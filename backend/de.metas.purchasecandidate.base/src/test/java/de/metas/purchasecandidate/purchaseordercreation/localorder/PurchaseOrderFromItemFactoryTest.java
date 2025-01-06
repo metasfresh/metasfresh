@@ -52,6 +52,32 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.*;
+import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -261,6 +287,7 @@ public class PurchaseOrderFromItemFactoryTest
 	private PricingConditions createDummyPricingConditions()
 	{
 		return PricingConditions.builder()
+				.validFrom(TimeUtil.asInstant(Timestamp.valueOf("2017-01-01 10:10:10.0")))
 				.build();
 	}
 

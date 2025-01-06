@@ -102,12 +102,14 @@ class PickingJobRepositoryTest
 						.preparationDate(instantAndOrgId("2021-11-02T07:39:16Z"))
 						.deliveryDate(instantAndOrgId("2021-11-02T07:39:16Z"))
 						.deliveryBPLocationId(BPartnerLocationId.ofRepoId(3, 4))
+						.handoverLocationId(BPartnerLocationId.ofRepoId(3, 4))
 						.deliveryRenderedAddress("deliveryRenderedAddress")
 						.pickerId(UserId.ofRepoId(5))
 						.line(PickingJobCreateRepoRequest.Line.builder()
 								.salesOrderAndLineId(salesOrderLineId)
 								.shipmentScheduleId(shipmentScheduleId)
 								.productId(ProductId.ofRepoId(6))
+								.huPIItemProductId(HUPIItemProductId.ofRepoId(6789))
 								.qtyToPick(Quantity.of(100, uomEach))
 								.pickFromAlternatives(ImmutableSet.of(
 										PickingJobCreateRepoRequest.PickFromAlternative.of(

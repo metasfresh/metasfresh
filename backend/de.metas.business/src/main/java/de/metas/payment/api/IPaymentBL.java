@@ -162,4 +162,6 @@ public interface IPaymentBL extends ISingletonService
 
 	@NonNull
 	Optional<CurrencyConversionTypeId> getCurrencyConversionTypeId(@NonNull PaymentId paymentId);
+
+	void reversePaymentById(@NonNull PaymentId paymentId);
 }

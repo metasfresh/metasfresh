@@ -526,6 +526,27 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 		return get_ValueAsBoolean(COLUMNNAME_IsFieldOnly);
 	}
 
+	/** 
+	 * IsFilterField AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISFILTERFIELD_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISFILTERFIELD_Yes = "Y";
+	/** No = N */
+	public static final String ISFILTERFIELD_No = "N";
+	@Override
+	public void setIsFilterField (final @Nullable java.lang.String IsFilterField)
+	{
+		set_Value (COLUMNNAME_IsFilterField, IsFilterField);
+	}
+
+	@Override
+	public java.lang.String getIsFilterField() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsFilterField);
+	}
+
 	@Override
 	public void setIsHeading (final boolean IsHeading)
 	{

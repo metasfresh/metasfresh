@@ -21,4 +21,19 @@
   width: 100%;
   min-height: 30px;
   padding: 15px;
+  
+  .col-label {
+    label {
+      width: 100%;
+    }
+  }
+
+  .col-chk {
+    padding-left: 0;
+
+    .input-checkbox {
+      margin-left: 0 !important;
+      margin-right: .5rem !important;
+    }
+  }
 }

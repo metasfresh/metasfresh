@@ -47,7 +47,7 @@ public class ClearanceStatusInfo
 	@Nullable
 	public static ClearanceStatusInfo ofHU(@NonNull final I_M_HU hu)
 	{
-		return ClearanceStatus.ofCodeOptional(hu.getClearanceStatus())
+		return ClearanceStatus.optionalOfNullableCode(hu.getClearanceStatus())
 				.map(status -> ClearanceStatusInfo.builder()
 						.clearanceDate(InstantAndOrgId.ofTimestampOrNull(hu.getClearanceDate(), OrgId.ofRepoId(hu.getAD_Org_ID())))
 						.clearanceNote(hu.getClearanceNote())

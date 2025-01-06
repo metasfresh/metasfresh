@@ -1,24 +1,6 @@
 package de.metas.dlm.model.interceptor;
 
-import java.util.Collections;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.ad.modelvalidator.ModelChangeType;
-import org.adempiere.ad.table.TableRecordIdDescriptor;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Client;
-import org.compiere.model.I_AD_Column;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.dlm.IDLMService;
 import de.metas.dlm.model.I_DLM_Partition_Workqueue;
@@ -30,6 +12,23 @@ import de.metas.dlm.partitioner.config.PartitionConfig;
 import de.metas.dlm.partitioner.config.PartitionerConfigLine;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
+import org.adempiere.ad.table.TableRecordIdDescriptor;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Client;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.POInfo;
+
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -98,7 +97,7 @@ public class PartitionerInterceptor extends AbstractModelInterceptor
 					final String tableName = Services.get(IADTableDAO.class).retrieveTableName(column.getAD_Table_ID());
 					if (!I_DLM_Partition_Workqueue.Table_Name.equals(tableName)) // this table is part of the DLM engine
 					{
-						final Optional<String> tableColumnName = columnBL.getTableIdColumnName(tableName, column.getColumnName());
+						final Optional<String> tableColumnName = POInfo.getPOInfoNotNull(tableName).getTableIdColumnName(column.getColumnName());
 						if (tableColumnName.isPresent()) // not the case for e.g. AD_Issue
 						{
 							engine.addModelChange(tableName, CheckTableRecordReferenceInterceptor.INSTANCE);

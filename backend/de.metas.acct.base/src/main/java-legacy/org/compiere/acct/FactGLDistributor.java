@@ -222,7 +222,7 @@ import java.util.List;
 				.account(account)
 				.accountConceptualName(null)
 				.additionalDescription(glDistributionLine.getDescription())
-				.qty(baseLine.getQty() != null ? Quantitys.create(glDistributionLine.getQty(), baseLine.getQty().getUomId()) : null)
+				.qty(baseLine.getQty() != null ? Quantitys.of(glDistributionLine.getQty(), baseLine.getQty().getUomId()) : null)
 				.build();
 
 		//

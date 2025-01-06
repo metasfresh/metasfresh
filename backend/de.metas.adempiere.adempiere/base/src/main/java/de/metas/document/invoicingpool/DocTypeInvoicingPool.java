@@ -53,6 +53,9 @@ public class DocTypeInvoicingPool
 	boolean isOnDistinctICTypes = true;
 
 	@Default
+	boolean isCreditedInvoiceReinvoicable = false;
+
+	@Default
 	boolean isActive = true;
 
 	@NonNull

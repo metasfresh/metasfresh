@@ -50,7 +50,7 @@ Feature: invoice review
 
   @from:cucumber
   @Id:S14758_100
-  # Note: completing the invoice to exercise also the MI that might create an empty invoic review record
+  # Note: completing the invoice to exercise also the MI that might create an empty invoice review record
   Scenario: Insert review by C_Invoice_ID and update it via ExternalId, expect a review record to be created automatically on invoice completion
 #    When set sys config boolean value true for sys config de.metas.invoice.review.AutoCreateForSalesInvoice
     And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/invoices/new' and fulfills with '200' status code
@@ -102,8 +102,8 @@ Feature: invoice review
       | C_Invoice_ID.Identifier |
       | invoice_1               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.C_Currency.ISO_Code | OPT.DateInvoiced | OPT.DateAcct | OPT.DateOrdered | OPT.C_DocType_ID.Identifier | OPT.C_DocTypeTarget_ID.Identifier | OPT.IsSOTrx | OPT.ExternalId                |
-      | invoice_1               | endCustomer_1            | endCustomerLocation_1             | poReference1    | 30 Tage netto | true      | CO        | EUR                     | 2023-04-05       | 2023-04-04   | 2023-04-03      | docType                     | docType                           | true        | externalHeaderId_2023-04-05_1 |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.C_Currency.ISO_Code | OPT.DateInvoiced | OPT.DateAcct | OPT.DateOrdered | OPT.C_DocType_ID.Identifier | OPT.C_DocTypeTarget_ID.Identifier | OPT.IsSOTrx | OPT.ExternalId                |
+      | invoice_1               | endCustomer_1            | endCustomerLocation_1             | poReference1    | 10 Tage 1 % | true      | CO        | EUR                     | 2023-04-05       | 2023-04-04   | 2023-04-03      | docType                     | docType                           | true        | externalHeaderId_2023-04-05_1 |
 
 #    TODO commented out as the stepdef was failing on remote and could not be reproduced on local
 #    this validates de.metas.invoice.interceptor.C_Invoice_InvoiceReview.createReviewRecord
@@ -189,8 +189,8 @@ Feature: invoice review
       | C_Invoice_ID.Identifier |
       | invoice_2               |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm   | processed | docStatus | OPT.C_Currency.ISO_Code | OPT.DateInvoiced | OPT.DateAcct | OPT.DateOrdered | OPT.C_DocType_ID.Identifier | OPT.C_DocTypeTarget_ID.Identifier | OPT.IsSOTrx | OPT.ExternalId                |
-      | invoice_2               | endCustomer_1            | endCustomerLocation_1             | poReference1    | 30 Tage netto | false     | DR        | EUR                     | 2023-04-05       | 2023-04-04   | 2023-04-03      | docType                     | docType                           | true        | externalHeaderId_2023-04-05_2 |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.C_Currency.ISO_Code | OPT.DateInvoiced | OPT.DateAcct | OPT.DateOrdered | OPT.C_DocType_ID.Identifier | OPT.C_DocTypeTarget_ID.Identifier | OPT.IsSOTrx | OPT.ExternalId                |
+      | invoice_2               | endCustomer_1            | endCustomerLocation_1             | poReference1    | 10 Tage 1 % | false     | DR        | EUR                     | 2023-04-05       | 2023-04-04   | 2023-04-03      | docType                     | docType                           | true        | externalHeaderId_2023-04-05_2 |
 
     And the user creates a JsonInvoiceReviewUpsertItem and stores it in the context
       | OPT.ExternalId                | orgCode | customColumn |

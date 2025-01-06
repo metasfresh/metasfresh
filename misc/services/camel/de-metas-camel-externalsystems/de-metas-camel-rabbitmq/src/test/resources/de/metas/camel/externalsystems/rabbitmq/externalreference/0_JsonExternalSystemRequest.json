@@ -10,7 +10,7 @@
     "RemoteURL": "https://test",
     "RoutingKey": "routingKey",
     "RabbitMQAuthToken": "authToken",
-    "JsonExternalReferenceLookupRequest": "{\"systemName\":\"ALBERTA\",\"items\":[{\"id\":\"externalRef_bpartner\",\"type\":\"BPartner\"},{\"id\":\"externalRef_bpLocation\",\"type\":\"BPartnerLocation\"},{\"id\":\"externalRef_user\",\"type\":\"UserID\"}]}"
+    "JsonExternalReferenceLookupRequest": "{\"systemName\":\"ALBERTA\",\"items\":[{\"externalReference\":\"externalRef_bpartner\",\"type\":\"BPartner\"},{\"externalReference\":\"externalRef_bpLocation\",\"type\":\"BPartnerLocation\"},{\"externalReference\":\"externalRef_user\",\"type\":\"UserID\"}]}"
   }
 }
 

@@ -4,6 +4,7 @@ import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
@@ -15,7 +16,6 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
-import de.metas.pricing.service.impl.PlainPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
@@ -24,6 +24,7 @@ import de.metas.util.Services;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
@@ -48,7 +49,7 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Campaign_Price;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
@@ -85,8 +86,16 @@ import static java.math.BigDecimal.ONE;
 @Component
 public class C_Campaign_Price
 {
-	private static final IBPartnerDAO bpartnerRepo = Services.get(IBPartnerDAO.class);
-	private static final ICountryDAO countriesRepo = Services.get(ICountryDAO.class);
+	private final IBPartnerDAO bpartnerRepo = Services.get(IBPartnerDAO.class);
+	private final ICountryDAO countriesRepo = Services.get(ICountryDAO.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
+	private static final AdMessageKey MSG_ProductNotOnPriceList = AdMessageKey.of("ProductNotOnPriceList");
+	private static final AdMessageKey ERR_MandatoryFields = AdMessageKey.of("C_Campaign_Price_MandatoryFields");
+
 	@Init
 	public void init()
 	{
@@ -107,14 +116,24 @@ public class C_Campaign_Price
 		{
 			return;
 		}
+
 		updatePricingInfo(record);
 		record.setC_BP_Group_ID(-1);
 	}
 
-	private static void updatePricingInfo(final I_C_Campaign_Price record)
+	private void updatePricingInfo(final I_C_Campaign_Price record)
 	{
 		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID());
-		final OrgId orgId = OrgId.ofRepoIdOrNull(record.getAD_Org_ID());
+		if (bpartnerId == null)
+		{
+			return;
+		}
+
+		final ProductId productId = ProductId.ofRepoIdOrNull(record.getM_Product_ID());
+		if (productId == null)
+		{
+			return;
+		}
 
 		final CountryId countryId = bpartnerRepo.getDefaultShipToLocationCountryIdOrNull(bpartnerId);
 		if (countryId != null)
@@ -122,33 +141,40 @@ public class C_Campaign_Price
 			record.setC_Country_ID(countryId.getRepoId());
 			updateCurrency(record, countryId);
 		}
+
 		final PricingSystemId pricingSystemId = bpartnerRepo.retrievePricingSystemIdOrNull(bpartnerId, SOTrx.SALES);
 		if (pricingSystemId != null)
 		{
 			record.setM_PricingSystem_ID(pricingSystemId.getRepoId());
-			final IPriceListDAO priceListDAO = new PlainPriceListDAO();
+
 			final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, countryId, SOTrx.SALES);
 			if (priceListId != null)
 			{
-				final ProductId productId = ProductId.ofRepoIdOrNull(record.getM_Product_ID());
-				final IPricingBL pricingBL = Services.get(IPricingBL.class);
-				final ZoneId timeZone = Services.get(IOrgDAO.class).getTimeZone(OrgId.ofRepoId(record.getAD_Org_ID()));
+				final OrgId orgId = OrgId.ofRepoIdOrAny(record.getAD_Org_ID());
+				final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 				final IEditablePricingContext pricingContext = pricingBL
 						.createInitialContext(
 								orgId,
 								productId,
 								bpartnerId,
-								Quantitys.create(ONE, productId),
+								Quantitys.of(ONE, productId),
 								SOTrx.SALES)
 						.setCountryId(countryId)
-						.setPriceDate(TimeUtil.asLocalDate(record.getValidFrom(),timeZone))
-						.setFailIfNotCalculated();
+						.setPriceDate(TimeUtil.asLocalDate(record.getValidFrom(), timeZone));
 				final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
+				if (!pricingResult.isCalculated())
+				{
+					throw new AdempiereException(MSG_ProductNotOnPriceList)
+							.setParameter("pricingContext", pricingContext)
+							.setParameter("pricingResult", pricingResult);
+				}
+
 				record.setC_TaxCategory_ID(pricingResult.getTaxCategoryId().getRepoId());
 				record.setInvoicableQtyBasedOn(pricingResult.getInvoicableQtyBasedOn().getCode());
 			}
 		}
-		else {
+		else
+		{
 			record.setM_PricingSystem_ID(-1);
 		}
 	}
@@ -181,7 +207,7 @@ public class C_Campaign_Price
 		updateCurrency(record, countryId);
 	}
 
-	private static void updateCurrency(final I_C_Campaign_Price record, final CountryId countryId)
+	private void updateCurrency(final I_C_Campaign_Price record, final CountryId countryId)
 	{
 		countriesRepo.getCountryCurrencyId(countryId).ifPresent(currencyId -> record.setC_Currency_ID(currencyId.getRepoId()));
 	}
@@ -195,13 +221,10 @@ public class C_Campaign_Price
 			return;
 		}
 
-		final UomId stockUomId = Services.get(IProductBL.class).getStockUOMId(productId);
+		final UomId stockUomId = productBL.getStockUOMId(productId);
 		record.setC_UOM_ID(stockUomId.getRepoId());
 
-		if(record.getC_BPartner_ID() > 0)
-		{
-			updatePricingInfo(record);
-		}
+		updatePricingInfo(record);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Campaign_Price.COLUMNNAME_C_BPartner_ID, I_C_Campaign_Price.COLUMNNAME_C_BP_Group_ID, I_C_Campaign_Price.COLUMNNAME_M_PricingSystem_ID })
@@ -209,7 +232,7 @@ public class C_Campaign_Price
 	{
 		if (record.getC_BPartner_ID() <= 0 && record.getC_BP_Group_ID() <= 0 && record.getM_PricingSystem_ID() <= 0)
 		{
-			throw new FillMandatoryException(I_C_Campaign_Price.COLUMNNAME_C_BP_Group_ID);
+			throw new AdempiereException(ERR_MandatoryFields);
 		}
 	}
 }

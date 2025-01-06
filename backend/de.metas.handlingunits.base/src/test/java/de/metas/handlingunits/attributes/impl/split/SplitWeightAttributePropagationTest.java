@@ -1084,7 +1084,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 				newHUWeightsExpectation("25", "25", "0", "0"));
 		
 		// when
-		final List<I_M_HU> newCUs = HUTransformService.newInstance(huContext).cuToNewCU(cuToSplit, Quantitys.create(10, helper.uomKgId));
+		final List<I_M_HU> newCUs = HUTransformService.newInstance(huContext).cuToNewCU(cuToSplit, Quantitys.of(10, helper.uomKgId));
 
 		// when
 		assertTradingUnitsWeightExpectations(
@@ -1111,7 +1111,7 @@ public class SplitWeightAttributePropagationTest extends AbstractWeightAttribute
 				newHUWeightsExpectation("7", "7", "0", "0"));
 
 		// when
-		final List<I_M_HU> newCUs = HUTransformService.newInstance(huContext).cuToNewCU(cuToSplit, Quantitys.create(5, helper.uomKgId));
+		final List<I_M_HU> newCUs = HUTransformService.newInstance(huContext).cuToNewCU(cuToSplit, Quantitys.of(5, helper.uomKgId));
 
 		// when
 		assertTradingUnitsWeightExpectations(

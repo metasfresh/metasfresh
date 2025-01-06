@@ -30,6 +30,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
@@ -81,7 +82,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Project;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -409,7 +409,7 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 						orgId,
 						productId,
 						bPartnerLocationAndCaptureId.getBpartnerId(),
-						Quantitys.create(invoiceCandidate.getQtyOrdered(), productId),
+						Quantitys.of(invoiceCandidate.getQtyOrdered(), productId),
 						soTrx)
 				.setPriceListId(priceListId)
 				.setPriceDate(TimeUtil.asLocalDate(invoiceCandidate.getDateOrdered(), timeZone))
@@ -513,7 +513,7 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 		else
 		{
 			queryBuilder.docBaseType(InvoiceDocBaseType.VendorInvoice.getDocBaseType())
-					.docSubType(X_C_DocType.DOCSUBTYPE_InternalVendorInvoice);
+					.docSubType(DocSubType.InternalVendorInvoice);
 		}
 
 		final DocTypeId docTypeIdOrNull = docTypeBL.getDocTypeIdOrNull(queryBuilder.build());

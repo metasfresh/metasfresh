@@ -26,11 +26,14 @@ import com.google.common.base.Splitter;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.GlobalQRCodeType;
 import de.metas.global_qrcodes.GlobalQRCodeVersion;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -44,6 +47,8 @@ class LMQRCodeParser
 	private static final GlobalQRCodeVersion VERSION_1 = GlobalQRCodeVersion.ofInt(1);
 
 	private static final Splitter SPLITTER = Splitter.on("#");
+
+	private static final DateTimeFormatter BEST_BEFORE_DATE_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
 	public static boolean isHandled(@NonNull final GlobalQRCode globalQRCode)
 	{
@@ -76,12 +81,16 @@ class LMQRCodeParser
 
 	private static LMQRCode fromGlobalQRCode_version1(final GlobalQRCode globalQRCode)
 	{
+		// NOTE to dev: keep in sync with huQRCodes.js, parseQRCodePayload_LeichMehl_v1
+		
 		try
 		{
 			final List<String> parts = SPLITTER.splitToList(globalQRCode.getPayloadAsJson());
 			return LMQRCode.builder()
-					.lotNumber(parts.get(0))
-					.weight(new BigDecimal(parts.get(1)))
+					.weightInKg(new BigDecimal(parts.get(0)))
+					.bestBeforeDate(parts.size() >= 2 ? LocalDate.parse(parts.get(1), BEST_BEFORE_DATE_FORMAT) : null)
+					.lotNumber(parts.size() >= 3 ? StringUtils.trimBlankToNull(parts.get(2)) : null)
+					.productNo(parts.size() >= 4 ? StringUtils.trimBlankToNull(parts.get(3)) : null)
 					.build();
 		}
 		catch (Exception ex)

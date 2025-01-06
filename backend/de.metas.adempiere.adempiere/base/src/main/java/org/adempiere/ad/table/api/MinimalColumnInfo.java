@@ -1,6 +1,7 @@
 package org.adempiere.ad.table.api;
 
 import de.metas.ad_reference.ReferenceId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -19,6 +20,7 @@ import javax.annotation.Nullable;
 public class MinimalColumnInfo
 {
 	@NonNull String columnName;
+	@Nullable String columnSql;
 	@NonNull AdColumnId adColumnId;
 	@NonNull AdTableId adTableId;
 	boolean isActive;
@@ -35,4 +37,6 @@ public class MinimalColumnInfo
 	{
 		return this.columnName.equalsIgnoreCase(columnName);
 	}
+
+	public boolean isPhysicalColumn() {return Check.isBlank(columnSql);}
 }

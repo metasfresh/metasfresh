@@ -5,7 +5,6 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.impl.ConstantWorkpackagePrio;
 import de.metas.async.spi.impl.SizeBasedWorkpackagePrio;
-import de.metas.common.util.TryAndWaitUtil;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -20,6 +19,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
+import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
@@ -31,9 +31,9 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
 import java.math.BigDecimal;
@@ -51,6 +51,8 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
  */
 /* package */class InvoiceCandidateEnqueuer implements IInvoiceCandidateEnqueuer
 {
+	private final static Logger logger = LogManager.getLogger(InvoiceCandidateEnqueuer.class);
+	
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_QTY_TO_INVOICE = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_QtyToInvoice");
 	private static final AdMessageKey MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_APPROVAL = AdMessageKey.of("InvoiceCandBL_Invoicing_Skipped_ApprovalForInvoicing");
 	private static final AdMessageKey MSG_IncompleteGroupsFound_1P = AdMessageKey.of("InvoiceCandEnqueuer_IncompleteGroupsFound");
@@ -75,7 +77,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	private boolean setWorkpackageADPInstanceCreatorId = true;
 
 	@Override
-	public IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(final Set<InvoiceCandidateId> invoiceCandidateIds)
+	public IInvoiceCandidateEnqueueResult enqueueInvoiceCandidateIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
 	{
 		Check.assumeNotEmpty(invoiceCandidateIds, "invoiceCandidateIds is not empty");
 
@@ -101,12 +103,12 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 
 		// make sure that we don't have a ton of ICs being updated by the app-Server while we do our own updates over here
 		// otherwise, we can easly run into DB-deadloacks
-		ensureICsAreUpdated(pInstanceId);
+		invoiceCandBL.ensureICsAreUpdated(InvoiceCandidateIdsSelection.ofSelectionId(pInstanceId));
 
 		// Prepare them in a dedicated trx so that the update-WP-processor "sees" them
 		trxManager.runInNewTrx(() -> updateSelectionBeforeEnqueueing(pInstanceId));
 
-		ensureICsAreUpdated(pInstanceId);
+		invoiceCandBL.ensureICsAreUpdated(InvoiceCandidateIdsSelection.ofSelectionId(pInstanceId));
 
 		//
 		// Make sure there are no changes in amounts or relevant fields (if that is required)
@@ -225,49 +227,6 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				workpackageQueueSizeBeforeEnqueueing,
 				totalNetAmtToInvoiceChecksum.getValue(),
 				icLock);
-	}
-
-	private void ensureICsAreUpdated(final @NonNull PInstanceId pinstanceId)
-	{
-		if (Adempiere.isUnitTestMode())
-		{
-			// In unit-test-mode we don't have the app-server running to do this for us, so we need to do it here.
-			// Updating invalid candidates to make sure that they e.g. have the correct header aggregation key and thus the correct ordering
-			// also, we need to make sure that each ICs was updated at least once, so that it has a QtyToInvoice > 0 (task 08343)
-			invoiceCandBL.updateInvalid()
-					.setContext(getCtx(), ITrx.TRXNAME_ThreadInherited)
-					.setTaggedWithAnyTag()
-					.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.ofSelectionId(pinstanceId))
-					.update();
-		}
-		else
-		{
-			// in later code-versions this might also be achieved by using AsyncBatchService.executeBatch(..), but here we just wait...
-			waitForInvoiceCandidatesUpdated(pinstanceId);
-		}
-	}
-
-	private void waitForInvoiceCandidatesUpdated(final @NonNull PInstanceId pinstanceId)
-	{
-		Loggables.addLog("waitForInvoiceCandidatesUpdated - Start waiting for the IC-selection with AD_PInstance_ID={} to be updated.", pinstanceId.getRepoId());
-		try
-		{
-			TryAndWaitUtil.tryAndWait(
-					3600 /*let's wait a full hour*/,
-					1000 /*check once a second*/,
-					() -> !invoiceCandDAO.hasInvalidInvoiceCandidatesForSelection(pinstanceId),
-					null);
-		}
-		catch (final InterruptedException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e)
-					.appendParametersToMessage()
-					.setParameter("AD_PInstance_ID (ICs-selection)", pinstanceId.getRepoId());
-		}
-		finally
-		{
-			Loggables.addLog("waitForInvoiceCandidatesUpdated - Done waiting for the IC-selection with AD_PInstance_ID={} to be updated.", pinstanceId.getRepoId());
-		}
 	}
 
 	/**

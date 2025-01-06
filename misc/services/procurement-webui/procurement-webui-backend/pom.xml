@@ -71,6 +71,13 @@
                 <!-- <version>1.18.18</version> -->
                 <version>1.18.24</version>
             </dependency>
+            
+            <!-- https://github.com/hoereth/springfox-enum-plugin -->
+            <dependency>
+                <groupId>de.pentabyte</groupId>
+                <artifactId>springfox-enum-plugin</artifactId>
+                <version>${springfox-enum-plugin.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -149,6 +156,7 @@
     </dependencies>
     
     <build>
+        <finalName>${project.artifactId}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -162,6 +170,17 @@
                         </exclude>
                     </excludes>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>spring-boot-procurement-backend-repackage</id>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                        <configuration>
+                            <executable>true</executable>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <plugin>

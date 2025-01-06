@@ -55,6 +55,9 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.util.Env;
@@ -92,9 +95,11 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	//FIXME: just a quick way of allowing qtyIssued to be more than planned; such configs should be available on the proper records (pp_product_planning, pp_order_bomLine..)
 	private final static String SYS_CONFIG_DO_NOT_RESTRICT_QTY_ISSUED = "de.metas.material.planning.pporder.impl.DO_NOT_RESTRICT_QTY_ISSUED";
+	private final static String SYS_CONFIG_DO_NOT_VALIDATE_TOLERANCE_ON_CLOSING = "de.metas.material.planning.pporder.impl.SYS_CONFIG_DO_NOT_VALIDATE_TOLERANCE_ON_CLOSING";
 
 	@Override
 	public I_PP_Order_BOMLine getOrderBOMLineById(@NonNull final PPOrderBOMLineId orderBOMLineId)
@@ -226,7 +231,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		else if (valueType == IssuingToleranceValueType.QUANTITY)
 		{
 			final UomId uomId = UomId.ofRepoId(record.getIssuingTolerance_UOM_ID());
-			final Quantity qty = Quantitys.create(record.getIssuingTolerance_Qty(), uomId);
+			final Quantity qty = Quantitys.of(record.getIssuingTolerance_Qty(), uomId);
 			return Optional.of(IssuingToleranceSpec.ofQuantity(qty));
 		}
 		else
@@ -293,7 +298,9 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	public Quantity getQtyRequired(@NonNull final ComputeQtyRequiredRequest computeQtyRequiredRequest)
 	{
 		final I_PP_Product_BOMLine productBomLine = bomDAO.getBOMLineById(computeQtyRequiredRequest.getProductBOMLineId().getRepoId());
-		return computeQtyRequiredByQtyOfFinishedGoods(productBomLine, computeQtyRequiredRequest.getFinishedGoodQty());
+		return computeQtyRequiredRequest.getFinishedGoodQty() != null
+				? computeQtyRequiredByQtyOfFinishedGoods(productBomLine, computeQtyRequiredRequest.getFinishedGoodQty())
+				: computeQtyRequiredByQtyOfIssuedProduct(productBomLine, computeQtyRequiredRequest.getIssuedQty());
 	}
 
 	Quantity computeQtyRequiredByQtyOfFinishedGoods(
@@ -310,6 +317,13 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 			@NonNull final Quantity qtyFinishedGood)
 	{
 		return toQtyCalculationsBOMLine(productBOMLine).computeQtyRequired(qtyFinishedGood);
+	}
+
+	private Quantity computeQtyRequiredByQtyOfIssuedProduct(
+			@NonNull final I_PP_Product_BOMLine productBOMLine,
+			@NonNull final Quantity qtyFinishedGood)
+	{
+		return toQtyCalculationsBOMLine(productBOMLine).computeQtyOfFinishedGoodsForComponentQty(qtyFinishedGood);
 	}
 
 	@Override
@@ -658,13 +672,16 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	@Override
 	public void validateBeforeClose(final I_PP_Order_BOMLine line, @Nullable final Quantity roundToScale)
 	{
+		if (sysConfigBL.getBooleanValue(SYS_CONFIG_DO_NOT_VALIDATE_TOLERANCE_ON_CLOSING, false))
+		{
+			return;
+		}
 		getQuantities(line).assertQtyToIssueToleranceIsRespected(roundToScale);
 	}
 
 	@Override
 	public void close(final I_PP_Order_BOMLine line)
 	{
-		changeQuantities(line, OrderBOMLineQuantities::close);
 		line.setProcessed(true); // just to make sure (but it should be already set when the PP_Order was completed)
 
 		orderBOMsRepo.save(line);
@@ -673,7 +690,6 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	@Override
 	public void unclose(final I_PP_Order_BOMLine line)
 	{
-		changeQuantities(line, OrderBOMLineQuantities::unclose);
 		orderBOMsRepo.save(line);
 	}
 
@@ -731,5 +747,12 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 				.filter(bomLine -> BOMComponentType.ofNullableCodeOrComponent(bomLine.getComponentType()).isIssue())
 				.map(bomLine -> ProductId.ofRepoId(bomLine.getM_Product_ID()))
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public ImmutableSet<WarehouseId> getIssueFromWarehouseIds(@NonNull final I_PP_Order ppOrder)
+	{
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID());
+		return warehouseDAO.getWarehouseIdsOfSameGroup(warehouseId, WarehouseGroupAssignmentType.MANUFACTURING);
 	}
 }

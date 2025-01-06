@@ -41,6 +41,7 @@ import de.metas.util.lang.ExternalId;
 import de.metas.util.time.DurationUtils;
 import de.metas.workflow.WFDurationUnit;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
@@ -112,20 +113,19 @@ public class WOProjectResourceRepository
 				.collect(WOProjectResourcesCollection.collect());
 	}
 
-	public ImmutableSet<ResourceId> getResourceIdsByProjectResourceIds(@NonNull final Set<WOProjectResourceId> projectResourceIds)
+	public ImmutableSet<ResourceIdAndType> getResourceIdsByProjectResourceIds(@NonNull final Set<WOProjectResourceId> projectResourceIds)
 	{
 		if (projectResourceIds.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
 
-		final ImmutableList<Integer> resourceRepoIds = queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
+		return queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
 				.addEqualsFilter(I_C_Project_WO_Resource.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Resource_ID, projectResourceIds)
-				.create()
-				.listDistinct(I_C_Project_WO_Resource.COLUMNNAME_S_Resource_ID, Integer.class);
-
-		return ResourceId.ofRepoIds(resourceRepoIds);
+				.stream()
+				.map(WOProjectResourceRepository::extractResourceIdAndType)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public InSetPredicate<WOProjectResourceId> getProjectResourceIdsPredicate(@NonNull final WOProjectResourceCalendarQuery query)
@@ -156,25 +156,24 @@ public class WOProjectResourceRepository
 	}
 
 	public Stream<WOProjectResource> streamByResourceIds(
-			@NonNull final Set<ResourceId> resourceIds,
+			@NonNull final Set<ResourceIdAndType> resourceIdAndTypes,
 			@Nullable final Set<ProjectId> onlyProjectIds)
 	{
-		if (resourceIds.isEmpty())
+		if (resourceIdAndTypes.isEmpty())
 		{
 			return Stream.empty();
 		}
 
-		final IQueryBuilder<I_C_Project_WO_Resource> queryBuilder = queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Project_WO_Resource.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
-				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_S_Resource_ID, resourceIds);
-
-		if (onlyProjectIds != null && !onlyProjectIds.isEmpty())
+		final IQuery<I_C_Project_WO_Resource> sqlQuery = toSqlQuery(WOProjectResourceCalendarQuery.builder()
+				.resourceIds(InSetPredicate.only(resourceIdAndTypes))
+				.projectIds(onlyProjectIds != null && !onlyProjectIds.isEmpty() ? InSetPredicate.only(onlyProjectIds) : InSetPredicate.any())
+				.build());
+		if (sqlQuery == null)
 		{
-			queryBuilder.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID, onlyProjectIds);
+			return Stream.empty();
 		}
 
-		return queryBuilder.stream()
+		return sqlQuery.stream()
 				.map(WOProjectResourceRepository::ofRecord);
 	}
 
@@ -253,7 +252,7 @@ public class WOProjectResourceRepository
 
 		resourceRecord.setAssignDateFrom(TimeUtil.asTimestamp(createWOProjectResourceRequest.getAssignDateFrom()));
 		resourceRecord.setAssignDateTo(TimeUtil.asTimestamp(createWOProjectResourceRequest.getAssignDateTo()));
-		
+
 		resourceRecord.setC_Project_WO_Step_ID(WOProjectStepId.toRepoId(createWOProjectResourceRequest.getWoProjectStepId()));
 		resourceRecord.setS_Resource_ID(ResourceId.toRepoId(createWOProjectResourceRequest.getResourceId()));
 		resourceRecord.setC_Project_ID(ProjectId.toRepoId(createWOProjectResourceRequest.getWoProjectStepId().getProjectId()));
@@ -353,7 +352,7 @@ public class WOProjectResourceRepository
 				.woProjectResourceId(WOProjectResourceId.ofRepoId(projectId, resourceRecord.getC_Project_WO_Resource_ID()))
 				.externalId(ExternalId.ofOrNull(resourceRecord.getExternalId()))
 
-				.resourceId(ResourceId.ofRepoId(resourceRecord.getS_Resource_ID()))
+				.resourceIdAndType(extractResourceIdAndType(resourceRecord))
 				.woProjectStepId(WOProjectStepId.ofRepoId(projectId, resourceRecord.getC_Project_WO_Step_ID()))
 
 				.dateRange(dateRange)
@@ -371,21 +370,39 @@ public class WOProjectResourceRepository
 				.build();
 	}
 
+	public static ResourceIdAndType extractResourceIdAndType(final @NonNull I_C_Project_WO_Resource resourceRecord)
+	{
+		return ResourceIdAndType.of(
+				ResourceId.ofRepoId(resourceRecord.getS_Resource_ID()),
+				WOResourceType.optionalOfNullableCode(resourceRecord.getResourceType()).orElse(WOResourceType.MACHINE)
+		);
+	}
+
 	@Nullable
 	private IQuery<I_C_Project_WO_Resource> toSqlQuery(@NonNull final WOProjectResourceCalendarQuery query)
 	{
-		final InSetPredicate<ResourceId> resourceIds = query.getResourceIds();
+		final InSetPredicate<ResourceIdAndType> resourceIdAndTypes = query.getResourceIds();
 		final InSetPredicate<ProjectId> projectIds = query.getProjectIds();
 
-		if (resourceIds.isNone() || projectIds.isNone())
+		if (resourceIdAndTypes.isNone() && projectIds.isNone())
 		{
 			return null;
 		}
 
 		final IQueryBuilder<I_C_Project_WO_Resource> sqlQuery = queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
 				.addEqualsFilter(I_C_Project_WO_Resource.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
-				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_S_Resource_ID, resourceIds)
 				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID, projectIds);
+
+		if (resourceIdAndTypes.isOnly())
+		{
+			final ICompositeQueryFilter<I_C_Project_WO_Resource> resourcesFilter = sqlQuery.addCompositeQueryFilter().setJoinOr();
+			for (final ResourceIdAndType resourceIdAndType : resourceIdAndTypes.toSet())
+			{
+				resourcesFilter.addCompositeQueryFilter().setJoinAnd()
+						.addEqualsFilter(I_C_Project_WO_Resource.COLUMNNAME_S_Resource_ID, resourceIdAndType.getResourceId())
+						.addEqualsFilter(I_C_Project_WO_Resource.COLUMNNAME_ResourceType, resourceIdAndType.getType());
+			}
+		}
 
 		if (query.getStartDate() != null || query.getEndDate() != null)
 		{
@@ -410,7 +427,8 @@ public class WOProjectResourceRepository
 		if (!isSimulation)
 		{
 			resourceRecord.setC_Project_WO_Step_ID(WOProjectStepId.toRepoId(projectResource.getWoProjectStepId()));
-			resourceRecord.setS_Resource_ID(ResourceId.toRepoId(projectResource.getResourceId()));
+			resourceRecord.setS_Resource_ID(projectResource.getResourceIdAndType().getResourceId().getRepoId());
+			resourceRecord.setResourceType(projectResource.getResourceIdAndType().getType().getCode());
 			resourceRecord.setExternalId(ExternalId.toValue(projectResource.getExternalId()));
 			resourceRecord.setC_Project_ID(ProjectId.toRepoId(projectResource.getWoProjectStepId().getProjectId()));
 		}
@@ -419,12 +437,12 @@ public class WOProjectResourceRepository
 		resourceRecord.setIsAllDay(projectResource.isAllDay());
 
 		resourceRecord.setAssignDateFrom(projectResource.getStartDate()
-												 .map(TimeUtil::asTimestamp)
-												 .orElse(null));
+				.map(TimeUtil::asTimestamp)
+				.orElse(null));
 
 		resourceRecord.setAssignDateTo(projectResource.getEndDate()
-											   .map(TimeUtil::asTimestamp)
-											   .orElse(null));
+				.map(TimeUtil::asTimestamp)
+				.orElse(null));
 
 		resourceRecord.setWOTestFacilityGroupName(projectResource.getTestFacilityGroupName());
 

@@ -1,6 +1,8 @@
 package de.metas.bpartner.service.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -17,6 +19,7 @@ import de.metas.bpartner.service.IBPartnerAware;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest.ContactType;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.StringUtils;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.Language;
@@ -53,6 +56,7 @@ import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -125,10 +129,37 @@ public class BPartnerBL implements IBPartnerBL
 		final I_C_BPartner bpartner = getById(bpartnerId);
 		if (bpartner == null)
 		{
-			return "<" + bpartnerId + ">";
+			return unknownBPName(bpartnerId);
 		}
 
 		return toString.apply(bpartner);
+	}
+
+	@NonNull
+	private static String unknownBPName(final @NonNull BPartnerId bpartnerId)
+	{
+		return "<" + bpartnerId.getRepoId() + ">";
+	}
+
+	@Override
+	public Map<BPartnerId, String> getBPartnerNames(@NonNull final Set<BPartnerId> bpartnerIds)
+	{
+		if (bpartnerIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap<BPartnerId, I_C_BPartner> bpartners = Maps.uniqueIndex(bpartnersRepo.getByIds(bpartnerIds), bpartner -> BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()));
+
+		final ImmutableMap.Builder<BPartnerId, String> result = ImmutableMap.builder();
+		for (final BPartnerId bpartnerId : bpartnerIds)
+		{
+			final I_C_BPartner bpartner = bpartners.get(bpartnerId);
+			String name = bpartner != null ? bpartner.getName() : unknownBPName(bpartnerId);
+			result.put(bpartnerId, name);
+		}
+
+		return result.build();
 	}
 
 	@Override
@@ -194,6 +225,14 @@ public class BPartnerBL implements IBPartnerBL
 		for (final I_AD_User contactRecord : contactRecords)
 		{
 			if (onlyActiveContacts && !contactRecord.isActive())
+			{
+				continue;
+			}
+
+			final boolean isInvoiceEmailEnabled = Optional.ofNullable(contactRecord.getIsInvoiceEmailEnabled())
+					.map(StringUtils::toBoolean)
+					.orElse(false);
+			if (request.isOnlyIfInvoiceEmailEnabled() && !isInvoiceEmailEnabled)
 			{
 				continue;
 			}
@@ -347,6 +386,14 @@ public class BPartnerBL implements IBPartnerBL
 			updateAddressNoSave(bpLocation, bpartner);
 			bpartnersRepo.save(bpLocation);
 		}
+	}
+
+	@Override
+	public void updateMemo(final @NonNull BPartnerId bpartnerId, final String memo)
+	{
+		final I_C_BPartner bpartner = bpartnersRepo.getById(bpartnerId);
+		bpartner.setMemo(memo);
+		bpartnersRepo.save(bpartner);
 	}
 
 	@Override
@@ -855,5 +902,12 @@ public class BPartnerBL implements IBPartnerBL
 																				  .type(type)
 																				  .bpartnerId(bPartnerId)
 																				  .build()));
+	}
+
+	@Override
+	@NonNull
+	public List<String> getOtherLocationNamesOfBPartner(@NonNull final BPartnerId bPartnerId, @Nullable final BPartnerLocationId bPartnerLocationId)
+	{
+		return bpartnersRepo.getOtherLocationNamesOfBPartner(bPartnerId, bPartnerLocationId);
 	}
 }

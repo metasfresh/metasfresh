@@ -33,6 +33,7 @@ import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.GeographicalCoordinatesWithBPartnerLocationId;
 import de.metas.bpartner.OrgMappingId;
+import de.metas.bpartner.service.impl.GLNQuery;
 import de.metas.email.EMailAddress;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -49,6 +50,7 @@ import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.QueryLimit;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -56,6 +58,7 @@ import org.compiere.model.I_C_BPartner_Location;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -82,6 +85,8 @@ public interface IBPartnerDAO extends ISingletonService
 	I_C_BPartner getById(final BPartnerId bpartnerId);
 
 	<T extends I_C_BPartner> T getById(BPartnerId bpartnerId, Class<T> modelClass);
+
+	List<I_C_BPartner> getByIds(@NonNull Collection<BPartnerId> bpartnerIds);
 
 	/**
 	 * @deprecated Please use {@link IBPartnerDAO#retrieveBPartnerIdBy(BPartnerQuery)} instead.
@@ -175,7 +180,6 @@ public interface IBPartnerDAO extends ISingletonService
 	I_AD_User getContactById(@NonNull BPartnerContactId contactId);
 
 	String getContactLocationEmail(@Nullable BPartnerContactId contactId);
-
 	@Nullable
 	I_AD_User getContactByIdInTrx(BPartnerContactId contactId);
 
@@ -260,6 +264,8 @@ public interface IBPartnerDAO extends ISingletonService
 	 */
 	List<I_C_BPartner_Location> retrieveBPartnerShipToLocations(I_C_BPartner bpartner);
 
+	List<I_C_BPartner_Location> retrieveBPartnerLocationsByIds(Set<BPartnerLocationId> ids);
+
 	/**
 	 * Performs an non-strict search (e.g. if BP has only one address, it returns it even if it's not flagged as the default ShipTo address).
 	 *
@@ -320,7 +326,8 @@ public interface IBPartnerDAO extends ISingletonService
 
 	BPartnerLocationId retrieveBPartnerLocationId(BPartnerLocationQuery query);
 
-	I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
+	@Nullable
+	I_C_BPartner_Location retrieveBPartnerLocation(@NonNull BPartnerLocationQuery query);
 
 	BPartnerPrintFormatMap getPrintFormats(@NonNull BPartnerId bpartnerId);
 
@@ -338,6 +345,10 @@ public interface IBPartnerDAO extends ISingletonService
 	Set<Integer> retrieveForSectionGroupPartner(BPartnerId sectionGroupPartnerId);
 
 	Optional<SalesRegionId> getSalesRegionIdByBPLocationId(@NonNull BPartnerLocationId bpartnerLocationId);
+
+	@NonNull List<String> getOtherLocationNamesOfBPartner(@NonNull BPartnerId bPartnerId, @Nullable BPartnerLocationId bPartnerLocationId);
+
+	Iterator<I_C_BPartner> retrievePartnersByQuery(@NonNull IQuery<I_C_BPartner> query);
 
 	@Value
 	@Builder
@@ -408,4 +419,7 @@ public interface IBPartnerDAO extends ISingletonService
 
 	@NonNull
 	ImmutableList<I_C_BPartner> getBySAPBpartnerCode(@NonNull String sapBPartnerCode);
+
+	@NonNull
+	Optional<BPartnerLocationId> retrieveSingleBPartnerLocationIdBy(@NonNull GLNQuery query);
 }

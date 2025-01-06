@@ -13,6 +13,7 @@ import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Functions;
 import de.metas.util.Functions.MemoizingFunction;
@@ -81,6 +82,7 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 
 	IView view;
 	ViewProfileId viewProfileId;
+	@Nullable DocumentQueryOrderByList viewOrderBys;
 	String tableName;
 	AdWindowId adWindowId;
 
@@ -90,14 +92,13 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 
 	DisplayPlace displayPlace;
 
-	boolean considerTableRelatedProcessDescriptors;
-
 	@Getter(AccessLevel.NONE) MemoizingFunction<Class<?>, SelectedModelsList> _selectedModelsSupplier = Functions.memoizingFirstCall(this::retrieveSelectedModels);
 
 	@Builder
 	private ViewAsPreconditionsContext(
 			@NonNull final IView view,
 			@Nullable final ViewProfileId viewProfileId,
+			@Nullable final DocumentQueryOrderByList viewOrderBys,
 			@NonNull final ViewRowIdsSelection viewRowIdsSelection,
 			final ViewRowIdsSelection parentViewRowIdsSelection,
 			final ViewRowIdsSelection childViewRowIdsSelection,
@@ -105,6 +106,7 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 	{
 		this.view = view;
 		this.viewProfileId = viewProfileId;
+		this.viewOrderBys = viewOrderBys;
 		this.adWindowId = view.getViewId().getWindowId().toAdWindowIdOrNull();
 
 		this.viewRowIdsSelection = viewRowIdsSelection;
@@ -122,13 +124,17 @@ public class ViewAsPreconditionsContext implements WebuiPreconditionsContext
 		}
 
 		this.displayPlace = displayPlace;
-
-		this.considerTableRelatedProcessDescriptors = view.isConsiderTableRelatedProcessDescriptors(selectedRowIds);
 	}
 
 	public DocumentIdsSelection getSelectedRowIds()
 	{
 		return viewRowIdsSelection.getRowIds();
+	}
+
+	@Override
+	public boolean isConsiderTableRelatedProcessDescriptors(@NonNull final ProcessHandlerType processHandlerType)
+	{
+		return view.isConsiderTableRelatedProcessDescriptors(processHandlerType, getSelectedRowIds());
 	}
 
 	public <T extends IView> T getView(@SuppressWarnings("unused") final Class<T> viewType)

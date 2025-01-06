@@ -34,13 +34,15 @@ import lombok.extern.jackson.Jacksonized;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 @Value
 @Builder
 @Jacksonized
 public class JsonPaymentAllocationLine
 {
 	@NonNull
-	@Schema(required = true,
+	@Schema(requiredMode = REQUIRED,
 			description = SwaggerDocConstants.INVOICE_IDENTIFIER_DOC)
 	String invoiceIdentifier;
 

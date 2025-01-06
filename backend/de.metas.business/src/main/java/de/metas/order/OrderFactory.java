@@ -324,13 +324,14 @@ public class OrderFactory
 		OrderDocumentLocationAdapterFactory
 				.locationAdapter(order)
 				.setFrom(DocumentLocation.builder()
-								 .bpartnerId(bpartnerId)
-								 .bpartnerLocationId(bpartnerLocationId)
-								 .contactId(contactId)
-								 .build());
+						.bpartnerId(bpartnerId)
+						.bpartnerLocationId(bpartnerLocationId)
+						.contactId(contactId)
+						.build());
 
 		return this;
 	}
+
 
 	public OrderFactory shipBPartner(final BPartnerId bpartnerId)
 	{

@@ -41,7 +41,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
-import org.eevolution.productioncandidate.service.PPOrderCandidateCreateRequest;
+import org.eevolution.productioncandidate.service.PPOrderCandidateCreateUpdateRequest;
 import org.eevolution.productioncandidate.service.PPOrderCandidateService;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -95,26 +95,28 @@ public class PPOrderCandidateRequestedEventHandler implements MaterialEventHandl
 		final PPOrderData ppOrderData = ppOrderCandidateRequestedEvent.getPpOrderCandidate().getPpOrderData();
 		final ProductId productId = ProductId.ofRepoId(ppOrderData.getProductDescriptor().getProductId());
 		final Quantity qtyRequired = Quantity.of(ppOrderData.getQtyRequired(), productBL.getStockUOM(productId));
-		final String traceId = ppOrderCandidateRequestedEvent.getEventDescriptor().getTraceId();
+		final String traceId = ppOrderCandidateRequestedEvent.getTraceId();
 		final boolean isSimulated = ppOrderCandidateRequestedEvent.getPpOrderCandidate().isSimulated();
+		final PPOrderCandidateId parentPPOrderCandidateId = PPOrderCandidateId.ofRepoIdOrNull(ppOrderCandidateRequestedEvent.getPpOrderCandidate().getParentPPOrderCandidateId());
 
-		return ppOrderCandidateService.createCandidate(PPOrderCandidateCreateRequest.builder()
-															   .clientAndOrgId(ppOrderData.getClientAndOrgId())
-															   .productPlanningId(ProductPlanningId.ofRepoIdOrNull(ppOrderData.getProductPlanningId()))
-															   .materialDispoGroupId(ppOrderData.getMaterialDispoGroupId())
-															   .plantId(ppOrderData.getPlantId())
-															   .warehouseId(ppOrderData.getWarehouseId())
-															   .productId(productId)
-															   .attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(ppOrderData.getProductDescriptor().getAttributeSetInstanceId()))
-															   .qtyRequired(qtyRequired)
-															   .datePromised(ppOrderData.getDatePromised())
-															   .dateStartSchedule(ppOrderData.getDateStartSchedule())
-															   .salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrderData.getOrderLineIdAsRepoId()))
-															   .shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(ppOrderData.getShipmentScheduleIdAsRepoId()))
-															   .simulated(isSimulated)
-															   .traceId(traceId)
-															   .packingMaterialId(ppOrderData.getPackingMaterialId())
+		return ppOrderCandidateService.createUpdateCandidate(PPOrderCandidateCreateUpdateRequest.builder()
+																	 .clientAndOrgId(ppOrderData.getClientAndOrgId())
+																	 .parentPPOrderCandidateId(parentPPOrderCandidateId)
+																	 .productPlanningId(ProductPlanningId.ofRepoIdOrNull(ppOrderData.getProductPlanningId()))
+																	 .materialDispoGroupId(ppOrderData.getMaterialDispoGroupId())
+																	 .plantId(ppOrderData.getPlantId())
+																	 .warehouseId(ppOrderData.getWarehouseId())
+																	 .productId(productId)
+																	 .attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(ppOrderData.getProductDescriptor().getAttributeSetInstanceId()))
+																	 .qtyRequired(qtyRequired)
+																	 .datePromised(ppOrderData.getDatePromised())
+																	 .dateStartSchedule(ppOrderData.getDateStartSchedule())
+																	 .salesOrderLineId(OrderLineId.ofRepoIdOrNull(ppOrderData.getOrderLineIdAsRepoId()))
+																	 .shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(ppOrderData.getShipmentScheduleIdAsRepoId()))
+																	 .simulated(isSimulated)
+																	 .traceId(traceId)
+																	 .packingMaterialId(ppOrderData.getPackingMaterialId())
 															   .lotForLot(ppOrderData.getLotForLot())
-															   .build());
+																	 .build());
 	}
 }

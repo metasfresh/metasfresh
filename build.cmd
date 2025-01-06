@@ -60,14 +60,18 @@ docker build -f docker-builds/Dockerfile.cucumber --secret id=mvn-settings,src=d
 docker build -f docker-builds/Dockerfile.backend.api -t %pubregistry%/metas-api:%qualifier% . || @goto error
 docker build -f docker-builds/Dockerfile.backend.app -t %pubregistry%/metas-app:%qualifier% . || @goto error
 docker build -f docker-builds/Dockerfile.camel.externalsystems -t %pubregistry%/metas-externalsystems:%qualifier% . || @goto error
+docker build -f docker-builds/Dockerfile.camel.edi -t %pubregistry%/metas-edi:%qualifier% . || @goto error
 docker build -f docker-builds/Dockerfile.frontend -t %pubregistry%/metas-frontend:%qualifier% . || @goto error
 docker build -f docker-builds/Dockerfile.mobile -t %pubregistry%/metas-mobile:%qualifier% . || @goto error
 docker build -f docker-builds/Dockerfile.db-standalone -t %pubregistry%/metas-db:%qualifier% . || @goto error
 docker build -f docker-builds/Dockerfile.db-migrations -t %pubregistry%/metas-db:%qualifier%-migrations . || @goto error
 docker build -f docker-builds/Dockerfile.db-preloaded -t %pubregistry%/metas-db:%qualifier%-preloaded . || @goto error
 
+docker build -f docker-builds/Dockerfile.procurement.backend --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml -t %pubregistry%/metas-procurement-backend:%qualifier% . || @goto error
+docker build -f docker-builds/Dockerfile.procurement.nginx -t %pubregistry%/metas-procurement-nginx:%qualifier% . || @goto error
+docker build -f docker-builds/Dockerfile.procurement.rabbitmq -t %pubregistry%/metas-procurement-rabbitmq:%qualifier% . || @goto error
+docker build -f docker-builds/Dockerfile.procurement.frontend -t %pubregistry%/metas-procurement-frontend:%qualifier% . || @goto error
 
-@echo.
 @echo --------------------------
 @echo building classic-compatible deployables
 @echo --------------------------

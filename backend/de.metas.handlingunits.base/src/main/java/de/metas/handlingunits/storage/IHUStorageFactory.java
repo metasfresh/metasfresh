@@ -23,6 +23,8 @@ package de.metas.handlingunits.storage;
  */
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -32,6 +34,7 @@ import de.metas.quantity.Quantity;
 import lombok.NonNull;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /**
@@ -69,4 +72,9 @@ public interface IHUStorageFactory
 
 	boolean isSingleProductStorageMatching(@NonNull I_M_HU hu, @NonNull ProductId productId);
 
+	@NonNull
+	IHUProductStorage getSingleHUProductStorage(@NonNull I_M_HU hu);
+
+	@NonNull
+	ImmutableMap<HuId, Set<ProductId>> getHUProductIds(@NonNull List<I_M_HU> hus);
 }

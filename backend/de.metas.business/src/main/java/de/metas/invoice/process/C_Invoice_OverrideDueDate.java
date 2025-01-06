@@ -45,7 +45,7 @@ import java.util.Collection;
 public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private final static String PARAM_OVERRIDE_DUE_DATE = "OverrideDueDate";
-	public static final AdMessageKey PAID_INVOICE_MESSAGE = AdMessageKey.of("Invoice_already_paid");
+	private static final AdMessageKey PAID_INVOICE_MESSAGE = AdMessageKey.of("Invoice_already_paid");
 	@Param(parameterName = PARAM_OVERRIDE_DUE_DATE, mandatory = true)
 	private Timestamp p_OverrideDueDate;
 
@@ -69,6 +69,7 @@ public class C_Invoice_OverrideDueDate extends JavaProcess implements IProcessPr
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(PAID_INVOICE_MESSAGE, paidInvoiceDocNos));
 		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 

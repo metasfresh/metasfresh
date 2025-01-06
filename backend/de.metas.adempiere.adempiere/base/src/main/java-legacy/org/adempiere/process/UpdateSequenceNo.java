@@ -19,6 +19,7 @@ import de.metas.process.ProcessInfoParameter;
 import org.compiere.util.DB;
 
 import java.sql.PreparedStatement;
+import java.time.Year;
 
 /**
  * Insert AD_Sequence records that restart sequence at every year into
@@ -54,29 +55,38 @@ public class UpdateSequenceNo extends JavaProcess
 		{
 			insertStmt = DB
 					.prepareStatement(
-							"INSERT INTO AD_Sequence_No(AD_SEQUENCE_ID, CALENDARYEAR,CALENDARMONTH, "
+							"INSERT INTO AD_Sequence_No(AD_SEQUENCE_ID, CALENDARYEAR,CALENDARMONTH,CALENDARDAY, "
 									+ "AD_CLIENT_ID, AD_ORG_ID, ISACTIVE, CREATED, CREATEDBY, "
 									+ "UPDATED, UPDATEDBY, CURRENTNEXT) "
-									+ "(SELECT AD_Sequence_ID, ?, ?, "
+									+ "(SELECT AD_Sequence_ID, ?, ?, ?, "
 									+ "AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, "
 									+ "Updated, UpdatedBy, StartNo "
 									+ "FROM AD_Sequence a "
-									+ "WHERE StartNewYear = 'Y' AND NOT EXISTS ( "
+									+ "WHERE RestartFrequency IS NOT NULL AND NOT EXISTS ( "
 									+ "SELECT AD_Sequence_ID "
 									+ "FROM AD_Sequence_No b "
 									+ "WHERE a.AD_Sequence_ID = b.AD_Sequence_ID "
 									+ "AND CalendarYear = ?"
-									+ "AND CalendarMonth = ?)) ",
+									+ "AND CalendarMonth = ?"
+									+ "AND CalendarDay = ?)) ",
 							get_TrxName());
 			insertStmt.setString(1, year);
-			insertStmt.setString(3, year);
+			insertStmt.setString(4, year);
 
+			final Year selectedYear = Year.of(Integer.parseInt(year));
 			for (int month = 1; month <= 12; month++)
 			{
 				final String monthAsString = month + "";
-				insertStmt.setString(2, monthAsString);
-				insertStmt.setString(4, monthAsString);
-				insertStmt.executeUpdate();
+				final int days = selectedYear.atMonth(month).lengthOfMonth();
+				for (int day = 1; day <= days; day++)
+				{
+					final String dayAsString = day + "";
+					insertStmt.setString(2, monthAsString);
+					insertStmt.setString(3, dayAsString);
+					insertStmt.setString(5, monthAsString);
+					insertStmt.setString(6, dayAsString);
+					insertStmt.executeUpdate();
+				}
 			}
 		}
 		finally

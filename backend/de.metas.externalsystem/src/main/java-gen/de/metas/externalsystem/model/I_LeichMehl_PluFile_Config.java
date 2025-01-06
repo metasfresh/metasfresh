@@ -4,16 +4,16 @@ import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for LeichMehl_PluFile_Config
- *  @author metasfresh (generated)
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_LeichMehl_PluFile_Config
+public interface I_LeichMehl_PluFile_Config 
 {
 
 	String Table_Name = "LeichMehl_PluFile_Config";
 
-	//	/** AD_Table_ID=542182 */
-	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=542182 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -74,6 +74,27 @@ public interface I_LeichMehl_PluFile_Config
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescription (@Nullable java.lang.String Description);
+
+	/**
+	 * Get Description.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDescription();
+
+	ModelColumn<I_LeichMehl_PluFile_Config, Object> COLUMN_Description = new ModelColumn<>(I_LeichMehl_PluFile_Config.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Active.

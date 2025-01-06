@@ -6,6 +6,7 @@ import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.NonNull;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -13,11 +14,12 @@ import java.util.Optional;
 
 public interface ISysConfigBL extends ISingletonService
 {
+	@Contract("_, !null -> !null")
 	@Nullable
-	String getValue(String name, @Nullable String defaultValue);
+	String getValue(@NonNull String name, @Nullable String defaultValue);
 
 	@Nullable
-	String getValue(String name);
+	String getValue(@NonNull String name);
 
 	@NonNull
 	default Optional<String> getValueOptional(final String name)
@@ -26,6 +28,8 @@ public interface ISysConfigBL extends ISingletonService
 	}
 
 	int getIntValue(String name, int defaultValue);
+
+	int getPositiveIntValue(String name, int defaultValue);
 
 	/**
 	 * Get system configuration property of type boolean
@@ -62,6 +66,8 @@ public interface ISysConfigBL extends ISingletonService
 	String getValue(@NonNull String name, @NonNull ClientAndOrgId clientAndOrgId);
 
 	int getIntValue(String name, int defaultValue, int AD_Client_ID, int AD_Org_ID);
+
+	int getIntValue(String name, int defaultValue, @NonNull ClientAndOrgId clientAndOrgId);
 
 	boolean getBooleanValue(String name, boolean defaultValue, int AD_Client_ID, int AD_Org_ID);
 

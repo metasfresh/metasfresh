@@ -1,34 +1,14 @@
 package org.adempiere.server.rpl.api.impl;
 
-import java.nio.charset.StandardCharsets;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Iterator;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryService;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -55,25 +35,19 @@ import org.compiere.model.MRefTable;
 import org.compiere.model.MTable;
 import org.compiere.model.X_EXP_FormatLine;
 import org.compiere.util.DisplayType;
-import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 import org.w3c.dom.Document;
 
-import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.AttachmentEntryService;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.ILoggable;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
+import java.util.Properties;
 
 public class IMPProcessorBL implements IIMPProcessorBL
 {
 	private static final Logger log = LogManager.getLogger(IMPProcessorBL.class);
 
-	private Class<? extends IImportHelper> importHelperClass = ImportHelper.class;
+	private final Class<? extends IImportHelper> importHelperClass = ImportHelper.class;
 
 	private static final String XMLATTACHMENT_NAME = "message.xml";
 
@@ -87,7 +61,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		final ILoggable loggable = new ILoggable()
 		{
 			@Override
-			public ILoggable addLog(String msg, Object... msgParameters)
+			public ILoggable addLog(@NonNull final String msg, @Nullable final Object... msgParameters)
 			{
 				final String summary = StringUtils.formatMessage(msg, msgParameters);
 				createLog(impProcessor, summary, null/* text */, reference, null/* error */);
@@ -97,6 +71,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		return Loggables.temporarySetLoggable(loggable);
 	}
 
+	@Nullable
 	@Override
 	public I_IMP_ProcessorLog createLog(
 			@NonNull final org.compiere.model.I_IMP_Processor impProcessor,
@@ -130,7 +105,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 			return null;
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(impProcessor); // TODO: we need to use getCtx(impProcessor, useClientOrgFromModel=true)
+		final Properties ctx = InterfaceWrapperHelper.getCtx(impProcessor, true);
 		final I_IMP_ProcessorLog pLog = InterfaceWrapperHelper.create(ctx, I_IMP_ProcessorLog.class, ITrx.TRXNAME_None);
 		pLog.setAD_Org_ID(impProcessor.getAD_Org_ID());
 
@@ -151,6 +126,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		return pLog;
 	}
 
+	@Nullable
 	@Override
 	public String getXmlMessage(@NonNull final I_IMP_ProcessorLog pLog)
 	{
@@ -221,13 +197,13 @@ public class IMPProcessorBL implements IIMPProcessorBL
 			final IImportHelper impHelper = createImportHelper(ctx);
 
 			final StringBuilder result = new StringBuilder();
-			Services.get(ITrxManager.class).run(ITrx.TRXNAME_None, (TrxRunnable)localTrxName -> {
+			Services.get(ITrxManager.class).run(ITrx.TRXNAME_None, localTrxName -> {
 				try
 				{
 					impHelper.importXMLDocument(result, document, localTrxName);
 					countSuccess[0]++;
 
-					log.info("" + plog + " - Result: " + result);
+					log.info(plog + " - Result: " + result);
 
 					InterfaceWrapperHelper.refresh(plog, localTrxName); // change plog's trxname to 'localTrxName'
 					markResolved(plog);
@@ -279,7 +255,11 @@ public class IMPProcessorBL implements IIMPProcessorBL
 
 	@Override
 	public I_IMP_ProcessorParameter createParameter(final org.compiere.model.I_IMP_Processor impProcessor,
-			final String key, final String name, final String desc, final String help, final String value)
+			final String key, 
+			@Nullable final String name, 
+			@Nullable final String desc, 
+			@Nullable final String help, 
+			final String value)
 	{
 		I_IMP_ProcessorParameter para = Services.get(IIMPProcessorDAO.class).retrieveParameter(impProcessor, key);
 		if (para == null)
@@ -297,15 +277,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		return para;
 	}
 
-	@Override
-	public I_IMP_ProcessorParameter createParameter(final org.compiere.model.I_IMP_Processor impProcessor, final String key, final String value)
-	{
-		final String name = null;
-		final String desc = null;
-		final String help = null;
-		return createParameter(impProcessor, key, name, desc, help, value);
-	}
-
+	@Nullable
 	@Override
 	public AdempiereProcessor asAdempiereProcessor(final org.compiere.model.I_IMP_Processor impProcessor)
 	{
@@ -344,13 +316,6 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		{
 			throw new AdempiereException("Cannot instantiate " + importHelperClass, e);
 		}
-	}
-
-	@Override
-	public void setImportHelperClass(final Class<? extends IImportHelper> importHelperClass)
-	{
-		Check.assumeNotNull(importHelperClass, "importHelperClass not null");
-		this.importHelperClass = importHelperClass;
 	}
 
 	@Override
@@ -402,7 +367,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 	}
 
 	@Override
-	public ITableAndColumn getTargetTableAndColumn(I_EXP_FormatLine line)
+	public ITableAndColumn getTargetTableAndColumn(@NonNull final I_EXP_FormatLine line)
 	{
 		Check.errorUnless(
 				X_EXP_FormatLine.TYPE_ReferencedEXPFormat.equals(line.getType()) || X_EXP_FormatLine.TYPE_EmbeddedEXPFormat.equals(line.getType()),
@@ -424,9 +389,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		if (displayType == DisplayType.Table
 				|| displayType == DisplayType.Search && adReferenceValueId > 0)
 		{
-			final int referenceId = adReferenceValueId;
-
-			final I_AD_Ref_Table refTable = MRefTable.get(ctx, referenceId);
+			final I_AD_Ref_Table refTable = MRefTable.get(ctx, adReferenceValueId);
 			final I_AD_Column embeddedKeyColumn = MColumn.get(ctx, refTable.getAD_Key());
 
 			embeddedTableName = Services.get(IADTableDAO.class).retrieveTableName(refTable.getAD_Table_ID());

@@ -18,6 +18,7 @@ import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.process.CreateProcessInstanceRequest;
 import de.metas.ui.web.process.IProcessInstanceController;
 import de.metas.ui.web.process.IProcessInstancesRepository;
+import de.metas.ui.web.process.ProcessHandlerType;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.WebuiPreconditionsContext;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
@@ -118,7 +119,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 	}
 
 	@Override
-	public String getProcessHandlerType()
+	public ProcessHandlerType getProcessHandlerType()
 	{
 		return ProcessId.PROCESSHANDLERTYPE_AD_Process;
 	}
@@ -341,6 +342,12 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 					.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here
 					.addParameter(ViewBasedProcessTemplate.PARAM_ViewId, viewRowIdsSelection.getViewId().toJson())
 					.addParameter(ViewBasedProcessTemplate.PARAM_ViewSelectedIds, viewRowIdsSelection.getRowIds().toCommaSeparatedString());
+		}
+		if(request.getViewOrderBys() != null && !request.getViewOrderBys().isEmpty())
+		{
+			processInfoBuilder
+					.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here
+					.addParameter(ViewBasedProcessTemplate.PARAM_ViewOrderBys, request.getViewOrderBys().toStringSyntax());
 		}
 		if (request.getParentViewRowIdsSelection() != null)
 		{

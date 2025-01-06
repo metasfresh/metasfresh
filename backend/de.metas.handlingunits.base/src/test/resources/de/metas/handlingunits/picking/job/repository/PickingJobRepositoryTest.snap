@@ -10,6 +10,10 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
       },
       "deliveryDate": "2021-11-02T07:39:16Z",
       "deliveryRenderedAddress": "deliveryRenderedAddress",
+      "handoverLocationId": {
+        "bpartnerId": 3,
+        "repoId": 4
+      },
       "isAllowPickingAnyHU": false,
       "isPickingReviewRequired": false,
       "lockedBy": 5,
@@ -23,9 +27,25 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
     "lines": [
       {
         "id": 1000000,
+        "isManuallyClosed": false,
+        "orderLineSeqNo": 0,
+        "packingInfo": {
+          "allowAnyProduct": true,
+          "finiteTU": false,
+          "id": 6789,
+          "infiniteCapacity": true,
+          "name": "infinite-6789",
+          "piItemId": 123
+        },
+        "pickingUnit": "CU",
+        "productCategoryId": 1,
         "productId": 6,
         "productName": "productName-6",
+        "productNo": "productNo-6",
         "progress": "NOT_STARTED",
+        "qtyPicked": "0 Ea",
+        "qtyRejected": "0 Ea",
+        "qtyRemainingToPick": "100 Ea",
         "qtyToPick": "100 Ea",
         "salesOrderAndLineId": {
           "orderId": 2,
@@ -90,8 +110,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
                   }
                 }
               },
-              "progress": "NOT_STARTED",
-              "qtyPickedSum": null
+              "progress": "NOT_STARTED"
             },
             "productId": 6,
             "productName": "productName-6",
@@ -106,6 +125,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
         ]
       }
     ],
+    "luPickTarget": null,
     "pickFromAlternatives": [
       {
         "id": 1000000,
@@ -135,6 +155,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
       }
     ],
     "pickingSlot": null,
-    "progress": "NOT_STARTED"
+    "progress": "NOT_STARTED",
+    "tuPickTarget": null
   }
 ]

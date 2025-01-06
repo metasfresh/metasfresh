@@ -162,7 +162,7 @@ public class HUReportExecutor
 		}
 	}
 
-	private static HUReportExecutorResult executeNow(final HUReportRequest request)
+	private static HUReportExecutorResult executeNow(@NonNull final HUReportRequest request)
 	{
 		final Properties ctx = request.getCtx();
 

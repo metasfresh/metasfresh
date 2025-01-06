@@ -29,6 +29,11 @@ public class GlobalQRCodeService
 		return createPDF(ImmutableList.of(qrCode), null, default_qrCodeProcessId);
 	}
 
+	public QRCodePDFResource createPDF(@NonNull final PrintableQRCode qrCode, @NonNull final AdProcessId qrCodeProcessId)
+	{
+		return createPDF(ImmutableList.of(qrCode), null, qrCodeProcessId);
+	}
+
 	public QRCodePDFResource createPDF(@NonNull final List<PrintableQRCode> qrCodes)
 	{
 		return createPDF(qrCodes, null, default_qrCodeProcessId);
@@ -36,15 +41,14 @@ public class GlobalQRCodeService
 
 	public QRCodePDFResource createPDF(@NonNull final List<PrintableQRCode> qrCodes,
 									   @Nullable final PInstanceId pInstanceId,
-									   @NonNull final AdProcessId qrCodeProcessId)
+									   @Nullable final AdProcessId qrCodeProcessId)
 	{
-		final QRCodePDFResource execute = CreatePDFCommand.builder()
+		return CreatePDFCommand.builder()
 				.qrCodes(qrCodes)
 				.pInstanceId(pInstanceId)
-				.qrCodeProcessId(qrCodeProcessId)
+				.qrCodeProcessId(qrCodeProcessId != null ? qrCodeProcessId : default_qrCodeProcessId)
 				.build()
 				.execute();
-		return execute;
 	}
 
     public void print(@NonNull final QRCodePDFResource pdf)

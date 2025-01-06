@@ -22,25 +22,12 @@
 
 package de.metas.material.maturing;
 
-import de.metas.material.planning.ProductPlanningId;
-import de.metas.material.planning.ddorder.DistributionNetworkId;
-import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.organization.OrgId;
-import de.metas.product.OnMaterialReceiptWithDestWarehouse;
 import de.metas.product.ProductId;
-import de.metas.product.ProductPlanningSchemaId;
-import de.metas.product.ResourceId;
-import de.metas.quantity.Quantity;
-import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.WarehouseId;
-import org.eevolution.api.ProductBOMVersionsId;
-
-import javax.annotation.Nullable;
 
 @Value
 @Builder(toBuilder = true)

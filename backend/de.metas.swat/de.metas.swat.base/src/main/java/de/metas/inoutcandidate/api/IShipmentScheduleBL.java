@@ -54,14 +54,13 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 public interface IShipmentScheduleBL extends ISingletonService
 {
-	String MSG_ShipmentSchedules_To_Recompute = "ShipmentSchedules_To_Recompute";
-
 	/**
 	 * Please use this method to avoid unneeded work packages.
 	 *
@@ -94,7 +93,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * <p>
 	 * <b>IMPORTANT</b> this column does not evaluate the actual schedule's own {@link I_M_ShipmentSchedule#isAllowConsolidateInOut()} value. As of now, that flag is only for the user's information.
 	 */
-	boolean isSchedAllowsConsolidate(I_M_ShipmentSchedule sched);
+	boolean isSchedAllowsConsolidate(@NonNull I_M_ShipmentSchedule sched);
 
 	/**
 	 * Creates a new aggregation key builder which can be used to decide if two given shipment schedules can go into the same shipment.
@@ -175,7 +174,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	WarehouseId getWarehouseId(I_M_ShipmentSchedule schedule);
 
-	ZonedDateTime getPreparationDate(I_M_ShipmentSchedule schedule);
+	ZonedDateTime getPreparationDate(@NonNull I_M_ShipmentSchedule schedule);
 
 	ShipmentAllocationBestBeforePolicy getBestBeforePolicy(ShipmentScheduleId id);
 
@@ -211,4 +210,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	ShippingNotificationFromShipmentScheduleProducer newShippingNotificationProducer();
 
 	void setPhysicalClearanceDate(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds, @Nullable Instant physicalClearanceDate);
+
+	@NonNull List<I_M_ShipmentSchedule> getByFilter(IQueryFilter<I_M_ShipmentSchedule> filter);
 }

@@ -84,4 +84,6 @@ public interface IAllocationRequestBuilder
 
 	@Nullable
 	ClearanceStatusInfo getClearanceStatusInfo();
+
+	IAllocationRequestBuilder setDeleteEmptyAndJustCreatedAggregatedTUs(@Nullable Boolean deleteEmptyAndJustCreatedAggregatedTUs);
 }

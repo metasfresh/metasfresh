@@ -137,6 +137,12 @@
 	<field name="isprintwhenpackingmaterial" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="isprintwhenpackingmaterial"/>
 	</field>
+	<field name="pricepattern" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="pricepattern"/>
+	</field>
+	<field name="amountpattern" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="amountpattern"/>
+	</field>
 	<variable name="LINESUM_SUM" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{linenetamt}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
@@ -196,7 +202,7 @@ $F{shiplocation}]]></textFieldExpression>
 			<band height="13">
 				<printWhenExpression><![CDATA[new Boolean ($V{InOutSum}.floatValue() != 0 && $V{InOutSum} != null)]]></printWhenExpression>
 				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement key="textField-53" mode="Transparent" x="466" y="0" width="76" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992">
+					<reportElement key="textField-53" mode="Transparent" x="432" y="0" width="76" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992">
 						<printWhenExpression><![CDATA[new Boolean ($V{InOutSum}.floatValue() != 0 && $V{InOutSum} != null)]]></printWhenExpression>
 					</reportElement>
 					<box>
@@ -233,8 +239,8 @@ $F{shiplocation}]]></textFieldExpression>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{TotalAmount} + " " + $F{doctype}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement key="textField-53" mode="Transparent" x="466" y="0" width="76" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement key="textField-53" mode="Transparent" x="432" y="0" width="76" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992">
 						<printWhenExpression><![CDATA[new Boolean ($V{InOutSum}.floatValue() != 0 && $V{InOutSum} != null)]]></printWhenExpression>
 					</reportElement>
 					<box>
@@ -247,6 +253,7 @@ $F{shiplocation}]]></textFieldExpression>
 						<font fontName="Arial" size="9" isBold="true" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{InOutSum}]]></textFieldExpression>
+					<patternExpression><![CDATA[$F{amountpattern}]]></patternExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -257,7 +264,7 @@ $F{shiplocation}]]></textFieldExpression>
 			<band height="12">
 				<printWhenExpression><![CDATA[!$F{ishu}]]></printWhenExpression>
 				<textField>
-					<reportElement key="textField-13" x="237" y="0" width="35" height="12" forecolor="#000000" uuid="6b40a14f-999a-4a4c-aafd-a3d930d5b605">
+					<reportElement key="textField-13" x="180" y="0" width="35" height="12" forecolor="#000000" uuid="6b40a14f-999a-4a4c-aafd-a3d930d5b605">
 						<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
@@ -265,17 +272,8 @@ $F{shiplocation}]]></textFieldExpression>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{HUQuantity}]]></textFieldExpression>
 				</textField>
-				<textField evaluationTime="Report">
-					<reportElement key="textField-13" x="180" y="0" width="57" height="12" forecolor="#000000" uuid="f38ae9ce-df27-4ebd-9a9e-221cb6330965">
-						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					</reportElement>
-					<textElement markup="none">
-						<font fontName="Arial" size="9" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$V{showAttributes} !=0 ? $R{Attributes} : ""]]></textFieldExpression>
-				</textField>
 				<textField>
-					<reportElement key="textField-17" x="273" y="0" width="74" height="12" forecolor="#000000" uuid="7813f80b-5d5f-43ac-ab2c-89b012285808">
+					<reportElement key="textField-17" x="215" y="0" width="98" height="12" forecolor="#000000" uuid="7813f80b-5d5f-43ac-ab2c-89b012285808">
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 						<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
 					</reportElement>
@@ -294,7 +292,7 @@ $F{shiplocation}]]></textFieldExpression>
 					<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement key="textField-20" x="389" y="0" width="39" height="12" forecolor="#000000" uuid="e4a0b9cb-d8bd-4cb0-946d-1bc9f8e41866">
+					<reportElement key="textField-20" x="355" y="0" width="39" height="12" forecolor="#000000" uuid="e4a0b9cb-d8bd-4cb0-946d-1bc9f8e41866">
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 					<textElement markup="none">
@@ -303,7 +301,7 @@ $F{shiplocation}]]></textFieldExpression>
 					<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement key="textField-20" x="496" y="0" width="46" height="12" forecolor="#000000" uuid="4072d60d-3d0c-4127-82d8-38c5898de5e6">
+					<reportElement key="textField-20" x="462" y="0" width="46" height="12" forecolor="#000000" uuid="4072d60d-3d0c-4127-82d8-38c5898de5e6">
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
@@ -312,7 +310,7 @@ $F{shiplocation}]]></textFieldExpression>
 					<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement key="textField-20" x="426" y="0" width="40" height="12" forecolor="#000000" uuid="4829f110-fa95-429a-b450-10c28f535158">
+					<reportElement key="textField-20" x="392" y="0" width="40" height="12" forecolor="#000000" uuid="4829f110-fa95-429a-b450-10c28f535158">
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
@@ -321,7 +319,7 @@ $F{shiplocation}]]></textFieldExpression>
 					<textFieldExpression><![CDATA[$R{Price}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement key="textField-20" x="542" y="0" width="34" height="12" forecolor="#000000" uuid="3df73f8d-ba61-48b0-92e0-fbdf5d2df279">
+					<reportElement key="textField-20" x="508" y="0" width="34" height="12" forecolor="#000000" uuid="3df73f8d-ba61-48b0-92e0-fbdf5d2df279">
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 						<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 					</reportElement>
@@ -331,7 +329,7 @@ $F{shiplocation}]]></textFieldExpression>
 					<textFieldExpression><![CDATA[$R{Tax}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Report">
-					<reportElement key="textField-19" x="466" y="0" width="30" height="12" forecolor="#000000" uuid="1342df9a-6972-4e2b-829d-a1ae83512bf5">
+					<reportElement key="textField-19" x="432" y="0" width="30" height="12" forecolor="#000000" uuid="1342df9a-6972-4e2b-829d-a1ae83512bf5">
 						<printWhenExpression><![CDATA[new Boolean ($F{isdiscountprinted}.equals( "Y" ))]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
@@ -343,7 +341,7 @@ $F{shiplocation}]]></textFieldExpression>
 )]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement key="textField-19" x="341" y="0" width="46" height="12" forecolor="#000000" uuid="f260d37b-5355-444b-9ea5-28a2a2314086">
+					<reportElement key="textField-19" x="307" y="0" width="46" height="12" forecolor="#000000" uuid="f260d37b-5355-444b-9ea5-28a2a2314086">
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
@@ -365,7 +363,7 @@ $F{shiplocation}]]></textFieldExpression>
 			<band height="12">
 				<printWhenExpression><![CDATA[$F{ishu} && $F{isprintwhenpackingmaterial}.equals("Y")]]></printWhenExpression>
 				<textField>
-					<reportElement key="textField-19" x="426" y="0" width="40" height="12" forecolor="#000000" uuid="abf845aa-feb5-4936-9920-5f767128c6e3"/>
+					<reportElement key="textField-19" x="392" y="0" width="40" height="12" forecolor="#000000" uuid="abf845aa-feb5-4936-9920-5f767128c6e3"/>
 					<textElement textAlignment="Right" markup="none">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
@@ -379,14 +377,14 @@ $F{shiplocation}]]></textFieldExpression>
 					<textFieldExpression><![CDATA[$R{PackingMaterial}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement key="textField-19" x="347" y="0" width="40" height="12" forecolor="#000000" uuid="ff1b3d6c-bd7e-4888-821c-e2f84cd91664"/>
+					<reportElement key="textField-19" x="313" y="0" width="40" height="12" forecolor="#000000" uuid="ff1b3d6c-bd7e-4888-821c-e2f84cd91664"/>
 					<textElement textAlignment="Right" markup="none">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Return}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement key="textField-20" x="496" y="0" width="46" height="12" forecolor="#000000" uuid="bf46f72e-5d4d-4f1a-a45a-0a46bbe56e51">
+					<reportElement key="textField-20" x="462" y="0" width="46" height="12" forecolor="#000000" uuid="bf46f72e-5d4d-4f1a-a45a-0a46bbe56e51">
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
@@ -395,14 +393,14 @@ $F{shiplocation}]]></textFieldExpression>
 					<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement key="textField-19" x="297" y="0" width="50" height="12" forecolor="#000000" uuid="9e1558f1-316c-48dc-9e8c-9cb1ddd3660f"/>
+					<reportElement key="textField-19" x="263" y="0" width="50" height="12" forecolor="#000000" uuid="9e1558f1-316c-48dc-9e8c-9cb1ddd3660f"/>
 					<textElement textAlignment="Right" markup="none">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Delivered}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement key="textField-20" x="542" y="0" width="34" height="12" forecolor="#000000" uuid="fa8f1836-4aad-4864-8d3a-49953b097e73">
+					<reportElement key="textField-20" x="508" y="0" width="34" height="12" forecolor="#000000" uuid="fa8f1836-4aad-4864-8d3a-49953b097e73">
 						<printWhenExpression><![CDATA[new Boolean ($F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
@@ -411,7 +409,7 @@ $F{shiplocation}]]></textFieldExpression>
 					<textFieldExpression><![CDATA[$R{Tax}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement key="textField-20" x="389" y="0" width="39" height="12" forecolor="#000000" uuid="ab85f5d6-b118-45bb-b5ec-dc863e51b7bf">
+					<reportElement key="textField-20" x="355" y="0" width="39" height="12" forecolor="#000000" uuid="ab85f5d6-b118-45bb-b5ec-dc863e51b7bf">
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 					<textElement markup="none">
@@ -420,7 +418,7 @@ $F{shiplocation}]]></textFieldExpression>
 					<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 				</textField>
 				<textField evaluationTime="Report">
-					<reportElement key="textField-19" x="466" y="0" width="30" height="12" forecolor="#000000" uuid="1342df9a-6972-4e2b-829d-a1ae83512bf5">
+					<reportElement key="textField-19" x="432" y="0" width="30" height="12" forecolor="#000000" uuid="1342df9a-6972-4e2b-829d-a1ae83512bf5">
 						<printWhenExpression><![CDATA[new Boolean ($F{isdiscountprinted}.equals( "Y" ))]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
@@ -444,8 +442,8 @@ $F{shiplocation}]]></textFieldExpression>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{TotalAmount} + " " + ($F{ishu}?$R{PackingMaterial}:$R{Article})]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement key="textField-53" mode="Transparent" x="466" y="-1" width="76" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement key="textField-53" mode="Transparent" x="432" y="-1" width="76" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992">
 						<printWhenExpression><![CDATA[new Boolean ($V{InOutSum}.floatValue() != 0 && $V{InOutSum} != null)]]></printWhenExpression>
 					</reportElement>
 					<box>
@@ -458,6 +456,7 @@ $F{shiplocation}]]></textFieldExpression>
 						<font fontName="Arial" size="9" isBold="true" isItalic="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{CategorySum}]]></textFieldExpression>
+					<patternExpression><![CDATA[$F{amountpattern}]]></patternExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -479,7 +478,7 @@ $F{shiplocation}]]></textFieldExpression>
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<printWhenExpression><![CDATA[!$F{ishu}]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="###0.0" isBlankWhenNull="true">
-				<reportElement key="textField-34" mode="Transparent" x="542" y="0" width="34" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="de5e58a7-6131-4080-b0ef-911c6a8b92a6">
+				<reportElement key="textField-34" mode="Transparent" x="508" y="0" width="34" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="de5e58a7-6131-4080-b0ef-911c6a8b92a6">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
@@ -511,8 +510,8 @@ $F{shiplocation}]]></textFieldExpression>
 				<textFieldExpression><![CDATA[$F{bp_product_name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="textField-24" mode="Transparent" x="59" y="0" width="178" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="87dc509c-13f6-46f5-a815-42e490ec8678">
-					<printWhenExpression><![CDATA[new Boolean($F{attributes}.isEmpty() || $F{attributes} == null)]]></printWhenExpression>
+				<reportElement key="textField-24" mode="Transparent" x="59" y="0" width="254" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="87dc509c-13f6-46f5-a815-42e490ec8678">
+					<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "N" ))]]></printWhenExpression>
 				</reportElement>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -525,8 +524,8 @@ $F{shiplocation}]]></textFieldExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_product_name}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-34" mode="Transparent" x="496" y="0" width="46" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="de5e58a7-6131-4080-b0ef-911c6a8b92a6">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-34" mode="Transparent" x="462" y="0" width="46" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="de5e58a7-6131-4080-b0ef-911c6a8b92a6">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<box>
@@ -539,9 +538,10 @@ $F{shiplocation}]]></textFieldExpression>
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{linenetamt}]]></textFieldExpression>
+				<patternExpression><![CDATA[$F{amountpattern}]]></patternExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-20" x="389" y="0" width="31" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
+				<reportElement key="textField-20" x="355" y="0" width="31" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<box>
@@ -556,7 +556,7 @@ $F{shiplocation}]]></textFieldExpression>
 				<textFieldExpression><![CDATA[$F{priceuom}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
-				<reportElement key="textField-24" mode="Transparent" x="237" y="0" width="35" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05">
+				<reportElement key="textField-24" mode="Transparent" x="180" y="0" width="35" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05">
 					<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ) && $F{huname} != null && !$F{huname}.isEmpty())]]></printWhenExpression>
 				</reportElement>
 				<box rightPadding="0">
@@ -571,7 +571,7 @@ $F{shiplocation}]]></textFieldExpression>
 				<textFieldExpression><![CDATA[$F{huqty}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="textField-31" mode="Transparent" x="273" y="0" width="74" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="03b0c9ed-0fb3-482e-98ac-b16490d6d9a1">
+				<reportElement key="textField-31" mode="Transparent" x="215" y="0" width="98" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="03b0c9ed-0fb3-482e-98ac-b16490d6d9a1">
 					<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -586,23 +586,7 @@ $F{shiplocation}]]></textFieldExpression>
 				<textFieldExpression><![CDATA[$F{huname}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="180" y="0" width="57" height="12" forecolor="#000000" uuid="59b2ab77-d40e-4f8b-9f58-a1e8ba298a01">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<printWhenExpression><![CDATA[new Boolean(!$F{attributes}.isEmpty() && $F{attributes} != null )]]></printWhenExpression>
-				</reportElement>
-				<box rightPadding="5">
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement>
-					<font fontName="Arial" size="9" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{attributes}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-20" x="420" y="0" width="46" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
+				<reportElement key="textField-20" x="386" y="0" width="46" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<box>
@@ -615,6 +599,7 @@ $F{shiplocation}]]></textFieldExpression>
 					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[(($F{isdiscountprinted}.equals("Y") && $F{discount}.floatValue() > 0 ) ? $F{priceentered} : $F{priceactual} )]]></textFieldExpression>
+				<patternExpression><![CDATA[$F{pricepattern}]]></patternExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-33" mode="Transparent" x="347" y="0" width="40" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
@@ -633,7 +618,7 @@ $F{shiplocation}]]></textFieldExpression>
 				<patternExpression><![CDATA[$F{qtypattern}]]></patternExpression>
 			</textField>
 			<staticText>
-				<reportElement x="488" y="0" width="8" height="12" uuid="c7acd6de-af63-42ec-a530-5ed4496aa666">
+				<reportElement x="454" y="0" width="8" height="12" uuid="c7acd6de-af63-42ec-a530-5ed4496aa666">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<printWhenExpression><![CDATA[new Boolean($F{isdiscountprinted}.equals("Y") && $F{discount}.floatValue() > 0 )]]></printWhenExpression>
 				</reportElement>
@@ -643,7 +628,7 @@ $F{shiplocation}]]></textFieldExpression>
 				<text><![CDATA[%]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement key="textField-33" mode="Transparent" x="466" y="0" width="22" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
+				<reportElement key="textField-33" mode="Transparent" x="432" y="0" width="22" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<printWhenExpression><![CDATA[new Boolean($F{isdiscountprinted}.equals("Y") && $F{discount}.floatValue() > 0 )]]></printWhenExpression>
 				</reportElement>
@@ -687,6 +672,41 @@ $F{shiplocation}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="12">
+			<printWhenExpression><![CDATA[new Boolean(!$F{p_description}.isEmpty() &&$F{p_description} != null )]]></printWhenExpression>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="textField-24" mode="Transparent" x="59" y="0" width="178" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="30e6432f-8caa-4e9d-8006-31c94ac17039"/>
+				<box rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{p_description}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="12">
+			<printWhenExpression><![CDATA[new Boolean(!$F{attributes}.isEmpty() && $F{attributes} != null )]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-13" x="59" y="0" width="178" height="12" forecolor="#000000" uuid="8f6922c4-4e8c-4d6f-a211-6248bd584f82">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<printWhenExpression><![CDATA[new Boolean(!$F{attributes}.isEmpty() && $F{attributes} != null )]]></printWhenExpression>
+				</reportElement>
+				<box rightPadding="5">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{attributes}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="12">
 			<printWhenExpression><![CDATA[$F{ishu} && $F{isprintwhenpackingmaterial}.equals("Y")]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" mode="Transparent" x="37" y="0" width="143" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
@@ -701,8 +721,8 @@ $F{shiplocation}]]></textFieldExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-34" mode="Transparent" x="496" y="0" width="46" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="de5e58a7-6131-4080-b0ef-911c6a8b92a6">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-34" mode="Transparent" x="462" y="0" width="46" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="de5e58a7-6131-4080-b0ef-911c6a8b92a6">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<box>
@@ -715,9 +735,10 @@ $F{shiplocation}]]></textFieldExpression>
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{linenetamt}]]></textFieldExpression>
+				<patternExpression><![CDATA[$F{amountpattern}]]></patternExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField-20" x="389" y="0" width="31" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
+				<reportElement key="textField-20" x="355" y="0" width="31" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 				</reportElement>
@@ -732,8 +753,8 @@ $F{shiplocation}]]></textFieldExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{uom}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-33" mode="Transparent" x="420" y="0" width="46" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-33" mode="Transparent" x="386" y="0" width="46" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<box>
@@ -746,9 +767,10 @@ $F{shiplocation}]]></textFieldExpression>
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[(($F{isdiscountprinted}.equals("Y") && $F{discount}.floatValue() > 0 ) ? $F{priceentered} : $F{priceactual} )]]></textFieldExpression>
+				<patternExpression><![CDATA[$F{pricepattern}]]></patternExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement key="textField-33" mode="Transparent" x="300" y="0" width="47" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b"/>
+				<reportElement key="textField-33" mode="Transparent" x="266" y="0" width="47" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -761,7 +783,7 @@ $F{shiplocation}]]></textFieldExpression>
 				<textFieldExpression><![CDATA[$F{shipped}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="0.0" isBlankWhenNull="true">
-				<reportElement key="textField-34" mode="Transparent" x="542" y="0" width="34" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="de5e58a7-6131-4080-b0ef-911c6a8b92a6">
+				<reportElement key="textField-34" mode="Transparent" x="508" y="0" width="34" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="de5e58a7-6131-4080-b0ef-911c6a8b92a6">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<printWhenExpression><![CDATA[new Boolean ($F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
@@ -777,7 +799,7 @@ $F{shiplocation}]]></textFieldExpression>
 				<textFieldExpression><![CDATA[$F{rate}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement key="textField-33" mode="Transparent" x="466" y="0" width="22" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
+				<reportElement key="textField-33" mode="Transparent" x="432" y="0" width="22" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<printWhenExpression><![CDATA[new Boolean($F{isdiscountprinted}.equals("Y") && $F{discount}.floatValue() > 0 )]]></printWhenExpression>
 				</reportElement>
@@ -803,7 +825,7 @@ $F{shiplocation}]]></textFieldExpression>
 				<text><![CDATA[%]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement key="textField-33" mode="Transparent" x="347" y="0" width="40" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b"/>
+				<reportElement key="textField-33" mode="Transparent" x="313" y="0" width="40" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -882,8 +904,8 @@ $F{shiplocation}]]></textFieldExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{SubTotal}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-53" mode="Transparent" x="466" y="0" width="76" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-53" mode="Transparent" x="432" y="0" width="76" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992">
 					<printWhenExpression><![CDATA[new Boolean ($V{InOutSum}.floatValue() != 0 && $V{InOutSum} != null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -896,6 +918,7 @@ $F{shiplocation}]]></textFieldExpression>
 					<font fontName="Arial" size="9" isItalic="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{InOutSum}]]></textFieldExpression>
+				<patternExpression><![CDATA[$F{amountpattern}]]></patternExpression>
 			</textField>
 		</band>
 	</pageFooter>
@@ -910,8 +933,8 @@ $F{shiplocation}]]></textFieldExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{TotalAmount}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-53" mode="Transparent" x="466" y="0" width="76" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-53" mode="Transparent" x="432" y="0" width="76" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992">
 					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -924,6 +947,7 @@ $F{shiplocation}]]></textFieldExpression>
 					<font fontName="Arial" size="9" isBold="true" isItalic="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{LINESUM_SUM}]]></textFieldExpression>
+				<patternExpression><![CDATA[$F{amountpattern}]]></patternExpression>
 			</textField>
 		</band>
 	</lastPageFooter>

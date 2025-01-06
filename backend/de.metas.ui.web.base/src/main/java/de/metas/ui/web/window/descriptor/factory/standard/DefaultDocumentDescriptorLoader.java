@@ -4,6 +4,7 @@ import com.google.common.base.Stopwatch;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.attributes_included_tab.AttributesIncludedTabLoader;
 import de.metas.ui.web.dataentry.window.descriptor.factory.DataEntrySubTabBindingDescriptorBuilder;
 import de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoader;
 import de.metas.ui.web.window.datatypes.WindowId;
@@ -110,6 +111,8 @@ import java.util.List;
 					.setDocActionElement(rootLayoutFactory.createSpecialElement_DocStatusAndDocAction());
 		}
 
+		//
+		// Standard tabs loader
 		ADTabLoader.builder()
 				.adWindowId(adWindowId)
 				.rootLayoutFactory(rootLayoutFactory)
@@ -117,22 +120,36 @@ import java.util.List;
 				.build()
 				.load();
 
-		final DataEntryTabLoader dataEntryTabLoader = DataEntryTabLoader
-				.builder()
-				.adWindowId(adWindowId)
-				.windowId(rootLayoutFactory.documentEntity().getWindowId())
-				.dataEntrySubTabBindingDescriptorBuilder(dataEntrySubTabBindingDescriptorBuilder)
-				.build();
-		final List<DocumentLayoutDetailDescriptor> layoutDescriptors = dataEntryTabLoader.loadDocumentLayout();
-		for (final DocumentLayoutDetailDescriptor descriptor : layoutDescriptors)
+		//
+		// DataEntry tabs loader
 		{
-			layoutBuilder.addDetail(descriptor);
-		}
+			final DataEntryTabLoader dataEntryTabLoader = DataEntryTabLoader.builder()
+					.adWindowId(adWindowId)
+					.windowId(rootLayoutFactory.documentEntity().getWindowId())
+					.dataEntrySubTabBindingDescriptorBuilder(dataEntrySubTabBindingDescriptorBuilder)
+					.build();
+			final List<DocumentLayoutDetailDescriptor> layoutDescriptors = dataEntryTabLoader.loadDocumentLayout();
+			for (final DocumentLayoutDetailDescriptor descriptor : layoutDescriptors)
+			{
+				layoutBuilder.addDetail(descriptor);
+			}
 
-		final List<DocumentEntityDescriptor> entityDescriptors = dataEntryTabLoader.loadDocumentEntity();
-		for (final DocumentEntityDescriptor descriptor : entityDescriptors)
+			final List<DocumentEntityDescriptor> entityDescriptors = dataEntryTabLoader.loadDocumentEntity();
+			for (final DocumentEntityDescriptor descriptor : entityDescriptors)
+			{
+				rootLayoutFactory.documentEntity().addIncludedEntity(descriptor);
+			}
+		}
+		
+		//
+ 		// Attributes tabs loader
 		{
-			rootLayoutFactory.documentEntity().addIncludedEntity(descriptor);
+			AttributesIncludedTabLoader.builder()
+					.adWindowId(adWindowId)
+					.rootEntityDescriptor(rootLayoutFactory.documentEntity())
+					.layoutBuilder(layoutBuilder)
+					.build()
+					.load();
 		}
 
 		//

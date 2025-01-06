@@ -1,7 +1,11 @@
 name: cicd
-on: [push, workflow_dispatch]
+on:
+  push:
+    paths-ignore:
+      - '**/README.md'
+  workflow_dispatch:
 env:
-  PIPELINE_VERSION: '0.3.4'
+  PIPELINE_VERSION: '0.3.9'
 jobs:
 
   init:
@@ -13,7 +17,11 @@ jobs:
       git-properties: ${{ steps.git-properties.outputs.content }}
       base-version-matrix: ${{ steps.base-version-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - uses: testspace-com/setup-testspace@v1
+        with:
+          domain: metasfresh
+          token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: sanitize-ref-name
         id: sanitize
         env:
@@ -62,7 +70,15 @@ jobs:
           echo "#### pipeline ($PIPELINE_VERSION)" >> $GITHUB_STEP_SUMMARY
           echo '* find more information at https://github.com/metasfresh/metasfresh/tree/${{ github.ref_name }}/docker-builds/README.md' >> $GITHUB_STEP_SUMMARY
           echo '* artifacts will be created for tag `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}`' >> $GITHUB_STEP_SUMMARY
+          echo '* BASE_VERSION for instances **without** customisations will be `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}-compat`' >> $GITHUB_STEP_SUMMARY
           echo '* test results can be found after completion at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
+      - name: testspace push build infos
+        run: |
+          touch github_run.txt
+          echo ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} >> github_run.txt
+          echo pipeline $PIPELINE_VERSION >> github_run.txt
+          echo ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }} >> github_run.txt
+          testspace github_run.txt
 
   java:
     runs-on: ubuntu-latest
@@ -70,8 +86,8 @@ jobs:
     permissions:
       packages: write
     steps:
-      - uses: actions/checkout@v3
-      - uses: docker/login-action@v2
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
@@ -135,7 +151,7 @@ jobs:
           --tag metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-images
-        uses: nick-fields/retry@v2
+        uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
@@ -160,8 +176,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: init
     steps:
-      - uses: actions/checkout@v3
-      - uses: docker/login-action@v2
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
@@ -184,7 +200,7 @@ jobs:
           --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-images
-        uses: nick-fields/retry@v2
+        uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
@@ -205,7 +221,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [init, frontend]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: testspace-com/setup-testspace@v1
         with:
           domain: metasfresh
@@ -225,7 +241,7 @@ jobs:
       - name: assert success
         run: |
           if [ $(cat jest/frontend/jest.exit-code) != 0 ]; then tail -1000 jest/frontend/jest.log && exit 1; fi     # print frontend log and exit if frontend failed
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: jest-logs
@@ -235,8 +251,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [init, java]
     steps:
-      - uses: actions/checkout@v3
-      - uses: docker/login-action@v2
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
@@ -277,6 +293,16 @@ jobs:
           --tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} \
           .
+      - name: build-edi
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.camel.edi \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
+          --tag metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} \
+          .
       - name: build-db
         run: |
           docker buildx build \
@@ -308,7 +334,7 @@ jobs:
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded \
           .
       - name: push-images
-        uses: nick-fields/retry@v2
+        uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
@@ -326,6 +352,8 @@ jobs:
             docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-migrations
             docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
             docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
+            docker push metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }}
       - name: produce-summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
@@ -335,13 +363,90 @@ jobs:
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-migrations' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+
+  procurement:
+    runs-on: ubuntu-latest
+    needs: [ init, java ]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - name: prepare-settings
+        env:
+          METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
+        run: |
+          envsubst < docker-builds/mvn/settings.xml > docker-builds/mvn/local-settings.xml
+      - name: build-procurement-backend
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.procurement.backend \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-floating }} \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
+          --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
+          --tag metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-fixed }} \
+          .
+      - name: build-procurement-nginx
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.procurement.nginx \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-fixed }} \
+          .
+      - name: build-procurement-rabbitmq
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.procurement.rabbitmq \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-fixed }} \
+          .
+      - name: build-procurement-frontend
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.procurement.frontend \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-fixed }} \
+          .
+      - name: push-images
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+          command: |
+            docker push metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-floating }}
+            docker push metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-floating }}
+            docker push metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-floating }}
+            docker push metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-floating }}
+      - name: produce-summary
+        run: |
+          echo '#### images' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-procurement-backend:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-procurement-nginx:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-procurement-rabbitmq:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+        
 
   compatibility-images:
     runs-on: ubuntu-latest
     needs: [init, frontend, backend]
     steps:
-      - uses: actions/checkout@v3
-      - uses: docker/login-action@v2
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
@@ -392,8 +497,19 @@ jobs:
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}-compat \
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}-compat \
           .
+      - name: tag images
+        run: |
+          docker pull metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
+          docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
+          docker pull metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}
+          docker tag metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat
+          docker pull metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}
+          docker tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat
+          docker pull metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}
+          docker tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat
+
       - name: push-images
-        uses: nick-fields/retry@v2
+        uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
@@ -413,6 +529,10 @@ jobs:
             docker push metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
+            docker push metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
+            docker push metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat
+            docker push metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat
+
       - name: produce-summary
         run: |
           echo 'compatibility images are available under the following tag: `${{ needs.init.outputs.tag-fixed }}-compat`' >> $GITHUB_STEP_SUMMARY
@@ -421,14 +541,17 @@ jobs:
           echo '* metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
 
   junit:
     name: test (java)
     runs-on: ubuntu-latest
     needs: [init, java]
     steps:
-      - uses: actions/checkout@v3
-      - uses: docker/login-action@v2
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
@@ -465,7 +588,7 @@ jobs:
           --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14 \
           .
       - name: push-result-image
-        uses: nick-fields/retry@v2
+        uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
@@ -486,7 +609,7 @@ jobs:
           if [ $(cat junit/commons/junit.exit-code) != 0 ] || [ $(cat junit/commons/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/commons/junit.log && exit 1; fi      # print commons log and exit if commons failed
           if [ $(cat junit/backend/junit.exit-code) != 0 ] || [ $(cat junit/backend/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/backend/junit.log && exit 1; fi      # print backend log and exit if backend failed
           if [ $(cat junit/camel/junit.exit-code) != 0 ] || [ $(cat junit/camel/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/camel/junit.log && exit 1; fi            # print camel log and exit if camel failed
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: junit-logs
@@ -497,8 +620,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [init, java]
     steps:
-      - uses: actions/checkout@v3
-      - uses: docker/login-action@v2
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
@@ -517,7 +640,7 @@ jobs:
           --tag metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-images
-        uses: nick-fields/retry@v2
+        uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
@@ -551,11 +674,13 @@ jobs:
             params: -Dcucumber.filter.tags="@ghActions:run_on_executor7 and not @flaky and not @ignore"
           #          - profile: flaky
           #            params: -Dcucumber.filter.tags="@flaky and not @ignore"
+          - profile: profile-temp
+            params: -Dcucumber.filter.tags="@ghActions:run_on_executor_temp and not @flaky and not @ignore"
           - profile: catchall
-            params: -Dcucumber.filter.tags="not @ghActions:run_on_executor1 and not @ghActions:run_on_executor2 and not @ghActions:run_on_executor3 and not @ghActions:run_on_executor4 and not @ghActions:run_on_executor5 and not @ghActions:run_on_executor6 and not @ghActions:run_on_executor7 and not @ignore and not @flaky"
+            params: -Dcucumber.filter.tags="not @ghActions:run_on_executor1 and not @ghActions:run_on_executor2 and not @ghActions:run_on_executor3 and not @ghActions:run_on_executor4 and not @ghActions:run_on_executor5 and not @ghActions:run_on_executor6 and not @ghActions:run_on_executor7 and not @ghActions:run_on_executor_temp and not @ignore and not @flaky"
     steps:
-      - uses: actions/checkout@v3
-      - uses: docker/login-action@v2
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
@@ -567,14 +692,18 @@ jobs:
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
           cucumberparams: ${{ matrix.params }}
+          TEST_SMTP_HOST: ${{ secrets.TEST_SMTP_HOST }}
+          TEST_SMTP_FROM: ${{ secrets.TEST_SMTP_FROM }}
+          TEST_SMTP_USER: ${{ secrets.TEST_SMTP_USER }}
+          TEST_SMTP_PASSWORD: ${{ secrets.TEST_SMTP_PASSWORD }}
         timeout-minutes: 120
         run: |
           mkdir cucumber
           docker pull metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
           docker cp "$(docker create --name tempcopytainer metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}):/compose.yml" . && docker rm tempcopytainer
-          docker-compose up --abort-on-container-exit --exit-code-from cucumber 2>&1 | tee cucumber.log && echo "${PIPESTATUS[0]}" > cucumber.exit-code
-          docker commit metasfresh_db_1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
-          docker-compose down
+          docker compose up --abort-on-container-exit --exit-code-from cucumber 2>&1 | tee cucumber.log && echo "${PIPESTATUS[0]}" > cucumber.exit-code
+          docker commit metasfresh-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
+          docker compose down
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
       - name: push-results
         run: |
@@ -582,7 +711,7 @@ jobs:
           testspace "[cucumber/${{ matrix.profile }}]cucumber/*.html"                                                                                              # upload cucumber html
           testspace "[cucumber/${{ matrix.profile }}]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"     # upload cucumber log with combined exit code
       - name: push-database-images
-        uses: nick-fields/retry@v2
+        uses: nick-fields/retry@v3
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
@@ -596,7 +725,7 @@ jobs:
       - name: assert success
         run: |
           if [ $(cat cucumber.exit-code) != 0 ] || [ $(cat cucumber.mvn.exit-code) != 0 ]; then tail -1000 cucumber.log && exit 1; fi                                     # print cucumber log and exit if cucumber failed
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: failure()
         with:
           name: cucumber-logs
@@ -607,17 +736,17 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ init, backend, frontend ]
     steps:
-      - uses: actions/checkout@v3
-      - uses: docker/login-action@v2
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
-      - name: start docker-compose
+      - name: start docker compose
         working-directory: docker-builds/compose/
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
         run: |
-          docker-compose up -d
+          docker compose up -d
       - name: Make the script files executable
         working-directory: docker-builds/health/
         if: success() || failure()
@@ -663,31 +792,37 @@ jobs:
         if: success() || failure()
         run: |
           ./containerHealthCheck.sh mobile
+      - name: edi health check
+        working-directory: docker-builds/health/
+        if: success() || failure()
+        run: |
+          ./containerHealthCheck.sh edi
       - name: run api health checks
         working-directory: docker-builds/health/
         if: success() || failure()
         run: |
           ./apiHealthChecks.sh
-      - name: create docker-compose summary
+      - name: create docker compose summary
         working-directory: docker-builds/compose/
         if: success() || failure()
         run: |
-          docker-compose ps -a
-          docker inspect --format "{{json .State.Health }}" compose_db_1 | jq
-          docker inspect --format "{{json .State.Health }}" compose_webapi_1 | jq
-          docker inspect --format "{{json .State.Health }}" compose_app_1 | jq
-          docker inspect --format "{{json .State.Health }}" compose_rabbitmq_1 | jq
-          docker inspect --format "{{json .State.Health }}" compose_search_1 | jq
-          docker inspect --format "{{json .State.Health }}" compose_webui_1 | jq
-          docker inspect --format "{{json .State.Health }}" compose_mobile_1 | jq
-          docker inspect --format "{{json .State.Health }}" compose_external_1 | jq
-      - name: stop docker-compose
+          docker compose ps -a
+          docker inspect --format "{{json .State.Health }}" compose-db-1 | jq
+          docker inspect --format "{{json .State.Health }}" compose-webapi-1 | jq
+          docker inspect --format "{{json .State.Health }}" compose-app-1 | jq
+          docker inspect --format "{{json .State.Health }}" compose-rabbitmq-1 | jq
+          docker inspect --format "{{json .State.Health }}" compose-search-1 | jq
+          docker inspect --format "{{json .State.Health }}" compose-webui-1 | jq
+          docker inspect --format "{{json .State.Health }}" compose-external-1 | jq
+          docker inspect --format "{{json .State.Health }}" compose-mobile-1 | jq
+          docker inspect --format "{{json .State.Health }}" compose-edi-1 | jq
+      - name: stop docker compose
         working-directory: docker-builds/compose/
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
         if: success() || failure()
         run: | 
-          docker-compose down
+          docker compose down
 
   redeploy:
     runs-on: ubuntu-latest

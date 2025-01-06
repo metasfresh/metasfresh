@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
+import de.metas.common.util.Check;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import lombok.EqualsAndHashCode;
@@ -36,5 +37,16 @@ public class HUQRCodeGenerateForExistingHUsResult
 	public ImmutableList<HUQRCode> toList()
 	{
 		return huQRCodes.values().asList();
+	}
+
+	@NonNull
+	public HUQRCode getFirstQRCode(final @NonNull HuId huId)
+	{
+		if (Check.isEmpty(huQRCodes.get(huId)))
+		{
+			throw new AdempiereException("No QRCode was generated for HuId=" + huId.getRepoId());
+		}
+
+		return huQRCodes.get(huId).iterator().next();
 	}
 }

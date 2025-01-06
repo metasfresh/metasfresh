@@ -2,6 +2,7 @@ package de.metas.material.cockpit.view.eventhandler;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
 import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.cockpit.view.mainrecord.UpdateMainDataRequest;
@@ -73,7 +74,7 @@ public class AbstractStockEstimateHandler
 	private UpdateMainDataRequest createDataUpdateRequestForEvent(
 			@NonNull final AbstractStockEstimateEvent stockEstimateEvent)
 	{
-		final OrgId orgId = stockEstimateEvent.getEventDescriptor().getOrgId();
+		final OrgId orgId = stockEstimateEvent.getOrgId();
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
 		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.builder()
@@ -88,8 +89,8 @@ public class AbstractStockEstimateHandler
 
 		final Integer qtyStockSeqNo = stockEstimateEvent instanceof StockEstimateDeletedEvent
 				? 0
-				: stockEstimateEvent.getQtyStockEstimateSeqNo();
-		
+				: CoalesceUtil.coalesceNotNull(stockEstimateEvent.getQtyStockEstimateSeqNo(), 0);
+
 		return UpdateMainDataRequest.builder()
 				.identifier(identifier)
 				.qtyStockEstimateSeqNo(qtyStockSeqNo)

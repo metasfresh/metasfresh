@@ -3,6 +3,7 @@ package de.metas.fresh.api.invoicecandidate.impl;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -30,8 +31,8 @@ public class FreshInvoiceCandBL implements IFreshInvoiceCandBL
 
 		final DocTypeId freshProduzentenabrechnung = Services.get(IDocTypeDAO.class).getDocTypeId(
 				DocTypeQuery.builder()
-				.docBaseType(DocBaseType.APInvoice)
-				.docSubType(X_C_DocType.DOCSUBTYPE_VendorInvoice)
+				.docBaseType(DocBaseType.PurchaseInvoice)
+				.docSubType(DocSubType.VendorInvoice)
 				.adClientId(candidate.getAD_Client_ID())
 				.adOrgId(candidate.getAD_Org_ID())
 				.build());

@@ -75,6 +75,8 @@ class DocApprovalStrategyServiceTest
 		private UserId approvalUserId1;
 		private UserId approvalUserId2;
 		private UserId approvalUserId3;
+		private UserId approvalUserId4;
+		private UserId approvalUserId5;
 		private UserId cfoId;
 		private UserId ceoId;
 
@@ -90,7 +92,11 @@ class DocApprovalStrategyServiceTest
 			final RoleId approvalRole1 = DocApprovalStrategyTestHelper.role().name("approvalRole1").approvalAmt(euro("1000")).build();
 			final RoleId approvalRole2 = DocApprovalStrategyTestHelper.role().name("approvalRole2").approvalAmt(euro("2000")).build();
 			final RoleId approvalRole3 = DocApprovalStrategyTestHelper.role().name("approvalRole3").approvalAmt(euro("3000")).build();
-			this.approvalUserId3 = DocApprovalStrategyTestHelper.user().name("approvalUserId3").roleId(approvalRole3).supervisorId(null).build();
+			final RoleId approvalRole4 = DocApprovalStrategyTestHelper.role().name("approvalRole4").approvalAmt(euro("4000")).build();
+			final RoleId approvalRole5 = DocApprovalStrategyTestHelper.role().name("approvalRole5").approvalAmt(euro("5000")).build();
+			this.approvalUserId5 = DocApprovalStrategyTestHelper.user().name("approvalUserId5").roleId(approvalRole5).supervisorId(null).build();
+			this.approvalUserId4 = DocApprovalStrategyTestHelper.user().name("approvalUserId4").roleId(approvalRole4).supervisorId(approvalUserId5).build();
+			this.approvalUserId3 = DocApprovalStrategyTestHelper.user().name("approvalUserId3").roleId(approvalRole3).supervisorId(approvalUserId4).build();
 			this.approvalUserId2 = DocApprovalStrategyTestHelper.user().name("approvalUserId2").roleId(approvalRole2).supervisorId(approvalUserId3).build();
 			this.approvalUserId1 = DocApprovalStrategyTestHelper.user().name("approvalUserId1").roleId(approvalRole1).supervisorId(approvalUserId2).build();
 
@@ -98,6 +104,7 @@ class DocApprovalStrategyServiceTest
 			this.ceoId = DocApprovalStrategyTestHelper.user().name("CEO").jobId(job_CEO).build();
 
 			this.approvalStrategyId = DocApprovalStrategyTestHelper.createApprovalStrategy(
+					DocApprovalStrategyLine.builder().type(DocApprovalStrategyType.Requestor).checkSupervisorStrategyType(CheckSupervisorStrategyType.DoNotCheck),
 					DocApprovalStrategyLine.builder().type(DocApprovalStrategyType.Requestor).checkSupervisorStrategyType(CheckSupervisorStrategyType.AllMathing).isProjectManagerSet(OptionalBoolean.FALSE),
 					DocApprovalStrategyLine.builder().type(DocApprovalStrategyType.ProjectManager).isProjectManagerSet(OptionalBoolean.TRUE),
 					DocApprovalStrategyLine.builder().type(DocApprovalStrategyType.Job).jobId(job_CFO).minimumAmountThatRequiresApproval(euro("250")),
@@ -137,7 +144,7 @@ class DocApprovalStrategyServiceTest
 		{
 			final List<UserId> userIdsToApprove = service.getUsersToApprove(newRequest().amountToApprove(euro("1000")).requestorId(approvalUserId1).build());
 			System.out.println("userIdsToApprove=" + toUsersListString(userIdsToApprove));
-			assertThat(userIdsToApprove).containsOnly(approvalUserId1, cfoId);
+			assertThat(userIdsToApprove).containsOnly(approvalUserId1, approvalUserId2, cfoId);
 		}
 
 		@Test
@@ -145,7 +152,7 @@ class DocApprovalStrategyServiceTest
 		{
 			final List<UserId> userIdsToApprove = service.getUsersToApprove(newRequest().amountToApprove(euro("2000")).requestorId(approvalUserId1).build());
 			System.out.println("userIdsToApprove=" + toUsersListString(userIdsToApprove));
-			assertThat(userIdsToApprove).containsOnly(approvalUserId1, approvalUserId2, cfoId);
+			assertThat(userIdsToApprove).containsOnly(approvalUserId1, approvalUserId2, approvalUserId3, cfoId);
 		}
 
 		@Test
@@ -153,7 +160,15 @@ class DocApprovalStrategyServiceTest
 		{
 			final List<UserId> userIdsToApprove = service.getUsersToApprove(newRequest().amountToApprove(euro("3000")).requestorId(approvalUserId1).build());
 			System.out.println("userIdsToApprove=" + toUsersListString(userIdsToApprove));
-			assertThat(userIdsToApprove).containsOnly(approvalUserId1, approvalUserId2, approvalUserId3, cfoId);
+			assertThat(userIdsToApprove).containsOnly(approvalUserId1, approvalUserId2, approvalUserId3, approvalUserId4, cfoId);
+		}
+
+		@Test
+		void euro4000()
+		{
+			final List<UserId> userIdsToApprove = service.getUsersToApprove(newRequest().amountToApprove(euro("4000")).requestorId(approvalUserId1).build());
+			System.out.println("userIdsToApprove=" + toUsersListString(userIdsToApprove));
+			assertThat(userIdsToApprove).containsOnly(approvalUserId1, approvalUserId2, approvalUserId3, approvalUserId4, approvalUserId5, cfoId);
 		}
 
 		@Test
@@ -161,7 +176,7 @@ class DocApprovalStrategyServiceTest
 		{
 			final List<UserId> userIdsToApprove = service.getUsersToApprove(newRequest().amountToApprove(euro("5000")).requestorId(approvalUserId1).build());
 			System.out.println("userIdsToApprove=" + toUsersListString(userIdsToApprove));
-			assertThat(userIdsToApprove).containsOnly(approvalUserId1, approvalUserId2, approvalUserId3, cfoId, ceoId);
+			assertThat(userIdsToApprove).containsOnly(approvalUserId1, approvalUserId2, approvalUserId3, approvalUserId4, approvalUserId5, cfoId, ceoId);
 		}
 
 		@Nested
@@ -172,7 +187,7 @@ class DocApprovalStrategyServiceTest
 			{
 				final List<UserId> userIdsToApprove = service.getUsersToApprove(newRequest().amountToApprove(euro("1")).requestorId(approvalUserId1).projectManagerId(projectManagerId).build());
 				System.out.println("userIdsToApprove=" + toUsersListString(userIdsToApprove));
-				assertThat(userIdsToApprove).containsOnly(projectManagerId);
+				assertThat(userIdsToApprove).containsOnly(approvalUserId1, projectManagerId);
 			}
 
 			@Test
@@ -181,7 +196,7 @@ class DocApprovalStrategyServiceTest
 				final GetUsersToApproveRequest request = newRequest().amountToApprove(euro("250")).requestorId(approvalUserId1).projectManagerId(projectManagerId).build();
 				final List<UserId> userIdsToApprove = service.getUsersToApprove(request);
 				System.out.println("userIdsToApprove=" + toUsersListString(userIdsToApprove));
-				assertThat(userIdsToApprove).containsOnly(projectManagerId, cfoId);
+				assertThat(userIdsToApprove).containsOnly(approvalUserId1, projectManagerId, cfoId);
 			}
 
 			@Test
@@ -190,7 +205,7 @@ class DocApprovalStrategyServiceTest
 				final GetUsersToApproveRequest request = newRequest().amountToApprove(euro("5000")).requestorId(approvalUserId1).projectManagerId(projectManagerId).build();
 				final List<UserId> userIdsToApprove = service.getUsersToApprove(request);
 				System.out.println("userIdsToApprove=" + toUsersListString(userIdsToApprove));
-				assertThat(userIdsToApprove).containsOnly(projectManagerId, cfoId, ceoId);
+				assertThat(userIdsToApprove).containsOnly(approvalUserId1, projectManagerId, cfoId, ceoId);
 			}
 		}
 	}

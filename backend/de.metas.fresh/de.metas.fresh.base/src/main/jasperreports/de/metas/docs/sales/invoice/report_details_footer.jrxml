@@ -20,46 +20,74 @@
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Invoice_Details_Footer ( $P{c_invoice_id}, $P{ad_language} ) as i
-JOIN report.taxnote($P{c_invoice_id}) taxnote  on 1=1;]]>
+JOIN report.taxnote ( $P{c_invoice_id}, $P{ad_language} ) taxnote  on 1=1;]]>
 	</queryString>
 	<field name="descriptionbottom" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="descriptionbottom"/>
 		<property name="com.jaspersoft.studio.field.label" value="descriptionbottom"/>
 	</field>
 	<field name="p_cond" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="p_cond"/>
 		<property name="com.jaspersoft.studio.field.label" value="p_cond"/>
 	</field>
-	<field name="p_term" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="p_term"/>
+	<field name="paymentrule" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="paymentrule"/>
+		<property name="com.jaspersoft.studio.field.label" value="paymentrule"/>
 	</field>
 	<field name="textcenter" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="textcenter"/>
 		<property name="com.jaspersoft.studio.field.label" value="textcenter"/>
 	</field>
-	<field name="paymentterm" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="paymentterm"/>
+	<field name="p_term" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="p_term"/>
+		<property name="com.jaspersoft.studio.field.label" value="p_term"/>
 	</field>
 	<field name="discount1" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="discount1"/>
 		<property name="com.jaspersoft.studio.field.label" value="discount1"/>
 	</field>
 	<field name="discount2" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="discount2"/>
 		<property name="com.jaspersoft.studio.field.label" value="discount2"/>
 	</field>
 	<field name="discount_date1" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="discount_date1"/>
 		<property name="com.jaspersoft.studio.field.label" value="discount_date1"/>
 	</field>
 	<field name="discount_date2" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="discount_date2"/>
 		<property name="com.jaspersoft.studio.field.label" value="discount_date2"/>
 	</field>
 	<field name="cursymbol" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cursymbol"/>
 		<property name="com.jaspersoft.studio.field.label" value="cursymbol"/>
 	</field>
+	<field name="incoterms" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="incoterms"/>
+		<property name="com.jaspersoft.studio.field.label" value="incoterms"/>
+	</field>
+	<field name="incotermlocation" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="incotermlocation"/>
+		<property name="com.jaspersoft.studio.field.label" value="incotermlocation"/>
+	</field>
+	<field name="deliveryrule" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="deliveryrule"/>
+		<property name="com.jaspersoft.studio.field.label" value="deliveryrule"/>
+	</field>
+	<field name="deliveryviarule" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="deliveryviarule"/>
+		<property name="com.jaspersoft.studio.field.label" value="deliveryviarule"/>
+	</field>
 	<field name="taxnote" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="taxnote"/>
 		<property name="com.jaspersoft.studio.field.label" value="taxnote"/>
 	</field>
 	<detail>
-		<band height="12" splitType="Stretch">
+		<band height="15" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<printWhenExpression><![CDATA[new Boolean( $F{p_cond} != null )]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-82" style="Test" x="37" y="0" width="485" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
+				<reportElement key="textField-82" style="Test" x="150" y="0" width="370" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -67,64 +95,12 @@ JOIN report.taxnote($P{c_invoice_id}) taxnote  on 1=1;]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement markup="html">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{PaymentCond} + " " + $F{p_cond}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{p_cond}]]></textFieldExpression>
 			</textField>
-		</band>
-		<band height="12">
-			<printWhenExpression><![CDATA[new Boolean( $F{p_term} != null )]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-82" style="Test" x="37" y="0" width="485" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement markup="html">
-					<font size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{PaymentRule} + " " + $F{p_term}]]></textFieldExpression>
-			</textField>
-		</band>
-		<band height="24">
-			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<printWhenExpression><![CDATA[new Boolean( ($F{descriptionbottom} != null && !$F{descriptionbottom}.isEmpty()) || ($R{showdetailsfooter}.equals( "Y" )))]]></printWhenExpression>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-82" style="Test" x="37" y="12" width="485" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement markup="html">
-					<font size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{descriptionbottom}]]></textFieldExpression>
-			</textField>
-		</band>
-		<band height="27">
-			<printWhenExpression><![CDATA[$F{taxnote} != null]]></printWhenExpression>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-82" style="Test" x="37" y="12" width="485" height="12" isPrintWhenDetailOverflows="true" uuid="160adfff-5e3e-4047-9307-7736dd9418e1"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement markup="html">
-					<font size="9"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{taxnote}]]></textFieldExpression>
-			</textField>
-		</band>
-		<band height="24">
-			<printWhenExpression><![CDATA[new Boolean($P{ad_language}.equals("de_CH") && false)]]></printWhenExpression>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-82" style="Test" x="37" y="12" width="485" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
+				<reportElement key="textField-1" style="Test" x="37" y="0" width="112" height="12" isPrintWhenDetailOverflows="true" uuid="5c6e9099-bbbd-48a8-8175-4092f979f1a9"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -132,7 +108,174 @@ JOIN report.taxnote($P{c_invoice_id}) taxnote  on 1=1;]]>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement markup="none">
-					<font size="9"/>
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{PaymentCond}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="15">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[new Boolean( $F{paymentrule} != null )]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-82" style="Test" x="150" y="0" width="370" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="html">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{paymentrule}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-1" style="Test" x="37" y="0" width="112" height="12" isPrintWhenDetailOverflows="true" uuid="189d2cc2-5fed-4122-8a35-30265f378fd6"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="none">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{PaymentRule}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="15">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[new Boolean ($F{incoterms} != null && !$F{incoterms}.isEmpty())]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-1" style="Test" x="37" y="0" width="112" height="12" isPrintWhenDetailOverflows="true" uuid="4a25541b-45ad-469d-9f09-35c3b8971178"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="none">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Incoterms}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-1" style="Test" x="150" y="0" width="370" height="12" isPrintWhenDetailOverflows="true" uuid="4ff3f6fe-0ee7-41b9-ae0e-7999cd7b1343"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{incoterms}+" "+$F{incotermlocation}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="15">
+			<printWhenExpression><![CDATA[new Boolean ($F{deliveryrule} != null && !$F{deliveryrule}.isEmpty())]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-1" style="Test" x="37" y="0" width="112" height="12" isPrintWhenDetailOverflows="true" uuid="47251f28-1da5-4701-afea-49ab7b3f5f91"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="none">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{DeliveryRule}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-1" style="Test" x="150" y="0" width="370" height="12" isPrintWhenDetailOverflows="true" uuid="a223c019-d0c8-4677-a962-e3b4e06ee2d6"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{deliveryrule}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="15">
+			<printWhenExpression><![CDATA[new Boolean ($F{deliveryviarule} != null && !$F{deliveryviarule}.isEmpty())]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-1" style="Test" x="37" y="0" width="112" height="12" isPrintWhenDetailOverflows="true" uuid="6b712cf3-92a2-4247-9925-82d166959677"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="none">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{DeliveryViaRule}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-1" style="Test" x="150" y="0" width="370" height="12" isPrintWhenDetailOverflows="true" uuid="33e2a39b-782d-4ebc-8d3c-98729a75b205"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{deliveryviarule}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="24">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[new Boolean( ($F{descriptionbottom} != null && !$F{descriptionbottom}.isEmpty()) || ($R{showdetailsfooter}.equals( "Y" )))]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-82" style="Test" x="37" y="12" width="483" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="html">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{descriptionbottom}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="27">
+			<printWhenExpression><![CDATA[$F{taxnote} != null]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-82" style="Test" x="37" y="12" width="483" height="12" isPrintWhenDetailOverflows="true" uuid="160adfff-5e3e-4047-9307-7736dd9418e1"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="html">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{taxnote}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="24">
+			<printWhenExpression><![CDATA[new Boolean($P{ad_language}.equals("de_CH") && false)]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-82" style="Test" x="37" y="12" width="483" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="none">
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Hinweis Zollrecht Art. 55 ZV: „Falls die Waren zu Beginn der Bewirtschaftungsphase noch auf Handelsstufe " +
 "vorhanden sind, ist für die entsprechende Menge über den gesicherten Internetzugang der Eidg. Zollverwaltung " +
@@ -144,9 +287,9 @@ JOIN report.taxnote($P{c_invoice_id}) taxnote  on 1=1;]]>
 		<band height="24">
 			<printWhenExpression><![CDATA[new Boolean($P{ad_language}.equals("fr_CH") && false)]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-16" x="37" y="12" width="485" height="12" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022"/>
+				<reportElement key="textField-16" x="37" y="12" width="483" height="12" uuid="c4b27b6a-bd83-4bb6-93b2-a814b734c022"/>
 				<textElement markup="none">
-					<font size="9" isBold="false"/>
+					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Remarque: „Quiconque dispose encore, dans le circuit de commercialisation, de produits agricoles au sens " +
 "de l'art. 7 de l'ordonnance du 7 décembre 1998 sur l'importation et l'exportation de légumes, de fruits et de " +

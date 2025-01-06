@@ -37,19 +37,19 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	@Override
 	public void setAD_BoilerPlate_Default_ID (final int AD_BoilerPlate_Default_ID)
 	{
-		if (AD_BoilerPlate_Default_ID < 1) 
+		if (AD_BoilerPlate_Default_ID < 1)
 			set_Value (COLUMNNAME_AD_BoilerPlate_Default_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_BoilerPlate_Default_ID, AD_BoilerPlate_Default_ID);
 	}
 
 	@Override
-	public int getAD_BoilerPlate_Default_ID() 
+	public int getAD_BoilerPlate_Default_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_BoilerPlate_Default_ID);
 	}
 
-	/** 
+	/**
 	 * AD_Language AD_Reference_ID=327
 	 * Reference name: AD_Language System
 	 */
@@ -138,7 +138,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		return get_ValueAsInt(COLUMNNAME_AD_User_InCharge_ID);
 	}
 
-	/** 
+	/**
 	 * Alberta_Gender AD_Reference_ID=541317
 	 * Reference name: Gender_List
 	 */
@@ -157,12 +157,12 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		throw new IllegalArgumentException ("Alberta_Gender is virtual column");	}
 
 	@Override
-	public java.lang.String getAlberta_Gender() 
+	public java.lang.String getAlberta_Gender()
 	{
 		return get_ValueAsString(COLUMNNAME_Alberta_Gender);
 	}
 
-	/** 
+	/**
 	 * AlbertaTitle AD_Reference_ID=541318
 	 * Reference name: Title_List
 	 */
@@ -293,16 +293,31 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	@Override
 	public void setC_Flatrate_Conditions_Default_ID (final int C_Flatrate_Conditions_Default_ID)
 	{
-		if (C_Flatrate_Conditions_Default_ID < 1) 
+		if (C_Flatrate_Conditions_Default_ID < 1)
 			set_Value (COLUMNNAME_C_Flatrate_Conditions_Default_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Flatrate_Conditions_Default_ID, C_Flatrate_Conditions_Default_ID);
 	}
 
 	@Override
-	public int getC_Flatrate_Conditions_Default_ID() 
+	public int getC_Flatrate_Conditions_Default_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Conditions_Default_ID);
+	}
+
+	@Override
+	public void setCC_User_ID (final int CC_User_ID)
+	{
+		if (CC_User_ID < 1)
+			set_Value (COLUMNNAME_CC_User_ID, null);
+		else
+			set_Value (COLUMNNAME_CC_User_ID, CC_User_ID);
+	}
+
+	@Override
+	public int getCC_User_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_CC_User_ID);
 	}
 
 	@Override
@@ -447,14 +462,14 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	@Override
 	public void setC_Title_ID (final int C_Title_ID)
 	{
-		if (C_Title_ID < 1) 
+		if (C_Title_ID < 1)
 			set_Value (COLUMNNAME_C_Title_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Title_ID, C_Title_ID);
 	}
 
 	@Override
-	public int getC_Title_ID() 
+	public int getC_Title_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Title_ID);
 	}
@@ -526,7 +541,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getEmail_private() 
+	public java.lang.String getEmail_private()
 	{
 		return get_ValueAsString(COLUMNNAME_Email_private);
 	}
@@ -656,7 +671,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getHobbies_interests() 
+	public java.lang.String getHobbies_interests()
 	{
 		return get_ValueAsString(COLUMNNAME_Hobbies_interests);
 	}
@@ -715,7 +730,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean isBackofficeContact() 
+	public boolean isBackofficeContact()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsBackofficeContact);
 	}
@@ -738,7 +753,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		throw new IllegalArgumentException ("IsCustomUserRestriction is virtual column");	}
 
 	@Override
-	public boolean isCustomUserRestriction() 
+	public boolean isCustomUserRestriction()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCustomUserRestriction);
 	}
@@ -762,7 +777,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean isDunningContact() 
+	public boolean isDunningContact()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDunningContact);
 	}
@@ -774,7 +789,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean isDunningDefault() 
+	public boolean isDunningDefault()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDunningDefault);
 	}
@@ -843,7 +858,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public boolean isLogisticContact() 
+	public boolean isLogisticContact()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsLogisticContact);
 	}
@@ -1043,14 +1058,14 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	@Override
 	public void setMKTG_Campaign_Default_ID (final int MKTG_Campaign_Default_ID)
 	{
-		if (MKTG_Campaign_Default_ID < 1) 
+		if (MKTG_Campaign_Default_ID < 1)
 			set_Value (COLUMNNAME_MKTG_Campaign_Default_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_MKTG_Campaign_Default_ID, MKTG_Campaign_Default_ID);
 	}
 
 	@Override
-	public int getMKTG_Campaign_Default_ID() 
+	public int getMKTG_Campaign_Default_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_MKTG_Campaign_Default_ID);
 	}
@@ -1181,14 +1196,14 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	@Override
 	public void setPhoto_ID (final int Photo_ID)
 	{
-		if (Photo_ID < 1) 
+		if (Photo_ID < 1)
 			set_Value (COLUMNNAME_Photo_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_Photo_ID, Photo_ID);
 	}
 
 	@Override
-	public int getPhoto_ID() 
+	public int getPhoto_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_Photo_ID);
 	}
@@ -1200,7 +1215,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getPrevious_company() 
+	public java.lang.String getPrevious_company()
 	{
 		return get_ValueAsString(COLUMNNAME_Previous_company);
 	}
@@ -1236,7 +1251,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
-	public java.lang.String getSecretKey_2FA() 
+	public java.lang.String getSecretKey_2FA()
 	{
 		return get_ValueAsString(COLUMNNAME_SecretKey_2FA);
 	}

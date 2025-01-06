@@ -264,7 +264,7 @@ public class ContractChangeBL implements IContractChangeBL
 
 	private void creditInvoice(@NonNull final de.metas.adempiere.model.I_C_Invoice openInvoice, final String reason)
 	{
-		final DocBaseType docbasetype = openInvoice.isSOTrx() ? DocBaseType.ARCreditMemo : DocBaseType.APCreditMemo;
+		final DocBaseType docbasetype = openInvoice.isSOTrx() ? DocBaseType.SalesCreditMemo : DocBaseType.PurchaseCreditMemo;
 		final DocTypeId targetDocTypeId = Services.get(IDocTypeDAO.class)
 				.getDocTypeId(DocTypeQuery.builder()
 									  .docBaseType(docbasetype)

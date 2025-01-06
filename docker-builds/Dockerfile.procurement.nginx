@@ -1,0 +1,5 @@
+FROM tekn0ir/nginx-stream
+
+COPY misc/services/procurement-webui/nginx/configs/certs/nginx-selfsigned.crt /etc/nginx/ssl/cert.pem
+COPY misc/services/procurement-webui/nginx/configs/certs/nginx-selfsigned.key /etc/nginx/ssl/key.pem
+COPY misc/services/procurement-webui/nginx/configs/default.conf /opt/nginx/stream.conf.d/

@@ -4,6 +4,7 @@ Feature: purchase order interaction with material cockpit - no product planning
 
   Background: Initial Data
     Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-16T13:30:13+02:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
@@ -11,23 +12,23 @@ Feature: purchase order interaction with material cockpit - no product planning
   @from:cucumber
   Scenario: PO with qty = 10, no ASI
     Given metasfresh contains M_Products:
-      | Identifier | Name                       |
-      | p_1        | purchaseProduct_22092022_1 |
+      | Identifier |
+      | p_1        |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
-      | ps_1       | pricing_system_name_22092022_1 | pricing_system_value_22092022_1 | pricing_system_description_22092022_1 | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                       | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_22092022_1 | null            | false | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_1       | ps_1               | DE           | EUR           | false | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                         | ValidFrom  |
-      | plv_1      | pl_1                      | purchaseOrder-PLV_22092022_1 | 2020-04-01 |
+      | Identifier | M_PriceList_ID |
+      | plv_1      | pl_1           |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
+      | Identifier | M_PriceList_Version_ID | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_1                  | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name                  | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endBPartner_1 | EndPartner_22092022_1 | Y            | N              | ps_1                          |
+      | Identifier    | IsVendor | IsCustomer | M_PricingSystem_ID |
+      | endBPartner_1 | Y        | N          | ps_1               |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.DatePromised     |
       | o_1        | false   | endBPartner_1            | 2021-12-02  | POO             | 2021-04-16T00:00:00Z |
@@ -50,23 +51,23 @@ Feature: purchase order interaction with material cockpit - no product planning
   @from:cucumber
   Scenario: PO with qty = 10, no ASI, reactivated, changed the qty to 20
     Given metasfresh contains M_Products:
-      | Identifier | Name                       |
-      | p_1        | purchaseProduct_22092022_2 |
+      | Identifier |
+      | p_1        |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
-      | ps_1       | pricing_system_name_22092022_2 | pricing_system_value_22092022_2 | pricing_system_description_22092022_2 | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                       | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_22092022_2 | null            | false | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | false | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                         | ValidFrom  |
-      | plv_1      | pl_1                      | purchaseOrder-PLV_22092022_2 | 2020-04-01 |
+      | Identifier | M_PriceList_ID.Identifier |
+      | plv_1      | pl_1                      |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name                  | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endBPartner_1 | EndPartner_22092022_2 | Y            | N              | ps_1                          |
+      | Identifier    | M_PricingSystem_ID.Identifier |
+      | endBPartner_1 | ps_1                          |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.DatePromised     |
       | o_1        | false   | endBPartner_1            | 2021-12-01  | POO             | 2021-04-16T00:00:00Z |
@@ -116,23 +117,23 @@ Feature: purchase order interaction with material cockpit - no product planning
   @from:cucumber
   Scenario: 2 POs, each with qty = 10, no ASI, same product
     Given metasfresh contains M_Products:
-      | Identifier | Name                       |
-      | p_1        | purchaseProduct_22092022_3 |
+      | Identifier |
+      | p_1        |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
-      | ps_1       | pricing_system_name_22092022_3 | pricing_system_value_22092022_3 | pricing_system_description_22092022_3 | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                       | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_22092022_3 | null            | false | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | false | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                         | ValidFrom  |
-      | plv_1      | pl_1                      | purchaseOrder-PLV_22092022_3 | 2020-04-01 |
+      | Identifier | M_PriceList_ID.Identifier |
+      | plv_1      | pl_1                      |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name                  | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endBPartner_1 | EndPartner_22092022_3 | Y            | Y              | ps_1                          |
+      | Identifier    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endBPartner_1 | Y            | Y              | ps_1                          |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.DatePromised     |
       | o_1        | false   | endBPartner_1            | 2021-12-01  | POO             | 2021-04-16T00:00:00Z |
@@ -173,25 +174,25 @@ Feature: purchase order interaction with material cockpit - no product planning
   @from:cucumber
   Scenario: 2 POs, each with qty = 10, no ASI, different product
     Given metasfresh contains M_Products:
-      | Identifier | Name                       |
-      | p_1        | purchaseProduct_22092022_4 |
-      | p_2        | purchaseProduct_22092022_5 |
+      | Identifier |
+      | p_1        |
+      | p_2        |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
-      | ps_1       | pricing_system_name_22092022_4 | pricing_system_value_22092022_4 | pricing_system_description_22092022_4 | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                       | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_22092022_4 | null            | false | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | false | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                         | ValidFrom  |
-      | plv_1      | pl_1                      | purchaseOrder-PLV_22092022_4 | 2020-04-01 |
+      | Identifier | M_PriceList_ID.Identifier |
+      | plv_1      | pl_1                      |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
       | pp_1       | plv_1                             | p_2                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name                  | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endBPartner_1 | EndPartner_22092022_4 | Y            | Y              | ps_1                          |
+      | Identifier    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endBPartner_1 | Y            | Y              | ps_1                          |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.DatePromised     |
       | o_1        | false   | endBPartner_1            | 2021-12-01  | POO             | 2021-04-16T00:00:00Z |
@@ -234,23 +235,23 @@ Feature: purchase order interaction with material cockpit - no product planning
   @from:cucumber
   Scenario: PO with qty = 10 and ASI
     Given metasfresh contains M_Products:
-      | Identifier | Name                       |
-      | p_1        | purchaseProduct_22092022_6 |
+      | Identifier |
+      | p_1        |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
-      | ps_1       | pricing_system_name_22092022_6 | pricing_system_value_22092022_6 | pricing_system_description_22092022_6 | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                       | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_22092022_6 | null            | false | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | false | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                         | ValidFrom  |
-      | plv_1      | pl_1                      | purchaseOrder-PLV_22092022_6 | 2020-04-01 |
+      | Identifier | M_PriceList_ID.Identifier |
+      | plv_1      | pl_1                      |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name                  | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endBPartner_1 | EndPartner_22092022_6 | Y            | Y              | ps_1                          |
+      | Identifier    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endBPartner_1 | Y            | Y              | ps_1                          |
     And metasfresh contains M_AttributeSetInstance with identifier "lineASI":
   """
   {
@@ -281,23 +282,23 @@ Feature: purchase order interaction with material cockpit - no product planning
   @from:cucumber
   Scenario: 2 POs with qty = 10 and different ASI
     Given metasfresh contains M_Products:
-      | Identifier | Name                       |
-      | p_1        | purchaseProduct_22092022_7 |
+      | Identifier |
+      | p_1        |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
-      | ps_1       | pricing_system_name_22092022_7 | pricing_system_value_22092022_7 | pricing_system_description_22092022_7 | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                       | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_22092022_7 | null            | false | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | false | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                         | ValidFrom  |
-      | plv_1      | pl_1                      | purchaseOrder-PLV_22092022_7 | 2020-04-01 |
+      | Identifier | M_PriceList_ID.Identifier |
+      | plv_1      | pl_1                      |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name                  | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endBPartner_1 | EndPartner_22092022_7 | Y            | Y              | ps_1                          |
+      | Identifier    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endBPartner_1 | Y            | Y              | ps_1                          |
     And metasfresh contains M_AttributeSetInstance with identifier "lineASI_1":
   """
   {
@@ -356,23 +357,23 @@ Feature: purchase order interaction with material cockpit - no product planning
   @from:cucumber
   Scenario: PO with 2 lines (qty=10, same product) and different ASIs, reactivated, changed ASI to the same one
     Given metasfresh contains M_Products:
-      | Identifier | Name                       |
-      | p_1        | purchaseProduct_22092022_8 |
+      | Identifier |
+      | p_1        |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
-      | ps_1       | pricing_system_name_22092022_8 | pricing_system_value_22092022_8 | pricing_system_description_22092022_8 | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                       | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_22092022_8 | null            | false | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | false | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                         | ValidFrom  |
-      | plv_1      | pl_1                      | purchaseOrder-PLV_22092022_8 | 2020-04-01 |
+      | Identifier | M_PriceList_ID.Identifier |
+      | plv_1      | pl_1                      |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name                  | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endBPartner_1 | EndPartner_22092022_8 | Y            | Y              | ps_1                          |
+      | Identifier    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endBPartner_1 | Y            | Y              | ps_1                          |
     And metasfresh contains M_AttributeSetInstance with identifier "lineASI_1":
   """
   {
@@ -404,9 +405,9 @@ Feature: purchase order interaction with material cockpit - no product planning
     When the order identified by o_1 is reactivated
 
     Then after not more than 120s, metasfresh has this MD_Cockpit data
-      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.C_OrderLine_ID.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_PurchaseOrder_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                     | 0                                  | 0                       | 0                          | 0                             | 0                            | 0                                   |
-      | cp_2       | p_1                     | 2021-04-16  |                               | 0                                  | 0                       | 0                          | 0                             | 0                            | 0                                   |
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate | OPT.QtyOrdered_PurchaseOrder_AtDate |
+      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 0                                  | 0                       | 0                          | 0                             | 0                            | 0                                   |
+      | cp_2       | p_1                     | 2021-04-16  |                              | 0                                  | 0                       | 0                          | 0                             | 0                            | 0                                   |
 
     And metasfresh has no MD_Cockpit_DocumentDetail data
       | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier |
@@ -431,23 +432,23 @@ Feature: purchase order interaction with material cockpit - no product planning
   @from:cucumber
   Scenario: 2 POs with qty = 10 and same ASI
     Given metasfresh contains M_Products:
-      | Identifier | Name                       |
-      | p_1        | purchaseProduct_22092022_9 |
+      | Identifier |
+      | p_1        |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
-      | ps_1       | pricing_system_name_22092022_9 | pricing_system_value_22092022_9 | pricing_system_description_22092022_9 | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                       | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_22092022_9 | null            | false | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | false | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                         | ValidFrom  |
-      | plv_1      | pl_1                      | purchaseOrder-PLV_22092022_9 | 2020-04-01 |
+      | Identifier | M_PriceList_ID.Identifier |
+      | plv_1      | pl_1                      |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name                  | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endBPartner_1 | EndPartner_22092022_9 | Y            | Y              | ps_1                          |
+      | Identifier    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endBPartner_1 | Y            | Y              | ps_1                          |
     And metasfresh contains M_AttributeSetInstance with identifier "lineASI_1":
   """
   {
@@ -493,23 +494,23 @@ Feature: purchase order interaction with material cockpit - no product planning
   @from:cucumber
   Scenario: PO with 1 line (qty=10) and ASI, reactivated, changed ASI and qty=12
     Given metasfresh contains M_Products:
-      | Identifier | Name                        |
-      | p_1        | purchaseProduct_22092022_10 |
+      | Identifier |
+      | p_1        |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                            | Value                            | OPT.Description                        | OPT.IsActive |
-      | ps_1       | pricing_system_name_22092022_10 | pricing_system_value_22092022_10 | pricing_system_description_22092022_10 | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                        | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_22092022_10 | null            | false | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | false | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                       | ValidFrom  |
-      | plv_1      | pl_1                      | salesOrder-PLV_22092022_10 | 2020-04-01 |
+      | Identifier | M_PriceList_ID.Identifier |
+      | plv_1      | pl_1                      |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endBPartner_1 | EndPartner_22092022_10 | Y            | Y              | ps_1                          |
+      | Identifier    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endBPartner_1 | Y            | Y              | ps_1                          |
     And metasfresh contains M_AttributeSetInstance with identifier "lineASI_1":
   """
   {
@@ -565,23 +566,23 @@ Feature: purchase order interaction with material cockpit - no product planning
   @from:cucumber
   Scenario: PO with qty = 10, no ASI, reactivated, changed the date promised
     Given metasfresh contains M_Products:
-      | Identifier | Name                        |
-      | p_1        | purchaseProduct_22092022_11 |
+      | Identifier |
+      | p_1        |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                            | Value                            | OPT.Description                        | OPT.IsActive |
-      | ps_1       | pricing_system_name_22092022_11 | pricing_system_value_22092022_11 | pricing_system_description_22092022_11 | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                        | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_22092022_11 | null            | false | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | false | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                          | ValidFrom  |
-      | plv_1      | pl_1                      | purchaseOrder-PLV_22092022_11 | 2020-04-01 |
+      | Identifier | M_PriceList_ID.Identifier |
+      | plv_1      | pl_1                      |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endBPartner_1 | EndPartner_22092022_11 | Y            | N              | ps_1                          |
+      | Identifier    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endBPartner_1 | Y            | N              | ps_1                          |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.DatePromised     |
       | o_1        | false   | endBPartner_1            | 2021-12-01  | POO             | 2021-04-15T00:00:00Z |
@@ -614,23 +615,23 @@ Feature: purchase order interaction with material cockpit - no product planning
   @from:cucumber
   Scenario: PO with 1 lines (qty=10) and ASI, reactivated, changed ASI and qty=12
     Given metasfresh contains M_Products:
-      | Identifier | Name                        |
-      | p_1        | purchaseProduct_23092022_01 |
+      | Identifier |
+      | p_1        |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                            | Value                            | OPT.Description                        | OPT.IsActive |
-      | ps_1       | pricing_system_name_23092022_01 | pricing_system_value_23092022_01 | pricing_system_description_23092022_01 | true         |
+      | Identifier |
+      | ps_1       |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                        | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_23092022_01 | null            | false | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | null            | false | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                       | ValidFrom  |
-      | plv_1      | pl_1                      | salesOrder-PLV_23092022_01 | 2020-04-01 |
+      | Identifier | M_PriceList_ID.Identifier |
+      | plv_1      | pl_1                      |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endBPartner_1 | EndPartner_23092022_01 | Y            | Y              | ps_1                          |
+      | Identifier    | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endBPartner_1 | Y            | Y              | ps_1                          |
     And metasfresh contains M_AttributeSetInstance with identifier "lineASI_1":
   """
   {

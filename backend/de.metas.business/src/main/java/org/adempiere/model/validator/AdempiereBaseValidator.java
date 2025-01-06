@@ -12,6 +12,7 @@ import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ITableCacheConfig;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.event.EventBusAdempiereInterceptor;
 import de.metas.event.Topic;
 import de.metas.notification.INotificationGroupNameRepository;

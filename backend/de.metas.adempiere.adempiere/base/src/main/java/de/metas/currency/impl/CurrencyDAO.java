@@ -109,6 +109,8 @@ public class CurrencyDAO implements ICurrencyDAO
 				.symbol(trlMap.getColumnTrl(I_C_Currency.COLUMNNAME_CurSymbol, record.getCurSymbol()))
 				.precision(CurrencyPrecision.ofInt(record.getStdPrecision()))
 				.costingPrecision(CurrencyPrecision.ofInt(record.getCostingPrecision()))
+				.isSOApply5CentCashRounding(record.isApply5CentCashRounding())
+				.isPOApply5CentCashRounding(record.isPOApply5CentCashRounding())
 				.build();
 	}
 

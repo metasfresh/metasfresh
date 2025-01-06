@@ -49,9 +49,11 @@ public class SwaggerDocConstants
 	public static final String NEXT_DOC = "Optional identifier for the next page that was provided to the client in the previous page.\n"
 			+ "If provided, any `since` value is ignored";
 
-	public static final String INVOICE_IDENTIFIER_DOC = "Identifier of the Invoice in question. Can be\n"
+	public static final String INVOICE_IDENTIFIER_DOC = "Identifier of the Invoice in question.\n"
+			+ "Note that only completed or closed invoices are considered. Also the invoice needs to be in the organisation (`orgCode`) that is specified further up in the request-body.\n"
+			+ "Can be:\n"
 			+ "* a plain `<C_Invoice.C_Invoice_ID>`\n"
-			+ "* or something like `doc-<C_Invoice.documentNo>`"
+			+ "* or something like `doc-<C_Invoice.documentNo>`\n"
 			+ "* or something like `ext-<C_Invoice.ExternalId>`";
 
 	public static final String SINCE_DOC = "Optional epoch timestamp in ms. The endpoint returns all resources that were created or modified *after* the given time.";
@@ -108,4 +110,15 @@ public class SwaggerDocConstants
 	public static final String PAYMENT_TERM_IDENTIFIER_DOC = "Identifier of the paymentTerm in question. Can be\n"
 			+ "* a plain `<C_PaymentTerm_ID>`\n"
 			+ "* or something like `val-<C_PaymentTerm.Value>`\n";
+
+	public static final String WAREHOUSE_IDENTIFIER_DOC = "Identifier of the warehouse in question. Can be\n"
+			+ "* a plain `<M_Warehouse_ID>`\n"
+			+ "* or something like `val-<M_Warehouse.Value>`\n"
+			+ "* or something like `ext-<ExternalSystemName>-<ExternalReference>` where `<ExternalReference>` translates to an identifier of the warehouse within the given `<ExternalSystem>`";
+
+	public static final String BANK_ACCOUNT_IDENTIFIER_DOC = "Identifier of the C_BP_BankAccount in question. Can be\n"
+			+ "* a plain `<C_BP_BankAccount_ID>`\n"
+			+ "* or `ext-<I_S_ExternalReference.ExternalSystem>-<I_S_ExternalReference.ExternalReference>`\n"
+			+ "* or `iban-<IBAN>`\n"
+			+ "* or `qr_iban-<QR-IBAN>`\n";
 }

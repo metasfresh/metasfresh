@@ -44,6 +44,9 @@ import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -118,6 +121,9 @@ public class PaymentBL implements IPaymentBL
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+
+	private static final AdMessageKey MSG_PaymentDocTypeInvoiceInconsistent = AdMessageKey.of("PaymentDocTypeInvoiceInconsistent");
 
 	@Override
 	public I_C_Payment getById(@NonNull final PaymentId paymentId)
@@ -944,7 +950,7 @@ public class PaymentBL implements IPaymentBL
 			// task: 07564 the SOtrx flags don't match, but that's OK *if* the invoice i a credit memo (either for the vendor or customer side)
 			if (!invoiceBL.isCreditMemo(invoice))
 			{
-				throw new AdempiereException("@PaymentDocTypeInvoiceInconsistent@");
+				throw new AdempiereException(MSG_PaymentDocTypeInvoiceInconsistent);
 			}
 		}
 
@@ -964,7 +970,7 @@ public class PaymentBL implements IPaymentBL
 
 		if (order.isSOTrx() != docType.isSOTrx())
 		{
-			throw new AdempiereException("@PaymentDocTypeInvoiceInconsistent@");
+			throw new AdempiereException(MSG_PaymentDocTypeInvoiceInconsistent);
 		}
 	}
 
@@ -1000,5 +1006,13 @@ public class PaymentBL implements IPaymentBL
 	public Optional<CurrencyConversionTypeId> getCurrencyConversionTypeId(@NonNull final PaymentId paymentId)
 	{
 		return paymentDAO.getCurrencyConversionTypeId(paymentId);
+	}
+
+	@Override
+	public void reversePaymentById(@NonNull final PaymentId paymentId)
+	{
+		final I_C_Payment payment = getById(paymentId);
+		payment.setDocAction(IDocument.ACTION_Reverse_Correct);
+		documentBL.processEx(payment, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 	}
 }

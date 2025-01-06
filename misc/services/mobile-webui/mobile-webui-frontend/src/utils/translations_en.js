@@ -5,8 +5,18 @@ const translations = {
     network: {
       noResponse: 'Connection error',
     },
+    qrCode: {
+      invalid: 'Invalid QR Code',
+    },
+  },
+  errorScreen: {
+    retryButton: 'Retry...',
   },
   general: {
+    Yes: 'Yes',
+    No: 'No',
+    OK: 'OK',
+    DocumentNo: 'Document No',
     Product: 'Product',
     ProductValue: 'Product Value',
     Locator: 'Locator',
@@ -17,11 +27,18 @@ const translations = {
     QtyMoved: 'Qty moved',
     QtyToMove: 'Qty to move',
     QtyRejected: 'Qty Rejected',
-    CatchWeight: 'Weight',
     Qty: 'Qty',
+    QtyTU: 'TUs',
+    CatchWeight: 'Weight',
+    PackingItemName: 'Packing',
+    BestBeforeDate: 'Best Before',
+    LotNo: 'Lot',
     DropToLocator: 'Drop to locator',
     cancelText: 'Cancel',
     okText: 'OK',
+    closeText: 'Close',
+    clearText: 'Clear',
+    reOpenText: 'Re-open',
     scanQRCode: 'Scan QR',
     Back: 'Back',
     Home: 'Home',
@@ -30,9 +47,16 @@ const translations = {
       showResults: 'Show results (%(count)s)',
       clearFilters: 'Clear filters',
     },
+    workplace: 'Workplace',
+    workstation: 'Workstation',
   },
   login: {
     submitButton: 'Login',
+    alternativeMethods: 'Switch to...',
+    authMethod: {
+      qrCode: 'QR Code',
+      userAndPass: 'Password',
+    },
   },
   logout: 'Logout',
   mobileui: {
@@ -50,20 +74,17 @@ const translations = {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',
       scanWorkplacePlaceholder: 'Scan workplace...',
-    },
-    huManager: {
-      action: {
-        assignExternalLotNumber: {
-          buttonCaption: 'Associate external LotNo',
-          scanTarget: 'Associate external LotNo',
-        },
-      },
+      scanWorkstationPlaceholder: 'Scan workstation...',
     },
   },
   activities: {
     scanBarcode: {
       defaultCaption: 'Scan',
       invalidScannedBarcode: 'Scanned code is invalid',
+    },
+    huManager: {
+      missingTargetQrCode: 'The target QR Code must be scanned first!',
+      scanLuOrLocator: 'Scan LU or Locator',
     },
     picking: {
       PickingLine: 'Picking Line',
@@ -73,11 +94,35 @@ const translations = {
       qtyAboveMax: '%(qtyDiff)s above max',
       notPositiveQtyNotAllowed: 'Zero or negative qty not allowed',
       confirmDone: 'Done',
+      confirmDoneAndCloseTarget: 'Done and close target LU',
       rejectedPrompt: 'There are %(qtyRejected)s %(uom)s not picked. Why ?',
       unPickBtn: 'Unpick',
       target: 'To Pick',
       picked: 'Picked',
-      Workplace: 'Workplace',
+      switchToManualInput: 'Manually',
+      switchToQrCodeInput: 'Scan QR',
+      skip: 'Skip',
+      scanTargetHU: 'Scan target HU',
+      qtyRejectedIgnoreReason: 'Do not record a reason',
+      qrcode: {
+        missingQty: 'The scanned QR, has no qty information!',
+        differentUOM: 'The scanned QR UOM does not match the target!',
+        differentProduct: 'The scanned QR Product does not match',
+      },
+      pickingTarget: {
+        New: 'New LU',
+        Select: 'Select Target',
+        Current: 'Current',
+        CloseTarget: 'Close',
+      },
+      tuPickingTarget: {
+        New: 'New TU',
+        Select: 'Select Target',
+        Current: 'Current',
+        CloseTarget: 'Close',
+      },
+      overPickConfirmationPrompt: 'Do you really want to pick more than was ordered?',
+      reopenLU: 'Reopen LU',
     },
     distribution: {
       DistributionLine: 'Distribution Line',
@@ -133,6 +178,11 @@ const translations = {
         newHU: 'New HU',
         target: 'To receive',
         picked: 'Received',
+      },
+      validateSourceLocator: {
+        noValidOption: 'No valid option available',
+        qrMatches: `OK!`,
+        qrDoesNotMatch: `Scanned QR doesn't match the source Locator!`,
       },
     },
   },

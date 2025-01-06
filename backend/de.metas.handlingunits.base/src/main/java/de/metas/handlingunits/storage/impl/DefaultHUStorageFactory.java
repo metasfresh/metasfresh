@@ -23,6 +23,8 @@ package de.metas.handlingunits.storage.impl;
  */
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.storage.IHUItemStorage;
@@ -35,8 +37,12 @@ import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import lombok.ToString;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @ToString
@@ -94,17 +100,34 @@ public class DefaultHUStorageFactory implements IHUStorageFactory
 	@Override
 	public boolean isSingleProductWithQtyEqualsTo(@NonNull final I_M_HU hu, @NonNull final ProductId productId, @NonNull final Quantity qty)
 	{
-		final List<IHUProductStorage> productStorages = getStorage(hu).getProductStorages();
-		return productStorages.size() == 1
-				&& ProductId.equals(productStorages.get(0).getProductId(), productId)
-				&& productStorages.get(0).getQty(qty.getUOM()).compareTo(qty) == 0;
+		return getStorage(hu).isSingleProductWithQtyEqualsTo(productId, qty);
 	}
 
 	@Override
 	public boolean isSingleProductStorageMatching(@NonNull final I_M_HU hu, @NonNull final ProductId productId)
 	{
-		final List<IHUProductStorage> productStorages = getStorage(hu).getProductStorages();
-		return productStorages.size() == 1
-				&& ProductId.equals(productStorages.get(0).getProductId(), productId);
+		return getStorage(hu).isSingleProductStorageMatching(productId);
+	}
+
+	@NonNull
+	public IHUProductStorage getSingleHUProductStorage(@NonNull final I_M_HU hu)
+	{
+		return getStorage(hu).getSingleHUProductStorage();
+	}
+
+	@Override
+	public @NonNull ImmutableMap<HuId, Set<ProductId>> getHUProductIds(@NonNull final List<I_M_HU> hus)
+	{
+		final Map<HuId, Set<ProductId>> huId2ProductIds = new HashMap<>();
+		streamHUProductStorages(hus)
+				.forEach(productStorage -> {
+					final Set<ProductId> productIds = new HashSet<>();
+					productIds.add(productStorage.getProductId());
+					huId2ProductIds.merge(productStorage.getHuId(), productIds, (oldValues, newValues) -> {
+						oldValues.addAll(newValues);
+						return oldValues;
+					});
+				});
+		return ImmutableMap.copyOf(huId2ProductIds);
 	}
 }

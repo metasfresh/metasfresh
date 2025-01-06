@@ -40,6 +40,7 @@ import java.util.List;
 
 import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.PRODUCT_CATEGORY_IDENTIFIER_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.READ_ONLY_SYNC_ADVISE_DOC;
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
 
 @Getter
 @ToString
@@ -52,19 +53,19 @@ public class JsonRequestProduct
 	@Schema(hidden = true)
 	private boolean codeSet;
 
-	@Schema(description = "Corresponding to `M_Product.Name`", required = true)
+	@Schema(description = "Corresponding to `M_Product.Name`", requiredMode = REQUIRED)
 	private String name;
 
 	@Schema(hidden = true)
 	private boolean nameSet;
 
-	@Schema(description = "Corresponding to `M_Product.Type`", required = true)
+	@Schema(description = "Corresponding to `M_Product.Type`", requiredMode = REQUIRED)
 	private Type type;
 
 	@Schema(hidden = true)
 	private boolean typeSet;
 
-	@Schema(description = "Corresponding to `M_Product.C_UOM_ID`", required = true)
+	@Schema(description = "Corresponding to `M_Product.C_UOM_ID`", requiredMode = REQUIRED)
 	private String uomCode;
 
 	@Schema(hidden = true)
@@ -163,6 +164,12 @@ public class JsonRequestProduct
 
 	@Schema
 	private JsonRequestProductWarehouseAssignmentSave warehouseAssignments;
+
+	@Schema
+	private List<JsonRequestProductTaxCategoryUpsert> productTaxCategories;
+
+	@Schema
+	private List<JsonRequestUOMConversionUpsert> uomConversions;
 
 	public void setCode(final @NonNull String code)
 	{
@@ -316,5 +323,15 @@ public class JsonRequestProduct
 			}
 			return type;
 		}
+	}
+
+	public void setProductTaxCategories(final List<JsonRequestProductTaxCategoryUpsert> productTaxCategories)
+	{
+		this.productTaxCategories = productTaxCategories;
+	}
+
+	public void setUomConversions(final List<JsonRequestUOMConversionUpsert> uomConversions)
+	{
+		this.uomConversions = uomConversions;
 	}
 }

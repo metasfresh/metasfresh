@@ -578,4 +578,19 @@ public class X_M_Inventory extends org.compiere.model.PO implements I_M_Inventor
 	{
 		return get_ValueAsInt(COLUMNNAME_User2_ID);
 	}
+
+	@Override
+	public void setM_Picking_Job_ID (final int M_Picking_Job_ID)
+	{
+		if (M_Picking_Job_ID < 1)
+			set_Value (COLUMNNAME_M_Picking_Job_ID, null);
+		else
+			set_Value (COLUMNNAME_M_Picking_Job_ID, M_Picking_Job_ID);
+	}
+
+	@Override
+	public int getM_Picking_Job_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Picking_Job_ID);
+	}
 }

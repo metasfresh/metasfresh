@@ -23,7 +23,13 @@
 package de.metas.workflow.rest_api.service;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
+import de.metas.mobile.application.MobileApplication;
+import de.metas.mobile.application.MobileApplicationId;
+import de.metas.mobile.application.MobileApplicationInfo;
+import de.metas.mobile.application.service.MobileApplicationService;
+import de.metas.security.IUserRolePermissions;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeRequest;
@@ -31,8 +37,6 @@ import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScann
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupport;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
-import de.metas.workflow.rest_api.model.MobileApplicationId;
-import de.metas.workflow.rest_api.model.MobileApplicationInfo;
 import de.metas.workflow.rest_api.model.UIComponent;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityId;
@@ -43,46 +47,43 @@ import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 @Service
+@RequiredArgsConstructor
 public class WorkflowRestAPIService
 {
+	private final static AdMessageKey NOT_WORKFLOW_APP_ERROR_MSG = AdMessageKey.of("de.metas.workflow.rest_api.service.NOT_WORKFLOW_APP_ERROR_MSG");
+
 	private static final Logger logger = LogManager.getLogger(WorkflowRestAPIService.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private static final String SYSCONFIG_LaunchersLimit = "WorkflowRestAPIService.LaunchersLimit";
 	private static final QueryLimit DEFAULT_LaunchersLimit = QueryLimit.ofInt(20);
 
-	private final MobileApplicationsMap applications;
-	private final WFActivityHandlersRegistry wfActivityHandlersRegistry;
+	@NonNull private final MobileApplicationService mobileApplicationService;
+	@NonNull private final WFActivityHandlersRegistry wfActivityHandlersRegistry;
 
-	public WorkflowRestAPIService(
-			@NonNull final Optional<List<MobileApplication>> applications,
-			@NonNull final WFActivityHandlersRegistry wfActivityHandlersRegistry)
+	public void assertAccess(@NonNull final MobileApplicationId applicationId, @NonNull final IUserRolePermissions permissions)
 	{
-		this.applications = MobileApplicationsMap.of(applications);
-		logger.info("applications: {}", this.applications);
-
-		this.wfActivityHandlersRegistry = wfActivityHandlersRegistry;
+		mobileApplicationService.assertAccess(applicationId, permissions);
 	}
 
-	public Stream<MobileApplicationInfo> streamMobileApplicationInfos(final UserId loggedUserId)
+	public Stream<MobileApplicationInfo> streamMobileApplicationInfos(final IUserRolePermissions userPermissions)
 	{
-		return applications.stream()
-				.map(application -> application.getApplicationInfo(loggedUserId));
+		return mobileApplicationService.streamMobileApplicationInfos(userPermissions);
 	}
 
 	public WorkflowLaunchersList getLaunchers(@NonNull final WorkflowLaunchersQuery query)
@@ -91,31 +92,27 @@ public class WorkflowRestAPIService
 				.provideLaunchers(query.withLimitIfNotSet(this::getLaunchersLimit));
 	}
 
-	public WorkflowLaunchersFacetGroupList getFacets(
-			@NonNull final MobileApplicationId applicationId,
-			@NonNull final UserId userId)
+	public WorkflowLaunchersFacetGroupList getFacets(@NonNull WorkflowLaunchersFacetQuery query)
 	{
-		return getWorkflowBasedMobileApplication(applicationId).getFacets(userId);
+		return getWorkflowBasedMobileApplication(query.getApplicationId()).getFacets(query);
 	}
 
 	private WorkflowBasedMobileApplication getWorkflowBasedMobileApplication(@NonNull final MobileApplicationId applicationId)
 	{
-		final MobileApplication mobileApplication = applications.getById(applicationId);
+		final MobileApplication mobileApplication = mobileApplicationService.getById(applicationId);
 		if (mobileApplication instanceof WorkflowBasedMobileApplication)
 		{
 			return (WorkflowBasedMobileApplication)mobileApplication;
 		}
 		else
 		{
-			throw new AdempiereException("Application '" + applicationId + "' is not a workflow based application");
+			throw new AdempiereException(NOT_WORKFLOW_APP_ERROR_MSG, applicationId);
 		}
 	}
 
-	private Stream<WorkflowBasedMobileApplication> streamWorkflowBasedMobileApplications()
+	private Stream<WorkflowBasedMobileApplication> streamWorkflowBasedMobileApplications(@NonNull final IUserRolePermissions permissions)
 	{
-		return applications.stream()
-				.filter(app -> app instanceof WorkflowBasedMobileApplication)
-				.map(app -> (WorkflowBasedMobileApplication)app);
+		return mobileApplicationService.streamMobileApplicationsOfType(WorkflowBasedMobileApplication.class, permissions);
 	}
 
 	private QueryLimit getLaunchersLimit()
@@ -126,10 +123,9 @@ public class WorkflowRestAPIService
 				: QueryLimit.ofInt(limitInt);
 	}
 
-	public void logout(@NonNull final UserId userId)
+	public void logout(@NonNull final IUserRolePermissions permissions)
 	{
-		applications.stream()
-				.forEach(application -> application.logout(userId));
+		mobileApplicationService.logout(permissions);
 	}
 
 	public WFProcess getWFProcessById(@NonNull final WFProcessId wfProcessId)
@@ -164,10 +160,10 @@ public class WorkflowRestAPIService
 				.abort(wfProcessId, callerId);
 	}
 
-	public void abortAllWFProcesses(@NonNull final UserId callerId)
+	public void abortAllWFProcesses(@NonNull final IUserRolePermissions permissions)
 	{
-		streamWorkflowBasedMobileApplications()
-				.forEach(application -> abortAllNoFail(application, callerId));
+		streamWorkflowBasedMobileApplications(permissions)
+				.forEach(application -> abortAllNoFail(application, permissions.getUserId()));
 	}
 
 	private static void abortAllNoFail(@NonNull final WorkflowBasedMobileApplication application, final @NonNull UserId callerId)
@@ -182,6 +178,7 @@ public class WorkflowRestAPIService
 		}
 	}
 
+	@NonNull
 	public WFProcessHeaderProperties getHeaderProperties(@NonNull final WFProcess wfProcess)
 	{
 		return getWorkflowBasedMobileApplication(wfProcess.getId().getApplicationId())

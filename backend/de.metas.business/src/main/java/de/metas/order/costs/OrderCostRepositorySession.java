@@ -226,11 +226,11 @@ public class OrderCostRepositorySession
 				.orderLineInfo(OrderCostDetailOrderLinePart.builder()
 						.orderLineId(OrderLineId.ofRepoId(record.getC_OrderLine_ID()))
 						.productId(ProductId.ofRepoId(record.getM_Product_ID()))
-						.qtyOrdered(Quantitys.create(record.getQtyOrdered(), uomId))
+						.qtyOrdered(Quantitys.of(record.getQtyOrdered(), uomId))
 						.orderLineNetAmt(Money.of(record.getLineNetAmt(), currencyId))
 						.build())
 				.costAmount(Money.of(record.getCostAmount(), currencyId))
-				.inoutQty(Quantitys.create(record.getQtyReceived(), uomId))
+				.inoutQty(Quantitys.of(record.getQtyReceived(), uomId))
 				.inoutCostAmount(Money.of(record.getCostAmountReceived(), currencyId))
 				.build();
 	}

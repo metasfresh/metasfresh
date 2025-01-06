@@ -20,7 +20,7 @@ public interface I_C_InvoiceTax
 	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -115,7 +115,7 @@ public interface I_C_InvoiceTax
 	 * Get Created By.
 	 * User who created this records
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -127,7 +127,7 @@ public interface I_C_InvoiceTax
 	 * Set Tax.
 	 * Tax identifier
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -137,7 +137,7 @@ public interface I_C_InvoiceTax
 	 * Get Tax.
 	 * Tax identifier
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -148,7 +148,7 @@ public interface I_C_InvoiceTax
 	/**
 	 * Set VAT Code.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -157,7 +157,7 @@ public interface I_C_InvoiceTax
 	/**
 	 * Get VAT Code.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -188,6 +188,29 @@ public interface I_C_InvoiceTax
 
 	ModelColumn<I_C_InvoiceTax, Object> COLUMN_IsActive = new ModelColumn<>(I_C_InvoiceTax.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Document Level.
+	 * Tax is calculated on document level (rather than line by line)
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDocumentLevel (boolean IsDocumentLevel);
+
+	/**
+	 * Get Document Level.
+	 * Tax is calculated on document level (rather than line by line)
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDocumentLevel();
+
+	ModelColumn<I_C_InvoiceTax, Object> COLUMN_IsDocumentLevel = new ModelColumn<>(I_C_InvoiceTax.class, "IsDocumentLevel", null);
+	String COLUMNNAME_IsDocumentLevel = "IsDocumentLevel";
 
 	/**
 	 * Set Packaging Tax.
@@ -232,8 +255,8 @@ public interface I_C_InvoiceTax
 	String COLUMNNAME_IsReverseCharge = "IsReverseCharge";
 
 	/**
-	 * Set Price incl. Tax.
-	 * Tax is included in the price
+	 * Set Tax Included.
+	 * Tax Included
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -242,8 +265,8 @@ public interface I_C_InvoiceTax
 	void setIsTaxIncluded (boolean IsTaxIncluded);
 
 	/**
-	 * Get Price incl. Tax.
-	 * Tax is included in the price
+	 * Get Tax Included.
+	 * Tax Included
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -382,7 +405,7 @@ public interface I_C_InvoiceTax
 	 * Get Updated By.
 	 * User who updated this records
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

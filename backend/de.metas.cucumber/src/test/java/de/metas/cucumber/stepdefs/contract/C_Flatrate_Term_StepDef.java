@@ -30,6 +30,7 @@ import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
+import de.metas.contracts.model.I_C_Flatrate_DataEntry;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
@@ -42,6 +43,8 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.process.PInstanceId;
@@ -50,6 +53,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -76,7 +80,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID;
@@ -90,7 +93,8 @@ import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_Processed;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_StartDate;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.procurement.base.model.I_C_Flatrate_Term.COLUMNNAME_PMM_Product_ID;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 
 public class C_Flatrate_Term_StepDef
@@ -110,6 +114,7 @@ public class C_Flatrate_Term_StepDef
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public C_Flatrate_Term_StepDef(
@@ -144,8 +149,8 @@ public class C_Flatrate_Term_StepDef
 			final I_C_BPartner billPartner = bpartnerTable.get(billPartnerIdentifier);
 
 			final I_C_BPartner_Location billPartnerLocation = bPartnerDAO.retrieveBPartnerLocation(IBPartnerDAO.BPartnerLocationQuery.builder().bpartnerId(BPartnerId.ofRepoId(billPartner.getC_BPartner_ID()))
-																										   .type(IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO)
-																										   .build());
+					.type(IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO)
+					.build());
 			assertThat(billPartnerLocation).isNotNull(); // guard
 
 			final String conditionsIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_Flatrate_Conditions_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -155,18 +160,20 @@ public class C_Flatrate_Term_StepDef
 
 			final I_C_Flatrate_Term contractRecord = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class);
 			contractRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+
 			contractRecord.setC_Flatrate_Conditions_ID(conditions.getC_Flatrate_Conditions_ID());
+			contractRecord.setC_UOM_ID(conditions.getC_UOM_ID());
+
 			contractRecord.setC_Flatrate_Data_ID(flatrateData.getC_Flatrate_Data_ID());
 			contractRecord.setBill_BPartner_ID(billPartner.getC_BPartner_ID());
 			contractRecord.setBill_Location_ID(billPartnerLocation.getC_BPartner_Location_ID());
 
 			final DocStatus docStatus = DocStatus.ofNullableCode(tableRow.get("OPT." + COLUMNNAME_DocStatus));
 			contractRecord.setDocStatus(CoalesceUtil.coalesceNotNull(docStatus, DocStatus.Completed).getCode());
-			
-			final Boolean processed = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, "OPT." + COLUMNNAME_Processed);
-			Optional.ofNullable(processed)
-					.ifPresentOrElse(contractRecord::setProcessed, () -> contractRecord.setProcessed(true));
-			
+			// TODO change to be *not* processed and completed by default
+			final boolean processed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_Processed, true);
+			contractRecord.setProcessed(processed);
+
 			final String dropshipPartnerIdentifier = tableRow.get("OPT." + COLUMNNAME_DropShip_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(dropshipPartnerIdentifier))
 			{
@@ -174,8 +181,8 @@ public class C_Flatrate_Term_StepDef
 				contractRecord.setDropShip_BPartner_ID(dropshipPartner.getC_BPartner_ID());
 
 				final I_C_BPartner_Location dropshipLocation = bPartnerDAO.retrieveBPartnerLocation(IBPartnerDAO.BPartnerLocationQuery.builder().bpartnerId(BPartnerId.ofRepoId(billPartner.getC_BPartner_ID()))
-																											.type(IBPartnerDAO.BPartnerLocationQuery.Type.SHIP_TO)
-																											.build());
+						.type(IBPartnerDAO.BPartnerLocationQuery.Type.SHIP_TO)
+						.build());
 				assertThat(dropshipLocation).isNotNull(); // guard
 				contractRecord.setDropShip_Location_ID(dropshipLocation.getC_BPartner_Location_ID());
 			}
@@ -185,6 +192,10 @@ public class C_Flatrate_Term_StepDef
 			{
 				final I_M_Product product = productTable.get(productIdentifier);
 				contractRecord.setM_Product_ID(product.getM_Product_ID());
+			}
+			else
+			{
+				contractRecord.setM_Product_ID(conditions.getM_Product_Flatrate_ID());
 			}
 
 			final String pmmProductIdentifier = tableRow.get("OPT." + COLUMNNAME_PMM_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -311,6 +322,18 @@ public class C_Flatrate_Term_StepDef
 				softly.assertThat(contract.getEndDate()).isEqualTo(endDate);
 			}
 
+			final Boolean isSoTrx = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_C_Flatrate_Term.COLUMNNAME_IsSOTrx);
+			if (isSoTrx != null)
+			{
+				softly.assertThat(contract.isSOTrx()).as(I_C_Flatrate_Term.COLUMNNAME_IsSOTrx).isEqualTo(isSoTrx);
+			}
+
+			final String poReference = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Flatrate_Term.COLUMNNAME_POReference);
+			if (Check.isNotBlank(poReference))
+			{
+				softly.assertThat(contract.getPOReference()).isEqualTo(poReference);
+			}
+
 			softly.assertAll();
 			
 			final String flatrateTermIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -416,11 +439,10 @@ public class C_Flatrate_Term_StepDef
 
 		assertThat(contract.getC_FlatrateTerm_Next()).isNull();  // contract not extended yet
 
-		final Integer ad_PInstance_ID = Integer.valueOf(pInstanceID);
-		assertThat(ad_PInstance_ID).isNotNull();
+        assertThat(pInstanceID).isNotNull();
 
 		final IFlatrateBL.ContractExtendingRequest contractExtendingRequest = IFlatrateBL.ContractExtendingRequest.builder()
-				.AD_PInstance_ID(PInstanceId.ofRepoId(ad_PInstance_ID))
+				.AD_PInstance_ID(PInstanceId.ofRepoId(pInstanceID))
 				.contract(contract)
 				.forceExtend(true)
 				.forceComplete(false)
@@ -459,4 +481,46 @@ public class C_Flatrate_Term_StepDef
 		final I_C_Flatrate_Term nextContract = contract.getC_FlatrateTerm_Next();
 		assertThat(nextContract).isNotNull(); // next term created & contract extended
 	}
+
+	@Then("^C_Flatrate_Term identified by (.*) is not extended$")
+	public void c_flatrate_termIsNotExtended(@NonNull final String contractIdentifier)
+	{
+		assertThat(contractIdentifier).isNotBlank();
+
+		final I_C_Flatrate_Term contract = contractTable.get(contractIdentifier);
+		assertThat(contract).isNotNull();
+
+		final I_C_Flatrate_Term nextContract = contract.getC_FlatrateTerm_Next();
+		assertThat(nextContract).isNull(); // next term not created & contract not extended
+	}
+
+	@And("^the C_Flatrate_Term identified by (.*) is completed$")
+	public void the_C_Flatrate_Term_IsCompleted(@NonNull final String identifier)
+	{
+		final I_C_Flatrate_Term flatrateTermRecord = contractTable.get(identifier);
+		assertThat(flatrateTermRecord).as("Missing C_Flatrate_Term with identifier %s", identifier).isNotNull();
+		documentBL.processEx(flatrateTermRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+	}
+
+	@And("^the C_Flatrate_Term identified by (.*) has (.*) C_Flatrate_DataEntries.$")
+	public void the_C_Flatrate_Term_has_DataEntries(@NonNull final String identifier, final String countStr)
+	{
+		final int count = NumberUtils.asInt(countStr);
+
+		final I_C_Flatrate_Term flatrateTermRecord = contractTable.get(identifier);
+		assertThat(flatrateTermRecord)
+				.as("Missing C_Flatrate_Term record for identifier=%s", identifier)
+				.isNotNull();
+
+		final List<I_C_Flatrate_DataEntry> list = queryBL.createQueryBuilder(I_C_Flatrate_DataEntry.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_DataEntry.COLUMNNAME_C_Flatrate_Term_ID, flatrateTermRecord.getC_Flatrate_Term_ID())
+				.create()
+				.list();
+
+		assertThat(list)
+				.as("Number of C_Flatrate_DataEntry record for C_Flatrate_Term_ID=%s - identifier=%s", flatrateTermRecord.getC_Flatrate_Term_ID(), identifier)
+				.hasSize(count);
+	}
+
 }

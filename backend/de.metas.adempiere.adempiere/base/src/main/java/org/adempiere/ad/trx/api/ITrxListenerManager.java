@@ -13,7 +13,6 @@ import java.util.function.Supplier;
  * Use {@link ITrxManager#getTrxListenerManager(String)} or {@link ITrxManager#getTrxListenerManagerOrAutoCommit(String)} to get your instance.
  *
  * @author tsa
- *
  */
 public interface ITrxListenerManager
 {
@@ -30,7 +29,7 @@ public interface ITrxListenerManager
 		/**
 		 * Method called <b>each time</b> after a transaction was successfully committed.
 		 * If an exception is thrown from this method, the exception will be JUST logged but it will not fail or stop the execution.
-		 *
+		 * <p>
 		 * <b>Note that the transaction with which the handler-method is invoked might also already be closed</b>
 		 */
 		AFTER_COMMIT(20),
@@ -176,7 +175,7 @@ public interface ITrxListenerManager
 
 		/**
 		 * Deactivate this listener, so that it won't be invoked any further.
-		 *
+		 * <p>
 		 * Method can be called when this listener shall be ignored from now on.<br>
 		 * Useful for example if the after-commit code shall be invoked only <b>once</b>, even if there are multiple commits.
 		 */
@@ -186,7 +185,6 @@ public interface ITrxListenerManager
 		}
 
 		/**
-		 *
 		 * @return <code>true</code>, unless {@link #deactivate()} has been called at least once. from there on, it always returns <code>false</code>.
 		 */
 		public boolean isActive()
@@ -213,6 +211,13 @@ public interface ITrxListenerManager
 	default void runAfterCommit(@NonNull final Runnable runnable)
 	{
 		newEventListener(TrxEventTiming.AFTER_COMMIT)
+				.invokeMethodJustOnce(true)
+				.registerHandlingMethod(trx -> runnable.run());
+	}
+
+	default void runAfterRollback(@NonNull final Runnable runnable)
+	{
+		newEventListener(TrxEventTiming.AFTER_ROLLBACK)
 				.invokeMethodJustOnce(true)
 				.registerHandlingMethod(trx -> runnable.run());
 	}

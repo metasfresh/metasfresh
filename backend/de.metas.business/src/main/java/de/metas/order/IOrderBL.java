@@ -26,13 +26,18 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.calendar.standard.YearId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.order.inout.InOutFromOrderProducer;
+import de.metas.order.shippingnotification.ShippingNotificationFromOrderProducer;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
 import de.metas.product.ProductId;
@@ -49,7 +54,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_PriceList_Version;
 import org.eevolution.api.PPCostCollectorId;
 
 import javax.annotation.Nullable;
@@ -65,8 +69,12 @@ public interface IOrderBL extends ISingletonService
 {
 	I_C_Order getById(OrderId orderId);
 
+	I_C_OrderLine getOrderLineById(OrderLineId orderLineId);
+
 	/**
-	 * Sets price list if there is a price list for the given location and pricing system.
+	 * Sets price list if there is a price list for the given order's location and pricing system.
+	 * <p>
+	 * ! If {@link I_C_Order#COLUMNNAME_C_BPartner_Location_Value_ID} is set, its country takes precendence over the country of {@link I_C_Order#COLUMNNAME_C_BPartner_Location_ID}.
 	 * <p>
 	 * This method does nothing if:
 	 * <ul>
@@ -86,7 +94,7 @@ public interface IOrderBL extends ISingletonService
 	 * </ul>
 	 * Note: if the given order is <code>null</code>, then the method returns <code>null</code>; also note that there is sort of a sibling method in IOrderLineBL.
 	 */
-	I_M_PriceList_Version getPriceListVersion(I_C_Order order);
+	PriceListVersionId getPriceListVersion(I_C_Order order);
 
 	BPartnerLocationAndCaptureId getShipToLocationId(I_C_Order order);
 
@@ -160,7 +168,7 @@ public interface IOrderBL extends ISingletonService
 	 */
 	void setDefaultDocTypeTargetId(I_C_Order order);
 
-	void setPODocTypeTargetId(I_C_Order order, String poDocSubType);
+	void setPODocTypeTargetId(I_C_Order order, DocSubType poDocSubType);
 
 	/**
 	 * Set Target Sales Document Type.
@@ -261,7 +269,13 @@ public interface IOrderBL extends ISingletonService
 
 	boolean isRequisition(@NonNull I_C_Order order);
 
-	boolean isProFormaSO(@NonNull I_C_Order order);
+	boolean isProformaSO(@NonNull OrderId orderId);
+
+	boolean isProformaSO(@NonNull I_C_Order order);
+
+	boolean isCallOrder(@NonNull I_C_Order order);
+
+	boolean isFrameAgreement(@NonNull I_C_Order order);
 
 	boolean isMediated(@NonNull I_C_Order order);
 
@@ -330,7 +344,7 @@ public interface IOrderBL extends ISingletonService
 	static Quantity extractQtyEntered(final I_C_OrderLine orderLine)
 	{
 		final UomId uomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
-		return Quantitys.create(orderLine.getQtyEntered(), uomId);
+		return Quantitys.of(orderLine.getQtyEntered(), uomId);
 	}
 
 	de.metas.interfaces.I_C_OrderLine createOrderLine(I_C_Order order);
@@ -359,8 +373,27 @@ public interface IOrderBL extends ISingletonService
 
 	Optional<PPCostCollectorId> getPPCostCollectorId(@NonNull OrderLineId orderLineId);
 
+	Map<OrderId, String> getDocumentNosByIds(@NonNull Collection<OrderId> orderIds);
+
 	void setWeightFromLines(@NonNull I_C_Order order);
 
 	@NonNull
 	List<OrderId> getUnprocessedIdsBy(@NonNull ProductId productId);
+
+	@Nullable
+	DocTypeId getDocTypeIdEffectiveOrNull(@NonNull I_C_Order order);
+
+	<T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLines(I_C_Order order, Class<T> clazz);
+
+	List<de.metas.interfaces.I_C_OrderLine> retrieveOrderLines(I_C_Order order);
+
+	String getDescriptionBottomById(@NonNull OrderId orderId);
+
+	String getDescriptionById(@NonNull OrderId orderId);
+
+	ShippingNotificationFromOrderProducer newShippingNotificationProducer();
+
+	InOutFromOrderProducer newInOutFromOrderProducer();
+
+	YearId getSuitableHarvestingYearId(@NonNull I_C_Order orderRecord);
 }

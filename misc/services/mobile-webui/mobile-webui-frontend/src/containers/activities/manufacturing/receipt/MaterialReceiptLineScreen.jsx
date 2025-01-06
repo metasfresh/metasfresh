@@ -10,7 +10,7 @@ import { manufacturingReceiptReceiveTargetScreen } from '../../../../routes/manu
 import { getActivityById, getLineByIdFromActivity } from '../../../../reducers/wfProcesses';
 
 import PickQuantityButton from './PickQuantityButton';
-import { toQRCodeDisplayable } from '../../../../utils/huQRCodes';
+import { toQRCodeDisplayable } from '../../../../utils/qrCode/hu';
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 
 const MaterialReceiptLineScreen = () => {

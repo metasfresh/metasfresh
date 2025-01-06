@@ -35,7 +35,6 @@ public class PickingJobLineId implements RepoIdAware
 		return id != null ? id.getRepoId() : -1;
 	}
 
-	@JsonCreator
 	public static PickingJobLineId ofRepoId(final int repoId)
 	{
 		return new PickingJobLineId(repoId);
@@ -47,6 +46,7 @@ public class PickingJobLineId implements RepoIdAware
 	}
 
 	@NonNull
+	@JsonCreator
 	public static PickingJobLineId ofString(@NonNull final String string)
 	{
 		try

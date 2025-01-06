@@ -698,10 +698,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 			}
 
 			sb.append("\nTable ").append(tableName).append(": ").append(map.size()).append(" records");
-			for (final Object o : map.values())
-			{
-				sb.append("\n\t").append(o);
-			}
+			sb.append("\n").append(POJOWrapperUtils.fromPOJOWrappers(map.values(), 1));
 		}
 
 		return sb.toString();

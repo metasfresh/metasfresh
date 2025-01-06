@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Packageable_V, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2050160718L;
+	private static final long serialVersionUID = 476393024L;
 
     /** Standard Constructor */
     public X_M_Packageable_V (final Properties ctx, final int M_Packageable_V_ID, @Nullable final String trxName)
@@ -408,6 +408,36 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	}
 
 	@Override
+	public void setHandOver_Location_ID (final int HandOver_Location_ID)
+	{
+		if (HandOver_Location_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_HandOver_Location_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_HandOver_Location_ID, HandOver_Location_ID);
+	}
+
+	@Override
+	public int getHandOver_Location_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_HandOver_Location_ID);
+	}
+
+	@Override
+	public void setHandOver_Partner_ID (final int HandOver_Partner_ID)
+	{
+		if (HandOver_Partner_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_HandOver_Partner_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_HandOver_Partner_ID, HandOver_Partner_ID);
+	}
+
+	@Override
+	public int getHandOver_Partner_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_HandOver_Partner_ID);
+	}
+
+	@Override
 	public void setIsCatchWeight (final boolean IsCatchWeight)
 	{
 		set_ValueNoCheck (COLUMNNAME_IsCatchWeight, IsCatchWeight);
@@ -791,6 +821,18 @@ public class X_M_Packageable_V extends org.compiere.model.PO implements I_M_Pack
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToDeliver);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setSetup_Place_No (final int Setup_Place_No)
+	{
+		set_ValueNoCheck (COLUMNNAME_Setup_Place_No, Setup_Place_No);
+	}
+
+	@Override
+	public int getSetup_Place_No() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Setup_Place_No);
 	}
 
 	/** 

@@ -54,6 +54,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -152,6 +153,7 @@ public class PurchaseDemandWithCandidatesServiceTest
 		final I_M_DiscountSchema discountSchemaRecord = newInstance(I_M_DiscountSchema.class);
 		discountSchemaRecord.setDiscountType(X_M_DiscountSchema.DISCOUNTTYPE_Breaks);
 		discountSchemaRecord.setBreakValueType(BreakValueType.QUANTITY.getCode());
+		discountSchemaRecord.setValidFrom(Timestamp.valueOf("2017-01-01 10:10:10.0"));
 		saveRecord(discountSchemaRecord);
 
 		paymentTermRecord = newInstance(I_C_PaymentTerm.class);

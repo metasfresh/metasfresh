@@ -31,22 +31,25 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 @Value
 @JsonDeserialize(builder = JsonRequestExternalReferenceUpsert.JsonRequestExternalReferenceUpsertBuilder.class)
 public class JsonRequestExternalReferenceUpsert
 {
-	@Schema(required = true, description = "Name of the external system (GitHub, Everhour etc) to which the referenced external resource belongs.")
+	@Schema(requiredMode = REQUIRED, description = "Name of the external system (GitHub, Everhour etc) to which the referenced external resource belongs.")
 	@NonNull
 	JsonExternalSystemName systemName;
 
+	@Schema(requiredMode = REQUIRED)
 	@NonNull
-	JsonExternalReferenceItem externalReferenceItem;
+	JsonExternalReferenceRequestItem externalReferenceItem;
 
 	@JsonCreator
 	@Builder
 	public JsonRequestExternalReferenceUpsert(
 			@JsonProperty("systemName") @NonNull final JsonExternalSystemName systemName,
-			@JsonProperty("externalReferenceItem") @NonNull final JsonExternalReferenceItem externalReferenceItem)
+			@JsonProperty("externalReferenceItem") @NonNull final JsonExternalReferenceRequestItem externalReferenceItem)
 	{
 		this.systemName = systemName;
 		this.externalReferenceItem = externalReferenceItem;

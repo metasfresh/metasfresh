@@ -167,7 +167,7 @@ BEGIN
                fa.qty                                            AS qtybook,
                0                                                 AS qtycount,
                'Y'                                               AS iscounted,
-               'Y'                                               AS processed,
+               'N'                                               AS processed,
                'M'                                               AS huaggregationtype
         FROM tmp_fact_acct fa
         WHERE fa.qty != 0
@@ -230,7 +230,7 @@ BEGIN
                0                                                                                      AS qtybook,
                prev_invl.qtycount                                                                     AS qtycount,
                'Y'                                                                                    AS iscounted,
-               'Y'                                                                                    AS processed,
+               'N'                                                                                    AS processed,
                'M'                                                                                    AS huaggregationtype,
                prev_invl.isactive                                                                     AS isactive
         FROM tmp_prev_inventoryline prev_invl

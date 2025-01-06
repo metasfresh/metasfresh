@@ -6,7 +6,7 @@ import {
 
 import { getLineById, getWfProcess } from '../reducers/wfProcesses';
 import { postManufacturingIssueEvent, postManufacturingReceiveEvent } from '../api/manufacturing';
-import { toQRCodeString } from '../utils/huQRCodes';
+import { toQRCodeString } from '../utils/qrCode/hu';
 
 const updateManufacturingIssueQty = ({ wfProcessId, activityId, lineId, stepId, qtyPicked, qtyRejectedReasonCode }) => {
   return {

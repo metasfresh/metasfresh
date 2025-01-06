@@ -37,6 +37,7 @@ import java.util.Optional;
 public class WorkplaceUserAssignRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final CCache<UserId, Optional<WorkplaceId>> byUserId = CCache.<UserId, Optional<WorkplaceId>>builder()
 			.tableName(I_C_Workplace_User_Assign.Table_Name)
 			.build();
@@ -47,25 +48,36 @@ public class WorkplaceUserAssignRepository
 		return byUserId.getOrLoad(userId, this::retrieveWorkplaceIdByUserId);
 	}
 
-	public void create(@NonNull final WorkplaceAssignmentCreateRequest request)
-	{
-		final I_C_Workplace_User_Assign record = InterfaceWrapperHelper.newInstance(I_C_Workplace_User_Assign.class);
-
-		record.setAD_User_ID(request.getUserId().getRepoId());
-		record.setC_Workplace_ID(request.getWorkplaceId().getRepoId());
-
-		InterfaceWrapperHelper.save(record);
-	}
-
 	@NonNull
 	private Optional<WorkplaceId> retrieveWorkplaceIdByUserId(@NonNull final UserId userId)
+	{
+		return retrieveActiveRecordByUserId(userId).map(WorkplaceUserAssignRepository::extractWorkplaceId);
+	}
+
+	private static WorkplaceId extractWorkplaceId(final I_C_Workplace_User_Assign record) {return WorkplaceId.ofRepoId(record.getC_Workplace_ID());}
+
+	@NonNull
+	private Optional<I_C_Workplace_User_Assign> retrieveActiveRecordByUserId(final @NonNull UserId userId)
 	{
 		return queryBL.createQueryBuilder(I_C_Workplace_User_Assign.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Workplace_User_Assign.COLUMNNAME_AD_User_ID, userId)
 				.create()
-				.firstOnlyOptional(I_C_Workplace_User_Assign.class)
-				.map(I_C_Workplace_User_Assign::getC_Workplace_ID)
-				.map(WorkplaceId::ofRepoId);
+				.firstOnlyOptional(I_C_Workplace_User_Assign.class);
+	}
+
+	public void create(@NonNull final WorkplaceAssignmentCreateRequest request)
+	{
+		final UserId userId = request.getUserId();
+		final WorkplaceId workplaceId = request.getWorkplaceId();
+
+		final I_C_Workplace_User_Assign record = retrieveActiveRecordByUserId(userId)
+				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_C_Workplace_User_Assign.class));
+
+		record.setIsActive(true);
+		record.setAD_User_ID(userId.getRepoId());
+		record.setC_Workplace_ID(workplaceId.getRepoId());
+
+		InterfaceWrapperHelper.save(record);
 	}
 }

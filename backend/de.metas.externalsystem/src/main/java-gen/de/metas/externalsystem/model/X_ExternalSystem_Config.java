@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config
  *  @author metasfresh (generated) 
@@ -114,7 +114,8 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	public static final String TYPE_Amazon = "AMZ";
 	/** PrintingClient = PC */
 	public static final String TYPE_PrintingClient = "PC";
-
+	/** Pro Care Management = PCM */
+	public static final String TYPE_ProCareManagement = "PCM";
 	@Override
 	public void setType (final String Type)
 	{

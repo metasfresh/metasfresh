@@ -377,7 +377,7 @@ public class WorkOrderProjectResourceRestService
 			@NonNull final List<WOProjectResource> woProjectResources)
 	{
 		return woProjectResources.stream()
-				.filter(woProjectResource -> stepId.equals(woProjectResource.getWoProjectStepId()) && woProjectResource.getResourceId().equals(resourceId))
+				.filter(woProjectResource -> stepId.equals(woProjectResource.getWoProjectStepId()) && woProjectResource.getResourceIdAndType().getResourceId().equals(resourceId))
 				.findFirst();
 	}
 
@@ -474,7 +474,7 @@ public class WorkOrderProjectResourceRestService
 		return JsonWorkOrderResourceResponse.builder()
 				.woResourceId(JsonMetasfreshId.of(WOProjectResourceId.toRepoId(resourceData.getWoProjectResourceId())))
 				.stepId(JsonMetasfreshId.of(WOProjectStepId.toRepoId(resourceData.getWoProjectStepId())))
-				.resourceId(JsonMetasfreshId.ofOrNull(ResourceId.toRepoId(resourceData.getResourceId())))
+				.resourceId(JsonMetasfreshId.ofOrNull(resourceData.getResourceIdAndType().getResourceId().getRepoId()))
 				
 				.assignDateFrom(resourceData.getStartDate()
 										.map(startDate -> TimeUtil.asLocalDate(startDate, zoneId))

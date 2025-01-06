@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.AdMessageKey;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
@@ -43,16 +43,17 @@ import java.util.function.UnaryOperator;
 @ToString
 public final class WFProcess
 {
+	private static final AdMessageKey NO_ACCESS_ERROR_MSG = AdMessageKey.of("de.metas.workflow.rest_api.model.NO_ACCESS_ERROR_MSG");
+	private static final AdMessageKey NO_ACTIVITY_ERROR_MSG = AdMessageKey.of("de.metas.workflow.rest_api.model.NO_ACTIVITY_ERROR_MSG");
+
 	@Getter
 	@NonNull private final WFProcessId id;
 
 	@Getter
 	@Nullable private final UserId responsibleId;
 
-	@Getter
-	@NonNull private final ITranslatableString caption;
-
 	@NonNull private final WFProcessStatus status;
+	@Getter private final boolean isAllowAbort;
 
 	@NonNull private final Object document;
 
@@ -64,20 +65,20 @@ public final class WFProcess
 	private WFProcess(
 			@NonNull final WFProcessId id,
 			@Nullable final UserId responsibleId,
-			@NonNull final ITranslatableString caption,
 			@NonNull final Object document,
+			@Nullable final Boolean isAllowAbort,
 			@NonNull final ImmutableList<WFActivity> activities)
 	{
 		Check.assumeNotEmpty(activities, "activities is not empty");
 
 		this.id = id;
 		this.responsibleId = responsibleId;
-		this.caption = caption;
 		this.document = document;
 		this.activities = activities;
 
 		this.activitiesById = Maps.uniqueIndex(this.activities, WFActivity::getId);
 		this.status = computeStatusFromActivities(this.activities);
+		this.isAllowAbort = computeIsAllowAbort(isAllowAbort, this.status);
 	}
 
 	private static WFProcessStatus computeStatusFromActivities(@NonNull final ImmutableList<WFActivity> activities)
@@ -90,11 +91,23 @@ public final class WFProcess
 		return WFProcessStatus.computeFromActivityStatuses(activityStatuses);
 	}
 
+	private static boolean computeIsAllowAbort(@Nullable final Boolean isAllowAbort, @NonNull final WFProcessStatus status)
+	{
+		if (isAllowAbort != null)
+		{
+			return isAllowAbort;
+		}
+		else
+		{
+			return status.isNotStarted();
+		}
+	}
+
 	public void assertHasAccess(@NonNull final UserId userId)
 	{
 		if (!hasAccess(userId))
 		{
-			throw new AdempiereException("User does not have access");
+			throw new AdempiereException(NO_ACCESS_ERROR_MSG);
 		}
 	}
 
@@ -108,22 +121,15 @@ public final class WFProcess
 		return type.cast(document);
 	}
 
-	public <T> WFProcess mapDocument(@NonNull final UnaryOperator<T> remappingFunction)
-	{
-		//noinspection unchecked
-		final T document = (T)this.document;
-		final T documentNew = remappingFunction.apply(document);
-		return !Objects.equals(document, documentNew)
-				? toBuilder().document(documentNew).build()
-				: this;
-	}
-
 	public WFActivity getActivityById(@NonNull final WFActivityId id)
 	{
 		final WFActivity wfActivity = activitiesById.get(id);
 		if (wfActivity == null)
 		{
-			throw new AdempiereException("No activity found for " + id + " in " + this);
+			throw new AdempiereException(NO_ACTIVITY_ERROR_MSG)
+					.appendParametersToMessage()
+					.setParameter("ID", id)
+					.setParameter("WFProcess", this);
 		}
 		return wfActivity;
 	}

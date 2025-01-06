@@ -37,12 +37,16 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.ProductBOMVersionsId;
+import org.eevolution.model.I_PP_Product_Planning;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 
 @Value
 @Builder(toBuilder = true)
@@ -56,10 +60,10 @@ public class ProductPlanning
 	// Selector
 	@Nullable ProductId productId;
 	@Nullable WarehouseId warehouseId;
-	@NonNull @Builder.Default OrgId orgId = OrgId.ANY;
+	@NonNull OrgId orgId;
 	@Nullable ResourceId plantId;
 	boolean isAttributeDependant;
-	@NonNull @Builder.Default AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.NONE;
+	@NonNull AttributeSetInstanceId attributeSetInstanceId;
 	@Nullable String storageAttributesKey;
 	int seqNo;
 
@@ -82,6 +86,7 @@ public class ProductPlanning
 	@Nullable BigDecimal qtyProcessed_OnDate;
 	@Nullable MaturingConfigId maturingConfigId;
 	@Nullable MaturingConfigLineId maturingConfigLineId;
+	int manufacturingAggregationId;
 	// Picking
 	boolean isPickingOrder;
 	boolean isPickDirectlyIfFeasible;
@@ -95,5 +100,82 @@ public class ProductPlanning
 	// Distribution
 	@Nullable DistributionNetworkId distributionNetworkId;
 
-	public ProductPlanningId getIdNotNull() {return Check.assumeNotNull(id, "product planning is saved: {}", this);}
+	public ProductPlanning(final boolean disallowSaving,
+						   @Nullable final ProductPlanningId id,
+						   @Nullable final ProductPlanningSchemaId productPlanningSchemaId,
+						   @Nullable final ProductId productId,
+						   @Nullable final WarehouseId warehouseId,
+						   @Nullable final OrgId orgId,
+						   @Nullable final ResourceId plantId,
+						   final boolean isAttributeDependant,
+						   @Nullable final AttributeSetInstanceId attributeSetInstanceId,
+						   @Nullable final String storageAttributesKey,
+						   final int seqNo,
+						   @Nullable final UserId plannerId,
+						   final boolean isCreatePlan,
+						   final int transferTimeDays,
+						   final int leadTimeDays,
+						   final boolean isDocComplete,
+			final boolean isLotForLot,
+						   final boolean isManufactured,
+						   final boolean isMatured,
+						   @Nullable final ProductBOMVersionsId bomVersionsId,
+						   @Nullable final PPRoutingId workflowId,
+						   @Nullable final Quantity maxManufacturedQtyPerOrderDispo,
+			@Nullable final BigDecimal qtyProcessedOnDate,
+						   @Nullable final MaturingConfigId maturingConfigId,
+						   @Nullable final MaturingConfigLineId maturingConfigLineId,
+						   final int manufacturingAggregationId,
+           				   final boolean isPickingOrder,
+						   final boolean isPickDirectlyIfFeasible,
+						   final boolean isPurchased,
+						   @Nullable final OnMaterialReceiptWithDestWarehouse onMaterialReceiptWithDestWarehouse,
+						   @Nullable final DistributionNetworkId distributionNetworkId)
+	{
+		this.isLotForLot = isLotForLot;
+		qtyProcessed_OnDate = qtyProcessedOnDate;
+		if (isMatured)
+		{
+			FillMandatoryException.assumeNotNull(maturingConfigId, I_PP_Product_Planning.COLUMNNAME_M_Maturing_Configuration_ID);
+			FillMandatoryException.assumeNotNull(maturingConfigLineId, I_PP_Product_Planning.COLUMNNAME_M_Maturing_Configuration_Line_ID);
+			FillMandatoryException.assumeNotNull(warehouseId, I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID);
+			FillMandatoryException.assumeNotNull(plantId, I_PP_Product_Planning.COLUMNNAME_S_Resource_ID);
+		}
+		this.disallowSaving = disallowSaving;
+		this.id = id;
+		this.productPlanningSchemaId = productPlanningSchemaId;
+		this.productId = productId;
+		this.warehouseId = warehouseId;
+		this.orgId = coalesceNotNull(orgId, OrgId.ANY);
+		this.plantId = plantId;
+		this.isAttributeDependant = isAttributeDependant;
+		this.attributeSetInstanceId = coalesceNotNull(attributeSetInstanceId, AttributeSetInstanceId.NONE);
+		this.storageAttributesKey = storageAttributesKey;
+		this.seqNo = seqNo;
+		this.plannerId = plannerId;
+		this.isCreatePlan = isCreatePlan;
+		this.transferTimeDays = transferTimeDays;
+		this.leadTimeDays = leadTimeDays;
+		this.isDocComplete = isDocComplete;
+		this.isManufactured = isManufactured;
+		this.isMatured = isMatured;
+		this.bomVersionsId = bomVersionsId;
+		this.workflowId = workflowId;
+		this.maxManufacturedQtyPerOrderDispo = maxManufacturedQtyPerOrderDispo;
+		this.maturingConfigId = maturingConfigId;
+		this.maturingConfigLineId = maturingConfigLineId;
+		this.isPickingOrder = isPickingOrder;
+		this.isPickDirectlyIfFeasible = isPickDirectlyIfFeasible;
+		this.isPurchased = isPurchased;
+		this.onMaterialReceiptWithDestWarehouse = onMaterialReceiptWithDestWarehouse;
+		this.distributionNetworkId = distributionNetworkId;
+		this.manufacturingAggregationId = manufacturingAggregationId;
+	}
+
+	public ProductPlanningId getIdNotNull()
+	{
+		return Check.assumeNotNull(id, "product planning is saved: {}", this);
+	}
+
+	public WarehouseId getWarehouseIdNotNull() {return Check.assumeNotNull(getWarehouseId(), "warehouse shal be set: {}", this);}
 }

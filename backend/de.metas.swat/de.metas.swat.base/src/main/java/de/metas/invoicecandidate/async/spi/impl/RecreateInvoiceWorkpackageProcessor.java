@@ -98,31 +98,34 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 		{
 			final I_C_Invoice invoice = invoiceIterator.next();
 
-			if (!canVoidPaidInvoice(invoice))
+			if (!canReversePaidInvoice(invoice))
 			{
-				loggable.addLog("C_Invoice_ID={}: Skipping paid invoice because we can't void it.", invoice.getC_Invoice_ID());
+				loggable.addLog("C_Invoice_ID={}: Skipping paid invoice because we can't reverse it.", invoice.getC_Invoice_ID());
 				continue;
 			}
 
-			final Set<InvoiceCandidateId> invoiceCandIds = voidAndReturnInvoiceCandIds(invoice);
+			final Set<InvoiceCandidateId> invoiceCandIds = reverseAndReturnInvoiceCandIds(invoice);
+			loggable.addLog("C_Invoice_ID={}: reversal done",invoice.getC_Invoice_ID());
 			if (invoiceCandIds.isEmpty())
 			{
-				loggable.addLog("C_Invoice_ID={}: Skipping invoice that is not based on invoice candidates.", invoice.getC_Invoice_ID());
+				loggable.addLog("C_Invoice_ID={}: Skipping invoice from re-invoicing because it is not based on invoice candidates.", invoice.getC_Invoice_ID());
 				continue;
 			}
 
+			loggable.addLog("C_Invoice_ID={}: Start enqueueing invoice candidates for re-invoicing", invoice.getC_Invoice_ID());
 			enqueueForInvoicing(invoiceCandIds, asyncBatch);
+			loggable.addLog("C_Invoice_ID={}: Done enqueueing invoice candidates for re-invoicing", invoice.getC_Invoice_ID());
 		}
 	}
 
-	private Set<InvoiceCandidateId> voidAndReturnInvoiceCandIds(final I_C_Invoice invoice)
+	private Set<InvoiceCandidateId> reverseAndReturnInvoiceCandIds(final I_C_Invoice invoice)
 	{
 		// NOTE: we have to separate voidAndReturnInvoiceCandIds and enqueueForInvoicing in 2 transactions because
 		// InvoiceCandidateEnqueuer is calling updateSelectionBeforeEnqueueing in a new transaction (for some reason?!?)
 		// and that is introducing a deadlock in case we are also changing C_Invoice_Candidate table here.
 		trxManager.assertThreadInheritedTrxNotExists();
 
-		return trxManager.callInNewTrx(() -> invoiceCandBL.voidAndReturnInvoiceCandIds(invoice));
+		return trxManager.callInNewTrx(() -> invoiceCandBL.reverseAndReturnInvoiceCandIds(invoice));
 	}
 
 	private void enqueueForInvoicing(final Set<InvoiceCandidateId> invoiceCandIds, final @NonNull I_C_Async_Batch asyncBatch)
@@ -147,7 +150,7 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 				.iterate(I_C_Invoice.class);
 	}
 
-	private boolean canVoidPaidInvoice(@NonNull final I_C_Invoice invoice)
+	private boolean canReversePaidInvoice(@NonNull final I_C_Invoice invoice)
 	{
 		final I_C_Invoice inv = InterfaceWrapperHelper.create(invoice, I_C_Invoice.class);
 
@@ -184,6 +187,7 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 		return InvoicingParams.builder()
 				.updateLocationAndContactForInvoice(true)
 				.ignoreInvoiceSchedule(false)
+				.supplementMissingPaymentTermIds(true)
 				.build();
 	}
 

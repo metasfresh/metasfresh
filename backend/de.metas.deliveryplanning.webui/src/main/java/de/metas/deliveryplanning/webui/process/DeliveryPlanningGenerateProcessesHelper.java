@@ -1,7 +1,6 @@
 package de.metas.deliveryplanning.webui.process;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningReceiptInfo;
 import de.metas.deliveryplanning.DeliveryPlanningService;
@@ -15,6 +14,7 @@ import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
+import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -33,6 +33,8 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
@@ -344,6 +346,9 @@ final class DeliveryPlanningGenerateProcessesHelper
 			throw new AdempiereException(MSG_ERROR_GOODS_ISSUE_QUANTITY);
 		}
 
+		final ProductId productId = getProductIdByShipmentScheduleId(shipmentScheduleId);
+		final StockQtyAndUOMQty qtyToShip = StockQtyAndUOMQtys.ofQtyInStockUOM(request.getQtyToShipBD(), productId);
+
 		final ShipmentScheduleEnqueuer.Result result = new ShipmentScheduleEnqueuer()
 				.setContext(Env.getCtx(), ITrx.TRXNAME_ThreadInherited)
 				.createWorkpackages(
@@ -354,9 +359,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 								.quantityType(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
 								.completeShipments(true)
 								.fixedShipmentDate(request.getDeliveryDate())
-								.qtysToDeliverOverride(ImmutableMap.<ShipmentScheduleId, BigDecimal>builder()
-															   .put(shipmentScheduleId, request.getQtyToShipBD())
-															   .build())
+								.qtysToDeliverOverride(QtyToDeliverMap.of(shipmentScheduleId, qtyToShip))
 								.forexContractRef(request.getForexContractRef())
 								.deliveryPlanningId(deliveryPlanningId)
 								.b2bReceiptId(b2bReceiptId)
@@ -384,6 +387,12 @@ final class DeliveryPlanningGenerateProcessesHelper
 		return shipmentScheduleEffectiveBL.getDeliveryRule(shipmentScheduleBL.getById(shipmentScheduleId));
 	}
 
+	private ProductId getProductIdByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleBL.getById(shipmentScheduleId);
+		return ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
+	}
+
 	public DeliveryPlanningGenerateReceiptResult generateReceipt(final DeliveryPlanningGenerateReceiptRequest request)
 	{
 		final DeliveryPlanningId deliveryPlanningId = request.getDeliveryPlanningId();
@@ -396,7 +405,7 @@ final class DeliveryPlanningGenerateProcessesHelper
 		}
 
 		final I_M_ReceiptSchedule receiptSchedule = huReceiptScheduleBL.getById(receiptInfo.getReceiptScheduleId());
-		final Quantity qtyToReceive = Quantitys.create(request.getQtyToReceiveBD(), UomId.ofRepoId(receiptSchedule.getC_UOM_ID()));
+		final Quantity qtyToReceive = Quantitys.of(request.getQtyToReceiveBD(), UomId.ofRepoId(receiptSchedule.getC_UOM_ID()));
 
 		final ForexContractRef forexContractRef = request.getForexContractRef();
 

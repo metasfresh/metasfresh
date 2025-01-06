@@ -22,19 +22,37 @@
 
 package de.metas.handlingunits.qrcodes.leich_und_mehl;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class LMQRCodeTest
 {
-	@Test
-	void fromGlobalQRCodeJsonString()
+	@Nested
+	class fromGlobalQRCodeJsonString
 	{
-		final LMQRCode qrCode = LMQRCode.fromGlobalQRCodeJsonString("LMQ#1#lotNumber1#123.45");
-		assertThat(qrCode.getLotNumber()).isEqualTo("lotNumber1");
-		assertThat(qrCode.getWeight()).isEqualTo(new BigDecimal("123.45"));
+		@Test
+		void standard()
+		{
+			final LMQRCode qrCode = LMQRCode.fromGlobalQRCodeJsonString("LMQ#1#123.456#13.12.2024#lot3");
+			assertThat(qrCode.getWeightInKg()).contains(new BigDecimal("123.456"));
+			assertThat(qrCode.getBestBeforeDate()).contains(LocalDate.parse("2024-12-13"));
+			assertThat(qrCode.getLotNumber()).contains("lot3");
+			assertThat(qrCode.getProductNo()).isNull();
+		}
+
+		@Test
+		void with_productNo()
+		{
+			final LMQRCode qrCode = LMQRCode.fromGlobalQRCodeJsonString("LMQ#1#123.456#13.12.2024#lot3#productNo88");
+			assertThat(qrCode.getWeightInKg()).contains(new BigDecimal("123.456"));
+			assertThat(qrCode.getBestBeforeDate()).contains(LocalDate.parse("2024-12-13"));
+			assertThat(qrCode.getLotNumber()).contains("lot3");
+			assertThat(qrCode.getProductNo()).isEqualTo("productNo88");
+		}
 	}
 }

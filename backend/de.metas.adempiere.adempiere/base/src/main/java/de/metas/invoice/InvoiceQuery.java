@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,41 +22,28 @@
 
 package de.metas.invoice;
 
-import de.metas.document.DocBaseAndSubType;
-import de.metas.document.engine.DocStatus;
-import de.metas.organization.OrgId;
-import de.metas.util.lang.ExternalId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.standard.CalendarId;
+import de.metas.calendar.standard.YearId;
+import de.metas.document.DocTypeId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
 
-import javax.annotation.Nullable;
-import java.util.Collection;
+import java.util.Set;
 
 @Value
+@Builder
 public class InvoiceQuery
 {
-	Integer invoiceId;
-	ExternalId externalId;
-	OrgId orgId;
-	String documentNo;
-	DocBaseAndSubType docType;
-	Collection<DocStatus> docStatuses;
-
-
-	@Builder(toBuilder = true)
-	public InvoiceQuery(@Nullable final Integer invoiceId,
-			@Nullable final ExternalId externalId,
-			@NonNull final OrgId orgId,
-			@Nullable final String documentNo,
-			@Nullable final DocBaseAndSubType docType,
-			@Nullable final Collection<DocStatus> docStatuses)
-	{
-		this.invoiceId = invoiceId;
-		this.externalId = externalId;
-		this.orgId = orgId;
-		this.documentNo = documentNo;
-		this.docType = docType;
-		this.docStatuses = docStatuses;
-	}
+	@NonNull @Singular Set<InvoiceId> invoiceIds;
+	@NonNull @Singular Set<BPartnerId> bpartnerIds;
+	@NonNull @Singular Set<Integer> bpartnerLocationRepoIds;
+	@NonNull @Singular Set<Integer> bpartnerContactRepoIds;
+	@NonNull @Singular Set<DocTypeId> docTypeIds;
+	@NonNull @Singular Set<WarehouseId> warehouseIds;
+	@NonNull @Singular Set<CalendarId> calendarIds;
+	@NonNull @Singular Set<YearId> yearIds;
 }

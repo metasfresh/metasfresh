@@ -1,5 +1,7 @@
 package de.metas.handlingunits.picking.job.repository;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -15,6 +17,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobPickFromAlternativeId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
@@ -30,6 +33,8 @@ import org.adempiere.warehouse.LocatorId;
 
 class PickingJobCreateRepoHelper
 {
+	private final static AdMessageKey PACKING_TO_GENERIC_PACKING_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.repository.PACKING_TO_GENERIC_PACKING_ERROR_MSG");
+
 	private final PickingJobLoaderAndSaver loader;
 
 	public PickingJobCreateRepoHelper(@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
@@ -80,6 +85,8 @@ class PickingJobCreateRepoHelper
 		record.setIsPickingReviewRequired(request.isPickingReviewRequired());
 		record.setIsReadyToReview(false);
 		record.setIsApproved(false);
+		record.setHandOver_Location_ID(BPartnerLocationId.toRepoId(request.getHandoverLocationId()));
+		record.setHandOver_Partner_ID(BPartnerId.toRepoId(request.getHandoverLocationId().getBpartnerId()));
 		InterfaceWrapperHelper.save(record);
 
 		loader.addAlreadyLoadedFromDB(record);
@@ -96,6 +103,7 @@ class PickingJobCreateRepoHelper
 		record.setM_Picking_Job_ID(pickingJobId.getRepoId());
 		record.setAD_Org_ID(orgId.getRepoId());
 		record.setM_Product_ID(line.getProductId().getRepoId());
+		record.setM_HU_PI_Item_Product_ID(line.getHuPIItemProductId().getRepoId());
 		record.setQtyToPick(line.getQtyToPick().toBigDecimal());
 		record.setC_UOM_ID(line.getQtyToPick().getUomId().getRepoId());
 		record.setC_Order_ID(OrderAndLineId.toOrderRepoId(line.getSalesOrderAndLineId()));
@@ -158,7 +166,9 @@ class PickingJobCreateRepoHelper
 					@Override
 					public Void packToGenericHU(final HuPackingInstructionsId genericPackingInstructionsId)
 					{
-						throw new AdempiereException("Packing to generic packing instructions is not supported: " + genericPackingInstructionsId);
+						throw new AdempiereException(PACKING_TO_GENERIC_PACKING_ERROR_MSG)
+								.appendParametersToMessage()
+								.setParameter("GenericPackingInstructionsId", genericPackingInstructionsId);
 					}
 				});
 

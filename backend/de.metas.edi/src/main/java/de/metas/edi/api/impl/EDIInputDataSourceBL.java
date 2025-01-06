@@ -1,9 +1,12 @@
 package de.metas.edi.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-
 import de.metas.edi.api.IEDIInputDataSourceBL;
 import de.metas.edi.model.I_AD_InputDataSource;
+import de.metas.impex.InputDataSourceId;
+
+import javax.annotation.Nullable;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -30,9 +33,9 @@ import de.metas.edi.model.I_AD_InputDataSource;
 public class EDIInputDataSourceBL implements IEDIInputDataSourceBL
 {
 	@Override
-	public boolean isEDIInputDataSource(final int inputDataSourceId)
+	public boolean isEDIInputDataSource(@Nullable final InputDataSourceId inputDataSourceId)
 	{
-		if (inputDataSourceId <= 0)
+		if (inputDataSourceId == null)
 		{
 			// shall not happen
 			return false;

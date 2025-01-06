@@ -31,6 +31,7 @@ import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 /**
@@ -43,6 +44,9 @@ public final class NumberUtils
 	private NumberUtils()
 	{
 	}
+
+	private static final BigDecimal TWENTY = new BigDecimal("20");
+
 
 	/**
 	 * Remove trailing zeros after decimal separator
@@ -145,6 +149,7 @@ public final class NumberUtils
 		return asBigDecimal(value, defaultValue, failIfUnparsable);
 	}
 
+	@Nullable
 	private static BigDecimal asBigDecimal(
 			@Nullable final Object value,
 			@Nullable final BigDecimal defaultValue,
@@ -293,6 +298,15 @@ public final class NumberUtils
 				.orElse(null);
 	}
 
+	public static boolean isZeroOrNull(@Nullable final BigDecimal value)
+	{
+		if (value == null)
+		{
+			return true;
+		}
+		 else return value.compareTo(BigDecimal.ZERO) == 0;
+	}
+
 	@NonNull
 	public static String toStringWithCustomDecimalSeparator(@NonNull final BigDecimal value, final char separator)
 	{
@@ -331,5 +345,38 @@ public final class NumberUtils
 	{
 		//noinspection NumberEquality
 		return (value1 == value2) || (value1 != null && value1.compareTo(value2) == 0);
+	}
+
+	@SafeVarargs
+	public static int firstNonZero(final Supplier<Integer>... suppliers)
+	{
+		if (suppliers == null || suppliers.length == 0)
+		{
+			return 0;
+		}
+
+		for (final Supplier<Integer> supplier : suppliers)
+		{
+			if (supplier == null)
+			{
+				continue;
+			}
+
+			final Integer value = supplier.get();
+			if (value != null && value != 0)
+			{
+				return value;
+			}
+		}
+
+		return 0;
+	}
+
+	@NonNull
+	public static BigDecimal roundTo5Cent(@NonNull final BigDecimal initialValue)
+	{
+		final BigDecimal multiplyBy20 = initialValue.multiply(TWENTY);
+		final BigDecimal intPart = multiplyBy20.setScale(0, RoundingMode.HALF_UP);
+		return intPart.divide(TWENTY);
 	}
 }

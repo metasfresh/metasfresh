@@ -16,9 +16,9 @@
  *****************************************************************************/
 package de.metas.cache;
 
-import java.util.Set;
-
 import org.adempiere.util.lang.impl.TableRecordReference;
+
+import java.util.Set;
 
 /**
  * Adempiere Cache Interface

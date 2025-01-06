@@ -11,9 +11,9 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
-import de.metas.organization.IOrgDAO;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.IssuingToleranceValueType;
@@ -40,8 +40,8 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -51,6 +51,7 @@ import org.eevolution.api.BOMType;
 import org.eevolution.api.BOMUse;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMId;
+import org.eevolution.api.ProductBOMLineId;
 import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
@@ -145,6 +146,17 @@ public class ProductBOMDAO implements IProductBOMDAO
 	}
 
 	@Override
+	public Optional<ProductBOMLineId> getBomLineByProductId(@NonNull final  ProductBOMId productBOMId, @NonNull final ProductId productId)
+	{
+		return queryBL.createQueryBuilder(I_PP_Product_BOMLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, productBOMId)
+				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID, productId)
+				.create()
+				.firstIdOnlyOptional(ProductBOMLineId::ofRepoId);
+	}
+
+	@Override
 	public Optional<ProductBOMId> getDefaultBOMIdByProductId(@NonNull final ProductId productId)
 	{
 		return getDefaultBOMByProductId(productId)
@@ -195,37 +207,57 @@ public class ProductBOMDAO implements IProductBOMDAO
 				.map(productBOM -> toProductBOM(productBOM, request));
 	}
 
-	private ProductBOM toProductBOM(@NonNull final I_PP_Product_BOM ppProductBom, @NonNull final ProductBOMRequest request)
-	{
-		final ProductBOMId productBOMId = ProductBOMId.ofRepoId(ppProductBom.getPP_Product_BOM_ID());
-		final List<I_PP_Product_BOMLine> components = queryBL.createQueryBuilder(I_PP_Product_BOMLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, productBOMId)
-				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_ComponentType, BOMComponentType.Component.getCode())
-				.create()
-				.listImmutable(I_PP_Product_BOMLine.class);
+    private ProductBOM toProductBOM(@NonNull final I_PP_Product_BOM ppProductBom, @NonNull final ProductBOMRequest request)
+    {
+        final ProductBOMId productBOMId = ProductBOMId.ofRepoId(ppProductBom.getPP_Product_BOM_ID());
+        final ImmutableList<I_PP_Product_BOMLine> bomLines = queryBL.createQueryBuilder(I_PP_Product_BOMLine.class)
+                .addOnlyActiveRecordsFilter()
+                .addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, productBOMId)
+                .create()
+                .listImmutable(I_PP_Product_BOMLine.class);
 
-		final Map<ProductDescriptor, ProductBOM> componentsProductBOMs = new HashMap<>();
-		for (final I_PP_Product_BOMLine component : components)
-		{
-			final ProductId productId = ProductId.ofRepoId(component.getM_Product_ID());
+        final List<I_PP_Product_BOMLine> components = bomLines.stream()
+                .filter((bomLine) -> bomLine.getComponentType() != null)
+                .filter((bomLine) -> BOMComponentType.ofCode(bomLine.getComponentType()).isComponent())
+                .toList();
 
-			final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(productId.getRepoId(), AttributesKey.NONE, component.getM_AttributeSetInstance_ID());
-			final ProductBOMRequest subBOMRequest = ProductBOMRequest.builder()
-					.productDescriptor(productDescriptor)
-					.date(request.getDate())
-					.build();
+        final Map<ProductDescriptor, ProductBOM> componentsProductBOMs = new HashMap<>();
+        for (final I_PP_Product_BOMLine component : components)
+        {
+            final ProductId productId = ProductId.ofRepoId(component.getM_Product_ID());
 
-			retrieveValidProductBOM(subBOMRequest).ifPresent(subBOM -> componentsProductBOMs.put(productDescriptor, subBOM));
-		}
-		return ProductBOM.builder()
-				.productBOMId(productBOMId)
-				.productDescriptor(request.getProductDescriptor())
-				.uomId(UomId.ofRepoId(ppProductBom.getC_UOM_ID()))
-				.components(components)
-				.componentsProductBOMs(componentsProductBOMs)
-				.build();
-	}
+            final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(productId.getRepoId(), AttributesKey.NONE, component.getM_AttributeSetInstance_ID());
+            final ProductBOMRequest subBOMRequest = ProductBOMRequest.builder()
+                    .productDescriptor(productDescriptor)
+                    .date(request.getDate())
+                    .build();
+
+            retrieveValidProductBOM(subBOMRequest).ifPresent(subBOM -> componentsProductBOMs.put(productDescriptor, subBOM));
+        }
+
+        final List<ProductBOMLine> coProducts = bomLines.stream()
+                .filter((bomLine) -> bomLine.getComponentType() != null)
+                .filter((bomLine) -> BOMComponentType.ofCode(bomLine.getComponentType()).isCoProduct())
+                .map(this::toProductBOMLine)
+                .toList();
+
+        return ProductBOM.builder()
+                .productBOMId(productBOMId)
+                .productDescriptor(request.getProductDescriptor())
+                .uomId(UomId.ofRepoId(ppProductBom.getC_UOM_ID()))
+                .components(components)
+                .componentsProductBOMs(componentsProductBOMs)
+                .coProducts(coProducts)
+                .build();
+    }
+
+    private ProductBOMLine toProductBOMLine(@NonNull final I_PP_Product_BOMLine record)
+    {
+        return ProductBOMLine.builder()
+                .productBOMLineId(ProductBOMLineId.ofRepoId(record.getPP_Product_BOMLine_ID()))
+                .productId(ProductId.ofRepoId(record.getM_Product_ID()))
+                .build();
+    }
 
 	@Override
 	public I_PP_Product_BOM getById(@NonNull final ProductBOMId bomId)
@@ -571,6 +603,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 
 		final IQueryBuilder<I_PP_Product_BOM> productBOMQueryBuilder = queryBL
 				.createQueryBuilder(I_PP_Product_BOM.class)
+				.addEqualsFilter(I_PP_Product_BOM.COLUMNNAME_DocStatus, X_PP_Product_BOM.DOCSTATUS_Completed)
 				.addOnlyActiveRecordsFilter();
 
 		if (!Check.isEmpty(bomTypes))
@@ -599,7 +632,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 	{
 		final DocTypeQuery query = DocTypeQuery.builder()
 				.adOrgId(orgId.getRepoId())
-				.docBaseType(DocBaseType.BillOfMaterialVersion)
+				.docBaseType(X_C_DocType.DOCBASETYPE_BOMFormula)
 				.adClientId(Env.getAD_Client_ID())
 				.build();
 
@@ -626,7 +659,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 		else if (valueType == IssuingToleranceValueType.QUANTITY)
 		{
 			final UomId uomId = UomId.ofRepoId(bomLine.getIssuingTolerance_UOM_ID());
-			final Quantity qty = Quantitys.create(bomLine.getIssuingTolerance_Qty(), uomId);
+			final Quantity qty = Quantitys.of(bomLine.getIssuingTolerance_Qty(), uomId);
 			return Optional.of(IssuingToleranceSpec.ofQuantity(qty));
 		}
 		else

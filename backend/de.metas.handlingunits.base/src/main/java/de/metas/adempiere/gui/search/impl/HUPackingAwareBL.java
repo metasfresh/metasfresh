@@ -217,7 +217,7 @@ public class HUPackingAwareBL implements IHUPackingAwareBL
 	{
 		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(huPackingAware.getM_HU_PI_Item_Product_ID());
 		return piItemProductId != null
-				? piPIItemProductBL.getById(piItemProductId)
+				? piPIItemProductBL.getRecordById(piItemProductId)
 				: null;
 	}
 

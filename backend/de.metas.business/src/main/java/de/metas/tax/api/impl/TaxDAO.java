@@ -146,28 +146,22 @@ public class TaxDAO implements ITaxDAO
 	}
 
 	@Override
-	public TaxId getDefaultTaxId(final I_C_TaxCategory taxCategory)
+	public Tax getDefaultTax(@NonNull final TaxCategoryId taxCategoryId)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(taxCategory);
-		final String trxName = InterfaceWrapperHelper.getTrxName(taxCategory);
-		final I_C_Tax tax;
-
-		final List<I_C_Tax> list = queryBL.createQueryBuilder(I_C_Tax.class, ctx, trxName)
-				.addEqualsFilter(I_C_Tax.COLUMNNAME_C_TaxCategory_ID, taxCategory.getC_TaxCategory_ID())
+		final List<I_C_Tax> list = queryBL.createQueryBuilderOutOfTrx(I_C_Tax.class)
+				.addEqualsFilter(I_C_Tax.COLUMNNAME_C_TaxCategory_ID, taxCategoryId)
 				.addEqualsFilter(I_C_Tax.COLUMNNAME_IsDefault, true)
 				.create()
 				.list();
 		if (list.size() == 1)
 		{
-			tax = list.get(0);
+			return TaxUtils.from(list.get(0));
 		}
 		else
 		{
 			// Error - should only be one default
 			throw new AdempiereException("TooManyDefaults");
 		}
-
-		return TaxId.ofRepoId(tax.getC_Tax_ID());
 	}
 
 	@Override
@@ -247,6 +241,12 @@ public class TaxDAO implements ITaxDAO
 	}
 
 	@Override
+	public @NonNull Optional<Tax> getByIfPresent(@NonNull final TaxQuery taxQuery)
+	{
+		return Optional.ofNullable(getBy(taxQuery));
+	}
+
+	@Override
 	@Nullable
 	public Tax getBy(@NonNull final TaxQuery taxQuery)
 	{
@@ -268,7 +268,9 @@ public class TaxDAO implements ITaxDAO
 			{
 				throw new AdempiereException("Multiple taxes have the same seqNo: C_Tax_ID=" + TaxId.toRepoId(firstTax.getTaxId()) + " and C_Tax_ID=" + TaxId.toRepoId(secondTax.getTaxId()))
 						.appendParametersToMessage()
-						.setParameter("taxQuery", taxQuery);
+						.setParameter("taxQuery", taxQuery)
+						.setParameter("firstTax", firstTax)
+						.setParameter("secondTax", secondTax);
 			}
 			Loggables.withLogger(logger, Level.INFO).addLog("Multiple C_Tax records {} match the search criteria. Returning the first record based on seqNo.", getTaxIds(taxes));
 		}

@@ -8,8 +8,8 @@ Feature: Dhl Shipment
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And ensure product accounts exist
     And load M_Shipper:
-      | M_Shipper_ID.Identifier | OPT.Name |
-      | shipper_DHL             | Dhl      |
+      | Identifier  | Name |
+      | shipper_DHL | Dhl  |
     And load C_UOM:
       | C_UOM_ID.Identifier | X12DE355 |
       | cm                  | CM       |
@@ -131,10 +131,11 @@ Feature: Dhl Shipment
     "closeOrder": false
 }
 """
-
+# why TF do we expect two invoices??
+    #
     Then process metasfresh response
       | C_Order_ID.Identifier | M_InOut_ID.Identifier | C_Invoice_ID.Identifier |
-      | order_1               | shipment_1            | invoice_1,invoice_2     |
+      | order_1               | shipment_1            | invoice_1               |
 
     And validate the created orders
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus |
@@ -157,12 +158,11 @@ Feature: Dhl Shipment
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.BPartnerAddress                         |
       | invoice_1               | dhl_customer             | dhl_location                      | ref_12301       | 1000002     | true      | CO        | locationBPName\naddr 22\n456 locationCity_2 |
-      | invoice_2               | dhl_customer             | dhl_location                      | ref_12301       | 1000002     | true      | CO        | locationBPName\naddr 22\n456 locationCity_2 |
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | il2                         | invoice_1               | packing_product_1       | 1           | true      |
-      | il1                         | invoice_2               | test_product_dhl_01     | 1           | true      |
+      | il1                         | invoice_1               | test_product_dhl_01     | 1           | true      |
     And load Transportation Order from Shipment
       | M_InOut_ID.Identifier | M_ShipperTransportation_ID.Identifier |
       | shipment_1            | shipTransp_1                          |

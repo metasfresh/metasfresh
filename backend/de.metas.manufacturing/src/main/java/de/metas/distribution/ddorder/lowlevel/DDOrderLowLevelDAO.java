@@ -1,19 +1,25 @@
 package de.metas.distribution.ddorder.lowlevel;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderQuery;
 import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine_Or_Alternative;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryUpdater;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Forecast;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
@@ -25,6 +31,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -54,6 +61,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Repository
 public class DDOrderLowLevelDAO
 {
+	public static final ModelDynAttributeAccessor<I_DD_Order, MaterialDispoGroupId> ATTR_DDORDER_REQUESTED_EVENT_GROUP_ID = //
+			new ModelDynAttributeAccessor<>(I_DD_Order.class.getName(), "DDOrderRequestedEvent_GroupId", MaterialDispoGroupId.class);
+
+	public static final ModelDynAttributeAccessor<I_DD_Order, String> ATTR_DDORDER_REQUESTED_EVENT_TRACE_ID = //
+			new ModelDynAttributeAccessor<>(I_DD_Order.class.getName(), "DDOrderRequestedEvent_TraceId", String.class);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public I_DD_Order getById(@NonNull final DDOrderId ddOrderId)
@@ -171,6 +184,20 @@ public class DDOrderLowLevelDAO
 	}
 
 	@NonNull
+	public ImmutableList<I_DD_OrderLine> getLinesByIds(@NonNull final ImmutableSet<DDOrderLineId> ddOrderLineIds)
+	{
+		if (ddOrderLineIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return queryBL.createQueryBuilder(I_DD_OrderLine.class)
+				.addInArrayFilter(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID, ddOrderLineIds)
+				.create()
+				.listImmutable(I_DD_OrderLine.class);
+	}
+
+	@NonNull
 	public I_DD_OrderLine getLineById(@NonNull final DDOrderLineId ddOrderLineId)
 	{
 		final I_DD_OrderLine record = InterfaceWrapperHelper.load(ddOrderLineId, I_DD_OrderLine.class);
@@ -199,6 +226,11 @@ public class DDOrderLowLevelDAO
 		if (deleteOrdersQuery.isOnlySimulated())
 		{
 			deleteOrdersQueryBuilder.addEqualsFilter(I_DD_Order.COLUMNNAME_IsSimulated, deleteOrdersQuery.isOnlySimulated());
+		}
+
+		if (deleteOrdersQuery.getPpOrderBOMLineId() != null)
+		{
+			deleteOrdersQueryBuilder.addEqualsFilter(I_DD_Order.COLUMNNAME_Forward_PP_Order_BOMLine_ID, deleteOrdersQuery.getPpOrderBOMLineId());
 		}
 
 		if (deleteOrdersQuery.getSalesOrderLineId() != null)
@@ -280,6 +312,23 @@ public class DDOrderLowLevelDAO
 				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_DD_Order_ID, order.getDD_Order_ID())
 				.create()
 				.deleteDirectly();
+	}
+
+	public void updateForwardPPOrderByIds(@NonNull final Set<DDOrderId> ddOrderIds, @Nullable final PPOrderId newPPOrderId)
+	{
+		if (ddOrderIds.isEmpty())
+		{
+			return;
+		}
+
+		queryBL.createQueryBuilder(I_DD_Order.class)
+				.addInArrayFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, ddOrderIds)
+				.addNotEqualsFilter(I_DD_Order.COLUMNNAME_Forward_PP_Order_ID, newPPOrderId)
+				.create()
+				.update(ddOrder -> {
+					ddOrder.setForward_PP_Order_ID(PPOrderId.toRepoId(newPPOrderId));
+					return IQueryUpdater.MODEL_UPDATED;
+				});
 	}
 
 }

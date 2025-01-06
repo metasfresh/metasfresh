@@ -68,6 +68,7 @@ public class PrintDataRequestHandler
 						.pageTo(segment.getPageTo())
 						.printerHW(jsonPrinterHW)
 						.trayId(HardwareTrayId.toRepoId(segment.getTrayId()))
+						.copies(segment.getCopies())
 						.build();
 				jsonPrintingSegments.add(jsonPrintingSegment);
 			}

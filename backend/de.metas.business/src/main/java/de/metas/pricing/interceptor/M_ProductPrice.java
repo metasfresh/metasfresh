@@ -77,4 +77,20 @@ public class M_ProductPrice
 	{
 		ProductPrices.assertUomConversionExists(productPrice);
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID })
+	public void assertProductTaxCategoryExists(@NonNull final I_M_ProductPrice productPrice)
+	{
+		if (productPrice.getC_TaxCategory_ID() <= 0)
+		{
+			final Optional<TaxCategoryId> taxCategoryId = productTaxCategoryService.getTaxCategoryIdOptional(productPrice);
+
+			if (!taxCategoryId.isPresent())
+			{
+				final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_NO_C_TAX_CATEGORY_FOR_PRODUCT_PRICE);
+				throw new AdempiereException(message).markAsUserValidationError();
+			}
+		}
+	}
 }
