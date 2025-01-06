@@ -65,6 +65,7 @@ docker build -f docker-builds/Dockerfile.frontend -t %pubregistry%/metas-fronten
 docker build -f docker-builds/Dockerfile.mobile -t %pubregistry%/metas-mobile:%qualifier% . || @goto error
 docker build -f docker-builds/Dockerfile.db-init -t %pubregistry%/metas-db:%qualifier% . || @goto error
 docker build -f docker-builds/Dockerfile.db-migrations -t %pubregistry%/metas-db:%qualifier%-migrations . || @goto error
+docker build -f docker-builds/Dockerfile.db-preloaded -t %pubregistry%/metas-db:%qualifier%-preloaded . || @goto error
 
 docker build -f docker-builds/Dockerfile.procurement.backend --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml -t %pubregistry%/metas-procurement-backend:%qualifier% . || @goto error
 docker build -f docker-builds/Dockerfile.procurement.nginx -t %pubregistry%/metas-procurement-nginx:%qualifier% . || @goto error

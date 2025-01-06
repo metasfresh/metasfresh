@@ -364,6 +364,16 @@ jobs:
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - name: build-db-preloaded
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.db-preloaded \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
+          --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
+          --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded \
+          --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded \
+          .
       - name: apply migrations
         working-directory: docker-builds/db/init-preloaded
         run: |

@@ -6,6 +6,10 @@ services:
     image: $mfregistry/metas-db:$mfversion
     ports:
       - "15432:5432"
+    environment:
+      # run the database on the initial data
+      # so we can later commit it again to create the preloaded db with migrations applied
+      - PGDATA=/var/lib/postgresql/initdata
     healthcheck:
       test: pg_isready -h localhost -U metasfresh -d metasfresh -t 1
       interval: 10s
