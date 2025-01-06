@@ -481,7 +481,7 @@ jobs:
 
   compatibility-images:
     runs-on: ubuntu-latest
-    needs: [init, frontend, backend]
+    needs: [init, frontend, backend, preloaded-db]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
@@ -689,7 +689,7 @@ jobs:
   cucumber-run:
     name: test (cucumber)
     runs-on: ubuntu-latest
-    needs: [init, backend, frontend, cucumber-build]
+    needs: [init, backend, frontend, cucumber-build, preloaded-db]
     strategy:
       max-parallel: 4
       fail-fast: false
@@ -754,7 +754,7 @@ jobs:
   health_check:
     name: health check
     runs-on: ubuntu-latest
-    needs: [ init, backend, frontend ]
+    needs: [ init, backend, frontend, preloaded-db ]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/login-action@v3
