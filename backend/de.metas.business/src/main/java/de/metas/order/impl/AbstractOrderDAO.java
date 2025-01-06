@@ -13,6 +13,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.order.OrderLineQuery;
 import de.metas.order.OrderQuery;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -233,17 +234,23 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	@Override
 	public List<I_C_OrderLine> retrieveOrderLinesByOrderIds(final Set<OrderId> orderIds)
 	{
+		return retrieveOrderLinesByOrderIds(orderIds, I_C_OrderLine.class);
+	}
+
+	@Override
+	public <T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLinesByOrderIds(final Set<OrderId> orderIds, Class<T> type)
+	{
 		if (orderIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}
 
-		return queryBL.createQueryBuilder(I_C_OrderLine.class)
+		return queryBL.createQueryBuilder(type)
 				.addInArrayFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, orderIds)
 				.orderBy(I_C_OrderLine.COLUMNNAME_C_Order_ID)
 				.orderBy(I_C_OrderLine.COLUMNNAME_Line)
 				.create()
-				.listImmutable(I_C_OrderLine.class);
+				.listImmutable(type);
 	}
 
 	@Override
@@ -560,5 +567,18 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_Processed, false)
 				.create()
 				.listDistinct(I_C_OrderLine.COLUMNNAME_C_Order_ID, OrderId.class);
+	}
+
+	@Override
+	public Stream<I_C_OrderLine> streamOrderLines(@NonNull final OrderLineQuery query)
+	{
+		final IQueryBuilder<I_C_OrderLine> queryBuilder = queryBL.createQueryBuilder(I_C_OrderLine.class);
+
+		if(query.getModularPurchaseContractId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_OrderLine.COLUMNNAME_Purchase_Modular_Flatrate_Term_ID, query.getModularPurchaseContractId());
+		}
+
+		return queryBuilder.create().stream();
 	}
 }

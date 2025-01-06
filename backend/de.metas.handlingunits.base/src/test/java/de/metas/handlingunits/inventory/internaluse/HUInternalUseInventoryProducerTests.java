@@ -25,6 +25,8 @@ package de.metas.handlingunits.inventory.internaluse;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HUTestHelper.TestHelperLoadRequest;
@@ -40,6 +42,7 @@ import de.metas.handlingunits.attribute.impl.HUUniqueAttributesRepository;
 import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryLine;
+import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
@@ -49,6 +52,7 @@ import de.metas.handlingunits.model.I_M_Inventory;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.validator.M_HU;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
 import de.metas.inventory.InventoryId;
 import de.metas.inventory.impl.InventoryBL;
@@ -61,6 +65,7 @@ import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
@@ -106,7 +111,6 @@ public class HUInternalUseInventoryProducerTests
 	private IHandlingUnitsDAO handlingUnitsDAO;
 	private InventoryService inventoryService;
 
-
 	private HUUniqueAttributesService huUniqueAttributesService;
 
 	private M_HU huCallout;
@@ -126,6 +130,8 @@ public class HUInternalUseInventoryProducerTests
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		huStatusBL = Services.get(IHUStatusBL.class);
+		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
 		inventoryService = InventoryService.newInstanceForUnitTesting();
 
 		final I_C_DocType dt = newInstance(I_C_DocType.class);

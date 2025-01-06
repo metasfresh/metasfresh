@@ -51,6 +51,7 @@ import org.compiere.model.I_I_Replenish;
 import org.compiere.model.I_I_ReportLine;
 import org.compiere.model.I_I_Request;
 import org.compiere.model.I_I_User;
+import org.compiere.model.I_Mobile_Application_Access;
 import org.slf4j.Logger;
 
 import java.util.Collection;
@@ -169,14 +170,16 @@ public class TableNamesSkipList
 		// Do not log *Access records - teo_Sarca BF [ 2782095 ]
 		// NOTE: Only if we are running as system. If user is logged in regular Tenant, we want to log them (07122)
 		this._tablesIgnoreSystemUC = addTableNamesUC(this._tablesIgnoreSystemUC, ImmutableSet.of(
-				I_AD_Window_Access.Table_Name,
-				I_AD_Process_Access.Table_Name,
-				I_AD_Workflow_Access.Table_Name,
-				I_AD_Form_Access.Table_Name,
-				I_AD_Task_Access.Table_Name,
-				I_AD_Document_Action_Access.Table_Name,
-				I_AD_Table_Access.Table_Name,
-				I_AD_Column_Access.Table_Name)
+						I_AD_Window_Access.Table_Name,
+						I_AD_Process_Access.Table_Name,
+						I_AD_Workflow_Access.Table_Name,
+						I_AD_Form_Access.Table_Name,
+						I_AD_Task_Access.Table_Name,
+						I_AD_Document_Action_Access.Table_Name,
+						I_AD_Table_Access.Table_Name,
+						I_AD_Column_Access.Table_Name,
+						I_Mobile_Application_Access.Table_Name
+				)
 		);
 
 		logger.info("Skip migration scripts logging for (init system): {}", this._tablesIgnoreSystemUC);

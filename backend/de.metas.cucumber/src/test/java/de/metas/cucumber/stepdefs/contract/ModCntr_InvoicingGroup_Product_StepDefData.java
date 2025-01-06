@@ -22,8 +22,8 @@
 
 package de.metas.cucumber.stepdefs.contract;
 
+import de.metas.contracts.model.I_ModCntr_InvoicingGroup_Product;
 import de.metas.cucumber.stepdefs.StepDefData;
-import org.compiere.model.I_ModCntr_InvoicingGroup_Product;
 
 public class ModCntr_InvoicingGroup_Product_StepDefData extends StepDefData<I_ModCntr_InvoicingGroup_Product>
 {

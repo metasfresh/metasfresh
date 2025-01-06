@@ -40,8 +40,8 @@ import de.metas.document.DocBaseType;
 import de.metas.document.dimension.Dimension;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.matchinv.MatchInv;
 import de.metas.invoice.matchinv.MatchInvCostPart;
 import de.metas.invoice.matchinv.MatchInvType;
@@ -138,13 +138,13 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	@Override
 	protected InvoiceAccountProviderExtension createAccountProviderExtension()
 	{
-		final InvoiceLineId invoiceLineId = getInvoiceLineId();
-		return services.getInvoiceAcct(invoiceLineId.getInvoiceId())
+		final InvoiceAndLineId invoiceAndLineId = getInvoiceLineId();
+		return services.getInvoiceAcct(invoiceAndLineId.getInvoiceId())
 				.map(invoiceAccounts -> InvoiceAccountProviderExtension.builder()
 						.accountDAO(services.getAccountDAO())
 						.invoiceAccounts(invoiceAccounts)
 						.clientId(getClientId())
-						.invoiceLineId(invoiceLineId)
+						.invoiceAndLineId(invoiceAndLineId)
 						.build())
 				.orElse(null);
 	}
@@ -159,7 +159,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		// Invoice Info
 		{
-			_invoiceLine = invoiceBL.getLineById(matchInv.getInvoiceLineId());
+			_invoiceLine = invoiceBL.getLineById(matchInv.getInvoiceAndLineId());
 			_invoice = invoiceBL.getById(InvoiceId.ofRepoId(_invoiceLine.getC_Invoice_ID()));
 			this.invoiceBPartnerId = BPartnerId.ofRepoId(_invoice.getC_BPartner_ID());
 			this.isCreditMemoInvoice = invoiceBL.isCreditMemo(_invoice);
@@ -413,10 +413,10 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		return !OrgId.equals(getInvoice_Org_ID(), getReceipt_Org_ID());
 	}
 
-	private InvoiceLineId getInvoiceLineId()
+	private InvoiceAndLineId getInvoiceLineId()
 	{
 		final I_C_InvoiceLine invoiceLine = getInvoiceLine();
-		return InvoiceLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID());
+		return InvoiceAndLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID());
 	}
 
 	private I_C_InvoiceLine getInvoiceLine()

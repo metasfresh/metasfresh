@@ -31,6 +31,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
@@ -71,12 +72,10 @@ public class PaymentRequestBL implements IPaymentRequestBL
 	}
 
 	@Override
-	public boolean updatePaySelectionLineFromPaymentRequestIfExists(final I_C_PaySelectionLine paySelectionLine)
+	public boolean updatePaySelectionLineFromPaymentRequestIfExists(@NonNull final I_C_PaySelectionLine paySelectionLine)
 	{
-		Check.assumeNotNull(paySelectionLine, "paySelectionLine not null");
-
-		final I_C_Invoice invoice = paySelectionLine.getC_Invoice();
-		Check.assumeNotNull(invoice, "invoice not null");
+		final I_C_Invoice invoice = Check.assumeNotNull(paySelectionLine.getC_Invoice(),
+														"C_Invoice not null for C_PaySelectionLine_ID={}", paySelectionLine.getC_PaySelectionLine_ID());
 
 		final IPaymentRequestDAO paymentRequestDAO = Services.get(IPaymentRequestDAO.class);
 		final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
@@ -109,7 +108,9 @@ public class PaymentRequestBL implements IPaymentRequestBL
 		{
 			// task 09698: don't apply more than the amount which is actually still open, even if the paymentRequest's amount is bigger.
 			final BigDecimal openAmt = allocationDAO.retrieveOpenAmtInInvoiceCurrency(invoice, true).toBigDecimal();
-			final BigDecimal payAmt = requestAmount.min(openAmt);
+
+			// make sure to also subtract the discount (that's coming from the payment-term)
+			final BigDecimal payAmt = requestAmount.min(openAmt.subtract(paySelectionLine.getDiscountAmt()));
 			paySelectionLine.setPayAmt(payAmt);
 
 			final BigDecimal differenceAmt = payAmt.subtract(openAmt);

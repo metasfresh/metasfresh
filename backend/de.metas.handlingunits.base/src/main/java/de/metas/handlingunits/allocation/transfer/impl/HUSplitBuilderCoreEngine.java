@@ -1,5 +1,6 @@
 package de.metas.handlingunits.allocation.transfer.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.ClearanceStatusInfo;
@@ -21,6 +22,7 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -30,6 +32,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -53,6 +56,8 @@ public class HUSplitBuilderCoreEngine
 	private final transient IHUPIItemProductDAO piipDAO = Services.get(IHUPIItemProductDAO.class);
 	private final transient IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+
+	private final SpringContextHolder.Lazy<HUQRCodesService> huQRCodesService;
 
 	private final IHUContext huContextInitital;
 	private final I_M_HU huToSplit;
@@ -83,6 +88,7 @@ public class HUSplitBuilderCoreEngine
 		this.huToSplit = huToSplit;
 		this.requestProvider = requestProvider;
 		this.destination = destination;
+		this.huQRCodesService = SpringContextHolder.lazyBean(HUQRCodesService.class, null);
 	}
 
 	/**
@@ -188,15 +194,14 @@ public class HUSplitBuilderCoreEngine
 					final List<I_M_HU> splitHUsInTrx = performSplit0(localHuContextCopy);
 
 					//
-					// Make created HUs to be out-of-transaction to be used elsewhere
-					for (final I_M_HU splitHU : splitHUsInTrx)
-					{
-						InterfaceWrapperHelper.setTrxName(splitHU, ITrx.TRXNAME_None);
-						splitHUs.add(splitHU);
-					}
+					// Make created HUs to be thread-inherited-transaction to be used elsewhere
+					InterfaceWrapperHelper.setThreadInheritedTrxName(splitHUsInTrx);
+					splitHUs.addAll(splitHUsInTrx);
 
 					return IHUContextProcessor.NULL_RESULT; // we don't care about the result
 				});
+
+		huQRCodesService.get().propagateQrForSplitHUs(huToSplit, ImmutableList.copyOf(splitHUs));
 
 		return splitHUs;
 	}

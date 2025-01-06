@@ -50,13 +50,14 @@ import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
 final class EventBus implements IEventBus
 {
-	private static final transient Logger logger = EventBusConfig.getLogger(EventBus.class);
+	private static final Logger logger = EventBusConfig.getLogger(EventBus.class);
 
 	/**
 	 * Log all event bus exceptions
@@ -223,6 +224,17 @@ final class EventBus implements IEventBus
 							 .withBody(json)
 							 .shallBeLogged()
 							 .build());
+	}
+
+	@Override
+	public void enqueueObjectsCollection(@NonNull final Collection<?> objs)
+	{
+		if (objs.isEmpty())
+		{
+			return;
+		}
+
+		objs.forEach(this::enqueueObject);
 	}
 
 	@Override

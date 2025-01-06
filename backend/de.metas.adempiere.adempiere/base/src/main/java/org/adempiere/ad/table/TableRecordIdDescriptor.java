@@ -2,7 +2,9 @@ package org.adempiere.ad.table;
 
 import de.metas.util.Check;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+import org.jetbrains.annotations.NotNull;
 
 /*
  * #%L
@@ -25,12 +27,12 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 /**
- * 
  * Example of how this could work in the real life:
- * 
+ *
  * <h1>Case 1 (Ad_Table_ID, Record_ID)</h1>
- * 
+ *
  * <li>Have a table Origin
  * <li>Have a table Target
  * <li>The table Origin has the column AD_Table_ID and Record_ID
@@ -39,9 +41,9 @@ import lombok.Value;
  * <li>Origin = originTableName
  * <li>Origin.Record_ID = recordIdColumnName
  * <li>Target = targetTableName
- * 
+ *
  * <h1>Case 2 (Prefix_Ad_Table_ID, Prefix_Record_ID)</h1>>
- * 
+ *
  * <li>Have a table Origin
  * <li>Have a table Target
  * <li>The table Origin has the column Target_AD_Table_ID and Target_Record_ID
@@ -51,14 +53,10 @@ import lombok.Value;
  * <li>Origin.Target_Record_ID = recordIdColumnName
  * <li>Target = targetTableName
  *
- * @see PartitionerServiceOld#augmentPartitionerConfig(PartitionerConfig, java.util.List)
- * @see DLMReferenceException#getTableReferenceDescriptor()
- *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Value
-public final class TableRecordIdDescriptor
+public class TableRecordIdDescriptor
 {
 	/**
 	 * Creates a descriptor for <code>referencingTableName.referencingColumnName => referencedTableName</code>.
@@ -69,25 +67,25 @@ public final class TableRecordIdDescriptor
 			final String targetTableName)
 	{
 		return builder()
-				.targetTableName(targetTableName)
 				.originTableName(originTableName)
+				.targetTableName(targetTableName)
 				.recordIdColumnName(recordIdColumnName)
 				.build();
 	}
 
-	private final String originTableName;
-	private final String recordIdColumnName;
-	private final String targetTableName;
+	@NonNull String originTableName;
+	@NonNull String recordIdColumnName;
+	@NonNull String targetTableName;
 
 	@Builder
 	private TableRecordIdDescriptor(
-			final String targetTableName,
-			final String originTableName,
-			final String recordIdColumnName)
+			@NotNull final String targetTableName,
+			@NotNull final String originTableName,
+			@NotNull final String recordIdColumnName)
 	{
-		Check.assumeNotEmpty(targetTableName, "Param 'referencedTableName' is not null");
-		Check.assumeNotEmpty(originTableName, "Param 'referencingTableName' is not null");
-		Check.assumeNotEmpty(recordIdColumnName, "Param 'referencingColumnName' is not null");
+		Check.assumeNotEmpty(targetTableName, "Param 'referencedTableName' is not empty");
+		Check.assumeNotEmpty(originTableName, "Param 'referencingTableName' is not empty");
+		Check.assumeNotEmpty(recordIdColumnName, "Param 'referencingColumnName' is not empty");
 
 		this.targetTableName = targetTableName;
 		this.originTableName = originTableName;

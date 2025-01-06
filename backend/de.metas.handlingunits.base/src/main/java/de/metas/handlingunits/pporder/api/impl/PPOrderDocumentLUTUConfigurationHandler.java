@@ -122,7 +122,7 @@ import java.util.Properties;
 		final HUPIItemProductId packingMaterialId = HUPIItemProductId.ofRepoIdOrNull(ppOrder.getM_HU_PI_Item_Product_ID());
 		if (packingMaterialId != null)
 		{
-			return hupiItemProductDAO.getById(packingMaterialId);
+			return hupiItemProductDAO.getRecordById(packingMaterialId);
 		}
 
 		//

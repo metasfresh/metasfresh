@@ -1,25 +1,23 @@
 package de.metas.cache.model;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
-
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
 
 /*
  * #%L

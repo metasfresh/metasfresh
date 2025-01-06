@@ -46,10 +46,10 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>com.lowagie</groupId>
-            <artifactId>itext</artifactId>
-        </dependency>
+		<dependency>
+			<groupId>com.itextpdf</groupId>
+			<artifactId>itextpdf</artifactId>
+		</dependency>
 
         <dependency>
             <groupId>de.metas.printing</groupId>

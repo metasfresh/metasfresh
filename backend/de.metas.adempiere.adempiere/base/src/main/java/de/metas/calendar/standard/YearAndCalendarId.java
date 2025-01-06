@@ -58,4 +58,24 @@ public record YearAndCalendarId(@NonNull YearId yearId, @NonNull CalendarId cale
 				calendarId != null && calendarId > 0 && yearId != null && yearId > 0
 						? Optional.of(new YearAndCalendarId(YearId.ofRepoId(yearId), CalendarId.ofRepoId(calendarId))) : Optional.empty();
 	}
+
+	public static int toCalendarRepoId(@Nullable final YearAndCalendarId yearAndCalendarId)
+	{
+		return getCalendarRepoIdOr(yearAndCalendarId, -1);
+	}
+
+	public static int getCalendarRepoIdOr(@Nullable final YearAndCalendarId yearAndCalendarId, final int defaultValue)
+	{
+		return yearAndCalendarId != null ? yearAndCalendarId.calendarId().getRepoId() : defaultValue;
+	}
+
+	public static int toYearRepoId(@Nullable final YearAndCalendarId yearAndCalendarId)
+	{
+		return getYearRepoIdOr(yearAndCalendarId, -1);
+	}
+
+	public static int getYearRepoIdOr(@Nullable final YearAndCalendarId yearAndCalendarId, final int defaultValue)
+	{
+		return yearAndCalendarId != null ? yearAndCalendarId.yearId().getRepoId() : defaultValue;
+	}
 }

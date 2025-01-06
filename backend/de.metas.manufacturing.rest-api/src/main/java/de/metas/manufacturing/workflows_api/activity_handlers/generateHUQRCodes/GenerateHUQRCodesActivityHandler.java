@@ -15,6 +15,7 @@ import de.metas.manufacturing.job.model.FinishedGoodsReceive;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
+import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
 import de.metas.material.planning.pporder.PPRoutingActivityType;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -59,7 +60,7 @@ public class GenerateHUQRCodesActivityHandler implements WFActivityHandler
 	@Override
 	public UIComponent getUIComponent(final @NonNull WFProcess wfProcess, final @NonNull WFActivity wfActivity, final @NonNull JsonOpts jsonOpts)
 	{
-		final ManufacturingJob job = wfProcess.getDocumentAs(ManufacturingJob.class);
+		final ManufacturingJob job = ManufacturingMobileApplication.getManufacturingJob(wfProcess);
 		final BPartnerId customerId = job.getCustomerId();
 
 		final ImmutableList<JsonPackingInstructions> tuPackingInstructionsList = job.getActivities()
@@ -141,7 +142,7 @@ public class GenerateHUQRCodesActivityHandler implements WFActivityHandler
 	private QtyTU computeQtyTUsRequired(final @NonNull FinishedGoodsReceiveLine finishedGoodsReceiveLine, final I_M_HU_PI_Item_Product tuPIItemProduct)
 	{
 		final UomId uomId = UomId.ofRepoId(tuPIItemProduct.getC_UOM_ID());
-		final Quantity qtyCusPerTU = Quantitys.create(tuPIItemProduct.getQty(), uomId);
+		final Quantity qtyCusPerTU = Quantitys.of(tuPIItemProduct.getQty(), uomId);
 		final Quantity qtyCUs = uomConversionBL.convertQuantityTo(finishedGoodsReceiveLine.getQtyToReceive(), finishedGoodsReceiveLine.getProductId(), uomId);
 		return QtyTU.ofBigDecimal(qtyCUs.toBigDecimal().divide(qtyCusPerTU.toBigDecimal(), 0, RoundingMode.UP));
 	}

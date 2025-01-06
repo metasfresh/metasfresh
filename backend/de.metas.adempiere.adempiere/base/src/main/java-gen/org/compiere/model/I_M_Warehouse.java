@@ -685,4 +685,5 @@ public interface I_M_Warehouse
 
 	ModelColumn<I_M_Warehouse, Object> COLUMN_Value = new ModelColumn<>(I_M_Warehouse.class, "Value", null);
 	String COLUMNNAME_Value = "Value";
+
 }

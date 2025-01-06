@@ -211,10 +211,6 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 	 *
 	 * NOTE: this is the main method for collecting packing materials. All other helper methods are converging to this one.
 	 *
-	 * @param remove
-	 * @param hu
-	 * @param huUnitTypeOverride
-	 * @param source
 	 * @return true if the packing materials were collected
 	 */
 	private boolean addOrRemoveHU(final boolean remove,
@@ -361,8 +357,7 @@ public class HUPackingMaterialsCollector implements IHUPackingMaterialsCollector
 						{
 
 							// check for the qty in the aggregated HU (if exists)
-							final I_M_HU_Item huItem = handlingUnitsDAO.retrieveAggregatedItemOrNull(hu, currentHUPipToOrigin.getHupip().getM_HU_PI_Item());
-
+							final I_M_HU_Item huItem = handlingUnitsDAO.retrieveAggregatedItemOrNull(hu);
 							if (huItem != null)
 							{
 								final BigDecimal includedQty = huItem.getQty();

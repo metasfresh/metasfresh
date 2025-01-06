@@ -31,7 +31,6 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutLineId;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
-import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.HUDescriptor;
@@ -59,7 +58,6 @@ import java.util.stream.Collectors;
 public class TransactionEventFactoryForInOutLine
 {
 	private final IInOutDAO inoutsRepo = Services.get(IInOutDAO.class);
-	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	private final IReceiptScheduleDAO receiptSchedulesRepo = Services.get(IReceiptScheduleDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
@@ -111,7 +109,7 @@ public class TransactionEventFactoryForInOutLine
 		{
 			final HUTraceEventQuery huTraceEventQuery = HUTraceEventQuery.builder()
 					.vhuStatus(X_M_HU.HUSTATUS_Shipped)
-					.inOutId(shipmentLineId.getInOutId().getRepoId())
+					.inOutId(shipmentLineId.getInOutId())
 					.build();
 
 			huDescriptors = huDescriptionFactory.createHuDescriptorsForTrace(huTraceEventQuery);

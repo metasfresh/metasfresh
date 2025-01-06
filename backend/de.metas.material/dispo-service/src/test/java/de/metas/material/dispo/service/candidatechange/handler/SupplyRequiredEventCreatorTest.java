@@ -10,6 +10,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
+import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import org.junit.jupiter.api.Test;
 
@@ -46,14 +47,16 @@ public class SupplyRequiredEventCreatorTest
 	@Test
 	public void createMaterialDemandEvent()
 	{
-		final Candidate demandCandidate = Candidate.builderForEventDescr(EventDescriptor.ofClientAndOrg(20, 30))
+		final Candidate demandCandidate = Candidate.builderForEventDescriptor(EventDescriptor.ofClientAndOrg(20, 30))
 				.id(CandidateId.ofRepoId(10))
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.businessCaseDetail(ProductionDetail.builder()
 						.advised(Flag.FALSE)
 						.pickDirectlyIfFeasible(Flag.FALSE)
-						.qty(new BigDecimal("10")).build())
+						.ppOrderRef(PPOrderRef.ofPPOrderId(123))
+						.qty(new BigDecimal("10"))
+						.build())
 				.groupId(MaterialDispoGroupId.ofInt(40))
 				.seqNo(50)
 				.materialDescriptor(MaterialDescriptor.builder()
@@ -68,8 +71,8 @@ public class SupplyRequiredEventCreatorTest
 				demandCandidate, BigDecimal.TEN, CandidateId.ofRepoId(60));
 
 		assertThat(result).isNotNull();
-		assertThat(result.getEventDescriptor().getClientId().getRepoId()).isEqualTo(20);
-		assertThat(result.getEventDescriptor().getOrgId().getRepoId()).isEqualTo(30);
+		assertThat(result.getClientId().getRepoId()).isEqualTo(20);
+		assertThat(result.getOrgId().getRepoId()).isEqualTo(30);
 		assertThat(result.getSupplyRequiredDescriptor().getDemandCandidateId()).isEqualTo(10);
 		assertThat(result.getSupplyRequiredDescriptor().getSupplyCandidateId()).isEqualTo(60);
 	}

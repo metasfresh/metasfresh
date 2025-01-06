@@ -31,7 +31,6 @@ import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.eevolution.api.impl.ProductBOM;
 import org.eevolution.api.impl.ProductBOMRequest;
-import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 
@@ -52,14 +51,9 @@ public interface IProductBOMBL extends ISingletonService
 	void updateIsBOMFlag(ProductId productId);
 
 	/**
-	 * Calculates low level code (LLC) for given product.
-	 * It also checks for BOM cycles.
-	 *
-	 * @return low level code (LLC)
+	 * checking BOM cycles.
 	 */
-	int calculateProductLowestLevel(ProductId productId);
-
-	IProductLowLevelUpdater updateProductLowLevels();
+	void checkCycles(final ProductId productId);
 
 	/**
 	 * Checks if a BOMLine which is a <code>X_PP_Product_BOMLine.COMPONENTTYPE_Variant</code> has a valid VariantGroup<br>
@@ -103,8 +97,6 @@ public interface IProductBOMBL extends ISingletonService
 	Optional<IssuingToleranceSpec> getEffectiveIssuingToleranceSpec(@NonNull I_PP_Product_BOMLine bomLine);
 
 	void verifyDefaultBOMProduct(@NonNull ProductId productId);
-
-	void verifyDefaultBOMProduct(@NonNull I_M_Product product);
 
 	Optional<ProductBOM> retrieveValidProductBOM(@NonNull ProductBOMRequest request);
 

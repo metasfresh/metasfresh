@@ -81,6 +81,6 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs_WithParam extends WEBUI_M_Receip
 		}
 
 		final UomId uomId = UomId.ofRepoId(rs.getC_UOM_ID());
-		return Quantitys.create(p_QtyCUsPerTU, uomId);
+		return Quantitys.of(p_QtyCUsPerTU, uomId);
 	}
 }

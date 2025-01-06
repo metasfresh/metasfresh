@@ -134,7 +134,7 @@ public class CreateMatchInvoiceCommand
 	{
 		if (this._invoiceLine == null)
 		{
-			this._invoiceLine = invoiceBL.getLineById(request.getInvoiceLineId());
+			this._invoiceLine = invoiceBL.getLineById(request.getInvoiceAndLineId());
 		}
 		return this._invoiceLine;
 	}

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/deliveryinstructions/report" whenResourceMissingType="Empty" uuid="9cbb1211-c2e8-4a8e-966b-e564bfc4c4f5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="4.0"/>
 	<property name="ireport.x" value="99"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="prod.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -21,36 +21,31 @@
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_DeliveryInstructions_ProductDetails($P{record_id}, $P{ad_language});]]>
 	</queryString>
 	<field name="warehousename" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="warehousename"/>
 		<property name="com.jaspersoft.studio.field.label" value="warehousename"/>
 	</field>
 	<field name="plannedloadedquantity" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="plannedloadedquantity"/>
 		<property name="com.jaspersoft.studio.field.label" value="plannedloadedquantity"/>
 	</field>
 	<field name="qtyordered" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qtyordered"/>
 		<property name="com.jaspersoft.studio.field.label" value="qtyordered"/>
 	</field>
 	<field name="productvalue" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="productvalue"/>
 		<property name="com.jaspersoft.studio.field.label" value="productvalue"/>
 	</field>
 	<field name="productname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="productname"/>
 		<property name="com.jaspersoft.studio.field.label" value="productname"/>
 	</field>
 	<field name="grade" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="grade"/>
 		<property name="com.jaspersoft.studio.field.label" value="grade"/>
 	</field>
-	<field name="ab182_dangerous_transport" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="ab182_dangerous_transport"/>
-	</field>
-	<field name="ab182_cas_number" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="ab182_cas_number"/>
-	</field>
-	<field name="ab182_hs_code" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="ab182_hs_code"/>
-	</field>
-	<field name="ab182_rreach_number" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="ab182_rreach_number"/>
-	</field>
 	<field name="uom" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="uom"/>
 		<property name="com.jaspersoft.studio.field.label" value="uom"/>
 	</field>
 	<pageHeader>

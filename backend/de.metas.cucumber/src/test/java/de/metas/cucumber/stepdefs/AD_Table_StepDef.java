@@ -10,7 +10,6 @@ import lombok.Value;
 import org.adempiere.ad.column.ColumnSql;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
-import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.POInfo;
 import org.compiere.model.POInfoColumn;
@@ -134,7 +133,7 @@ public class AD_Table_StepDef
 		public static TableNamesSkipList ofDataTable(@NonNull final DataTable dataTable)
 		{
 			return new TableNamesSkipList(
-					DataTableRow.toRows(dataTable)
+					DataTableRows.of(dataTable)
 							.stream()
 							.map(row -> row.getAsString("TableName"))
 							.map(String::toUpperCase)

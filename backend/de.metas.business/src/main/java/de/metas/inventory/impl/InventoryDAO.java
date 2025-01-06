@@ -59,7 +59,13 @@ public class InventoryDAO implements IInventoryDAO
 	@Override
 	public I_M_InventoryLine getLineById(@NonNull final InventoryLineId inventoryLineId)
 	{
-		return load(inventoryLineId, I_M_InventoryLine.class);
+		return getLineById(inventoryLineId, I_M_InventoryLine.class);
+	}
+
+	@Override
+	public <T extends I_M_InventoryLine> T getLineById(@NonNull final InventoryLineId inventoryLineId, @NonNull Class<T> modelType)
+	{
+		return load(inventoryLineId, modelType);
 	}
 
 	@Override

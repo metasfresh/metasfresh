@@ -1,9 +1,5 @@
 package de.metas.banking.process;
 
-import java.sql.Timestamp;
-
-import org.compiere.model.I_C_PaySelection;
-
 import de.metas.banking.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaySelectionDAO;
@@ -14,10 +10,15 @@ import de.metas.payment.PaymentRule;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_PaySelection;
+
+import java.sql.Timestamp;
 
 /*
  * #%L
@@ -52,6 +53,36 @@ public class C_PaySelection_CreateFrom extends JavaProcess implements IProcessPr
 
 	private IPaySelectionUpdater paySelectionUpdater;
 
+	@Param(parameterName = "OnlyDiscount", mandatory = true)
+	private boolean p_OnlyDiscount;
+
+	@Param(parameterName = "OnlyDue", mandatory = true)
+	private boolean p_OnlyDue;
+
+	@Param(parameterName = "IncludeInDispute", mandatory = false)
+	private boolean p_IncludeInDispute;
+
+	@Param(parameterName = "MatchRequirement", mandatory = true)
+	private String p_MatchRequirement;
+
+	@Param(parameterName = "PayDate", mandatory = false)
+	private Timestamp p_PayDate;
+
+	@Param(parameterName = "PaymentRule", mandatory = false)
+	private String p_PaymentRule;
+
+	@Param(parameterName = I_C_BPartner.COLUMNNAME_C_BPartner_ID, mandatory = false)
+	private int p_C_BPartner_ID;
+
+	@Param(parameterName = I_C_BP_Group.COLUMNNAME_C_BP_Group_ID, mandatory = false)
+	private int p_C_BP_Group_ID;
+
+	@Param(parameterName = "DateInvoiced", mandatory = false)
+	private Timestamp p_DateInvoiced;
+
+	@Param(parameterName = "POReference", mandatory = false)
+	private String p_POReference;
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
@@ -81,54 +112,17 @@ public class C_PaySelection_CreateFrom extends JavaProcess implements IProcessPr
 		final I_C_PaySelection paySelection = paySelectionDAO.getById(paySelectionId).get();
 		paySelectionUpdater.setC_PaySelection(paySelection);
 
-		for (final ProcessInfoParameter para : getParametersAsArray())
-		{
-			final String name = para.getParameterName();
-			if (para.getParameter() == null)
-			{
-
-			}
-			else if (name.equals("OnlyDiscount"))
-			{
-				final boolean p_OnlyDiscount = para.getParameterAsBoolean();
-				paySelectionUpdater.setOnlyDiscount(p_OnlyDiscount);
-			}
-			else if (name.equals("OnlyDue"))
-			{
-				final boolean p_OnlyDue = para.getParameterAsBoolean();
-				paySelectionUpdater.setOnlyDue(p_OnlyDue);
-			}
-			else if (name.equals("IncludeInDispute"))
-			{
-				final boolean p_IncludeInDispute = para.getParameterAsBoolean();
-				paySelectionUpdater.setIncludeInDispute(p_IncludeInDispute);
-			}
-			else if (name.equals("MatchRequirement"))
-			{
-				final InvoiceMatchingMode matchRequirement = InvoiceMatchingMode.ofCode(para.getParameterAsString());
-				paySelectionUpdater.setMatchRequirement(matchRequirement);
-			}
-			else if (name.equals("PayDate"))
-			{
-				final Timestamp p_PayDate = para.getParameterAsTimestamp();
-				paySelectionUpdater.setPayDate(p_PayDate);
-			}
-			else if (name.equals("PaymentRule"))
-			{
-				final PaymentRule paymentRule = PaymentRule.ofNullableCode(para.getParameterAsString());
-				paySelectionUpdater.setPaymentRule(paymentRule);
-			}
-			else if (name.equals("C_BPartner_ID"))
-			{
-				final int p_C_BPartner_ID = para.getParameterAsInt();
-				paySelectionUpdater.setC_BPartner_ID(p_C_BPartner_ID);
-			}
-			else if (name.equals("C_BP_Group_ID"))
-			{
-				final int p_C_BP_Group_ID = para.getParameterAsInt();
-				paySelectionUpdater.setC_BP_Group_ID(p_C_BP_Group_ID);
-			}
-		}
+		// set params
+		paySelectionUpdater.setOnlyDiscount(p_OnlyDiscount);
+		paySelectionUpdater.setOnlyDue(p_OnlyDue);
+		paySelectionUpdater.setIncludeInDispute(p_IncludeInDispute);
+		paySelectionUpdater.setMatchRequirement(InvoiceMatchingMode.ofCode(p_MatchRequirement));
+		paySelectionUpdater.setPayDate(p_PayDate);
+		paySelectionUpdater.setPaymentRule(PaymentRule.ofNullableCode(p_PaymentRule));
+		paySelectionUpdater.setC_BPartner_ID(p_C_BPartner_ID);
+		paySelectionUpdater.setC_BP_Group_ID(p_C_BP_Group_ID);
+		paySelectionUpdater.setPOReference(p_POReference);
+		paySelectionUpdater.setDateInvoiced(p_DateInvoiced);
 	}
 
 	@Override

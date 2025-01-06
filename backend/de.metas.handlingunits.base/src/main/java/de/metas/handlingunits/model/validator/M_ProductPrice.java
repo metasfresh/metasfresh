@@ -49,9 +49,6 @@ import org.compiere.model.ModelValidator;
 
 /**
  * Model validator <b>with attached callout</b>. See {@link #validateUOM(I_M_ProductPrice)} for what it does.
- *
- * @author ts
- * @task http://dewiki908/mediawiki/index.php/09045_Changes_on_Excel_Export-Import_%28107395757529%29
  */
 @Callout(I_M_ProductPrice.class)
 @Validator(I_M_ProductPrice.class)
@@ -74,10 +71,14 @@ public class M_ProductPrice
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = I_M_ProductPrice.COLUMNNAME_C_UOM_ID)
-	@CalloutMethod(columnNames = { I_M_ProductPrice.COLUMNNAME_C_UOM_ID })
+			ifColumnsChanged = { I_M_ProductPrice.COLUMNNAME_C_UOM_ID, I_M_ProductPrice.COLUMNNAME_M_Product_ID })
+	@CalloutMethod(columnNames = { I_M_ProductPrice.COLUMNNAME_C_UOM_ID, I_M_ProductPrice.COLUMNNAME_M_Product_ID })
 	public void validateUOM(final I_M_ProductPrice productPrice)
 	{
+		if (productPrice.getM_Product_ID() <= 0)
+		{
+			return; // nothing to do yet
+		}
 		final UomId uomId = UomId.ofRepoIdOrNull(productPrice.getC_UOM_ID());
 		if(uomId == null)
 		{
@@ -109,7 +110,7 @@ public class M_ProductPrice
 					.markAsUserValidationError();
 		}
 
-		final I_M_HU_PI_Item_Product packingMaterial = huPIItemProductBL.getById(packingMaterialPriceId);
+		final I_M_HU_PI_Item_Product packingMaterial = huPIItemProductBL.getRecordById(packingMaterialPriceId);
 
 		if (huCapacityBL.isInfiniteCapacity(packingMaterial))
 		{
@@ -124,12 +125,6 @@ public class M_ProductPrice
 		final UomId productPriceUOMId = UomId.ofRepoId(productPrice.getC_UOM_ID());
 
 		final UOMConversionsMap uomConversionsMap = uomConversionDAO.getProductConversions(ProductId.ofRepoId(productPrice.getM_Product_ID()));
-
-		if (uomConversionsMap == null)
-		{
-			throw new AdempiereException(MSG_ERR_M_PRODUCT_PRICE_NO_UOM_CONVERSION)
-					.markAsUserValidationError();
-		}
 
 		final UomId productUomId = productBL.getStockUOMId(productPrice.getM_Product_ID());
 

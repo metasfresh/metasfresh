@@ -1,9 +1,8 @@
 package de.metas.contracts.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_CallOrderSummary
  *  @author metasfresh (generated) 
@@ -53,7 +52,7 @@ public interface I_C_CallOrderSummary
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Call Order Summary.
+	 * Set Call-off order overview.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -62,7 +61,7 @@ public interface I_C_CallOrderSummary
 	void setC_CallOrderSummary_ID (int C_CallOrderSummary_ID);
 
 	/**
-	 * Get Call Order Summary.
+	 * Get Call-off order overview.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -151,28 +150,6 @@ public interface I_C_CallOrderSummary
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -196,6 +173,28 @@ public interface I_C_CallOrderSummary
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Active.
@@ -298,8 +297,10 @@ public interface I_C_CallOrderSummary
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	void setPOReference (@Nullable java.lang.String POReference);
 
 	/**
@@ -308,8 +309,10 @@ public interface I_C_CallOrderSummary
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	@Nullable java.lang.String getPOReference();
 
 	ModelColumn<I_C_CallOrderSummary, Object> COLUMN_POReference = new ModelColumn<>(I_C_CallOrderSummary.class, "POReference", null);

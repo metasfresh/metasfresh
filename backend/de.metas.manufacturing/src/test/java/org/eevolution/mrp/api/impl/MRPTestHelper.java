@@ -4,6 +4,9 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
+import de.metas.document.DocSubType;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocRepository;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
@@ -16,6 +19,7 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.eventbus.MaterialEventConverter;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.planning.ErrorCodes;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPRoutingType;
 import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
@@ -285,7 +289,11 @@ public class MRPTestHelper
 				new PPOrderBOMBL(),
 				new DDOrderLowLevelService(new DDOrderLowLevelDAO(), ResourceService.newInstanceForJUnitTesting()),
 				new ProductBOMVersionsDAO(),
-				new ProductBOMService(new ProductBOMVersionsDAO()));
+				new ProductBOMService(new ProductBOMVersionsDAO()),
+				new DDOrderCandidateRepository(),
+				new DDOrderCandidateAllocRepository(),
+				new DistributionNetworkRepository(),
+				new ReplenishInfoRepository());
 	}
 
 	public Timestamp getToday()
@@ -421,7 +429,6 @@ public class MRPTestHelper
 		product.setName(name);
 		product.setM_Product_Category_ID(productCategoryDefault == null ? -1 : productCategoryDefault.getM_Product_Category_ID());
 		product.setC_UOM_ID(uom.getC_UOM_ID());
-		product.setLowLevel(0);
 		InterfaceWrapperHelper.save(product);
 
 		return product;
@@ -589,7 +596,7 @@ public class MRPTestHelper
 
 	private void setCommonProperties(final I_PP_Order ppOrder)
 	{
-		Services.get(IPPOrderBL.class).setDocType(ppOrder, PPOrderDocBaseType.MANUFACTURING_ORDER, null);
+		Services.get(IPPOrderBL.class).setDocType(ppOrder, PPOrderDocBaseType.MANUFACTURING_ORDER, DocSubType.NONE);
 
 		// required to avoid an NPE when building the lightweight PPOrder pojo
 		final Timestamp t1 = SystemTime.asTimestamp();

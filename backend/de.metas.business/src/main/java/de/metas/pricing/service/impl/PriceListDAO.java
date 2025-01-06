@@ -31,6 +31,7 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.common.util.Check;
 import de.metas.currency.ICurrencyBL;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -107,7 +108,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class PriceListDAO implements IPriceListDAO
 {
-	private static final transient Logger logger = LogManager.getLogger(PriceListDAO.class);
+	private static final Logger logger = LogManager.getLogger(PriceListDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
@@ -254,6 +255,19 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
+	public boolean isProductPriceExistsInSystem(final PricingSystemId pricingSystemId, final SOTrx soTrx, final ProductId productId)
+	{
+		final ImmutableSet<PriceListId> priceListIds = retrievePriceListsCollectionByPricingSystemId(pricingSystemId).filterAndListIds(soTrx);
+		return queryBL.createQueryBuilder(I_M_PriceList_Version.class)
+				.addInArrayFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID,priceListIds)
+				.andCollectChildren(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID, I_M_ProductPrice.class)
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_M_ProductPrice.COLUMNNAME_IsActive, true)
+				.create()
+				.anyMatch();
+	}
+
+	@Override
 	public PriceListId retrievePriceListIdByPricingSyst(
 			@Nullable final PricingSystemId pricingSystemId,
 			final CountryId countryId,
@@ -277,8 +291,18 @@ public class PriceListDAO implements IPriceListDAO
 		return !priceLists.isEmpty() ? PriceListId.ofRepoId(priceLists.get(0).getM_PriceList_ID()) : null;
 	}
 
+	@NonNull
+	public I_M_PriceList retrievePriceListbyId(@NonNull final PriceListId priceListId)
+	{
+		final I_M_PriceList priceList = load(priceListId, I_M_PriceList.class);
+		return Check.assumeNotNull(priceList, "Missing M_PriceList record for ID={}", priceListId.getRepoId());
+	}
+
 	@Override
-	public List<I_M_PriceList> retrievePriceLists(final PricingSystemId pricingSystemId, final CountryId countryId, final SOTrx soTrx)
+	public List<I_M_PriceList> retrievePriceLists(
+			@NonNull final PricingSystemId pricingSystemId, 
+			@NonNull final CountryId countryId, 
+			@Nullable final SOTrx soTrx)
 	{
 		return retrievePriceListsCollectionByPricingSystemId(pricingSystemId)
 				.filterAndList(countryId, soTrx);
@@ -326,6 +350,7 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
+	@Nullable
 	public PriceListVersionId retrievePriceListVersionIdOrNull(
 			@NonNull final PriceListId priceListId,
 			@NonNull final ZonedDateTime date,
@@ -617,7 +642,7 @@ public class PriceListDAO implements IPriceListDAO
 		final I_M_PriceList_Version previousPlv = Services.get(IPriceListDAO.class).retrievePreviousVersionOrNull(plv, true);
 		if (previousPlv != null)
 		{
-			plv.setM_Pricelist_Version_Base(previousPlv);
+			plv.setM_Pricelist_Version_Base_ID(previousPlv.getM_PriceList_Version_ID());
 			save(plv);
 		}
 
@@ -766,7 +791,6 @@ public class PriceListDAO implements IPriceListDAO
 
 	private void createNewPLV(final I_M_PriceList_Version oldCustomerPLV, final I_M_PriceList_Version newBasePLV, final UserId userId)
 	{
-
 		final I_M_PriceList_Version newCustomerPLV = copy()
 				.setSkipCalculatedColumns(true)
 				.setFrom(oldCustomerPLV)
@@ -887,7 +911,7 @@ public class PriceListDAO implements IPriceListDAO
 				.matchingColumnNames(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, I_C_BPartner.COLUMNNAME_M_PricingSystem_ID)
 				.subQuery(customerQuery)
 				.end()
-				.andCollectChildren(I_M_PriceList_Version.COLUMN_M_PriceList_ID)
+				.andCollectChildren(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, I_M_PriceList_Version.class)
 				.addOnlyActiveRecordsFilter()
 
 				.addNotEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, basePriceListId)

@@ -435,4 +435,5 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
 	}
+
 }

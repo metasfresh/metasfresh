@@ -118,6 +118,31 @@ public class Money implements Comparable<Money>
 		this.currencyId = currencyId;
 	}
 
+	@Override
+	public String toString()
+	{
+		final StringBuilder sb = new StringBuilder();
+		sb.append(value);
+		if (CurrencyId.equals(currencyId, CurrencyId.USD))
+		{
+			sb.append(" USD");
+		}
+		else if (CurrencyId.equals(currencyId, CurrencyId.EUR))
+		{
+			sb.append(" EUR");
+		}
+		else if (CurrencyId.equals(currencyId, CurrencyId.CHF))
+		{
+			sb.append(" CHF");
+		}
+		else
+		{
+			sb.append(" [").append(currencyId.getRepoId()).append("]");
+		}
+
+		return sb.toString();
+	}
+
 	public BigDecimal toBigDecimal()
 	{
 		return value;
@@ -248,6 +273,11 @@ public class Money implements Comparable<Money>
 		}
 
 		return new Money(value.multiply(multiplicand), currencyId);
+	}
+
+	public Money multiply(final int multiplicand)
+	{
+		return multiply(BigDecimal.valueOf(multiplicand));
 	}
 
 	public Money multiply(@NonNull final Percent percent, @NonNull final CurrencyPrecision precision)

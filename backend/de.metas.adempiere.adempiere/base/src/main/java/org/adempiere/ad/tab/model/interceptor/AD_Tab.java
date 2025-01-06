@@ -113,6 +113,7 @@ public class AD_Tab
 		tab.setDescription(tabElement.getDescription());
 		tab.setHelp(tabElement.getHelp());
 		tab.setCommitWarning(tabElement.getCommitWarning());
+		tab.setEntityType(tab.getAD_Window().getEntityType());
 	}
 
 	private void recreateElementLinkForTab(final I_AD_Tab tab)

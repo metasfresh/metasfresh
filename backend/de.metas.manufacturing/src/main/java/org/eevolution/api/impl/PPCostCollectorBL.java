@@ -60,6 +60,7 @@ import org.eevolution.api.ComponentIssueCreateRequest;
 import org.eevolution.api.CostCollectorType;
 import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPCostCollectorDAO;
+import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPCostCollectorQuantities;
 import org.eevolution.api.PPOrderBOMLineId;
@@ -395,6 +396,16 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		if (componentType.isVariant())
 		{
 			return;
+		}
+
+		final OrderBOMLineQuantities orderBOMLineQuantities = ppOrderBOMBL.getQuantities(line);
+		if (orderBOMLineQuantities.getIssuingToleranceSpec() != null)
+		{
+			final Quantity scaleRounding = Services.get(IPPOrderBL.class).getRoundingToScale(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID())).orElse(null);
+			if (orderBOMLineQuantities.isQtyIssuedWithinTolerance(scaleRounding))
+			{
+				return;
+			}
 		}
 
 		final PPOrderBOMLineId ppOrderBOMLineId = PPOrderBOMLineId.ofRepoId(line.getPP_Order_BOMLine_ID());

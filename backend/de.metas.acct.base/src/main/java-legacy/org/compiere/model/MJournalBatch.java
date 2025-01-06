@@ -222,8 +222,7 @@ public class MJournalBatch extends X_GL_JournalBatch implements IDocument
 		MJournal[] journals = getJournals();
 		if (journals.length == 0)
 		{
-			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			throw AdempiereException.noLines();
 		}
 		
 		BigDecimal TotalDr = BigDecimal.ZERO;

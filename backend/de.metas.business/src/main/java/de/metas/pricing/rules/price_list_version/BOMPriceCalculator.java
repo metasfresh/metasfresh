@@ -23,6 +23,7 @@
 package de.metas.pricing.rules.price_list_version;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.IProductDAO;
@@ -82,7 +83,7 @@ class BOMPriceCalculator
 	private BOMPrices calculateBOMLinePrice(final I_PP_Product_BOMLine bomLine)
 	{
 		final ProductId bomLineProductId = ProductId.ofRepoId(bomLine.getM_Product_ID());
-		final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(priceListVersion, bomLineProductId);
+		final I_M_ProductPrice productPrice = ProductPrices.retrieveMainProductPriceOrNull(PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID()), bomLineProductId);
 		if (productPrice == null)
 		{
 			throw ProductNotOnPriceListException.builder()

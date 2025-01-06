@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_Picking_Job_Line, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1890342962L;
+	private static final long serialVersionUID = -1811058248L;
 
     /** Standard Constructor */
     public X_M_Picking_Job_Line (final Properties ctx, final int M_Picking_Job_Line_ID, @Nullable final String trxName)
@@ -117,6 +117,33 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public void setIsManuallyClosed (final boolean IsManuallyClosed)
+	{
+		set_Value (COLUMNNAME_IsManuallyClosed, IsManuallyClosed);
+	}
+
+	@Override
+	public boolean isManuallyClosed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsManuallyClosed);
+	}
+
+	@Override
+	public void setM_HU_PI_Item_Product_ID (final int M_HU_PI_Item_Product_ID)
+	{
+		if (M_HU_PI_Item_Product_ID < 1) 
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_ID, M_HU_PI_Item_Product_ID);
+	}
+
+	@Override
+	public int getM_HU_PI_Item_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Item_Product_ID);
 	}
 
 	@Override

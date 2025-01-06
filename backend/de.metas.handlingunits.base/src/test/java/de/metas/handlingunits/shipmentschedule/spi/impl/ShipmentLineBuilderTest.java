@@ -4,7 +4,6 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.handlingunits.HUTestHelper;
-import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -14,6 +13,8 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUFactory;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUSupportingServices;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
@@ -68,14 +69,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class ShipmentLineBuilderTest
 {
-	private IHUContext huContext;
 	private HUTestHelper huTestHelper;
+	private ShipmentScheduleWithHUFactory shipmentScheduleWithHUFactory;
 
 	@BeforeEach
 	public void init()
 	{
 		huTestHelper = new HUTestHelper();
-		huContext = Services.get(IHUContextFactory.class).createMutableHUContext();
+		shipmentScheduleWithHUFactory = ShipmentScheduleWithHUFactory.builder()
+				.supportingServices(ShipmentScheduleWithHUSupportingServices.getInstance())
+				.huContext(Services.get(IHUContextFactory.class).createMutableHUContext())
+				.build();
 
 		final I_C_UOM_Conversion catchUOMConversionRecord = newInstance(I_C_UOM_Conversion.class);
 		catchUOMConversionRecord.setM_Product_ID(huTestHelper.pTomatoProductId.getRepoId());
@@ -159,8 +163,7 @@ public class ShipmentLineBuilderTest
 				.qtyTUsCalculated(new BigDecimal("12345")) // not relevant
 				.build();
 
-		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(
-				huContext,
+		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = shipmentScheduleWithHUFactory.ofShipmentScheduleWithoutHu(
 				shipmentSchedule,
 				oneWithoutCatch,
 				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
@@ -183,6 +186,45 @@ public class ShipmentLineBuilderTest
 	}
 
 	@Test
+	public void createSplitShipmentLine_shipmentScheduleWithoutHu_QtyTU()
+	{
+		final StockQtyAndUOMQty oneWithoutCatch = StockQtyAndUOMQtys.ofQtyInStockUOM(ONE, huTestHelper.pTomatoProductId);
+
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedule()
+				.qtyCUsPerTU(8)
+				.qtyTUsCalculated(new BigDecimal("100"))
+				.build();
+
+		// create partial shipment line
+		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = shipmentScheduleWithHUFactory.ofShipmentScheduleWithoutHu(
+				shipmentSchedule,
+				oneWithoutCatch,
+				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
+
+		final ShipmentLineBuilder shipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader(), new ShipmentLineNoInfo());
+		shipmentLineBuilder.setManualPackingMaterial(true);
+
+		shipmentLineBuilder.add(shipmentScheduleWithoutHu);
+		final I_M_InOutLine shipmentLine = shipmentLineBuilder.createShipmentLine();
+
+		// create split shipment line
+		final ShipmentScheduleWithHU splitShipmentScheduleWithoutHu = shipmentScheduleWithHUFactory.ofShipmentScheduleWithoutHu(
+				shipmentSchedule,
+				oneWithoutCatch,
+				M_ShipmentSchedule_QuantityTypeToUse.TYPE_SPLIT_SHIPMENT);
+
+		final ShipmentLineBuilder splitShipmentLineBuilder = new ShipmentLineBuilder(createShipmentHeader(), new ShipmentLineNoInfo());
+		splitShipmentLineBuilder.setManualPackingMaterial(true);
+
+		splitShipmentLineBuilder.add(splitShipmentScheduleWithoutHu);
+		final I_M_InOutLine splitShipmentLine = shipmentLineBuilder.createShipmentLine();
+
+		// both lines should have the same QtyTU_Override
+		assertThat(shipmentLine.getQtyTU_Override()).isEqualTo("1");
+		assertThat(splitShipmentLine.getQtyTU_Override()).isEqualTo("1");
+	}
+
+	@Test
 	public void createShipmentLine_shipmentScheduleWithoutHu_qtyZero_noCatchQty()
 	{
 		final StockQtyAndUOMQty zeroWithoutCatch = StockQtyAndUOMQtys.createZero(huTestHelper.pTomatoProductId, null);
@@ -192,8 +234,7 @@ public class ShipmentLineBuilderTest
 				.qtyTUsCalculated(new BigDecimal("12345")) // not relevant
 				.build();
 
-		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(
-				huContext,
+		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = shipmentScheduleWithHUFactory.ofShipmentScheduleWithoutHu(
 				shipmentSchedule,
 				zeroWithoutCatch,
 				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
@@ -225,8 +266,7 @@ public class ShipmentLineBuilderTest
 				.qtyTUsCalculated(BigDecimal.TEN)
 				.build();
 
-		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(
-				huContext,
+		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = shipmentScheduleWithHUFactory.ofShipmentScheduleWithoutHu(
 				shipmentSchedule,
 				oneWithoutCatch,
 				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
@@ -259,8 +299,7 @@ public class ShipmentLineBuilderTest
 				.qtyTUsCalculated(new BigDecimal("12345")) // not relevant
 				.build();
 
-		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(
-				huContext,
+		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = shipmentScheduleWithHUFactory.ofShipmentScheduleWithoutHu(
 				shipmentSchedule,
 				oneWithCatch,
 				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
@@ -294,8 +333,7 @@ public class ShipmentLineBuilderTest
 				.qtyTUsCalculated(new BigDecimal("12345")) // not relevant
 				.build();
 
-		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(
-				huContext,
+		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = shipmentScheduleWithHUFactory.ofShipmentScheduleWithoutHu(
 				shipmentSchedule,
 				oneWithCatch,
 				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
@@ -328,8 +366,7 @@ public class ShipmentLineBuilderTest
 				.qtyTUsCalculated(new BigDecimal("12345")) // not relevant
 				.build();
 
-		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(
-				huContext,
+		final ShipmentScheduleWithHU shipmentScheduleWithoutHu = shipmentScheduleWithHUFactory.ofShipmentScheduleWithoutHu(
 				shipmentSchedule,
 				oneWithCatch,
 				M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);
@@ -373,8 +410,7 @@ public class ShipmentLineBuilderTest
 				shipmentSchedule.setC_BPartner2_ID(BPartnerId.toRepoId(bpartner2Id));
 				InterfaceWrapperHelper.save(shipmentSchedule);
 
-				final ShipmentScheduleWithHU shipmentScheduleWithoutHu = ShipmentScheduleWithHU.ofShipmentScheduleWithoutHu(
-						huContext,
+				final ShipmentScheduleWithHU shipmentScheduleWithoutHu = shipmentScheduleWithHUFactory.ofShipmentScheduleWithoutHu(
 						shipmentSchedule,
 						StockQtyAndUOMQtys.ofQtyInStockUOM(ONE, huTestHelper.pTomatoProductId),
 						M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER);

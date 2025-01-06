@@ -39,7 +39,9 @@ public class InvoiceCandidateAllocCreateRequest
 	@NonNull I_C_InvoiceLine invoiceLine;
 	@NonNull StockQtyAndUOMQty qtysInvoiced;
 	
-	@Nullable String note;
+/**
+	 * May be null or empty. Use it to provide a user-friendly note that can be displayed to the customer admin/user
+	 */	@Nullable String note;
 
 	@NonNull InvoiceLineAllocType invoiceLineAllocType;
 

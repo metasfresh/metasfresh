@@ -46,6 +46,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
@@ -57,6 +58,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
@@ -92,6 +94,12 @@ public class InOutDAO implements IInOutDAO
 		return load(inoutId, I_M_InOut.class);
 	}
 
+	@Override
+	public List<I_M_InOut> getByIds(@NonNull final Set<InOutId> inoutIds)
+	{
+		return loadByRepoIdAwares(inoutIds, I_M_InOut.class);
+	}
+
 	@Nullable
 	@Override
 	public <T extends I_M_InOut> T getById(@NonNull final InOutId inoutId, @NonNull final Class<T> modelClass)
@@ -109,6 +117,12 @@ public class InOutDAO implements IInOutDAO
 	public I_M_InOutLine getLineByIdInTrx(@NonNull final InOutLineId inoutLineId)
 	{
 		return load(inoutLineId, I_M_InOutLine.class);
+	}
+
+	@Override
+	public I_M_InOut getByLineIdInTrx(@NonNull final InOutLineId inoutLineId)
+	{
+		return getById(InOutId.ofRepoId(getLineByIdInTrx(inoutLineId).getM_InOut_ID()));
 	}
 
 	@Override
@@ -322,10 +336,10 @@ public class InOutDAO implements IInOutDAO
 	{
 		return queryBL.createQueryBuilder(I_M_InOut.class, ctx, ITrx.TRXNAME_None)
 				.addInArrayOrAllFilter(I_M_InOut.COLUMNNAME_DocStatus,
-									   IDocument.STATUS_Drafted,  // task: 07448: we also need to consider drafted shipments, because that's the customer workflow, and qty in a drafted InOut don'T couln'T at picked
-									   // anymore, because they are already in a shipper-transportation
-									   IDocument.STATUS_InProgress,
-									   IDocument.STATUS_WaitingConfirmation)
+						IDocument.STATUS_Drafted,  // task: 07448: we also need to consider drafted shipments, because that's the customer workflow, and qty in a drafted InOut don'T couln'T at picked
+						// anymore, because they are already in a shipper-transportation
+						IDocument.STATUS_InProgress,
+						IDocument.STATUS_WaitingConfirmation)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, true)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
@@ -652,6 +666,12 @@ public class InOutDAO implements IInOutDAO
 		return sqlQueryBuilder;
 	}
 
+	@Override
+	public Stream<I_M_InOut> retrieveByQuery(@NonNull final InOutQuery query)
+	{
+		return toSqlQuery(query).create().stream();
+	}
+
 	private IQueryBuilder<I_M_InOut> toSqlQuery(@NonNull final InOutQuery query)
 	{
 		final IQueryBuilder<I_M_InOut> sqlQueryBuilder = queryBL.createQueryBuilder(I_M_InOut.class)
@@ -669,8 +689,26 @@ public class InOutDAO implements IInOutDAO
 		{
 			sqlQueryBuilder.addEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, query.getDocStatus());
 		}
+		if (!query.getOrderIds().isEmpty())
+		{
+			sqlQueryBuilder.addInArrayFilter(I_M_InOut.COLUMNNAME_C_Order_ID, query.getOrderIds());
+		}
 
 		return sqlQueryBuilder;
 	}
 
+
+	@Override
+	public ImmutableList<InOutId> retrieveShipmentsWithoutShipperTransportation(@NonNull final Timestamp date)
+	{
+		return queryBL
+				.createQueryBuilder(de.metas.inout.model.I_M_InOut.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_MovementDate, date)
+				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, true)
+				.addEqualsFilter(de.metas.inout.model.I_M_InOut.COLUMNNAME_M_ShipperTransportation, null)
+				.create()
+				.listIds(InOutId::ofRepoId)
+				.asList();
+	}
 }

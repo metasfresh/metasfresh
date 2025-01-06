@@ -27,6 +27,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -47,12 +48,22 @@ public class WorkplaceId implements RepoIdAware
 	public static WorkplaceId ofRepoId(final int repoId) {return new WorkplaceId(repoId);}
 
 	@Nullable
-	@JsonCreator
 	public static WorkplaceId ofRepoIdOrNull(final int repoId) {return repoId > 0 ? new WorkplaceId(repoId) : null;}
 
 	public static Optional<WorkplaceId> optionalOfRepoId(final int repoId) {return Optional.ofNullable(ofRepoIdOrNull(repoId));}
 
 	public static int toRepoId(@Nullable final WorkplaceId workplaceId) {return workplaceId != null ? workplaceId.getRepoId() : -1;}
+
+	@Nullable
+	@JsonCreator
+	public static WorkplaceId ofNullableObject(@Nullable final Object obj)
+	{
+		if (obj == null)
+		{
+			return null;
+		}
+		return RepoIdAwares.ofObject(obj, WorkplaceId.class, WorkplaceId::ofRepoId);
+	}
 
 	@Override
 	@JsonValue

@@ -182,6 +182,10 @@ public final class Fact
 		return getAcctSchema().getId();
 	}
 
+	public CurrencyId getAcctCurrencyId() {return getAcctSchema().getCurrencyId();}
+
+	public boolean isAccountingCurrency(@NonNull final CurrencyId currencyId) {return getAcctSchema().isAccountingCurrency(currencyId);}
+
 	private AcctSchemaElementsMap getAcctSchemaElements()
 	{
 		return getAcctSchema().getSchemaElements();
@@ -427,8 +431,6 @@ public final class Fact
 		final CurrencyId acctCurrencyId = acctSchema.getCurrencyId();
 		final Money ZERO = Money.zero(acctCurrencyId);
 
-		Money diff = getAcctBalance().toMoney();        // DR-CR
-
 		Money BSamount = ZERO;
 		FactLine BSline = null;
 		Money PLamount = ZERO;
@@ -468,45 +470,12 @@ public final class Fact
 					.setAmtSource(m_doc.getCurrencyId(), BigDecimal.ZERO, BigDecimal.ZERO)
 					.alsoAddZeroLine()
 					.buildAndAddNotNull();
-			// line = new FactLine2(services, m_doc.get_Table_ID(), m_doc.get_ID());
-			// line.setDocumentInfo(m_doc, null);
-			// line.setPostingType(getPostingType());
-			// line.setAccount(acctSchema, acctSchemaGL.getCurrencyBalancingAcct());
-			//
-			// // Amount
-			// line.setAmtSource(m_doc.getCurrencyId(), BigDecimal.ZERO, BigDecimal.ZERO);
-			// line.convert();
 			// Accounted
-			Money drAmt = ZERO;
-			Money crAmt = ZERO;
-			boolean isDR = diff.signum() < 0;
-			Money difference = diff.abs();
-			if (isDR)
-			{
-				drAmt = difference;
-			}
-			else
-			{
-				crAmt = difference;
-			}
-			// Switch sides
-			boolean switchIt = BSline != null
-					&& ((BSline.isDrSourceBalance() && isDR)
-					|| (!BSline.isDrSourceBalance() && !isDR));
-			if (switchIt)
-			{
-				drAmt = ZERO;
-				crAmt = ZERO;
-				if (isDR)
-				{
-					crAmt = difference.negate();
-				}
-				else
-				{
-					drAmt = difference.negate();
-				}
-			}
-			line.setAmtAcct(drAmt, crAmt);
+			Balance diff = getAcctBalance().computeDiffToBalance();
+
+			diff = diff.negateAndInvertIf(BSline != null && BSline.isDrSourceBalance() == diff.isDebit());
+
+			line.setAmtAcct(diff);
 			//add(line);
 		}
 		else
@@ -522,13 +491,13 @@ public final class Fact
 			}
 			if (line == null)
 			{
-				log.error("No Line found");
+				log.error("No BS or PL Line found");
 			}
 			else
 			{
+				final Money diff = getAcctBalance().toMoney();        // DR-CR
 				log.debug("Adjusting Amt={}; Line={}", diff, line);
 				line.currencyCorrect(diff);
-				log.debug(line.toString());
 			}
 		}   // correct biggest amount
 

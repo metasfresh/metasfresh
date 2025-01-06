@@ -72,8 +72,7 @@ import java.util.Set;
 	private Integer _warehouseId = null;
 	/**
 	 * M_Product_ID
-	 *
-	 * Default: -1 i.e. don't filter by product, don't take it from MRPContext
+	 * Default: -1 i.e. don't filter by product, don't take it from context
 	 */
 	private Integer _productId = -1;
 
@@ -87,7 +86,6 @@ import java.util.Set;
 
 	/**
 	 * Filter only active records
-	 *
 	 * Default: Yes
 	 */
 	private boolean _onlyActiveRecords = true;
@@ -149,18 +147,6 @@ import java.util.Set;
 		if (productId > 0)
 		{
 			filters.addEqualsFilter(I_PP_MRP.COLUMNNAME_M_Product_ID, productId);
-		}
-
-		//
-		// Filter by Product's Low Level Code (LLC)
-		final int productLLC = getLowLevelCode();
-		if (productLLC >= 0)
-		{
-			final IQuery<I_M_Product> productQuery = queryBL
-					.createQueryBuilder(I_M_Product.class, contextProvider)
-					.filter(new EqualsQueryFilter<>(I_M_Product.COLUMNNAME_LowLevel, productLLC))
-					.create();
-			filters.addInSubQueryFilter(I_PP_MRP.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, productQuery);
 		}
 
 		//
@@ -417,11 +403,6 @@ import java.util.Set;
 			return _productId;
 		}
 
-		return -1;
-	}
-
-	public int getLowLevelCode()
-	{
 		return -1;
 	}
 

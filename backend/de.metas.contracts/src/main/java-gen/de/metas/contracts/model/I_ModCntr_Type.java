@@ -52,6 +52,29 @@ public interface I_ModCntr_Type
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set DB Column Name.
+	 * Name of the column in the database
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setColumnName (@Nullable java.lang.String ColumnName);
+
+	/**
+	 * Get DB Column Name.
+	 * Name of the column in the database
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getColumnName();
+
+	ModelColumn<I_ModCntr_Type, Object> COLUMN_ColumnName = new ModelColumn<>(I_ModCntr_Type.class, "ColumnName", null);
+	String COLUMNNAME_ColumnName = "ColumnName";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -79,7 +102,7 @@ public interface I_ModCntr_Type
 	/**
 	 * Set Description.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -88,7 +111,7 @@ public interface I_ModCntr_Type
 	/**
 	 * Get Description.
 	 *
-	 * <br>Type: String
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -121,7 +144,30 @@ public interface I_ModCntr_Type
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Contract Module Type.
+	 * Set Sales Transaction.
+	 * This is a Sales Transaction
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSOTrx (boolean IsSOTrx);
+
+	/**
+	 * Get Sales Transaction.
+	 * This is a Sales Transaction
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSOTrx();
+
+	ModelColumn<I_ModCntr_Type, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_ModCntr_Type.class, "IsSOTrx", null);
+	String COLUMNNAME_IsSOTrx = "IsSOTrx";
+
+	/**
+	 * Set Computing Method.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -130,7 +176,7 @@ public interface I_ModCntr_Type
 	void setModCntr_Type_ID (int ModCntr_Type_ID);
 
 	/**
-	 * Get Contract Module Type.
+	 * Get Computing Method.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -145,19 +191,19 @@ public interface I_ModCntr_Type
 	 * Set Modular Contract Handler Type.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setModularContractHandlerType (@Nullable java.lang.String ModularContractHandlerType);
+	void setModularContractHandlerType (java.lang.String ModularContractHandlerType);
 
 	/**
 	 * Get Modular Contract Handler Type.
 	 *
 	 * <br>Type: List
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getModularContractHandlerType();
+	java.lang.String getModularContractHandlerType();
 
 	ModelColumn<I_ModCntr_Type, Object> COLUMN_ModularContractHandlerType = new ModelColumn<>(I_ModCntr_Type.class, "ModularContractHandlerType", null);
 	String COLUMNNAME_ModularContractHandlerType = "ModularContractHandlerType";

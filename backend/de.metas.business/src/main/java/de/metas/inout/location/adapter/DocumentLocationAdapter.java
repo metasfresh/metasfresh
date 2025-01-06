@@ -22,6 +22,7 @@
 
 package de.metas.inout.location.adapter;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.RecordBasedLocationAdapter;
@@ -29,12 +30,15 @@ import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.shippingnotification.location.adapter.ShippingNotificationDocumentLocationAdapterFactory;
+import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
@@ -98,13 +102,14 @@ public class DocumentLocationAdapter
 	}
 
 	@Override
+	@Nullable
 	public String getBPartnerAddress()
 	{
 		return delegate.getBPartnerAddress();
 	}
 
 	@Override
-	public void setBPartnerAddress(String address)
+	public void setBPartnerAddress(final String address)
 	{
 		delegate.setBPartnerAddress(address);
 	}
@@ -128,6 +133,16 @@ public class DocumentLocationAdapter
 	public void setFrom(@NonNull final I_C_Invoice from)
 	{
 		setFrom(InvoiceDocumentLocationAdapterFactory.locationAdapter(from).toDocumentLocation());
+	}
+
+	public void setFrom(@NonNull final I_M_Shipping_Notification from)
+	{
+		setFrom(ShippingNotificationDocumentLocationAdapterFactory.locationAdapter(from).toDocumentLocation());
+	}
+
+	public void setFrom(@NonNull final BPartnerLocationAndCaptureId from)
+	{
+		setFrom(DocumentLocation.ofBPartnerLocationAndCaptureId(from));
 	}
 
 	@Override

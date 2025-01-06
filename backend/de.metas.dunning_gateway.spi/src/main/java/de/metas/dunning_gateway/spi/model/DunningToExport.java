@@ -1,15 +1,15 @@
 package de.metas.dunning_gateway.spi.model;
 
+import de.metas.invoice.InvoiceId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.Calendar;
 import java.util.List;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -39,6 +39,9 @@ public class DunningToExport
 {
 	@NonNull
 	DunningId id;
+
+	@NonNull
+	InvoiceId invoiceId;
 
 	@NonNull
 	Calendar dunningDate;

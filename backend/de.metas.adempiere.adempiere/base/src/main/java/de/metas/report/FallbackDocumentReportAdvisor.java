@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,10 +31,14 @@ import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.Language;
 import de.metas.process.AdProcessId;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
@@ -46,10 +50,13 @@ final class FallbackDocumentReportAdvisor implements DocumentReportAdvisor
 {
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final DocumentReportAdvisorUtil util;
+	private final DocOutboundConfigRepository docOutboundConfigRepository;
+	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
-	public FallbackDocumentReportAdvisor(@NonNull final DocumentReportAdvisorUtil util)
+	public FallbackDocumentReportAdvisor(@NonNull final DocumentReportAdvisorUtil util, @NonNull final DocOutboundConfigRepository docOutboundConfigRepository)
 	{
 		this.util = util;
+		this.docOutboundConfigRepository = docOutboundConfigRepository;
 	}
 
 	@Override
@@ -79,7 +86,22 @@ final class FallbackDocumentReportAdvisor implements DocumentReportAdvisor
 		final DocTypeId docTypeId = documentBL.getDocTypeId(record).orElse(null);
 		final I_C_DocType docType = docTypeId != null ? util.getDocTypeById(docTypeId) : null;
 		final String documentNo = documentBL.getDocumentNo(record);
-		final BPartnerId bpartnerId = util.getBPartnerIdForModel(record).orElse(null);
+
+		boolean isMain = true;
+		final AdColumnId columnId = docOutboundConfigRepository.retrievePartnerColumnCorelatedWithPrintFormatId(recordRef, adPrintFormatToUseId).orElse(null);
+		BPartnerId bpartnerId;
+		if (columnId == null)
+		{
+			bpartnerId = util.getBPartnerIdForModel(record).orElse(null);
+		}
+		else
+		{
+			final String columnName = adTableDAO.retrieveColumnName(columnId.getRepoId());
+			final Object partnerIdObj = InterfaceWrapperHelper.getValueOrNull(record, columnName);
+			bpartnerId = BPartnerId.ofRepoIdOrNull(NumberUtils.asInt(partnerIdObj, -1));
+			isMain = false;
+		}
+
 		final I_C_BPartner bpartner = bpartnerId != null ? util.getBPartnerById(bpartnerId) : null;
 		final Language language = bpartnerId != null
 				? util.getBPartnerLanguage(bpartner).orElse(null)
@@ -121,6 +143,7 @@ final class FallbackDocumentReportAdvisor implements DocumentReportAdvisor
 				.bpartnerId(bpartnerId)
 				.docTypeId(docTypeId)
 				.language(language)
+				.isMainReport(isMain)
 				//.printOptionsDescriptor() // will be fetched later based on reportProcessId
 				//.printOptions() // none
 				.build();

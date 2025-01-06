@@ -145,8 +145,11 @@ public class C_OrderLine
 		}
 		else
 		{
-			final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(orderLine).toBigDecimal();
-			orderLine.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
+			if(!orderLine.isManualQtyInPriceUOM())
+			{
+				final BigDecimal qtyEnteredInPriceUOM = orderLineBL.convertQtyEnteredToPriceUOM(orderLine).toBigDecimal();
+				orderLine.setQtyEnteredInPriceUOM(qtyEnteredInPriceUOM);
+			}
 		}
 	}
 }

@@ -24,6 +24,7 @@ package de.metas.rest_api.v2.shipping;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -43,6 +44,7 @@ import de.metas.common.shipping.v2.shipment.JsonProcessShipmentRequest;
 import de.metas.common.shipping.v2.shipment.ShipmentScheduleIdentifier;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsRequest;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
+import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentService;
 import de.metas.handlingunits.shipmentschedule.api.ShippingInfoCache;
@@ -74,8 +76,9 @@ import de.metas.ordercandidate.api.OLCandRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
-import de.metas.product.IProductDAO.ProductQuery;
 import de.metas.product.ProductId;
+import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
 import de.metas.rest_api.v2.invoice.impl.JsonInvoiceService;
 import de.metas.rest_api.v2.ordercandidates.impl.JsonProcessCompositeResponse;
@@ -202,7 +205,7 @@ public class JsonShipmentService
 			final Set<InOutId> createdInoutIds = shipmentService.retrieveInOutIdsByScheduleIds(generateShipmentRequest.getScheduleIds());
 
 			loggable.addLog("processShipmentSchedules - finished creating shipments with currentBatchId={}; M_InOut_IDs={}",
-							currentBatchId, createdInoutIds);
+					currentBatchId, createdInoutIds);
 			createdShipmentIdsCollector.addAll(createdInoutIds);
 
 			if (request.getInvoice())
@@ -235,7 +238,7 @@ public class JsonShipmentService
 
 	private void updateShipmentSchedules(@NonNull final JsonCreateShipmentRequest request)
 	{
-		final ShippingInfoCache cache = initShippingInfoCache();
+		final ShippingInfoCache cache = newShippingInfoCache();
 
 		cache.warmUpForShipmentScheduleIds(extractShipmentScheduleIds(request));
 		cache.warmUpForShipperInternalNames(extractShippersInternalName(request));
@@ -322,11 +325,7 @@ public class JsonShipmentService
 
 		if (Check.isNotBlank(createShipmentInfo.getProductSearchKey()))
 		{
-			final ProductQuery query = ProductQuery.builder().value(createShipmentInfo.getProductSearchKey())
-					.orgId(OrgId.ofRepoId(shipmentSchedule.getAD_Org_ID()))
-					.includeAnyOrg(true) // include articles with org=*
-					.build();
-			final ProductId incomingProductId = productDAO.retrieveProductIdBy(query);
+			final ProductId incomingProductId = cache.getProductId(createShipmentInfo.getProductSearchKey(), OrgId.ofRepoId(shipmentSchedule.getAD_Org_ID()));
 
 			if (incomingProductId == null || incomingProductId.getRepoId() != shipmentSchedule.getM_Product_ID())
 			{
@@ -448,9 +447,12 @@ public class JsonShipmentService
 			@NonNull final AsyncBatchId asyncBatchId)
 	{
 		final ImmutableMap.Builder<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = new ImmutableMap.Builder<>();
-		final ImmutableMap.Builder<ShipmentScheduleId, BigDecimal> scheduleToQuantityToDeliver = new ImmutableMap.Builder<>();
+		final ImmutableMap.Builder<ShipmentScheduleId, StockQtyAndUOMQty> scheduleToQuantityToDeliver = new ImmutableMap.Builder<>();
 
 		final ImmutableSet.Builder<ShipmentScheduleId> shipmentScheduleIdsBuilder = new ImmutableSet.Builder<>();
+
+		final ShippingInfoCache cache = newShippingInfoCache();
+		cache.warmUpForShipmentScheduleIds(createShipmentInfoList, CreateShipmentInfoCandidate::getShipmentScheduleId);
 
 		for (final CreateShipmentInfoCandidate createShipmentCandidate : createShipmentInfoList)
 		{
@@ -471,7 +473,8 @@ public class JsonShipmentService
 			final BigDecimal qtyToDeliverInStockingUOM = createShipmentInfo.getMovementQuantity();
 			if (qtyToDeliverInStockingUOM != null)
 			{
-				scheduleToQuantityToDeliver.put(shipmentScheduleId, qtyToDeliverInStockingUOM);
+				final StockQtyAndUOMQty qtyToDeliver = StockQtyAndUOMQtys.ofQtyInStockUOM(qtyToDeliverInStockingUOM, cache.getProductId(shipmentScheduleId));
+				scheduleToQuantityToDeliver.put(shipmentScheduleId, qtyToDeliver);
 			}
 		}
 
@@ -479,7 +482,7 @@ public class JsonShipmentService
 				.asyncBatchId(asyncBatchId)
 				.scheduleIds(shipmentScheduleIdsBuilder.build())
 				.scheduleToExternalInfo(scheduleId2ExternalInfo.build())
-				.scheduleToQuantityToDeliverOverride(scheduleToQuantityToDeliver.build())
+				.scheduleToQuantityToDeliverOverride(QtyToDeliverMap.ofMap(scheduleToQuantityToDeliver.build()))
 				.quantityTypeToUse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
 				.isCompleteShipment(true)
 				.build();
@@ -494,8 +497,8 @@ public class JsonShipmentService
 		else
 		{
 			return bPartnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
-															.bpartnerValue(bPartnerValue)
-															.build());
+					.bpartnerValue(bPartnerValue)
+					.build());
 		}
 	}
 
@@ -527,10 +530,9 @@ public class JsonShipmentService
 	{
 		final Set<ShipmentScheduleId> scheduleIds = shippedCandidateKeys.stream().map(ShippedCandidateKey::getShipmentScheduleId).collect(ImmutableSet.toImmutableSet());
 
-		final ImmutableMap<ShipmentScheduleId, List<I_M_ShipmentSchedule_QtyPicked>> scheduleId2qtyPickedRecords = shipmentScheduleAllocDAO.retrieveOnShipmentLineRecordsByScheduleIds(scheduleIds);
+		final ImmutableListMultimap<ShipmentScheduleId, I_M_ShipmentSchedule_QtyPicked> scheduleId2qtyPickedRecords = shipmentScheduleAllocDAO.retrieveOnShipmentLineRecordsByScheduleIds(scheduleIds);
 
 		final Set<InOutLineId> inOutLineIds = scheduleId2qtyPickedRecords.values().stream()
-				.flatMap(List::stream)
 				.map(I_M_ShipmentSchedule_QtyPicked::getM_InOutLine_ID)
 				.map(InOutLineId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
@@ -593,7 +595,7 @@ public class JsonShipmentService
 	private ShipmentScheduleId getShipmentScheduleIdByExternalHeaderAndLineId(@NonNull final ShipmentScheduleIdentifier identifier)
 	{
 		Check.assume(identifier.identifiedByHeaderAndLineId(),
-					 "getShipmentScheduleIdByExternalHeaderAndLineId should be called for ShipmentScheduleIdentifier with externalHeaderId and externalLineId");
+				"getShipmentScheduleIdByExternalHeaderAndLineId should be called for ShipmentScheduleIdentifier with externalHeaderId and externalLineId");
 
 		final OLCandQuery query = OLCandQuery.builder()
 				.externalHeaderId(identifier.getExternalHeaderId())
@@ -610,7 +612,7 @@ public class JsonShipmentService
 		if (olCandIds.size() != 1)
 		{
 			throw new AdempiereException("Number of olCands found for external header id and line id: "
-												 + identifier + " != 1. Found: " + olCandIds.size());
+					+ identifier + " != 1. Found: " + olCandIds.size());
 		}
 
 		final OLCandId olCandId = CollectionUtils.singleElement(olCandIds);
@@ -638,9 +640,9 @@ public class JsonShipmentService
 	{
 		return JsonCreateShipmentResponse.builder()
 				.createdShipmentIds(shipmentIds.stream()
-											.map(InOutId::getRepoId)
-											.map(JsonMetasfreshId::of)
-											.collect(ImmutableList.toImmutableList()))
+						.map(InOutId::getRepoId)
+						.map(JsonMetasfreshId::of)
+						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 
@@ -658,10 +660,10 @@ public class JsonShipmentService
 		return asyncBatchId2ScheduleIds.entrySet()
 				.stream()
 				.collect(Collectors.toMap(Map.Entry::getKey,
-										  entry -> entry.getValue()
-												  .stream()
-												  .map(candidateInfoById::get)
-												  .collect(ImmutableList.toImmutableList())));
+						entry -> entry.getValue()
+								.stream()
+								.map(candidateInfoById::get)
+								.collect(ImmutableList.toImmutableList())));
 	}
 
 	@NonNull
@@ -675,12 +677,13 @@ public class JsonShipmentService
 				.build();
 	}
 
-	private ShippingInfoCache initShippingInfoCache()
+	private ShippingInfoCache newShippingInfoCache()
 	{
 		return ShippingInfoCache.builder()
 				.shipmentScheduleBL(shipmentScheduleBL)
 				.scheduleEffectiveBL(scheduleEffectiveBL)
 				.shipperDAO(shipperDAO)
+				.productDAO(productDAO)
 				.build();
 	}
 

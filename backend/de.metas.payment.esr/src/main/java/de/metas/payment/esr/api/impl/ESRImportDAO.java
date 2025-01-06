@@ -430,7 +430,7 @@ public class ESRImportDAO implements IESRImportDAO
 		{
 			return Optional.empty(); // no point searching ESR_ImportLines
 		}
-		
+
 		final List<I_ESR_ImportLine> lines = fetchSimilarESRLine(esrLine);
 
 		while (paymentIdIterator.hasNext())

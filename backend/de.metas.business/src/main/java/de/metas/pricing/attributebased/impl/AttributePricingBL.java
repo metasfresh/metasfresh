@@ -1,10 +1,15 @@
 package de.metas.pricing.attributebased.impl;
 
-import java.util.List;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.pricing.IPricingAttribute;
+import de.metas.pricing.attributebased.IAttributePricingBL;
+import de.metas.pricing.attributebased.IProductPriceAware;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetId;
@@ -19,17 +24,9 @@ import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_ProductPrice;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.pricing.IPricingAttribute;
-import de.metas.pricing.attributebased.IAttributePricingBL;
-import de.metas.pricing.attributebased.IProductPriceAware;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.util.GuavaCollectors;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.Value;
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
 
 public class AttributePricingBL implements IAttributePricingBL
 {
@@ -85,7 +82,7 @@ public class AttributePricingBL implements IAttributePricingBL
 	}
 
 	@Override
-	public List<IPricingAttribute> extractPricingAttributes(final I_M_ProductPrice productPrice)
+	public List<IPricingAttribute> extractPricingAttributes(@NonNull final I_M_ProductPrice productPrice)
 	{
 		final I_M_AttributeSetInstance productPriceASI = productPrice.getM_AttributeSetInstance();
 		if (productPriceASI == null || productPriceASI.getM_AttributeSetInstance_ID() <= 0)
@@ -99,7 +96,7 @@ public class AttributePricingBL implements IAttributePricingBL
 				.collect(GuavaCollectors.toImmutableList());
 	}
 
-	private final PricingAttribute createPricingAttribute(final I_M_AttributeInstance instance)
+	private PricingAttribute createPricingAttribute(final I_M_AttributeInstance instance)
 	{
 		final I_M_Attribute attribute = attributesRepo.getAttributeById(instance.getM_Attribute_ID());
 		final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(instance.getM_AttributeValue_ID());
@@ -142,8 +139,8 @@ public class AttributePricingBL implements IAttributePricingBL
 	@Value
 	private static class PricingAttribute implements IPricingAttribute
 	{
-		private final I_M_Attribute attribute;
-		private final AttributeListValue attributeValue;
+		I_M_Attribute attribute;
+		AttributeListValue attributeValue;
 
 		private PricingAttribute(@NonNull final I_M_Attribute attribute, @Nullable final AttributeListValue attributeValue)
 		{

@@ -31,6 +31,7 @@ import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -39,12 +40,11 @@ import java.time.Instant;
 @Builder
 public class ModularFlatrateTermQuery
 {
-	@NonNull BPartnerId bPartnerId;
-	@Nullable
-	ProductId productId;
+	@Nullable BPartnerId bPartnerId;
+	@Nullable WarehouseId warehouseId;
+	@Nullable ProductId productId;
 	@NonNull SOTrx soTrx;
-	@Nullable
-	YearId yearId;
+	@Nullable YearId yearId;
 	@NonNull TypeConditions typeConditions;
 	@Nullable
 	CalendarId calendarId;

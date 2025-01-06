@@ -97,7 +97,7 @@ public class InOutCostRepository
 				.bpartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
 				.costTypeId(OrderCostTypeId.ofRepoId(record.getC_Cost_Type_ID()))
 				.costElementId(CostElementId.ofRepoId(record.getM_CostElement_ID()))
-				.qty(Quantitys.create(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.qty(Quantitys.of(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.costAmount(Money.of(record.getCostAmount(), currencyId))
 				.costAmountInvoiced(Money.of(record.getCostAmountInvoiced(), currencyId))
 				.isInvoiced(record.isInvoiced())

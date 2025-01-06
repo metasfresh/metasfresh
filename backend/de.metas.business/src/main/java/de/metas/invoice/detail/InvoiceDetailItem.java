@@ -23,6 +23,7 @@
 package de.metas.invoice.detail;
 
 import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Value;
 import org.apache.commons.lang3.StringUtils;
@@ -46,6 +47,8 @@ public class InvoiceDetailItem
 
 	@Nullable
 	BigDecimal price;
+
+	@Nullable Quantity qty;
 
 	String note;
 
