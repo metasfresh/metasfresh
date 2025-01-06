@@ -41,8 +41,6 @@ echo "=========="
 echo " ...done!"
 echo "=========="
 
-activate_extensions
-
 activate_extensions()
 {
 	if [ "${add_pg_stat_statements_extension}" != "n" ]; then
@@ -58,3 +56,6 @@ EOSQL
 		echo "==========="
 	fi
 }
+
+activate_extensions
+
