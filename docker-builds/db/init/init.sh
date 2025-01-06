@@ -25,8 +25,8 @@ if [ ! -s "$PGDATA/PG_VERSION" ]; then
     echo " Creating role ..."
     echo "==================="
     psql -v ON_ERROR_STOP=1 --username=postgres <<- EOSQL
-    CREATE ROLE metasfresh LOGIN ENCRYPTED PASSWORD 'metasfresh' SUPERUSER INHERIT NOCREATEDB NOCREATEROLE;
-    EOSQL
+CREATE ROLE metasfresh LOGIN ENCRYPTED PASSWORD 'metasfresh' SUPERUSER INHERIT NOCREATEDB NOCREATEROLE;
+EOSQL
     echo "==========="
     echo " ... done!"
     echo "==========="
@@ -60,9 +60,3 @@ if [ ! -s "$PGDATA/PG_VERSION" ]; then
 
     activate_extensions
 fi
-
-
-
-
-
-
