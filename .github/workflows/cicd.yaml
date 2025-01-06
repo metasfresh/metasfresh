@@ -372,6 +372,9 @@ jobs:
           docker commit init-preloaded-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
           docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
           docker compose down
+      - name: assert success
+        run: |
+          if [ $(cat migration.exit-code) != 0 ]; then tail -1000 migrations.log && exit 1; fi
       - name: push images
         uses: nick-fields/retry@v3
         with:
