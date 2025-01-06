@@ -20,13 +20,14 @@
  * #L%
  */
 
-import ScanAnythingScreen from './containers/ScanAnythingScreen';
+import AppScreen from './containers/AppScreen';
+import { APPLICATION_ID } from './constants';
 
-export const scanAnythingLocation = () => '/scanAnything';
+export const appLocation = () => `/${APPLICATION_ID}`;
 
-export const scanAnythingRoutes = [
+export const routes = [
   {
-    path: scanAnythingLocation(),
-    Component: ScanAnythingScreen,
+    path: appLocation(),
+    Component: AppScreen,
   },
 ];

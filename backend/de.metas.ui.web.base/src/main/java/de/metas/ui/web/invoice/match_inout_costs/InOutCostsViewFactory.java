@@ -3,7 +3,7 @@ package de.metas.ui.web.invoice.match_inout_costs;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
 import de.metas.money.MoneyService;
@@ -83,11 +83,11 @@ public class InOutCostsViewFactory implements IViewFactory
 
 	public final CreateViewRequest createViewRequest(
 			@NonNull final SOTrx soTrx,
-			@NonNull final InvoiceLineId invoiceLineId)
+			@NonNull final InvoiceAndLineId invoiceAndLineId)
 	{
 		return CreateViewRequest.builder(WINDOW_ID)
 				.setParameter(VIEW_PARAM_SOTrx, soTrx)
-				.setParameter(VIEW_PARAM_invoiceLineId, invoiceLineId)
+				.setParameter(VIEW_PARAM_invoiceLineId, invoiceAndLineId)
 				.setUseAutoFilters(true)
 				.build();
 	}
@@ -109,15 +109,15 @@ public class InOutCostsViewFactory implements IViewFactory
 	private InOutCostsViewData getViewData(final @NonNull CreateViewRequest request)
 	{
 		final SOTrx soTrx = getSOTrx(request);
-		final InvoiceLineId invoiceLineId = getInvoiceLineId(request);
+		final InvoiceAndLineId invoiceAndLineId = getInvoiceLineId(request);
 		final DocumentFilter effectiveFilter = getEffectiveFilter(request);
-		return viewDataService.getData(soTrx, invoiceLineId, effectiveFilter);
+		return viewDataService.getData(soTrx, invoiceAndLineId, effectiveFilter);
 	}
 
 	@NonNull
-	private static InvoiceLineId getInvoiceLineId(final @NonNull CreateViewRequest request)
+	private static InvoiceAndLineId getInvoiceLineId(final @NonNull CreateViewRequest request)
 	{
-		return Check.assumeNotNull(request.getParameterAs(VIEW_PARAM_invoiceLineId, InvoiceLineId.class), "No invoiceLineId parameter provided");
+		return Check.assumeNotNull(request.getParameterAs(VIEW_PARAM_invoiceLineId, InvoiceAndLineId.class), "No invoiceLineId parameter provided");
 	}
 
 	@NonNull
@@ -131,8 +131,8 @@ public class InOutCostsViewFactory implements IViewFactory
 	{
 		if (request.isUseAutoFilters())
 		{
-			final InvoiceLineId invoiceLineId = getInvoiceLineId(request);
-			final I_C_Invoice invoice = invoiceBL.getById(invoiceLineId.getInvoiceId());
+			final InvoiceAndLineId invoiceAndLineId = getInvoiceLineId(request);
+			final I_C_Invoice invoice = invoiceBL.getById(invoiceAndLineId.getInvoiceId());
 			final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 			final LookupValue bpartner = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name).findById(bpartnerId);
 

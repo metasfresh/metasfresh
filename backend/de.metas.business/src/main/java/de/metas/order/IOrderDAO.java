@@ -87,6 +87,8 @@ public interface IOrderDAO extends ISingletonService
 
 	List<I_C_OrderLine> retrieveOrderLinesByOrderIds(Set<OrderId> orderIds);
 
+	<T extends org.compiere.model.I_C_OrderLine> List<T> retrieveOrderLinesByOrderIds(Set<OrderId> orderIds, Class<T> type);
+
 	List<I_C_OrderLine> retrieveOrderLinesByIds(Set<OrderLineId> orderLineIds);
 
 	/**
@@ -158,4 +160,6 @@ public interface IOrderDAO extends ISingletonService
 
 	@NonNull
 	List<OrderId> getUnprocessedIdsBy(@NonNull ProductId productId);
+
+	Stream<I_C_OrderLine> streamOrderLines(@NonNull OrderLineQuery query);
 }

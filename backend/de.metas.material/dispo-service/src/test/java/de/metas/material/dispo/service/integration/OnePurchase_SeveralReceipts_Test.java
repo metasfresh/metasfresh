@@ -65,7 +65,8 @@ import java.util.Optional;
 import static de.metas.material.event.EventTestHelper.CLIENT_AND_ORG_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 /*
  * #%L
@@ -153,10 +154,10 @@ public class OnePurchase_SeveralReceipts_Test
 	{
 		final EventLogUserService eventLogUserService = Mockito.spy(EventLogUserService.class);
 		Mockito.doAnswer(invocation -> {
-			final InvokeHandlerAndLogRequest request = (InvokeHandlerAndLogRequest)invocation.getArguments()[0];
-			request.getInvokaction().run();
-			return null; // void
-		})
+					final InvokeHandlerAndLogRequest request = (InvokeHandlerAndLogRequest)invocation.getArguments()[0];
+					request.getInvokaction().run();
+					return null; // void
+				})
 				.when(eventLogUserService)
 				.invokeHandlerAndLog(ArgumentMatchers.any());
 

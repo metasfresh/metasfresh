@@ -39,6 +39,7 @@ public enum ManufacturingResourceType implements ReferenceListAwareEnum
 	Plant(X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant),
 	WorkCenter(X_S_Resource.MANUFACTURINGRESOURCETYPE_WorkCenter),
 	WorkStation(X_S_Resource.MANUFACTURINGRESOURCETYPE_WorkStation),
+	ExternalSystem(X_S_Resource.MANUFACTURINGRESOURCETYPE_ExternalSystem),
 	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<ManufacturingResourceType> index = ReferenceListAwareEnums.index(values());
@@ -71,4 +72,11 @@ public enum ManufacturingResourceType implements ReferenceListAwareEnum
 	}
 
 	public static String toCode(@Nullable ManufacturingResourceType type) {return type != null ? type.getCode() : null;}
+
+	public boolean isWorkstation() {return WorkStation.equals(this);}
+
+	public boolean isExternalSystem()
+	{
+		return ExternalSystem.equals(this);
+	}
 }

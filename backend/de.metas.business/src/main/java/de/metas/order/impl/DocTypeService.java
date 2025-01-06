@@ -24,6 +24,7 @@ package de.metas.order.impl;
 
 import de.metas.common.ordercandidates.v2.request.JsonOrderDocType;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -34,13 +35,10 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_DocType;
-import org.compiere.model.X_C_DocType;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
-
-import static de.metas.common.util.CoalesceUtil.firstNotEmptyTrimmed;
 
 @Service
 public class DocTypeService
@@ -53,13 +51,13 @@ public class DocTypeService
 			@NonNull final DocBaseType docBaseType,
 			@NonNull final OrgId orgId)
 	{
-		return getDocTypeId(docBaseType, null, orgId);
+		return getDocTypeId(docBaseType, DocSubType.NONE, orgId);
 	}
 
 	@NonNull
 	public DocTypeId getDocTypeId(
 			@NonNull final DocBaseType docBaseType,
-			@Nullable final String docSubType,
+			@NonNull final DocSubType docSubType,
 			@NonNull final OrgId orgId)
 	{
 		final I_AD_Org orgRecord = orgsDAO.getById(orgId);
@@ -67,7 +65,7 @@ public class DocTypeService
 		final DocTypeQuery query = DocTypeQuery
 				.builder()
 				.docBaseType(docBaseType)
-				.docSubType(firstNotEmptyTrimmed(docSubType, DocTypeQuery.DOCSUBTYPE_NONE))
+				.docSubType(docSubType)
 				.adClientId(orgRecord.getAD_Client_ID())
 				.adOrgId(orgRecord.getAD_Org_ID())
 				.build();
@@ -84,15 +82,15 @@ public class DocTypeService
 		}
 
 		final DocBaseType docBaseType = DocBaseType.SalesOrder;
-		final String docSubType;
+		final DocSubType docSubType;
 
 		if (JsonOrderDocType.PrepayOrder.equals(orderDocType))
 		{
-			docSubType = X_C_DocType.DOCSUBTYPE_PrepayOrder;
+			docSubType = DocSubType.PrepayOrder;
 		}
 		else
 		{
-			docSubType = X_C_DocType.DOCSUBTYPE_StandardOrder;
+			docSubType = DocSubType.StandardOrder;
 		}
 
 		final I_AD_Org orgRecord = orgsDAO.getById(orgId);

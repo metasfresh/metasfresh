@@ -2,6 +2,7 @@ package org.adempiere.warehouse.spi.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.lang.SOTrx;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -16,18 +17,22 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Warehouse;
 
+import javax.annotation.Nullable;
+
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /**
  * Default implementation of {@link IWarehouseAdvisor}.
- *
+ * <p>
  * It's just fetching the warehouse from record's M_Warehouse_ID field and if nothing found then organization's warehouse is returned.
  *
  * @author tsa
- *
  */
 public class WarehouseAdvisor implements IWarehouseAdvisor
 {
+	final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+	final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	@Override
 	public WarehouseId evaluateWarehouse(@NonNull final OrderLineId orderLineId)
@@ -62,7 +67,6 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 
 	protected WarehouseId findOrderWarehouseId(@NonNull final I_C_Order order)
 	{
-		final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 
 		final OrgId adOrgId = OrgId.ofRepoId(order.getAD_Org_ID());
 
@@ -73,10 +77,10 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 
 		if (order.isDropShip() && !isSOTrx)
 		{
-			final WarehouseId dropShipWarehouseId = orgsRepo.getOrgDropshipWarehouseId(adOrgId);
+			final WarehouseId dropShipWarehouseId = orgDAO.getOrgDropshipWarehouseId(adOrgId);
 			if (dropShipWarehouseId == null)
 			{
-				final String orgName = orgsRepo.retrieveOrgName(adOrgId);
+				final String orgName = orgDAO.retrieveOrgName(adOrgId);
 				throw new AdempiereException("@NotFound@ @DropShip_Warehouse_ID@ (@AD_Org_ID@: " + orgName + ")");
 			}
 			return dropShipWarehouseId;
@@ -90,14 +94,38 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 			return pickingWarehouseId;
 		}
 
-		final WarehouseId orgPOWarehouseId = orgsRepo.getOrgPOWarehouseId(adOrgId);
+		final WarehouseId purchaseWarehouseId = findPurchaseWarehouseId(order);
+		if (purchaseWarehouseId != null)
+		{
+			return purchaseWarehouseId;
+		}
 
-		return !isSOTrx && orgPOWarehouseId != null ? orgPOWarehouseId : orgsRepo.getOrgWarehouseId(adOrgId);
+		final WarehouseId orgPOWarehouseId = orgDAO.getOrgPOWarehouseId(adOrgId);
+
+		return !isSOTrx && orgPOWarehouseId != null ? orgPOWarehouseId : orgDAO.getOrgWarehouseId(adOrgId);
+	}
+
+	@Nullable
+	private WarehouseId findPurchaseWarehouseId(final @NonNull I_C_Order order)
+	{
+		if (order.isSOTrx())
+		{
+			return null;
+		}
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+		if (bpartnerId == null)
+		{
+			return null;
+		}
+
+		return findWarehouseIdForSOTrx(bpartnerId, SOTrx.PURCHASE);
 	}
 
 	/**
 	 * Retrieve the picking warehouse based on the order's bPartner. Returns <code>null</code> if the partner is not customer, has no warehouse assigned or the order is not a sales order.
 	 */
+	@Nullable
 	private WarehouseId findPickingWarehouseId(@NonNull final I_C_Order order)
 	{
 		if (!order.isSOTrx())
@@ -111,27 +139,36 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 			return null;
 		}
 
-		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
-		final I_C_BPartner bp = bpartnersRepo.getById(bpartnerId);
-		if (!bp.isCustomer())
-		{
-			return null;
-		}
-
-		final WarehouseId customerWarehouseId = WarehouseId.ofRepoIdOrNull(bp.getM_Warehouse_ID());
+		final WarehouseId customerWarehouseId = findWarehouseIdForSOTrx(bpartnerId, SOTrx.SALES);
 		if (customerWarehouseId != null && isPickingWarehouse(customerWarehouseId))
 		{
 			return customerWarehouseId;
 		}
 
-		// if order is a purchase order, return null
+		return null;
+	}
+
+	@Nullable
+	private WarehouseId findWarehouseIdForSOTrx(@NonNull final BPartnerId bpartnerId, @NonNull final SOTrx soTrx)
+	{
+		final I_C_BPartner bp = partnerDAO.getById(bpartnerId);
+
+		if (soTrx.isSales() && bp.isCustomer())
+		{
+			return WarehouseId.ofRepoIdOrNull(bp.getM_Warehouse_ID());
+		}
+		else if (soTrx.isPurchase() && bp.isVendor())
+		{
+			return WarehouseId.ofRepoIdOrNull(bp.getM_WarehousePO_ID());
+		}
+
 		return null;
 	}
 
 	private boolean isPickingWarehouse(final WarehouseId warehouseId)
 	{
-		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-		final I_M_Warehouse warehouse = warehousesRepo.getById(warehouseId);
+
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
 		return warehouse.isPickingWarehouse();
 	}
 }

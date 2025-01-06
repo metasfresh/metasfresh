@@ -78,16 +78,17 @@ FROM
 		SELECT 	lui.M_HU_ID, 
 		--in case the HUs are aggregated we need to calculate how many TU and Cu are there
 		COALESCE( (CASE WHEN val.qty IS NOT NULL THEN (avg(tus.qty) / val.qty)::numeric ELSE avg(tus.qty)  END), 0) AS CU_per_TU,
-		COALESCE(val.qty, count(tu.M_HU_ID))::bigint AS TU_per_LU
+        COUNT(tu.m_hu_id)::bigint AS TU_per_LU,
+                tus.m_product_id
 		FROM 	M_HU_Item lui
 			 JOIN M_HU_PI_Item lupii ON lui.M_HU_PI_Item_ID = lupii.M_HU_PI_Item_ID AND lupii.ItemType = 'HU' AND lupii.isActive = 'Y'
 			 JOIN M_HU tu ON lui.M_HU_Item_ID = tu.M_HU_Item_Parent_ID
 			 JOIN M_HU_Storage tus ON tu.M_HU_ID = tus.M_HU_ID AND tus.isActive = 'Y'
 			LEFT JOIN "de.metas.handlingunits".get_TU_Values_From_Aggregation(tu.M_HU_ID) val on true
 		WHERE lui.isActive = 'Y'
-		GROUP BY lui.M_HU_ID, val.qty
+		GROUP BY lui.M_HU_ID, val.qty, tus.m_product_id
 		
-	) qty ON lu.M_HU_ID = qty.M_HU_ID
+	) qty ON lu.M_HU_ID = qty.M_HU_ID and qty.m_product_id=p.m_product_id
 
 	LEFT OUTER JOIN M_HU_Attribute lua_sscc ON lu.M_HU_ID = lua_sscc.M_HU_ID AND lua_sscc.isActive = 'Y'
 		AND lua_sscc.M_Attribute_ID = (SELECT M_Attribute_ID FROM M_Attribute WHERE name = 'SSCC18' AND isActive = 'Y')

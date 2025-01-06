@@ -461,6 +461,29 @@ public interface I_M_InventoryLine
 	String COLUMNNAME_M_Locator_ID = "M_Locator_ID";
 
 	/**
+	 * Set Modular Contract.
+	 * Document lines linked to a modular contract will generate contract module logs.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setModular_Flatrate_Term_ID (int Modular_Flatrate_Term_ID);
+
+	/**
+	 * Get Modular Contract.
+	 * Document lines linked to a modular contract will generate contract module logs.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getModular_Flatrate_Term_ID();
+
+	ModelColumn<I_M_InventoryLine, Object> COLUMN_Modular_Flatrate_Term_ID = new ModelColumn<>(I_M_InventoryLine.class, "Modular_Flatrate_Term_ID", null);
+	String COLUMNNAME_Modular_Flatrate_Term_ID = "Modular_Flatrate_Term_ID";
+
+	/**
 	 * Set Product.
 	 * Product, Service, Item
 	 *
@@ -506,29 +529,6 @@ public interface I_M_InventoryLine
 
 	ModelColumn<I_M_InventoryLine, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_M_InventoryLine.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
 	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
-
-	/**
-	 * Set Modular Contract.
-	 * A document linked to a modular contract will generate modular contract logs
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setModular_Flatrate_Term_ID (int Modular_Flatrate_Term_ID);
-
-	/**
-	 * Get Modular Contract.
-	 * A document linked to a modular contract will generate modular contract logs
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getModular_Flatrate_Term_ID();
-
-	ModelColumn<I_M_InventoryLine, Object> COLUMN_Modular_Flatrate_Term_ID = new ModelColumn<>(I_M_InventoryLine.class, "Modular_Flatrate_Term_ID", null);
-	String COLUMNNAME_Modular_Flatrate_Term_ID = "Modular_Flatrate_Term_ID";
 
 	/**
 	 * Set Processed.
@@ -636,6 +636,29 @@ public interface I_M_InventoryLine
 
 	ModelColumn<I_M_InventoryLine, Object> COLUMN_QtyInternalUse = new ModelColumn<>(I_M_InventoryLine.class, "QtyInternalUse", null);
 	String COLUMNNAME_QtyInternalUse = "QtyInternalUse";
+
+	/**
+	 * Set Rendered QR Code.
+	 * It's the QR code which is directly incorporated in the QR code image. Nothing more, nothing less.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRenderedQRCode (@Nullable java.lang.String RenderedQRCode);
+
+	/**
+	 * Get Rendered QR Code.
+	 * It's the QR code which is directly incorporated in the QR code image. Nothing more, nothing less.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getRenderedQRCode();
+
+	ModelColumn<I_M_InventoryLine, Object> COLUMN_RenderedQRCode = new ModelColumn<>(I_M_InventoryLine.class, "RenderedQRCode", null);
+	String COLUMNNAME_RenderedQRCode = "RenderedQRCode";
 
 	/**
 	 * Set Reverse Line.

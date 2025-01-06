@@ -50,6 +50,7 @@ public class CtxNames
 	public static final String NAME_Marker = "@";
 	static final String MODIFIER_Old = "old";
 	static final String MODIFIER_QuotedIfNotDefault = "quotedIfNotDefault";
+	static final String MODIFIER_AsJsonString = "asJsonString";
 
 	public static final String VALUE_NULL = null;
 
@@ -61,6 +62,7 @@ public class CtxNames
 	private static final ImmutableSet<String> MODIFIERS = ImmutableSet.<String>builder()
 			.add(MODIFIER_Old)
 			.add(MODIFIER_QuotedIfNotDefault)
+			.add(MODIFIER_AsJsonString)
 			.build();
 
 	private static final Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z0-9_\\-\\.#$|]+");

@@ -1,6 +1,7 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
@@ -12,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_AcctSchema_Element extends org.compiere.model.PO implements I_C_AcctSchema_Element, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1761212300L;
+	private static final long serialVersionUID = 1040512403L;
 
     /** Standard Constructor */
     public X_C_AcctSchema_Element (final Properties ctx, final int C_AcctSchema_Element_ID, @Nullable final String trxName)
@@ -377,6 +378,10 @@ public class X_C_AcctSchema_Element extends org.compiere.model.PO implements I_C
 	public static final String ELEMENTTYPE_HarvestingCalendar = "HC";
 	/** Harvesting Year = HY */
 	public static final String ELEMENTTYPE_HarvestingYear = "HY";
+	/** UserElementNumber1 = N1 */
+	public static final String ELEMENTTYPE_UserElementNumber1 = "N1";
+	/** UserElementNumber2 = N2 */
+	public static final String ELEMENTTYPE_UserElementNumber2 = "N2";
 	@Override
 	public void setElementType (final java.lang.String ElementType)
 	{
@@ -531,6 +536,32 @@ public class X_C_AcctSchema_Element extends org.compiere.model.PO implements I_C
 	public int getSeqNo() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SeqNo);
+	}
+
+	@Override
+	public void setUserElementNumber1 (final @Nullable BigDecimal UserElementNumber1)
+	{
+		set_Value (COLUMNNAME_UserElementNumber1, UserElementNumber1);
+	}
+
+	@Override
+	public BigDecimal getUserElementNumber1() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_UserElementNumber1);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setUserElementNumber2 (final @Nullable BigDecimal UserElementNumber2)
+	{
+		set_Value (COLUMNNAME_UserElementNumber2, UserElementNumber2);
+	}
+
+	@Override
+	public BigDecimal getUserElementNumber2() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_UserElementNumber2);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

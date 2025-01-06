@@ -105,7 +105,7 @@ public class Excel_OLCand_Row
 
 	private final int C_BPartner_ID;
 	private final int C_BPartner_Location_ID;
-	
+
 	@Getter private final int Bill_BPartner_ID;
 	@Getter private final int Bill_Location_ID;
 	@Getter private final int HandOver_Partner_ID;

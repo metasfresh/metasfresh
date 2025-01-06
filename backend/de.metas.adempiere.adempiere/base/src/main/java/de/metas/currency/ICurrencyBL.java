@@ -212,4 +212,8 @@ public interface ICurrencyBL extends ISingletonService
 			@NonNull CurrencyId toCurrencyId,
 			@NonNull LocalDate conversionDate,
 			@NonNull ClientAndOrgId clientAndOrgId);
+
+	boolean isSOApply5CentCashRounding(@NonNull CurrencyId currencyId);
+
+	boolean isPOApply5CentCashRounding(@NonNull CurrencyId currencyId);
 }

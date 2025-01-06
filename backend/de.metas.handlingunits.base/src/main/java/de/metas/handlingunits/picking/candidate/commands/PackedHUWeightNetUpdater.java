@@ -134,7 +134,7 @@ public class PackedHUWeightNetUpdater
 
 	public void updatePackToHU(@NonNull final I_M_HU hu)
 	{
-		updatePickFromHUs(ImmutableList.of(hu));
+		updatePackToHUs(ImmutableList.of(hu));
 	}
 
 	public void updatePackToHUs(@NonNull final List<I_M_HU> hus)
@@ -156,8 +156,19 @@ public class PackedHUWeightNetUpdater
 		}
 		else
 		{
-			throw new AdempiereException("Updating weight of more than than one packed HU is not supported")
-					.setParameter("hus", hus);
+			final Quantity catchWeightToDistribute = weightToTransfer.divide(hus.size());
+			Quantity distributedCatchWeight = weightToTransfer.toZero();
+
+			for (int index = 0; index < hus.size(); index++)
+			{
+				final Quantity actualWeightToDistribute = index + 1 == hus.size()
+						? weightToTransfer.subtract(distributedCatchWeight)
+						: catchWeightToDistribute;
+
+				distributedCatchWeight = distributedCatchWeight.add(actualWeightToDistribute);
+
+				setWeightNet(hus.get(index), actualWeightToDistribute);
+			}
 		}
 	}
 

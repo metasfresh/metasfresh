@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_InvoiceLine
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_InvoiceLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1222059933L;
+	private static final long serialVersionUID = 99328306L;
 
     /** Standard Constructor */
     public X_C_InvoiceLine (final Properties ctx, final int C_InvoiceLine_ID, @Nullable final String trxName)
@@ -144,7 +144,7 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
-	public boolean isA_Processed() 
+	public boolean isA_Processed()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_A_Processed);
 	}
@@ -182,14 +182,14 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	@Override
 	public void setC_BPartner2_ID (final int C_BPartner2_ID)
 	{
-		if (C_BPartner2_ID < 1) 
+		if (C_BPartner2_ID < 1)
 			set_Value (COLUMNNAME_C_BPartner2_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_BPartner2_ID, C_BPartner2_ID);
 	}
 
 	@Override
-	public int getC_BPartner2_ID() 
+	public int getC_BPartner2_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner2_ID);
 	}
@@ -239,14 +239,14 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	@Override
 	public void setC_Flatrate_Term_ID (final int C_Flatrate_Term_ID)
 	{
-		if (C_Flatrate_Term_ID < 1) 
+		if (C_Flatrate_Term_ID < 1)
 			set_Value (COLUMNNAME_C_Flatrate_Term_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Flatrate_Term_ID, C_Flatrate_Term_ID);
 	}
 
 	@Override
-	public int getC_Flatrate_Term_ID() 
+	public int getC_Flatrate_Term_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Term_ID);
 	}
@@ -335,14 +335,14 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	@Override
 	public void setC_Order_ID (final int C_Order_ID)
 	{
-		if (C_Order_ID < 1) 
+		if (C_Order_ID < 1)
 			set_Value (COLUMNNAME_C_Order_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Order_ID, C_Order_ID);
 	}
 
 	@Override
-	public int getC_Order_ID() 
+	public int getC_Order_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
 	}
@@ -389,14 +389,14 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	@Override
 	public void setC_OrderSO_ID (final int C_OrderSO_ID)
 	{
-		if (C_OrderSO_ID < 1) 
+		if (C_OrderSO_ID < 1)
 			set_Value (COLUMNNAME_C_OrderSO_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_OrderSO_ID, C_OrderSO_ID);
 	}
 
 	@Override
-	public int getC_OrderSO_ID() 
+	public int getC_OrderSO_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_OrderSO_ID);
 	}
@@ -473,14 +473,14 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	@Override
 	public void setC_Shipping_Location_ID (final int C_Shipping_Location_ID)
 	{
-		if (C_Shipping_Location_ID < 1) 
+		if (C_Shipping_Location_ID < 1)
 			set_Value (COLUMNNAME_C_Shipping_Location_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Shipping_Location_ID, C_Shipping_Location_ID);
 	}
 
 	@Override
-	public int getC_Shipping_Location_ID() 
+	public int getC_Shipping_Location_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Shipping_Location_ID);
 	}
@@ -488,14 +488,14 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	@Override
 	public void setC_TaxCategory_ID (final int C_TaxCategory_ID)
 	{
-		if (C_TaxCategory_ID < 1) 
+		if (C_TaxCategory_ID < 1)
 			set_Value (COLUMNNAME_C_TaxCategory_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_TaxCategory_ID, C_TaxCategory_ID);
 	}
 
 	@Override
-	public int getC_TaxCategory_ID() 
+	public int getC_TaxCategory_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_TaxCategory_ID);
 	}
@@ -503,14 +503,14 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	@Override
 	public void setC_Tax_ID (final int C_Tax_ID)
 	{
-		if (C_Tax_ID < 1) 
+		if (C_Tax_ID < 1)
 			set_Value (COLUMNNAME_C_Tax_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Tax_ID, C_Tax_ID);
 	}
 
 	@Override
-	public int getC_Tax_ID() 
+	public int getC_Tax_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Tax_ID);
 	}
@@ -548,14 +548,14 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	@Override
 	public void setC_VAT_Code_ID (final int C_VAT_Code_ID)
 	{
-		if (C_VAT_Code_ID < 1) 
+		if (C_VAT_Code_ID < 1)
 			set_Value (COLUMNNAME_C_VAT_Code_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_VAT_Code_ID, C_VAT_Code_ID);
 	}
 
 	@Override
-	public int getC_VAT_Code_ID() 
+	public int getC_VAT_Code_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_VAT_Code_ID);
 	}
@@ -629,8 +629,29 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 		set_Value (COLUMNNAME_IsDescription, IsDescription);
 	}
 
+	/**
+	 * InvoicingGroup AD_Reference_ID=541742
+	 * Reference name: InvoicingGroup
+	 */
+	public static final int INVOICINGGROUP_AD_Reference_ID=541742;
+	/** Service = Service */
+	public static final String INVOICINGGROUP_Service = "Service";
+	/** Costs = Costs */
+	public static final String INVOICINGGROUP_Costs = "Costs";
 	@Override
-	public boolean isDescription() 
+	public void setInvoicingGroup (final @Nullable java.lang.String InvoicingGroup)
+	{
+		set_Value (COLUMNNAME_InvoicingGroup, InvoicingGroup);
+	}
+
+	@Override
+	public java.lang.String getInvoicingGroup()
+	{
+		return get_ValueAsString(COLUMNNAME_InvoicingGroup);
+	}
+
+	@Override
+	public boolean isDescription()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDescription);
 	}
@@ -656,6 +677,18 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	public boolean isManualPrice()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsManualPrice);
+	}
+
+	@Override
+	public void setIsHidePriceAndAmountOnPrint (final boolean IsHidePriceAndAmountOnPrint)
+	{
+		set_Value (COLUMNNAME_IsHidePriceAndAmountOnPrint, IsHidePriceAndAmountOnPrint);
+	}
+
+	@Override
+	public boolean isHidePriceAndAmountOnPrint()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsHidePriceAndAmountOnPrint);
 	}
 
 	@Override
@@ -926,14 +959,14 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	@Override
 	public void setM_SectionCode_ID (final int M_SectionCode_ID)
 	{
-		if (M_SectionCode_ID < 1) 
+		if (M_SectionCode_ID < 1)
 			set_Value (COLUMNNAME_M_SectionCode_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_SectionCode_ID, M_SectionCode_ID);
 	}
 
 	@Override
-	public int getM_SectionCode_ID() 
+	public int getM_SectionCode_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
 	}
@@ -1027,6 +1060,18 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	public java.lang.String getProductDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_ProductDescription);
+	}
+
+	@Override
+	public void setProductName (final @Nullable java.lang.String ProductName)
+	{
+		set_Value (COLUMNNAME_ProductName, ProductName);
+	}
+
+	@Override
+	public java.lang.String getProductName()
+	{
+		return get_ValueAsString(COLUMNNAME_ProductName);
 	}
 
 	@Override
@@ -1203,6 +1248,32 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	public int getUser2_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_User2_ID);
+	}
+
+	@Override
+	public void setUserElementNumber1 (final @Nullable BigDecimal UserElementNumber1)
+	{
+		set_Value (COLUMNNAME_UserElementNumber1, UserElementNumber1);
+	}
+
+	@Override
+	public BigDecimal getUserElementNumber1()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_UserElementNumber1);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setUserElementNumber2 (final @Nullable BigDecimal UserElementNumber2)
+	{
+		set_Value (COLUMNNAME_UserElementNumber2, UserElementNumber2);
+	}
+
+	@Override
+	public BigDecimal getUserElementNumber2()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_UserElementNumber2);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

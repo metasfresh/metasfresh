@@ -22,6 +22,7 @@
 
 package de.metas.invoicecandidate.api;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -40,8 +41,8 @@ import de.metas.money.Money;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTerm;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -186,11 +187,12 @@ public interface IInvoiceCandBL extends ISingletonService
 	 *
 	 * @param ic  the candidate whose values shall be updated. It is assumed that the candidate has <code>IsManual='Y'</code>.
 	 */
-	void set_QtyInvoiced_NetAmtInvoiced_Aggregation(Properties ctx, I_C_Invoice_Candidate ic);
+	void set_QtyInvoiced_NetAmtInvoiced_Aggregation(@NonNull I_C_Invoice_Candidate ic);
 
 	/**
 	 * @return true if given candidate is a credit memo (i.e. is manual and price actual < 0)
 	 */
+	@VisibleForTesting
 	boolean isCreditMemo(I_C_Invoice_Candidate cand);
 
 	Money calculateNetAmt(I_C_Invoice_Candidate ic);
@@ -325,7 +327,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * Update the POReference of a candidate based on the POReference from the order.
 	 * <p>
-	 * For both sales and purchase orders (purchases added as of <a href="https://github.com/metasfresh/metasfresh/issues/292">...</a>).
+	 * For both sales and purchase orders (purchases added as of <a href="https://github.com/metasfresh/metasfresh/issues/292">https://github.com/metasfresh/metasfresh/issues/292</a>).
 	 * <p>
 	 * Candidate will not be saved.
 	 */
@@ -339,6 +341,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * @return today date (without time!) to be used by invoicing BLs
 	 */
+	@NonNull
 	LocalDate getToday();
 
 	/**
@@ -428,7 +431,7 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	/**
 	 * Wait until the given ICs were validated - usually by the async-processor. In unit-test-mode, update them directly. 
-	 * 
+	 *
 	 */
 	void ensureICsAreUpdated(@NonNull InvoiceCandidateIdsSelection invoiceCandidateIdsSelection);
 

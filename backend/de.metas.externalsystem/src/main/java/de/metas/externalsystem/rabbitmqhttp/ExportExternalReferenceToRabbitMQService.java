@@ -232,7 +232,7 @@ public class ExportExternalReferenceToRabbitMQService extends ExportExternalRefe
 	private static JsonExternalReferenceLookupItem toJsonExternalReferenceLookupItem(@NonNull final ExternalReference externalReference)
 	{
 		return JsonExternalReferenceLookupItem.builder()
-				.id(externalReference.getExternalReference())
+				.externalReference(externalReference.getExternalReference())
 				.type(externalReference.getExternalReferenceType().getCode())
 				.build();
 	}

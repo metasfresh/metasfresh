@@ -7,7 +7,7 @@ export const formatQtyToHumanReadableStr = ({ qty, uom, precision = null, tolera
 
   const { qtyEffectiveStr, uomEffective } = formatQtyToHumanReadable({ qty, uom, precision });
 
-  let result = `${qtyEffectiveStr}${uomEffective ? uomEffective : ''}`;
+  let result = `${qtyEffectiveStr}${uomEffective ? ' ' + uomEffective : ''}`;
 
   if (tolerance != null && typeof tolerance === 'object') {
     if (tolerance.percentage != null) {
@@ -73,7 +73,7 @@ export const formatQtyToHumanReadable = ({ qty, uom, precision = null }) => {
     MAX_maximumFractionDigits
   );
 
-  qtyEffective = parseFloat(qtyEffective.toFixed(maximumFractionDigits));
+  qtyEffective = parseFloat(Number(qtyEffective).toFixed(maximumFractionDigits));
 
   if (maximumFractionDigits < MAX_maximumFractionDigits) {
     formatOptions.minimumFractionDigits = 0;

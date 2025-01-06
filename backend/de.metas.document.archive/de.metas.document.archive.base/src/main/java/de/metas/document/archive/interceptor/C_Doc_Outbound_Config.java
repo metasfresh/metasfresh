@@ -25,14 +25,17 @@ package de.metas.document.archive.interceptor;
 
 import java.util.List;
 
+import de.metas.report.DocOutboundConfig;
+import de.metas.report.DocOutboundConfigRepository;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Doc_Outbound_Config;
 import org.compiere.model.ModelValidator;
 
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.api.IDocOutboundProducerService;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -50,6 +53,8 @@ import lombok.NonNull;
 @Validator(I_C_Doc_Outbound_Config.class)
 class C_Doc_Outbound_Config
 {
+	private DocOutboundConfigRepository docOutboundConfigRepository = SpringContextHolder.instance.getBean(DocOutboundConfigRepository.class);
+
 	private final Archive_Main_Validator parent;
 
 	public C_Doc_Outbound_Config(@NonNull final Archive_Main_Validator parent)
@@ -62,10 +67,10 @@ class C_Doc_Outbound_Config
 	@Init
 	public void registerAllOutboundProducers()
 	{
-		final List<I_C_Doc_Outbound_Config> configs = Services.get(IDocOutboundDAO.class).retrieveAllConfigs();
-		for (final I_C_Doc_Outbound_Config config : configs)
+		final List<DocOutboundConfig> configs = docOutboundConfigRepository.retrieveAllConfigs();
+		for (final DocOutboundConfig config : configs)
 		{
-			registerOutboundProducer(config);
+			registerOutboundProducer(docOutboundConfigRepository.load(config.getId()));
 		}
 	}
 

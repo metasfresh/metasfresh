@@ -20,6 +20,7 @@ import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
@@ -110,6 +111,7 @@ final class CreateOrderCommand
 		// Planning dimension
 		ppOrderRecord.setAD_Org_ID(request.getClientAndOrgId().getOrgId().getRepoId());
 		ppOrderRecord.setS_Resource_ID(request.getPlantId().getRepoId());
+		ppOrderRecord.setWorkStation_ID(ResourceId.toRepoId(request.getWorkstationId()));
 		ppOrderRecord.setM_Warehouse_ID(request.getWarehouseId().getRepoId());
 		ppOrderRecord.setPlanner_ID(UserId.toRepoId(getPlannerIdOrNull(request, productPlanning)));
 

@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.impl.ElementValueId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.organization.OrgId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
@@ -32,7 +32,7 @@ class InvoiceAcctRepositoryTest
 						InvoiceAcctRule.builder()
 								.matcher(InvoiceAcctRuleMatcher.builder()
 										.acctSchemaId(AcctSchemaId.ofRepoId(901))
-										.invoiceLineId(InvoiceLineId.ofRepoId(101, 141))
+										.invoiceAndLineId(InvoiceAndLineId.ofRepoId(101, 141))
 										.accountConceptualName(AccountConceptualName.ofString("Some_Acct"))
 										.build())
 								.elementValueId(ElementValueId.ofRepoId(902))

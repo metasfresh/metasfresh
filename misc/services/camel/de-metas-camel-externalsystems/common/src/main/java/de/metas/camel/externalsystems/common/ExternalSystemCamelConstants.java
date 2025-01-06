@@ -52,6 +52,8 @@ public class ExternalSystemCamelConstants
 
 	public static final String MF_UPSERT_BPARTNER_V2_CAMEL_URI = "metasfresh.upsert-bpartner-v2.camel.uri";
 
+	public static final String MF_UPSERT_WAREHOUSE_V2_CAMEL_URI = "metasfresh.upsert-warehouse-v2.camel.uri";
+
 	public static final String MF_UPSERT_BPARTNER_LOCATION_V2_CAMEL_URI = "metasfresh.upsert-bpartnerlocation-v2.camel.uri";
 
 	public static final String MF_RETRIEVE_BPARTNER_V2_CAMEL_URI = "metasfresh.retrieve-bpartner-v2.camel.uri";
@@ -99,6 +101,8 @@ public class ExternalSystemCamelConstants
 	public static final String MF_SEQ_NO_V2_URI = "metasfresh.seqno.v2.api.uri";
 
 	public static final String MF_ATTACHMENT_ROUTE_ID = "To-MF_PushAttachment-Route";
+
+	public static final String MF_AD_Process_ROUTE_ID = "To-MF_InvokeAdProcess-Route";
 
 	public static final String MF_ENQUEUE_PURCHASE_CANDIDATES_V2_CAMEL_URI = "To-MF_Enqueue_Purchases_Candidate-Route";
 

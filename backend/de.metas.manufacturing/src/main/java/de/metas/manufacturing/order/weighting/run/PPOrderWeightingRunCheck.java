@@ -51,6 +51,6 @@ public class PPOrderWeightingRunCheck
 			return;
 		}
 
-		this.weight = Quantitys.create(this.weight.toBigDecimal(), uomId);
+		this.weight = Quantitys.of(this.weight.toBigDecimal(), uomId);
 	}
 }

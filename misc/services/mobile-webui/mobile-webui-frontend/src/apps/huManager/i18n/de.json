@@ -3,6 +3,7 @@
   "qrCode": "QR code",
   "locator": "Lagerort",
   "HUStatus": "Status",
+  "numberOfAggregatedHUs": "Aggregierte HU-Zahl",
   "product": "Produkt",
   "qty": "Menge",
   "disposePendingStatus": "Entsorgen",
@@ -14,7 +15,8 @@
     },
     "move": {
       "buttonCaption": "Bewegen",
-      "scanTarget": "Lagerort scannen"
+      "scanTarget": "Lagerort scannen",
+      "qtyTULabel": "TU-Zahl"
     },
     "scanAgain": {
       "buttonCaption": "Erneut scannen"
@@ -32,10 +34,14 @@
       "scanTargetPlaceholder": "Scan-Ziel",
       "moveSuccess": "Erfolgreich verschoben"
     },
+    "setCurrentLocator": {
+      "buttonCaption": "Lagerort ändern"
+    },
     "changeQty": {
       "buttonCaption": "Menge verändern",
       "qtyLabel": "Menge",
-      "descriptionLabel": "Beschreibung"
+      "descriptionLabel": "Beschreibung",
+      "allowedOnlyForSingleProducts": "Die Aktion kann nur für ein einzelnes Produkt durchgeführt werden."
     },
     "printLabels": {
       "buttonCaption": "Etiketten drucken",

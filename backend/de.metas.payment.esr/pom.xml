@@ -100,6 +100,7 @@
                             <schemaDirectory>src/main/xsd/camt.054.001.06</schemaDirectory>
                             <generatePackage>de.metas.payment.camt054_001_06</generatePackage>
                             <generateDirectory>${project.basedir}/src/main/java-xjc_camt054_001_06</generateDirectory>
+                            <noFileHeader>true</noFileHeader>
                         </configuration>
                     </execution>
                     <execution>
@@ -112,6 +113,7 @@
                             <schemaDirectory>src/main/xsd/camt.054.001.02</schemaDirectory>
                             <generatePackage>de.metas.payment.camt054_001_02</generatePackage>
                             <generateDirectory>${project.basedir}/src/main/java-xjc_camt054_001_02</generateDirectory>
+                            <noFileHeader>true</noFileHeader>
                         </configuration>
                     </execution>
                 </executions>

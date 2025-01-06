@@ -32,6 +32,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.payment.TenderType;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import org.compiere.util.DisplayType;
 
 /**
  * Write-off Open Invoices
@@ -195,19 +196,19 @@ public class InvoiceWriteOff extends JavaProcess
 			if (p_DateInvoiced_From != null && p_DateInvoiced_To != null)
 			{
 				sql.append(" AND TRUNC(DateInvoiced) BETWEEN ")
-						.append(DB.TO_DATE(p_DateInvoiced_From, true))
+						.append(DB.TO_DATE(p_DateInvoiced_From, DisplayType.Date))
 						.append(" AND ")
-						.append(DB.TO_DATE(p_DateInvoiced_To, true));
+						.append(DB.TO_DATE(p_DateInvoiced_To, DisplayType.Date));
 			}
 			else if (p_DateInvoiced_From != null)
 			{
 				sql.append(" AND TRUNC(DateInvoiced) >= ")
-						.append(DB.TO_DATE(p_DateInvoiced_From, true));
+						.append(DB.TO_DATE(p_DateInvoiced_From, DisplayType.Date));
 			}
 			else if (p_DateInvoiced_To != null)
 			{
 				sql.append(" AND TRUNC(DateInvoiced) <= ")
-						.append(DB.TO_DATE(p_DateInvoiced_To, true));
+						.append(DB.TO_DATE(p_DateInvoiced_To, DisplayType.Date));
 			}
 		}
 		sql.append(" AND IsPaid='N' ORDER BY C_Currency_ID, C_BPartner_ID, DateInvoiced");

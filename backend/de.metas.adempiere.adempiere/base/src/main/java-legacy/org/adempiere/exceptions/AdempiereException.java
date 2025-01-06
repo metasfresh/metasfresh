@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.error.AdIssueId;
 import de.metas.error.IssueCategory;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStringBuilder;
@@ -43,6 +42,8 @@ import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 public class AdempiereException extends RuntimeException
 		implements IIssueReportableAware
 {
+	public static final AdMessageKey MSG_NoLines = AdMessageKey.of("NoLines");
+
 	/**
 	 * Wraps given <code>throwable</code> as {@link AdempiereException}, if it's not already an {@link AdempiereException}.<br>
 	 * Note that this method also tries to pick the most specific adempiere exception (work in progress).
@@ -116,10 +117,9 @@ public class AdempiereException extends RuntimeException
 
 	public static ITranslatableString extractMessageTrl(final Throwable throwable)
 	{
-		if (throwable instanceof AdempiereException)
+		if (throwable instanceof final AdempiereException ex)
 		{
-			final AdempiereException ex = (AdempiereException)throwable;
-			return ex.getMessageBuilt();
+            return ex.getMessageBuilt();
 		}
 
 		return TranslatableStrings.constant(extractMessage(throwable));
@@ -177,7 +177,7 @@ public class AdempiereException extends RuntimeException
 			return cause;
 		}
 
-		if(throwable instanceof CalloutExecutionException)
+		if (throwable instanceof CalloutExecutionException)
 		{
 			return cause;
 		}
@@ -260,37 +260,45 @@ public class AdempiereException extends RuntimeException
 	{
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = TranslatableStrings.parse(message);
+		this.userValidationError = TranslatableStrings.isPossibleTranslatableString(message);
 		this.mdcContextMap = captureMDCContextMap();
 		this.errorCode = null;
 	}
 
 	public AdempiereException(@NonNull final ITranslatableString message)
 	{
-		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
-		this.messageTrl = message;
-		this.mdcContextMap = captureMDCContextMap();
-
 		// when this constructor is called, usually we have nice error messages,
 		// so we can consider those user-friendly errors
-		this.userValidationError = true;
+		this(message, true, null);
+	}
 
-		this.errorCode = null;
+	protected AdempiereException(@NonNull final ITranslatableString message, final boolean userValidationError)
+	{
+		this(message, userValidationError, null);
+	}
+
+	private AdempiereException(
+			@NonNull final ITranslatableString message,
+			final boolean userValidationError,
+			@Nullable final String errorCode)
+	{
+		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
+		this.messageTrl = message;
+		this.userValidationError = userValidationError;
+		this.mdcContextMap = captureMDCContextMap();
+		this.errorCode = errorCode;
 	}
 
 	public AdempiereException(@NonNull final AdMessageKey messageKey)
 	{
-		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
-		this.messageTrl = Services.get(IMsgBL.class).getTranslatableMsgText(messageKey);
-		this.userValidationError = true;
-		this.mdcContextMap = captureMDCContextMap();
-
-		this.errorCode = messageKey.toAD_Message();
+		this(TranslatableStrings.adMessage(messageKey), true, messageKey.toAD_Message());
 	}
 
 	public AdempiereException(final String adLanguage, @NonNull final AdMessageKey adMessage, final Object... params)
 	{
-		this.messageTrl = Services.get(IMsgBL.class).getTranslatableMsgText(adMessage, params);
+		this.messageTrl = TranslatableStrings.adMessage(adMessage, params);
 		this.adLanguage = captureLanguageOnConstructionTime ? adLanguage : null;
+		this.userValidationError = true;
 		this.mdcContextMap = captureMDCContextMap();
 
 		setParameter("AD_Language", this.adLanguage);
@@ -309,6 +317,7 @@ public class AdempiereException extends RuntimeException
 		super(cause);
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = TranslatableStrings.empty();
+		this.userValidationError = false;
 		this.mdcContextMap = captureMDCContextMap();
 
 		this.errorCode = null;
@@ -319,6 +328,7 @@ public class AdempiereException extends RuntimeException
 		super(cause);
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = TranslatableStrings.constant(plainMessage);
+		this.userValidationError = false;
 		this.mdcContextMap = captureMDCContextMap();
 
 		this.errorCode = null;
@@ -329,10 +339,17 @@ public class AdempiereException extends RuntimeException
 		super(cause);
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = message;
+		this.userValidationError = true;
 		this.mdcContextMap = captureMDCContextMap();
 
 		this.errorCode = null;
 	}
+
+	public static AdempiereException noLines() {return new AdempiereException(MSG_NoLines);}
+
+	public static AdempiereException newWithTranslatableMessage(@Nullable final String translatableMessage) {return new AdempiereException(TranslatableStrings.parse(translatableMessage));}
+
+	public static AdempiereException newWithPlainMessage(@Nullable final String plainMessage) {return new AdempiereException(TranslatableStrings.constant(plainMessage), false);}
 
 	private static Map<String, String> captureMDCContextMap()
 	{
@@ -418,10 +435,9 @@ public class AdempiereException extends RuntimeException
 		{
 			appendParameters(message);
 			final Throwable cause = getCause();
-			if (cause instanceof AdempiereException)
+			if (cause instanceof final AdempiereException metasfreshCause)
 			{
-				final AdempiereException metasfreshCause = (AdempiereException)cause;
-				if (metasfreshCause.appendParametersToMessage) // also append the cause's parameters
+                if (metasfreshCause.appendParametersToMessage) // also append the cause's parameters
 				{
 					metasfreshCause.appendParameters(message);
 				}
@@ -430,6 +446,7 @@ public class AdempiereException extends RuntimeException
 		return message.build();
 	}
 
+	@Nullable
 	protected final String getADLanguage()
 	{
 		return coalesceSuppliers(() -> adLanguage, Env::getAD_Language);

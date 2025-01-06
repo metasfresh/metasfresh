@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,6 +23,7 @@
 package org.eevolution.api.impl;
 
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -51,4 +52,12 @@ public class ProductBOM
 
 	@NonNull
 	Map<ProductDescriptor, ProductBOM> componentsProductBOMs;
+
+	@NonNull
+	List<ProductBOMLine> coProducts;
+
+	public ProductId getProductId()
+	{
+		return ProductId.ofRepoId(productDescriptor.getProductId());
+	}
 }

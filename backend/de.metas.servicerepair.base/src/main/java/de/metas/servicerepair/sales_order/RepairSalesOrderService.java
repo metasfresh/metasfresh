@@ -57,7 +57,7 @@ public class RepairSalesOrderService
 		this.projectService = projectService;
 	}
 
-	public Optional<RepairSalesOrderInfo> extractSalesOrderInfo(final I_C_Order order)
+	public Optional<RepairSalesOrderInfo> extractSalesOrderInfo(@NonNull final I_C_Order order)
 	{
 		if (!order.isSOTrx())
 		{

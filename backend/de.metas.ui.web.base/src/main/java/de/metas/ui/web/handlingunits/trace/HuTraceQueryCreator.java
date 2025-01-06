@@ -4,11 +4,13 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEventQuery;
 import de.metas.handlingunits.trace.HUTraceEventQuery.EventTimeOperator;
 import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
 import de.metas.handlingunits.trace.HUTraceType;
+import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inventory.InventoryId;
 import de.metas.organization.OrgId;
@@ -16,11 +18,16 @@ import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
+import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mmovement.MovementId;
+import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderId;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -117,16 +124,59 @@ final class HuTraceQueryCreator
 			@NonNull final DocumentFilterParam parameter)
 	{
 		final String paramName = parameter.getFieldName();
+		 BiFunction<HUTraceEventQuery, DocumentFilterParam, HUTraceEventQuery> queryUpdateFunction = null;
 
-		final BiFunction<HUTraceEventQuery, DocumentFilterParam, HUTraceEventQuery> queryUpdateFunction = //
-				FIELD_NAME_2_UPDATE_METHOD.get(paramName);
-
-		if (queryUpdateFunction == null)
+		if (Check.isNotBlank(paramName))
+		{ // case: filtering
+			queryUpdateFunction = //
+					FIELD_NAME_2_UPDATE_METHOD.get(paramName);
+			if (queryUpdateFunction == null)
+			{
+				final String message = StringUtils.formatMessage("The given filterParam has an unexpected fieldName={}", paramName);
+				throw new AdempiereException(message)
+						.setParameter("documentFilterParam", parameter);
+			}
+		}
+		else if (parameter.getSqlWhereClause() != null
+				&& !parameter.getSqlWhereClause().isEmpty())
+		{ // case: zooming
+			if (parameter.getSqlWhereClause().getSql().startsWith(I_M_HU.COLUMNNAME_M_HU_ID))
+			{ 
+				queryUpdateFunction = HuTraceQueryCreator::updateAnyHuFromParameterWhereClause;
+			}
+			else if (parameter.getSqlWhereClause().getSql().startsWith(I_M_HU_Trace.COLUMNNAME_M_Product_ID))
+			{
+				queryUpdateFunction = HuTraceQueryCreator::updateProductIdFromParameterWhereClause;
+			}
+			else if (parameter.getSqlWhereClause().getSql().startsWith(I_M_HU_Trace.COLUMNNAME_M_ShipmentSchedule_ID))
+			{
+				queryUpdateFunction = HuTraceQueryCreator::updateShipmentScheduleIdFromParameterWhereClause;
+			}
+			else if (parameter.getSqlWhereClause().getSql().startsWith(I_M_HU_Trace.COLUMNNAME_PP_Cost_Collector_ID))
+			{
+				queryUpdateFunction = HuTraceQueryCreator::updatePpCostCollectorIdFromParameterWhereClause;
+			}
+			else if (parameter.getSqlWhereClause().getSql().startsWith(I_M_HU_Trace.COLUMNNAME_PP_Order_ID))
+			{
+				queryUpdateFunction = HuTraceQueryCreator::updatePpOrderIdFromParameterWhereClause;
+			}
+			else if (parameter.getSqlWhereClause().getSql().startsWith(I_M_HU_Trace.COLUMNNAME_M_InOut_ID))
+			{
+				queryUpdateFunction = HuTraceQueryCreator::updateInOutIdFromParameterWhereClause;
+			}
+			else if (parameter.getSqlWhereClause().getSql().startsWith(I_M_HU_Trace.COLUMNNAME_M_Movement_ID))
+			{
+				queryUpdateFunction = HuTraceQueryCreator::updateMovementIdFromParameterWhereClause;
+			}
+		}
+		
+		if(queryUpdateFunction == null)
 		{
-			final String message = StringUtils.formatMessage("The given filterparam has an unexpected fieldName={}", paramName);
+			final String message = StringUtils.formatMessage("The given filterParam has has nothing we can extract into the HUTraceQuery={}", parameter);
 			throw new AdempiereException(message)
 					.setParameter("documentFilterParam", parameter);
 		}
+
 		return queryUpdateFunction;
 	}
 
@@ -167,6 +217,16 @@ final class HuTraceQueryCreator
 		return query.withProductId(ProductId.ofRepoIdOrNull(extractInt(parameter)));
 	}
 
+	private static HUTraceEventQuery updateProductIdFromParameterWhereClause(
+			@NonNull final HUTraceEventQuery query,
+			@NonNull final DocumentFilterParam parameter)
+	{
+		errorIfQueryValueNotNull("productId", query.getProductId(), query);
+
+		final int repoId = extractRepoIdFromParamWhereClause(parameter);
+		return query.withProductId(ProductId.ofRepoId(repoId));
+	}
+
 	private static HUTraceEventQuery updateLotNumberFromParameter(
 			@NonNull final HUTraceEventQuery query,
 			@NonNull final DocumentFilterParam parameter)
@@ -185,22 +245,52 @@ final class HuTraceQueryCreator
 		return query.withShipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(extractInt(parameter)));
 	}
 
+	private static HUTraceEventQuery updateShipmentScheduleIdFromParameterWhereClause(
+			@NonNull final HUTraceEventQuery query,
+			@NonNull final DocumentFilterParam parameter)
+	{
+		errorIfQueryValueNotNull("shipmentScheduleId", query.getShipmentScheduleId(), query);
+
+		final int repoId = extractRepoIdFromParamWhereClause(parameter);
+		return query.withShipmentScheduleId(ShipmentScheduleId.ofRepoId(repoId));
+	}
+
 	private static HUTraceEventQuery updatePpCostCollectorIdFromParameter(
 			@NonNull final HUTraceEventQuery query,
 			@NonNull final DocumentFilterParam parameter)
 	{
-		errorIfQueryValueGreaterThanZero("PpCostCollectorId", query.getPpCostCollectorId(), query);
+		errorIfQueryValueNotNull("PpCostCollectorId", query.getPpCostCollectorId(), query);
 
-		return query.withPpCostCollectorId(extractInt(parameter));
+		return query.withPpCostCollectorId(PPCostCollectorId.ofRepoId(extractInt(parameter)));
+	}
+
+	private static HUTraceEventQuery updatePpCostCollectorIdFromParameterWhereClause(
+			@NonNull final HUTraceEventQuery query,
+			@NonNull final DocumentFilterParam parameter)
+	{
+		errorIfQueryValueNotNull("ppCostCollectorId", query.getPpCostCollectorId(), query);
+
+		final int repoId = extractRepoIdFromParamWhereClause(parameter);
+		return query.withPpCostCollectorId(PPCostCollectorId.ofRepoId(repoId));
 	}
 
 	private static HUTraceEventQuery updatePpOrderIdFromParameter(
 			@NonNull final HUTraceEventQuery query,
 			@NonNull final DocumentFilterParam parameter)
 	{
-		errorIfQueryValueGreaterThanZero("PpOrderId", query.getPpOrderId(), query);
+		errorIfQueryValueNotNull("ppOrderId", query.getPpOrderId(), query);
 
-		return query.withPpOrderId(extractInt(parameter));
+		return query.withPpOrderId(PPOrderId.ofRepoId(extractInt(parameter)));
+	}
+
+	private static HUTraceEventQuery updatePpOrderIdFromParameterWhereClause(
+			@NonNull final HUTraceEventQuery query,
+			@NonNull final DocumentFilterParam parameter)
+	{
+		errorIfQueryValueNotNull("ppOrderId", query.getPpOrderId(), query);
+
+		final int repoId = extractRepoIdFromParamWhereClause(parameter);
+		return query.withPpOrderId(PPOrderId.ofRepoId(repoId));
 	}
 
 	private static HUTraceEventQuery updateVhuIdFromParameter(
@@ -241,9 +331,19 @@ final class HuTraceQueryCreator
 	private static HUTraceEventQuery updateMovementIdFromParameter(
 			@NonNull final HUTraceEventQuery query, @NonNull final DocumentFilterParam parameter)
 	{
-		errorIfQueryValueGreaterThanZero("MovementId", query.getMovementId(), query);
+		errorIfQueryValueNotNull("MovementId", query.getMovementId(), query);
 
-		return query.withMovementId(extractInt(parameter));
+		return query.withMovementId(MovementId.ofRepoId(extractInt(parameter)));
+	}
+
+	private static HUTraceEventQuery updateMovementIdFromParameterWhereClause(
+			@NonNull final HUTraceEventQuery query,
+			@NonNull final DocumentFilterParam parameter)
+	{
+		errorIfQueryValueNotNull("movementId", query.getMovementId(), query);
+
+		final int repoId = extractRepoIdFromParamWhereClause(parameter);
+		return query.withMovementId(MovementId.ofRepoId(repoId));
 	}
 
 	private static HUTraceEventQuery updateInventoryIdFromParameter(
@@ -276,9 +376,19 @@ final class HuTraceQueryCreator
 			@NonNull final HUTraceEventQuery query,
 			@NonNull final DocumentFilterParam parameter)
 	{
-		errorIfQueryValueGreaterThanZero("InOutId", query.getInOutId(), query);
+		errorIfQueryValueNotNull("InOutId", query.getInOutId(), query);
 
-		return query.withInOutId(extractInt(parameter));
+		return query.withInOutId(InOutId.ofRepoId(extractInt(parameter)));
+	}
+
+	private static HUTraceEventQuery updateInOutIdFromParameterWhereClause(
+			@NonNull final HUTraceEventQuery query,
+			@NonNull final DocumentFilterParam parameter)
+	{
+		errorIfQueryValueNotNull("inOutId", query.getInOutId(), query);
+
+		final int repoId = extractRepoIdFromParamWhereClause(parameter);
+		return query.withInOutId(InOutId.ofRepoId(repoId));
 	}
 
 	private static HUTraceEventQuery updateDocStatusFromParameter(
@@ -322,6 +432,36 @@ final class HuTraceQueryCreator
 		return query.withOrgId(OrgId.ofRepoIdOrNull(extractInt(parameter)));
 	}
 
+	private static HUTraceEventQuery updateAnyHuFromParameterWhereClause(
+			@NonNull final HUTraceEventQuery query,
+			@NonNull final DocumentFilterParam parameter)
+	{
+		errorIfQueryValueNotNull("anyHuId", query.getAnyHuId(), query);
+
+		final int repoId = extractRepoIdFromParamWhereClause(parameter);
+		return query.withAnyHuId(HuId.ofRepoId(repoId));
+	}
+
+	private static int extractRepoIdFromParamWhereClause(final @NotNull DocumentFilterParam parameter)
+	{
+		final SqlAndParams sqlWhereClause = Check.assumeNotNull(
+				parameter.getSqlWhereClause(),
+				"If this method is called, then the  given parameter has a sqlWhereClause; parameter={}", parameter);
+		try
+		{
+			final String whereClauseString = sqlWhereClause.toSqlStringInlineParams();
+
+			final String huIdStr = whereClauseString.split("=")[1];
+			return Integer.parseInt(huIdStr);
+		}
+		catch (final Exception e)
+		{
+			throw AdempiereException.wrapIfNeeded(e) // this method shall work. if not, there isn't really anything the user can do about it
+					.appendParametersToMessage()
+					.setParameter("DocumentFilterParam", parameter);
+		}
+	}
+
 	private static void errorIfQueryValueGreaterThanZero(
 			@NonNull final String field,
 			final int value,
@@ -360,7 +500,7 @@ final class HuTraceQueryCreator
 
 	private static void errorIfQueryValueNotNull(
 			@NonNull final String field,
-			final Object value,
+			@Nullable final Object value,
 			@NonNull final HUTraceEventQuery query)
 	{
 		if (value != null)

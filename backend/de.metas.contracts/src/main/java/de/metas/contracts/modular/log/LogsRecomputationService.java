@@ -22,20 +22,28 @@
 
 package de.metas.contracts.modular.log;
 
-import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_ModCntr_Log;
 import de.metas.contracts.modular.ModelAction;
 import de.metas.contracts.modular.ModularContractService;
+import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutQuery;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineQuery;
+import de.metas.shippingnotification.ShippingNotificationLine;
+import de.metas.shippingnotification.ShippingNotificationQuery;
 import de.metas.shippingnotification.ShippingNotificationService;
 import de.metas.shippingnotification.model.I_M_Shipping_Notification;
 import de.metas.shippingnotification.model.I_M_Shipping_NotificationLine;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StreamUtils;
 import lombok.NonNull;
@@ -45,11 +53,14 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
+import org.compiere.util.Env;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.IPPOrderDAO;
+import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
@@ -59,6 +70,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -70,7 +82,7 @@ public class LogsRecomputationService
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 	private final IPPCostCollectorDAO ppCostCollectorDAO = Services.get(IPPCostCollectorDAO.class);
-	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 
 	@NonNull
@@ -79,6 +91,99 @@ public class LogsRecomputationService
 	private final ModularContractService modularContractService;
 	@NonNull
 	private final ModularContractLogDAO modularContractLogDAO;
+
+	public void recomputeAllFinalInvoiceRelatedLogsLinkedTo(@NonNull final FlatrateTermId flatrateTermId)
+	{
+		final I_C_Flatrate_Term flatrateTerm = flatrateBL.getById(flatrateTermId);
+
+		final OrderId flatrateTermOrderId = OrderId.ofRepoId(flatrateTerm.getC_Order_Term_ID());
+		inOutDAO.retrieveByQuery(InOutQuery.builder()
+										 .orderId(flatrateTermOrderId)
+										 .build())
+						.forEach(this::recomputeForInOut);
+
+		if(flatrateTerm.isSOTrx())
+		{
+			shippingNotificationService.getByQuery(ShippingNotificationQuery.builder()
+														   .orderId(flatrateTermOrderId)
+														   .build())
+					.forEach(shippingNotification -> recomputeForShippingNotificationLines(shippingNotification.getLines()));
+		}
+		else
+		{
+			final Set<OrderId> salesOrderIds = orderDAO.streamOrderLines(OrderLineQuery.builder().modularPurchaseContractId(flatrateTermId).build())
+					.map(I_C_OrderLine::getC_Order_ID)
+					.map(OrderId::ofRepoId)
+					.collect(Collectors.toSet());
+
+			inOutDAO.retrieveByQuery(InOutQuery.builder()
+											 .orderIds(salesOrderIds)
+											 .build())
+					.forEach(this::recomputeForInOut);
+
+			shippingNotificationService.getByQuery(ShippingNotificationQuery.builder()
+														   .orderIds(salesOrderIds)
+														   .build())
+					.forEach(shippingNotification -> recomputeForShippingNotificationLines(shippingNotification.getLines()));
+
+			ppOrderDAO.streamManufacturingOrders(ManufacturingOrderQuery.builder()
+														 .modularFlatrateTermId(flatrateTermId)
+														 .build())
+					.map(I_PP_Order::getPP_Order_ID)
+					.map(PPOrderId::ofRepoId)
+					.forEach(this::recomputeForPPOrder);
+
+			recomputeForFlatrate(flatrateTerm);
+		}
+	}
+
+	private void recomputeForShippingNotificationLines(@NonNull final List<ShippingNotificationLine> shippingNotificationLinesList)
+	{
+		shippingNotificationLinesList.forEach(line -> modularContractService.scheduleLogCreation(
+				DocStatusChangedEvent.builder()
+						.tableRecordReference(TableRecordReference.of(I_M_Shipping_NotificationLine.Table_Name,
+																	  Check.assumeNotNull(line.getId(), "ShippingNotificationLineId shouldn't be null")))
+						.modelAction(ModelAction.RECREATE_LOGS)
+						.userInChargeId(Env.getLoggedUserId())
+						.build())
+		);
+	}
+
+	private void recomputeForInOut(@NonNull final I_M_InOut inOut)
+	{
+		inOutDAO.retrieveAllLines(inOut)
+				.forEach(line -> modularContractService.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
+								.tableRecordReference(TableRecordReference.of(line))
+								.modelAction(ModelAction.RECREATE_LOGS)
+								.userInChargeId(Env.getLoggedUserId())
+								.build())
+		);
+	}
+
+	private void recomputeForPPOrder(@NonNull final PPOrderId ppOrderId)
+	{
+		ppCostCollectorDAO.getByOrderId(ppOrderId)
+				.forEach(ppCostCollector -> modularContractService.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
+								.tableRecordReference(TableRecordReference.of(ppCostCollector))
+								.modelAction(ModelAction.RECREATE_LOGS)
+								.userInChargeId(Env.getLoggedUserId())
+								.build())
+		);
+	}
+
+	private void recomputeForFlatrate(@NonNull final I_C_Flatrate_Term term)
+	{
+		modularContractService.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
+								.tableRecordReference(TableRecordReference.of(term))
+								.modelAction(ModelAction.RECREATE_LOGS)
+								.userInChargeId(Env.getLoggedUserId())
+								.build()
+		);
+	}
+
 
 	public void recomputeLogs(@NonNull final IQueryFilter<I_ModCntr_Log> filter)
 	{
@@ -114,7 +219,7 @@ public class LogsRecomputationService
 	public void recomputeForInOut(@NonNull final IQueryFilter<I_M_InOut> filter)
 	{
 		inOutDAO.stream(filter)
-				.forEach(this::recomputeForInOut);
+				.forEach(this::recomputeForInOutInNewTrx);
 	}
 
 	public void recomputeForOrder(@NonNull final IQueryFilter<I_C_Order> filter)
@@ -123,10 +228,10 @@ public class LogsRecomputationService
 				.forEach(this::recomputeForOrder);
 	}
 
-	public void recomputeForFlatrate(@NonNull final IQueryFilter<I_C_Flatrate_Term> filter)
+	public void recomputeForFlatrateInNewTrx(@NonNull final IQueryFilter<I_C_Flatrate_Term> filter)
 	{
-		flatrateDAO.stream(filter)
-				.forEach(this::recomputeForFlatrate);
+		flatrateBL.stream(filter)
+				.forEach(this::recomputeForFlatrateInNewTrx);
 	}
 
 	public void recomputeForInventory(@NonNull final IQueryFilter<I_M_Inventory> filter)
@@ -149,7 +254,7 @@ public class LogsRecomputationService
 		ppOrderDAO.stream(filter)
 				.map(I_PP_Order::getPP_Order_ID)
 				.map(PPOrderId::ofRepoId)
-				.forEach(this::recomputeForPPOrder);
+				.forEach(this::recomputeForPPOrderInNewTrx);
 	}
 
 	public void recomputeForShippingNotification(@NonNull final IQueryFilter<I_M_Shipping_Notification> filter)
@@ -169,17 +274,29 @@ public class LogsRecomputationService
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> invoiceDAO
 				.retrieveLines(invoiceId)
-				.forEach(line -> modularContractService.invokeWithModelForAllContractTypes(line, ModelAction.RECREATE_LOGS)));
+				.forEach(line -> modularContractService.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
+								.tableRecordReference(TableRecordReference.of(line))
+								.modelAction(ModelAction.RECREATE_LOGS)
+								.userInChargeId(Env.getLoggedUserId())
+								.build()))
+		);
 	}
 
-	private void recomputeForInOut(@NonNull final I_M_InOut inOut)
+	private void recomputeForInOutInNewTrx(@NonNull final I_M_InOut inOut)
 	{
 		trxManager.assertThreadInheritedTrxNotExists();
 
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> inOutDAO
 				.retrieveAllLines(inOut)
-				.forEach(line -> modularContractService.invokeWithModelForAllContractTypes(line, ModelAction.RECREATE_LOGS)));
+				.forEach(line -> modularContractService.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
+								.tableRecordReference(TableRecordReference.of(line))
+								.modelAction(ModelAction.RECREATE_LOGS)
+								.userInChargeId(Env.getLoggedUserId())
+								.build()))
+		);
 	}
 
 	private void recomputeForOrder(@NonNull final I_C_Order order)
@@ -189,16 +306,28 @@ public class LogsRecomputationService
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> orderDAO
 				.retrieveOrderLines(order)
-				.forEach(line -> modularContractService.invokeWithModelForAllContractTypes(line, ModelAction.RECREATE_LOGS)));
+				.forEach(line -> modularContractService.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
+								.tableRecordReference(TableRecordReference.of(line))
+								.modelAction(ModelAction.RECREATE_LOGS)
+								.userInChargeId(Env.getLoggedUserId())
+								.build()))
+		);
 	}
 
-	private void recomputeForFlatrate(@NonNull final I_C_Flatrate_Term term)
+	private void recomputeForFlatrateInNewTrx(@NonNull final I_C_Flatrate_Term term)
 	{
 		trxManager.assertThreadInheritedTrxNotExists();
 
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> modularContractService
-				.invokeWithModelForAllContractTypes(term, ModelAction.RECREATE_LOGS));
+				.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
+								.tableRecordReference(TableRecordReference.of(term))
+								.modelAction(ModelAction.RECREATE_LOGS)
+								.userInChargeId(Env.getLoggedUserId())
+								.build())
+				);
 	}
 
 	private void recomputeForInventory(@NonNull final InventoryId inventoryId)
@@ -208,7 +337,13 @@ public class LogsRecomputationService
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> inventoryDAO
 				.retrieveLinesForInventoryId(inventoryId, I_M_InventoryLine.class)
-				.forEach(line -> modularContractService.invokeWithModelForAllContractTypes(line, ModelAction.RECREATE_LOGS)));
+				.forEach(line -> modularContractService.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
+								.tableRecordReference(TableRecordReference.of(line))
+								.modelAction(ModelAction.RECREATE_LOGS)
+								.userInChargeId(Env.getLoggedUserId())
+								.build()))
+				);
 	}
 
 	private void recomputeForCostCollector(@NonNull final I_PP_Cost_Collector costCollector)
@@ -217,29 +352,46 @@ public class LogsRecomputationService
 
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> modularContractService
-				.invokeWithModelForAllContractTypes(costCollector, ModelAction.RECREATE_LOGS));
+				.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
+								.tableRecordReference(TableRecordReference.of(costCollector))
+								.modelAction(ModelAction.RECREATE_LOGS)
+								.userInChargeId(Env.getLoggedUserId())
+								.build())
+				);
 	}
 
-	private void recomputeForPPOrder(@NonNull final PPOrderId ppOrderId)
+	private void recomputeForPPOrderInNewTrx(@NonNull final PPOrderId ppOrderId)
 	{
 		trxManager.assertThreadInheritedTrxNotExists();
 
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> ppCostCollectorDAO
 				.getByOrderId(ppOrderId)
-				.forEach(ppCostCollector -> modularContractService.invokeWithModelForAllContractTypes(ppCostCollector,
-																									  ModelAction.RECREATE_LOGS)));
+				.forEach(ppCostCollector -> modularContractService.scheduleLogCreation(
+						DocStatusChangedEvent.builder()
+								.tableRecordReference(TableRecordReference.of(ppCostCollector))
+								.modelAction(ModelAction.RECREATE_LOGS)
+								.userInChargeId(Env.getLoggedUserId())
+								.build()))
+		);
 	}
 
-	private void recomputeForRecord(@NonNull final TableRecordReference tableRecordReference)
+	private void recomputeForRecord(@NonNull final TableRecordReference recordRef)
 	{
 		trxManager.assertThreadInheritedTrxNotExists();
 
-		switch (tableRecordReference.getTableName())
+		switch (recordRef.getTableName())
 		{
-			case I_PP_Order.Table_Name -> recomputeForPPOrder(tableRecordReference.getIdAssumingTableName(I_PP_Order.Table_Name, PPOrderId::ofRepoId));
+			case I_PP_Order.Table_Name -> recomputeForPPOrderInNewTrx(recordRef.getIdAssumingTableName(I_PP_Order.Table_Name, PPOrderId::ofRepoId));
 			default -> trxManager.runInNewTrx(() -> modularContractService
-					.invokeWithModelForAllContractTypes(tableRecordReference.getModel(), ModelAction.RECREATE_LOGS));
+					.scheduleLogCreation(
+							DocStatusChangedEvent.builder()
+									.tableRecordReference(recordRef)
+									.modelAction(ModelAction.RECREATE_LOGS)
+									.userInChargeId(Env.getLoggedUserId())
+									.build())
+				);
 		}
 	}
 
@@ -249,6 +401,12 @@ public class LogsRecomputationService
 
 		//dev-note: one trx per each document, to preserve the results of already successfully recomputed logs
 		trxManager.runInNewTrx(() -> shippingNotificationLinesList
-				.forEach(line -> modularContractService.invokeWithModelForAllContractTypes(line, ModelAction.RECREATE_LOGS)));
+				.forEach(line -> modularContractService.scheduleLogCreation(
+						 DocStatusChangedEvent.builder()
+								 .tableRecordReference(TableRecordReference.of(line))
+								 .modelAction(ModelAction.RECREATE_LOGS)
+								 .userInChargeId(Env.getLoggedUserId())
+								 .build()))
+				);
 	}
 }

@@ -1131,4 +1131,16 @@ public class X_M_ReceiptSchedule extends org.compiere.model.PO implements I_M_Re
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
 	}
+
+	@Override
+	public void setPOReference (final @Nullable java.lang.String POReference)
+	{
+		set_Value (COLUMNNAME_POReference, POReference);
+	}
+
+	@Override
+	public java.lang.String getPOReference()
+	{
+		return get_ValueAsString(COLUMNNAME_POReference);
+	}
 }

@@ -8,9 +8,10 @@ import { huManagerReducer } from './reducers';
 import { huManagerLocation, huManagerRoutes } from './routes';
 import * as api from './api';
 import { toastError } from '../../utils/toast';
+import { APPLICATION_ID } from './constants';
 
 export const applicationDescriptor = {
-  applicationId: 'huManager',
+  applicationId: APPLICATION_ID,
   routes: huManagerRoutes,
   messages: {
     en: messages_en,

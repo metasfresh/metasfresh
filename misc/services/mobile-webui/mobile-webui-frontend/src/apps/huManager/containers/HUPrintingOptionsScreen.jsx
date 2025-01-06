@@ -7,6 +7,7 @@ import { getHandlingUnitInfoFromGlobalState } from '../reducers';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import * as api from '../api';
+import * as actions from '../actions';
 import { toastError } from '../../../utils/toast';
 import ReadQtyDialog from '../../../components/dialogs/ReadQtyDialog';
 
@@ -58,9 +59,9 @@ const HUPrintingOptionsScreen = () => {
     }
     setIsPrintingInProgress(true);
 
-    api
+    actions
       .printHULabels({
-        huQRCode: handlingUnitInfo.qrCode,
+        huId: handlingUnitInfo.id,
         huLabelProcessId: currentPrintingOption.processId,
         nrOfCopies: qty,
       })

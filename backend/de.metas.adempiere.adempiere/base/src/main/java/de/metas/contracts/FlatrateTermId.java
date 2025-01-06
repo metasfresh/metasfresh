@@ -7,6 +7,7 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -63,4 +64,6 @@ public class FlatrateTermId implements RepoIdAware
 	{
 		return repoId;
 	}
+
+	public static boolean equals(@Nullable final FlatrateTermId id1, @Nullable final FlatrateTermId id2) {return Objects.equals(id1, id2);}
 }

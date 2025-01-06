@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_PaymentTerm
  *  @author metasfresh (generated) 
@@ -52,7 +53,11 @@ public interface I_C_PaymentTerm
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Special Baseline Date Determination.
+	 * Set Baseline Date.
+	 * This field is used to determine the baseline date as the basis for calculating the due date. It offers three options: 
+* After Bill of Lading: corresponds to the actual loading date from the delivery instructions. 
+* After delivery: corresponds to the delivery/receipt date. 
+* Invoice date: corresponds to the date of the invoice.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -61,7 +66,11 @@ public interface I_C_PaymentTerm
 	void setBaseLineType (java.lang.String BaseLineType);
 
 	/**
-	 * Get Special Baseline Date Determination.
+	 * Get Baseline Date.
+	 * This field is used to determine the baseline date as the basis for calculating the due date. It offers three options: 
+* After Bill of Lading: corresponds to the actual loading date from the delivery instructions. 
+* After delivery: corresponds to the delivery/receipt date. 
+* Invoice date: corresponds to the date of the invoice.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -74,6 +83,10 @@ public interface I_C_PaymentTerm
 
 	/**
 	 * Set Calculation Method.
+	 * This field is used to determine the due date for payments based on the terms agreed upon between the buyer and seller. It offers three options: 
+* "Baseline date + X days": This option adds a certain number of days (X) to the baseline date, which is typically the date of the invoice. For example, if the baseline date is January 1 and X is 30, the due date would be January 31. 
+* "Baseline date + X days to end of month": This option adds a certain number of days (X) to the baseline date and then sets the due date to the end of that month. For example, if the baseline date is January 1 and X is 15, the due date would be January 31. 
+* "End of month of baseline date + X days": This option sets the due date to the end of the month in which the baseline date falls, and then adds a certain number of days (X) to it. For example, if the baseline date is January 15 and X is 15, the due date would be February 15.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -83,6 +96,10 @@ public interface I_C_PaymentTerm
 
 	/**
 	 * Get Calculation Method.
+	 * This field is used to determine the due date for payments based on the terms agreed upon between the buyer and seller. It offers three options: 
+* "Baseline date + X days": This option adds a certain number of days (X) to the baseline date, which is typically the date of the invoice. For example, if the baseline date is January 1 and X is 30, the due date would be January 31. 
+* "Baseline date + X days to end of month": This option adds a certain number of days (X) to the baseline date and then sets the due date to the end of that month. For example, if the baseline date is January 1 and X is 15, the due date would be January 31. 
+* "End of month of baseline date + X days": This option sets the due date to the end of the month in which the baseline date falls, and then adds a certain number of days (X) to it. For example, if the baseline date is January 15 and X is 15, the due date would be February 15.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -341,29 +358,6 @@ public interface I_C_PaymentTerm
 
 	ModelColumn<I_C_PaymentTerm, Object> COLUMN_IsActive = new ModelColumn<>(I_C_PaymentTerm.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Allow overriding due date.
-	 * If ticked, the due date determined at the time of invoicing based on this payment term can be overridden.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsAllowOverrideDueDate (boolean IsAllowOverrideDueDate);
-
-	/**
-	 * Get Allow overriding due date.
-	 * If ticked, the due date determined at the time of invoicing based on this payment term can be overridden.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isAllowOverrideDueDate();
-
-	ModelColumn<I_C_PaymentTerm, Object> COLUMN_IsAllowOverrideDueDate = new ModelColumn<>(I_C_PaymentTerm.class, "IsAllowOverrideDueDate", null);
-	String COLUMNNAME_IsAllowOverrideDueDate = "IsAllowOverrideDueDate";
 
 	/**
 	 * Set Default.

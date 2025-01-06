@@ -31,9 +31,13 @@ import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.report.ReportResultData;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.service.ClientId;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -88,6 +92,7 @@ public interface IDesadvBL extends ISingletonService
 	/**
 	 * Print SSCC18 labels for given {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack} IDs by invoking a jasper-process, and forwarding its binary report data.
 	 */
+	@Nullable
 	ReportResultData printSSCC18_Labels(Properties ctx, Collection<EDIDesadvPackId> desadvPack_IDs_ToPrint);
 
 	/**
@@ -104,4 +109,10 @@ public interface IDesadvBL extends ISingletonService
 	 * @return all <code>M_InOutLine</code>s (incl inactive ones) that reference the given <code>desadvLine</code>.
 	 */
 	List<I_M_InOutLine> retrieveAllInOutLines(I_EDI_DesadvLine desadvLine);
+
+	void updateQtyOrdered_OverrideFromShipSchedAndSave(@NonNull I_M_ShipmentSchedule schedule);
+
+	void propagateEDIStatus(@NonNull I_EDI_Desadv desadv);
+
+	boolean isMatchUsingOrderId(@NonNull ClientId clientId);
 }

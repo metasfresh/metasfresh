@@ -1,0 +1,13 @@
+
+
+-- 2024-08-21T13:05:01.167Z
+UPDATE C_DocType SET AD_PrintFormat_ID=1000012,Updated=TO_TIMESTAMP('2024-08-21 13:05:01.166000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE C_DocType_ID=541124
+;
+
+
+
+
+-- 2024-08-21T13:09:46.130Z
+UPDATE C_DocType SET AD_PrintFormat_ID=540126,Updated=TO_TIMESTAMP('2024-08-21 13:09:46.130000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE C_DocType_ID=540944
+;
+

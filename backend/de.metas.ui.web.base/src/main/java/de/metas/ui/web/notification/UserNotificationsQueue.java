@@ -15,6 +15,7 @@ import de.metas.util.Check;
 import de.metas.websocket.WebsocketTopicName;
 import de.metas.websocket.sender.WebsocketSender;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.slf4j.Logger;
@@ -49,6 +50,7 @@ public class UserNotificationsQueue
 {
 	private static final Logger logger = LogManager.getLogger(UserNotificationsQueue.class);
 
+	@Getter
 	private final UserId userId;
 	private JSONOptions jsonOptions;
 
@@ -57,6 +59,8 @@ public class UserNotificationsQueue
 	private final INotificationRepository notificationsRepo;
 
 	private final WebsocketSender websocketSender;
+	
+	@Getter
 	private final WebsocketTopicName websocketEndpoint;
 
 	@Builder
@@ -82,16 +86,6 @@ public class UserNotificationsQueue
 		return MoreObjects.toStringHelper(this)
 				.add("websocketEndpoint", websocketEndpoint)
 				.toString();
-	}
-
-	public UserId getUserId()
-	{
-		return userId;
-	}
-
-	public WebsocketTopicName getWebsocketEndpoint()
-	{
-		return websocketEndpoint;
 	}
 
 	private void fireEventOnWebsocket(final JSONNotificationEvent event)

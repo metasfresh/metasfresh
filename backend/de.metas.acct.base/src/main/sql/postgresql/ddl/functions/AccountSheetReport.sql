@@ -162,6 +162,7 @@ BEGIN
                    AND (p_account_id IS NULL OR fa.account_id = p_account_id)
                    AND (p_c_activity_id IS NULL OR fa.c_activity_id = p_c_activity_id)
                    AND (p_c_project_id IS NULL OR fa.c_project_id = p_c_project_id)
+                   AND (p_ad_org_id IS NULL or fa.ad_org_id = p_ad_org_id)
              )
     INSERT
     INTO TMP_AccountSheetReport(fact_acct_id,

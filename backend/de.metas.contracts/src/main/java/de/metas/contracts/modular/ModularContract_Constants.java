@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular;
 
+import de.metas.contracts.modular.settings.ModularContractTypeId;
 import de.metas.i18n.AdMessageKey;
 
 public class ModularContract_Constants
@@ -31,4 +32,15 @@ public class ModularContract_Constants
 
 	public static final AdMessageKey MSG_REACTIVATE_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.impl.ReactivateNotAllowed");
 	public static final AdMessageKey MSG_ERROR_PROCESSED_LOGS_CANNOT_BE_RECOMPUTED = AdMessageKey.of("de.metas.contracts.modular.PROCESSED_LOGS_EXISTS");
+
+	public static final ModularContractTypeId CONTRACT_MODULE_TYPE_INFORMATIVE_LOGS_ID = ModularContractTypeId.ofRepoId(540008);
+	public static final ModularContractTypeId CONTRACT_MODULE_TYPE_SALES_INFORMATIVE_LOGS_ID = ModularContractTypeId.ofRepoId(540026);
+	public static final ModularContractTypeId CONTRACT_MODULE_TYPE_DefinitiveInvoiceRawProduct_ID =  ModularContractTypeId.ofRepoId(540009);
+	public static final ModularContractTypeId CONTRACT_MODULE_TYPE_DefinitiveInvoiceProcessedProduct_ID =  ModularContractTypeId.ofRepoId(540010);
+	public static final ModularContractTypeId CONTRACT_MODULE_TYPE_UserElementNumber1_ID =  ModularContractTypeId.ofRepoId(540024);
+	public static final ModularContractTypeId CONTRACT_MODULE_TYPE_UserElementNumber2_ID =  ModularContractTypeId.ofRepoId(540025);
+	public static final ModularContractTypeId CONTRACT_MODULE_TYPE_DefinitiveInvoiceUserElementNumber1_ID =  ModularContractTypeId.ofRepoId(540034);
+	public static final ModularContractTypeId CONTRACT_MODULE_TYPE_DefinitiveInvoiceUserElementNumber2_ID =  ModularContractTypeId.ofRepoId(540035);
+	public static final ModularContractTypeId CONTRACT_MODULE_TYPE_StorageCost_ID =  ModularContractTypeId.ofRepoId(540020);
+	public static final ModularContractTypeId CONTRACT_MODULE_TYPE_DefinitiveInvoiceStorageCost_ID =  ModularContractTypeId.ofRepoId(540036);
 }

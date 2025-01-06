@@ -80,10 +80,13 @@ public class ESRDataLoaderUtil
 
 	public static final AdMessageKey ERR_WRONG_POST_BANK_ACCOUNT = AdMessageKey.of("ESR_Wrong_Post_Bank_Account");
 
+	public static final AdMessageKey ERR_UNFIT_ESR_NO = AdMessageKey.of("de.metas.payment.esr.UnfitEsrNo");
+
 	private final IBPBankAccountDAO bpBankAccountRepo = Services.get(IBPBankAccountDAO.class);
 	private final IESRBPBankAccountDAO esrbpBankAccountRepo = Services.get(IESRBPBankAccountDAO.class);
 	private final IESRImportDAO esrImportDAO = Services.get(IESRImportDAO.class);
 	private final IESRImportBL esrImportBL = Services.get(IESRImportBL.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	public I_ESR_ImportLine newLine(@NonNull final I_ESR_ImportFile esrImportFile)
 	{
@@ -118,6 +121,14 @@ public class ESRDataLoaderUtil
 			return; // there is nothing to do. Note that we don't log an error because if this string is empty, something already failed and was logged before.
 		}
 
+		if (completeEsrReferenceNumberStr.length() < 26)
+		{
+			addMatchErrorMsg(importLine,
+							 msgBL.getMsg(Env.getCtx(), ERR_UNFIT_ESR_NO,
+															   new Object[] { completeEsrReferenceNumberStr }));
+			return;    // nothing to further do, as the substring operation on the completeEsrReferenceNumberStr will throw StringIndexOutOfBoundsException
+		}
+		
 		// When matching, we will ignore the first 7 digits (the bank account no), and the last digit (check digit)
 		final String esrReferenceNumberToMatch = completeEsrReferenceNumberStr.substring(7, 26);
 
@@ -129,7 +140,7 @@ public class ESRDataLoaderUtil
 		if (esrReferenceNumberDocument == null)
 		{
 			addMatchErrorMsg(importLine,
-							 Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_NO_ESR_NO_FOUND_IN_DB_1P,
+							 msgBL.getMsg(Env.getCtx(), ERR_NO_ESR_NO_FOUND_IN_DB_1P,
 															   new Object[] { completeEsrReferenceNumberStr }));
 		}
 		else
@@ -169,7 +180,7 @@ public class ESRDataLoaderUtil
 			{
 				addMatchErrorMsg(
 						importLine,
-						Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_ESR_DOES_NOT_BELONG_TO_INVOICE_2P,
+						msgBL.getMsg(Env.getCtx(), ERR_ESR_DOES_NOT_BELONG_TO_INVOICE_2P,
 														  new Object[] { completeEsrReferenceNumberStr, tableName }));
 			}
 		}
@@ -276,7 +287,7 @@ public class ESRDataLoaderUtil
 			if (invoice.getAD_Org_ID() != importLine.getAD_Org_ID())
 			{
 				addMatchErrorMsg(importLine,
-								 Services.get(IMsgBL.class).getMsg(Env.getCtx(), ESRDataLoaderUtil.ESR_UNFIT_INVOICE_ORG));
+								 msgBL.getMsg(Env.getCtx(), ESRDataLoaderUtil.ESR_UNFIT_INVOICE_ORG));
 			}
 			// check the org: should not match with invoices which have the partner from other org
 			else if (Services.get(IESRLineHandlersService.class).applyESRMatchingBPartnerOfTheInvoice(invoice, importLine))
@@ -304,7 +315,7 @@ public class ESRDataLoaderUtil
 					else
 					{
 						addMatchErrorMsg(importLine,
-										 Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_UNFIT_BPARTNER_VALUES, new Object[] {
+										 msgBL.getMsg(Env.getCtx(), ERR_UNFIT_BPARTNER_VALUES, new Object[] {
 												 invoicePartner.getValue(),
 												 bpValue
 										 }));
@@ -314,7 +325,7 @@ public class ESRDataLoaderUtil
 				if (!invoiceDocumentNo.equals(documentNo))
 				{
 					addMatchErrorMsg(importLine,
-									 Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_UNFIT_DOCUMENT_NOS, new Object[] {
+									 msgBL.getMsg(Env.getCtx(), ERR_UNFIT_DOCUMENT_NOS, new Object[] {
 											 invoiceDocumentNo,
 											 documentNo
 									 }));
@@ -323,7 +334,7 @@ public class ESRDataLoaderUtil
 			else
 			{
 				addMatchErrorMsg(importLine,
-								 Services.get(IMsgBL.class).getMsg(Env.getCtx(), ESRDataLoaderUtil.ESR_UNFIT_BPARTNER_ORG));
+								 msgBL.getMsg(Env.getCtx(), ESRDataLoaderUtil.ESR_UNFIT_BPARTNER_ORG));
 			}
 
 		}
@@ -338,7 +349,7 @@ public class ESRDataLoaderUtil
 				if (invoiceFallback.getAD_Org_ID() != importLine.getAD_Org_ID())
 				{
 					addMatchErrorMsg(importLine,
-									 Services.get(IMsgBL.class).getMsg(Env.getCtx(), ESRDataLoaderUtil.ESR_UNFIT_INVOICE_ORG));
+									 msgBL.getMsg(Env.getCtx(), ESRDataLoaderUtil.ESR_UNFIT_INVOICE_ORG));
 				}
 				else
 				{
@@ -412,7 +423,7 @@ public class ESRDataLoaderUtil
 		{
 			if (Check.isBlank(postAcctNo) || !bankAccount.isAccountNoMatching(postAcctNo))
 			{
-				ESRDataLoaderUtil.addMatchErrorMsg(importLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_POST_BANK_ACCOUNT,
+				ESRDataLoaderUtil.addMatchErrorMsg(importLine, msgBL.getMsg(Env.getCtx(), ERR_WRONG_POST_BANK_ACCOUNT,
 																								 new Object[] { bankAccount, postAcctNo }));
 			}
 		}
@@ -434,7 +445,7 @@ public class ESRDataLoaderUtil
 			if (!esrNumbersFit)
 			{
 
-				ESRDataLoaderUtil.addMatchErrorMsg(importLine, Services.get(IMsgBL.class).getMsg(Env.getCtx(), ERR_WRONG_POST_BANK_ACCOUNT,
+				ESRDataLoaderUtil.addMatchErrorMsg(importLine, msgBL.getMsg(Env.getCtx(), ERR_WRONG_POST_BANK_ACCOUNT,
 																								 new Object[] { postAcctNo }));
 			}
 		}

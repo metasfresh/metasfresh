@@ -59,6 +59,9 @@ import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.MASS
 import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.METASFRESH_EXTERNAL_SYSTEM_NAME;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
+/**
+ * This route's job is to open a http-port and write the BPartner-JSON data which just it received to disk. The location can be set via property or env-variable.
+ */
 @Component
 public class MetasfreshRestAPIRouteBuilder extends RouteBuilder implements IExternalSystemService
 {

@@ -147,8 +147,7 @@ public class BPartnerLocation
 	@Nullable
 	private String fax;
 
-	@Nullable
-	final String setupPlaceNo;
+	@Nullable final String setupPlaceNo;
 
 	@Nullable
 	private String vatTaxId;
@@ -356,6 +355,12 @@ public class BPartnerLocation
 		setRegion(address.getRegion());
 		setDistrict(address.getDistrict());
 		setCountryName(address.getCountryName());
+	}
+
+	@Nullable
+	public LocationId getExistingLocationIdNotNull()
+	{
+		return Check.assumeNotNull(getExistingLocationId(), "existingLocationId not null: {}", this);
 	}
 
 	/**

@@ -23,6 +23,7 @@
 package org.adempiere.archive.api;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocTypeId;
 import de.metas.i18n.Language;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
@@ -79,10 +80,18 @@ public class ArchiveRequest
 	@Nullable
 	BPartnerId bpartnerId;
 	@Nullable
+	DocTypeId overrideDocTypeId;
+	@Nullable
 	String documentNo;
+
+	@Builder.Default
+	boolean isMainReport = true;
 
 	@Nullable
 	Language language;
+
+	@Nullable
+	String poReference;
 
 	//
 	// Printing:

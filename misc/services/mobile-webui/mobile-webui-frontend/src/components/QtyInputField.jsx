@@ -23,19 +23,19 @@ const QtyInputField = ({
       uom,
     })
   );
+
   useEffect(() => {
-    setQtyInfo(
-      computeQtyInfoFromString({
-        qtyInputString: qtyInitial != null ? `${qtyInitial}` : '',
-        integerValuesOnly,
-        prevQtyInfo: {
-          qty: qtyInfo?.qty ?? 0,
-          notValidMessage: qtyInfo?.notValidMessage ?? null,
-        },
-        validateQtyEntered,
-        uom,
-      })
-    );
+    const newQtyInfo = computeQtyInfoFromString({
+      qtyInputString: qtyInitial != null ? `${qtyInitial}` : '',
+      integerValuesOnly,
+      prevQtyInfo: {
+        qty: qtyInfo?.qty ?? 0,
+        notValidMessage: qtyInfo?.notValidMessage ?? null,
+      },
+      validateQtyEntered,
+      uom,
+    });
+    setQtyInfo(newQtyInfo);
   }, [qtyInitial, integerValuesOnly, qtyInfo?.qty, qtyInfo?.notValidMessage, qtyInfo?.isQtyValid, validateQtyEntered]);
   //
   // Inform parent about initial value
@@ -44,14 +44,12 @@ const QtyInputField = ({
   //
   // Request Focus
   const qtyInputRef = useRef(null);
-  if (isRequestFocus) {
-    useEffect(() => {
-      if (!readonly) {
-        qtyInputRef.current.focus();
-        qtyInputRef.current.select();
-      }
-    }, [isRequestFocus, readonly]);
-  }
+  useEffect(() => {
+    if (isRequestFocus && !readonly && qtyInputRef.current) {
+      qtyInputRef.current.focus();
+      qtyInputRef.current.select();
+    }
+  }, [isRequestFocus, readonly]);
 
   const handleQtyEntered = (e) => {
     const qtyInputString = e.target.value ? e.target.value : '0';
@@ -116,7 +114,7 @@ const computeQtyInfoFromString = ({ qtyInputString, integerValuesOnly, prevQtyIn
 
     const notValidMessage = validateQtyEntered ? validateQtyEntered(qty, uom) : null;
 
-    return qtyInfos.of({ qty, notValidMessage });
+    return qtyInfos.of({ qty, qtyStr: qtyInputString, notValidMessage });
   }
 };
 

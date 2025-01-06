@@ -11,6 +11,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPRoutingRepository;
 import de.metas.material.planning.pporder.PPAlwaysAvailableToUser;
+import de.metas.material.planning.pporder.PPOrderTargetPlanningStatus;
 import de.metas.material.planning.pporder.PPRouting;
 import de.metas.material.planning.pporder.PPRoutingActivity;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
@@ -21,6 +22,7 @@ import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.material.planning.pporder.PPRoutingProduct;
 import de.metas.material.planning.pporder.PPRoutingProductId;
 import de.metas.material.planning.pporder.PPRoutingType;
+import de.metas.material.planning.pporder.RawMaterialsIssueStrategy;
 import de.metas.material.planning.pporder.UserInstructions;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
@@ -235,10 +237,13 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				.milestone(activityRecord.isMilestone())
 				.alwaysAvailableToUser(PPAlwaysAvailableToUser.ofNullableCode(activityRecord.getPP_AlwaysAvailableToUser()))
 				.userInstructions(UserInstructions.ofNullableString(activityRecord.getPP_UserInstructions()))
+				.targetPlanningStatus(PPOrderTargetPlanningStatus.ofNullableCode(activityRecord.getTargetPlanningStatus()))
 				//
 				.nextActivityIds(nextActivityIds)
 				//
 				.activityTemplateId(PPRoutingActivityTemplateId.ofRepoIdOrNull(activityRecord.getAD_WF_Node_Template_ID()))
+				//
+				.rawMaterialsIssueStrategy(RawMaterialsIssueStrategy.ofCodeOrDefault(activityRecord.getRawMaterialsIssueStrategy()))
 				//
 				.build();
 	}

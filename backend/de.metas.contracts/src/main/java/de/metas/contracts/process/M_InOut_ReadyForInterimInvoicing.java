@@ -26,6 +26,7 @@ import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutBL;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -58,6 +59,15 @@ public class M_InOut_ReadyForInterimInvoicing extends JavaProcess implements IPr
 		if (streamFlatrateTermIds(context).anyMatch(Objects::isNull))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("At least one line has no contract set !");
+		}
+
+		final boolean isDocStatusEligible = getSelectedRecords()
+				.map(I_M_InOut::getDocStatus)
+				.map(DocStatus::ofCode)
+				.allMatch(DocStatus::isCompleted);
+		if (!isDocStatusEligible)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("At least one record is not completed");
 		}
 
 		final boolean areAllModularContracts = streamFlatrateTermIds(context)

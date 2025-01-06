@@ -5,6 +5,7 @@ import de.metas.util.Check;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 
@@ -13,6 +14,9 @@ import javax.annotation.Nullable;
 import static org.compiere.model.X_AD_MailConfig.CUSTOMTYPE_InvoiceRejection;
 import static org.compiere.model.X_AD_MailConfig.CUSTOMTYPE_MassDunning;
 import static org.compiere.model.X_AD_MailConfig.CUSTOMTYPE_OrgCompiereUtilLogin;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -65,4 +69,5 @@ public enum EMailCustomType implements ReferenceListAwareEnum
 		return eMailCustomType;
 	}
 
+	public static boolean equals(EMailCustomType t1, EMailCustomType t2) {return Objects.equals(t1, t2);}
 }

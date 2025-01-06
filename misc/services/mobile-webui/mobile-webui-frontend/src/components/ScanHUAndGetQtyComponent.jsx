@@ -2,14 +2,16 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import { trl } from '../utils/translations';
-
-import BarcodeScannerComponent from './BarcodeScannerComponent';
 import GetQuantityDialog from './dialogs/GetQuantityDialog';
 import Button from './buttons/Button';
-import { formatQtyToHumanReadableStr, formatQtyToHumanReadable, roundToQtyPrecision } from '../utils/qtys';
+import { formatQtyToHumanReadable, formatQtyToHumanReadableStr, roundToQtyPrecision } from '../utils/qtys';
 import { useBooleanSetting } from '../reducers/settings';
 import { toastError } from '../utils/toast';
+import { toQRCodeString } from '../utils/qrCode/hu';
+import HUScanner from './huSelector/HUScanner';
+import BarcodeScannerComponent from './BarcodeScannerComponent';
 
+const STATUS_NOT_INITIALIZED = 'NOT_INITIALIZED';
 const STATUS_READ_BARCODE = 'READ_BARCODE';
 const STATUS_READ_QTY = 'READ_QTY';
 
@@ -18,11 +20,15 @@ const DEFAULT_MSG_notPositiveQtyNotAllowed = 'activities.picking.notPositiveQtyN
 const DEFAULT_MSG_notEligibleHUBarcode = 'activities.picking.notEligibleHUBarcode';
 
 const ScanHUAndGetQtyComponent = ({
+  scannedBarcode: scannedBarcodeParam,
   eligibleBarcode,
   resolveScannedBarcode,
+  useHUScanner,
   //
   userInfo,
   qtyCaption,
+  packingItemName,
+  qtyTargetCaption,
   qtyTarget,
   qtyMax,
   lineQtyToIssue,
@@ -37,17 +43,23 @@ const ScanHUAndGetQtyComponent = ({
   catchWeightUom,
   isShowBestBeforeDate = false,
   isShowLotNo = false,
+  isShowCloseTargetButton = false,
   //
   invalidBarcodeMessageKey,
   invalidQtyMessageKey,
   //
+  getConfirmationPromptForQty,
   onResult,
+  onClose: onCloseCallback,
 }) => {
-  const [progressStatus, setProgressStatus] = useState(STATUS_READ_BARCODE);
+  const [progressStatus, setProgressStatus] = useState(STATUS_NOT_INITIALIZED);
   const [resolvedBarcodeData, setResolvedBarcodeData] = useState({
+    lineId: null,
     userInfo,
     qtyCaption,
+    packingItemName,
     qtyTarget,
+    qtyTargetCaption,
     qtyMax,
     lineQtyToIssue,
     lineQtyIssued,
@@ -61,10 +73,15 @@ const ScanHUAndGetQtyComponent = ({
     catchWeightUom,
   });
 
+  //
+  // Init/reset resolvedBarcodeData on parameters changed (usually first time or when we get here from history.replace)
   useEffect(() => {
     setResolvedBarcodeData((prevState) => ({
+      lineId: prevState?.lineId,
       userInfo,
       qtyCaption,
+      packingItemName,
+      qtyTargetCaption,
       qtyTarget,
       qtyMax,
       lineQtyToIssue,
@@ -83,6 +100,8 @@ const ScanHUAndGetQtyComponent = ({
   }, [
     userInfo,
     qtyCaption,
+    packingItemName,
+    qtyTargetCaption,
     qtyTarget,
     qtyMax,
     lineQtyToIssue,
@@ -97,7 +116,18 @@ const ScanHUAndGetQtyComponent = ({
     catchWeightUom,
   ]);
 
-  const handleResolveScannedBarcode = ({ scannedBarcode }) => {
+  //
+  // Simulate barcode scanning when we get "qrCode" url param
+  // IMPORTANT: this shall be called after "Init/reset resolvedBarcodeData" effect
+  useEffect(() => {
+    if (scannedBarcodeParam) {
+      onBarcodeScanned(handleResolveScannedBarcode({ scannedBarcode: scannedBarcodeParam }));
+    } else {
+      setProgressStatus(STATUS_READ_BARCODE);
+    }
+  }, [scannedBarcodeParam]);
+
+  const handleResolveScannedBarcode = ({ scannedBarcode, huId }) => {
     // console.log('handleResolveScannedBarcode', { scannedBarcode, eligibleBarcode });
 
     // If an eligible barcode was provided, make sure scanned barcode is matching it
@@ -110,20 +140,37 @@ const ScanHUAndGetQtyComponent = ({
     // noinspection UnnecessaryLocalVariableJS
     const resolvedBarcodeDataNew = {
       ...resolvedBarcodeData,
-      ...resolveScannedBarcode?.(scannedBarcode),
+      ...resolveScannedBarcode?.(scannedBarcode, huId),
       scannedBarcode,
     };
 
-    // console.log('handleResolveScannedBarcode', { resolvedBarcodeDataNew, resolvedBarcodeData });
+    //console.log('handleResolveScannedBarcode', { resolvedBarcodeDataNew, resolvedBarcodeData });
 
     return resolvedBarcodeDataNew;
+  };
+
+  const handleEligibleBarcodeClicked = ({ scannedBarcode }) => {
+    return handleResolveScannedBarcode({ scannedBarcode });
+  };
+
+  const handleHandlingUnitInfoScanned = (handlingUnitInfo) => {
+    try {
+      onBarcodeScanned(
+        handleResolveScannedBarcode({
+          scannedBarcode: toQRCodeString(handlingUnitInfo.qrCode),
+          huId: handlingUnitInfo.id,
+        })
+      );
+    } catch (e) {
+      toastError({ plainMessage: e });
+    }
   };
 
   const onBarcodeScanned = (resolvedBarcodeDataNew) => {
     setResolvedBarcodeData(resolvedBarcodeDataNew);
     const askForQty = resolvedBarcodeDataNew.qtyTarget != null || resolvedBarcodeDataNew.qtyMax != null;
 
-    // console.log('onBarcodeScanned', { resolvedBarcodeDataNew, resolvedBarcodeData, askForQty });
+    console.log('onBarcodeScanned', { resolvedBarcodeDataNew, resolvedBarcodeData, askForQty });
 
     if (askForQty) {
       setProgressStatus(STATUS_READ_QTY);
@@ -186,25 +233,32 @@ const ScanHUAndGetQtyComponent = ({
     catchWeightUom,
     bestBeforeDate,
     lotNo,
-    gotoPickingLineScreen = true,
+    productNo,
+    barcodeType,
+    isCloseTarget = false,
+    isDone = true,
   }) => {
-    onResult({
+    return onResult({
       qty: qtyEnteredAndValidated,
       qtyRejected,
       reason: qtyRejectedReason,
       scannedBarcode: resolvedBarcodeData.scannedBarcode,
       resolvedBarcodeData,
+      barcodeType,
       catchWeight,
       catchWeightUom,
       isTUToBePickedAsWhole: resolvedBarcodeData.isTUToBePickedAsWhole,
       bestBeforeDate,
       lotNo,
-      gotoPickingLineScreen,
+      productNo,
+      isCloseTarget,
+      isDone,
     });
   };
 
   const onCloseDialog = () => {
     setProgressStatus(STATUS_READ_BARCODE);
+    onCloseCallback?.();
   };
 
   const showEligibleBarcodeDebugButton = useBooleanSetting('barcodeScanner.showEligibleBarcodeDebugButton');
@@ -213,25 +267,32 @@ const ScanHUAndGetQtyComponent = ({
     case STATUS_READ_BARCODE: {
       return (
         <>
-          <BarcodeScannerComponent
-            resolveScannedBarcode={handleResolveScannedBarcode}
-            onResolvedResult={onBarcodeScanned}
-          />
+          {useHUScanner ? (
+            <HUScanner onResolvedBarcode={handleHandlingUnitInfoScanned} eligibleBarcode={eligibleBarcode} />
+          ) : (
+            <BarcodeScannerComponent
+              resolveScannedBarcode={handleResolveScannedBarcode}
+              onResolvedResult={onBarcodeScanned}
+            />
+          )}
           {showEligibleBarcodeDebugButton && eligibleBarcode && (
             <Button
               caption={`DEBUG: QR`}
-              onClick={() => onBarcodeScanned(handleResolveScannedBarcode({ scannedBarcode: eligibleBarcode }))}
+              onClick={() => onBarcodeScanned(handleEligibleBarcodeClicked({ scannedBarcode: eligibleBarcode }))}
             />
           )}
         </>
       );
     }
     case STATUS_READ_QTY: {
+      console.log('rendering qty dialog', { resolvedBarcodeData });
       return (
         <GetQuantityDialog
           userInfo={resolvedBarcodeData.userInfo}
+          qtyTargetCaption={resolvedBarcodeData.qtyTargetCaption}
           qtyTarget={resolvedBarcodeData.qtyTarget}
           qtyCaption={resolvedBarcodeData.qtyCaption}
+          packingItemName={resolvedBarcodeData.packingItemName}
           totalQty={resolvedBarcodeData.lineQtyToIssue}
           qtyAlreadyOnScale={resolvedBarcodeData.qtyAlreadyOnScale}
           uom={resolvedBarcodeData.uom}
@@ -246,7 +307,9 @@ const ScanHUAndGetQtyComponent = ({
           bestBeforeDate={resolvedBarcodeData.bestBeforeDate}
           isShowLotNo={isShowLotNo}
           lotNo={resolvedBarcodeData.lotNo}
+          isShowCloseTargetButton={isShowCloseTargetButton}
           //
+          getConfirmationPromptForQty={getConfirmationPromptForQty}
           validateQtyEntered={validateQtyEntered}
           onQtyChange={onQtyEntered}
           onCloseDialog={onCloseDialog}
@@ -262,14 +325,18 @@ const ScanHUAndGetQtyComponent = ({
 ScanHUAndGetQtyComponent.propTypes = {
   //
   // Props: Barcode scanning related
+  scannedBarcode: PropTypes.string,
   eligibleBarcode: PropTypes.string,
   resolveScannedBarcode: PropTypes.func,
+  useHUScanner: PropTypes.bool,
   //
   // Props: Qty related
   userInfo: PropTypes.array,
   qtyCaption: PropTypes.string,
+  packingItemName: PropTypes.string,
   qtyMax: PropTypes.number,
   qtyTarget: PropTypes.number,
+  qtyTargetCaption: PropTypes.string,
   lineQtyToIssue: PropTypes.number,
   lineQtyIssued: PropTypes.number,
   qtyHUCapacity: PropTypes.number,
@@ -282,13 +349,16 @@ ScanHUAndGetQtyComponent.propTypes = {
   catchWeightUom: PropTypes.string,
   isShowBestBeforeDate: PropTypes.bool,
   isShowLotNo: PropTypes.bool,
+  isShowCloseTargetButton: PropTypes.bool,
   //
   // Error messages:
   invalidBarcodeMessageKey: PropTypes.string,
   invalidQtyMessageKey: PropTypes.string,
   //
   // Functions
+  getConfirmationPromptForQty: PropTypes.func,
   onResult: PropTypes.func,
+  onClose: PropTypes.func,
 };
 
 export default ScanHUAndGetQtyComponent;

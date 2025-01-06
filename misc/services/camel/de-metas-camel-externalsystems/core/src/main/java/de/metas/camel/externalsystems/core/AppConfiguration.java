@@ -30,15 +30,20 @@ import lombok.NonNull;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.spring.boot.CamelContextConfiguration;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 
 import static de.metas.camel.externalsystems.core.authorization.CustomMessageToMFRouteBuilder.CUSTOM_TO_MF_ROUTE_ID;
 
 @Configuration
 public class AppConfiguration
 {
+	private static final Logger logger = LogManager.getLogger(AppConfiguration.class);
 	private final ApplicationContext context;
 	private final CamelContext camelContext;
 
@@ -76,7 +81,11 @@ public class AppConfiguration
 			{
 				camelContext.setAutoStartup(false);
 
-				final String metasfreshAPIBaseURL = context.getEnvironment().getProperty(ExternalSystemCamelConstants.MF_API_BASE_URL_PROPERTY);
+				final Environment env = context.getEnvironment();
+
+				logger.log(Level.INFO, "Configured RabbitMQ hostname:port is  {}:{}", env.getProperty("camel.component.rabbitmq.hostname"), env.getProperty("camel.component.rabbitmq.port-number"));
+
+				final String metasfreshAPIBaseURL = env.getProperty(ExternalSystemCamelConstants.MF_API_BASE_URL_PROPERTY);
 
 				if (Check.isBlank(metasfreshAPIBaseURL))
 				{

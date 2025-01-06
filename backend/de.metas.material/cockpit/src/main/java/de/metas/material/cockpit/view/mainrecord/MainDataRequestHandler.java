@@ -27,6 +27,8 @@ import de.metas.Profiles;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.view.MainDataRecordIdentifier;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
 import lombok.NonNull;
 import org.compiere.model.IQuery;
@@ -117,20 +119,24 @@ public class MainDataRequestHandler
 		// was Fresh_QtyMRP, was QtyRequiredForProduction
 		dataRecord.setQtyDemand_PP_Order_AtDate(computeSum(dataRecord.getQtyDemand_PP_Order_AtDate(), dataUpdateRequest.getQtyDemandPPOrder()));
 
-		dataRecord.setQtySupplyRequired_AtDate(CoalesceUtil.firstPositiveOrZero(computeSum(dataRecord.getQtySupplyRequired_AtDate(), dataUpdateRequest.getQtySupplyRequired())));
+		final BigDecimal qtySupplyRequired_AtDate_Prev = dataRecord.getQtySupplyRequired_AtDate();
+		dataRecord.setQtySupplyRequired_AtDate(CoalesceUtil.firstPositiveOrZero(computeSum(qtySupplyRequired_AtDate_Prev, dataUpdateRequest.getQtySupplyRequired())));
 
 		updateQtyStockEstimateColumns(dataRecord, dataUpdateRequest);
 
 		dataRecord.setQtyInventoryCount_AtDate(computeSum(dataRecord.getQtyInventoryCount_AtDate(), dataUpdateRequest.getQtyInventoryCount()));
 		dataRecord.setQtyInventoryTime_AtDate(TimeUtil.asTimestamp(TimeUtil.max(TimeUtil.asInstant(dataRecord.getDateGeneral()),
-																		 dataUpdateRequest.getQtyInventoryTime())));
+				dataUpdateRequest.getQtyInventoryTime())));
 
 		dataRecord.setQtySupplySum_AtDate(computeQtySupply_Sum(dataRecord));
 		dataRecord.setQtyDemandSum_AtDate(computeQtyDemand_Sum(dataRecord));
+
+		final ILoggable loggable = Loggables.get();
+		loggable.addLog("Update MD_Cockpit_ID=" + dataRecord.getMD_Cockpit_ID() + ", QtySupplyRequired_AtDate=" + qtySupplyRequired_AtDate_Prev + "->" + dataRecord.getQtySupplyRequired_AtDate());
 	}
 
 	private static void updateQtyStockEstimateColumns(
-			@NonNull final I_MD_Cockpit dataRecord, 
+			@NonNull final I_MD_Cockpit dataRecord,
 			@NonNull final UpdateMainDataRequest dataUpdateRequest)
 	{
 		if (dataUpdateRequest.getQtyStockEstimateCount() != null)

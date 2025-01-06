@@ -85,7 +85,7 @@ Feature: approved for invoicing
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_ol_1     | ol_1                      | N             |
 
-    When 'generate shipments' process is invoked
+    When  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_ol_1                           | D            | true                | false       |
     Then after not more than 60s, M_InOut is found:

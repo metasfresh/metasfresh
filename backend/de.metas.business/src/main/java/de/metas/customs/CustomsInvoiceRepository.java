@@ -204,7 +204,7 @@ public class CustomsInvoiceRepository
 			@NonNull final ImmutableListMultimap<CustomsInvoiceLineId, CustomsInvoiceLineAlloc> allocs)
 	{
 		final CustomsInvoiceLineId id = CustomsInvoiceLineId.ofRepoId(customsInvoiceId, record.getC_Customs_Invoice_Line_ID());
-		final Quantity qty = Quantitys.create(record.getInvoicedQty(), UomId.ofRepoId(record.getC_UOM_ID()));
+		final Quantity qty = Quantitys.of(record.getInvoicedQty(), UomId.ofRepoId(record.getC_UOM_ID()));
 		final Money lineNetAmt = Money.of(record.getLineNetAmt(), currencyId);
 
 		return CustomsInvoiceLine.builder()

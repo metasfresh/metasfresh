@@ -39,12 +39,12 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
@@ -169,6 +169,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 		receiptSchedule.setC_Project_ID(line.getC_Project_ID()); // C_OrderLine.C_Project_ID is set from order via model interceptor
 
+		receiptSchedule.setPOReference(order.getPOReference());
 		//
 		// Delivery rule, Priority rule
 		{
@@ -210,8 +211,8 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			//
 			// Destination Warehouse
 
-			final I_M_Warehouse warehouseDest = getWarehouseDest(ctx, line);
-			receiptSchedule.setM_Warehouse_Dest_ID(warehouseDest == null ? 0 : warehouseDest.getM_Warehouse_ID());
+			final WarehouseId warehouseDestId = getWarehouseDest(ctx, line).orElse(null);
+			receiptSchedule.setM_Warehouse_Dest_ID(WarehouseId.toRepoId(warehouseDestId));
 		}
 
 		//
@@ -374,16 +375,16 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 	}
 
 	/**
-	 * @return destination warehouse for given order line or <code>null</code>
+	 * @return destination warehouse for given order line
 	 */
-	private I_M_Warehouse getWarehouseDest(final Properties ctx, final org.compiere.model.I_C_OrderLine line)
+	private Optional<WarehouseId> getWarehouseDest(final Properties ctx, final org.compiere.model.I_C_OrderLine line)
 	{
 		//
 		// If we deal with a drop shipment we shall not have any destination warehouse where we need to move after receipt (08402)
 		final I_C_Order order = line.getC_Order();
 		if (order.isDropShip())
 		{
-			return null;
+			return Optional.empty();
 		}
 
 		final IReceiptScheduleWarehouseDestProvider warehouseDestProvider = getWarehouseDestProvider();

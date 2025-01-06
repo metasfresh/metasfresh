@@ -25,6 +25,7 @@ package de.metas.handlingunits.picking.job.model;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.ITranslatableString;
@@ -39,6 +40,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.compiere.model.I_C_UOM;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
 
@@ -64,7 +66,7 @@ public class PickingJobStep
 	@NonNull PickingJobStepPickFromMap pickFroms;
 
 	//
-	// Pick To Specification
+	// Pack To Specification
 	@NonNull PackToSpec packToSpec;
 
 	@NonNull PickingJobProgress progress;
@@ -105,6 +107,16 @@ public class PickingJobStep
 
 	public boolean isNothingPicked() {return pickFroms.isNothingPicked();}
 
+	public Quantity getQtyPicked()
+	{
+		return pickFroms.getQtyPicked().orElseGet(qtyToPick::toZero);
+	}
+
+	public Quantity getQtyRejected()
+	{
+		return pickFroms.getQtyRejected().orElseGet(qtyToPick::toZero);
+	}
+
 	public PickingJobStep reduceWithPickedEvent(
 			@NonNull PickingJobStepPickFromKey key,
 			@NonNull PickingJobStepPickedTo pickedTo)
@@ -142,4 +154,9 @@ public class PickingJobStep
 		return pickFroms.getPickFromByHUQRCode(qrCode);
 	}
 
+	@NonNull
+	public List<HuId> getPickedHUIds()
+	{
+		return pickFroms.getPickedHUIds();
+	}
 }

@@ -67,6 +67,7 @@ import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JsonProcessHealthResponse;
 import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
@@ -245,6 +246,7 @@ public class ProcessRestController
 					.singleDocumentPath(singleDocumentPath)
 					.selectedIncludedDocumentPaths(jsonRequest.getSelectedIncludedDocumentPaths())
 					.viewRowIdsSelection(viewRowIdsSelection)
+					.viewOrderBys(viewId != null ? jsonRequest.getViewOrderBys() : DocumentQueryOrderByList.EMPTY)
 					.parentViewRowIdsSelection(jsonRequest.getParentViewRowIdsSelection())
 					.childViewRowIdsSelection(jsonRequest.getChildViewRowIdsSelection())
 					.build();

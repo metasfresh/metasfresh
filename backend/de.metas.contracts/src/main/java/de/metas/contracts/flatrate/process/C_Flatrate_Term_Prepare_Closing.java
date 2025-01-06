@@ -41,7 +41,6 @@ import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.Query;
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
@@ -96,37 +95,27 @@ public class C_Flatrate_Term_Prepare_Closing extends JavaProcess
 		// create one correction entry per UOM and fill it with the qtys that were invoiced
 		// (i.e. the entries' Qty_Reported values). It's up to the user to add the final correction values and
 		// complete those entries.
-		final List<I_C_UOM> uoms = new Query(ctx, I_C_UOM.Table_Name, I_C_UOM.COLUMNNAME_UOMType + "=?", trxName)
-				.setParameters(flatrateTerm.getUOMType())
-				.setOnlyActiveRecords(true)
-				.setOrderBy(I_C_UOM.COLUMNNAME_C_UOM_ID)
-				.list(I_C_UOM.class);
+		final I_C_UOM uomRecord = uomDAO.getById(flatrateTerm.getC_UOM_ID());
 
-		boolean allEntriesCompleted = true;
+		// We sum up qtyReported from the invoicing data entries lying within 'p_period'.
+		// At the same time we make sure that all those entries have been completed.
+		// The result is used as the correction entry's qtyPlanned value.
+		final LocalDateAndOrgId endDate = LocalDateAndOrgId.ofTimestamp(p_periodTo.getEndDate(), OrgId.ofRepoId(flatrateTerm.getAD_Org_ID()), orgDAO::getTimeZone);
+			final QtyReportedAndQtyActual qtyReportedAndQtyActual = retreiveQtyReportedOrNull(flatrateTerm, startDate, endDate, uomRecord);
 
-		for (final I_C_UOM uom : uoms)
+		final boolean allEntriesCompleted = qtyReportedAndQtyActual != null;
+
+		if (allEntriesCompleted)
 		{
-			// We sum up qtyReported from the invoicing data entries lying within 'p_period'.
-			// At the same time we make sure that all those entries have been completed.
-			// The result is used as the correction entry's qtyPlanned value.
-			final LocalDateAndOrgId endDate = LocalDateAndOrgId.ofTimestamp(p_periodTo.getEndDate(), OrgId.ofRepoId(flatrateTerm.getAD_Org_ID()), orgDAO::getTimeZone);
-			final QtyReportedAndQtyActual qtyReportedAndQtyActual = retreiveQtyReportedOrNull(flatrateTerm, startDate, endDate, uom);
-			if (qtyReportedAndQtyActual == null)
-			{
-				allEntriesCompleted = false;
-			}
+			final I_C_Flatrate_DataEntry existingCorrectionentry =
+					flatrateDB.retrieveDataEntryOrNull(flatrateTerm, p_periodTo, X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased, UomId.ofRepoId(uomRecord.getC_UOM_ID()));
 
-			if (allEntriesCompleted)
+			if (existingCorrectionentry != null)
 			{
-				final I_C_Flatrate_DataEntry existingCorrectionentry =
-						flatrateDB.retrieveDataEntryOrNull(flatrateTerm, p_periodTo, X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased, uom);
-
-				if (existingCorrectionentry != null)
-				{
-					final String msg =
-							Msg.getMsg(getCtx(),
-									MSG_PREPARE_CLOSING_CORRECTION_ENTRY_EXISTS_2P,
-									new Object[] { uom.getName(), p_periodTo.getName() });
+				final String msg =
+						Msg.getMsg(getCtx(),
+								   MSG_PREPARE_CLOSING_CORRECTION_ENTRY_EXISTS_2P,
+								   new Object[] { uomRecord.getName(), p_periodTo.getName() });
 					addLog(msg);
 				}
 				else
@@ -137,21 +126,20 @@ public class C_Flatrate_Term_Prepare_Closing extends JavaProcess
 
 					newCorrectionEntry.setType(X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased);
 
-					newCorrectionEntry.setC_UOM_ID(uom.getC_UOM_ID());
-					newCorrectionEntry.setC_Flatrate_Term_ID(flatrateTerm.getC_Flatrate_Term_ID());
-					newCorrectionEntry.setC_Period_ID(p_periodTo.getC_Period_ID());
+				newCorrectionEntry.setC_UOM_ID(uomRecord.getC_UOM_ID());
+				newCorrectionEntry.setC_Flatrate_Term_ID(flatrateTerm.getC_Flatrate_Term_ID());
+				newCorrectionEntry.setC_Period_ID(p_periodTo.getC_Period_ID());
 
-					newCorrectionEntry.setQty_Planned(qtyReportedAndQtyActual.qtyReported);
-					if (flatrateTerm.getC_Flatrate_Conditions().isCorrectionAmtAtClosing())
-					{
-						newCorrectionEntry.setActualQty(qtyReportedAndQtyActual.qtyActual);
-					}
-
-					uomId2NewCorrectionEntries.put(uom.getC_UOM_ID(), newCorrectionEntry);
+				newCorrectionEntry.setQty_Planned(qtyReportedAndQtyActual.qtyReported);
+				if (flatrateTerm.getC_Flatrate_Conditions().isCorrectionAmtAtClosing())
+				{
+					newCorrectionEntry.setActualQty(qtyReportedAndQtyActual.qtyActual);
 				}
+
+				uomId2NewCorrectionEntries.put(uomRecord.getC_UOM_ID(), newCorrectionEntry);
 			}
 		}
-
+		
 		if (allEntriesCompleted)
 		{
 			for (final I_C_Flatrate_DataEntry newCorrectionEntry : uomId2NewCorrectionEntries.values())

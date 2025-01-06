@@ -97,6 +97,7 @@ public class DocumentCollection
 
 	private static final Logger logger = LogManager.getLogger(DocumentCollection.class);
 	public static final AdMessageKey MSG_CLONING_NOT_ALLOWED_FOR_CURRENT_WINDOW = AdMessageKey.of("de.metas.ui.web.window.model.DocumentCollection.CloningNotAllowedForCurrentWindow");
+	public static final AdMessageKey MSG_CREATE_NOT_ALLOWED = AdMessageKey.of(("de.metas.ui.web.window.model.DocumentCollection.CreateNotAllowed"));
 
 	private final DocumentDescriptorFactory documentDescriptorFactory;
 	private final UserSession userSession;
@@ -358,7 +359,7 @@ public class DocumentCollection
 		final LogicExpressionResult allow = allowExpr.evaluateToResult(userSession.toEvaluatee(), OnVariableNotFound.ReturnNoResult);
 		if (allow.isFalse())
 		{
-			throw new AdempiereException("Create not allowed");
+			throw new AdempiereException(MSG_CREATE_NOT_ALLOWED);
 		}
 	}
 
@@ -574,7 +575,7 @@ public class DocumentCollection
 
 		//
 		// Notify frontend
-		documentKeys.forEach(documentKey -> websocketPublisher.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId()));
+		documentKeys.forEach(documentKey -> websocketPublisher.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId(), true));
 	}
 
 	public void invalidateDocumentsByWindowId(
