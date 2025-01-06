@@ -3,6 +3,7 @@ de.metas.externalsystem.ExternalSystemLeichMehlConfigProductMappingRepositoryTes
     "bPartnerId": 1,
     "id": 2,
     "leichMehlPluFileConfigGroup": {
+      "customQueryProcessValue": "ExternalSystem_Config_LeichMehl_CustomQuery",
       "externalSystemLeichMehlPluFileConfigs": [
         {
           "id": 1,
@@ -18,6 +19,59 @@ de.metas.externalsystem.ExternalSystemLeichMehlConfigProductMappingRepositoryTes
       "name": "testGroupName"
     },
     "pluFile": "pluFilePartner",
+    "pluType": "CU",
+    "productId": 1
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemLeichMehlConfigProductMappingRepositoryTest.getExternalSystemLeichMehlConfigProductMappings_whenConfigWithCUAndTUExist_getCUOne=[
+  {
+    "bPartnerId": 1,
+    "id": 1,
+    "leichMehlPluFileConfigGroup": {
+      "externalSystemLeichMehlPluFileConfigs": [
+        {
+          "id": 1,
+          "leichMehlPluFileConfigGroupId": 1,
+          "replaceRegExp": "replacePattern",
+          "replacement": "replacement",
+          "replacementSource": "PPOrder",
+          "targetFieldName": "targetFileName",
+          "targetFieldType": "Date"
+        }
+      ],
+      "id": 1,
+      "name": "testGroupName"
+    },
+    "pluFile": "pluFile",
+    "pluType": "CU",
+    "productId": 1
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemLeichMehlConfigProductMappingRepositoryTest.getExternalSystemLeichMehlConfigProductMappings_whenConfigWithCUAndTUExist_getTUOne=[
+  {
+    "bPartnerId": 1,
+    "id": 2,
+    "leichMehlPluFileConfigGroup": {
+      "externalSystemLeichMehlPluFileConfigs": [
+        {
+          "id": 1,
+          "leichMehlPluFileConfigGroupId": 1,
+          "replaceRegExp": "replacePattern",
+          "replacement": "replacement",
+          "replacementSource": "PPOrder",
+          "targetFieldName": "targetFileName",
+          "targetFieldType": "Date"
+        }
+      ],
+      "id": 1,
+      "name": "testGroupName"
+    },
+    "pluFile": "pluFilePartner",
+    "pluType": "TU",
     "productId": 1
   }
 ]

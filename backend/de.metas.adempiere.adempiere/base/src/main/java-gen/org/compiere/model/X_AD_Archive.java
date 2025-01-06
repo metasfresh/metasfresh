@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 457753025L;
+	private static final long serialVersionUID = 171076542L;
 
     /** Standard Constructor */
     public X_AD_Archive (final Properties ctx, final int AD_Archive_ID, @Nullable final String trxName)
@@ -269,6 +269,19 @@ public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive,
 	}
 
 	@Override
+	public void setIsMainArchive (final boolean IsMainArchive)
+	{
+		set_Value (COLUMNNAME_IsMainArchive, IsMainArchive);
+	}
+
+	@Override
+	public boolean isMainArchive()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsMainArchive);
+	}
+
+
+	@Override
 	public void setIsFileSystem (final boolean IsFileSystem)
 	{
 		set_Value (COLUMNNAME_IsFileSystem, IsFileSystem);
@@ -302,6 +315,36 @@ public class X_AD_Archive extends org.compiere.model.PO implements I_AD_Archive,
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+
+	@Override
+	public void setOverride_DocType_ID (final int Override_DocType_ID)
+	{
+		if (Override_DocType_ID < 1)
+			set_Value (COLUMNNAME_Override_DocType_ID, null);
+		else
+			set_Value (COLUMNNAME_Override_DocType_ID, Override_DocType_ID);
+	}
+
+	@Override
+	public int getOverride_DocType_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Override_DocType_ID);
+	}
+
+
+
+	@Override
+	public void setPOReference (final @Nullable java.lang.String POReference)
+	{
+		set_Value (COLUMNNAME_POReference, POReference);
+	}
+
+	@Override
+	public java.lang.String getPOReference() 
+	{
+		return get_ValueAsString(COLUMNNAME_POReference);
 	}
 
 	@Override

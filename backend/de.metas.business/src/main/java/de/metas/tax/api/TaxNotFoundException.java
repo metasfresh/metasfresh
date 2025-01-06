@@ -16,6 +16,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -58,7 +59,6 @@ public class TaxNotFoundException extends AdempiereException
 
 	@Builder
 	private TaxNotFoundException(
-			final String adMessage,
 			final ProductId productId,
 			final int chargeId,
 			final TaxCategoryId taxCategoryId,
@@ -113,6 +113,16 @@ public class TaxNotFoundException extends AdempiereException
 		setParameter("billFromCountryId", billFromCountryId);
 		this.billToC_Location_ID = billToC_Location_ID;
 		setParameter("billToC_Location_ID", billToC_Location_ID != null ? billToC_Location_ID.getRepoId() : null);
+	}
+
+	public static TaxNotFoundException ofQuery(@NonNull final TaxQuery taxQuery)
+	{
+		return TaxNotFoundException.builder()
+				.taxCategoryId(taxQuery.getTaxCategoryId())
+				.isSOTrx(taxQuery.getSoTrx().isSales())
+				.billDate(taxQuery.getDateOfInterest())
+				.billFromCountryId(taxQuery.getFromCountryId())
+				.build();
 	}
 
 	@Override

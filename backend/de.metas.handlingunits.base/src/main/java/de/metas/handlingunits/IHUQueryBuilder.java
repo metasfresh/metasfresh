@@ -476,5 +476,5 @@ public interface IHUQueryBuilder
 	 */
 	IHUQueryBuilder setOnlyStockedProducts(final boolean onlyStockedProducts);
 
-
+	IHUQueryBuilder setIgnoreHUsScheduledInDDOrder(boolean ignoreHUsScheduledInDDOrder);
 }

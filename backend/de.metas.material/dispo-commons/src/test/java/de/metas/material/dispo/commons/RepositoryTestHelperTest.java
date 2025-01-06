@@ -1,6 +1,6 @@
 package de.metas.material.dispo.commons;
 
-import de.metas.document.dimension.DimensionFactory;
+import com.google.common.collect.ImmutableList;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.material.dispo.commons.candidate.Candidate;
@@ -19,10 +19,7 @@ import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -49,20 +46,17 @@ import static org.assertj.core.api.Assertions.*;
 public class RepositoryTestHelperTest
 {
 	private RepositoryTestHelper repositoryTestHelper;
-	private DimensionService dimensionService;
-	private StockChangeDetailRepo stockChangeDetailRepo;
+	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
 	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
 
-		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
-		dimensionFactories.add(new MDCandidateDimensionFactory());
-		dimensionService = new DimensionService(dimensionFactories);
-		stockChangeDetailRepo = new StockChangeDetailRepo();
+		final DimensionService dimensionService = new DimensionService(ImmutableList.of(new MDCandidateDimensionFactory()));
 		SpringContextHolder.registerJUnitBean(dimensionService);
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
+		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
+		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
 
 		repositoryTestHelper = new RepositoryTestHelper(candidateRepositoryWriteService);
@@ -104,7 +98,7 @@ public class RepositoryTestHelperTest
 		return Services.get(IQueryBL.class).createQueryBuilder(I_MD_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MD_Candidate.COLUMN_MD_Candidate_ID,
-								 candidateId.getRepoId())
+						candidateId.getRepoId())
 				.create().firstOnly(I_MD_Candidate.class);
 	}
 
@@ -112,9 +106,7 @@ public class RepositoryTestHelperTest
 	public void constructor_sets_up_candidates_correctly_and_queries_work()
 	{
 		final CandidatesQuery stockCandidatequery = repositoryTestHelper.mkQueryForStockUntilDate(EventTestHelper.NOW);
-		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 		final Candidate retrievedStockCandidate = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(stockCandidatequery);
-		assertThat(retrievedStockCandidate).isNotNull();
 		assertThat(retrievedStockCandidate).isEqualTo(repositoryTestHelper.stockCandidate);
 	}
 

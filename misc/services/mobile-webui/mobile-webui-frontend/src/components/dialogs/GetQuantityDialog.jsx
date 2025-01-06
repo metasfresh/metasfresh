@@ -11,19 +11,24 @@ import * as ws from '../../utils/websocket';
 import { qtyInfos } from '../../utils/qtyInfos';
 import { formatQtyToHumanReadableStr } from '../../utils/qtys';
 import { useBooleanSetting } from '../../reducers/settings';
-import { toastError } from '../../utils/toast';
+import { toastError, toastErrorFromObj } from '../../utils/toast';
 import BarcodeScannerComponent from '../BarcodeScannerComponent';
 import { parseQRCodeString } from '../../utils/qrCode/hu';
+import { doFinally } from '../../utils';
+import YesNoDialog from './YesNoDialog';
+import Spinner from '../Spinner';
 
 const GetQuantityDialog = ({
-  readOnly = false,
+  readOnly: readOnlyParam = false,
   hideQtyInput = false,
   //
   userInfo,
   qtyTarget,
+  qtyTargetCaption,
   totalQty,
   qtyAlreadyOnScale,
   qtyCaption,
+  packingItemName,
   uom,
   qtyRejectedReasons,
   scaleDevice,
@@ -36,22 +41,33 @@ const GetQuantityDialog = ({
   bestBeforeDate: bestBeforeDateParam = '',
   isShowLotNo = false,
   lotNo: lotNoParam = '',
+  isShowCloseTargetButton = false,
   //
   validateQtyEntered,
+  getConfirmationPromptForQty,
   onQtyChange,
   onCloseDialog,
 }) => {
+  const [isProcessing, setProcessing] = useState(false);
+  const [confirmationDialogProps, setConfirmationDialogProps] = useState({
+    promptQuestion: '',
+    onQtyChangePayload: undefined,
+  });
+
   const allowManualInput = useBooleanSetting('qtyInput.AllowManualInputWhenScaleDeviceExists');
   const doNotValidateQty = useBooleanSetting('qtyInput.DoNotValidate');
   const allowTempQtyStorage = useBooleanSetting('qtyInput.allowTempQtyStorage');
+  const useZeroAsInitialValue = useBooleanSetting('qtyInput.useZeroAsInitialValue');
 
-  const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(qtyTarget));
+  const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(useZeroAsInitialValue ? 0 : qtyTarget));
   const [rejectedReason, setRejectedReason] = useState(null);
   const [useScaleDevice, setUseScaleDevice] = useState(!!scaleDevice);
   const [tempQtyStorage, setTempQtyStorage] = useState(qtyInfos.of({ qty: 0 }));
 
   const useCatchWeight = !scaleDevice && catchWeightUom;
-  const [catchWeight, setCatchWeight] = useState(qtyInfos.invalidOfNumber(catchWeightParam));
+  const [catchWeight, setCatchWeight] = useState(
+    qtyInfos.invalidOfNumber(useZeroAsInitialValue ? 0 : catchWeightParam)
+  );
   const [showCatchWeightQRCodeReader, setShowCatchWeightQRCodeReader] = useState(useCatchWeight);
 
   const onQtyEntered = (qtyInfo) => setQtyInfo(qtyInfo);
@@ -83,22 +99,40 @@ const GetQuantityDialog = ({
     (qtyInfo?.isQtyValid &&
       (qtyRejected === 0 || rejectedReason != null) &&
       (!useCatchWeight || catchWeight?.isQtyValid));
-  const allValid = readOnly || (isQtyValid && (!isShowBestBeforeDate || isBestBeforeDateValid));
+  const allValid = (readOnlyParam || (isQtyValid && (!isShowBestBeforeDate || isBestBeforeDateValid))) && !isProcessing;
+  const readOnly = readOnlyParam || isProcessing;
+
+  const getConfirmationPrompt = useCallback(
+    async (qtyInput) => {
+      return getConfirmationPromptForQty && (await getConfirmationPromptForQty(qtyInput));
+    },
+    [getConfirmationPromptForQty]
+  );
+
+  const fireOnQtyChange = useCallback(
+    (payload) => {
+      setProcessing(true);
+      const promise = onQtyChange(payload)?.catch?.((error) => toastErrorFromObj(error));
+      doFinally(promise, () => setProcessing(false));
+    },
+    [onQtyChange]
+  );
 
   const actualValidateQtyEntered = useCallback(
     (qty, uom) => {
       if (!allowTempQtyStorage) {
         return validateQtyEntered(qty, uom);
       }
-
       return validateQtyEntered(qty + tempQtyStorage.qty, uom);
     },
     [tempQtyStorage]
   );
 
-  const onDialogYes = () => {
+  const onDialogYes = async ({ isCloseTarget }) => {
+    if (isProcessing) return;
+
     if (allValid) {
-      const inputQtyEnteredAndValidated = qtyInfos.toNumberOrString(qtyInfo);
+      const inputQtyEnteredAndValidated = qtyInfos.toNumber(qtyInfo);
 
       const qtyToIssue = inputQtyEnteredAndValidated + tempQtyStorage.qty;
 
@@ -107,15 +141,27 @@ const GetQuantityDialog = ({
         qtyEnteredAndValidated = Math.max(qtyToIssue - qtyAlreadyOnScale, 0);
       }
 
-      onQtyChange({
+      const onQtyChangePayload = {
         qtyEnteredAndValidated: qtyEnteredAndValidated,
         qtyRejected,
         qtyRejectedReason: qtyRejected > 0 ? rejectedReason : null,
-        catchWeight: useCatchWeight ? qtyInfos.toNumberOrString(catchWeight) : null,
+        catchWeight: useCatchWeight ? qtyInfos.toNumber(catchWeight) : null,
         catchWeightUom: useCatchWeight ? catchWeightUom : null,
         bestBeforeDate: isShowBestBeforeDate ? bestBeforeDate : null,
         lotNo: isShowLotNo ? lotNo : null,
-      });
+        isCloseTarget: !!isCloseTarget,
+      };
+
+      const confirmationPrompt = await getConfirmationPrompt(qtyEnteredAndValidated);
+      if (confirmationPrompt) {
+        setConfirmationDialogProps({
+          promptQuestion: confirmationPrompt,
+          onQtyChangePayload,
+        });
+        return;
+      }
+
+      fireOnQtyChange(onQtyChangePayload);
     }
   };
 
@@ -142,24 +188,38 @@ const GetQuantityDialog = ({
   };
 
   const readQtyFromQrCode = useCallback(
-    (result) => {
+    async (result) => {
       const qrCode = parseQRCodeString(result.scannedBarcode);
       if (!qrCode.weightNet || !qrCode.weightNetUOM) {
         throw { messageKey: 'activities.picking.qrcode.missingQty' };
       }
       if (qrCode.weightNetUOM !== catchWeightUom) {
-        throw { messageKey: 'activities.picking.qrCode.differentUOM' };
+        throw { messageKey: 'activities.picking.qrcode.differentUOM' };
       }
 
-      // console.log('readQtyFromQrCode', { qrCode, result, catchWeightUom });
-      return onQtyChange({
+      const onQtyChangePayload = {
         qtyEnteredAndValidated: 1,
         catchWeight: qrCode.weightNet,
         catchWeightUom: catchWeightUom,
         bestBeforeDate: qrCode.bestBeforeDate,
         lotNo: qrCode.lotNo,
-        gotoPickingLineScreen: false,
-      });
+        productNo: qrCode.productNo,
+        barcodeType: qrCode.barcodeType,
+        isDone: false,
+      };
+
+      const confirmationPrompt = await getConfirmationPrompt(1);
+
+      if (confirmationPrompt) {
+        setConfirmationDialogProps({
+          promptQuestion: confirmationPrompt,
+          onQtyChangePayload,
+        });
+        return;
+      }
+
+      // console.log('readQtyFromQrCode', { qrCode, result, catchWeightUom });
+      fireOnQtyChange(onQtyChangePayload);
     },
     [catchWeightUom, onQtyChange]
   );
@@ -221,9 +281,9 @@ const GetQuantityDialog = ({
       <>
         <table className="table">
           <tbody>
-            {qtyCaption && (
+            {qtyTargetCaption && (
               <tr>
-                <th>{qtyCaption}</th>
+                <th>{qtyTargetCaption}</th>
                 <td>{formatQtyToHumanReadableStr({ qty: Math.max(qtyTarget, 0), uom })}</td>
               </tr>
             )}
@@ -253,8 +313,22 @@ const GetQuantityDialog = ({
     );
   };
 
+  if (confirmationDialogProps?.promptQuestion && confirmationDialogProps.onQtyChangePayload) {
+    return (
+      <YesNoDialog
+        promptQuestion={confirmationDialogProps.promptQuestion}
+        onYes={() => {
+          fireOnQtyChange(confirmationDialogProps.onQtyChangePayload);
+          setConfirmationDialogProps(undefined);
+        }}
+        onNo={() => setConfirmationDialogProps(undefined)}
+      />
+    );
+  }
+
   return (
     <div>
+      {isProcessing && <Spinner />}
       <div className="prompt-dialog get-qty-dialog">
         <article className="message is-dark">
           <div className="message-body">
@@ -264,9 +338,9 @@ const GetQuantityDialog = ({
                 <div className="table-container">
                   <table className="table">
                     <tbody>
-                      {qtyCaption && (
+                      {qtyTargetCaption && (
                         <tr>
-                          <th>{qtyCaption}</th>
+                          <th>{qtyTargetCaption}</th>
                           <td>{formatQtyToHumanReadableStr({ qty: Math.max(qtyTarget, 0), uom })}</td>
                         </tr>
                       )}
@@ -279,7 +353,7 @@ const GetQuantityDialog = ({
                         ))}
                       {!hideQtyInput && (
                         <tr>
-                          <th>Qty</th>
+                          <th>{qtyCaption ?? trl('general.Qty')}</th>
                           <td>
                             <QtyInputField
                               qty={qtyInfos.toNumberOrString(qtyInfo)}
@@ -308,6 +382,12 @@ const GetQuantityDialog = ({
                               isRequestFocus={true}
                             />
                           </td>
+                        </tr>
+                      )}
+                      {packingItemName && (
+                        <tr>
+                          <th>{trl('general.PackingItemName')}</th>
+                          <td>{packingItemName}</td>
                         </tr>
                       )}
                       {scaleDevice && allowManualInput && (
@@ -411,10 +491,26 @@ const GetQuantityDialog = ({
                   </table>
                 </div>
                 <div className="buttons is-centered">
-                  <button className="button is-danger" disabled={!allValid} onClick={onDialogYes}>
+                  {isShowCloseTargetButton && (
+                    <>
+                      <button
+                        className="button is-success"
+                        disabled={!allValid}
+                        onClick={() => onDialogYes({ isCloseTarget: true })}
+                      >
+                        {trl('activities.picking.confirmDoneAndCloseTarget')}
+                      </button>
+                      <br />
+                    </>
+                  )}
+                  <button
+                    className="button is-danger"
+                    disabled={!allValid}
+                    onClick={() => onDialogYes({ isCloseTarget: false })}
+                  >
                     {trl('activities.picking.confirmDone')}
                   </button>
-                  <button className="button is-success" onClick={onCloseDialog}>
+                  <button className="button is-success" disabled={isProcessing} onClick={onCloseDialog}>
                     {trl('general.cancelText')}
                   </button>
                 </div>
@@ -448,9 +544,11 @@ GetQuantityDialog.propTypes = {
   readOnly: PropTypes.bool,
   userInfo: PropTypes.array,
   qtyTarget: PropTypes.number.isRequired,
+  qtyTargetCaption: PropTypes.string,
   totalQty: PropTypes.number,
   qtyAlreadyOnScale: PropTypes.number,
   qtyCaption: PropTypes.string,
+  packingItemName: PropTypes.string,
   uom: PropTypes.string.isRequired,
   qtyRejectedReasons: PropTypes.arrayOf(PropTypes.object),
   scaleDevice: PropTypes.object,
@@ -461,9 +559,11 @@ GetQuantityDialog.propTypes = {
   bestBeforeDate: PropTypes.string,
   isShowLotNo: PropTypes.bool,
   lotNo: PropTypes.string,
+  isShowCloseTargetButton: PropTypes.bool,
 
   // Callbacks
   validateQtyEntered: PropTypes.func,
+  getConfirmationPromptForQty: PropTypes.func,
   onQtyChange: PropTypes.func.isRequired,
   onCloseDialog: PropTypes.func,
 };

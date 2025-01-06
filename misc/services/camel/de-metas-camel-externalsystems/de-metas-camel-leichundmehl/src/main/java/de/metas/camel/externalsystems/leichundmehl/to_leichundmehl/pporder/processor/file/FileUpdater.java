@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.processor.file;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -35,6 +36,7 @@ import de.metas.common.externalsystem.leichundmehl.JsonPluFileAudit;
 import de.metas.common.externalsystem.leichundmehl.JsonProcessedKeys;
 import de.metas.common.externalsystem.leichundmehl.JsonReplacementSource;
 import de.metas.common.externalsystem.leichundmehl.JsonTargetFieldType;
+import de.metas.common.util.Check;
 import de.metas.common.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -131,7 +133,11 @@ public class FileUpdater
 	@Nullable
 	private String resolveValueToUpdate(@NonNull final JsonExternalSystemLeichMehlPluFileConfig config)
 	{
-		final JsonNode replacementSourceTree = getReplacementSourceTree(config.getReplacementSource());
+		final JsonNode replacementSourceTree = getReplacementSourceTreeOrNull(config.getReplacementSource());
+		if (replacementSourceTree == null)
+		{
+			return null;
+		}
 
 		final Replacement replacement = Replacement.of(config.getReplacement());
 
@@ -145,18 +151,41 @@ public class FileUpdater
 		return targetNode.textValue();
 	}
 
-	@NonNull
-	private JsonNode getReplacementSourceTree(@NonNull final JsonReplacementSource jsonReplacementSource)
+	@Nullable
+	private JsonNode getReplacementSourceTreeOrNull(@NonNull final JsonReplacementSource jsonReplacementSource)
 	{
 		switch (jsonReplacementSource)
 		{
-			case Product -> {
+			case Product ->
+			{
 				return JsonObjectMapperHolder.sharedJsonObjectMapper().convertValue(this.context.getProductInfoNonNull(), JsonNode.class);
 			}
-			case PPOrder -> {
+			case PPOrder ->
+			{
 				return JsonObjectMapperHolder.sharedJsonObjectMapper().convertValue(this.context.getManufacturingOrderNonNull(), JsonNode.class);
 			}
+			case CustomProcessResult ->
+			{
+				return extractCustomQueryResonseAsJSON();
+			}
 			default -> throw new RuntimeException("Unhandled type=" + jsonReplacementSource.getCode());
+		}
+	}
+
+	@Nullable
+	private JsonNode extractCustomQueryResonseAsJSON()
+	{
+		if (Check.isBlank(this.context.getCustomQueryProcessResponse()))
+		{
+			return null;
+		}
+		try
+		{
+			return JsonObjectMapperHolder.sharedJsonObjectMapper().readTree(this.context.getCustomQueryProcessResponse());
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException("Unable to read JSON-response from Custom Query AD_Process invocation", e);
 		}
 	}
 

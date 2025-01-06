@@ -63,7 +63,7 @@ public class JsonCreateInvoiceCandidatesRequestItem
 			description = "Needs to be set if the invoice candidate shall be created.")
 	JsonExternalId externalLineId;
 
-	@Schema(description = "External reference (document number) on a remote system. Not neccesarily unique, but but the external user will want to filter recrods using it")
+	@Schema(description = "External reference (document number) on a remote system. Not neccesarily unique, but but the external user will want to filter records using it")
 	String poReference;
 
 	@Schema(required = true, //

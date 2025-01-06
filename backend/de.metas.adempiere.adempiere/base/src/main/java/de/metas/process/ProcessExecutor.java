@@ -89,6 +89,7 @@ public final class ProcessExecutor
 	private final transient IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final transient INotificationBL notificationBL = Services.get(INotificationBL.class);
 
+	private final Consumer<ProcessInfo> beforeCallback;
 	private final IProcessExecutionListener listener;
 	private final ProcessInfo pi;
 	private final boolean switchContextWhenRunning;
@@ -103,6 +104,7 @@ public final class ProcessExecutor
 		// gh #2092 verify that we have an AD_Role_ID; otherwise, the assertPermissions() call we are going to do will fail
 		Check.errorIf(pi.getRoleId() == null, "Process info has AD_Role_ID={}; builder={}", pi.getRoleId(), builder);
 
+		beforeCallback = builder.beforeCallback;
 		listener = builder.getListener();
 		switchContextWhenRunning = builder.switchContextWhenRunning;
 		onErrorThrowException = builder.onErrorThrowException;
@@ -140,6 +142,9 @@ public final class ProcessExecutor
 		if (pi.getProcessClassInfo().isRunOutOfTransaction()
 				&& trxManager.hasThreadInheritedTrx())
 		{
+			// IMPORTANT: take a snapshot of current context to make sure important properties like AD_User_ID,AD_Role_ID,etc. are preserved
+			pi.snapshotCtx();
+			
 			final Thread thread = new Thread(this::executeNow);
 			thread.setName(buildThreadName());
 			logger.debug("Starting thread with name={}", thread.getName());
@@ -182,6 +187,13 @@ public final class ProcessExecutor
 			@Override
 			public void run(final String localTrxName) throws Exception
 			{
+				//
+				// Execute before call callback
+				if (beforeCallback != null)
+				{
+					beforeCallback.accept(pi);
+				}
+
 				//
 				// Execute the process (workflow/java/db process)
 				if (pi.getWorkflowId() != null)
@@ -686,13 +698,6 @@ public final class ProcessExecutor
 			//
 			// Save process info to database, including parameters.
 			adPInstanceDAO.saveProcessInfo(pi);
-
-			//
-			// Execute before call callback
-			if (beforeCallback != null)
-			{
-				beforeCallback.accept(pi);
-			}
 		}
 
 		private ProcessInfo getProcessInfo()

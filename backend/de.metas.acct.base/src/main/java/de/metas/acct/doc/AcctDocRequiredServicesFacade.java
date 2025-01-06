@@ -262,6 +262,12 @@ public class AcctDocRequiredServicesFacade
 		return elementValueService.getById(elementValueId);
 	}
 
+	public ElementValueId getElementValueId(@NonNull final Account account)
+	{
+		final MAccount validCombination = accountDAO.getById(account.getAccountId());
+		return validCombination.getElementValueId();
+	}
+
 	public CurrencyPrecision getCurrencyStandardPrecision(@NonNull final CurrencyId currencyId)
 	{
 		return currencyDAO.getStdPrecision(currencyId);

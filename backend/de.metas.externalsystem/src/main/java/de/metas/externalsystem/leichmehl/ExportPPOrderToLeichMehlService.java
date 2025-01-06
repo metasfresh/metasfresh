@@ -37,6 +37,7 @@ import de.metas.common.externalsystem.leichundmehl.JsonTargetFieldType;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
+import de.metas.externalsystem.ExternalSystemLeichConfigProductMappingQuery;
 import de.metas.externalsystem.ExternalSystemLeichMehlConfigProductMappingRepository;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
@@ -46,6 +47,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -87,7 +89,7 @@ public class ExportPPOrderToLeichMehlService extends ExportPPOrderToExternalSyst
 
 		final I_PP_Order ppOrder = ppOrderDAO.getById(ppOrderId);
 
-		final ExternalSystemLeichMehlConfigProductMapping productMappingConfig = matchProductMappingConfig(ppOrder).orElse(null);
+		final ExternalSystemLeichMehlConfigProductMapping productMappingConfig = matchProductMappingConfig(ppOrder, leichMehlConfig.getPluType()).orElse(null);
 
 		if (productMappingConfig == null)
 		{
@@ -95,23 +97,40 @@ public class ExportPPOrderToLeichMehlService extends ExportPPOrderToExternalSyst
 			throw new AdempiereException(MISSING_PRODUCT_PLU_CONFIG, productName);
 		}
 
-		final List<ExternalSystemLeichMehlPluFileConfig> externalSystemLeichMehlPluFileConfigs = productMappingConfig.getLeichMehlPluFileConfigGroup().getExternalSystemLeichMehlPluFileConfigs();
-
-		if (externalSystemLeichMehlPluFileConfigs.isEmpty())
+		final LeichMehlPluFileConfigGroup configGroup = productMappingConfig.getLeichMehlPluFileConfigGroup();
+		final List<ExternalSystemLeichMehlPluFileConfig> configs = configGroup.getExternalSystemLeichMehlPluFileConfigs();
+		
+		if (configs.isEmpty())
 		{
-			throw new AdempiereException(MISSING_PLU_CONFIG_GROUP_ENTRIES, productMappingConfig.getLeichMehlPluFileConfigGroup().getName());
+			throw new AdempiereException(MISSING_PLU_CONFIG_GROUP_ENTRIES, configGroup.getName());
 		}
 
 		final Map<String, String> parameters = new HashMap<>();
 
 		parameters.put(ExternalSystemConstants.PARAM_PP_ORDER_ID, String.valueOf(ppOrderId.getRepoId()));
-		parameters.put(ExternalSystemConstants.PARAM_PRODUCT_BASE_FOLDER_NAME, leichMehlConfig.getProductBaseFolderName());
-		parameters.put(ExternalSystemConstants.PARAM_TCP_PORT_NUMBER, String.valueOf(leichMehlConfig.getTcpPort()));
-		parameters.put(ExternalSystemConstants.PARAM_TCP_HOST, leichMehlConfig.getTcpHost());
+
+		if (Check.isNotBlank(configGroup.getCustomQueryProcessValue()))
+		{
+			parameters.put(ExternalSystemConstants.PARAM_CUSTOM_QUERY_AD_PROCESS_VALUE, configGroup.getCustomQueryProcessValue());
+		}
+
+		parameters.put(ExternalSystemConstants.PARAM_PLU_FILE_TEMPLATE_BASE_FOLDER_NAME, leichMehlConfig.getProductBaseFolderName());
+		parameters.put(ExternalSystemConstants.PARAM_PLU_FILE_DESTINATION, leichMehlConfig.getPluFileDestination().getCode());
+		
+		if (leichMehlConfig.getPluFileDestination() == PLUFileDestination.TCP)
+		{
+			parameters.put(ExternalSystemConstants.PARAM_TCP_HOST, leichMehlConfig.getTcpHost());
+			parameters.put(ExternalSystemConstants.PARAM_TCP_PORT_NUMBER, String.valueOf(leichMehlConfig.getTcpPort()));
+		}
+		else
+		{
+			parameters.put(ExternalSystemConstants.PARAM_PLU_FILE_SERVER_FOLDER, leichMehlConfig.getPluFileServerFolder());
+		}
+
 		parameters.put(ExternalSystemConstants.PARAM_PLU_FILE_EXPORT_AUDIT_ENABLED, String.valueOf(leichMehlConfig.isPluFileExportAuditEnabled()));
 		parameters.put(ExternalSystemConstants.PARAM_CONFIG_MAPPINGS, toJsonProductMapping(productMappingConfig.getPluFile(),
 																						   ProductId.ofRepoId(ppOrder.getM_Product_ID())));
-		parameters.put(ExternalSystemConstants.PARAM_PLU_FILE_CONFIG, toJsonPluFileConfig(externalSystemLeichMehlPluFileConfigs));
+		parameters.put(ExternalSystemConstants.PARAM_PLU_FILE_CONFIG, toJsonPluFileConfig(configs));
 
 		return parameters;
 	}
@@ -130,14 +149,18 @@ public class ExportPPOrderToLeichMehlService extends ExportPPOrderToExternalSyst
 
 	@NonNull
 	private Optional<ExternalSystemLeichMehlConfigProductMapping> matchProductMappingConfig(
-			@NonNull final I_PP_Order ppOrder)
+			@NonNull final I_PP_Order ppOrder,
+			@NonNull final PLUType pluType)
 	{
 		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(ppOrder.getC_BPartner_ID());
 
 		final ProductId ppOrderProductId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
 
-
-		return externalSystemLeichMehlConfigProductMappingRepository.getByProductIdAndPartnerId(ppOrderProductId, bPartnerId);
+		return externalSystemLeichMehlConfigProductMappingRepository.getByQuery(ExternalSystemLeichConfigProductMappingQuery.builder()
+																						.productId(ppOrderProductId)
+																						.bPartnerId(bPartnerId)
+																						.pluType(pluType)
+																						.build());
 	}
 
 	@NonNull

@@ -9,8 +9,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import javax.annotation.Nullable;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -33,24 +34,29 @@ import java.time.temporal.Temporal;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * @author Teo Sarca
  */
 public class TimeUtilTest
 {
+	private TimeZone jvmTimezoneBackup;
+
 	@BeforeEach
 	public void beforeEach()
 	{
 		SystemTime.resetTimeSource();
+		jvmTimezoneBackup = TimeZone.getDefault();
 	}
 
 	@AfterEach
 	public void afterEach()
 	{
 		SystemTime.resetTimeSource();
+		TimeZone.setDefault(jvmTimezoneBackup);
 	}
 
 	private static Timestamp createTimestamp(final int year, int month, int day)
@@ -458,6 +464,48 @@ public class TimeUtilTest
 		assertThat(TimeUtil.isDateOrTimeClass(BigDecimal.class)).isFalse();
 	}
 
+	@Test
+	public void daysBetween360()
+	{
+		final ZonedDateTime December5_2018 = ZonedDateTime.parse("2018-12-05T00:15:00+01:00");
+		final ZonedDateTime December5_2018_2 = ZonedDateTime.parse("2018-12-05T00:15:00+02:00");
+		final ZonedDateTime December5_2017 = ZonedDateTime.parse("2017-12-05T00:15:00+01:00");
+		final ZonedDateTime June28_2024 = ZonedDateTime.parse("2024-06-28T00:15:00+01:00");
+		final ZonedDateTime November5_2024 = ZonedDateTime.parse("2024-11-05T00:15:00+01:00");
+		final ZonedDateTime February28_2019 = ZonedDateTime.parse("2019-02-28T00:15:00+01:00");
+		final ZonedDateTime February28_2020 = ZonedDateTime.parse("2020-02-28T00:15:00+01:00");
+		final ZonedDateTime February29_2020 = ZonedDateTime.parse("2020-02-29T00:15:00+01:00");
+		final ZonedDateTime February28_2021 = ZonedDateTime.parse("2021-02-28T00:15:00+01:00");
+		final ZonedDateTime March1_2020 = ZonedDateTime.parse("2020-03-01T00:15:00+01:00");
+		final ZonedDateTime March31_2021 = ZonedDateTime.parse("2021-03-31T00:15:00+01:00");
+		final ZonedDateTime March31_2020 = ZonedDateTime.parse("2020-03-31T00:15:00+01:00");
+
+
+		assertThat(TimeUtil.getDaysBetween360(December5_2018, December5_2017)).isEqualTo(-360);
+		assertThat(TimeUtil.getDaysBetween360(December5_2018, December5_2018)).isEqualTo(0);
+		assertThat(TimeUtil.getDaysBetween360(December5_2018, December5_2018_2)).isEqualTo(0);
+
+		assertThat(TimeUtil.getDaysBetween360(December5_2018, June28_2024)).isEqualTo(2003);
+
+		assertThat(TimeUtil.getDaysBetween360(December5_2017, December5_2018)).isEqualTo(360);
+
+		assertThat(TimeUtil.getDaysBetween360(February28_2019, February28_2020)).isEqualTo(360);
+
+		assertThat(TimeUtil.getDaysBetween360(February28_2019, February29_2020)).isEqualTo(361);
+
+		assertThat(TimeUtil.getDaysBetween360(February28_2020, February28_2021)).isEqualTo(360);
+
+		assertThat(TimeUtil.getDaysBetween360(February29_2020, February28_2021)).isEqualTo(359);
+
+		assertThat(TimeUtil.getDaysBetween360(June28_2024, November5_2024)).isEqualTo(127);
+
+		assertThat(TimeUtil.getDaysBetween360(February28_2019, March1_2020)).isEqualTo(363);
+
+		assertThat(TimeUtil.getDaysBetween360(February28_2020, March31_2021)).isEqualTo(392);
+
+		assertThat(TimeUtil.getDaysBetween360(February28_2020, March31_2020)).isEqualTo(32);
+	}
+
 	@Nested
 	class trunc
 	{
@@ -745,6 +793,7 @@ public class TimeUtilTest
 			assertThat(TimeUtil.asLocalDate(localDateAndOrgId)).isEqualTo("2022-03-04");
 		}
 	}
+
 	@Nested
 	public class isOverlapping
 	{
@@ -804,5 +853,28 @@ public class TimeUtilTest
 			assertThat(TimeUtil.isOverlapping(ts("2023-10-01"), ts("2023-10-05"), ts("2023-10-07"), ts("2023-10-10")))
 					.isFalse();
 		}
+	}
+
+	@ParameterizedTest(name = "JVM.zoneId={0}")
+	@ValueSource(strings = {
+			"Pacific/Midway", // -11:00
+			"US/Alaska", // -09:00,
+			"America/Jamaica", // -05:00
+			"Atlantic/Azores", // -01:00
+			"UTC",
+			"Europe/Berlin",  // +01:00
+			"Europe/Bucharest", // +02:00
+			"Asia/Kolkata", // +05:30
+			"Asia/Tokyo", // +09:00
+			"Pacific/Kiritimati", // +14:00
+	})
+	void parseLocalDateAsTimestamp_asLocalDate(final String timezone)
+	{
+		TimeZone.setDefault(TimeZone.getTimeZone(timezone));
+		//System.out.println("JVM TimeZone: " + TimeZone.getDefault());
+		assertThat(TimeZone.getDefault()).isEqualTo(TimeZone.getTimeZone(timezone));
+
+		final Timestamp timestamp = TimeUtil.parseLocalDateAsTimestamp("2024-03-30");
+		assertThat(TimeUtil.asLocalDateNonNull(timestamp)).isEqualTo("2024-03-30");
 	}
 }

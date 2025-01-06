@@ -141,6 +141,7 @@ class AccountImportTestHelper
 		acctSchemaGL.setIncomeSummary_Acct(1);
 		acctSchemaGL.setRetainedEarning_Acct(1);
 		acctSchemaGL.setPPVOffset_Acct(1);
+		acctSchemaGL.setCashRounding_Acct(1);
 		saveRecord(acctSchemaGL);
 
 		final I_C_AcctSchema_Default acctSchemaDefault = newInstance(I_C_AcctSchema_Default.class);

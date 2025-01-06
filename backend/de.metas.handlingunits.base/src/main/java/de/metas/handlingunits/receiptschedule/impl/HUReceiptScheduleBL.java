@@ -574,7 +574,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		// Set HU_PurchaseOrderLine_ID (task 09741)
 		if (purchaseOrderLineIds.size() == 1)
 		{
-			final AttributeId attrId_PurchaseOrderLine = attributesRepo.retrieveAttributeIdByValue(HUAttributeConstants.ATTR_PurchaseOrderLine_ID);
+			final AttributeId attrId_PurchaseOrderLine = attributesRepo.getAttributeIdByCode(HUAttributeConstants.ATTR_PurchaseOrderLine_ID);
 			initialAttributeValueDefaults.put(attrId_PurchaseOrderLine, purchaseOrderLineIds.iterator().next());
 		}
 
@@ -603,10 +603,12 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		final int tableID = InterfaceWrapperHelper.getModelTableId(receiptSchedule);
 		final int recordID = InterfaceWrapperHelper.getId(receiptSchedule);
 		archive.setAD_Table_ID(tableID);
+		archive.setIsMainArchive(true);
 		archive.setRecord_ID(recordID);
 		archive.setC_BPartner_ID(receiptSchedule.getC_BPartner_ID());
 		archive.setAD_Org_ID(receiptSchedule.getAD_Org_ID());
 		archive.setName(filename);
+		archive.setIsMainArchive(true);
 		archive.setIsReport(false);
 		archiveStorage.setBinaryData(archive, imagePDFBytes);
 		InterfaceWrapperHelper.save(archive);

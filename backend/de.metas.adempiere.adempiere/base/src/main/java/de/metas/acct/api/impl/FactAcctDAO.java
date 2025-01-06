@@ -84,19 +84,6 @@ public class FactAcctDAO implements IFactAcctDAO
 	}
 
 	@Override
-	public void deleteForRecordRef(@NonNull final TableRecordReference recordRef)
-	{
-		final int adTableId = recordRef.getAD_Table_ID();
-		final int recordId = recordRef.getRecord_ID();
-		retrieveQueryForDocument(Env.getCtx(), adTableId, recordId, ITrx.TRXNAME_ThreadInherited)
-				.create()
-				.deleteDirectly();
-
-		factAcctListenersService.fireAfterUnpost(recordRef);
-
-	}
-
-	@Override
 	public IQueryBuilder<I_Fact_Acct> retrieveQueryForDocument(@NonNull final IDocument document)
 	{
 		final Properties ctx = document.getCtx();

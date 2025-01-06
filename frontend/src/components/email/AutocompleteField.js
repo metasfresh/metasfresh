@@ -18,8 +18,27 @@ const AutocompleteField = ({
   }, [value]);
 
   const onTagsChanged = (newTags) => {
-    setTags(newTags);
-    onChange && onChange(newTags);
+    const newTagsResolved = newTags.map(resolveNewTagIfNeeded);
+    setTags(newTagsResolved);
+    onChange && onChange(newTagsResolved);
+  };
+
+  const resolveNewTagIfNeeded = (newTag) => {
+    // Case: newTag it's a string, i.e. not already resolved
+    if (typeof newTag === 'string' || newTag instanceof String) {
+      // If suggestions list has only one element => that's actually our match
+      if (suggestions?.length === 1) {
+        return suggestions[0];
+      }
+      // Fallback: consider a new email address introduced by user
+      else {
+        return { key: newTag, caption: newTag };
+      }
+    }
+    // Case: assume it's an already resolved { key, caption } object
+    else {
+      return newTag;
+    }
   };
 
   const fetchSuggestionsForQueryString = ({ value }) => {

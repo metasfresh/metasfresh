@@ -30,3 +30,4 @@ public interface SEPAMarshaler
 {
 	void marshal(I_SEPA_Export sepaDocument, OutputStream out);
 }
+

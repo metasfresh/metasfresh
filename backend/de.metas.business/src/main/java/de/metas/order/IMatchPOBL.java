@@ -1,17 +1,16 @@
 package de.metas.order;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-
 import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchPO;
 
-import de.metas.util.ISingletonService;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 /*
  * #%L
@@ -50,7 +49,7 @@ public interface IMatchPOBL extends ISingletonService
 	 */
 	I_M_MatchPO create(I_C_InvoiceLine iLine, I_M_InOutLine receiptLine, Timestamp dateTrx, BigDecimal qty);
 
-	void unlink(@NonNull OrderLineId orderLineId, @NonNull InvoiceLineId invoiceLineId);
+	void unlink(@NonNull OrderLineId orderLineId, @NonNull InvoiceAndLineId invoiceAndLineId);
 
 	void unlink(@NonNull InOutId inoutId);
 

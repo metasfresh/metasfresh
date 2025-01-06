@@ -22,8 +22,7 @@
 
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.tcp;
 
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.ConnectionDetails;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.DispatchMessageRequest;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.DispatchMessageRequest;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
@@ -70,7 +69,7 @@ public class SendToTCPRouteBuilder extends RouteBuilder
 	{
 		final DispatchMessageRequest request = exchange.getIn().getBody(DispatchMessageRequest.class);
 
-		final ConnectionDetails tcpConnection = request.getConnectionDetails();
+		final TCPConnectionDetails tcpConnection = request.getDestinationDetails().getConnectionDetailsNotNull();
 
 		try (final Socket socket = new Socket(tcpConnection.getTcpHost(), tcpConnection.getTcpPort());
 				final DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream()))

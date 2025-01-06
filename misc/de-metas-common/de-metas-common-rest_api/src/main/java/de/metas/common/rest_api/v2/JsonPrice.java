@@ -30,17 +30,19 @@ import lombok.Value;
 
 import java.math.BigDecimal;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 @Schema(description = "Price for one item, in the given unit of measurement and curency")
 @Value
 public class JsonPrice
 {
-	@Schema(required = true)
+	@Schema(requiredMode = REQUIRED)
 	BigDecimal value;
 
-	@Schema(required = true)
+	@Schema(requiredMode = REQUIRED)
 	String currencyCode;
 
-	@Schema(required = true,
+	@Schema(requiredMode = REQUIRED,
 			description = "Identify which unit of measurement this about")
 	String priceUomCode;
 

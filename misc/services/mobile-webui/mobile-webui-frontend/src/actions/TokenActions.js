@@ -1,13 +1,12 @@
 import { SET_TOKEN, CLEAR_TOKEN } from '../constants/TokenActionTypes';
 
 /**
- * @method setToken
  * @summary sets user's authentication token
  */
-export function setToken(token) {
+export function setToken({ token, userFullname }) {
   return {
     type: SET_TOKEN,
-    payload: { token },
+    payload: { token, userFullname },
   };
 }
 

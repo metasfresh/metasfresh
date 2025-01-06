@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.eevolution.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for PP_Order_Candidate
  *  @author metasfresh (generated) 
@@ -362,6 +362,33 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	public int getPP_Order_Candidate_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PP_Order_Candidate_ID);
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Order_Candidate getPP_Order_Candidate_Parent()
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Order_Candidate_Parent_ID, org.eevolution.model.I_PP_Order_Candidate.class);
+	}
+
+	@Override
+	public void setPP_Order_Candidate_Parent(final org.eevolution.model.I_PP_Order_Candidate PP_Order_Candidate_Parent)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Order_Candidate_Parent_ID, org.eevolution.model.I_PP_Order_Candidate.class, PP_Order_Candidate_Parent);
+	}
+
+	@Override
+	public void setPP_Order_Candidate_Parent_ID (final int PP_Order_Candidate_Parent_ID)
+	{
+		if (PP_Order_Candidate_Parent_ID < 1) 
+			set_Value (COLUMNNAME_PP_Order_Candidate_Parent_ID, null);
+		else 
+			set_Value (COLUMNNAME_PP_Order_Candidate_Parent_ID, PP_Order_Candidate_Parent_ID);
+	}
+
+	@Override
+	public int getPP_Order_Candidate_Parent_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PP_Order_Candidate_Parent_ID);
 	}
 
 	@Override

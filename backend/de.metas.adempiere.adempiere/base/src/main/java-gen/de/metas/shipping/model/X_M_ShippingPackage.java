@@ -7,13 +7,13 @@ import java.util.Properties;
 import javax.annotation.Nullable;
 
 /** Generated Model for M_ShippingPackage
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
 public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_ShippingPackage, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1778894926L;
+	private static final long serialVersionUID = 1336235374L;
 
     /** Standard Constructor */
     public X_M_ShippingPackage (final Properties ctx, final int M_ShippingPackage_ID, @Nullable final String trxName)
@@ -42,7 +42,7 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	}
 
 	@Override
-	public BigDecimal getActualDischargeQuantity() 
+	public BigDecimal getActualDischargeQuantity()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ActualDischargeQuantity);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -55,7 +55,7 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	}
 
 	@Override
-	public BigDecimal getActualLoadQty() 
+	public BigDecimal getActualLoadQty()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ActualLoadQty);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -68,7 +68,7 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	}
 
 	@Override
-	public java.lang.String getBatch() 
+	public java.lang.String getBatch()
 	{
 		return get_ValueAsString(COLUMNNAME_Batch);
 	}
@@ -83,7 +83,7 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	}
 
 	@Override
-	public int getC_BPartner_ID() 
+	public int getC_BPartner_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
@@ -98,7 +98,7 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	}
 
 	@Override
-	public int getC_BPartner_Location_ID() 
+	public int getC_BPartner_Location_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
 	}
@@ -125,7 +125,7 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	}
 
 	@Override
-	public int getC_Order_ID() 
+	public int getC_Order_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
 	}
@@ -145,14 +145,14 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	@Override
 	public void setC_OrderLine_ID (final int C_OrderLine_ID)
 	{
-		if (C_OrderLine_ID < 1) 
+		if (C_OrderLine_ID < 1)
 			set_Value (COLUMNNAME_C_OrderLine_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_OrderLine_ID, C_OrderLine_ID);
 	}
 
 	@Override
-	public int getC_OrderLine_ID() 
+	public int getC_OrderLine_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_OrderLine_ID);
 	}
@@ -160,14 +160,14 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	@Override
 	public void setC_UOM_ID (final int C_UOM_ID)
 	{
-		if (C_UOM_ID < 1) 
+		if (C_UOM_ID < 1)
 			set_Value (COLUMNNAME_C_UOM_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
 	@Override
-	public int getC_UOM_ID() 
+	public int getC_UOM_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
@@ -179,7 +179,7 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	}
 
 	@Override
-	public boolean isToBeFetched() 
+	public boolean isToBeFetched()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsToBeFetched);
 	}
@@ -206,7 +206,7 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	}
 
 	@Override
-	public int getM_InOut_ID() 
+	public int getM_InOut_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_InOut_ID);
 	}
@@ -214,14 +214,14 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	@Override
 	public void setM_Locator_ID (final int M_Locator_ID)
 	{
-		if (M_Locator_ID < 1) 
+		if (M_Locator_ID < 1)
 			set_Value (COLUMNNAME_M_Locator_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_Locator_ID, M_Locator_ID);
 	}
 
 	@Override
-	public int getM_Locator_ID() 
+	public int getM_Locator_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Locator_ID);
 	}
@@ -248,7 +248,7 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	}
 
 	@Override
-	public int getM_Package_ID() 
+	public int getM_Package_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Package_ID);
 	}
@@ -256,14 +256,14 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	@Override
 	public void setM_Product_ID (final int M_Product_ID)
 	{
-		if (M_Product_ID < 1) 
+		if (M_Product_ID < 1)
 			set_Value (COLUMNNAME_M_Product_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
 	@Override
-	public int getM_Product_ID() 
+	public int getM_Product_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
@@ -290,7 +290,7 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	}
 
 	@Override
-	public int getM_ShipperTransportation_ID() 
+	public int getM_ShipperTransportation_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_ShipperTransportation_ID);
 	}
@@ -305,7 +305,7 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	}
 
 	@Override
-	public int getM_ShippingPackage_ID() 
+	public int getM_ShippingPackage_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_ShippingPackage_ID);
 	}
@@ -317,7 +317,7 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	}
 
 	@Override
-	public java.lang.String getNote() 
+	public java.lang.String getNote()
 	{
 		return get_ValueAsString(COLUMNNAME_Note);
 	}
@@ -329,7 +329,7 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	}
 
 	@Override
-	public BigDecimal getPackageNetTotal() 
+	public BigDecimal getPackageNetTotal()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PackageNetTotal);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -342,7 +342,7 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	}
 
 	@Override
-	public BigDecimal getPackageWeight() 
+	public BigDecimal getPackageWeight()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PackageWeight);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -355,7 +355,7 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 	}
 
 	@Override
-	public boolean isProcessed() 
+	public boolean isProcessed()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
@@ -366,7 +366,7 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 		throw new IllegalArgumentException ("ProductName is virtual column");	}
 
 	@Override
-	public java.lang.String getProductName() 
+	public java.lang.String getProductName()
 	{
 		return get_ValueAsString(COLUMNNAME_ProductName);
 	}
@@ -377,8 +377,35 @@ public class X_M_ShippingPackage extends org.compiere.model.PO implements I_M_Sh
 		throw new IllegalArgumentException ("ProductValue is virtual column");	}
 
 	@Override
-	public java.lang.String getProductValue() 
+	public java.lang.String getProductValue()
 	{
 		return get_ValueAsString(COLUMNNAME_ProductValue);
+	}
+
+
+	@Override
+	public void setQtyLU (final @Nullable BigDecimal QtyLU)
+	{
+		set_Value (COLUMNNAME_QtyLU, QtyLU);
+	}
+
+	@Override
+	public BigDecimal getQtyLU()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyLU);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyTU (final @Nullable BigDecimal QtyTU)
+	{
+		set_Value (COLUMNNAME_QtyTU, QtyTU);
+	}
+
+	@Override
+	public BigDecimal getQtyTU()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyTU);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

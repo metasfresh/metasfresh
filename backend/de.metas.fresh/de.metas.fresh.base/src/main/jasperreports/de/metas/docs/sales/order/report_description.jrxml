@@ -84,6 +84,15 @@
 	<field name="offer_documentno" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="offer_documentno"/>
 	</field>
+	<field name="deliverytoaddress" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="deliverytoaddress"/>
+	</field>
+	<field name="validuntil" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.label" value="validuntil"/>
+	</field>
+	<field name="versionno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="versionno"/>
+	</field>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -98,12 +107,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" markup="none">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-3" x="441" y="127" width="134" height="13" uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576"/>
+				<reportElement key="textField-3" x="412" y="91" width="133" height="13" uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -111,12 +120,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{dateordered}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-10" x="169" y="129" width="135" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
+				<reportElement key="textField-10" x="170" y="91" width="134" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
 					<printWhenExpression><![CDATA[new Boolean($F{bp_value}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -126,12 +135,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-5" x="353" y="127" width="89" height="13" uuid="544c4066-f2ba-46d3-9659-0492702b8ba2"/>
+				<reportElement key="textField-5" x="323" y="91" width="89" height="13" uuid="544c4066-f2ba-46d3-9659-0492702b8ba2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -139,12 +148,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-1" x="169" y="115" width="135" height="13" forecolor="#000000" uuid="ce743195-413e-4016-8405-428ac8e84baf"/>
+				<reportElement key="textField-1" x="170" y="78" width="134" height="13" forecolor="#000000" uuid="ce743195-413e-4016-8405-428ac8e84baf"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -157,7 +166,7 @@
 				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-11" x="37" y="129" width="133" height="13" uuid="c2adc14d-beb1-41b9-9ad8-62e8b8eecd02">
+				<reportElement key="textField-11" x="37" y="91" width="133" height="13" uuid="c2adc14d-beb1-41b9-9ad8-62e8b8eecd02">
 					<printWhenExpression><![CDATA[new Boolean($F{bp_value}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -167,12 +176,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{BP_Value}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-6" x="37" y="115" width="133" height="13" forecolor="#000000" uuid="c92f9276-6317-4bdd-9067-12af4231a75e"/>
+				<reportElement key="textField-6" x="37" y="78" width="133" height="13" forecolor="#000000" uuid="c92f9276-6317-4bdd-9067-12af4231a75e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -185,7 +194,7 @@
 				<textFieldExpression><![CDATA[$F{printname}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-5" x="353" y="113" width="89" height="13" uuid="544c4066-f2ba-46d3-9659-0492702b8ba2">
+				<reportElement key="textField-5" x="323" y="78" width="89" height="13" uuid="544c4066-f2ba-46d3-9659-0492702b8ba2">
 					<printWhenExpression><![CDATA[new Boolean($F{reference} != null || !$F{reference}.equals( "" ))]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -195,12 +204,12 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{POReference}]]></textFieldExpression>
 			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
-				<reportElement key="textField-3" x="389" y="113" width="186" height="13" uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576">
+				<reportElement key="textField-3" x="359" y="78" width="186" height="13" uuid="294cc55b-31ea-4b7d-b0f8-03be77e0a576">
 					<printWhenExpression><![CDATA[new Boolean($F{reference} != null || !$F{reference}.equals( "" ))]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -210,12 +219,42 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Right">
-					<font size="9"/>
+					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{reference}]]></textFieldExpression>
 			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-5" x="323" y="104" width="89" height="13" uuid="3895a9b9-24d9-4c70-a436-5fca1448097e">
+					<printWhenExpression><![CDATA[new Boolean($R{show_datepromised}.equals( "Y" ) && $F{datepromised} != null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{DatePromised}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy HH:mm" isBlankWhenNull="true">
+				<reportElement key="textField-3" x="412" y="104" width="133" height="13" uuid="d5e47a77-884a-4032-a9b2-f19773e2dca2">
+					<printWhenExpression><![CDATA[new Boolean($R{show_datepromised}.equals( "Y" ) && $F{datepromised} != null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{datepromised}]]></textFieldExpression>
+			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-11" x="37" y="143" width="133" height="13" uuid="e19938ac-946e-4df9-a29e-2278a3b5d207">
+				<reportElement key="textField-11" x="37" y="104" width="133" height="13" uuid="e19938ac-946e-4df9-a29e-2278a3b5d207">
 					<printWhenExpression><![CDATA[new Boolean($F{eori}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -230,7 +269,7 @@
 				<textFieldExpression><![CDATA[$R{EORI}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-10" x="169" y="143" width="135" height="13" uuid="f2daa350-8efc-43b5-a81c-21f424378fb0">
+				<reportElement key="textField-10" x="170" y="104" width="134" height="13" uuid="f2daa350-8efc-43b5-a81c-21f424378fb0">
 					<printWhenExpression><![CDATA[new Boolean($F{eori}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -243,6 +282,140 @@
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{eori}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-6" x="37" y="143" width="133" height="13" forecolor="#000000" uuid="7945e88b-6746-47bb-91f1-d3080a56cb84"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{shipmentaddress}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-1" x="170" y="143" width="383" height="13" forecolor="#000000" uuid="472ea7f4-8e4e-4c9c-9525-2bebbebd7165"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{deliverytoaddress}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-5" x="37" y="117" width="133" height="13" uuid="2836b8cd-2fd1-4fd3-9c94-ceceeeb92c1b"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Account_manager}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement key="textField-3" x="170" y="117" width="134" height="13" uuid="c9ebec74-d19f-4a6c-b5a9-2aebb9a81471"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sr_name}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy HH:mm" isBlankWhenNull="true">
+				<reportElement key="textField-3" x="170" y="130" width="134" height="13" uuid="69883b4e-81c3-4c11-b402-067f0cb156b9"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sr_email}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-5" x="37" y="130" width="133" height="13" uuid="a9888666-38ea-4298-8ec2-b165c1ea37f5"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{email}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-5" x="323" y="117" width="89" height="13" uuid="b5d6a6ff-a54b-4248-811d-2f5a820bb5ab">
+					<printWhenExpression><![CDATA[new Boolean($F{validuntil} != null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{ValidUntil}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-5" x="323" y="130" width="89" height="13" uuid="463b7bee-7f09-434f-995a-0a3c09637eac">
+					<printWhenExpression><![CDATA[new Boolean($F{versionno} != null)]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{VersionNo}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement key="textField-3" x="412" y="117" width="133" height="13" uuid="7ffe2203-9be4-46c0-ba8a-3d4ebd140b25"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{validuntil}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-3" x="412" y="130" width="133" height="13" uuid="00500998-7c2b-4a03-a14a-6646a99d3e1f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{versionno}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

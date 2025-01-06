@@ -66,7 +66,7 @@ public interface IProductPlanningDAO extends ISingletonService
 		}
 	}
 
-	ProductPlanning getById(ProductPlanningId id);
+	ProductPlanning getById(@NonNull ProductPlanningId id);
 
 	void deleteById(@NonNull ProductPlanningId id);
 
@@ -83,6 +83,12 @@ public interface IProductPlanningDAO extends ISingletonService
 	 * @throws NoPlantForWarehouseException if there was no plant found or if there was more then one plant found.
 	 */
 	ResourceId findPlantId(final int adOrgId, final I_M_Warehouse warehouse, final int productId, int attributeSetInstanceId);
+
+	Optional<ResourceId> findPlantIfExists(
+			OrgId orgId,
+			I_M_Warehouse warehouse,
+			ProductId productId,
+			AttributeSetInstanceId attributeSetInstanceId);
 
 	ProductPlanning save(@NonNull ProductPlanning productPlanning);
 

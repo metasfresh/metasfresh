@@ -1,50 +1,12 @@
-import * as types from '../../constants/PickingActionTypes';
 import { current, isDraft } from 'immer';
-import { updateUserEditable } from './utils';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
 
 const COMPONENT_TYPE = 'picking/pickProducts';
 
-export const pickingReducer = ({ draftState, action }) => {
-  switch (action.type) {
-    case types.UPDATE_PICKING_STEP_QTY: {
-      return reduceOnUpdateQtyPicked(draftState, action.payload);
-    }
-
-    default: {
-      return draftState;
-    }
-  }
-};
-
-const reduceOnUpdateQtyPicked = (draftState, payload) => {
-  const { wfProcessId, activityId, lineId, stepId, altStepId, qtyPicked, qtyRejected, qtyRejectedReasonCode } = payload;
-
-  const draftWFProcess = draftState[wfProcessId];
-  const draftActivityDataStored = draftWFProcess.activities[activityId].dataStored;
-  const draftStep = draftActivityDataStored.lines[lineId].steps[stepId];
-
-  const draftPickFrom = altStepId ? draftStep.pickFromAlternatives[altStepId] : draftStep.mainPickFrom;
-  draftPickFrom.qtyPicked = qtyPicked;
-  draftPickFrom.qtyRejected = qtyRejected;
-  draftPickFrom.qtyRejectedReasonCode = qtyRejectedReasonCode;
-
-  allocatePickingAlternatives({
-    draftActivityDataStored,
-    lineId,
-    stepId,
-  });
-
-  updateStepStatusAndRollup({
-    draftWFProcess,
-    activityId,
-    lineId,
-    stepId,
-  });
-
-  return draftState;
-};
+// export const pickingReducer = ({ draftState, action }) => {
+//   return draftState;
+// };
 
 const extractDraftMapKeys = (draftMap) => {
   return isDraft(draftMap) ? Object.keys(current(draftMap)) : Object.keys(draftMap);
@@ -164,130 +126,8 @@ const deallocateQtyAvailable = ({ draftActivityDataStored, stepId }) => {
     }
   }
 };
-
-const updateStepStatusAndRollup = ({ draftWFProcess, activityId, lineId, stepId }) => {
-  const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
-  updateStepStatus({ draftStep });
-
-  //
-  // Rollup:
-  updateLineFromStepsAndRollup({ draftWFProcess, activityId, lineId });
-};
-
-const updateStepStatus = ({ draftStep }) => {
-  draftStep.completeStatus = computeStepStatus({ draftStep });
-};
-
-const computeStepStatus = ({ draftStep }) => {
-  const statuses = [];
-
-  const mainPickFromStatus = computePickFromStatus(draftStep.mainPickFrom);
-  statuses.push(mainPickFromStatus);
-
-  if (draftStep.pickFromAlternatives) {
-    const alternativeIds = extractDraftMapKeys(draftStep.pickFromAlternatives);
-    alternativeIds.forEach((alternativeId) => {
-      const pickFromAlternative = draftStep.pickFromAlternatives[alternativeId];
-      if (pickFromAlternative.isDisplayed) {
-        const pickFromAlternativeStatus = computePickFromStatus(pickFromAlternative);
-        if (!statuses.includes(pickFromAlternativeStatus)) {
-          statuses.push(pickFromAlternativeStatus);
-        }
-      }
-    });
-  }
-
-  return CompleteStatus.reduceFromCompleteStatuesUniqueArray(statuses);
-};
-
 export const computePickFromStatus = (pickFrom) => {
   return pickFrom.qtyPicked || pickFrom.qtyRejected ? CompleteStatus.COMPLETED : CompleteStatus.NOT_STARTED;
-};
-
-const updateLineFromStepsAndRollup = ({ draftWFProcess, activityId, lineId }) => {
-  const draftLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
-  updateLineFromSteps({ draftLine });
-
-  //
-  // Rollup:
-  updateActivityStatusFromLinesAndRollup({ draftWFProcess, activityId });
-};
-
-const updateLineFromSteps = ({ draftLine }) => {
-  const lineQtys = computeLineQtys(draftLine);
-  draftLine.qtyPicked = lineQtys.qtyPicked;
-  draftLine.qtyRejected = lineQtys.qtyRejected;
-
-  draftLine.completeStatus = computeLineStatusFromStepStatuses({ draftLine });
-};
-
-const computeLineStatusFromStepStatuses = ({ draftLine }) => {
-  if (!draftLine.qtyPicked && !draftLine.qtyRejected) {
-    return CompleteStatus.NOT_STARTED;
-  } else if (draftLine.qtyPicked + draftLine.qtyRejected >= draftLine.qtyToPick) {
-    return CompleteStatus.COMPLETED;
-  } else {
-    return CompleteStatus.IN_PROGRESS;
-  }
-};
-
-const computeLineQtys = (line) => {
-  const result = { qtyPicked: 0, qtyRejected: 0 };
-
-  if (!line.steps) {
-    return result;
-  }
-
-  const stepsArray = Object.values(line.steps);
-  if (!stepsArray) {
-    return result;
-  }
-
-  const stepQtysSum = stepsArray.reduce(
-    (accum, step) => {
-      const stepQtys = computeStepQtys(step);
-      accum.qtyPicked += stepQtys.qtyPicked;
-      accum.qtyRejected += stepQtys.qtyRejected;
-      return accum;
-    },
-    { qtyPicked: 0, qtyRejected: 0 }
-  );
-  result.qtyPicked = stepQtysSum.qtyPicked;
-  result.qtyRejected = stepQtysSum.qtyRejected;
-
-  return result;
-};
-
-const computeStepQtys = (step) => {
-  let qtyPicked = 0;
-  let qtyRejected = 0;
-
-  if (step.mainPickFrom.qtyPicked) {
-    qtyPicked += step.mainPickFrom.qtyPicked;
-    qtyRejected += step.mainPickFrom.qtyRejected;
-  }
-
-  if (step.pickFromAlternatives) {
-    qtyPicked += Object.values(step.pickFromAlternatives).reduce(
-      (accum, pickFromAlternative) => accum + pickFromAlternative.qtyPicked,
-      0
-    );
-    qtyRejected += Object.values(step.pickFromAlternatives).reduce(
-      (accum, pickFromAlternative) => accum + pickFromAlternative.qtyRejected,
-      0
-    );
-  }
-
-  return { qtyPicked, qtyRejected };
-};
-
-const updateActivityStatusFromLinesAndRollup = ({ draftWFProcess, activityId }) => {
-  const draftActivity = draftWFProcess.activities[activityId];
-  updateActivityStatusFromLines({ draftActivityDataStored: draftActivity.dataStored });
-
-  //
-  // Rollup:
-  updateUserEditable({ draftWFProcess });
 };
 
 const updateActivityStatusFromLines = ({ draftActivityDataStored }) => {
@@ -316,9 +156,10 @@ const computeActivityStatusFromLines = ({ draftActivityDataStored }) => {
 //
 
 const normalizePickingLines = (lines) => {
-  return lines.reduce((accum, line) => {
+  return lines.reduce((accum, line, index) => {
     accum[line.pickingLineId] = {
       ...line,
+      sortingIndex: index,
       steps: normalizePickingSteps(line.steps),
     };
     return accum;
@@ -333,7 +174,13 @@ const normalizePickingSteps = (steps) => {
 };
 
 const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStored, fromActivity }) => {
+  draftActivityDataStored.pickTarget = fromActivity.componentProps.pickTarget;
+  draftActivityDataStored.tuPickTarget = fromActivity.componentProps.tuPickTarget;
+  draftActivityDataStored.isPickWithNewLU = fromActivity.componentProps.isPickWithNewLU;
+  draftActivityDataStored.isAllowNewTU = fromActivity.componentProps.isAllowNewTU;
   draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
+  draftActivityDataStored.isAllowSkippingRejectedReason = fromActivity.componentProps.isAllowSkippingRejectedReason;
+  draftActivityDataStored.isShowPromptWhenOverPicking = fromActivity.componentProps.isShowPromptWhenOverPicking;
 
   //
   // Copy lines
@@ -367,22 +214,16 @@ const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStore
     }
   }
 
-  //
-  // Update all statuses
-  for (let lineId of Object.keys(draftLines)) {
-    const draftLine = draftLines[lineId];
-
-    for (let stepId of Object.keys(draftLine.steps)) {
-      const draftStep = draftLine.steps[stepId];
-      updateStepStatus({ draftStep });
-    }
-
-    updateLineFromSteps({ draftLine });
-  }
   updateActivityStatusFromLines({ draftActivityDataStored });
 
   return draftActivityDataStored;
 };
+
+//
+//
+// ------------------------------------------------------------------------------------
+//
+//
 
 registerHandler({
   componentType: COMPONENT_TYPE,

@@ -21,6 +21,7 @@ import de.metas.printing.printingdata.PrintingDataToPDFFileStorer;
 import de.metas.printing.spi.impl.ExternalSystemsPrintingNotifier;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.report.DocOutboundConfigRepository;
 import de.metas.resource.ManufacturingResourceType;
 import de.metas.resource.ResourceService;
 import de.metas.util.Services;
@@ -66,6 +67,7 @@ public class OrderCheckupTestHelper
 		productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
 		SpringContextHolder.registerJUnitBean(ResourceService.newInstanceForJUnitTesting());
+		SpringContextHolder.registerJUnitBean(DocOutboundConfigRepository.class, DocOutboundConfigRepository.instance);
 
 		Services.get(IPrintingQueueBL.class).registerHandler(OrderCheckupPrintingQueueHandler.instance);
 

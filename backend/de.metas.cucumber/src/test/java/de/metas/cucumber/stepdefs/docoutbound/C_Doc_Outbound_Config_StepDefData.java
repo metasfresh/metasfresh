@@ -23,7 +23,7 @@
 package de.metas.cucumber.stepdefs.docoutbound;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
+import org.compiere.model.I_C_Doc_Outbound_Config;
 
 public class C_Doc_Outbound_Config_StepDefData extends StepDefData<I_C_Doc_Outbound_Config>
 {

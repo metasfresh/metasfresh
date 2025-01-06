@@ -9,6 +9,9 @@ const translations = {
       invalid: 'Ungültiger QR Code',
     },
   },
+  errorScreen: {
+    retryButton: 'Erneut versuchen',
+  },
   general: {
     Yes: 'Ja',
     No: 'Nein',
@@ -24,8 +27,10 @@ const translations = {
     QtyMoved: 'Menge bewegt',
     QtyToMove: 'Bewegungsmenge',
     QtyRejected: 'verworfen',
-    CatchWeight: 'Gewicht',
     Qty: 'Qty',
+    QtyTU: 'Gebindemenge',
+    CatchWeight: 'Gewicht',
+    PackingItemName: 'Packvorschrift',
     BestBeforeDate: 'MHD',
     LotNo: 'Lot-Nr',
     DropToLocator: 'Ziel Lagerort',
@@ -33,6 +38,7 @@ const translations = {
     okText: 'OK',
     closeText: 'Schließen',
     clearText: 'Lösen',
+    reOpenText: 'Wieder öffnen',
     scanQRCode: 'QR scannen',
     Back: 'Zurück',
     Home: 'Home',
@@ -88,6 +94,7 @@ const translations = {
       qtyAboveMax: '%(qtyDiff)s über max', // TODO verify trl
       notPositiveQtyNotAllowed: 'Null oder negative Menge nicht erlaubt', // TODO verify trl
       confirmDone: 'OK',
+      confirmDoneAndCloseTarget: 'OK und LU schließen',
       rejectedPrompt: 'Es gibt %(qtyRejected)s %(uom)s ungepickte Mengen. Warum?',
       unPickBtn: 'Rückgängig',
       target: 'Soll',
@@ -96,10 +103,26 @@ const translations = {
       switchToQrCodeInput: 'QR scannen',
       skip: 'Überspringen',
       scanTargetHU: 'Ziel HU scannen',
+      qtyRejectedIgnoreReason: 'Keinen Grund eintragen',
       qrcode: {
         missingQty: 'Der gescannte QR-Code enthält keine Mengenangaben!',
         differentUOM: 'Der gescannte QR UOM stimmt nicht mit dem Ziel überein!',
+        differentProduct: 'Das gescannte QR Produkt stimmt nicht mit dem in der Pickingzeile überein',
       },
+      pickingTarget: {
+        New: 'Neues Gebinde',
+        Select: 'Gebinde',
+        Current: 'Offenes Gebinde',
+        CloseTarget: 'Schließen',
+      },
+      tuPickingTarget: {
+        New: 'New TU',
+        Select: 'Select Target',
+        Current: 'Current',
+        CloseTarget: 'Close',
+      },
+      overPickConfirmationPrompt: 'Möchten Sie wirklich mehr kommissionieren als beauftragt wurde?',
+      reopenLU: 'LU wieder öffnen',
     },
     distribution: {
       DistributionLine: 'Bereitstellung Zeile',
@@ -155,6 +178,11 @@ const translations = {
         newHU: 'Neues Gebinde',
         target: 'Empf. Soll',
         picked: 'Ist',
+      },
+      validateSourceLocator: {
+        noValidOption: 'Keine gültige Option verfügbar',
+        qrMatches: `OK!`,
+        qrDoesNotMatch: `Der gescannte QR stimmt nicht mit der Quelle Locator überein!`,
       },
     },
   },

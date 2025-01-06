@@ -122,7 +122,7 @@ public class InOutPackageRepository
 		}
 		return PackageItem.builder()
 				.productId(productId)
-				.quantity(Quantitys.create(inOutLine.getMovementQty(), UomId.ofRepoId(inOutLine.getC_UOM_ID())))
+				.quantity(Quantitys.of(inOutLine.getMovementQty(), UomId.ofRepoId(inOutLine.getC_UOM_ID())))
 				.orderLineId(orderLineId)
 				.build();
 	}

@@ -160,4 +160,6 @@ public interface IOrderDAO extends ISingletonService
 
 	@NonNull
 	List<OrderId> getUnprocessedIdsBy(@NonNull ProductId productId);
+
+	Stream<I_C_OrderLine> streamOrderLines(@NonNull OrderLineQuery query);
 }

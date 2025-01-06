@@ -1,5 +1,8 @@
 package de.metas.event;
 
+import lombok.NonNull;
+
+import java.util.Collection;
 import java.util.function.Consumer;
 
 /*
@@ -59,8 +62,7 @@ public interface IEventBus
 	 *
 	 * @param type the class of the object the consumer is subscribed to.
 	 *             The event-bus will attempt to deserialize the event's body to an instance of this class.
-	 *             
-	 * @return the newly created event-listener, in case the caller wants to unsubscribe later           
+	 * @return the newly created event-listener, in case the caller wants to unsubscribe later
 	 */
 	<T> IEventListener subscribeOn(Class<T> type, Consumer<T> eventConsumer);
 
@@ -78,6 +80,8 @@ public interface IEventBus
 	 * Create an event and serialize the given {@code obj} to be the event's body (payload).
 	 */
 	void enqueueObject(Object obj);
+
+	void enqueueObjectsCollection(@NonNull final Collection<?> objs);
 
 	/**
 	 * @return {@code true} if the bus was destroyed and it no longer accepts events.

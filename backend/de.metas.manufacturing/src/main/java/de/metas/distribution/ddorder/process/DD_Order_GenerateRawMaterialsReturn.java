@@ -29,12 +29,15 @@ import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.material.planning.ddorder.DistributionNetworkLine;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.ShipperId;
 import de.metas.storage.IStorageEngine;
 import de.metas.storage.IStorageEngineService;
 import de.metas.storage.IStorageQuery;
@@ -42,6 +45,7 @@ import de.metas.storage.IStorageRecord;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ASICopy;
@@ -59,7 +63,6 @@ import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TrxRunnable2;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
-import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_Order;
@@ -70,17 +73,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * @implSpec Task <a href="http://dewiki908/mediawiki/index.php/08118_Wie_geht_das_zur%C3%BCck%2C_was_noch_bei_der_Linie_steht_%28Prozess%29_%28107566315908%29">...</a>
+ * @implSpec <a href="http://dewiki908/mediawiki/index.php/08118_Wie_geht_das_zur%C3%BCck%2C_was_noch_bei_der_Linie_steht_%28Prozess%29_%28107566315908%29">task</a>
  */
 public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 {
 	// Services
-	private final transient IStorageEngineService storageEngineService = Services.get(IStorageEngineService.class);
-	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final transient IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
-	private final transient DDOrderLowLevelService ddOrderLowLevelService = SpringContextHolder.instance.getBean(DDOrderLowLevelService.class);
+	@NonNull private final IStorageEngineService storageEngineService = Services.get(IStorageEngineService.class);
+	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	@NonNull private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	@NonNull private final DDOrderLowLevelService ddOrderLowLevelService = SpringContextHolder.instance.getBean(DDOrderLowLevelService.class);
+	@NonNull private final DistributionNetworkRepository distributionNetworkRepository = SpringContextHolder.instance.getBean(DistributionNetworkRepository.class);
 
 	//
 	// Parameters
@@ -116,6 +120,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 
 		final IStorageEngine storageEngine = storageEngineService.getStorageEngine();
 		final IStorageQuery storageQuery = storageEngine.newStorageQuery();
+		storageQuery.addBPartnerId(null);
 		storageQuery.addWarehouseId(warehouseId);
 		final Map<ArrayKey, RawMaterialsReturnDDOrderLineCandidate> key2candidate = new HashMap<>();
 
@@ -135,9 +140,12 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 						storageRecord.getProductId(),
 						attributeSetInstance.getM_AttributeSetInstance_ID());
 
-				candidate = new RawMaterialsReturnDDOrderLineCandidate(
-						attributeSetIinstanceAware,
-						storageRecord.getLocator());
+				candidate = RawMaterialsReturnDDOrderLineCandidate.builder()
+						.distributionNetworkRepository(distributionNetworkRepository)
+						.attributeSetInstanceAware(attributeSetIinstanceAware)
+						.locator(storageRecord.getLocator())
+						.build();
+
 				key2candidate.put(key, candidate);
 			}
 
@@ -228,7 +236,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 
 		final IContextAware context = PlainContextAware.newWithThreadInheritedTrx(getCtx());
 		final Timestamp dateOrdered = candidate.getDateOrdered();
-		final int shipperId = candidate.getDD_NetworkDistributionLine().getM_Shipper_ID();
+		final ShipperId shipperId = candidate.getDD_NetworkDistributionLine().getShipperId();
 		final OrgId orgId = candidate.getOrgId();
 		final BPartnerLocationId orgBPLocationId = candidate.getOrgBPLocationId();
 		final UserId salesRepId = candidate.getPlannerId();
@@ -254,7 +262,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		ddOrder.setDocAction(X_DD_Order.DOCACTION_Complete);
 		ddOrder.setDateOrdered(dateOrdered);
 		ddOrder.setDatePromised(dateOrdered);
-		ddOrder.setM_Shipper_ID(shipperId);
+		ddOrder.setM_Shipper_ID(shipperId.getRepoId());
 		ddOrder.setIsInDispute(false);
 		ddOrder.setIsInTransit(false);
 
@@ -268,7 +276,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 
 		final IAttributeSetInstanceAware attributeSetInstanceAware = candidate.getM_Product();
 		final Quantity qtyToMove = Quantity.of(candidate.getQty(), candidate.getC_UOM());
-		final I_DD_NetworkDistributionLine networkLine = candidate.getDD_NetworkDistributionLine();
+		final DistributionNetworkLine networkLine = candidate.getDD_NetworkDistributionLine();
 		final I_M_Locator locatorFrom = candidate.getM_Locator();
 		final I_M_Locator locatorTo = candidate.getRawMaterialsLocator();
 
@@ -305,7 +313,7 @@ public class DD_Order_GenerateRawMaterialsReturn extends JavaProcess
 		//
 		// Other flags
 		ddOrderline.setIsInvoiced(false);
-		ddOrderline.setDD_AllowPush(networkLine.isDD_AllowPush());
+		ddOrderline.setDD_AllowPush(networkLine.isAllowPush());
 		ddOrderline.setIsKeepTargetPlant(networkLine.isKeepTargetPlant());
 
 		ddOrderLowLevelService.save(ddOrderline);

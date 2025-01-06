@@ -46,6 +46,7 @@ import de.metas.payment.esr.dataimporter.ESRImportEnqueuer;
 import de.metas.payment.esr.dataimporter.ESRImportEnqueuerDataSource;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
+import de.metas.payment.esr.dataimporter.ESRType;
 import de.metas.payment.esr.dataimporter.IESRDataImporter;
 import de.metas.payment.esr.dataimporter.impl.v11.ESRTransactionLineMatcherUtil;
 import de.metas.payment.esr.exception.ESRImportLockedException;
@@ -121,7 +122,7 @@ public class ESRImportBL implements IESRImportBL
 	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
 
 	/**
-	 * @task <a href="https://github.com/metasfresh/metasfresh/issues/2118">https://github.com/metasfresh/metasfresh/issues/2118</a>
+	 * task <a href="https://github.com/metasfresh/metasfresh/issues/2118">https://github.com/metasfresh/metasfresh/issues/2118</a>
 	 */
 	private static final String CFG_PROCESS_UNSPPORTED_TRX_TYPES = "de.metas.payment.esr.ProcessUnspportedTrxTypes";
 
@@ -373,7 +374,7 @@ public class ESRImportBL implements IESRImportBL
 		// task 05917: check if the the payment date from the ESR file is OK for us
 		try
 		{
-			periodBL.testPeriodOpen(Env.getCtx(), importLine.getPaymentDate(), DocBaseType.APPayment, importLine.getAD_Org_ID());
+			periodBL.testPeriodOpen(Env.getCtx(), importLine.getPaymentDate(), DocBaseType.PurchasePayment, importLine.getAD_Org_ID());
 		}
 		catch (final PeriodClosedException p)
 		{
@@ -599,6 +600,16 @@ public class ESRImportBL implements IESRImportBL
 			return true;
 		}
 
+		// Check for SCOR ESR Type
+		if (ESRTransactionLineMatcherUtil.isSCORLine(line))
+		{
+			line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unknown_Invoice);
+			line.setIsValid(true);
+			line.setProcessed(true);
+			esrImportDAO.save(line);
+			return true;
+		}
+
 		// skip reverse booking lines from regular processing
 		// the admin should deal with them manually
 		if (isReverseBookingLine(line))
@@ -659,6 +670,7 @@ public class ESRImportBL implements IESRImportBL
 
 		return existentPaymentId.orElse(null);
 	}
+
 
 	/**
 	 * task https://github.com/metasfresh/metasfresh/issues/2118

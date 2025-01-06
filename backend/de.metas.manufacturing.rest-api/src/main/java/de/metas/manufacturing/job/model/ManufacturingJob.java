@@ -12,11 +12,13 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRoutingActivityId;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
@@ -27,11 +29,11 @@ public class ManufacturingJob
 	@NonNull PPOrderId ppOrderId;
 	@NonNull String documentNo;
 	@Nullable BPartnerId customerId;
-	@NonNull ZonedDateTime datePromised;
+	@NonNull ZonedDateTime dateStartSchedule;
 	@Nullable UserId responsibleId;
 	boolean allowUserReporting;
 
-	@NonNull WarehouseId warehouseId;
+	@NonNull LocatorId locatorId;
 	@Nullable DeviceId currentScaleDeviceId;
 
 	@NonNull ImmutableList<ManufacturingJobActivity> activities;
@@ -41,23 +43,23 @@ public class ManufacturingJob
 			@NonNull final PPOrderId ppOrderId,
 			@NonNull final String documentNo,
 			@Nullable final BPartnerId customerId,
-			@NonNull final ZonedDateTime datePromised,
+			@NonNull final ZonedDateTime dateStartSchedule,
 			@Nullable final UserId responsibleId,
 			final boolean allowUserReporting,
 			//
-			final @NonNull WarehouseId warehouseId,
+			final @NonNull LocatorId locatorId,
 			@Nullable final DeviceId currentScaleDeviceId,
 			//
 			@NonNull final ImmutableList<ManufacturingJobActivity> activities)
 	{
-		this.warehouseId = warehouseId;
+		this.locatorId = locatorId;
 		this.currentScaleDeviceId = currentScaleDeviceId;
 		Check.assumeNotEmpty(activities, "activities is not empty");
 
 		this.ppOrderId = ppOrderId;
 		this.documentNo = documentNo;
 		this.customerId = customerId;
-		this.datePromised = datePromised;
+		this.dateStartSchedule = dateStartSchedule;
 		this.responsibleId = responsibleId;
 		this.allowUserReporting = allowUserReporting;
 		this.activities = activities;
@@ -149,5 +151,29 @@ public class ManufacturingJob
 		return !DeviceId.equals(this.currentScaleDeviceId, currentScaleDeviceId)
 				? toBuilder().currentScaleDeviceId(currentScaleDeviceId).build()
 				: this;
+	}
+
+
+	@NonNull
+	public LocalDate getDateStartScheduleAsLocalDate()
+	{
+		return dateStartSchedule.toLocalDate();
+	}
+
+	@NonNull
+	public ManufacturingJob withChangedRawMaterialIssue(@NonNull final UnaryOperator<RawMaterialsIssue> mapper)
+	{
+		final ImmutableList<ManufacturingJobActivity> updatedActivities = activities
+				.stream()
+				.map(activity -> activity.withChangedRawMaterialsIssue(mapper))
+				.collect(ImmutableList.toImmutableList());
+
+		return withActivities(updatedActivities);
+	}
+
+	@NonNull
+	public WarehouseId getWarehouseId()
+	{
+		return locatorId.getWarehouseId();
 	}
 }

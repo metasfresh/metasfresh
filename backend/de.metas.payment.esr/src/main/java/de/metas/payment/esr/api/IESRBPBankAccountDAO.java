@@ -22,15 +22,15 @@ package de.metas.payment.esr.api;
  * #L%
  */
 
-import java.util.List;
-
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_BPartner;
-
 import de.metas.banking.BankAccountId;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.esr.model.I_ESR_PostFinanceUserNumber;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner;
+
+import java.util.List;
 
 public interface IESRBPBankAccountDAO extends ISingletonService
 {
@@ -58,4 +58,6 @@ public interface IESRBPBankAccountDAO extends ISingletonService
 	List<I_C_BP_BankAccount> retrieveQRBPBankAccounts(String IBAN);
 
 	boolean isESRBankAccount(int bpBankAccountId);
+
+	I_C_BP_BankAccount getById(@NonNull BankAccountId bankAccountId);
 }

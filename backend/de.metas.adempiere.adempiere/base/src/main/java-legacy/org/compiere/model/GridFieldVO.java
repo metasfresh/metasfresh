@@ -28,6 +28,7 @@ import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.security.permissions.UIDisplayedEntityTypes;
 import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Getter;
@@ -41,7 +42,9 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.ad.validationRule.AdValRuleId;
+import org.adempiere.exceptions.DBException;
 import org.compiere.model.FieldGroupVO.FieldGroupType;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -123,6 +126,7 @@ public class GridFieldVO implements Serializable
 	 * @param rs           resultset AD_Field_v
 	 * @return MFieldVO
 	 */
+	@NonNull
 	static GridFieldVO create(
 			final Properties ctx,
 			final int WindowNo,
@@ -130,6 +134,7 @@ public class GridFieldVO implements Serializable
 			final AdWindowId AD_Window_ID,
 			final int AD_Tab_ID,
 			final boolean readOnly,
+			@NonNull final TabIncludeFiltersStrategy tabIncludeFiltersStrategy,
 			final boolean loadAllLanguages,
 			final boolean applyRolePermissions,
 			final ResultSet rs)
@@ -138,7 +143,7 @@ public class GridFieldVO implements Serializable
 
 		final GridFieldVO vo = new GridFieldVO(ctx, WindowNo, TabNo, AD_Window_ID, AD_Tab_ID, readOnly, applyRolePermissions);
 
-		String columnName = "ColumnName";
+		String columnName = null;
 		try
 		{
 			vo.ColumnName = rs.getString("ColumnName");
@@ -356,10 +361,10 @@ public class GridFieldVO implements Serializable
 				{
 					vo.Included_Tab_ID = rs.getInt(i);
 				}
-				else if (columnName.equalsIgnoreCase("InfoFactoryClass"))
-				{
-					vo.InfoFactoryClass = rs.getString(i);
-				}
+				// else if (columnName.equalsIgnoreCase("InfoFactoryClass"))
+				// {
+				// 	vo.InfoFactoryClass = rs.getString(i);
+				// }
 				else if (columnName.equalsIgnoreCase("IsAutocomplete"))
 				{
 					vo.autocomplete = "Y".equals(rs.getString(i));
@@ -391,14 +396,16 @@ public class GridFieldVO implements Serializable
 			}
 
 			//
-			vo.defaultFilterDescriptor = retrieveDefaultFilterDescriptor(rs);
+			vo.defaultFilterDescriptor = retrieveDefaultFilterDescriptor(rs, tabIncludeFiltersStrategy);
 			vo.fieldGroup = FieldGroupVO.build(fieldGroupName, fieldGroupType, fieldGroupCollapsedByDefault);
 			vo.layoutConstraints = layoutConstraints.build();
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
-			logger.error("Failed creating GridFieldVO for ColumnName={}. Returning null.", columnName, e);
-			return null;
+			throw new DBException("Exception loading GridFieldVO", e).appendParametersToMessage()
+					.setParameter("AD_Window_ID", AdWindowId.toRepoId(AD_Window_ID))
+					.setParameter("AD_Tab_ID", AD_Tab_ID)
+					.setParameter("ColumnName", columnName);
 		}
 
 		//
@@ -419,18 +426,47 @@ public class GridFieldVO implements Serializable
 		return vo;
 	}   // create
 
-	private static GridFieldDefaultFilterDescriptor retrieveDefaultFilterDescriptor(final ResultSet rs) throws SQLException
+	@Nullable
+	private static GridFieldDefaultFilterDescriptor retrieveDefaultFilterDescriptor(
+			@NonNull final ResultSet rs,
+			@NonNull final TabIncludeFiltersStrategy tabIncludeFiltersStrategy) throws SQLException
 	{
-		final boolean defaultFilter = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
-		final boolean facetFilter = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsFacetFilter));
-		if (!defaultFilter && !facetFilter)
+		if (tabIncludeFiltersStrategy == TabIncludeFiltersStrategy.None)
+		{
+			return null;
+		}
+
+		final OptionalBoolean isFilterField = OptionalBoolean.ofNullableString(rs.getString(I_AD_Field.COLUMNNAME_IsFilterField));
+		if (isFilterField.isFalse())
+		{
+			return null;
+		}
+
+		final boolean isDefaultFilterColumn;
+		final boolean isFacetFilter;
+		if (tabIncludeFiltersStrategy == TabIncludeFiltersStrategy.Explicit)
+		{
+			isDefaultFilterColumn = isFilterField.isTrue();
+			isFacetFilter = isFilterField.isTrue() && StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsFacetFilter));
+		}
+		else if (tabIncludeFiltersStrategy == TabIncludeFiltersStrategy.Auto)
+		{
+			isDefaultFilterColumn = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsSelectionColumn));
+			isFacetFilter = StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsFacetFilter));
+		}
+		else
+		{
+			throw new AdempiereException("Unknown TabIncludeFiltersStrategy: " + tabIncludeFiltersStrategy);
+		}
+
+		if (!isDefaultFilterColumn && !isFacetFilter)
 		{
 			return null;
 		}
 
 		return GridFieldDefaultFilterDescriptor.builder()
 				//
-				.defaultFilter(defaultFilter)
+				.defaultFilter(isDefaultFilterColumn)
 				.defaultFilterSeqNo(rs.getInt(I_AD_Column.COLUMNNAME_SelectionColumnSeqNo))
 				.operator(rs.getString(I_AD_Column.COLUMNNAME_FilterOperator))
 				.showFilterIncrementButtons(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsShowFilterIncrementButtons)))
@@ -438,7 +474,7 @@ public class GridFieldVO implements Serializable
 				.defaultValue(rs.getString(I_AD_Column.COLUMNNAME_FilterDefaultValue))
 				.adValRuleId(AdValRuleId.ofRepoIdOrNull(rs.getInt(I_AD_Column.COLUMNNAME_Filter_Val_Rule_ID)))
 				//
-				.facetFilter(facetFilter)
+				.facetFilter(isFacetFilter)
 				.facetFilterSeqNo(rs.getInt(I_AD_Column.COLUMNNAME_FacetFilterSeqNo))
 				.maxFacetsToFetch(rs.getInt(I_AD_Column.COLUMNNAME_MaxFacetsToFetch))
 				//
@@ -475,6 +511,7 @@ public class GridFieldVO implements Serializable
 		vo.IsReadOnly = false;
 		vo.IsUpdateable = true;
 
+		try
 		{
 			vo.AD_Table_ID = 0;
 			vo.AD_Field_ID = null; // metas
@@ -506,6 +543,10 @@ public class GridFieldVO implements Serializable
 			vo.DisplayLogic = rs.getString("DisplayLogic");
 
 			vo.fieldEntityType = rs.getString("FieldEntityType");
+		}
+		catch (final SQLException e)
+		{
+			logger.error("createParameter", e);
 		}
 		//
 		vo.initFinish();
@@ -856,8 +897,6 @@ public class GridFieldVO implements Serializable
 
 	public boolean IsCalculated = false; // metas
 
-	public String InfoFactoryClass = null;
-
 	private String fieldEntityType = null;
 
 	private boolean useDocSequence = false;
@@ -968,7 +1007,6 @@ public class GridFieldVO implements Serializable
 							IsParent,
 							AD_Val_Rule_ID); // metas: 03271
 				}
-				lookupInfo.setInfoFactoryClass(this.InfoFactoryClass);
 			}
 			catch (Exception e)     // Cannot create Lookup
 			{

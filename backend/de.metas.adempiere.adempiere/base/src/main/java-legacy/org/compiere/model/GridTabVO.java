@@ -241,6 +241,9 @@ public class GridTabVO implements Evaluatee, Serializable
 			{
 				vo.IsInsertRecord = false;
 			}
+			final String InsertLogic = rs.getString("InsertLogic");
+			vo.InsertLogicExpr = Services.get(IExpressionFactory.class)
+					.compileOrDefault(InsertLogic, DEFAULT_InsertLogicExpr, ILogicExpression.class); // metas: 03093
 
 			if ("Y".equals(rs.getString("IsSingleRow")))
 			{
@@ -539,6 +542,11 @@ public class GridTabVO implements Evaluatee, Serializable
 	 */
 	public String OrderByClause;
 	/**
+	 * Tab Insert
+	 */
+	private static final ILogicExpression DEFAULT_InsertLogicExpr = ConstantLogicExpression.FALSE;
+	@Getter private ILogicExpression InsertLogicExpr = DEFAULT_InsertLogicExpr;
+	/**
 	 * Tab Read Only
 	 */
 	private static final ILogicExpression DEFAULT_ReadOnlyLogicExpr = ConstantLogicExpression.FALSE;
@@ -603,6 +611,8 @@ public class GridTabVO implements Evaluatee, Serializable
 	@Getter
 	private boolean queryIfNoFilters = true;
 
+	@NonNull private TabIncludeFiltersStrategy includeFiltersStrategy = TabIncludeFiltersStrategy.Auto;
+
 	@Override
 	public String toString()
 	{
@@ -629,6 +639,7 @@ public class GridTabVO implements Evaluatee, Serializable
 							.setAdWindowId(getAdWindowId())
 							.setAD_Tab_ID(getAD_Tab_ID())
 							.setTemplateTabId(AdTabId.toRepoId(getTemplateTabId()))
+							.setTabIncludeFiltersStrategy(includeFiltersStrategy)
 							.setTabReadOnly(isReadOnly())
 							.setLoadAllLanguages(loadAllLanguages)
 							.setApplyRolePermissions(applyRolePermissions)
@@ -781,6 +792,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		clone.OrderByClause = OrderByClause;
 		clone.ReadOnlyLogicExpr = ReadOnlyLogicExpr;
 		clone.DisplayLogicExpr = DisplayLogicExpr;
+		clone.InsertLogicExpr = InsertLogicExpr;
 		clone.TabLevel = TabLevel;
 		clone.AD_Image_ID = AD_Image_ID;
 		clone.Included_Tab_ID = Included_Tab_ID;
@@ -899,6 +911,10 @@ public class GridTabVO implements Evaluatee, Serializable
 		{
 			vo.MaxQueryRecords = 0;
 		}
+
+		final boolean isIncludedTab = vo.TabLevel > 0;
+		vo.includeFiltersStrategy = TabIncludeFiltersStrategy.optionalOfNullableCode(rs.getString(I_AD_Tab.COLUMNNAME_IncludeFiltersStrategy))
+				.orElse(isIncludedTab ? TabIncludeFiltersStrategy.None : TabIncludeFiltersStrategy.Auto);
 	}
 
 	private void clone_metas(final Properties ctx, final int windowNo, final GridTabVO clone)

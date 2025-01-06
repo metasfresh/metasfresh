@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.eevolution.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for PP_Product_Planning
  *  @author metasfresh (generated) 
@@ -584,5 +584,20 @@ public class X_PP_Product_Planning extends org.compiere.model.PO implements I_PP
 	public int getYield() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Yield);
+	}
+
+	@Override
+	public void setC_Manufacturing_Aggregation_ID (final int C_Manufacturing_Aggregation_ID)
+	{
+		if (C_Manufacturing_Aggregation_ID < 1)
+			set_Value (COLUMNNAME_C_Manufacturing_Aggregation_ID, null);
+		else
+			set_Value (COLUMNNAME_C_Manufacturing_Aggregation_ID, C_Manufacturing_Aggregation_ID);
+	}
+
+	@Override
+	public int getC_Manufacturing_Aggregation_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Manufacturing_Aggregation_ID);
 	}
 }

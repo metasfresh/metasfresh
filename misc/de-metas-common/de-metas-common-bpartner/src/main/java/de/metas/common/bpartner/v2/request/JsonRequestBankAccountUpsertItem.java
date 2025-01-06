@@ -34,6 +34,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.ToString;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
@@ -44,14 +45,16 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE
 @Getter
 @ToString
 @EqualsAndHashCode
-@Schema(description = "Contains the bank account to be inserted or delete. The bank account is identified by IBAN.")
+@Schema(description = "Contains the bank account to be inserted or deleted. The bank account is identified by IBAN.")
 public class JsonRequestBankAccountUpsertItem
 {
+	@Setter
 	@NonNull
 	@Schema(minLength = 1)
 	@JsonProperty("identifier")
 	private String identifier;
 
+	@Setter
 	@NonNull
 	@Schema(minLength = 1)
 	@JsonProperty("iban")
@@ -87,19 +90,10 @@ public class JsonRequestBankAccountUpsertItem
 	@Schema(hidden = true)
 	private boolean isDefaultSet;
 
+	@Setter
 	@Schema(description = "Sync advise about this contact's individual properties.\n" + PARENT_SYNC_ADVISE_DOC)
 	@JsonInclude(Include.NON_NULL)
 	SyncAdvise syncAdvise;
-
-	public void setIdentifier(final String identifier)
-	{
-		this.identifier = identifier;
-	}
-
-	public void setIban(final String iban)
-	{
-		this.iban = iban;
-	}
 
 	public void setName(final String name)
 	{
@@ -131,13 +125,8 @@ public class JsonRequestBankAccountUpsertItem
 		this.isDefaultSet = true;
 	}
 
-	public void setSyncAdvise(final SyncAdvise syncAdvise)
-	{
-		this.syncAdvise = syncAdvise;
-	}
-
 	public boolean getIsActive()
 	{
-		return activeSet && CoalesceUtil.coalesceNotNull(active, true);
+		return CoalesceUtil.coalesceNotNull(active, true);
 	}
 }

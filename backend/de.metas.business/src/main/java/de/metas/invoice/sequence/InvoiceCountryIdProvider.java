@@ -34,15 +34,20 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import static org.compiere.model.X_C_DocType.DOCBASETYPE_APCreditMemo;
+import static org.compiere.model.X_C_DocType.DOCBASETYPE_APInvoice;
+import static org.compiere.model.X_C_DocType.DOCBASETYPE_ARCreditMemo;
+import static org.compiere.model.X_C_DocType.DOCBASETYPE_ARInvoice;
+import static org.compiere.model.X_C_DocType.DOCBASETYPE_CustomsInvoice;
 
 public class InvoiceCountryIdProvider implements ICountryIdProvider
 {
-	private static final List<String> INVOICE_DOCBASETYPES = Arrays.asList("API", "APC", "ARI", "ARC");
+	private static final List<String> INVOICE_DOCBASETYPES = Arrays.asList(DOCBASETYPE_APInvoice, DOCBASETYPE_APCreditMemo, DOCBASETYPE_ARInvoice, DOCBASETYPE_ARCreditMemo, DOCBASETYPE_CustomsInvoice);
 
 	@Override
 	public ProviderResult computeValueInfo(@NonNull final Evaluatee eval)
 	{
-		if(!I_C_Invoice.Table_Name.equals(InterfaceWrapperHelper.getModelTableName(eval)))
+		if(!I_C_Invoice.Table_Name.equals(InterfaceWrapperHelper.getModelTableNameOrNull(eval)))
 		{
 			return ProviderResult.EMPTY;
 		}

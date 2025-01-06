@@ -34,6 +34,9 @@
       "scanTargetPlaceholder": "Scan-Ziel",
       "moveSuccess": "Erfolgreich verschoben"
     },
+    "setCurrentLocator": {
+      "buttonCaption": "Lagerort ändern"
+    },
     "changeQty": {
       "buttonCaption": "Menge verändern",
       "qtyLabel": "Menge",

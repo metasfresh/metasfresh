@@ -1,10 +1,7 @@
 package de.metas.ui.web.view;
 
-import java.math.BigDecimal;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.Values;
@@ -16,6 +13,8 @@ import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -70,6 +69,30 @@ public final class ViewRowFieldNameAndJsonValues
 	public ImmutableSet<String> getFieldNames()
 	{
 		return map.keySet();
+	}
+
+	public Comparable<?> getAsComparable(
+			@NonNull final String fieldName,
+			@NonNull final JSONOptions jsonOpts)
+	{
+		final Object valueObj = map.get(fieldName);
+
+		if (JSONNullValue.isNull(valueObj))
+		{
+			return null;
+		}
+		else if (valueObj instanceof ITranslatableString)
+		{
+			return ((ITranslatableString)valueObj).translate(jsonOpts.getAdLanguage());
+		}
+		else if (valueObj instanceof Comparable)
+		{
+			return (Comparable<?>)valueObj;
+		}
+		else
+		{
+			return valueObj.toString();
+		}
 	}
 
 	public Object getAsJsonObject(

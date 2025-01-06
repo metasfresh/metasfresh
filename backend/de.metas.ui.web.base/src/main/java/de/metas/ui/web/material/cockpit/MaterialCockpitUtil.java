@@ -37,7 +37,6 @@ public final class MaterialCockpitUtil
 	public static final WindowId WINDOWID_MaterialCockpitView = WindowId.fromJson(WINDOWID_MaterialCockpitView_String);
 
 	public static final String WINDOWID_MaterialCockpit_Detail_String = "540395";
-	public static final WindowId WINDOWID_MaterialCockpit_DetailView = WindowId.fromJson(WINDOWID_MaterialCockpitView_String);
 
 	public static final String WINDOW_MaterialCockpit_StockDetail_String = "540457";
 	public static final WindowId WINDOW_MaterialCockpit_StockDetailView = WindowId.of(Integer.parseInt(WINDOW_MaterialCockpit_StockDetail_String));

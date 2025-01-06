@@ -51,7 +51,7 @@ import java.util.function.Consumer;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
-class ManualInvoiceRepository
+public class ManualInvoiceRepository
 {
 	@NonNull
 	public ManualInvoice save(@NonNull final CreateManualInvoiceRequest createManualInvoiceRequest)
@@ -84,10 +84,10 @@ class ManualInvoiceRepository
 	}
 
 	public void applyAndSave(
-			@NonNull final InvoiceLineId invoiceLineId,
+			@NonNull final InvoiceAndLineId invoiceAndLineId,
 			@NonNull final Consumer<I_C_InvoiceLine> updateInvoiceLine)
 	{
-		final I_C_InvoiceLine invoiceLineRecord = getLineRecordByIdNotNull(invoiceLineId);
+		final I_C_InvoiceLine invoiceLineRecord = getLineRecordByIdNotNull(invoiceAndLineId);
 
 		updateInvoiceLine.accept(invoiceLineRecord);
 
@@ -108,13 +108,13 @@ class ManualInvoiceRepository
 	}
 
 	@NonNull
-	private I_C_InvoiceLine getLineRecordByIdNotNull(final @NonNull InvoiceLineId invoiceLineId)
+	private I_C_InvoiceLine getLineRecordByIdNotNull(final @NonNull InvoiceAndLineId invoiceAndLineId)
 	{
-		final I_C_InvoiceLine invoiceLineRecord = InterfaceWrapperHelper.load(invoiceLineId, I_C_InvoiceLine.class);
+		final I_C_InvoiceLine invoiceLineRecord = InterfaceWrapperHelper.load(invoiceAndLineId, I_C_InvoiceLine.class);
 
 		if (invoiceLineRecord == null)
 		{
-			throw new AdempiereException("No C_InvoiceLine record found for id: " + invoiceLineId);
+			throw new AdempiereException("No C_InvoiceLine record found for id: " + invoiceAndLineId);
 		}
 
 		return invoiceLineRecord;
@@ -175,6 +175,7 @@ class ManualInvoiceRepository
 		invoiceRecord.setC_Currency_ID(createManualInvoiceRequest.getCurrencyId().getRepoId());
 		invoiceRecord.setM_PriceList_ID(createManualInvoiceRequest.getPriceListId().getRepoId());
 		invoiceRecord.setAD_InputDataSource_ID(InputDataSourceId.toRepoId(createManualInvoiceRequest.getDataSourceId()));
+		invoiceRecord.setC_PaymentTerm_ID(createManualInvoiceRequest.getPaymentTermId().getRepoId());
 		saveRecord(invoiceRecord);
 
 		return invoiceRecord;
@@ -186,7 +187,7 @@ class ManualInvoiceRepository
 			@NonNull final I_C_Invoice invoiceRecord)
 	{
 		return ManualInvoiceLine.builder()
-				.id(InvoiceLineId.ofRepoId(invoiceRecord.getC_Invoice_ID(), invoiceLineRecord.getC_InvoiceLine_ID()))
+				.id(InvoiceAndLineId.ofRepoId(invoiceRecord.getC_Invoice_ID(), invoiceLineRecord.getC_InvoiceLine_ID()))
 				.externalLineId(invoiceLineRecord.getExternalIds())
 				.line(invoiceLineRecord.getLine())
 				.lineDescription(invoiceLineRecord.getDescription())
@@ -225,6 +226,7 @@ class ManualInvoiceRepository
 				.soTrx(SOTrx.ofBoolean(invoiceRecord.isSOTrx()))
 				.currencyId(CurrencyId.ofRepoId(invoiceRecord.getC_Currency_ID()))
 				.grandTotal(invoiceRecord.getGrandTotal())
-				.totalLines(invoiceRecord.getTotalLines());
+				.totalLines(invoiceRecord.getTotalLines())
+				.cashRoundingAmt(invoiceRecord.getCashRoundingAmt());
 	}
 }

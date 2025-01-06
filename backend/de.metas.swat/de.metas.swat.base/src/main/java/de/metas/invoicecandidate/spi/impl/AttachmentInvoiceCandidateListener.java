@@ -1,17 +1,14 @@
 package de.metas.invoicecandidate.spi.impl;
 
-import java.util.List;
-
-import org.compiere.Adempiere;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.invoicecandidate.model.I_C_Invoice;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateListener;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
+
+import java.util.List;
 
 /*
  * #%L
@@ -46,7 +43,7 @@ public class AttachmentInvoiceCandidateListener implements IInvoiceCandidateList
 	@Override
 	public void onBeforeInvoiceComplete(
 			@NonNull final I_C_Invoice invoice,
-			@NonNull List<I_C_Invoice_Candidate> fromCandidates)
+			@NonNull final List<I_C_Invoice_Candidate> fromCandidates)
 	{
 		final AttachmentEntryService attachmentryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 		attachmentryService.shareAttachmentLinks(fromCandidates, ImmutableList.of(invoice));

@@ -6,6 +6,7 @@ import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.common.util.StringUtils;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -21,9 +22,6 @@ import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.MAccount;
 import org.compiere.util.Env;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -115,15 +113,7 @@ public class AccountDAO implements IAccountDAO
 
 			if (value instanceof String)
 			{
-				final String valueStr = value.toString();
-				if (!valueStr.isEmpty())
-				{
-					queryBuilder.addEqualsFilter(columnName, valueStr);
-				}
-				else
-				{
-					queryBuilder.addEqualsFilter(columnName, null);
-				}
+				queryBuilder.addEqualsFilter(columnName, StringUtils.asStringAndTrimBlankToNull(value));
 			}
 			else if (value instanceof Integer)
 			{
@@ -135,9 +125,7 @@ public class AccountDAO implements IAccountDAO
 				}
 				else
 				{
-					final boolean mandatorySegment = segmentType == AcctSegmentType.Client
-							|| segmentType == AcctSegmentType.Organization
-							|| segmentType == AcctSegmentType.Account;
+					final boolean mandatorySegment = segmentType.isMandatoryQuerySegment();
 					if (mandatorySegment)
 					{
 						queryBuilder.addEqualsFilter(columnName, valueInt);
@@ -183,6 +171,8 @@ public class AccountDAO implements IAccountDAO
 		vc.setUser2_ID(dimension.getUser2_ID());
 		vc.setUserElement1_ID(dimension.getUserElement1_ID());
 		vc.setUserElement2_ID(dimension.getUserElement2_ID());
+		vc.setUserElementNumber1(dimension.getUserElementNumber1());
+		vc.setUserElementNumber2(dimension.getUserElementNumber2());
 		vc.setUserElementString1(dimension.getUserElementString1());
 		vc.setUserElementString2(dimension.getUserElementString2());
 		vc.setUserElementString3(dimension.getUserElementString3());

@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
 import java.util.function.Function;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class ExternalReference
 {
 	/**
@@ -71,7 +71,8 @@ public class ExternalReference
 	@Nullable
 	Integer externalSystemParentConfigId;
 
-	boolean isReadOnlyInMetasfresh;
+	@Builder.Default
+	boolean readOnlyInMetasfresh = false;
 
 	int recordId;
 

@@ -51,7 +51,14 @@ public class PlainDunningDAO extends AbstractDunningDAO
 	@Override
 	public <T> T newInstance(IDunningContext dunningContext, Class<T> interfaceClass)
 	{
-		return lookupMap.newInstance(interfaceClass);
+		if (dunningContext!=null)
+		{
+			return lookupMap.newInstance(dunningContext.getCtx(), interfaceClass);
+		}
+		else
+		{
+			return lookupMap.newInstance(interfaceClass);
+		}
 	}
 
 	@Override

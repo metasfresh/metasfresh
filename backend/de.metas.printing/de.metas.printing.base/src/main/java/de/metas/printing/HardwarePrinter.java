@@ -26,26 +26,26 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.audit.data.ExternalSystemParentConfigId;
+import de.metas.printing.model.I_AD_PrinterHW;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 
 import javax.annotation.Nullable;
+import java.net.URI;
 
 @Value
 public class HardwarePrinter
 {
-	HardwarePrinterId id;
-
-	String name;
-
-	OutputType outputType;
-
+	@NonNull HardwarePrinterId id;
+	@NonNull String name;
+	@NonNull OutputType outputType;
 	@Nullable ExternalSystemParentConfigId externalSystemParentConfigId;
-
-	ImmutableMap<HardwareTrayId, HardwareTray> trays;
+	@Nullable URI ippUrl;
+	@NonNull ImmutableMap<HardwareTrayId, HardwareTray> trays;
 
 	@Builder
 	private HardwarePrinter(
@@ -53,12 +53,19 @@ public class HardwarePrinter
 			@NonNull final String name,
 			@NonNull final OutputType outputType,
 			@Nullable final ExternalSystemParentConfigId externalSystemParentConfigId,
+			@Nullable final URI ippUrl,
 			@Singular final ImmutableList<HardwareTray> trays)
 	{
+		if (outputType == OutputType.Frontend && ippUrl == null)
+		{
+			throw new FillMandatoryException(I_AD_PrinterHW.COLUMNNAME_IPP_URL);
+		}
+		
 		this.id = id;
 		this.name = name;
 		this.outputType = outputType;
 		this.externalSystemParentConfigId = externalSystemParentConfigId;
+		this.ippUrl = ippUrl;
 		this.trays = Maps.uniqueIndex(trays, HardwareTray::getId);
 	}
 
@@ -73,5 +80,12 @@ public class HardwarePrinter
 		}
 
 		return hardwareTray;
+	}
+
+	public boolean isFrontendPrinter() {return getOutputType().isFrontend();}
+
+	public URI getPrinterURI()
+	{
+		return getIppUrl();
 	}
 }

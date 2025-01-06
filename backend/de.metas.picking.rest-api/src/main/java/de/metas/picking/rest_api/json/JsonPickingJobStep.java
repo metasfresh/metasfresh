@@ -22,7 +22,7 @@
 
 package de.metas.picking.rest_api.json;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.i18n.ITranslatableString;
@@ -34,7 +34,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import java.math.BigDecimal;
-import java.util.Map;
+import java.util.List;
 import java.util.function.Function;
 
 @Value
@@ -43,19 +43,15 @@ import java.util.function.Function;
 public class JsonPickingJobStep
 {
 	@NonNull String pickingStepId;
+	@NonNull JsonCompleteStatus completeStatus;
 
 	@NonNull String productId;
 	@NonNull String productName;
 	@NonNull String uom;
 	@NonNull BigDecimal qtyToPick;
 
-	//
-	// Main PickFrom
 	@NonNull JsonPickingJobStepPickFrom mainPickFrom;
-
-	//
-	// PickFrom alternatives
-	@NonNull Map<String, JsonPickingJobStepPickFrom> pickFromAlternatives;
+	@NonNull List<JsonPickingJobStepPickFrom> pickFromAlternatives;
 
 	public static JsonPickingJobStep of(
 			final PickingJobStep step,
@@ -64,29 +60,24 @@ public class JsonPickingJobStep
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();
 
-		final JsonPickingJobStepPickFrom mainPickFrom = JsonPickingJobStepPickFrom.of(
-				step.getPickFrom(PickingJobStepPickFromKey.MAIN), jsonOpts, getUOMSymbolById);
+		final JsonPickingJobStepPickFrom mainPickFrom = JsonPickingJobStepPickFrom.of(step.getPickFrom(PickingJobStepPickFromKey.MAIN), jsonOpts, getUOMSymbolById);
 
-		final ImmutableMap<String, JsonPickingJobStepPickFrom> pickFromAlternatives = step.getPickFromKeys()
+		final List<JsonPickingJobStepPickFrom> pickFromAlternatives = step.getPickFromKeys()
 				.stream()
 				.filter(PickingJobStepPickFromKey::isAlternative)
 				.map(step::getPickFrom)
 				.map(pickFrom -> JsonPickingJobStepPickFrom.of(pickFrom, jsonOpts, getUOMSymbolById))
-				.collect(ImmutableMap.toImmutableMap(JsonPickingJobStepPickFrom::getAlternativeId, alt -> alt));
+				.collect(ImmutableList.toImmutableList());
 
 		return builder()
 				.pickingStepId(step.getId().getAsString())
+				.completeStatus(JsonCompleteStatus.of(step.getProgress()))
 				.productId(step.getProductId().getAsString())
 				.productName(step.getProductName().translate(adLanguage))
 				.uom(step.getQtyToPick().getUOMSymbol())
 				.qtyToPick(step.getQtyToPick().toBigDecimal())
-				//
-				// Main PickFrom
 				.mainPickFrom(mainPickFrom)
-				//
-				// PickFrom Alternatives
 				.pickFromAlternatives(pickFromAlternatives)
-				//
 				.build();
 	}
 }

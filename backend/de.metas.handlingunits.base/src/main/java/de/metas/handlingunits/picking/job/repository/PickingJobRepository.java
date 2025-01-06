@@ -53,7 +53,7 @@ public class PickingJobRepository
 		return PickingJobStepId.ofRepoId(repoId);
 	}
 
-	public void save(final PickingJob pickingJob)
+	public void save(@NonNull final PickingJob pickingJob)
 	{
 		PickingJobLoaderAndSaver.forSaving().save(pickingJob);
 	}
@@ -163,6 +163,21 @@ public class PickingJobRepository
 				.create()
 				.firstIdOnlyOptional(PickingJobId::ofRepoIdOrNull)
 				.map(pickingJobId -> PickingJobLoaderAndSaver.forLoading(loadingSupportServices).loadById(pickingJobId));
+	}
+
+	@NonNull
+	public List<PickingJob> getDraftedByPickingSlotId(
+			@NonNull final PickingSlotId slotId,
+			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
+	{
+		final ImmutableSet<PickingJobId> pickingJobIds = queryBL.createQueryBuilder(I_M_Picking_Job.class)
+				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_DocStatus, PickingJobDocStatus.Drafted.getCode())
+				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_M_PickingSlot_ID, slotId)
+				.create()
+				.listIds(PickingJobId::ofRepoId);
+
+		return PickingJobLoaderAndSaver.forLoading(loadingSupportServices)
+				.loadByIds(pickingJobIds);
 	}
 
 	public boolean hasReadyToReview(@NonNull final ImmutableSet<PickingJobId> pickingJobIds)

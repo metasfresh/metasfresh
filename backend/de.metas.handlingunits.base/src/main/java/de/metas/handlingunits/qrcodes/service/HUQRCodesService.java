@@ -11,6 +11,8 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
+import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
 import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
@@ -102,7 +104,7 @@ public class HUQRCodesService
 		return createPdfForHUIds(huIds);
 	}
 
-	public QRCodePDFResource createPdfForSelectionOfHUIds(@NonNull final PInstanceId selectionId, @NonNull final AdProcessId qrCodeProcessId)
+	public QRCodePDFResource createPdfForSelectionOfHUIds(@NonNull final PInstanceId selectionId, @Nullable final AdProcessId qrCodeProcessId)
 	{
 		final Set<HuId> huIds = handlingUnitsBL.getHuIdsBySelectionId(selectionId);
 		return createPdfForHUIds(huIds, selectionId, qrCodeProcessId);
@@ -116,7 +118,7 @@ public class HUQRCodesService
 		return createPDF(qrCodes);
 	}
 
-	public QRCodePDFResource createPdfForHUIds(@NonNull final Set<HuId> huIds, @NonNull final PInstanceId selectionId, @NonNull final AdProcessId qrCodeProcessId)
+	public QRCodePDFResource createPdfForHUIds(@NonNull final Set<HuId> huIds, @NonNull final PInstanceId selectionId, @Nullable final AdProcessId qrCodeProcessId)
 	{
 		// Make sure all HUs have QR Codes assigned
 		final ImmutableList<HUQRCode> qrCodes = generateForExistingHUs(huIds).toList();
@@ -128,7 +130,7 @@ public class HUQRCodesService
 	 */
 	public QRCodePDFResource createPDF(@NonNull final List<HUQRCode> qrCodes,
 									   @NonNull final PInstanceId pInstanceId,
-									   @NonNull final AdProcessId qrCodeProcessId)
+									   @Nullable final AdProcessId qrCodeProcessId)
 	{
 		return globalQRCodeService.createPDF(
 				qrCodes.stream()
@@ -151,10 +153,16 @@ public class HUQRCodesService
 	}
 
 	public void printForSelectionOfHUIds(@NonNull final PInstanceId selectionId,
-                                         @NonNull final AdProcessId qrCodeProcessId,
-                                         @NonNull final PrintCopies printCopies)
+										 @Nullable final AdProcessId qrCodeProcessId,
+										 @NonNull final PrintCopies printCopies)
 	{
 		print(createPdfForSelectionOfHUIds(selectionId, qrCodeProcessId), printCopies);
+	}
+
+	public void print(@NonNull final HuId huId)
+	{
+		final HUQRCode qrCode = getQRCodeByHuId(huId);
+		print(ImmutableList.of(qrCode));
 	}
 
 	public void print(@NonNull final List<HUQRCode> qrCodes)
@@ -201,7 +209,7 @@ public class HUQRCodesService
 		{
 			return existingQRCode;
 		}
-		else if (sysConfigBL.getBooleanValue(SYSCONFIG_GenerateQRCodeIfMissing, true))
+		else if (isGenerateQRCodesIfMissing())
 		{
 			return generateForExistingHU(huId).getSingleQRCode(huId);
 		}
@@ -211,8 +219,8 @@ public class HUQRCodesService
 		}
 	}
 
-	@Nullable
-	public HUQRCode getQRCodeByHuIdIfExists(@NonNull final HuId huId)
+	@NonNull
+	public HUQRCode getFirstQRCodeByHuId(@NonNull final HuId huId)
 	{
 		final HUQRCode existingQRCode = getFirstQRCodeByHuIdIfExists(huId).orElse(null);
 		if (existingQRCode != null)
@@ -221,11 +229,12 @@ public class HUQRCodesService
 		}
 		else if (sysConfigBL.getBooleanValue(SYSCONFIG_GenerateQRCodeIfMissing, true))
 		{
-			return generateForExistingHUs(ImmutableSet.of(huId)).getSingleQRCode(huId);
+			return generateForExistingHUs(ImmutableSet.of(huId))
+					.getFirstQRCode(huId);
 		}
 		else
 		{
-			return null;
+			throw new AdempiereException("No QR Code attached to HU " + huId.getRepoId());
 		}
 	}
 
@@ -237,6 +246,33 @@ public class HUQRCodesService
 	public Optional<HUQRCode> getFirstQRCodeByHuIdIfExists(@NonNull final HuId huId)
 	{
 		return huQRCodesRepository.getFirstQRCodeByHuId(huId);
+	}
+
+	public List<HUQRCode> getOrCreateQRCodesByHuId(@NonNull final HuId huId)
+	{
+		return getOrCreateQRCodesByHuId(huId, true);
+	}
+
+	public List<HUQRCode> getQRCodesByHuId(@NonNull final HuId huId)
+	{
+		return getOrCreateQRCodesByHuId(huId, isGenerateQRCodesIfMissing());
+	}
+
+	private List<HUQRCode> getOrCreateQRCodesByHuId(@NonNull final HuId huId, boolean isGenerateQRCodesIfMissing)
+	{
+		if (isGenerateQRCodesIfMissing)
+		{
+			return generateForExistingHU(huId).toList();
+		}
+		else
+		{
+			return huQRCodesRepository.getQRCodesByHuId(huId);
+		}
+	}
+
+	private boolean isGenerateQRCodesIfMissing()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_GenerateQRCodeIfMissing, true);
 	}
 
 	public void assign(@NonNull final HUQRCode qrCode, @NonNull final HuId huId, final boolean ensureSingleAssignment)
@@ -280,19 +316,32 @@ public class HUQRCodesService
 
 	public static IHUQRCode toHUQRCode(@NonNull final String jsonString)
 	{
-		final GlobalQRCode globalQRCode = GlobalQRCode.ofString(jsonString);
-		if (HUQRCode.isHandled(globalQRCode))
+		final GlobalQRCode globalQRCode = GlobalQRCode.parse(jsonString).orNullIfError();
+		if (globalQRCode != null)
 		{
-			return HUQRCode.fromGlobalQRCode(globalQRCode);
+			if (HUQRCode.isHandled(globalQRCode))
+			{
+				return HUQRCode.fromGlobalQRCode(globalQRCode);
+			}
+			else if (LMQRCode.isHandled(globalQRCode))
+			{
+				return LMQRCode.fromGlobalQRCode(globalQRCode);
+			}
 		}
-		else if (LMQRCode.isHandled(globalQRCode))
+
+		final GS1HUQRCode gs1HUQRCode = GS1HUQRCode.fromStringOrNullIfNotHandled(jsonString);
+		if (gs1HUQRCode != null)
 		{
-			return LMQRCode.fromGlobalQRCode(globalQRCode);
+			return gs1HUQRCode;
 		}
-		else
+
+		final EAN13HUQRCode ean13HUQRCode = EAN13HUQRCode.fromStringOrNullIfNotHandled(jsonString);
+		if (ean13HUQRCode != null)
 		{
-			throw new AdempiereException("QR code is not handled: " + globalQRCode);
+			return ean13HUQRCode;
 		}
+
+		throw new AdempiereException("QR code is not handled: " + jsonString);
 	}
 
 	@NonNull

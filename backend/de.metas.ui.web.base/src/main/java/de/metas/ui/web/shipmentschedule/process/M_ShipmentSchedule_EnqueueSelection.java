@@ -36,6 +36,7 @@ import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.Result;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromShipmentSchedules;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
@@ -64,6 +65,7 @@ import org.compiere.model.I_C_ForeignExchangeContract;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -77,6 +79,8 @@ public class M_ShipmentSchedule_EnqueueSelection
 		extends JavaProcess
 		implements IProcessPrecondition, IProcessDefaultParametersProvider, IProcessParametersCallout
 {
+	private static final AdMessageKey PRECONDITION_MSG_SHIPPING_NOTIFICATION_REQUIRED = AdMessageKey.of("de.metas.ui.web.shipmentschedule.process.M_ShipmentSchedule_EnqueueSelection.ShippingNotificationRequired");
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
@@ -132,12 +136,28 @@ public class M_ShipmentSchedule_EnqueueSelection
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final boolean foundAtLeastOneUnprocessedSchedule = context.streamSelectedModels(I_M_ShipmentSchedule.class)
-				.anyMatch(sched -> sched.isActive() &&
-						!sched.isProcessed() &&
-						!bPartnerBlockStatusService.isBPartnerBlocked(BPartnerId.ofRepoId(sched.getC_BPartner_ID())));
+		final List<de.metas.inoutcandidate.model.I_M_ShipmentSchedule> shipmentSchedules = shipmentScheduleBL.getByFilter(context.getQueryFilter(de.metas.inoutcandidate.model.I_M_ShipmentSchedule.class));
+		final boolean isRequiredShipmentNotificationMissing = shipmentSchedules
+				.stream()
+				.anyMatch(sched -> sched.isShippingNotificationRequired()
+						&& sched.getPhysicalClearanceDate() == null
+						&& isEligible(sched));
+
+		if(isRequiredShipmentNotificationMissing)
+		{
+			return ProcessPreconditionsResolution.reject(PRECONDITION_MSG_SHIPPING_NOTIFICATION_REQUIRED);
+		}
+
+		final boolean foundAtLeastOneUnprocessedSchedule = shipmentSchedules
+				.stream()
+				.anyMatch(this::isEligible);
 
 		return ProcessPreconditionsResolution.acceptIf(foundAtLeastOneUnprocessedSchedule);
+	}
+
+	private boolean isEligible(@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule sched)
+	{
+		return sched.isActive() && !sched.isProcessed() && !bPartnerBlockStatusService.isBPartnerBlocked(BPartnerId.ofRepoId(sched.getC_BPartner_ID()));
 	}
 
 	@Nullable

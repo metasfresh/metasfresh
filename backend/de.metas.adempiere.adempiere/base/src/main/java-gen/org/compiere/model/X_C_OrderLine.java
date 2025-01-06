@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_OrderLine
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1783588622L;
+	private static final long serialVersionUID = -490384294L;
 
     /** Standard Constructor */
     public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
@@ -873,7 +873,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public boolean isCampaignPrice() 
+	public boolean isCampaignPrice()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCampaignPrice);
 	}
@@ -885,7 +885,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public boolean isDeliveryClosed() 
+	public boolean isDeliveryClosed()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDeliveryClosed);
 	}
@@ -987,6 +987,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public void setIsManualQtyInPriceUOM (final boolean IsManualQtyInPriceUOM)
+	{
+		set_Value (COLUMNNAME_IsManualQtyInPriceUOM, IsManualQtyInPriceUOM);
+	}
+
+	@Override
+	public boolean isManualQtyInPriceUOM()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsManualQtyInPriceUOM);
+	}
+
+	@Override
 	public void setIsOnConsignment (final boolean IsOnConsignment)
 	{
 		set_Value (COLUMNNAME_IsOnConsignment, IsOnConsignment);
@@ -1083,7 +1095,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** 
+	/**
 	 * ManualCompensationLinePosition AD_Reference_ID=541856
 	 * Reference name: ManualCompensationLinePosition
 	 */
@@ -1099,7 +1111,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public java.lang.String getManualCompensationLinePosition() 
+	public java.lang.String getManualCompensationLinePosition()
 	{
 		return get_ValueAsString(COLUMNNAME_ManualCompensationLinePosition);
 	}
@@ -1608,6 +1620,21 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ProfitPriceActual);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setPurchase_Modular_Flatrate_Term_ID (final int Purchase_Modular_Flatrate_Term_ID)
+	{
+		if (Purchase_Modular_Flatrate_Term_ID < 1)
+			set_Value (COLUMNNAME_Purchase_Modular_Flatrate_Term_ID, null);
+		else
+			set_Value (COLUMNNAME_Purchase_Modular_Flatrate_Term_ID, Purchase_Modular_Flatrate_Term_ID);
+	}
+
+	@Override
+	public int getPurchase_Modular_Flatrate_Term_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Purchase_Modular_Flatrate_Term_ID);
 	}
 
 	@Override

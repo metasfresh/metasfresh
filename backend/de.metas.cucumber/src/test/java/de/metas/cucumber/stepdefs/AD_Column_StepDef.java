@@ -94,7 +94,7 @@ public class AD_Column_StepDef
 	@And("update AD_Column:")
 	public void update_AD_Columns(@NonNull final DataTable dataTable)
 	{
-		DataTableRow.toRows(dataTable).forEach(this::updateAD_Column);
+		DataTableRows.of(dataTable).forEach(this::updateAD_Column);
 	}
 
 	private void updateAD_Column(final DataTableRow row)

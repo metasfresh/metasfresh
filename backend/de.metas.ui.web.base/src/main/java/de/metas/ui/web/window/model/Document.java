@@ -79,6 +79,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 
+import static de.metas.ui.web.window.WindowConstants.FIELDNAME_IsSOTrx;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -205,6 +207,8 @@ public final class Document
 
 		changesCollector = builder.getChangesCollector();
 
+		boolean hasNonBooleanIsSOTrx = false; // Used to make sure yes/no refList readonlyLogic doesn't default to 'N' if null
+
 		//
 		// Create document fields
 		{
@@ -220,6 +224,11 @@ public final class Document
 				{
 					Check.assumeNull(parentLinkField, "Only one parent link field shall exist but we found: {}, {}", parentLinkField, field); // shall no happen at this level
 					parentLinkField = field;
+				}
+
+				if(fieldName.equals(FIELDNAME_IsSOTrx) && !fieldDescriptor.isBooleanWidgetType())
+				{
+					hasNonBooleanIsSOTrx = true;
 				}
 			}
 			fieldsByName = fieldsBuilder.build();
@@ -257,9 +266,9 @@ public final class Document
 			if (_parentDocument == null)
 			{
 				final Optional<SOTrx> soTrx = entityDescriptor.getSOTrx();
-				if (soTrx.isPresent())
+				if (soTrx.isPresent() && !hasNonBooleanIsSOTrx)
 				{
-					setDynAttributeNoCheck("IsSOTrx", soTrx.get().isSales()); // cover the case for FieldName=IsSOTrx, DefaultValue=@IsSOTrx@
+					setDynAttributeNoCheck(FIELDNAME_IsSOTrx, soTrx.get().isSales()); // cover the case for FieldName=IsSOTrx, DefaultValue=@IsSOTrx@
 				}
 				setDynAttributeNoCheck("IsApproved", false); // cover the case for FieldName=IsApproved, DefaultValue=@IsApproved@
 			}
@@ -998,8 +1007,7 @@ public final class Document
 
 	private IDocumentField getFieldOrNull(final String fieldName)
 	{
-		final IDocumentField documentField = fieldsByName.get(fieldName);
-		return documentField;
+		return fieldsByName.get(fieldName);
 	}
 
 	public IDocumentFieldView getFieldViewOrNull(final String fieldName)
@@ -2151,6 +2159,11 @@ public final class Document
 				.filter(BooleanWithReason::isTrue)
 				.findFirst()
 				.orElse(BooleanWithReason.FALSE);
+	}
+	
+	public boolean containsField(@NonNull final String fieldName)
+	{
+		return fieldsByName.containsKey(fieldName);
 	}
 
 	@NonNull

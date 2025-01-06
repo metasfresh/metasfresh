@@ -87,6 +87,9 @@ public interface IPriceListDAO extends ISingletonService
 			CountryId countryId,
 			SOTrx soTrx);
 
+	@NonNull
+	I_M_PriceList retrievePriceListbyId(@NonNull PriceListId priceListId);
+
 	/**
 	 * Returns a list containing all the PO price lists for a given pricing system and a country.<br>
 	 * The method returns both price lists with the given country and without any country. The price list
@@ -101,6 +104,8 @@ public interface IPriceListDAO extends ISingletonService
 	 */
 	@Nullable
 	PriceListId retrievePriceListIdByPricingSyst(PricingSystemId pricingSystemId, BPartnerLocationAndCaptureId bpartnerLocationId, SOTrx soTrx);
+
+	boolean isProductPriceExistsInSystem(PricingSystemId pricingSystemId, SOTrx soTrx, ProductId productId);
 
 	/**
 	 * Retrieves the plv for the given price list and date. Never returns <code>null</code>

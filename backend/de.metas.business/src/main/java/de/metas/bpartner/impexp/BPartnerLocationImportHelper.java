@@ -79,10 +79,6 @@ import org.compiere.model.ModelValidationEngine;
 
 	/**
 	 * retrieve existent BPartner location and call method for updating the fields
-	 *
-	 * @param importRecord
-	 * @param importRecordsForSameBPartner
-	 * @return
 	 */
 	private I_C_BPartner_Location fetchAndUpdateExistingBPLocation(@NonNull final BPartnerImportContext context)
 	{
@@ -120,9 +116,6 @@ import org.compiere.model.ModelValidationEngine;
 	 * <ul>
 	 * * City not empty
 	 * </ul>
-	 *
-	 * @param importRecord
-	 * @return
 	 */
 	private I_C_BPartner_Location createNewBPartnerLocation(@NonNull final BPartnerImportContext context)
 	{
@@ -169,7 +162,7 @@ import org.compiere.model.ModelValidationEngine;
 			@NonNull final I_I_BPartner importRecord,
 			@NonNull final I_C_BPartner_Location bpartnerLocation)
 	{
-		final LocationId locationId = locationDAO.createLocation(LocationCreateRequest.builder()
+		final LocationId locationId = locationDAO.createOrReuseLocation(LocationCreateRequest.builder()
 				.address1(importRecord.getAddress1())
 				.address2(importRecord.getAddress2())
 				.address3(importRecord.getAddress3())
@@ -224,13 +217,13 @@ import org.compiere.model.ModelValidationEngine;
 	}
 
 	@VisibleForTesting
-	static final boolean extractIsShipTo(@NonNull final I_I_BPartner importRecord)
+	static boolean extractIsShipTo(@NonNull final I_I_BPartner importRecord)
 	{
 		return importRecord.isShipToDefault() ? true : importRecord.isShipTo();
 	}
 
 	@VisibleForTesting
-	static final boolean extractIsBillTo(@NonNull final I_I_BPartner importRecord)
+	static boolean extractIsBillTo(@NonNull final I_I_BPartner importRecord)
 	{
 		return importRecord.isBillToDefault() ? true : importRecord.isBillTo();
 	}

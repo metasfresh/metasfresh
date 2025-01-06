@@ -8,7 +8,7 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 ;
 
 -- 2023-02-06T15:08:01.940Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556207,TO_TIMESTAMP('2023-02-06 17:08:01','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table C_Order_Cost',1,'Y','N','Y','Y','C_Order_Cost','N',1000000,TO_TIMESTAMP('2023-02-06 17:08:01','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (0,0,556207,TO_TIMESTAMP('2023-02-06 17:08:01','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table C_Order_Cost',1,'Y','N','Y','Y','C_Order_Cost',1000000,TO_TIMESTAMP('2023-02-06 17:08:01','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2023-02-06T15:08:01.948Z
@@ -213,7 +213,7 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 ;
 
 -- 2023-02-06T15:13:35.996Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556208,TO_TIMESTAMP('2023-02-06 17:13:35','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table C_Order_Cost_Detail',1,'Y','N','Y','Y','C_Order_Cost_Detail','N',1000000,TO_TIMESTAMP('2023-02-06 17:13:35','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (0,0,556208,TO_TIMESTAMP('2023-02-06 17:13:35','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table C_Order_Cost_Detail',1,'Y','N','Y','Y','C_Order_Cost_Detail',1000000,TO_TIMESTAMP('2023-02-06 17:13:35','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2023-02-06T15:13:36.001Z

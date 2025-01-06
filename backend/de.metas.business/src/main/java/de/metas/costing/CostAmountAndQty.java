@@ -19,7 +19,7 @@ public class CostAmountAndQty
 
 	public static CostAmountAndQty zero(@NonNull final CurrencyId currencyId, @NonNull final UomId uomId)
 	{
-		return of(CostAmount.zero(currencyId), Quantitys.createZero(uomId));
+		return of(CostAmount.zero(currencyId), Quantitys.zero(uomId));
 	}
 
 	public static CurrencyId getCommonCurrencyIdOfAll(@Nullable final CostAmountAndQty... values)

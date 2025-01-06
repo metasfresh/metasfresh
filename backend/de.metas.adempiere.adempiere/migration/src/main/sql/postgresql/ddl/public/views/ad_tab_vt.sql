@@ -40,6 +40,7 @@ SELECT trl.ad_language
      , t.ad_process_id
      , t.issorttab
      , t.isinsertrecord
+     , t.insertlogic
      , t.isadvancedtab
      , t.ad_columnsortorder_id
      , t.ad_columnsortyesno_id
@@ -69,6 +70,7 @@ SELECT trl.ad_language
      , t.NotFound_Message AS NotFound_Message_BaseLang
      , trl.NotFound_MessageDetail
      , t.NotFound_MessageDetail AS NotFound_MessageDetail_BaseLang
+     , t.IncludeFiltersStrategy
 FROM ad_tab t
          JOIN ad_table tbl ON t.ad_table_id = tbl.ad_table_id
          JOIN ad_tab_trl trl ON t.ad_tab_id = trl.ad_tab_id

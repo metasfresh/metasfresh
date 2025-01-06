@@ -34,7 +34,7 @@ import de.metas.contracts.commission.mediated.algorithm.MediatedCommissionConfig
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
-import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.lang.SOTrx;
@@ -278,14 +278,14 @@ public class CommissionInstanceRepository
 					propagateAdditionalColumns(invoiceCandidateId, commissionInstanceRecord);
 					break;
 				case SalesInvoice:
-					final InvoiceLineId invoiceLineId = InvoiceLineId.cast(triggerDocumentId.getRepoIdAware());
-					commissionInstanceRecord.setC_InvoiceLine_ID(invoiceLineId.getRepoId());
-					propagateAdditionalColumns(invoiceLineId, commissionInstanceRecord);
+					final InvoiceAndLineId invoiceAndLineId = InvoiceAndLineId.cast(triggerDocumentId.getRepoIdAware());
+					commissionInstanceRecord.setC_InvoiceLine_ID(invoiceAndLineId.getRepoId());
+					propagateAdditionalColumns(invoiceAndLineId, commissionInstanceRecord);
 					break;
 				case SalesCreditmemo:
-					final InvoiceLineId creditMemoInvoiceLineId = InvoiceLineId.cast(triggerDocumentId.getRepoIdAware());
-					commissionInstanceRecord.setC_InvoiceLine_ID(creditMemoInvoiceLineId.getRepoId());
-					propagateAdditionalColumns(creditMemoInvoiceLineId, commissionInstanceRecord);
+					final InvoiceAndLineId creditMemoInvoiceAndLineId = InvoiceAndLineId.cast(triggerDocumentId.getRepoIdAware());
+					commissionInstanceRecord.setC_InvoiceLine_ID(creditMemoInvoiceAndLineId.getRepoId());
+					propagateAdditionalColumns(creditMemoInvoiceAndLineId, commissionInstanceRecord);
 					break;
 				case MediatedOrder:
 					final OrderLineId orderLineId = OrderLineId.cast(triggerDocumentId.getRepoIdAware());
@@ -351,10 +351,10 @@ public class CommissionInstanceRepository
 	}
 
 	private void propagateAdditionalColumns(
-			@NonNull final InvoiceLineId invoiceLineId,
+			@NonNull final InvoiceAndLineId invoiceAndLineId,
 			@NonNull final I_C_Commission_Instance commissionInstanceRecord)
 	{
-		final I_C_InvoiceLine invoiceLineRecord = loadOutOfTrx(invoiceLineId, I_C_InvoiceLine.class);
+		final I_C_InvoiceLine invoiceLineRecord = loadOutOfTrx(invoiceAndLineId, I_C_InvoiceLine.class);
 		commissionInstanceRecord.setPOReference(invoiceLineRecord.getC_Invoice().getPOReference());
 		commissionInstanceRecord.setBill_BPartner_ID(invoiceLineRecord.getC_Invoice().getC_BPartner_ID());
 		commissionInstanceRecord.setC_Invoice_ID(invoiceLineRecord.getC_Invoice_ID());
