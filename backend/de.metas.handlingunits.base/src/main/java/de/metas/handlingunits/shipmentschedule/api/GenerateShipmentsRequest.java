@@ -47,7 +47,7 @@ public class GenerateShipmentsRequest
 	ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleToExternalInfo;
 
 	@NonNull
-	ImmutableMap<ShipmentScheduleId, BigDecimal> scheduleToQuantityToDeliverOverride;
+	QtyToDeliverMap scheduleToQuantityToDeliverOverride;
 
 	@NonNull
 	M_ShipmentSchedule_QuantityTypeToUse quantityTypeToUse;
@@ -68,6 +68,15 @@ public class GenerateShipmentsRequest
 	@Nullable
 	Boolean isShipDateToday;
 
+	/**
+	 * The shipments are created via async-workpackage and this flag decides if the caller wants to wait for them.
+	 * By default, it is set to true for backwards compatibility.
+	 * 
+	 * @see ShipmentService#generateShipments(GenerateShipmentsRequest) 
+	 */
+	@Builder.Default
+	boolean waitForShipments = true;
+	
 	public ImmutableMap<ShipmentScheduleId, String> extractShipmentDocumentNos()
 	{
 		final ImmutableMap.Builder<ShipmentScheduleId, String> result = ImmutableMap.builder();

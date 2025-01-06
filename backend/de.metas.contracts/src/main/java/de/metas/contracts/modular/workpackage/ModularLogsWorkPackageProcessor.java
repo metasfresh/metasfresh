@@ -22,15 +22,16 @@
 
 package de.metas.contracts.modular.workpackage;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.async.QueueWorkPackageId;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.IFlatrateDAO;
-import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.log.status.ModularLogCreateStatusService;
-import de.metas.product.ProductId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -40,17 +41,17 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.SpringContextHolder;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 
 public class ModularLogsWorkPackageProcessor extends WorkpackageProcessorAdapter
 {
 	private final ModularContractLogHandler logHandler = SpringContextHolder.instance.getBean(ModularContractLogHandler.class);
 	private final ModularLogCreateStatusService createStatusService = SpringContextHolder.instance.getBean(ModularLogCreateStatusService.class);
+	private final ModularContractService modularContractService = SpringContextHolder.instance.getBean(ModularContractService.class);
+
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, @Nullable final String localTrxName)
@@ -83,47 +84,60 @@ public class ModularLogsWorkPackageProcessor extends WorkpackageProcessorAdapter
 	}
 
 	@NonNull
-	private List<IModularContractLogHandler.HandleLogsRequest<Object>> getRequestList()
+	private List<IModularContractLogHandler.HandleLogsRequest> getRequestList()
 	{
-		final ProcessModularLogAggRequest processModularLogAggRequest = getRequestListParam();
+		final ProcessModularLogRequestList requests = getRequestListParam();
 
 		final QueueWorkPackageId workPackageId = QueueWorkPackageId.ofRepoId(getC_Queue_WorkPackage().getC_Queue_WorkPackage_ID());
 
-		final Map<FlatrateTermId, IModularContractLogHandler.FlatrateTermInfo> contractId2Record = new HashMap<>();
+		final ImmutableMap<FlatrateTermId, IModularContractLogHandler.FlatrateTermInfo> contractId2Record =
+				loadFlatrateTermInfo(requests.getContractIds());
 
-		return processModularLogAggRequest.getRequestList()
-				.stream()
+		return requests.stream()
+				.filter(req -> {
+					if (!contractId2Record.containsKey(req.getFlatrateTermId()))
+					{
+						Loggables.addLog("Skip req={}, because no ModularSettings were found for contractId = {}",
+										 req,
+										 req.getFlatrateTermId());
+						return false;
+					}
+					return true;
+				})
 				.map(processRequest -> IModularContractLogHandler.HandleLogsRequest.builder()
-						.model(processRequest.getRecordReference().getModel())
+						.tableRecordReference(processRequest.getRecordReference())
 						.logEntryContractType(processRequest.getLogEntryContractType())
 						.modelAction(processRequest.getAction())
 						.workPackageId(workPackageId)
-						.handlerClassname(processRequest.getHandlerClassname())
-						.contractInfo(contractId2Record.computeIfAbsent(processRequest.getFlatrateTermId(), this::loadFlatrateTermInfo))
+						.computingMethodType(processRequest.getComputingMethodType())
+						.contractInfo(contractId2Record.get(processRequest.getFlatrateTermId()))
 						.build())
 				.toList();
 	}
 
 	@NonNull
-	private ProcessModularLogAggRequest getRequestListParam()
+	private ProcessModularLogRequestList getRequestListParam()
 	{
 		final String requestsToProcess = getParameters().getParameterAsString(Params.REQUESTS_TO_PROCESS.name());
 
 		return Optional.ofNullable(requestsToProcess)
-				.map(requestsToProcessParam -> JsonObjectMapperHolder.fromJson(requestsToProcess, ProcessModularLogAggRequest.class))
+				.map(requestsToProcessParam -> JsonObjectMapperHolder.fromJson(requestsToProcess, ProcessModularLogRequestList.class))
 				.orElseThrow(() -> new AdempiereException("Missing mandatory parameter!")
 						.appendParametersToMessage()
 						.setParameter("wpParameterName", Params.REQUESTS_TO_PROCESS.name()));
 	}
 
 	@NonNull
-	private IModularContractLogHandler.FlatrateTermInfo loadFlatrateTermInfo(@NonNull final FlatrateTermId flatrateTermId)
+	private ImmutableMap<FlatrateTermId, IModularContractLogHandler.FlatrateTermInfo> loadFlatrateTermInfo(@NonNull final ImmutableSet<FlatrateTermId> contractIds)
 	{
-		final I_C_Flatrate_Term term = flatrateDAO.retrieveTerm(flatrateTermId);
-		return IModularContractLogHandler.FlatrateTermInfo
-				.builder()
-				.flatrateTermId(flatrateTermId)
-				.productId(ProductId.ofRepoIdOrNull(term.getM_Product_ID()))
-				.build();
+		return modularContractService.getSettingsByContractIds(contractIds)
+				.entrySet()
+				.stream()
+				.map(settingsByContractId -> IModularContractLogHandler.FlatrateTermInfo
+						.builder()
+						.flatrateTermId(settingsByContractId.getKey())
+						.modularContractSettings(settingsByContractId.getValue())
+						.build())
+				.collect(ImmutableMap.toImmutableMap(IModularContractLogHandler.FlatrateTermInfo::getFlatrateTermId, Function.identity()));
 	}
 }

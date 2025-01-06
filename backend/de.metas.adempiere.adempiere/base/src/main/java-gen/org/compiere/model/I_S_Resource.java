@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for S_Resource
  *  @author metasfresh (generated)
@@ -56,7 +55,7 @@ public interface I_S_Resource
 	 * Set Contact.
 	 * User within the system - Internal or Business Partner Contact
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -66,14 +65,13 @@ public interface I_S_Resource
 	 * Get Contact.
 	 * User within the system - Internal or Business Partner Contact
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getAD_User_ID();
 
 	String COLUMNNAME_AD_User_ID = "AD_User_ID";
-
 
 	/**
 	 * Set Capacity Per Production Cycle.
@@ -117,7 +115,7 @@ public interface I_S_Resource
 	String COLUMNNAME_CapacityPerProductionCycle_UOM_ID = "CapacityPerProductionCycle_UOM_ID";
 
 	/**
-	 * Set Abrechenbare Menge.
+	 * Set Chargeable Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -126,7 +124,7 @@ public interface I_S_Resource
 	void setChargeableQty (@Nullable BigDecimal ChargeableQty);
 
 	/**
-	 * Get Abrechenbare Menge.
+	 * Get Chargeable Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -161,6 +159,31 @@ public interface I_S_Resource
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Workplace.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Workplace_ID (int C_Workplace_ID);
+
+	/**
+	 * Get Workplace.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Workplace_ID();
+
+	@Nullable org.compiere.model.I_C_Workplace getC_Workplace();
+
+	void setC_Workplace(@Nullable org.compiere.model.I_C_Workplace C_Workplace);
+
+	ModelColumn<I_S_Resource, org.compiere.model.I_C_Workplace> COLUMN_C_Workplace_ID = new ModelColumn<>(I_S_Resource.class, "C_Workplace_ID", org.compiere.model.I_C_Workplace.class);
+	String COLUMNNAME_C_Workplace_ID = "C_Workplace_ID";
 
 	/**
 	 * Set Daily Capacity.
@@ -228,6 +251,27 @@ public interface I_S_Resource
 	String COLUMNNAME_InternalName = "InternalName";
 
 	/**
+	 * Set External System Config.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_Config_ID (int ExternalSystem_Config_ID);
+
+	/**
+	 * Get External System Config.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_Config_ID();
+
+	ModelColumn<I_S_Resource, Object> COLUMN_ExternalSystem_Config_ID = new ModelColumn<>(I_S_Resource.class, "ExternalSystem_Config_ID", null);
+	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -251,7 +295,7 @@ public interface I_S_Resource
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Verfügbar.
+	 * Set Available.
 	 * Resource is available
 	 *
 	 * <br>Type: YesNo
@@ -261,7 +305,7 @@ public interface I_S_Resource
 	void setIsAvailable (boolean IsAvailable);
 
 	/**
-	 * Get Verfügbar.
+	 * Get Available.
 	 * Resource is available
 	 *
 	 * <br>Type: YesNo
@@ -317,6 +361,7 @@ public interface I_S_Resource
 
 	/**
 	 * Set Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -326,6 +371,7 @@ public interface I_S_Resource
 
 	/**
 	 * Get Exclude from MRP.
+	 * Exclude from MRP calculation
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -403,6 +449,7 @@ public interface I_S_Resource
 
 	/**
 	 * Set Queuing Time.
+	 * Queue time is the time a job waits at a work center before begin handled.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -412,6 +459,7 @@ public interface I_S_Resource
 
 	/**
 	 * Get Queuing Time.
+	 * Queue time is the time a job waits at a work center before begin handled.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -491,7 +539,7 @@ public interface I_S_Resource
 	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**
-	 * Set Ressourcenart.
+	 * Set Resource Type.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -500,7 +548,7 @@ public interface I_S_Resource
 	void setS_ResourceType_ID (int S_ResourceType_ID);
 
 	/**
-	 * Get Ressourcenart.
+	 * Get Resource Type.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true

@@ -8,6 +8,7 @@ Feature: Product items invoice candidates: receipts
     And metasfresh has date and time 2022-03-01T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
+    And set sys config boolean value true for sys config de.metas.handlingunits.model.validator.M_InOut.allowReactivateOfReceiptWithHUAssigned
 
     When load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |

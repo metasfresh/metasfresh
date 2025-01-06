@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1369968982L;
+	private static final long serialVersionUID = 456361077L;
 
     /** Standard Constructor */
     public X_C_Invoice (final Properties ctx, final int C_Invoice_ID, @Nullable final String trxName)
@@ -153,6 +153,19 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
+	public void setCashRoundingAmt (final BigDecimal CashRoundingAmt)
+	{
+		set_Value (COLUMNNAME_CashRoundingAmt, CashRoundingAmt);
+	}
+
+	@Override
+	public BigDecimal getCashRoundingAmt()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CashRoundingAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public org.compiere.model.I_C_Auction getC_Auction()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Auction_ID, org.compiere.model.I_C_Auction.class);
@@ -254,14 +267,14 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	@Override
 	public void setC_BP_BankAccount_ID (final int C_BP_BankAccount_ID)
 	{
-		if (C_BP_BankAccount_ID < 1) 
+		if (C_BP_BankAccount_ID < 1)
 			set_Value (COLUMNNAME_C_BP_BankAccount_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_BP_BankAccount_ID, C_BP_BankAccount_ID);
 	}
 
 	@Override
-	public int getC_BP_BankAccount_ID() 
+	public int getC_BP_BankAccount_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BP_BankAccount_ID);
 	}
@@ -726,14 +739,14 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	@Override
 	public void setC_Tax_Departure_Country_ID (final int C_Tax_Departure_Country_ID)
 	{
-		if (C_Tax_Departure_Country_ID < 1) 
+		if (C_Tax_Departure_Country_ID < 1)
 			set_Value (COLUMNNAME_C_Tax_Departure_Country_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Tax_Departure_Country_ID, C_Tax_Departure_Country_ID);
 	}
 
 	@Override
-	public int getC_Tax_Departure_Country_ID() 
+	public int getC_Tax_Departure_Country_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Tax_Departure_Country_ID);
 	}
@@ -1342,6 +1355,21 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
+	public void setModCntr_Settings_ID (final int ModCntr_Settings_ID)
+	{
+		if (ModCntr_Settings_ID < 1)
+			set_Value (COLUMNNAME_ModCntr_Settings_ID, null);
+		else
+			set_Value (COLUMNNAME_ModCntr_Settings_ID, ModCntr_Settings_ID);
+	}
+
+	@Override
+	public int getModCntr_Settings_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_ModCntr_Settings_ID);
+	}
+
+	@Override
 	public void setM_PriceList_ID (final int M_PriceList_ID)
 	{
 		if (M_PriceList_ID < 1) 
@@ -1525,6 +1553,33 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public boolean isProcessing() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processing);
+	}
+
+	@Override
+	public org.compiere.model.I_C_BP_BankAccount getOrg_BP_Account()
+	{
+		return get_ValueAsPO(COLUMNNAME_Org_BP_Account_ID, org.compiere.model.I_C_BP_BankAccount.class);
+	}
+
+	@Override
+	public void setOrg_BP_Account(final org.compiere.model.I_C_BP_BankAccount Org_BP_Account)
+	{
+		set_ValueFromPO(COLUMNNAME_Org_BP_Account_ID, org.compiere.model.I_C_BP_BankAccount.class, Org_BP_Account);
+	}
+
+	@Override
+	public void setOrg_BP_Account_ID (final int Org_BP_Account_ID)
+	{
+		if (Org_BP_Account_ID < 1)
+			set_Value (COLUMNNAME_Org_BP_Account_ID, null);
+		else
+			set_Value (COLUMNNAME_Org_BP_Account_ID, Org_BP_Account_ID);
+	}
+
+	@Override
+	public int getOrg_BP_Account_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Org_BP_Account_ID);
 	}
 
 	@Override

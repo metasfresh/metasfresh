@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -54,7 +55,8 @@ public class X12DE355
 	@Nullable
 	public static X12DE355 ofNullableCode(@Nullable final String code)
 	{
-		return code != null && !Check.isBlank(code) ? ofCode(code) : null;
+		final String codeNorm = StringUtils.trimBlankToNull(code);
+		return codeNorm != null ? ofCode(codeNorm) : null;
 	}
 
 	@NonNull
@@ -156,7 +158,7 @@ public class X12DE355
 	{
 		if (temporalUnit == null)
 		{
-			throw new AdempiereException("" + this + " is not a known temporal unit");
+			throw new AdempiereException(this + " is not a known temporal unit");
 		}
 
 		return temporalUnit;

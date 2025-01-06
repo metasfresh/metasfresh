@@ -24,7 +24,6 @@ package de.metas.document.archive.interceptor;
 
 import de.metas.cache.CacheMgt;
 import de.metas.document.archive.model.I_AD_Archive;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.process.ExportArchivePDF;
 import de.metas.document.archive.spi.impl.DocOutboundArchiveEventListener;
 import de.metas.document.archive.spi.impl.RemoteArchiveStorage;
@@ -41,6 +40,8 @@ import org.adempiere.archive.api.IArchiveStorageFactory.AccessMode;
 import org.adempiere.archive.spi.impl.FilesystemArchiveStorage;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_Doc_Outbound_Config;
+import org.compiere.model.I_C_Doc_Outbound_Config_CC;
 import org.compiere.model.MClient;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
@@ -101,6 +102,7 @@ public class Archive_Main_Validator implements ModelValidator
 		// task 09417: while we are at it, also make sure that config changes are propagated
 		final CacheMgt cacheMgt = CacheMgt.get();
 		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_Doc_Outbound_Config.Table_Name);
+		cacheMgt.enableRemoteCacheInvalidationForTableName(I_C_Doc_Outbound_Config_CC.Table_Name);
 	}
 
 	@Override

@@ -7,12 +7,15 @@ import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.material.planning.pporder.PPAlwaysAvailableToUser;
+import de.metas.material.planning.pporder.PPOrderTargetPlanningStatus;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingActivityType;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.material.planning.pporder.RawMaterialsIssueStrategy;
 import de.metas.material.planning.pporder.UserInstructions;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -28,7 +31,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import de.metas.common.util.pair.ImmutablePair;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderActivityScheduleChangeRequest;
@@ -259,6 +261,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				.milestone(record.isMilestone())
 				.alwaysAvailableToUser(PPAlwaysAvailableToUser.ofNullableCode(record.getPP_AlwaysAvailableToUser()))
 				.userInstructions(UserInstructions.ofNullableString(record.getPP_UserInstructions()))
+				.targetPlanningStatus(PPOrderTargetPlanningStatus.ofNullableCode(record.getTargetPlanningStatus()))
 				//
 				.resourceId(resourceId)
 				//
@@ -276,19 +279,21 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				// Planned values
 				.setupTimeRequired(Duration.of(record.getSetupTimeRequiered(), durationUnit.getTemporalUnit()))
 				.durationRequired(Duration.of(record.getDurationRequiered(), durationUnit.getTemporalUnit()))
-				.qtyRequired(Quantitys.create(record.getQtyRequiered(), uomId))
+				.qtyRequired(Quantitys.of(record.getQtyRequiered(), uomId))
 				//
 				// Reported values
 				.setupTimeReal(Duration.of(record.getSetupTimeReal(), durationUnit.getTemporalUnit()))
 				.durationReal(Duration.of(record.getDurationReal(), durationUnit.getTemporalUnit()))
-				.qtyDelivered(Quantitys.create(record.getQtyDelivered(), uomId))
-				.qtyScrapped(Quantitys.create(record.getQtyScrap(), uomId))
-				.qtyRejected(Quantitys.create(record.getQtyReject(), uomId))
+				.qtyDelivered(Quantitys.of(record.getQtyDelivered(), uomId))
+				.qtyScrapped(Quantitys.of(record.getQtyScrap(), uomId))
+				.qtyRejected(Quantitys.of(record.getQtyReject(), uomId))
 				.dateStart(TimeUtil.asInstant(record.getDateStart()))
 				.dateFinish(TimeUtil.asInstant(record.getDateFinish()))
 				.alwaysAvailableToUser(CoalesceUtil.coalesceNotNull(PPAlwaysAvailableToUser.ofNullableCode(record.getPP_AlwaysAvailableToUser()), PPAlwaysAvailableToUser.DEFAULT))
 				//
 				.scannedQRCode(GlobalQRCode.ofNullableString(record.getScannedQRCode()))
+				//
+				.rawMaterialsIssueStrategy(RawMaterialsIssueStrategy.ofCodeOrDefault(record.getRawMaterialsIssueStrategy()))
 				//
 				.build();
 	}
@@ -551,6 +556,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		record.setIsMilestone(from.isMilestone());
 		record.setPP_AlwaysAvailableToUser(from.getAlwaysAvailableToUser().getCode());
 		record.setPP_UserInstructions(from.getUserInstructions() != null ? from.getUserInstructions().getAsString() : null);
+		record.setTargetPlanningStatus(from.getTargetPlanningStatus() != null ? from.getTargetPlanningStatus().getCode() : null);
 
 		record.setS_Resource_ID(from.getResourceId().getRepoId());
 
@@ -587,6 +593,8 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		record.setAD_WF_Node_Template_ID(PPRoutingActivityTemplateId.toRepoId(activityTemplateId));
 
 		record.setScannedQRCode(from.getScannedQRCode() != null ? from.getScannedQRCode().getAsString() : null);
+
+		record.setRawMaterialsIssueStrategy(RawMaterialsIssueStrategy.toCode(from.getRawMaterialsIssueStrategy()));
 	}
 
 	private I_PP_Order_NodeNext toNewOrderNodeNextRecord(final PPOrderRoutingActivity activity, final PPOrderRoutingActivity nextActivity)

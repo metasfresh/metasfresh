@@ -20,7 +20,7 @@ FROM (
                                                                                                                                                      THEN (SELECT mt.lot
                                                                                                                                                            FROM m_material_tracking mt
                                                                                                                                                            WHERE mt.m_material_tracking_id = ai.value::numeric)
-                                                                                                                                                     ELSE av.Name -- default
+                                                                                                                                                     ELSE COALESCE(av.Name, ai.value) -- default
                 END                      AS ai_Value,
                 M_AttributeSetInstance_ID,
                 a.Value                  AS at_Value,

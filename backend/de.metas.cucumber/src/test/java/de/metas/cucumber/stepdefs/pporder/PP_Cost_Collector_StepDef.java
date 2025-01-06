@@ -27,11 +27,16 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.CostCollectorType;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -39,10 +44,9 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_DocStatus;
 import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_M_Product_ID;
 import static org.eevolution.model.I_PP_Cost_Collector.COLUMNNAME_MovementQty;
@@ -89,7 +93,7 @@ public class PP_Cost_Collector_StepDef
 	}
 
 	@NonNull
-	private Boolean loadPPCostCollector(@NonNull final Map<String, String> tableRow)
+	private boolean loadPPCostCollector(@NonNull final Map<String, String> tableRow)
 	{
 		final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
@@ -100,20 +104,32 @@ public class PP_Cost_Collector_StepDef
 
 		final String status = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_DocStatus);
 
-		final Optional<I_PP_Cost_Collector> ppCostCollector = queryBL.createQueryBuilder(I_PP_Cost_Collector.class)
+		final IQueryBuilder<I_PP_Cost_Collector> queryBuilder = queryBL.createQueryBuilder(I_PP_Cost_Collector.class)
 				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID())
 				.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_M_Product_ID, ppOrder.getM_Product_ID())
-				.addEqualsFilter(COLUMNNAME_DocStatus, status)
-				.create()
-				.firstOnlyOptional(I_PP_Cost_Collector.class);
+				.addEqualsFilter(COLUMNNAME_DocStatus, status);
 
-		if (!ppCostCollector.isPresent())
+		StringUtils.trimBlankToOptional(tableRow.get(I_PP_Cost_Collector.COLUMNNAME_CostCollectorType))
+				.map(CostCollectorType::ofNullableCode)
+				.ifPresent(costCollectorType -> queryBuilder.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_CostCollectorType, costCollectorType));
+
+		final IQuery<I_PP_Cost_Collector> query = queryBuilder.create();
+		final List<I_PP_Cost_Collector> ppCostCollectors = query.list();
+		if (ppCostCollectors.isEmpty())
 		{
 			return false;
 		}
+		else if (ppCostCollectors.size() > 1)
+		{
+			throw new AdempiereException("More than one cost collector found for `" + tableRow)
+					.appendParametersToMessage()
+					.setParameter("ppCostCollectors", ppCostCollectors)
+					.setParameter("query", query);
+		}
 
+		final I_PP_Cost_Collector ppCostCollector = ppCostCollectors.get(0);
 		final String ppCostCollectorIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_PP_Cost_Collector_ID + "." + TABLECOLUMN_IDENTIFIER);
-		ppCostCollectorTable.put(ppCostCollectorIdentifier, ppCostCollector.get());
+		ppCostCollectorTable.put(ppCostCollectorIdentifier, ppCostCollector);
 
 		return true;
 	}

@@ -22,6 +22,7 @@ package de.metas.storage;
  * #L%
  */
 
+import lombok.NonNull;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -53,4 +54,5 @@ public interface IStorageEngine
 	 */
 	IAttributeSet getAttributeSet(I_M_AttributeSetInstance asi);
 
+	boolean anyMatch(@NonNull IContextAware context, @NonNull IStorageQuery storageQuery);
 }

@@ -5,27 +5,27 @@
 -- 2022-01-11T15:22:47.332Z
 -- URL zum Konzept
 UPDATE AD_Column
-SET FieldLength=100, Updated=TO_TIMESTAMP('2022-01-11 17:22:47', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+SET FieldLength=150, Updated=TO_TIMESTAMP('2022-01-11 17:22:47', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Column_ID = 2902
 ;
 
 -- 2022-01-11T15:22:53.811Z
 -- URL zum Konzept
 INSERT INTO t_alter_column
-VALUES ('c_bpartner', 'Name', 'VARCHAR(100)', NULL, NULL)
+VALUES ('c_bpartner', 'Name', 'VARCHAR(150)', NULL, NULL)
 ;
 
 -- 2022-01-11T15:23:12.464Z
 -- URL zum Konzept
 UPDATE AD_Column
-SET FieldLength=100, Updated=TO_TIMESTAMP('2022-01-11 17:23:12', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+SET FieldLength=150, Updated=TO_TIMESTAMP('2022-01-11 17:23:12', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
 WHERE AD_Column_ID = 542713
 ;
 
 -- 2022-01-11T15:23:18.148Z
 -- URL zum Konzept
 INSERT INTO t_alter_column
-VALUES ('c_bpartner', 'CompanyName', 'VARCHAR(100)', NULL, NULL)
+VALUES ('c_bpartner', 'CompanyName', 'VARCHAR(150)', NULL, NULL)
 ;
 
 

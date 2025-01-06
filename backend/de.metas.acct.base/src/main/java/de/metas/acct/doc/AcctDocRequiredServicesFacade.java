@@ -1,5 +1,6 @@
 package de.metas.acct.doc;
 
+import de.metas.acct.Account;
 import de.metas.acct.GLCategoryId;
 import de.metas.acct.GLCategoryRepository;
 import de.metas.acct.accounts.AccountProvider;
@@ -99,6 +100,7 @@ import de.metas.util.StringUtils;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.acct.api.IFactAcctBL;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -156,6 +158,7 @@ public class AcctDocRequiredServicesFacade
 	private final ModelCacheInvalidationService modelCacheInvalidationService;
 
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
+	private final IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
 	@Getter
 	private final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
 	private final ElementValueService elementValueService;
@@ -249,9 +252,20 @@ public class AcctDocRequiredServicesFacade
 		return accountDAO.getById(accountId);
 	}
 
+	public Account getAccount(@NonNull final I_Fact_Acct factAcct)
+	{
+		return factAcctBL.getAccount(factAcct);
+	}
+
 	public ElementValue getElementValueById(@NonNull final ElementValueId elementValueId)
 	{
 		return elementValueService.getById(elementValueId);
+	}
+
+	public ElementValueId getElementValueId(@NonNull final Account account)
+	{
+		final MAccount validCombination = accountDAO.getById(account.getAccountId());
+		return validCombination.getElementValueId();
 	}
 
 	public CurrencyPrecision getCurrencyStandardPrecision(@NonNull final CurrencyId currencyId)
@@ -563,8 +577,8 @@ public class AcctDocRequiredServicesFacade
 		record.setOpenItemKey(factLine.getOpenItemTrxInfo() != null ? factLine.getOpenItemTrxInfo().getKey().getAsString() : null);
 
 		final YearAndCalendarId calendarAndYearId = factLine.getYearAndCalendarId();
-		record.setC_Harvesting_Calendar_ID(calendarAndYearId !=null ? CalendarId.toRepoId(calendarAndYearId.calendarId()) : -1);
-		record.setHarvesting_Year_ID(calendarAndYearId !=null ? YearId.toRepoId(calendarAndYearId.yearId()) : -1);
+		record.setC_Harvesting_Calendar_ID(calendarAndYearId != null ? CalendarId.toRepoId(calendarAndYearId.calendarId()) : -1);
+		record.setHarvesting_Year_ID(calendarAndYearId != null ? YearId.toRepoId(calendarAndYearId.yearId()) : -1);
 
 		factAcctDAO.save(record);
 		factLine.setId(FactAcctId.ofRepoId(record.getFact_Acct_ID()));

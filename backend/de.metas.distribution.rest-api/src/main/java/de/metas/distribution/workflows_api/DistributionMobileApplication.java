@@ -7,11 +7,10 @@ import de.metas.distribution.rest_api.JsonDistributionEvent;
 import de.metas.distribution.workflows_api.activity_handlers.CompleteDistributionWFActivityHandler;
 import de.metas.distribution.workflows_api.activity_handlers.MoveWFActivityHandler;
 import de.metas.document.engine.IDocument;
-import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.user.UserId;
-import de.metas.workflow.rest_api.model.MobileApplicationId;
-import de.metas.workflow.rest_api.model.MobileApplicationInfo;
+import de.metas.mobile.application.MobileApplicationId;
+import de.metas.util.Check;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
@@ -27,6 +26,8 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
+import java.util.Objects;
+import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
 
 @Component
@@ -34,12 +35,6 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 {
 	@VisibleForTesting
 	public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("distribution");
-
-	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.distribution.appName");
-	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
-			.id(APPLICATION_ID)
-			.caption(TranslatableStrings.adMessage(MSG_Caption))
-			.build();
 
 	private final DistributionRestService distributionRestService;
 	private final DistributionWorkflowLaunchersProvider wfLaunchersProvider;
@@ -56,13 +51,7 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
 
 	@Override
-	public @NonNull MobileApplicationInfo getApplicationInfo(@NonNull UserId loggedUserId)
-	{
-		return APPLICATION_INFO;
-	}
-
-	@Override
-	public WorkflowLaunchersList provideLaunchers(@NonNull WorkflowLaunchersQuery query)
+	public WorkflowLaunchersList provideLaunchers(@NonNull final WorkflowLaunchersQuery query)
 	{
 		if (query.getFilterByQRCode() != null)
 		{
@@ -99,7 +88,6 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 		return WFProcess.builder()
 				.id(WFProcessId.ofIdPart(APPLICATION_ID, job.getDdOrderId()))
 				.responsibleId(job.getResponsibleId())
-				.caption(TranslatableStrings.anyLanguage("" + job.getDdOrderId().getRepoId()))
 				.document(job)
 				.activities(ImmutableList.of(
 						WFActivity.builder()
@@ -122,7 +110,7 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	public void abort(final WFProcessId wfProcessId, final UserId callerId)
 	{
 		final WFProcess wfProcess = getWFProcessById(wfProcessId);
-		distributionRestService.abort(wfProcess.getDocumentAs(DistributionJob.class));
+		distributionRestService.abort(getDistributionJob(wfProcess));
 	}
 
 	@Override
@@ -152,11 +140,34 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 		return remappingFunction.apply(wfProcess);
 	}
 
+	private WFProcess changeWFProcessById(
+			@NonNull final WFProcessId wfProcessId,
+			@NonNull final BiFunction<WFProcess, DistributionJob, DistributionJob> remappingFunction)
+	{
+		final WFProcess wfProcess = getWFProcessById(wfProcessId);
+		return mapDocument(wfProcess, job -> remappingFunction.apply(wfProcess, job));
+	}
+
+	public static WFProcess mapDocument(@NonNull final WFProcess wfProcess, @NonNull final UnaryOperator<DistributionJob> mapper)
+	{
+		final DistributionJob job = getDistributionJob(wfProcess);
+		final DistributionJob jobChanged = mapper.apply(job);
+		return !Objects.equals(job, jobChanged)
+				? toWFProcess(jobChanged)
+				: wfProcess;
+	}
+
+	@NonNull
+	public static DistributionJob getDistributionJob(final @NonNull WFProcess wfProcess)
+	{
+		return wfProcess.getDocumentAs(DistributionJob.class);
+	}
+
 	@Override
 	public WFProcessHeaderProperties getHeaderProperties(final @NonNull WFProcess wfProcess)
 	{
-		final DistributionJob job = wfProcess.getDocumentAs(DistributionJob.class);
-		return WFProcessHeaderProperties.builder()
+		final DistributionJob job = getDistributionJob(wfProcess);
+		final WFProcessHeaderProperties.WFProcessHeaderPropertiesBuilder builder = WFProcessHeaderProperties.builder()
 				.entry(WFProcessHeaderProperty.builder()
 						.caption(TranslatableStrings.adElementOrMessage("DocumentNo"))
 						.value(job.getDocumentNo())
@@ -172,20 +183,36 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 				.entry(WFProcessHeaderProperty.builder()
 						.caption(TranslatableStrings.adElementOrMessage("M_Warehouse_To_ID"))
 						.value(job.getDropToWarehouse().getCaption())
-						.build())
-				.build();
+						.build());
+
+		if (Check.isNotBlank(job.getSalesOrderDocumentNo()))
+		{
+			builder.entry(WFProcessHeaderProperty.builder()
+								  .caption(TranslatableStrings.adElementOrMessage("C_Order_DocumentNo"))
+								  .value(job.getSalesOrderDocumentNo())
+								  .build());
+		}
+
+		if (Check.isNotBlank(job.getPpOrderDocumentNo()))
+		{
+			builder.entry(WFProcessHeaderProperty.builder()
+								  .caption(TranslatableStrings.adElementOrMessage("PP_Order_DocumentNo"))
+								  .value(job.getPpOrderDocumentNo())
+								  .build());
+		}
+
+		return builder.build();
 	}
 
-	public void processEvent(final JsonDistributionEvent event, final UserId callerId)
+	public WFProcess processEvent(final JsonDistributionEvent event, final UserId callerId)
 	{
 		final WFProcessId wfProcessId = WFProcessId.ofString(event.getWfProcessId());
-		changeWFProcessById(
+		return changeWFProcessById(
 				wfProcessId,
-				wfProcess -> {
+				(wfProcess, job) -> {
 					wfProcess.assertHasAccess(callerId);
 					//assertPickingActivityType(jsonEvents, wfProcess);
-
-					return wfProcess.<DistributionJob>mapDocument(job -> distributionRestService.processEvent(job, event));
+					return distributionRestService.processEvent(job, event);
 				});
 	}
 

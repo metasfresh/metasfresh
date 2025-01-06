@@ -30,6 +30,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.sectionCode.SectionCodeId;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
@@ -54,6 +55,8 @@ public class InOutLineDimensionFactory implements DimensionFactory<I_M_InOutLine
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.bpartnerId2(BPartnerId.ofRepoIdOrNull(record.getC_BPartner2_ID()))
+				.userElementNumber1(InterfaceWrapperHelper.getValueAsBigDecimalOrNull(record, I_M_InOutLine.COLUMNNAME_UserElementNumber1))
+				.userElementNumber2(InterfaceWrapperHelper.getValueAsBigDecimalOrNull(record, I_M_InOutLine.COLUMNNAME_UserElementNumber2))
 				.userElementString1(record.getUserElementString1())
 				.userElementString2(record.getUserElementString2())
 				.userElementString3(record.getUserElementString3())
@@ -63,7 +66,7 @@ public class InOutLineDimensionFactory implements DimensionFactory<I_M_InOutLine
 				.userElementString7(record.getUserElementString7())
 				.user1_ID(record.getUser1_ID())
 				.user2_ID(record.getUser2_ID())
-				.harvestingYearAndCalendarId(YearAndCalendarId.ofRepoIdOrNull(record.getC_Harvesting_Calendar_ID(), record.getHarvesting_Year_ID()))
+				.harvestingYearAndCalendarId(YearAndCalendarId.ofRepoIdOrNull(record.getHarvesting_Year_ID(), record.getC_Harvesting_Calendar_ID()))
 				.build();
 	}
 
@@ -84,6 +87,8 @@ public class InOutLineDimensionFactory implements DimensionFactory<I_M_InOutLine
 	@Override
 	public void updateRecordUserElements(final I_M_InOutLine record, final Dimension from)
 	{
+		record.setUserElementNumber1(from.getUserElementNumber1());
+		record.setUserElementNumber2(from.getUserElementNumber2());
 		record.setUserElementString1(from.getUserElementString1());
 		record.setUserElementString2(from.getUserElementString2());
 		record.setUserElementString3(from.getUserElementString3());

@@ -1,7 +1,7 @@
 package de.metas.ui.web.invoice.match_inout_costs;
 
 import de.metas.i18n.TranslatableStrings;
-import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.lang.SOTrx;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.view.ViewHeaderProperties;
@@ -29,7 +29,7 @@ public class InOutCostsViewData implements IRowsData<InOutCostRow>
 	//
 	// parameters
 	@Getter @NonNull final SOTrx soTrx;
-	@Getter @NonNull private final InvoiceLineId invoiceLineId;
+	@Getter @NonNull private final InvoiceAndLineId invoiceAndLineId;
 	@Getter @Nullable private final DocumentFilter filter;
 
 	//
@@ -41,11 +41,11 @@ public class InOutCostsViewData implements IRowsData<InOutCostRow>
 	private InOutCostsViewData(
 			@NonNull final InOutCostsViewDataService viewDataService,
 			@NonNull final SOTrx soTrx,
-			@NonNull final InvoiceLineId invoiceLineId,
+			@NonNull final InvoiceAndLineId invoiceAndLineId,
 			@Nullable final DocumentFilter filter)
 	{
 		this.viewDataService = viewDataService;
-		this.invoiceLineId = invoiceLineId;
+		this.invoiceAndLineId = invoiceAndLineId;
 		this.filter = filter;
 		this.soTrx = soTrx;
 		this.rowsHolder = SynchronizedRowsIndexHolder.of(viewDataService.retrieveRows(soTrx, filter));
@@ -81,7 +81,7 @@ public class InOutCostsViewData implements IRowsData<InOutCostRow>
 				.group(ViewHeaderPropertiesGroup.builder()
 						.entry(ViewHeaderProperty.builder()
 								.caption(TranslatableStrings.adElementOrMessage("InvoiceOpenAmt"))
-								.value(TranslatableStrings.amount(viewDataService.getInvoiceLineOpenAmount(invoiceLineId)))
+								.value(TranslatableStrings.amount(viewDataService.getInvoiceLineOpenAmount(invoiceAndLineId)))
 								.build())
 						.build())
 				.build();

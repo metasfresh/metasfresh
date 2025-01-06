@@ -393,50 +393,25 @@ public interface I_AD_Sequence
 	String COLUMNNAME_Prefix = "Prefix";
 
 	/**
-	 * Set Restart sequence every Month.
-	 * Restart the sequence with Start on every 1st of the month
+	 * Set Restart frequency.
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setStartNewMonth (boolean StartNewMonth);
+	void setRestartFrequency (@Nullable java.lang.String RestartFrequency);
 
 	/**
-	 * Get Restart sequence every Month.
-	 * Restart the sequence with Start on every 1st of the month
+	 * Get Restart frequency.
 	 *
-	 * <br>Type: YesNo
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	boolean isStartNewMonth();
+	@Nullable java.lang.String getRestartFrequency();
 
-	ModelColumn<I_AD_Sequence, Object> COLUMN_StartNewMonth = new ModelColumn<>(I_AD_Sequence.class, "StartNewMonth", null);
-	String COLUMNNAME_StartNewMonth = "StartNewMonth";
-
-	/**
-	 * Set Restart sequence every Year.
-	 * Restart the sequence with Start on every 1/1
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setStartNewYear (boolean StartNewYear);
-
-	/**
-	 * Get Restart sequence every Year.
-	 * Restart the sequence with Start on every 1/1
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	boolean isStartNewYear();
-
-	ModelColumn<I_AD_Sequence, Object> COLUMN_StartNewYear = new ModelColumn<>(I_AD_Sequence.class, "StartNewYear", null);
-	String COLUMNNAME_StartNewYear = "StartNewYear";
+	ModelColumn<I_AD_Sequence, Object> COLUMN_RestartFrequency = new ModelColumn<>(I_AD_Sequence.class, "RestartFrequency", null);
+	String COLUMNNAME_RestartFrequency = "RestartFrequency";
 
 	/**
 	 * Set Start No.

@@ -22,7 +22,10 @@ package org.adempiere.archive.api;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.document.DocTypeId;
 import de.metas.report.PrintCopies;
+import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
@@ -32,6 +35,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.springframework.core.io.Resource;
 
+import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.util.Optional;
 
@@ -39,7 +43,6 @@ import java.util.Optional;
  * Archive related business logic
  *
  * @author tsa
- *
  */
 public interface IArchiveBL extends ISingletonService
 {
@@ -69,4 +72,11 @@ public interface IArchiveBL extends ISingletonService
 	Optional<I_AD_Archive> getLastArchiveRecord(@NonNull TableRecordReference reference);
 
 	Optional<Resource> getLastArchiveBinaryData(@NonNull TableRecordReference reference);
+
+	I_AD_Archive getRecordById(@NonNull ArchiveId archiveId);
+
+	@Nullable
+	DocTypeId getOverrideDocTypeId(@NonNull ArchiveId archiveId);
+
+	void updatePrintedRecords(ImmutableSet<ArchiveId> ids, UserId userId);
 }

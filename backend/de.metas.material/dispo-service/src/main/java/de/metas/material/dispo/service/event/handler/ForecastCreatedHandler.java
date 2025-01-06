@@ -62,7 +62,7 @@ public class ForecastCreatedHandler implements MaterialEventHandler<ForecastCrea
 	{
 		final Forecast forecast = event.getForecast();
 
-		final CandidateBuilder candidateBuilder = Candidate.builderForEventDescr(event.getEventDescriptor())
+		final CandidateBuilder candidateBuilder = Candidate.builderForEventDescriptor(event.getEventDescriptor())
 				//.status(EventUtil.getCandidateStatus(forecast.getDocStatus()))
 				.type(CandidateType.STOCK_UP)
 				.businessCase(CandidateBusinessCase.FORECAST);

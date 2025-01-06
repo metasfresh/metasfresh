@@ -7,10 +7,9 @@ import { trl } from '../../../utils/translations';
 import { toastError } from '../../../utils/toast';
 import { postStepPicked, postStepUnPicked } from '../../../api/picking';
 import { pickingStepScanScreenLocation } from '../../../routes/picking';
-import { updatePickingStepQty } from '../../../actions/PickingActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { getStepById } from '../../../reducers/wfProcesses';
-import { getPickFrom, getQtyToPick } from '../../../utils/picking';
+import { getPickFromForStep, getQtyToPickForStep } from '../../../utils/picking';
 
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ConfirmButton from '../../../components/buttons/ConfirmButton';
@@ -84,20 +83,7 @@ const PickStepScreen = () => {
       qtyRejected,
       qtyRejectedReasonCode: 'N',
       huQRCode: toQRCodeString(pickFrom.huQRCode),
-    }).then(() => {
-      dispatch(
-        updatePickingStepQty({
-          wfProcessId,
-          activityId,
-          lineId,
-          stepId,
-          altStepId,
-          qtyPicked: 0,
-          qtyRejected,
-          qtyRejectedReasonCode: 'N', // FIXME: hardcoded NotFound reason code
-        })
-      );
-    });
+    }).then((wfProcess) => dispatch(updateWFProcess({ wfProcess })));
   };
 
   const onScanButtonClick = () =>
@@ -152,8 +138,8 @@ const PickStepScreen = () => {
 const getPropsFromState = ({ state, wfProcessId, activityId, lineId, stepId, altStepId }) => {
   const stepProps = getStepById(state, wfProcessId, activityId, lineId, stepId);
   return {
-    pickFrom: stepProps != null ? getPickFrom({ stepProps, altStepId }) : null,
-    qtyToPick: stepProps != null ? getQtyToPick({ stepProps, altStepId }) : 0,
+    pickFrom: stepProps != null ? getPickFromForStep({ stepProps, altStepId }) : null,
+    qtyToPick: stepProps != null ? getQtyToPickForStep({ stepProps, altStepId }) : 0,
     uom: stepProps?.uom ?? '',
   };
 };

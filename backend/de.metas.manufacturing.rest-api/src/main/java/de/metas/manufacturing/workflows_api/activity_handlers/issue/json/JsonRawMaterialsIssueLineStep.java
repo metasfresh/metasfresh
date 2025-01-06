@@ -3,6 +3,7 @@ package de.metas.manufacturing.workflows_api.activity_handlers.issue.json;
 import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.Builder;
@@ -12,6 +13,7 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @Value
 @Builder
@@ -23,7 +25,8 @@ public class JsonRawMaterialsIssueLineStep
 	@NonNull String productId;
 	@NonNull String productName;
 	@NonNull String locatorName;
-	@NonNull JsonDisplayableQRCode huQRCode;
+	@NonNull String locatorQrCode;
+	@NonNull String huId;
 	@NonNull String uom;
 	@NonNull BigDecimal qtyHUCapacity;
 	@NonNull BigDecimal qtyToIssue;
@@ -31,6 +34,7 @@ public class JsonRawMaterialsIssueLineStep
 	@Nullable BigDecimal qtyRejected;
 	@Nullable String qtyRejectedReasonCode;
 	@Nullable JsonScaleTolerance scaleTolerance;
+	@Nullable JsonDisplayableQRCode huQRCode;
 
 	public static JsonRawMaterialsIssueLineStep of(RawMaterialsIssueStep step, JsonOpts jsonOpts)
 	{
@@ -40,7 +44,11 @@ public class JsonRawMaterialsIssueLineStep
 				.productId(String.valueOf(step.getProductId().getRepoId()))
 				.productName(step.getProductName().translate(jsonOpts.getAdLanguage()))
 				.locatorName(step.getIssueFromLocator().getCaption())
-				.huQRCode(step.getIssueFromHU().getBarcode().toRenderedJson())
+				.locatorQrCode(step.getIssueFromLocator().getQrCode().toGlobalQRCodeJsonString())
+				.huQRCode(Optional.ofNullable(step.getIssueFromHU().getBarcode())
+								  .map(HUQRCode::toRenderedJson)
+								  .orElse(null))
+				.huId(step.getIssueFromHU().getId().toHUValue())
 				.uom(step.getQtyToIssue().getUOMSymbol())
 				.qtyHUCapacity(step.getIssueFromHU().getHuCapacity().toBigDecimal())
 				.qtyToIssue(step.getQtyToIssue().toBigDecimal());

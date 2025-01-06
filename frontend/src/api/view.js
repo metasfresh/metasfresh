@@ -2,6 +2,7 @@ import axios, { delete as del, get, patch, post } from 'axios';
 
 import { createPatchRequestPayload, getQueryString } from '../utils';
 import { prepareFilterForBackend } from '../utils/filterHelpers';
+import { toOrderBysCommaSeparatedString } from '../utils/windowHelpers';
 
 export function getData({
   entity,
@@ -17,7 +18,7 @@ export function getData({
 }) {
   let queryParams = getQueryString({
     advanced: fetchAdvancedFields,
-    orderBy: orderBy,
+    orderBy: orderBy ? toOrderBysCommaSeparatedString(orderBy) : null,
   });
 
   return get(
@@ -248,14 +249,17 @@ export function deleteStaticFilter(windowId, viewId, filterId) {
 export const allActionsRequest = ({
   windowId,
   viewId,
+  viewOrderBy,
   selectedIds,
   childViewId,
   childViewSelectedIds,
 }) => {
   return post(`${config.API_URL}/documentView/${windowId}/${viewId}/actions`, {
+    viewOrderBy,
     selectedIds,
     childViewId,
     childViewSelectedIds,
+    all: true,
   });
 };
 
@@ -263,6 +267,7 @@ export function quickActionsRequest({
   windowId,
   viewId,
   viewProfileId,
+  viewOrderBy,
   selectedIds,
   childView,
   parentView,
@@ -271,6 +276,7 @@ export function quickActionsRequest({
   if (childView && childView.viewId) {
     requestBody = {
       viewProfileId,
+      viewOrderBy,
       selectedIds,
       childViewId: childView.viewId,
       childViewSelectedIds: childView.selected,
@@ -278,6 +284,7 @@ export function quickActionsRequest({
   } else if (parentView && parentView.viewId) {
     requestBody = {
       viewProfileId,
+      viewOrderBy,
       selectedIds,
       parentViewId: parentView.viewId,
       parentViewSelectedIds: parentView.selected,
@@ -285,6 +292,7 @@ export function quickActionsRequest({
   } else {
     requestBody = {
       viewProfileId,
+      viewOrderBy,
       selectedIds,
     };
   }

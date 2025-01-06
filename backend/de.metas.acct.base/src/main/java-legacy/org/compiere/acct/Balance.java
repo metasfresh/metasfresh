@@ -110,6 +110,18 @@ public final class Balance
 	 */
 	public boolean isReversal() {return debit.signum() <= 0 && credit.signum() <= 0;}
 
+	public boolean isDebit()
+	{
+		if (isReversal())
+		{
+			return toMoney().signum() <= 0;
+		}
+		else
+		{
+			return toMoney().signum() >= 0;
+		}
+	}
+
 	public CurrencyId getCurrencyId() {return Money.getCommonCurrencyIdOfAll(debit, credit);}
 
 	public Balance negateAndInvert()
@@ -131,6 +143,19 @@ public final class Balance
 		}
 
 		return new Balance(this.debit.subtract(min), this.credit.subtract(min));
+	}
+
+	public Balance computeDiffToBalance()
+	{
+		final Money diff = toMoney();
+		if (isReversal())
+		{
+			return diff.signum() < 0 ? ofCredit(diff) : ofDebit(diff.negate());
+		}
+		else
+		{
+			return diff.signum() < 0 ? ofDebit(diff.negate()) : ofCredit(diff);
+		}
 	}
 
 	public Balance invert()

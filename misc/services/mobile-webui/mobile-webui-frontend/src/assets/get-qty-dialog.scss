@@ -1,25 +1,31 @@
 .get-qty-dialog {
 
-  table {
-    width: 100%;
+  .table-container {
+    height: 70vh;
+    overflow-x: auto;
+    overflow-y: auto;
 
-    tbody {
-      tr {
-        th {
-          min-width: 38vw !important;
+    .table {
+      width: 100%;
 
-          text-align: left !important;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
+      tbody {
+        tr {
+          th {
+            min-width: 38vw !important;
 
-        td {
-          text-align: right;
-          white-space: pre-wrap;
+            text-align: left !important;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
 
-          input {
-            text-align: right
+          td {
+            text-align: right;
+            white-space: pre-wrap;
+
+            input {
+              text-align: right
+            }
           }
         }
       }

@@ -3,6 +3,7 @@
   "qrCode": "QR code",
   "locator": "Locator",
   "HUStatus": "Status",
+  "numberOfAggregatedHUs": "Aggregated HUs count",
   "product": "Product",
   "clearanceStatus": "Clearance Status",
   "clearanceNote": "Clearance Note",
@@ -14,7 +15,8 @@
     },
     "move": {
       "buttonCaption": "Move",
-      "scanTarget": "Scan target"
+      "scanTarget": "Scan target",
+      "qtyTULabel": "TU Qty"
     },
     "scanAgain": {
       "buttonCaption": "Scan again"
@@ -32,10 +34,14 @@
       "scanTargetPlaceholder": "Scan target",
       "moveSuccess": "Successfully moved"
     },
+    "setCurrentLocator": {
+      "buttonCaption": "Change current locator"
+    },
     "changeQty": {
       "buttonCaption": "Change qty",
       "qtyLabel": "Qty",
-      "descriptionLabel": "Description"
+      "descriptionLabel": "Description",
+      "allowedOnlyForSingleProducts": "The action can be performed only for a single product."
     },
     "printLabels": {
       "buttonCaption": "Print labels",

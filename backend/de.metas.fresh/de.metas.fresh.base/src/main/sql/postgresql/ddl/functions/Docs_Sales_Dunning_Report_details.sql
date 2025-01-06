@@ -16,22 +16,25 @@ CREATE FUNCTION report.Docs_Sales_Dunning_Report_details(IN p_Record_ID   numeri
                 feeamt       numeric,
                 totalamt     numeric,
                 duedate      timestamp WITH TIME ZONE,
-                daysdue      numeric
+                daysdue      numeric,
+                DunningLevel character varying
             )
 AS
 $$
 SELECT COALESCE(dt_trl.printname, dt.PrintName)                                             AS PrintName,
        COALESCE(doc.DocumentNo, 'ERROR')                                                    AS DocumentNo,
        doc.DocumentDate,
-       c.iso_code                                                                           AS currency,
+       c.cursymbol                                                                          AS currency,
        doc.GrandTotal,
        doc.PaidAmt                                                                          AS paidamt,
        doc.GrandTotal - doc.PaidAmt                                                         AS openamt,
        dl.amt                                                                               AS FeeAmt,
        invoiceopen(dc.Record_ID, 0::numeric) + dl.amt                                       AS totalamt,
-       doc.DueDate AS DueDate,
-       dc.DaysDue
+       paymenttermduedate(doc.C_PaymentTerm_ID, doc.DocumentDate::timestamp WITH TIME ZONE) AS DueDate,
+       dc.DaysDue,
+       dlv.printname                                                                        AS DunningLevel
 FROM C_DunningDoc dd
+         LEFT JOIN C_DunningLevel dlv ON dd.c_dunninglevel_id = dlv.c_dunninglevel_id
          LEFT JOIN C_DunningDoc_line dl ON dd.C_DunningDoc_ID = dl.C_DunningDoc_ID
          LEFT JOIN C_DunningDoc_Line_Source dls ON dl.C_DunningDoc_Line_ID = dls.C_DunningDoc_Line_ID AND dls.isActive = 'Y'
          LEFT JOIN C_Dunning_Candidate dc ON dls.C_Dunning_Candidate_ID = dc.C_Dunning_Candidate_ID AND dc.isActive = 'Y'

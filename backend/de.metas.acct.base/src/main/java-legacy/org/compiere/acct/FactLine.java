@@ -154,6 +154,8 @@ public class FactLine
 	@Getter @Setter(AccessLevel.PRIVATE) private String userElementString7;
 	@Getter @Setter(AccessLevel.PRIVATE) private Instant userElementDate1;
 	@Getter @Setter(AccessLevel.PRIVATE) private Instant userElementDate2;
+	@Getter @Setter(AccessLevel.PRIVATE) private BigDecimal userElementNumber1;
+	@Getter @Setter(AccessLevel.PRIVATE) private BigDecimal userElementNumber2;
 	@Getter @Setter(AccessLevel.PRIVATE) private YearAndCalendarId yearAndCalendarId;
 
 	@Getter @Nullable private FAOpenItemTrxInfo openItemTrxInfo;
@@ -656,7 +658,7 @@ public class FactLine
 				.orgId(orgId)
 				.build();
 		//
-		accrual.setAmtSource(currencyId, this.amtSourceCr, this.amtSourceDr);
+		accrual.setAmtSource(getCurrencyId(), getAmtSourceCr(), getAmtSourceDr());
 		accrual.convert();
 		accrual.setDescription(description);
 
@@ -817,6 +819,11 @@ public class FactLine
 		setAmtSourceDr(roundAmountToPrecision("AmtSourceDr", AmtSourceDr, precision));
 		setAmtSourceCr(roundAmountToPrecision("AmtSourceCr", AmtSourceCr, precision));
 	}   // setAmtSource
+
+	public void setAmtAcct(@NonNull final Balance balance)
+	{
+		setAmtAcct(balance.getDebit(), balance.getCredit());
+	}
 
 	/**
 	 * Set Accounted Amounts (alternative: call convert)
@@ -1004,7 +1011,7 @@ public class FactLine
 	 */
 	public boolean isDrSourceBalance()
 	{
-		return getSourceBalance().signum() >= 0;
+		return getSourceBalance().isDebit();
 	}
 
 	public Balance getAcctBalance()
@@ -1232,6 +1239,8 @@ public class FactLine
 				.setUser2_ID(this.User2_ID)
 				.setUserElement1_ID(this.userElement1_ID)
 				.setUserElement2_ID(this.userElement2_ID)
+				.setUserElementNumber1(this.userElementNumber1)
+				.setUserElementNumber2(this.userElementNumber2)
 				.setUserElementString1(this.userElementString1)
 				.setUserElementString2(this.userElementString2)
 				.setUserElementString3(this.userElementString3)
@@ -1361,6 +1370,8 @@ public class FactLine
 		this.User2_ID = dimension.getUser2_ID();
 		setUserElement1_ID(dimension.getUserElement1Id());
 		setUserElement2_ID(dimension.getUserElement2Id());
+		setUserElementNumber1(getUserElementNumber1());
+		setUserElementNumber2(getUserElementNumber2());
 		setUserElementString1(dimension.getUserElementString1());
 		setUserElementString2(dimension.getUserElementString2());
 		setUserElementString3(dimension.getUserElementString3());
@@ -1455,6 +1466,14 @@ public class FactLine
 		if (dim.isSegmentValueSet(AcctSegmentType.UserElement2))
 		{
 			setUserElement2_ID(dim.getUserElement2_ID());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserElementNumber1))
+		{
+			setUserElementNumber1(dim.getUserElementNumber1());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.UserElementNumber2))
+		{
+			setUserElementNumber2(dim.getUserElementNumber2());
 		}
 		if (dim.isSegmentValueSet(AcctSegmentType.UserElementString1))
 		{

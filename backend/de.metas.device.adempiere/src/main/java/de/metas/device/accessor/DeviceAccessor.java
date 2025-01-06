@@ -15,6 +15,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.slf4j.Logger;
 
@@ -93,6 +94,17 @@ public final class DeviceAccessor
 		return assignedWarehouseIds.isEmpty() || assignedWarehouseIds.contains(warehouseId);
 	}
 
+	public boolean isAvailableForLocator(@NonNull final LocatorId locatorId)
+	{
+		if (!isAvailableForWarehouse(locatorId.getWarehouseId()))
+		{
+			return false;
+		}
+
+		final ImmutableSet<LocatorId> assignedLocatorIds = deviceConfig.getAssignedLocatorIds();
+		return assignedLocatorIds.isEmpty() || assignedLocatorIds.contains(locatorId);
+	}
+	
 	public synchronized BigDecimal acquireValue()
 	{
 		logger.debug("This: {}, Device: {}; Request: {}", this, device, request);

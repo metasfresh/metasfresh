@@ -27,9 +27,26 @@ Feature: Extend Modular Contract Period
       | Identifier               | Name                                | Value                               |
       | modularCntrPricingSystem | modularCntrPricingSystem_23072023_1 | modularCntrPricingSystem_23072023_1 |
 
+
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name      | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | modularCntrPricingSystem      | DE                        | EUR                 | pl_280822 | false | false         | 2              | true         |
+
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | ValidFrom  | Name                 |
+      | plv_1      | pl_1                      | 2022-08-01 | PriceListVersionTest |
+
+
+
     And metasfresh contains M_Products:
       | Identifier         | Name                               |
       | module_log_product | module_log_product_test_07042023_1 |
+
+
+
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_1                             | module_log_product      | 10.0     | PCE               | Normal                        |
 
     And metasfresh contains C_BPartners:
       | Identifier           | Name                            | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_PaymentTerm_ID.Value |
@@ -40,26 +57,24 @@ Feature: Extend Modular Contract Period
       | bp_modularCntrPeriod_Location | 5823198505483 | bp_modularCntrPeriod     | true                | true                |
 
     And metasfresh contains ModCntr_Settings:
-      | ModCntr_Settings_ID.Identifier | Name                | M_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | OPT.M_PricingSystem_ID.Identifier |
-      | modCntr_settings_1             | settings_23072023_1 | module_log_product      | harvesting_calendar      | y2022                | modularCntrPricingSystem          |
+      | ModCntr_Settings_ID.Identifier | Name                | M_Raw_Product_ID.Identifier | C_Calendar_ID.Identifier | C_Year_ID.Identifier | M_PricingSystem_ID.Identifier |
+      | modCntr_settings_1             | settings_23072023_1 | module_log_product          | harvesting_calendar      | y2022                | modularCntrPricingSystem      |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                             | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
-      | modularCntrConditions_1             | modularCntrConditions_23072023_1 | ModularContract | modularCntrPricingSystem          | Ex                       | modCntr_settings_1                 |
+      | Identifier              | Name                             | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.ModCntr_Settings_ID.Identifier |
+      | modularCntrConditions_1 | modularCntrConditions_23072023_1 | ModularContract | modularCntrPricingSystem          | Ex                       | modCntr_settings_1                 |
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier        | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
       | modularCntrTerm_1 | modularCntrConditions_1             | bp_modularCntrPeriod        | 2021-10-31 | 2022-10-30 | module_log_product          |
 
-    And load AD_Message:
-      | Identifier            | Value                                         |
-      | extension_not_allowed | MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED |
-
     And add I_AD_PInstance with id 240720231
 
     Then extend C_Flatrate_Term:
-      | C_Flatrate_Term_ID.Identifier | StartDate  | AD_PInstance_ID | OPT.AD_Message_ID.Identifier |
-      | modularCntrTerm_1             | 2022-10-31 | 240720231       | extension_not_allowed        |
+      | C_Flatrate_Term_ID.Identifier | StartDate  | AD_PInstance_ID |
+      | modularCntrTerm_1             | 2022-10-31 | 240720231       |
+
+    Then C_Flatrate_Term identified by modularCntrTerm_1 is not extended
 
   @Id:S0300_400
   @from:cucumber
@@ -101,8 +116,8 @@ Feature: Extend Modular Contract Period
       | billBPUser_1          | BillBPartnerContact_1 | bp_abo_customer_1            | bp_abo_customer_location_1            | Y                           | Y                           |
 
     And metasfresh contains C_Flatrate_Conditions:
-      | C_Flatrate_Conditions_ID.Identifier | Name                | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.InvoiceRule
-      | abo_test_23072023_1                 | Abo_test_23072023_1 | Subscr          | ps_1                              | Ca                       | D
+      | Identifier          | Name                | Type_Conditions | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.InvoiceRule
+      | abo_test_23072023_1 | Abo_test_23072023_1 | Subscr          | ps_1                              | Ca                       | D
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier    | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier |

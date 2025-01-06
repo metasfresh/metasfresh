@@ -1,9 +1,8 @@
 package de.metas.inoutcandidate.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Packageable_V
  *  @author metasfresh (generated) 
@@ -437,6 +436,46 @@ public interface I_M_Packageable_V
 
 	ModelColumn<I_M_Packageable_V, Object> COLUMN_FreightCostRule = new ModelColumn<>(I_M_Packageable_V.class, "FreightCostRule", null);
 	String COLUMNNAME_FreightCostRule = "FreightCostRule";
+
+	/**
+	 * Set unloading address.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setHandOver_Location_ID (int HandOver_Location_ID);
+
+	/**
+	 * Get unloading address.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getHandOver_Location_ID();
+
+	String COLUMNNAME_HandOver_Location_ID = "HandOver_Location_ID";
+
+	/**
+	 * Set Handover partner.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setHandOver_Partner_ID (int HandOver_Partner_ID);
+
+	/**
+	 * Get Handover partner.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getHandOver_Partner_ID();
+
+	String COLUMNNAME_HandOver_Partner_ID = "HandOver_Partner_ID";
 
 	/**
 	 * Set Active.
@@ -999,6 +1038,27 @@ public interface I_M_Packageable_V
 	String COLUMNNAME_QtyToDeliver = "QtyToDeliver";
 
 	/**
+	 * Set Setup Place No..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSetup_Place_No (int Setup_Place_No);
+
+	/**
+	 * Get Setup Place No..
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSetup_Place_No();
+
+	ModelColumn<I_M_Packageable_V, Object> COLUMN_Setup_Place_No = new ModelColumn<>(I_M_Packageable_V.class, "Setup_Place_No", null);
+	String COLUMNNAME_Setup_Place_No = "Setup_Place_No";
+
+	/**
 	 * Set Best Before Policy.
 	 *
 	 * <br>Type: List
@@ -1085,44 +1145,4 @@ public interface I_M_Packageable_V
 
 	ModelColumn<I_M_Packageable_V, Object> COLUMN_WarehouseName = new ModelColumn<>(I_M_Packageable_V.class, "WarehouseName", null);
 	String COLUMNNAME_WarehouseName = "WarehouseName";
-
-	/**
-	 * Set Handover Location.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setHandover_Location_ID (int Handover_Location_ID);
-
-	/**
-	 * Get Handover Location.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getHandover_Location_ID();
-
-	String COLUMNNAME_Handover_Location_ID = "Handover_Location_ID";
-
-	/**
-	 * Set Handover Location.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setHandover_Partner_ID (int Handover_Partner_ID);
-
-	/**
-	 * Get Handover Location.
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getHandover_Partner_ID();
-
-	String COLUMNNAME_Handover_Partner_ID = "Handover_Partner_ID";
 }

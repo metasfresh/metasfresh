@@ -22,17 +22,25 @@
 
 package de.metas.handlingunits;
 
+import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.LocatorId;
 import org.springframework.lang.Nullable;
+
+import java.time.ZonedDateTime;
 
 @Value
 @Builder
 public class UpdateHUQtyRequest
 {
-	@NonNull HuId huId;
+	@NonNull @Builder.Default ZonedDateTime date = SystemTime.asZonedDateTime();
+	@Nullable HuId huId;
+	@Nullable HUQRCode huQRCode;
+	@Nullable LocatorId locatorId;
 	@NonNull Quantity qty;
 	@Nullable String description;
 }

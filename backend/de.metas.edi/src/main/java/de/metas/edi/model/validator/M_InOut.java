@@ -1,5 +1,6 @@
 package de.metas.edi.model.validator;
 
+import de.metas.common.util.CoalesceUtil;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -26,7 +27,7 @@ public class M_InOut
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_M_InOut.COLUMNNAME_C_BPartner_ID)
 	public void updateEdiStatus(final I_M_InOut document)
 	{
-		try (final MDCCloseable inOutMDC = TableRecordMDC.putTableRecordReference(document))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(document))
 		{
 			if (Services.get(IHUInOutBL.class).isCustomerReturn(document))
 			{
@@ -65,9 +66,12 @@ public class M_InOut
 			return;
 		}
 
-		// order.isEdiEnabled might be for DESADV or INVOIC; so we also need to check the bpartner's flag
-		final I_C_BPartner bpartner = InterfaceWrapperHelper.create(order.getC_BPartner(), I_C_BPartner.class);
-		if (!bpartner.isEdiDesadvRecipient())
+		// order.isEdiEnabled might be for just DESADV or just INVOIC; so we also need to check the finalRecipient's flag
+		final int finalRecipientId = CoalesceUtil.firstGreaterThanZero(order.getDropShip_BPartner_ID(), order.getC_BPartner_ID());
+		final I_C_BPartner finalRecipient = InterfaceWrapperHelper.load(finalRecipientId, I_C_BPartner.class);
+		final int handOverRecipientId = CoalesceUtil.firstGreaterThanZero(order.getHandOver_Partner_ID(), order.getC_BPartner_ID());
+		final I_C_BPartner handOverRecipient = InterfaceWrapperHelper.load(handOverRecipientId, I_C_BPartner.class);
+		if (!finalRecipient.isEdiDesadvRecipient() && !handOverRecipient.isEdiDesadvRecipient())
 		{
 			inout.setIsEdiEnabled(false);
 			return;
@@ -98,7 +102,7 @@ public class M_InOut
 		}
 
 		if (inOut.getEDI_Desadv_ID() <= 0
-				&& !Check.isEmpty(inOut.getPOReference(), true)) // task 08619: only try if we have a POReference and thus can succeed
+				&& Check.isNotBlank(inOut.getPOReference())) // task 08619: only try if we have a POReference and thus can succeed
 		{
 			Services.get(IDesadvBL.class).addToDesadvCreateForInOutIfNotExist(inOut);
 		}

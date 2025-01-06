@@ -548,4 +548,28 @@ public class QuantityTest
 		}
 
 	}
+
+	@Nested
+	class spreadEqually
+	{
+		@Test
+		void spread_100kg_in_1_part()
+		{
+			final I_C_UOM uom = uomHelper.createUOM("kg", 2);
+			assertThat(Quantity.of("100", uom).spreadEqually(1))
+					.containsExactly(Quantity.of("100", uom));
+		}
+
+		@Test
+		void spread_100kg_in_3_parts()
+		{
+			final I_C_UOM uom = uomHelper.createUOM("kg", 2);
+			assertThat(Quantity.of("100", uom).spreadEqually(3))
+					.containsExactly(
+							Quantity.of("33.34", uom),
+							Quantity.of("33.34", uom),
+							Quantity.of("33.32", uom)
+					);
+		}
+	}
 }

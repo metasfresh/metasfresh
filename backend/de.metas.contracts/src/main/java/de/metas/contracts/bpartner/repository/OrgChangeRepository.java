@@ -28,31 +28,16 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.common.util.CoalesceUtil;
-import de.metas.contracts.ConditionsId;
 import de.metas.contracts.FlatrateTerm;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.FlatrateTermStatus;
+import de.metas.contracts.FlatrateTermRepo;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.bpartner.service.OrgChangeBPartnerComposite;
-import de.metas.contracts.location.ContractLocationHelper;
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.order.DeliveryRule;
-import de.metas.order.DeliveryViaRule;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.organization.OrgId;
-import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
-import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
@@ -64,22 +49,22 @@ import java.util.Set;
 @Repository
 public class OrgChangeRepository
 {
-
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
 
 	private final BPartnerCompositeRepository bPartnerCompositeRepo;
+	private final FlatrateTermRepo flatrateTermRepo;
 	private final OrgMappingRepository orgMappingRepo;
 	private final MembershipContractRepository membershipContractRepo;
 
-	public OrgChangeRepository(@NonNull final BPartnerCompositeRepository bPartnerCompositeRepo,
+	public OrgChangeRepository(
+			@NonNull final BPartnerCompositeRepository bPartnerCompositeRepo,
+			@NonNull final FlatrateTermRepo flatrateTermRepo,
 			@NonNull final OrgMappingRepository orgMappingRepo,
 			@NonNull final MembershipContractRepository membershipContractRepo)
 	{
 		this.bPartnerCompositeRepo = bPartnerCompositeRepo;
+		this.flatrateTermRepo = flatrateTermRepo;
 		this.orgMappingRepo = orgMappingRepo;
 		this.membershipContractRepo = membershipContractRepo;
 	}
@@ -117,7 +102,7 @@ public class OrgChangeRepository
 	{
 		final Set<FlatrateTermId> flatrateTermIds = flatrateDAO.retrieveAllRunningSubscriptionIds(bpartnerId, orgChangeDate, orgId);
 		return flatrateTermIds.stream()
-				.map(this::createFlatrateTerm)
+				.map(flatrateTermRepo::getById)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -125,41 +110,8 @@ public class OrgChangeRepository
 	{
 		final Set<FlatrateTermId> membershipFlatrateTermIds = membershipContractRepo.retrieveMembershipSubscriptionIds(bpartnerId, orgChangeDate, orgId);
 		return membershipFlatrateTermIds.stream()
-				.map(this::createFlatrateTerm)
+				.map(flatrateTermRepo::getById)
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	private FlatrateTerm createFlatrateTerm(@NonNull final FlatrateTermId flatrateTermId)
-	{
-		final I_C_Flatrate_Term term = flatrateDAO.getById(flatrateTermId);
-
-		final OrgId orgId = OrgId.ofRepoId(term.getAD_Org_ID());
-
-		final ProductId productId = ProductId.ofRepoId(term.getM_Product_ID());
-		final I_C_UOM termUom = uomDAO.getById(CoalesceUtil.coalesce(UomId.ofRepoIdOrNull(term.getC_UOM_ID()), productBL.getStockUOMId(productId)));
-
-		final BPartnerLocationAndCaptureId billPartnerLocationAndCaptureId = ContractLocationHelper.extractBillToLocationId(term);
-		final BPartnerLocationAndCaptureId dropshipLPartnerLocationAndCaptureId = ContractLocationHelper.extractDropshipLocationId(term);
-
-		return FlatrateTerm.builder()
-				.flatrateTermId(flatrateTermId)
-				.orgId(orgId)
-				.billPartnerLocationAndCaptureId(billPartnerLocationAndCaptureId)
-				.dropshipPartnerLocationAndCaptureId(dropshipLPartnerLocationAndCaptureId)
-				.productId(productId)
-				.flatrateConditionsId(ConditionsId.ofRepoId(term.getC_Flatrate_Conditions_ID()))
-				.isSimulation(term.isSimulation())
-				.status(FlatrateTermStatus.ofNullableCode(term.getContractStatus()))
-				.userInChargeId(UserId.ofRepoIdOrNull(term.getAD_User_InCharge_ID()))
-				.startDate(TimeUtil.asInstant(term.getStartDate()))
-				.endDate(TimeUtil.asInstant(term.getEndDate()))
-				.masterStartDate(TimeUtil.asInstant(term.getMasterStartDate()))
-				.masterEndDate(TimeUtil.asInstant(term.getMasterEndDate()))
-				.plannedQtyPerUnit(Quantity.of(term.getPlannedQtyPerUnit(), termUom))
-				.deliveryRule(DeliveryRule.ofNullableCode(term.getDeliveryRule()))
-				.deliveryViaRule(DeliveryViaRule.ofNullableCode(term.getDeliveryViaRule()))
-
-				.build();
 	}
 
 	public boolean hasAnyMembershipProduct(@NonNull final OrgId orgId)

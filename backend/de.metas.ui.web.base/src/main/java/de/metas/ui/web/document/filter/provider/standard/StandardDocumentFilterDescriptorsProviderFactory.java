@@ -2,8 +2,8 @@ package de.metas.ui.web.document.filter.provider.standard;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterInlineRenderMode;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
@@ -12,13 +12,17 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsConstan
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.sql.SqlDefaultDocumentFilterConverter;
 import de.metas.ui.web.view.IViewsRepository;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
 import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
+import de.metas.ui.web.window.descriptor.DetailId;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDefaultFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -26,7 +30,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -58,7 +61,6 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 {
 	// services
 	private final ISysConfigBL sysConfigs = Services.get(ISysConfigBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IViewsRepository viewsRepository;
 
 	private static final String FILTER_ID_DefaultDate = "default-date";
@@ -78,14 +80,11 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 	}
 
 	@Override
-	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context,
-																   @NonNull final Collection<DocumentFieldDescriptor> fields)
+	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context)
 	{
-		return createFiltersProvider(fields, context.isAutodetectDefaultDateFilter());
-	}
+		final ImmutableList<DocumentFieldDescriptor> fields = context.getFields();
+		final boolean isAutodetectDefaultDateFilter = context.isAutodetectDefaultDateFilter();
 
-	private DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final Collection<DocumentFieldDescriptor> fields, final boolean isAutodetectDefaultDateFilter)
-	{
 		final List<DocumentFieldDescriptor> fieldsForDefaultFiltering = fields.stream()
 				.filter(DocumentFieldDescriptor::hasFileringInfo)
 				.filter(field -> field.getDefaultFilterInfo().isDefaultFilter())
@@ -101,7 +100,11 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 		//
 		// Default filters
 		DocumentFilterDescriptor defaultDateFilter = null;
-		DocumentFilterDescriptor.Builder defaultFilterBuilder = null;
+		final DocumentFilterDescriptor.Builder defaultFilterBuilder = DocumentFilterDescriptor.builder()
+				.setFilterId(FILTER_ID_Default)
+				.setSortNo(DocumentFilterDescriptorsConstants.SORT_NO_DEFAULT_FILTERS_GROUP)
+				.setDisplayName(TranslatableStrings.adMessage(MSG_DefaultFilterName))
+				.setFrequentUsed(false);
 		final ArrayList<DocumentFilterDescriptor> inlineFilters = new ArrayList<>();
 		for (final DocumentFieldDescriptor field : fieldsForDefaultFiltering)
 		{
@@ -130,15 +133,30 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 			}
 			else
 			{
-				if (defaultFilterBuilder == null)
-				{
-					defaultFilterBuilder = DocumentFilterDescriptor.builder()
-							.setFilterId(FILTER_ID_Default)
-							.setSortNo(DocumentFilterDescriptorsConstants.SORT_NO_DEFAULT_FILTERS_GROUP)
-							.setDisplayName(msgBL.getTranslatableMsgText(MSG_DefaultFilterName))
-							.setFrequentUsed(false);
-				}
 				defaultFilterBuilder.addParameter(filterParam);
+			}
+		}
+
+		//
+		// Filters of included tabs
+		for (final DocumentEntityDescriptor includedEntity : context.getIncludedEntities())
+		{
+			final DetailId detailId = Check.assumeNotNull(includedEntity.getDetailId(), "detailId shall be not null for {}", includedEntity);
+			for (final DocumentFilterDescriptor includedFilter : includedEntity.getFilterDescriptors().getAll())
+			{
+				final String includedFilterId = includedFilter.getFilterId();
+				if (FILTER_ID_Default.equals(includedFilterId))
+				{
+					for (final DocumentFilterParamDescriptor includedFilterParam : includedFilter.getParameters())
+					{
+						defaultFilterBuilder.addParameter(
+								includedFilterParam.toBuilder()
+										.parameterName(SqlDefaultDocumentFilterConverter.includedFilterParameterName(detailId, includedFilterId, includedFilterParam.getParameterName()))
+										.fieldName(SqlDefaultDocumentFilterConverter.includedFilterParameterName(detailId, includedFilterId, includedFilterParam.getFieldName()))
+										.mandatory(false)
+						);
+					}
+				}
 			}
 		}
 
@@ -152,12 +170,14 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 			facetFilters.add(facetFilter);
 		}
 
+		//
+		// Assemble final filter descriptors list
 		final ArrayList<DocumentFilterDescriptor> descriptors = new ArrayList<>();
 		if (defaultDateFilter != null)
 		{
 			descriptors.add(defaultDateFilter);
 		}
-		if (defaultFilterBuilder != null)
+		if (defaultFilterBuilder.hasParameters())
 		{
 			descriptors.add(defaultFilterBuilder.build());
 		}

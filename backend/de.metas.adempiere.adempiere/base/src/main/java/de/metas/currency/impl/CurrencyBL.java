@@ -371,6 +371,24 @@ public class CurrencyBL implements ICurrencyBL
 		return getCurrencyConversionTypeId(conversionTypeMethod);
 	}
 
+	@Override
+	public boolean isSOApply5CentCashRounding(@NonNull final CurrencyId currencyId)
+	{
+		final Currency currency = currencyDAO.getById(currencyId);
+
+		return currency.isSOApply5CentCashRounding();
+
+	}
+
+	@Override
+	public boolean isPOApply5CentCashRounding(@NonNull final CurrencyId currencyId)
+	{
+		final Currency currency = currencyDAO.getById(currencyId);
+
+		return currency.isPOApply5CentCashRounding();
+
+	}
+
 	@Nullable
 	private CurrencyRate getCurrencyRateOrNull(
 			@NonNull final CurrencyConversionContext conversionCtx,

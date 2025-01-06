@@ -24,7 +24,7 @@ const reduceOnUpdateQtyIssued = (draftState, payload) => {
   const draftWFProcess = draftState[wfProcessId];
   const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
 
-  draftStep.qtyIssued = qtyPicked;
+  draftStep.qtyIssued = Number(qtyPicked);
   draftStep.qtyRejected = Math.max(draftStep.qtyToIssue - qtyPicked, 0);
   draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
 
@@ -69,42 +69,21 @@ const updateLineFromStepsAndRollup = ({ draftWFProcess, activityId, lineId }) =>
 };
 
 const updateLineFromSteps = ({ draftLine }) => {
-  draftLine.completeStatus = computeLineStatusFromSteps({ draftLine });
   draftLine.qtyIssued = computeLineQtyIssuedFromSteps({ draftLine });
   draftLine.qtyToIssueRemaining = Math.max(draftLine.qtyToIssue - draftLine.qtyIssued, 0);
+  draftLine.completeStatus = computeLineStatus({ draftLine });
 };
 
-const computeLineStatusFromSteps = ({ draftLine }) => {
-  const stepIds = extractDraftMapKeys(draftLine.steps);
-
-  const stepStatuses = [];
-  let hasCompletedAlternativeSteps = false;
-  stepIds.forEach((stepId) => {
-    const draftStep = draftLine.steps[stepId];
-
-    const status = draftStep.completeStatus;
-    const isAlternativeStep = draftStep.qtyToIssue === 0;
-    if (!isAlternativeStep) {
-      if (!stepStatuses.includes(status)) {
-        stepStatuses.push(status);
-      }
-    } else {
-      if (status === CompleteStatus.COMPLETED) {
-        hasCompletedAlternativeSteps = true;
-      }
-    }
-  });
-
-  let lineStatus =
-    stepStatuses.length > 0
-      ? CompleteStatus.reduceFromCompleteStatuesUniqueArray(stepStatuses)
-      : CompleteStatus.NOT_STARTED;
-
-  if (lineStatus === CompleteStatus.NOT_STARTED && hasCompletedAlternativeSteps) {
-    lineStatus = CompleteStatus.COMPLETED;
+const computeLineStatus = ({ draftLine }) => {
+  if (!draftLine.qtyIssued) {
+    return CompleteStatus.NOT_STARTED;
   }
-
-  return lineStatus;
+  const minQtyToIssueForCompletion = draftLine.qtyToIssueMin ?? draftLine.qtyToIssue;
+  if (draftLine.qtyIssued >= minQtyToIssueForCompletion) {
+    return CompleteStatus.COMPLETED;
+  } else {
+    return CompleteStatus.IN_PROGRESS;
+  }
 };
 
 // @VisibleForTesting
@@ -173,6 +152,7 @@ const normalizeLines = (lines) => {
       qtyToIssueMax: line.qtyToIssueMax,
       qtyToIssueTolerance: line.qtyToIssueTolerance,
       userInstructions: line.userInstructions,
+      seqNo: line.seqNo,
       steps: line.steps.reduce((accum, step) => {
         accum[step.id] = step;
         return accum;

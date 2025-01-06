@@ -14,9 +14,15 @@
 @import './BarcodeScannerComponent.scss';
 @import './toast.scss';
 @import './hu-button.scss';
+@import './spinner.scss';
+@import './error-screen.scss';
 
 * {
   box-sizing: border-box;
+}
+
+html {
+  overflow: hidden !important;
 }
 
 body {

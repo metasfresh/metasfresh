@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_Fact_Acct_Transactions_View extends org.compiere.model.PO implements I_Fact_Acct_Transactions_View, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2105182354L;
+	private static final long serialVersionUID = -645303719L;
 
     /** Standard Constructor */
     public X_Fact_Acct_Transactions_View (final Properties ctx, final int Fact_Acct_Transactions_View_ID, @Nullable final String trxName)
@@ -767,6 +767,8 @@ public class X_Fact_Acct_Transactions_View extends org.compiere.model.PO impleme
 	public static final String DOCBASETYPE_CostRevaluation = "CRD";
 	/** ModularOrder = MMO */
 	public static final String DOCBASETYPE_ModularOrder = "MMO";
+	/** Shipping notification = SHN */
+	public static final String DOCBASETYPE_ShippingNotification = "SHN";
 	@Override
 	public void setDocBaseType (final @Nullable java.lang.String DocBaseType)
 	{
@@ -1157,6 +1159,32 @@ public class X_Fact_Acct_Transactions_View extends org.compiere.model.PO impleme
 	public int getUserElement2_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_UserElement2_ID);
+	}
+
+	@Override
+	public void setUserElementNumber1 (final @Nullable BigDecimal UserElementNumber1)
+	{
+		set_Value (COLUMNNAME_UserElementNumber1, UserElementNumber1);
+	}
+
+	@Override
+	public BigDecimal getUserElementNumber1() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_UserElementNumber1);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setUserElementNumber2 (final @Nullable BigDecimal UserElementNumber2)
+	{
+		set_Value (COLUMNNAME_UserElementNumber2, UserElementNumber2);
+	}
+
+	@Override
+	public BigDecimal getUserElementNumber2() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_UserElementNumber2);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

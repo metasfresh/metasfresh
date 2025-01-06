@@ -13,10 +13,10 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
-import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.handlingunits.report.HUReportAwareViewRow;
+import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValues;
 import de.metas.ui.web.view.ViewRowFieldNameAndJsonValuesHolder;
@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Stack;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -254,6 +255,7 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 
 	private transient String _summary; // lazy
 	private final ViewRowFieldNameAndJsonValuesHolder<HUEditorRow> values = ViewRowFieldNameAndJsonValuesHolder.newInstance(HUEditorRow.class);
+	private final BiPredicate<HUEditorRow, ProcessDescriptor> customProcessApplyPredicate;
 
 	private HUEditorRow(@NonNull final Builder builder)
 	{
@@ -316,6 +318,7 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 		}
 
 		serviceContract = null;
+		customProcessApplyPredicate = builder.getCustomProcessApplyPredicate();
 	}
 
 	@Override
@@ -676,6 +679,16 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 		return huIdCollector.build();
 	}
 
+	@Override
+	public boolean applies(final @NonNull ProcessDescriptor processDescriptor)
+	{
+		if (customProcessApplyPredicate == null)
+		{
+			return true;
+		}
+		return customProcessApplyPredicate.test(this, processDescriptor);
+	}
+
 	//
 	//
 	//
@@ -707,6 +720,7 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 		private LocatorId locatorId;
 		private String locatorCaption;
 		private BPartnerId bpartnerId;
+		private BiPredicate<HUEditorRow, ProcessDescriptor> customProcessApplyPredicate;
 
 		@Nullable
 		private JSONLookupValue clearanceStatus;
@@ -935,6 +949,18 @@ public final class HUEditorRow implements IViewRow, HUReportAwareViewRow
 		{
 			clearanceStatus = clearanceStatusLookupValue;
 			return this;
+		}
+
+		public Builder setCustomProcessApplyPredicate(@Nullable final BiPredicate<HUEditorRow, ProcessDescriptor> processApplyPredicate)
+		{
+			this.customProcessApplyPredicate = processApplyPredicate;
+			return this;
+		}
+
+		@Nullable
+		private BiPredicate<HUEditorRow, ProcessDescriptor> getCustomProcessApplyPredicate()
+		{
+			return this.customProcessApplyPredicate;
 		}
 
 		/**

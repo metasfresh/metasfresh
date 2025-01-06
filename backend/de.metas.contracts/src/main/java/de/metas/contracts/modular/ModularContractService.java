@@ -22,129 +22,319 @@
 
 package de.metas.contracts.modular;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.ModularContractSettingsId;
 import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.modular.computing.ColumnOption;
+import de.metas.contracts.modular.computing.ComputingMethodService;
+import de.metas.contracts.modular.computing.ContractSpecificScalePriceRequest;
+import de.metas.contracts.modular.computing.DocStatusChangedEvent;
+import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.ModularContractLogService;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsService;
+import de.metas.contracts.modular.settings.ModuleConfig;
+import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
 import de.metas.contracts.modular.workpackage.ProcessModularLogsEnqueuer;
+import de.metas.document.DocTypeId;
+import de.metas.i18n.AdMessageKey;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
+
+import static de.metas.contracts.modular.ComputingMethodType.AVERAGE_CONTRACT_SPECIFIC_PRICE_METHODS;
 
 @Service
 @RequiredArgsConstructor
 public class ModularContractService
 {
-	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
-	@NonNull
-	private final ModularContractHandlerFactory modularContractHandlerFactory;
-	@NonNull
-	private final ModularContractSettingsDAO modularContractSettingsDAO;
-	@NonNull
-	private final ProcessModularLogsEnqueuer processLogsEnqueuer;
+	@NonNull private final ModularContractComputingMethodHandlerRegistry modularContractHandlers;
+	@NonNull private final ProcessModularLogsEnqueuer processLogsEnqueuer;
+	@NonNull private final ComputingMethodService computingMethodService;
+	@NonNull private final ModularContractPriceRepository modularContractPriceRepository;
+	@NonNull private final ModularContractLogService modularContractLogService;
+	@NonNull private final ModularContractSettingsService modularContractSettingsService;
+	@NonNull private final ModularContractProvider contractProvider;
 
-	public <T> void invokeWithModelForAllContractTypes(@NonNull final T model, @NonNull final ModelAction action)
+	private static final AdMessageKey MSG_MORE_THAN_ONE_PURCHASE_MODULAR_CONTRACT_CANDIDATE = AdMessageKey.of("de.metas.contracts.modular.ModularContractService.MoreThanOneModularPurchaseContractCandidateFound");
+
+	public static ModularContractService newInstanceForJUnitTesting()
 	{
-		ImmutableSet.copyOf(LogEntryContractType.values())
-				.forEach(contractType -> modularContractHandlerFactory.getApplicableHandlersFor(model, contractType)
-						.forEach(handler -> invokeWithModel(handler, model, action, contractType)));
+		Adempiere.assertUnitTestMode();
+		return new ModularContractService(
+			ModularContractComputingMethodHandlerRegistry.newInstanceForJUnitTesting(),
+			ProcessModularLogsEnqueuer.newInstanceForJUnitTesting(),
+			ComputingMethodService.newInstanceForJUnitTesting(),
+			new ModularContractPriceRepository(),
+			ModularContractLogService.newInstanceForJUnitTesting(),
+			ModularContractSettingsService.newInstanceForJUnitTesting(),
+			ModularContractProvider.newInstanceForJUnitTesting()
+		);
 	}
 
-	public <T> void invokeWithModel(@NonNull final T model, @NonNull final ModelAction action, @NonNull final LogEntryContractType logEntryContractType)
+	public void scheduleLogCreation(@NonNull final DocStatusChangedEvent event)
 	{
-		modularContractHandlerFactory.getApplicableHandlersFor(model, logEntryContractType)
-				.forEach(handler -> invokeWithModel(handler, model, action, logEntryContractType));
-	}
+		boolean isRequestValidated = false;
 
-	private <T> void invokeWithModel(
-			@NonNull final IModularContractTypeHandler<T> handler,
-			@NonNull final T model,
-			@NonNull final ModelAction action,
-			@NonNull final LogEntryContractType logEntryContractType)
-	{
-		createContractNowIfRequired(handler, model, action);
-
-		handler.streamContractIds(model)
-				.filter(flatrateTermId -> isApplicableContract(handler, flatrateTermId))
-				.forEach(flatrateTermId -> invokeWithModel(handler, model, action, flatrateTermId, logEntryContractType));
-	}
-
-	private <T> void createContractNowIfRequired(
-			@NonNull final IModularContractTypeHandler<T> handler,
-			@NonNull final T model,
-			@NonNull final ModelAction action)
-	{
-		if (ModelAction.COMPLETED == action)
+		for (final LogEntryContractType logEntryContractType : event.getLogEntryContractTypes())
 		{
-			handler.createContractIfRequired(model);
+			for (final IComputingMethodHandler handler : modularContractHandlers.getApplicableHandlersFor(event.getTableRecordReference(), logEntryContractType))
+			{
+				final ComputingMethodType computingMethodType = handler.getComputingMethodType();
+
+
+				final List<FlatrateTermId> contractIds = handler.streamContractIds(event.getTableRecordReference()).toList();
+				Check.assume(contractIds.size() <= 1, "Maximum 1 Contract should be found");
+				if(!contractIds.isEmpty())
+				{
+					//If in future Iterations it's still max 1 we should replace it with Optional or Nullable
+					final FlatrateTermId contractId = contractIds.get(0);
+					if (!isApplicableContract(event.getTableRecordReference(), handler, contractId))
+					{
+						continue;
+					}
+
+					if (!isRequestValidated)
+					{
+						computingMethodService.validateAction(event.getTableRecordReference(), event.getModelAction());
+						isRequestValidated = true;
+					}
+
+					processLogsEnqueuer.enqueueAfterCommit(ProcessModularLogsEnqueuer.EnqueueRequest.builder()
+							.recordReference(event.getTableRecordReference())
+							.action(event.getModelAction())
+							.userInChargeId(event.getUserInChargeId())
+							.logEntryContractType(logEntryContractType)
+							.computingMethodType(computingMethodType)
+							.flatrateTermId(contractId)
+							.build());
+				}
+			}
 		}
 	}
 
-	private <T> boolean isApplicableContract(@NonNull final IModularContractTypeHandler<T> handler, @NonNull final FlatrateTermId flatrateTermId)
+	private boolean isApplicableContract(
+			@NonNull final TableRecordReference tableRecordReference,
+			@NonNull final IComputingMethodHandler handler,
+			@NonNull final FlatrateTermId contractId)
 	{
-		if (!isModularOrInterimContract(flatrateTermId))
+		if (!isModularOrInterimContract(contractId))
 		{
 			return false;
 		}
 
-		final ModularContractSettings settings = modularContractSettingsDAO.getByFlatrateTermIdOrNull(flatrateTermId);
-		return isHandlerApplicableForSettings(handler, settings);
+		final ModularContractSettings settings = modularContractSettingsService.getByFlatrateTermIdOrNull(contractId);
+		final ComputingMethodType computingMethodType = handler.getComputingMethodType();
+		if (settings == null || !settings.contains(computingMethodType))
+		{
+			return false;
+		}
+
+		// Stop log creation after final invoice
+		if(flatrateBL.getById(contractId).isFinalInvoiced() && computingMethodType.isFinalInvoiceSpecificMethod())
+		{
+			return false;
+		}
+
+		return handler.isApplicableForSettings(tableRecordReference, settings);
 	}
 
 	private boolean isModularOrInterimContract(@NonNull final FlatrateTermId flatrateTermId)
 	{
-		final I_C_Flatrate_Term flatrateTermRecord = flatrateDAO.getById(flatrateTermId);
+		final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(flatrateTermId);
 		final TypeConditions typeConditions = TypeConditions.ofCode(flatrateTermRecord.getType_Conditions());
 		return typeConditions.isModularOrInterim();
 	}
 
-	private static <T> boolean isHandlerApplicableForSettings(
-			@NonNull final IModularContractTypeHandler<T> handler,
-			@Nullable final ModularContractSettings settings)
+	public PricingSystemId getPricingSystemId(@NonNull final FlatrateTermId flatrateTermId)
 	{
-		if (settings == null)
+		final ModularContractSettings modularContractSettings = modularContractSettingsService.getByFlatrateTermId(flatrateTermId);
+
+		return modularContractSettings.getPricingSystemId();
+	}
+
+	@NonNull
+	public TaxCategoryId getContractSpecificTaxCategoryId(@NonNull final ContractSpecificPriceRequest contractSpecificPriceRequest)
+	{
+		return modularContractPriceRepository.retrieveOptionalContractSpecificTaxCategory(contractSpecificPriceRequest)
+				// don't have a contract specific price (e.g: Receipt), default to the contract's tax category.
+				.orElseGet(() -> TaxCategoryId.ofRepoId(flatrateBL.getById(contractSpecificPriceRequest.getFlatrateTermId()).getC_TaxCategory_ID()));
+	}
+
+	@NonNull
+	public ProductPrice getContractSpecificPrice(@NonNull final ContractSpecificPriceRequest contractSpecificPriceRequest)
+	{
+		return modularContractPriceRepository.retrievePriceForProductAndContract(contractSpecificPriceRequest).getProductPrice();
+	}
+
+	@Nullable
+	public ProductPrice getContractSpecificScalePrice(@NonNull final ContractSpecificScalePriceRequest contractSpecificScalePriceRequest)
+	{
+		final ModCntrSpecificPrice modCntrSpecificPrice = modularContractPriceRepository.retrieveScalePriceForProductAndContract(contractSpecificScalePriceRequest);
+
+		if (modCntrSpecificPrice == null)
 		{
-			return false;
+			return null;
 		}
 
-		return settings.getModuleConfigs()
-				.stream()
-				.anyMatch(config -> config.isMatchingHandler(handler.getHandlerType()));
+		return ProductPrice.builder()
+				.productId(modCntrSpecificPrice.productId())
+				.money(modCntrSpecificPrice.amount())
+				.uomId(modCntrSpecificPrice.uomId())
+				.build();
 	}
 
-	private <T> void invokeWithModel(
-			@NonNull final IModularContractTypeHandler<T> handler,
-			@NonNull final T model,
-			@NonNull final ModelAction action,
-			@NonNull final FlatrateTermId flatrateTermId,
-			@NonNull final LogEntryContractType logEntryContractType)
+	@NonNull
+	public ImmutableMap<FlatrateTermId, ModularContractSettings> getSettingsByContractIds(@NonNull final ImmutableSet<FlatrateTermId> contractIds)
 	{
-		handler.validateAction(model, action);
-
-		processLogsEnqueuer.enqueueAfterCommit(handler,
-											   TableRecordReference.of(model),
-											   action,
-											   flatrateTermId,
-											   logEntryContractType);
-
-		handleAction(handler, model, action, flatrateTermId);
+		return modularContractSettingsService.getOrLoadBy(contractIds);
 	}
 
-	private <T> void handleAction(
-			@NonNull final IModularContractTypeHandler<T> handler,
-			@NonNull final T model,
-			@NonNull final ModelAction action,
-			@NonNull final FlatrateTermId flatrateTermId)
+	@NonNull
+	public ModularContractSettings getModularSettingsForContract(@NonNull final FlatrateTermId contractId)
 	{
-		handler.handleAction(model, action, flatrateTermId, this);
+		final ModularContractSettings settings = getSettingsByContractIds(ImmutableSet.of(contractId))
+				.get(contractId);
+
+		if (settings == null)
+		{
+			throw new AdempiereException("No ModularContractSettings found for contractId=" + contractId);
+		}
+
+		return settings;
+	}
+
+	@NonNull
+	public ModuleConfig getByModuleId(@NonNull final ModularContractModuleId modularContractModuleId)
+	{
+		return modularContractSettingsService.getByModuleId(modularContractModuleId);
+	}
+
+	public void afterInvoiceReverse(@NonNull final I_C_Invoice invoiceRecord, @NonNull final ModularContractLogHandlerRegistry logHandlerRegistry)
+	{
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
+		modularContractLogService.unprocessModularContractLogs(invoiceId, DocTypeId.ofRepoId(invoiceRecord.getC_DocType_ID()));
+
+		final ModularContractSettingsId modularContractSettingsId = ModularContractSettingsId.ofRepoIdOrNull(invoiceRecord.getModCntr_Settings_ID());
+		if(modularContractSettingsId == null)
+		{
+			return;
+		}
+
+		final FlatrateTermId flatrateTermId = getFlatrateTermIdByInvoiceId(invoiceId);
+		if(!flatrateBL.isModularContract(flatrateTermId)) // could be interim
+		{
+			return;
+		}
+
+		modularContractSettingsService.getById(modularContractSettingsId).getModuleConfigs().stream()
+				.filter(config -> config.isMatchingAnyOf(AVERAGE_CONTRACT_SPECIFIC_PRICE_METHODS))
+				.forEach(config -> modularContractLogService.updateAverageContractSpecificPrice(config, flatrateTermId, logHandlerRegistry));
+
+		if(invoiceBL.isFinalInvoiceOrFinalCreditMemo(invoiceRecord) || invoiceBL.isSalesFinalInvoiceOrFinalCreditMemo(invoiceRecord))
+		{
+			updateIsFinalInvoiced(flatrateTermId, false);
+		}
+	}
+
+	public FlatrateTermId getFlatrateTermIdByInvoiceId(@NonNull final InvoiceId invoiceId)
+	{
+		return Check.assumePresent(flatrateBL.getIdByInvoiceId(invoiceId), "FlatrateTermId should be present");
+	}
+
+	public void updateIsFinalInvoiced(@NonNull final InvoiceId invoiceId, final boolean isFinalInvoiced)
+	{
+		if(invoiceBL.isFinalInvoiceOrFinalCreditMemo(invoiceId) || invoiceBL.isSalesFinalInvoiceOrFinalCreditMemo(invoiceId))
+		{
+			updateIsFinalInvoiced(getFlatrateTermIdByInvoiceId(invoiceId), isFinalInvoiced);
+		}
+	}
+
+	public void updateIsFinalInvoiced(@NonNull final FlatrateTermId flatrateTermId, final boolean isFinalInvoiced)
+	{
+		final I_C_Flatrate_Term flatrateTerm = flatrateBL.getById(flatrateTermId);
+		flatrateTerm.setIsFinalInvoiced(isFinalInvoiced);
+		flatrateBL.save(flatrateTerm);
+	}
+
+	public void setPurchaseModularContractIdsIfExists(@NonNull final I_C_Order orderRecord, final boolean isErrorIfMoreThanOneFound)
+	{
+		if(!orderRecord.isSOTrx())
+		{
+			return;
+		}
+		for(final I_C_OrderLine orderLineRecord : orderDAO.retrieveOrderLines(orderRecord))
+		{
+			updatePurchaseModularContractId(orderLineRecord, isErrorIfMoreThanOneFound);
+			orderDAO.save(orderLineRecord);
+		}
+	}
+
+	public void updatePurchaseModularContractId(
+			@NonNull final I_C_OrderLine orderLineRecord,
+			final boolean isErrorIfMoreThanOneFound)
+	{
+		final OrderId orderId = OrderId.ofRepoId(orderLineRecord.getC_Order_ID());
+		final ProductId productId = ProductId.ofRepoId(orderLineRecord.getM_Product_ID());
+		final Set<FlatrateTermId> contractIds = contractProvider.getInitialPurchaseModularContractCandidatesForSalesOrderLine(orderId, productId);
+		final FlatrateTermId currentFlatrateTermId = FlatrateTermId.ofRepoIdOrNull(orderLineRecord.getPurchase_Modular_Flatrate_Term_ID());
+
+		if (contractIds.isEmpty())
+		{
+			orderLineRecord.setPurchase_Modular_Flatrate_Term_ID(-1);
+		}
+		else if (contractIds.size() == 1)
+		{
+			final FlatrateTermId newFlatrateTermId = CollectionUtils.singleElement(contractIds);
+			if(FlatrateTermId.equals(currentFlatrateTermId, newFlatrateTermId))
+			{
+				return;
+			}
+			orderLineRecord.setPurchase_Modular_Flatrate_Term_ID(newFlatrateTermId.getRepoId());
+		}
+		else if (isErrorIfMoreThanOneFound && FlatrateTermId.ofRepoIdOrNull(orderLineRecord.getPurchase_Modular_Flatrate_Term_ID()) == null)
+		{
+			throw new AdempiereException(MSG_MORE_THAN_ONE_PURCHASE_MODULAR_CONTRACT_CANDIDATE);
+		}
+	}
+
+	public boolean isFinalInvoiceLineForComputingMethod(
+			@NonNull final InvoiceLineId invoiceLineId,
+			@NonNull final ComputingMethodType computingMethodType,
+			@Nullable final ColumnOption columnOption)
+	{
+		return computingMethodService.isFinalInvoiceLineForComputingMethod(invoiceLineId, ImmutableSet.of(computingMethodType), columnOption);
 	}
 }

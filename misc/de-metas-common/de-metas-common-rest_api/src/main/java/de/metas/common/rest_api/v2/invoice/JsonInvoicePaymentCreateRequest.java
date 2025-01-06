@@ -39,24 +39,26 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 
+import static io.swagger.v3.oas.annotations.media.Schema.RequiredMode.REQUIRED;
+
 @Value
 @Builder
 @Jacksonized
 public class JsonInvoicePaymentCreateRequest
 {
-	@Schema(required = true,
+	@Schema(requiredMode = REQUIRED,
 			description = "Identifier of the bPartner in question. Can be\n"
 					+ "* a plain `<C_BPartner_ID>`\n"
 					+ "* or something like `ext-<I_S_ExternalReference.ExternalSystem>-<I_S_ExternalReference.ExternalReference>`\n")
 	@NonNull
 	String bpartnerIdentifier;
 
-	@Schema(required = true)
+	@Schema(requiredMode = REQUIRED)
 	@NonNull
 	String currencyCode;
 
 	@NonNull
-	@Schema(required = true, //
+	@Schema(requiredMode = REQUIRED, //
 			description = "Specifies the direction of the payment: Inbound or Outbound.")
 	@Builder.Default
 	JsonPaymentDirection type = JsonPaymentDirection.INBOUND;
@@ -67,11 +69,11 @@ public class JsonInvoicePaymentCreateRequest
 	@Nullable
 	String orgCode;
 
-	@Schema(required = true)
+	@Schema(requiredMode = REQUIRED)
 	@Nullable
 	String targetIBAN;
 
-	@Schema(required = true, //
+	@Schema(requiredMode = REQUIRED, //
 			description = "An external identifier for the payment being posted to metasfresh. Translates to `C_Payment.ExternalId`")
 	@Nullable
 	String externalPaymentId;

@@ -30,6 +30,7 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.service.IPriceListBL;
@@ -306,10 +307,10 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final ProductId productId = ProductId.ofRepoIdOrNull(invoiceLine.getM_Product_ID());
 		Check.assumeNotNull(productId, "M_Product_ID > 0 for {}", invoiceLine);
 
-		final I_M_PriceList_Version priceListVersion = priceListDAO.retrievePriceListVersionOrNull(priceListId, priceDate, processedPLVFiltering);
+		final PriceListVersionId priceListVersionId = priceListDAO.retrievePriceListVersionIdOrNull(priceListId, priceDate, processedPLVFiltering);
 
-		return Optional.ofNullable(priceListVersion)
-				.map(plv -> ProductPrices.retrieveMainProductPriceOrNull(plv, productId))
+		return Optional.ofNullable(priceListVersionId)
+				.map(plv -> ProductPrices.retrieveMainProductPriceOrNull(priceListVersionId, productId))
 				.map(productTaxCategoryService::getTaxCategoryId)
 				.orElseGet(() -> {
 					final LookupTaxCategoryRequest lookupTaxCategoryRequest = LookupTaxCategoryRequest.builder()
@@ -334,8 +335,8 @@ public class InvoiceLineBL implements IInvoiceLineBL
 
 		final I_C_Order order = InterfaceWrapperHelper.create(ctx, invoiceLine.getC_Invoice().getC_Order_ID(), I_C_Order.class, trxName);
 
-		final I_M_PriceList priceList = priceListDAO.getById(order.getM_PriceList_ID());
-		Check.assumeNotNull(priceList, "Price list exists for id {}", order.getM_PriceList_ID());
+		final PriceListId priceListId = PriceListId.ofRepoId(invoice.getM_PriceList_ID());
+		Check.assumeNotNull(priceListId, "Price list exists for id {}", order.getM_PriceList_ID());
 
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
@@ -344,11 +345,10 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		final ProductId productId = ProductId.ofRepoIdOrNull(invoiceLine.getM_Product_ID());
 		Check.assumeNotNull(productId, "M_Product_ID > 0 for {}", invoiceLine);
 
-		final I_M_PriceList_Version priceListVersion = priceListDAO
-				.retrievePriceListVersionOrNull(priceList, priceDate, processedPLVFiltering);
+		final PriceListVersionId priceListVersionId = priceListDAO.retrievePriceListVersionIdOrNull(priceListId, priceDate, processedPLVFiltering);
 
-		return Optional.ofNullable(priceListVersion)
-				.map(plv -> ProductPrices.retrieveMainProductPriceOrNull(plv, productId))
+		return Optional.ofNullable(priceListVersionId)
+				.map(plv -> ProductPrices.retrieveMainProductPriceOrNull(priceListVersionId, productId))
 				.map(productTaxCategoryService::getTaxCategoryId)
 				.orElseGet(() -> {
 					final LookupTaxCategoryRequest lookupTaxCategoryRequest = LookupTaxCategoryRequest.builder()
@@ -387,21 +387,21 @@ public class InvoiceLineBL implements IInvoiceLineBL
 		if (priceUomId != null && uomId != null)
 		{
 
-			final Quantity qtyToConvert = Quantitys.create(qtyEntered, uomId);
+			final Quantity qtyToConvert = Quantitys.of(qtyEntered, uomId);
 			final Quantity result = uomConversionBL.convertQuantityTo(qtyToConvert, UOMConversionContext.of(productId), priceUomId);
 			logger.debug("invoice line has both Price_UOM_ID={} and C_UOM_ID={}; return result={}", priceUomId.getRepoId(), uomId.getRepoId(), result);
 			return result;
 		}
 		else if (uomId != null)
 		{
-			final Quantity result = Quantitys.create(qtyEntered, uomId);
+			final Quantity result = Quantitys.of(qtyEntered, uomId);
 			logger.debug("invoice line has Price_UOM_ID=null and C_UOM_ID={}; return result ={}", uomId.getRepoId(), result);
 			return result;
 		}
 		else if (productId != null)
 		{
 			final UomId stockUomId = productBL.getStockUOMId(productId);
-			final Quantity result = Quantitys.create(ilRecord.getQtyInvoiced(), stockUomId);
+			final Quantity result = Quantitys.of(ilRecord.getQtyInvoiced(), stockUomId);
 			logger.debug("invoice line has Price_UOM_ID=null, C_UOM_ID=null and M_Product_ID={}; return result={}", productId.getRepoId(), result);
 			return result;
 		}
@@ -567,11 +567,11 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	@NonNull
 	public Quantity getQtyEnteredInStockUOM(@NonNull final I_C_InvoiceLine invoiceLine)
 	{
-		final Quantity qtyEntered = Quantitys.create(invoiceLine.getQtyEntered(), UomId.ofRepoId(invoiceLine.getC_UOM_ID()));
+		final Quantity qtyEntered = Quantitys.of(invoiceLine.getQtyEntered(), UomId.ofRepoId(invoiceLine.getC_UOM_ID()));
 
 		final UomId stockUOMId = productBL.getStockUOMId(invoiceLine.getM_Product_ID());
 
-		return Quantitys.create(
+		return Quantitys.of(
 				qtyEntered,
 				UOMConversionContext.of(ProductId.ofRepoId(invoiceLine.getM_Product_ID())),
 				stockUOMId);

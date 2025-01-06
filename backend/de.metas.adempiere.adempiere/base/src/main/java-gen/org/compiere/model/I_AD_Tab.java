@@ -583,6 +583,50 @@ public interface I_AD_Tab
 	String COLUMNNAME_IncludedTabNewRecordInputMode = "IncludedTabNewRecordInputMode";
 
 	/**
+	 * Set Include filters.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIncludeFiltersStrategy (@Nullable java.lang.String IncludeFiltersStrategy);
+
+	/**
+	 * Get Include filters.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIncludeFiltersStrategy();
+
+	ModelColumn<I_AD_Tab, Object> COLUMN_IncludeFiltersStrategy = new ModelColumn<>(I_AD_Tab.class, "IncludeFiltersStrategy", null);
+	String COLUMNNAME_IncludeFiltersStrategy = "IncludeFiltersStrategy";
+
+	/**
+	 * Set Insert Logic.
+	 * Logic to determine if tab allows creation of new records or not.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInsertLogic (@Nullable java.lang.String InsertLogic);
+
+	/**
+	 * Get Insert Logic.
+	 * Logic to determine if tab allows creation of new records or not.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInsertLogic();
+
+	ModelColumn<I_AD_Tab, Object> COLUMN_InsertLogic = new ModelColumn<>(I_AD_Tab.class, "InsertLogic", null);
+	String COLUMNNAME_InsertLogic = "InsertLogic";
+
+	/**
 	 * Set Internal Name.
 	 * Generally used to give records a name that can be safely referenced from code.
 	 *

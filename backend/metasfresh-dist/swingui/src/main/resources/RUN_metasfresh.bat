@@ -36,7 +36,7 @@
   SET CLIENT_REMOTE_DEBUG_OPTS=
   echo Not using CLIENT_DEBUGGING_PORTS
   ) ELSE (
-  SET CLIENT_REMOTE_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%DBG_PORT%
+  SET CLIENT_REMOTE_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:%DBG_PORT%
   echo Using CLIENT_DEBUGGING_PORT %DBG_PORT%
 )
 @goto JMX_DEBUG_PORTS

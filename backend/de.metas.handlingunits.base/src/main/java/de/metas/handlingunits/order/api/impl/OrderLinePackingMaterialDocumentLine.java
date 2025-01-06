@@ -22,11 +22,6 @@ package de.metas.handlingunits.order.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
-
 import de.metas.handlingunits.impl.AbstractPackingMaterialDocumentLine;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.order.IOrderLineBL;
@@ -37,6 +32,10 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
+
+import java.math.BigDecimal;
 
 /* package */class OrderLinePackingMaterialDocumentLine extends AbstractPackingMaterialDocumentLine
 {
@@ -85,7 +84,7 @@ import lombok.NonNull;
 		orderLine.setQtyOrdered(qtyOrdered);
 
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
-		final Quantity qtyInStockUOM = Quantitys.create(qtyOrdered, ProductId.ofRepoId(orderLine.getM_Product_ID()));
+		final Quantity qtyInStockUOM = Quantitys.of(qtyOrdered, ProductId.ofRepoId(orderLine.getM_Product_ID()));
 
 		final Quantity qtyEntered = orderLineBL.convertQtyToUOM(qtyInStockUOM, orderLine);
 		orderLine.setQtyEntered(qtyEntered.toBigDecimal());

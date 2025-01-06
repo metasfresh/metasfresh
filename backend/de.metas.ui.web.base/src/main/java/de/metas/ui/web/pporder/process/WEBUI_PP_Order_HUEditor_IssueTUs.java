@@ -79,7 +79,7 @@ public class WEBUI_PP_Order_HUEditor_IssueTUs
 		final I_M_HU sourceLUorTU = row.getM_HU();
 
 		final HUsToNewTUsRequest request = HUsToNewTUsRequest.forSourceHuAndQty(sourceLUorTU, qtyTUs);
-		final List<I_M_HU> extractedTUs = HUTransformService.newInstance().husToNewTUs(request);
+		final List<I_M_HU> extractedTUs = HUTransformService.newInstance().husToNewTUs(request).toHURecords();
 		if (extractedTUs.isEmpty())
 		{
 			throw new AdempiereException("@NoSelection@");

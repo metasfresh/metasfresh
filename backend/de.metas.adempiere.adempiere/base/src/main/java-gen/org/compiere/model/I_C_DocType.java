@@ -73,7 +73,7 @@ public interface I_C_DocType
 
 	/**
 	 * Set Print Format.
-	 * Data Print Format
+	 * The print format determines how data is rendered for print.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -83,7 +83,7 @@ public interface I_C_DocType
 
 	/**
 	 * Get Print Format.
-	 * Data Print Format
+	 * The print format determines how data is rendered for print.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -97,31 +97,6 @@ public interface I_C_DocType
 
 	ModelColumn<I_C_DocType, org.compiere.model.I_AD_PrintFormat> COLUMN_AD_PrintFormat_ID = new ModelColumn<>(I_C_DocType.class, "AD_PrintFormat_ID", org.compiere.model.I_AD_PrintFormat.class);
 	String COLUMNNAME_AD_PrintFormat_ID = "AD_PrintFormat_ID";
-
-	/**
-	 * Set Document Approval Strategy.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Doc_Approval_Strategy_ID (int C_Doc_Approval_Strategy_ID);
-
-	/**
-	 * Get Document Approval Strategy.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Doc_Approval_Strategy_ID();
-
-	@Nullable org.compiere.model.I_C_Doc_Approval_Strategy getC_Doc_Approval_Strategy();
-
-	void setC_Doc_Approval_Strategy(@Nullable org.compiere.model.I_C_Doc_Approval_Strategy C_Doc_Approval_Strategy);
-
-	ModelColumn<I_C_DocType, org.compiere.model.I_C_Doc_Approval_Strategy> COLUMN_C_Doc_Approval_Strategy_ID = new ModelColumn<>(I_C_DocType.class, "C_Doc_Approval_Strategy_ID", org.compiere.model.I_C_Doc_Approval_Strategy.class);
-	String COLUMNNAME_C_Doc_Approval_Strategy_ID = "C_Doc_Approval_Strategy_ID";
 
 	/**
 	 * Set Difference Document.
@@ -146,6 +121,7 @@ public interface I_C_DocType
 	String COLUMNNAME_C_DocTypeDifference_ID = "C_DocTypeDifference_ID";
 
 	/**
+	 * Set Document Approval Strategy.
 	 * Set Document Type.
 	 * Document type or rules
 	 *
@@ -189,6 +165,33 @@ public interface I_C_DocType
 	int getC_DocTypeInvoice_ID();
 
 	String COLUMNNAME_C_DocTypeInvoice_ID = "C_DocTypeInvoice_ID";
+
+	/**
+	 * Set Invoicing Pool.
+	 * An invoicing pool is used to aggregate invoices and credit memos into a single document. It contains specific document types for aggregating positive invoice amounts (e.g., purchase invoice) and negative amounts (e.g., credit memo).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Doc_Approval_Strategy_ID (int C_Doc_Approval_Strategy_ID);
+
+	/**
+	 * Get Document Approval Strategy.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Doc_Approval_Strategy_ID();
+
+	@Nullable org.compiere.model.I_C_Doc_Approval_Strategy getC_Doc_Approval_Strategy();
+
+	void setC_Doc_Approval_Strategy(@Nullable org.compiere.model.I_C_Doc_Approval_Strategy C_Doc_Approval_Strategy);
+
+	ModelColumn<I_C_DocType, org.compiere.model.I_C_Doc_Approval_Strategy> COLUMN_C_Doc_Approval_Strategy_ID = new ModelColumn<>(I_C_DocType.class, "C_Doc_Approval_Strategy_ID", org.compiere.model.I_C_Doc_Approval_Strategy.class);
+	String COLUMNNAME_C_Doc_Approval_Strategy_ID = "C_Doc_Approval_Strategy_ID";
+
 
 	/**
 	 * Set Invoicing Pool.
@@ -281,6 +284,27 @@ public interface I_C_DocType
 
 	ModelColumn<I_C_DocType, Object> COLUMN_CompletedNotification_BoilerPlate_ID = new ModelColumn<>(I_C_DocType.class, "CompletedNotification_BoilerPlate_ID", null);
 	String COLUMNNAME_CompletedNotification_BoilerPlate_ID = "CompletedNotification_BoilerPlate_ID";
+
+	/**
+	 * Set Copy Description And Document Note.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCopyDescriptionAndDocumentNote (@Nullable java.lang.String CopyDescriptionAndDocumentNote);
+
+	/**
+	 * Get Copy Description And Document Note.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCopyDescriptionAndDocumentNote();
+
+	ModelColumn<I_C_DocType, Object> COLUMN_CopyDescriptionAndDocumentNote = new ModelColumn<>(I_C_DocType.class, "CopyDescriptionAndDocumentNote", null);
+	String COLUMNNAME_CopyDescriptionAndDocumentNote = "CopyDescriptionAndDocumentNote";
 
 	/**
 	 * Get Created.
@@ -588,27 +612,6 @@ public interface I_C_DocType
 
 	ModelColumn<I_C_DocType, Object> COLUMN_IsActive = new ModelColumn<>(I_C_DocType.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Copy description to document.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsCopyDescriptionToDocument (boolean IsCopyDescriptionToDocument);
-
-	/**
-	 * Get Copy description to document.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isCopyDescriptionToDocument();
-
-	ModelColumn<I_C_DocType, Object> COLUMN_IsCopyDescriptionToDocument = new ModelColumn<>(I_C_DocType.class, "IsCopyDescriptionToDocument", null);
-	String COLUMNNAME_IsCopyDescriptionToDocument = "IsCopyDescriptionToDocument";
 
 	/**
 	 * Set Create Counter Document.

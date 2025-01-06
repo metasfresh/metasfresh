@@ -29,7 +29,6 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
@@ -205,14 +204,13 @@ public class PickingSlotsClearingView implements IView, IViewRowOverrides
 	}
 
 	@Override
-	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final ViewFilterParameterLookupEvaluationCtx ctx)
+	public LookupValuesPage getFilterParameterDropdown(final String filterId, final String filterParameterName, final ViewFilterParameterLookupEvaluationCtx ctx)
 	{
 		return filterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
 				.orElseThrow(() -> new AdempiereException("No lookup found for filterId=" + filterId + ", filterParameterName=" + filterParameterName))
-				.findEntities(ctx.toEvaluatee())
-				.getValues();
+				.findEntities(ctx.toEvaluatee());
 	}
 
 	@Override

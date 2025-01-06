@@ -90,7 +90,7 @@ public class C_Invoice_Candidate
 			Services.get(IAggregationBL.class).resetHeaderAggregationKey(ic);
 			ic.setLineAggregationKey(null);
 			//
-			invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation(ctx, ic);
+			invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation(ic);
 			//
 			if (ic.getBill_BPartner_ID() > 0)
 			{

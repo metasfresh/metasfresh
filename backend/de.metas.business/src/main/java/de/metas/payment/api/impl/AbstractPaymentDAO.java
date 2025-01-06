@@ -258,12 +258,12 @@ public abstract class AbstractPaymentDAO implements IPaymentDAO
 
 		return paymentsForEmployees;
 	}
-	
+
 	@NonNull
 	public Optional<CurrencyConversionTypeId> getCurrencyConversionTypeId(@NonNull final PaymentId paymentId)
 	{
 		final I_C_Payment paymentRecord = getById(paymentId);
-		
+
 		return Optional.ofNullable(CurrencyConversionTypeId.ofRepoIdOrNull(paymentRecord.getC_ConversionType_ID()));
 	}
 }

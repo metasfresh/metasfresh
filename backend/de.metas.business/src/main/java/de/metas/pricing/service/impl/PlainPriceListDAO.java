@@ -63,7 +63,7 @@ public class PlainPriceListDAO extends PriceListDAO
 			// nothing to do
 			return;
 		}
-		int discountSchemaId = newCustomerPLV.getM_DiscountSchema_ID();
+		final int discountSchemaId = newCustomerPLV.getM_DiscountSchema_ID();
 
 		if (discountSchemaId <= 0)
 		{
@@ -110,7 +110,7 @@ public class PlainPriceListDAO extends PriceListDAO
 				.orElse(null);
 	}
 
-	private boolean productMatchesSchemaLine(int productId, final I_M_DiscountSchemaLine schemaLine)
+	private boolean productMatchesSchemaLine(final int productId, final I_M_DiscountSchemaLine schemaLine)
 	{
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 
@@ -130,9 +130,7 @@ public class PlainPriceListDAO extends PriceListDAO
 
 		final I_M_Product product = productDAO.getById(productId);
 
-		final boolean sameCategory = product.getM_Product_Category_ID() == schemaLine.getM_Product_Category_ID();
-
-		return sameCategory;
+		return product.getM_Product_Category_ID() == schemaLine.getM_Product_Category_ID();
 
 	}
 
@@ -170,18 +168,16 @@ public class PlainPriceListDAO extends PriceListDAO
 				.matchingColumnNames(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, I_C_BPartner.COLUMNNAME_M_PricingSystem_ID)
 				.subQuery(customerQuery)
 				.end()
-				.andCollectChildren(I_M_PriceList_Version.COLUMN_M_PriceList_ID)
+				.andCollectChildren(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, I_M_PriceList_Version.class)
 				.addOnlyActiveRecordsFilter()
 				.addNotEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, basePricelistId)
 				.create()
 
 				.list(I_M_PriceList_Version.class);
 
-		final ImmutableList<I_M_PriceList_Version> newestVersions = customerVersions.stream()
+		return customerVersions.stream()
 				.filter(version -> retrieveNextVersionOrNull(version, false) == null)
 				.collect(ImmutableList.toImmutableList());
-
-		return newestVersions;
 	}
 
 }
