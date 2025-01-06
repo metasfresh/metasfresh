@@ -340,8 +340,6 @@ jobs:
             docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}
             docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-migrations
             docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-migrations
-            docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
-            docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
             docker push metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }}
       - name: produce-summary
@@ -370,8 +368,9 @@ jobs:
         working-directory: docker-builds/db/init-preloaded
         run: |
           docker pull metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
-          docker compose up --abort-on-container-exit --exit-code-from migration 2>&1 | echo "${PIPESTATUS[0]}" > migration.exit-code
-          docker commit metasfresh-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
+          docker compose up --abort-on-container-exit --exit-code-from migration 2>&1 | tee migrations.log && echo "${PIPESTATUS[0]}" > migration.exit-code
+          docker compose ps -a
+          docker commit init-preloaded-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
           docker compose down
       - name: tag images
         run: |
