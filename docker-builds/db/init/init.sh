@@ -36,9 +36,9 @@ EOSQL
     echo " Creating database and permissions ..."
     echo "======================================="
     psql -v ON_ERROR_STOP=1 --username=postgres <<- EOSQL
-    CREATE DATABASE metasfresh WITH OWNER = metasfresh;
-    GRANT ALL PRIVILEGES ON DATABASE metasfresh to metasfresh;
-    EOSQL
+CREATE DATABASE metasfresh WITH OWNER = metasfresh;
+GRANT ALL PRIVILEGES ON DATABASE metasfresh to metasfresh;
+EOSQL
     echo "==========="
     echo " ... done!"
     echo "==========="
