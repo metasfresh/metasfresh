@@ -27,6 +27,7 @@ public class PPOrderIssueSchedule
 	@NonNull SeqNo seqNo;
 
 	@NonNull ProductId productId;
+	@With
 	@NonNull Quantity qtyToIssue;
 	@NonNull HuId issueFromHUId;
 	@NonNull LocatorId issueFromLocatorId;

@@ -22,10 +22,11 @@
 
 package de.metas.rest_api.v2.invoice.review;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.RestUtils;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.invoice.InvoiceQuery;
+import de.metas.invoice.SingleInvoiceQuery;
 import de.metas.invoice.review.InvoiceReviewCreateUpdateRequest;
 import de.metas.invoice.review.InvoiceReviewId;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -47,6 +48,11 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
+import static de.metas.document.engine.DocStatus.Closed;
+import static de.metas.document.engine.DocStatus.Completed;
+import static de.metas.document.engine.DocStatus.Drafted;
+import static de.metas.document.engine.DocStatus.InProgress;
+
 @Service
 public class JsonInvoiceReviewService
 {
@@ -61,7 +67,7 @@ public class JsonInvoiceReviewService
 	public Optional<JsonCreateInvoiceReviewResponse> upsert(@NonNull final JsonInvoiceReviewUpsertItem jsonInvoiceReviewUpsertItem)
 	{
 		final OrgId orgId = getOrgId(jsonInvoiceReviewUpsertItem.getOrgCode());
-		final InvoiceQuery invoiceQuery = createInvoiceQueryOrNull(jsonInvoiceReviewUpsertItem, orgId);
+		final SingleInvoiceQuery invoiceQuery = createInvoiceQueryOrNull(jsonInvoiceReviewUpsertItem, orgId);
 		if (invoiceQuery == null)
 		{
 			return Optional.empty();
@@ -89,10 +95,12 @@ public class JsonInvoiceReviewService
 	}
 
 	@Nullable
-	private static InvoiceQuery createInvoiceQueryOrNull(@NonNull final JsonInvoiceReviewUpsertItem jsonInvoiceReviewUpsertItem, @NonNull final OrgId orgId)
+	private static SingleInvoiceQuery createInvoiceQueryOrNull(@NonNull final JsonInvoiceReviewUpsertItem jsonInvoiceReviewUpsertItem, @NonNull final OrgId orgId)
 	{
-		final InvoiceQuery.InvoiceQueryBuilder invoiceQueryBuilder = InvoiceQuery.builder()
-				.orgId(orgId);
+		final SingleInvoiceQuery.SingleInvoiceQueryBuilder invoiceQueryBuilder = SingleInvoiceQuery.builder()
+				.orgId(orgId)
+				// There might be reversed invoices with the same ExternalId
+				.docStatuses(ImmutableList.of(Drafted, InProgress, Completed, Closed));
 
 		if (jsonInvoiceReviewUpsertItem.getInvoiceId() != null)
 		{

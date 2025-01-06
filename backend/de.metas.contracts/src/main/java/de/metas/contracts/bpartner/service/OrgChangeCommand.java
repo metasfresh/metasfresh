@@ -232,7 +232,7 @@ public class OrgChangeCommand
 
 		bpartnerAndSubscriptions.getAllRunningSubscriptions()
 				.stream()
-				.map(FlatrateTerm::getFlatrateTermId)
+				.map(FlatrateTerm::getId)
 				.map(flatrateDAO::getById)
 				.forEach(currentTerm -> contractChangeBL.cancelContract(currentTerm, contractChangeParameters));
 

@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_Workplace
  *  @author metasfresh (generated) 
@@ -51,6 +52,27 @@ public interface I_C_Workplace
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Workplace.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Workplace_ID (int C_Workplace_ID);
+
+	/**
+	 * Get Workplace.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Workplace_ID();
+
+	ModelColumn<I_C_Workplace, Object> COLUMN_C_Workplace_ID = new ModelColumn<>(I_C_Workplace.class, "C_Workplace_ID", null);
+	String COLUMNNAME_C_Workplace_ID = "C_Workplace_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -74,27 +96,6 @@ public interface I_C_Workplace
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Workplace.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_Workplace_ID (int C_Workplace_ID);
-
-	/**
-	 * Get Workplace.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_Workplace_ID();
-
-	ModelColumn<I_C_Workplace, Object> COLUMN_C_Workplace_ID = new ModelColumn<>(I_C_Workplace.class, "C_Workplace_ID", null);
-	String COLUMNNAME_C_Workplace_ID = "C_Workplace_ID";
 
 	/**
 	 * Set Description.
@@ -141,11 +142,32 @@ public interface I_C_Workplace
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Picking Slot.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_PickingSlot_ID (int M_PickingSlot_ID);
+
+	/**
+	 * Get Picking Slot.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_PickingSlot_ID();
+
+	ModelColumn<I_C_Workplace, Object> COLUMN_M_PickingSlot_ID = new ModelColumn<>(I_C_Workplace.class, "M_PickingSlot_ID", null);
+	String COLUMNNAME_M_PickingSlot_ID = "M_PickingSlot_ID";
+
+	/**
 	 * Set Warehouse.
 	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setM_Warehouse_ID (int M_Warehouse_ID);
@@ -155,7 +177,7 @@ public interface I_C_Workplace
 	 * Storage Warehouse and Service Point
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getM_Warehouse_ID();

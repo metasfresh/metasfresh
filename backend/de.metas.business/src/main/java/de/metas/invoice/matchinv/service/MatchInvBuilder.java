@@ -3,7 +3,7 @@ package de.metas.invoice.matchinv.service;
 import de.metas.common.util.time.SystemTime;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutLineId;
-import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.matchinv.MatchInvCostPart;
 import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.listeners.MatchInvListenersRegistry;
@@ -191,10 +191,10 @@ public class MatchInvBuilder
 		return Check.assumeNotNull(_invoiceLine, "_invoiceLine not null");
 	}
 
-	private InvoiceLineId getInvoiceLineId()
+	private InvoiceAndLineId getInvoiceLineId()
 	{
 		final I_C_InvoiceLine invoiceLine = getInvoiceLine();
-		return InvoiceLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID());
+		return InvoiceAndLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID());
 	}
 
 	private I_C_Invoice getInvoice()

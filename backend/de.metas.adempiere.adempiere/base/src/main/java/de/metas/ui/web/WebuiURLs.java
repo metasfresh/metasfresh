@@ -57,33 +57,33 @@ public class WebuiURLs
 	private static final String PARAM_ResetPasswordToken = "token";
 
 	public static final String SYSCONFIG_IsCrossSiteUsageAllowed = "webui.frontend.allow-cross-site-usage";
-	
+
+	private static final String SYSCONFIG_APP_API_URL = "app.api.url";
 	public static final String SYSCONFIG_FRONTEND_URL = "webui.frontend.url";
 	private static final String SYSCONFIG_DOCUMENT_PATH = "webui.frontend.path.document";
 	private static final String SYSCONFIG_VIEW_PATH = "webui.frontend.path.view";
 	private static final String SYSCONFIG_RESET_PASSWORD_PATH = "webui.frontend.path.resetPassword";
 
-	private static final Map<String, String> defaultsBySysConfigName = ImmutableMap.<String, String> builder()
+	private static final Map<String, String> defaultsBySysConfigName = ImmutableMap.<String, String>builder()
 			.put(SYSCONFIG_DOCUMENT_PATH, "/window/{" + PARAM_windowId + "}/{" + PARAM_documentId + "}")
 			.put(SYSCONFIG_VIEW_PATH, "/window/{" + PARAM_windowId + "}?viewId={" + PARAM_viewId + "}")
 			.put(SYSCONFIG_RESET_PASSWORD_PATH, "/resetPassword?token={" + PARAM_ResetPasswordToken + "}")
 			.build();
 
 	/**
-	 *
 	 * @return e.g. https://webui
 	 */
 	@Nullable
 	public String getFrontendURL()
 	{
-		final String url = StringUtils.trimBlankToNull(sysConfigBL.getValue(SYSCONFIG_FRONTEND_URL, ""));
+		final String url = StringUtils.trimBlankToNull(sysConfigBL.getValue(SYSCONFIG_FRONTEND_URL));
 		if (url == null || "-".equals(url))
 		{
 			logger.warn("{} is not configured. Features like CORS, document links in emails etc will not work", SYSCONFIG_FRONTEND_URL);
 			return null;
 		}
 
-		return url.trim();
+		return url;
 	}
 
 	@Nullable
@@ -120,7 +120,7 @@ public class WebuiURLs
 	@Nullable
 	public String getDocumentUrl(@NonNull final String windowId, @NonNull final String documentId)
 	{
-		return getFrontendURL(SYSCONFIG_DOCUMENT_PATH, ImmutableMap.<String, Object> builder()
+		return getFrontendURL(SYSCONFIG_DOCUMENT_PATH, ImmutableMap.<String, Object>builder()
 				.put(WebuiURLs.PARAM_windowId, windowId)
 				.put(WebuiURLs.PARAM_documentId, documentId)
 				.build());
@@ -135,7 +135,7 @@ public class WebuiURLs
 	@Nullable
 	public String getViewUrl(@NonNull final String windowId, @NonNull final String viewId)
 	{
-		return getFrontendURL(SYSCONFIG_VIEW_PATH, ImmutableMap.<String, Object> builder()
+		return getFrontendURL(SYSCONFIG_VIEW_PATH, ImmutableMap.<String, Object>builder()
 				.put(PARAM_windowId, windowId)
 				.put(PARAM_viewId, viewId)
 				.build());
@@ -146,7 +146,7 @@ public class WebuiURLs
 	{
 		Check.assumeNotEmpty(token, "token is not empty");
 
-		return getFrontendURL(SYSCONFIG_RESET_PASSWORD_PATH, ImmutableMap.<String, Object> builder()
+		return getFrontendURL(SYSCONFIG_RESET_PASSWORD_PATH, ImmutableMap.<String, Object>builder()
 				.put(PARAM_ResetPasswordToken, token)
 				.build());
 	}
@@ -155,4 +155,22 @@ public class WebuiURLs
 	{
 		return sysConfigBL.getBooleanValue(SYSCONFIG_IsCrossSiteUsageAllowed, false);
 	}
+
+	public String getAppApiUrl()
+	{
+		final String url = StringUtils.trimBlankToNull(sysConfigBL.getValue(SYSCONFIG_APP_API_URL));
+		if (url != null && !url.equals("-"))
+		{
+			return url;
+		}
+
+		final String frontendUrl = getFrontendURL();
+		if (frontendUrl != null)
+		{
+			return frontendUrl + "/app";
+		}
+
+		return null;
+	}
+
 }

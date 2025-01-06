@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ModCntr_Module extends org.compiere.model.PO implements I_ModCntr_Module, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1918625418L;
+	private static final long serialVersionUID = -1999606309L;
 
     /** Standard Constructor */
     public X_ModCntr_Module (final Properties ctx, final int ModCntr_Module_ID, @Nullable final String trxName)
@@ -34,15 +34,26 @@ public class X_ModCntr_Module extends org.compiere.model.PO implements I_ModCntr
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
 	}
 
+	@Override
+	public void setDescription (final @Nullable java.lang.String Description)
+	{
+		throw new IllegalArgumentException ("Description is virtual column");	}
+
+	@Override
+	public java.lang.String getDescription() 
+	{
+		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
 	/** 
 	 * InvoicingGroup AD_Reference_ID=541742
 	 * Reference name: InvoicingGroup
 	 */
 	public static final int INVOICINGGROUP_AD_Reference_ID=541742;
-	/** Leistung = Leistung */
-	public static final String INVOICINGGROUP_Leistung = "Leistung";
-	/** Kosten = Kosten */
-	public static final String INVOICINGGROUP_Kosten = "Kosten";
+	/** Service = Service */
+	public static final String INVOICINGGROUP_Service = "Service";
+	/** Costs = Costs */
+	public static final String INVOICINGGROUP_Costs = "Costs";
 	@Override
 	public void setInvoicingGroup (final java.lang.String InvoicingGroup)
 	{
@@ -53,6 +64,18 @@ public class X_ModCntr_Module extends org.compiere.model.PO implements I_ModCntr
 	public java.lang.String getInvoicingGroup() 
 	{
 		return get_ValueAsString(COLUMNNAME_InvoicingGroup);
+	}
+
+	@Override
+	public void setIsGenerated (final boolean IsGenerated)
+	{
+		set_Value (COLUMNNAME_IsGenerated, IsGenerated);
+	}
+
+	@Override
+	public boolean isGenerated() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsGenerated);
 	}
 
 	@Override

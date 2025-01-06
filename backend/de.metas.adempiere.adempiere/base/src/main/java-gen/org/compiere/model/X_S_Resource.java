@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for S_Resource
  *  @author metasfresh (generated)
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1720848993L;
+	private static final long serialVersionUID = 664197132L;
 
     /** Standard Constructor */
     public X_S_Resource (final Properties ctx, final int S_Resource_ID, @Nullable final String trxName)
@@ -92,6 +92,33 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	}
 
 	@Override
+	public org.compiere.model.I_C_Workplace getC_Workplace()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Workplace_ID, org.compiere.model.I_C_Workplace.class);
+	}
+
+	@Override
+	public void setC_Workplace(final org.compiere.model.I_C_Workplace C_Workplace)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Workplace_ID, org.compiere.model.I_C_Workplace.class, C_Workplace);
+	}
+
+	@Override
+	public void setC_Workplace_ID (final int C_Workplace_ID)
+	{
+		if (C_Workplace_ID < 1)
+			set_Value (COLUMNNAME_C_Workplace_ID, null);
+		else
+			set_Value (COLUMNNAME_C_Workplace_ID, C_Workplace_ID);
+	}
+
+	@Override
+	public int getC_Workplace_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Workplace_ID);
+	}
+
+	@Override
 	public void setDailyCapacity (final @Nullable BigDecimal DailyCapacity)
 	{
 		set_Value (COLUMNNAME_DailyCapacity, DailyCapacity);
@@ -126,6 +153,21 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	public java.lang.String getInternalName()
 	{
 		return get_ValueAsString(COLUMNNAME_InternalName);
+	}
+
+	@Override
+	public void setExternalSystem_Config_ID (final int ExternalSystem_Config_ID)
+	{
+		if (ExternalSystem_Config_ID < 1)
+			set_Value (COLUMNNAME_ExternalSystem_Config_ID, null);
+		else
+			set_Value (COLUMNNAME_ExternalSystem_Config_ID, ExternalSystem_Config_ID);
+	}
+
+	@Override
+	public int getExternalSystem_Config_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Config_ID);
 	}
 
 	@Override
@@ -165,6 +207,8 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	public static final String MANUFACTURINGRESOURCETYPE_WorkCenter = "WC";
 	/** WorkStation = WS */
 	public static final String MANUFACTURINGRESOURCETYPE_WorkStation = "WS";
+	/** ExternalSystem = ES */
+	public static final String MANUFACTURINGRESOURCETYPE_ExternalSystem = "ES";
 	@Override
 	public void setManufacturingResourceType (final @Nullable java.lang.String ManufacturingResourceType)
 	{
@@ -263,14 +307,14 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	@Override
 	public void setS_HumanResourceTestGroup_ID (final int S_HumanResourceTestGroup_ID)
 	{
-		if (S_HumanResourceTestGroup_ID < 1) 
+		if (S_HumanResourceTestGroup_ID < 1)
 			set_Value (COLUMNNAME_S_HumanResourceTestGroup_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_S_HumanResourceTestGroup_ID, S_HumanResourceTestGroup_ID);
 	}
 
 	@Override
-	public int getS_HumanResourceTestGroup_ID() 
+	public int getS_HumanResourceTestGroup_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_S_HumanResourceTestGroup_ID);
 	}

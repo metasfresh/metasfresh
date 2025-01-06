@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_HU
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1070501090L;
+	private static final long serialVersionUID = -975613490L;
 
     /** Standard Constructor */
     public X_M_HU (final Properties ctx, final int M_HU_ID, @Nullable final String trxName)
@@ -71,7 +71,7 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	}
 
 	@Override
-	public java.sql.Timestamp getClearanceDate()
+	public java.sql.Timestamp getClearanceDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_ClearanceDate);
 	}
@@ -114,16 +114,43 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	}
 
 	@Override
+	public de.metas.handlingunits.model.I_M_HU getClonedFrom_HU()
+	{
+		return get_ValueAsPO(COLUMNNAME_ClonedFrom_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
+	}
+
+	@Override
+	public void setClonedFrom_HU(final de.metas.handlingunits.model.I_M_HU ClonedFrom_HU)
+	{
+		set_ValueFromPO(COLUMNNAME_ClonedFrom_HU_ID, de.metas.handlingunits.model.I_M_HU.class, ClonedFrom_HU);
+	}
+
+	@Override
+	public void setClonedFrom_HU_ID (final int ClonedFrom_HU_ID)
+	{
+		if (ClonedFrom_HU_ID < 1) 
+			set_Value (COLUMNNAME_ClonedFrom_HU_ID, null);
+		else 
+			set_Value (COLUMNNAME_ClonedFrom_HU_ID, ClonedFrom_HU_ID);
+	}
+
+	@Override
+	public int getClonedFrom_HU_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ClonedFrom_HU_ID);
+	}
+
+	@Override
 	public void setC_Project_ID (final int C_Project_ID)
 	{
-		if (C_Project_ID < 1)
+		if (C_Project_ID < 1) 
 			set_Value (COLUMNNAME_C_Project_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_Project_ID, C_Project_ID);
 	}
 
 	@Override
-	public int getC_Project_ID()
+	public int getC_Project_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
 	}
@@ -157,8 +184,6 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	public static final String HUSTATUS_Shipped = "E";
 	/** Issued = I */
 	public static final String HUSTATUS_Issued = "I";
-	/** Repair = R */
-	public static final String HUSTATUS_Repair = "R";
 	@Override
 	public void setHUStatus (final java.lang.String HUStatus)
 	{
@@ -189,7 +214,7 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	}
 
 	@Override
-	public boolean isExternalProperty()
+	public boolean isExternalProperty() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsExternalProperty);
 	}

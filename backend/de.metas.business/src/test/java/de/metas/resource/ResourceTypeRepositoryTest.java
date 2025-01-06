@@ -1,6 +1,7 @@
 package de.metas.resource;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.product.ProductCategoryId;
 import de.metas.uom.UomId;
 import lombok.NonNull;
@@ -30,6 +31,7 @@ class ResourceTypeRepositoryTest
 		@NonNull final I_S_ResourceType record = InterfaceWrapperHelper.newInstance(I_S_ResourceType.class);
 		record.setS_ResourceType_ID(123);
 		//record.setIsActive(true); // not needed
+		record.setName("resource type");
 		record.setM_Product_Category_ID(444);
 		record.setC_UOM_ID(555);
 		record.setIsDateSlot(true);
@@ -44,9 +46,11 @@ class ResourceTypeRepositoryTest
 		final ResourceType resourceType = ResourceTypeRepository.fromRecord(record);
 		assertThat(resourceType)
 				.usingRecursiveComparison()
+				.ignoringFieldsMatchingRegexes("caption")
 				.isEqualTo(ResourceType.builder()
 						.id(ResourceTypeId.ofRepoId(123))
 						.active(true)
+						.caption(TranslatableStrings.empty()) // will be ignored and checked below
 						.productCategoryId(ProductCategoryId.ofRepoId(444))
 						.durationUomId(UomId.ofRepoId(555))
 						.availability(ResourceWeeklyAvailability.builder()
@@ -56,6 +60,7 @@ class ResourceTypeRepositoryTest
 								.timeSlotEnd(LocalTime.parse("17:00"))
 								.build())
 						.build());
+		assertThat(resourceType.getCaption().getDefaultValue()).isEqualTo("resource type");
 	}
 
 }

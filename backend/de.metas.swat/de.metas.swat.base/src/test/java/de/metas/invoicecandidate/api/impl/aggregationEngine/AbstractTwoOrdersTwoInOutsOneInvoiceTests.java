@@ -22,21 +22,8 @@ package de.metas.invoicecandidate.api.impl.aggregationEngine;
  * #L%
  */
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.List;
-
-import de.metas.business.BusinessTestHelper;
-import de.metas.material.MovementType;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.util.TimeUtil;
-
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.business.BusinessTestHelper;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.InvoiceCandidateIds;
@@ -44,9 +31,22 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.expectations.InvoiceCandidateExpectation;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.material.MovementType;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 /**
  * In this scenario we have two invoice candidates (also referencing two orders). The first ic has two iols, the 2nd ic has one iol.
@@ -158,7 +158,7 @@ public abstract class AbstractTwoOrdersTwoInOutsOneInvoiceTests extends Abstract
 	}
 
 	@Override
-	protected void step_validate_before_aggregation(final List<I_C_Invoice_Candidate> ignored, final List<I_M_InOutLine> ignoredToo)
+	protected void step_validate_before_aggregation(final @NonNull List<I_C_Invoice_Candidate> ignored, final @NonNull List<I_M_InOutLine> ignoredToo)
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 

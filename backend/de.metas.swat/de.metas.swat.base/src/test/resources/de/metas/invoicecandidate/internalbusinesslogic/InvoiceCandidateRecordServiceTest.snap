@@ -97,7 +97,7 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
     "priceUomId": 110000,
     "product": {
       "id": 300000,
-      "stocked": false
+      "itemType": true
     },
     "soTrx": "SALES",
     "uomId": 110000,
@@ -201,7 +201,7 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
     "priceUomId": 110000,
     "product": {
       "id": 300000,
-      "stocked": false
+      "itemType": true
     },
     "soTrx": "SALES",
     "uomId": 110000,
@@ -297,7 +297,7 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
     "priceUomId": 110000,
     "product": {
       "id": 300000,
-      "stocked": false
+      "itemType": true
     },
     "soTrx": "SALES",
     "uomId": 110000,

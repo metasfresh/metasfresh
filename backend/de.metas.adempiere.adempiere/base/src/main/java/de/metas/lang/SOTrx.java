@@ -32,6 +32,10 @@ public enum SOTrx
 {
 	SALES, PURCHASE;
 
+	private static final String ISSOTRX_Yes = "Y";
+
+	private static final String ISSOTRX_No = "N";
+
 	/**
 	 * For backward compatibility we are accepting null parameter, so we are calling {@link #ofNullableBoolean(Boolean)}.
 	 * <p>
@@ -107,5 +111,31 @@ public enum SOTrx
 					.setParameter("SOTrx", soTrx)
 					.setParameter("Known values", values());
 		}
+	}
+
+	@NonNull
+	public static SOTrx ofYesNoString(@NonNull final String soTrx)
+	{
+		if(soTrx.equals(ISSOTRX_Yes))
+		{
+			return SALES;
+		}
+		else if(soTrx.equals(ISSOTRX_No))
+		{
+			return PURCHASE;
+		}
+		else
+		{
+			throw new AdempiereException("Invalid SOTrx!")
+					.appendParametersToMessage()
+					.setParameter("SOTrx", soTrx)
+					.setParameter("Known values", ISSOTRX_Yes + "/" + ISSOTRX_No);
+		}
+	}
+
+	@NonNull
+	public String toYesNoString()
+	{
+		return isSales() ? ISSOTRX_Yes : ISSOTRX_No;
 	}
 }

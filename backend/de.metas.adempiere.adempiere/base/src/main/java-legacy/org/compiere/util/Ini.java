@@ -22,6 +22,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.FileUtil;
 import lombok.Setter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempiereLookAndFeel;
@@ -450,7 +451,7 @@ public final class Ini
 		}
 
 		//
-		String tempDir = System.getProperty("java.io.tmpdir");
+		String tempDir = FileUtil.getTempDir();
 		if (tempDir == null || tempDir.length() <= 1)
 			tempDir = getMetasfreshHome();
 		if (tempDir == null)

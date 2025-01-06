@@ -1,9 +1,8 @@
 package de.metas.ordercandidate.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_OLCand
  *  @author metasfresh (generated) 
@@ -22,7 +21,7 @@ public interface I_C_OLCand
 	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -34,7 +33,7 @@ public interface I_C_OLCand
 	 * Set Data destination.
 	 * Specifies which part of metasfresh shall process the given record
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -44,7 +43,7 @@ public interface I_C_OLCand
 	 * Get Data destination.
 	 * Specifies which part of metasfresh shall process the given record
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -56,7 +55,7 @@ public interface I_C_OLCand
 	/**
 	 * Set Inputsource.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -65,7 +64,7 @@ public interface I_C_OLCand
 	/**
 	 * Get Inputsource.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -77,7 +76,7 @@ public interface I_C_OLCand
 	/**
 	 * Set Issues.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -86,7 +85,7 @@ public interface I_C_OLCand
 	/**
 	 * Get Issues.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -140,7 +139,7 @@ public interface I_C_OLCand
 	 * Set Table.
 	 * Database Table information
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -150,7 +149,7 @@ public interface I_C_OLCand
 	 * Get Table.
 	 * Database Table information
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -224,7 +223,7 @@ public interface I_C_OLCand
 	/**
 	 * Set Bill Business Partner.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -233,7 +232,7 @@ public interface I_C_OLCand
 	/**
 	 * Get Bill Business Partner.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -244,7 +243,7 @@ public interface I_C_OLCand
 	/**
 	 * Set Bill Location.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -253,7 +252,7 @@ public interface I_C_OLCand
 	/**
 	 * Get Bill Location.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -289,7 +288,7 @@ public interface I_C_OLCand
 	/**
 	 * Set Bill Contact.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -298,7 +297,7 @@ public interface I_C_OLCand
 	/**
 	 * Get Bill Contact.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -330,7 +329,7 @@ public interface I_C_OLCand
 	/**
 	 * Set Async Batch.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -339,7 +338,7 @@ public interface I_C_OLCand
 	/**
 	 * Get Async Batch.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -351,7 +350,7 @@ public interface I_C_OLCand
 	/**
 	 * Set Auction.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -360,7 +359,7 @@ public interface I_C_OLCand
 	/**
 	 * Get Auction.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -420,7 +419,7 @@ public interface I_C_OLCand
 	/**
 	 * Set Location.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -429,7 +428,7 @@ public interface I_C_OLCand
 	/**
 	 * Get Location.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -551,7 +550,7 @@ public interface I_C_OLCand
 	/**
 	 * Set Location override.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -560,7 +559,7 @@ public interface I_C_OLCand
 	/**
 	 * Get Location override.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -596,7 +595,7 @@ public interface I_C_OLCand
 	/**
 	 * Set Costs.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -605,7 +604,7 @@ public interface I_C_OLCand
 	/**
 	 * Get Costs.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -617,7 +616,7 @@ public interface I_C_OLCand
 	 * Set Currency.
 	 * The Currency for this record
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -627,7 +626,7 @@ public interface I_C_OLCand
 	 * Get Currency.
 	 * The Currency for this record
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -639,7 +638,7 @@ public interface I_C_OLCand
 	 * Set DocType Invoice.
 	 * Document type used for invoices generated from this sales document
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -649,7 +648,7 @@ public interface I_C_OLCand
 	 * Get DocType Invoice.
 	 * Document type used for invoices generated from this sales document
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -682,7 +681,7 @@ public interface I_C_OLCand
 	/**
 	 * Set Contract Terms.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -691,7 +690,7 @@ public interface I_C_OLCand
 	/**
 	 * Get Contract Terms.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -789,7 +788,7 @@ public interface I_C_OLCand
 	 * Set Project.
 	 * Financial Project
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -799,7 +798,7 @@ public interface I_C_OLCand
 	 * Get Project.
 	 * Financial Project
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -824,7 +823,7 @@ public interface I_C_OLCand
 	 * Get Created By.
 	 * User who created this records
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -836,7 +835,7 @@ public interface I_C_OLCand
 	 * Set Tax Category.
 	 * Tax Category
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -846,7 +845,7 @@ public interface I_C_OLCand
 	 * Get Tax Category.
 	 * Tax Category
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -858,7 +857,7 @@ public interface I_C_OLCand
 	 * Set UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -868,7 +867,7 @@ public interface I_C_OLCand
 	 * Get UOM.
 	 * Unit of Measure
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -879,7 +878,7 @@ public interface I_C_OLCand
 	/**
 	 * Set UOM.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -888,7 +887,7 @@ public interface I_C_OLCand
 	/**
 	 * Get UOM.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1230,7 +1229,7 @@ public interface I_C_OLCand
 	/**
 	 * Set Ship Location.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1239,7 +1238,7 @@ public interface I_C_OLCand
 	/**
 	 * Get Ship Location.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1322,7 +1321,7 @@ public interface I_C_OLCand
 	/**
 	 * Set Ship Contact.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1331,7 +1330,7 @@ public interface I_C_OLCand
 	/**
 	 * Get Ship Contact.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1380,6 +1379,27 @@ public interface I_C_OLCand
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_ErrorMsg = new ModelColumn<>(I_C_OLCand.class, "ErrorMsg", null);
 	String COLUMNNAME_ErrorMsg = "ErrorMsg";
+
+	/**
+	 * Set Replication Transaction.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEXP_ReplicationTrx_ID (int EXP_ReplicationTrx_ID);
+
+	/**
+	 * Get Replication Transaction.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getEXP_ReplicationTrx_ID();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_EXP_ReplicationTrx_ID = new ModelColumn<>(I_C_OLCand.class, "EXP_ReplicationTrx_ID", null);
+	String COLUMNNAME_EXP_ReplicationTrx_ID = "EXP_ReplicationTrx_ID";
 
 	/**
 	 * Set External Header ID.
@@ -1492,7 +1512,7 @@ public interface I_C_OLCand
 	/**
 	 * Set unloading address.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1501,7 +1521,7 @@ public interface I_C_OLCand
 	/**
 	 * Get unloading address.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1648,7 +1668,7 @@ public interface I_C_OLCand
 	/**
 	 * Set Handover contact.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1657,7 +1677,7 @@ public interface I_C_OLCand
 	/**
 	 * Get Handover contact.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1727,6 +1747,29 @@ public interface I_C_OLCand
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_InvoicableQtyBasedOn = new ModelColumn<>(I_C_OLCand.class, "InvoicableQtyBasedOn", null);
 	String COLUMNNAME_InvoicableQtyBasedOn = "InvoicableQtyBasedOn";
+
+	/**
+	 * Set Invoice Rule.
+	 * Frequency and method of invoicing
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoiceRule (@Nullable java.lang.String InvoiceRule);
+
+	/**
+	 * Get Invoice Rule.
+	 * Frequency and method of invoicing
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInvoiceRule();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_InvoiceRule = new ModelColumn<>(I_C_OLCand.class, "InvoiceRule", null);
+	String COLUMNNAME_InvoiceRule = "InvoiceRule";
 
 	/**
 	 * Set Active.
@@ -1838,6 +1881,27 @@ public interface I_C_OLCand
 	String COLUMNNAME_IsGroupingError = "IsGroupingError";
 
 	/**
+	 * Set Approval needed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsImportedWithIssues (boolean IsImportedWithIssues);
+
+	/**
+	 * Get Approval needed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isImportedWithIssues();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_IsImportedWithIssues = new ModelColumn<>(I_C_OLCand.class, "IsImportedWithIssues", null);
+	String COLUMNNAME_IsImportedWithIssues = "IsImportedWithIssues";
+
+	/**
 	 * Set Discount Manual.
 	 *
 	 * <br>Type: YesNo
@@ -1901,7 +1965,6 @@ public interface I_C_OLCand
 
 	ModelColumn<I_C_OLCand, Object> COLUMN_IsManualQtyItemCapacity = new ModelColumn<>(I_C_OLCand.class, "IsManualQtyItemCapacity", null);
 	String COLUMNNAME_IsManualQtyItemCapacity = "IsManualQtyItemCapacity";
-
 
 	/**
 	 * Set EDI Import Error.
@@ -1971,10 +2034,31 @@ public interface I_C_OLCand
 	String COLUMNNAME_Line = "Line";
 
 	/**
+	 * Set Manual Qty in Price UOM.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setManualQtyInPriceUOM (@Nullable BigDecimal ManualQtyInPriceUOM);
+
+	/**
+	 * Get Manual Qty in Price UOM.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getManualQtyInPriceUOM();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_ManualQtyInPriceUOM = new ModelColumn<>(I_C_OLCand.class, "ManualQtyInPriceUOM", null);
+	String COLUMNNAME_ManualQtyInPriceUOM = "ManualQtyInPriceUOM";
+
+	/**
 	 * Set Attribute Set.
 	 * Product Attribute Set
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1984,7 +2068,7 @@ public interface I_C_OLCand
 	 * Get Attribute Set.
 	 * Product Attribute Set
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2027,7 +2111,7 @@ public interface I_C_OLCand
 	/**
 	 * Set Packing Instruction eff..
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a virtual column
@@ -2038,7 +2122,7 @@ public interface I_C_OLCand
 	/**
 	 * Get Packing Instruction eff..
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: true (lazy loading)
 	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
@@ -2052,7 +2136,7 @@ public interface I_C_OLCand
 	/**
 	 * Set Packing Instruction.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2061,7 +2145,7 @@ public interface I_C_OLCand
 	/**
 	 * Get Packing Instruction.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2073,7 +2157,7 @@ public interface I_C_OLCand
 	/**
 	 * Set Packing Instruction Override.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2082,7 +2166,7 @@ public interface I_C_OLCand
 	/**
 	 * Get Packing Instruction Override.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2139,7 +2223,7 @@ public interface I_C_OLCand
 	 * Set Product.
 	 * Product, Service, Item
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2149,7 +2233,7 @@ public interface I_C_OLCand
 	 * Get Product.
 	 * Product, Service, Item
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2226,7 +2310,7 @@ public interface I_C_OLCand
 	/**
 	 * Set Section Code.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2235,7 +2319,7 @@ public interface I_C_OLCand
 	/**
 	 * Get Section Code.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2252,7 +2336,7 @@ public interface I_C_OLCand
 	 * Set Shipper.
 	 * Method or manner of product delivery
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2262,7 +2346,7 @@ public interface I_C_OLCand
 	 * Get Shipper.
 	 * Method or manner of product delivery
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2278,7 +2362,7 @@ public interface I_C_OLCand
 	/**
 	 * Set Destination warehouse locator.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2287,7 +2371,7 @@ public interface I_C_OLCand
 	/**
 	 * Get Destination warehouse locator.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2519,7 +2603,7 @@ public interface I_C_OLCand
 	/**
 	 * Set Price UOM.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2528,7 +2612,7 @@ public interface I_C_OLCand
 	/**
 	 * Get Price UOM.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2602,6 +2686,27 @@ public interface I_C_OLCand
 	String COLUMNNAME_QtyEntered = "QtyEntered";
 
 	/**
+	 * Set Qty Override.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyEntered_Override (@Nullable BigDecimal QtyEntered_Override);
+
+	/**
+	 * Get Qty Override.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyEntered_Override();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_QtyEntered_Override = new ModelColumn<>(I_C_OLCand.class, "QtyEntered_Override", null);
+	String COLUMNNAME_QtyEntered_Override = "QtyEntered_Override";
+
+	/**
 	 * Set Packaging capacity.
 	 * Capacity in the respective product's unit of measuerement
 	 *
@@ -2669,6 +2774,47 @@ public interface I_C_OLCand
 	String COLUMNNAME_QtyShipped = "QtyShipped";
 
 	/**
+	 * Set Shipped Weight.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyShipped_CatchWeight (@Nullable BigDecimal QtyShipped_CatchWeight);
+
+	/**
+	 * Get Shipped Weight.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyShipped_CatchWeight();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_QtyShipped_CatchWeight = new ModelColumn<>(I_C_OLCand.class, "QtyShipped_CatchWeight", null);
+	String COLUMNNAME_QtyShipped_CatchWeight = "QtyShipped_CatchWeight";
+
+	/**
+	 * Set Shipped Weight UOM.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyShipped_CatchWeight_UOM_ID (int QtyShipped_CatchWeight_UOM_ID);
+
+	/**
+	 * Get Shipped Weight UOM.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getQtyShipped_CatchWeight_UOM_ID();
+
+	String COLUMNNAME_QtyShipped_CatchWeight_UOM_ID = "QtyShipped_CatchWeight_UOM_ID";
+
+	/**
 	 * Set Record ID.
 	 * Direct internal record ID
 	 *
@@ -2731,7 +2877,7 @@ public interface I_C_OLCand
 	 * Get Updated By.
 	 * User who updated this records
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

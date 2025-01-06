@@ -1,9 +1,11 @@
 package de.metas.security;
 
+import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.organization.OrgId;
 import de.metas.security.impl.RolePermissionsNotFoundException;
 import de.metas.security.requests.CreateDocActionAccessRequest;
 import de.metas.security.requests.CreateFormAccessRequest;
+import de.metas.security.requests.CreateMobileApplicationAccessRequest;
 import de.metas.security.requests.CreateProcessAccessRequest;
 import de.metas.security.requests.CreateRecordPrivateAccessRequest;
 import de.metas.security.requests.CreateTaskAccessRequest;
@@ -32,16 +34,17 @@ import java.util.function.Predicate;
  * {@link IUserRolePermissions} retrieval DAO.
  *
  * @author tsa
- *
  */
 public interface IUserRolePermissionsDAO extends ISingletonService
 {
-	/** @return role dependent tables; it does not include AD_Role table; it might include tables which does not have AD_Role_ID column */
+	/**
+	 * @return role dependent tables; it does not include AD_Role table; it might include tables which does not have AD_Role_ID column
+	 */
 	Set<String> getRoleDependentTableNames();
 
 	/**
 	 * Gets current cache version.
-	 * 
+	 * <p>
 	 * The cache version is incremented on each cache reset call.
 	 */
 	long getCacheVersion();
@@ -49,7 +52,7 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	/**
 	 * Resets all role and permissions related caches after current transaction is committed.
 	 * If there is no current transaction, the caches will be reset right away.
-	 * 
+	 * <p>
 	 * If a cache reset was already scheduled for current transaction this method won't schedule another one.
 	 */
 	void resetCacheAfterTrxCommit();
@@ -73,14 +76,14 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 
 	/**
 	 * Retrieves {@link IUserRolePermissions} assigned to given user and which have (readonly) access to given organization.
-	 * 
+	 *
 	 * @return permissions with organization access.
 	 */
 	List<IUserRolePermissions> retrieveUserRolesPermissionsForUserWithOrgAccess(ClientId clientId, OrgId orgId, UserId adUserId, LocalDate localDate);
 
 	/**
 	 * Retrieves first {@link IUserRolePermissions} assigned to given user and which have (readonly) access to given organization.
-	 * 
+	 *
 	 * @return permissions with organization access.
 	 * @see #retrieveUserRolesPermissionsForUserWithOrgAccess(ClientId, OrgId, UserId, LocalDate)
 	 */
@@ -104,7 +107,7 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 
 	/**
 	 * Delete Access Records of the role.
-	 *
+	 * <p>
 	 * WARNING: to be called after the role was (successfully) deleted.
 	 */
 	void deleteAccessRecords(RoleId roleId);
@@ -115,7 +118,6 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	void setAccountingModuleActive();
 
 	/**
-	 * 
 	 * @return always return {@code false}, unless {@link #setAccountingModuleActive()} was previously called.
 	 */
 	boolean isAccountingModuleActive();
@@ -151,6 +153,10 @@ public interface IUserRolePermissionsDAO extends ISingletonService
 	void createPrivateAccess(CreateRecordPrivateAccessRequest request);
 
 	void deletePrivateAccess(RemoveRecordPrivateAccessRequest request);
+
+	void createMobileApplicationAccess(CreateMobileApplicationAccessRequest request);
+
+	void deleteMobileApplicationAccess(MobileApplicationRepoId applicationId);
 
 	/**
 	 * @return true if given user has a role where he/she is an administrator, according to {@link IUserRolePermissions#isSystemAdministrator()}

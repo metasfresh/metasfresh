@@ -11,8 +11,9 @@ import org.adempiere.warehouse.LocatorId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 
+import javax.annotation.Nullable;
+
 @Value
-@Builder
 public class PPOrderIssueScheduleCreateRequest
 {
 	@NonNull PPOrderId ppOrderId;
@@ -26,4 +27,34 @@ public class PPOrderIssueScheduleCreateRequest
 	@NonNull LocatorId issueFromLocatorId;
 
 	boolean isAlternativeIssue;
+
+	@Nullable Quantity qtyIssued;
+
+	@Builder
+	private PPOrderIssueScheduleCreateRequest(
+			@NonNull final PPOrderId ppOrderId,
+			@NonNull final PPOrderBOMLineId ppOrderBOMLineId,
+			@NonNull final SeqNo seqNo,
+			@NonNull final ProductId productId,
+			@NonNull final Quantity qtyToIssue,
+			@NonNull final HuId issueFromHUId,
+			@NonNull final LocatorId issueFromLocatorId,
+			final boolean isAlternativeIssue,
+			@Nullable final Quantity qtyIssued)
+	{
+		if (qtyIssued != null)
+		{
+			Quantity.assertSameUOM(qtyToIssue, qtyIssued);
+		}
+
+		this.ppOrderId = ppOrderId;
+		this.ppOrderBOMLineId = ppOrderBOMLineId;
+		this.seqNo = seqNo;
+		this.productId = productId;
+		this.qtyToIssue = qtyToIssue;
+		this.issueFromHUId = issueFromHUId;
+		this.issueFromLocatorId = issueFromLocatorId;
+		this.isAlternativeIssue = isAlternativeIssue;
+		this.qtyIssued = qtyIssued;
+	}
 }

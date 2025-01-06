@@ -23,7 +23,11 @@ package de.metas.handlingunits.shipmentschedule.integrationtest;
  */
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
+import de.metas.global_qrcodes.service.GlobalQRCodeService;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUContext;
@@ -40,12 +44,17 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.shipmentschedule.api.HUShippingFacade;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.api.ShipmentScheduleAllowConsolidatePredicateComposite;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.impl.ShipmentScheduleInvalidateBL;
@@ -54,6 +63,7 @@ import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.logging.LogManager;
 import de.metas.order.DeliveryRule;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.user.UserGroupRepository;
@@ -90,7 +100,7 @@ import static de.metas.business.BusinessTestHelper.createWarehouse;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * HU Shipment Process:
@@ -154,6 +164,8 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 
 		Services.registerService(IShipmentScheduleInvalidateBL.class, new ShipmentScheduleInvalidateBL(new PickingBOMService()));
 
+		SpringContextHolder.registerJUnitBean(new ShipmentScheduleAllowConsolidatePredicateComposite(ImmutableList.of()));
+		
 		final OrderLineShipmentScheduleHandler orderLineShipmentScheduleHandler = OrderLineShipmentScheduleHandler.newInstanceWithoutExtensions();
 		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(orderLineShipmentScheduleHandler);
 
@@ -212,6 +224,13 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		// this.huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
 		SpringContextHolder.registerJUnitBean(new UserGroupRepository());
+
+		final QRCodeConfigurationService qrCodeConfigurationService = new QRCodeConfigurationService(new QRCodeConfigurationRepository());
+		SpringContextHolder.registerJUnitBean(qrCodeConfigurationService);
+		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService(DoNothingMassPrintingService.instance), qrCodeConfigurationService));
+
+		SpringContextHolder.registerJUnitBean(new ModularContractSettingsRepository());
+		SpringContextHolder.registerJUnitBean(new ModularContractLogDAO());
 		huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
 		huPackageDAO = Services.get(IHUPackageDAO.class);
 

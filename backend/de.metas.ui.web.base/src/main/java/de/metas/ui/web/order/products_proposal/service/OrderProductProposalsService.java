@@ -9,6 +9,7 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -44,7 +45,6 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -178,7 +178,7 @@ public class OrderProductProposalsService
 	{
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
 				.docBaseType(DocBaseType.SalesOrder)
-				.docSubType(X_C_DocType.DOCSUBTYPE_Proposal)
+				.docSubType(DocSubType.Proposal)
 				.adClientId(clientAndOrgId.getClientId().getRepoId())
 				.adOrgId(clientAndOrgId.getOrgId().getRepoId())
 				.build();

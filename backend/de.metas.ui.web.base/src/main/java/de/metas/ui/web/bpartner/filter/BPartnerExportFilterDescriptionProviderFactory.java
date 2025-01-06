@@ -30,7 +30,6 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -38,7 +37,6 @@ import org.compiere.model.I_C_BPartner_Export;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 
 @Component
 public class BPartnerExportFilterDescriptionProviderFactory implements DocumentFilterDescriptorsProviderFactory
@@ -53,9 +51,7 @@ public class BPartnerExportFilterDescriptionProviderFactory implements DocumentF
 
 	@Override
 	@NonNull
-	public DocumentFilterDescriptorsProvider createFiltersProvider(
-			@NonNull final CreateFiltersProviderContext context,
-			final @NonNull Collection<DocumentFieldDescriptor> fields)
+	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context)
 	{
 		if (!isValidTable(context.getTableName()))
 		{

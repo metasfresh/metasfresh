@@ -34,6 +34,7 @@
 							<schemaDirectory>src/main/xsd</schemaDirectory>
 							<generatePackage>de.metas.payment.sepa.jaxb.sct.pain_008_003_02</generatePackage>
 							<generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
+							<noFileHeader>true</noFileHeader>
 						</configuration>
 					</execution>
 				</executions>

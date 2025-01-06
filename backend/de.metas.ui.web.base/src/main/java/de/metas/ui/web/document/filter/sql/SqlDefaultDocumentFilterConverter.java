@@ -2,14 +2,19 @@ package de.metas.ui.web.document.filter.sql;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableMap;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
+import de.metas.ui.web.view.descriptor.SqlViewBinding;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityFieldBinding;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
@@ -18,6 +23,8 @@ import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.ad.dao.impl.NullQueryFilterModifier;
@@ -27,7 +34,9 @@ import org.compiere.util.DB;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -58,19 +67,16 @@ import java.util.List;
  *
  * @author metas-dev <dev@metasfresh.com>
  */
-/* package */final class SqlDefaultDocumentFilterConverter implements SqlDocumentFilterConverter
+@RequiredArgsConstructor
+public final class SqlDefaultDocumentFilterConverter implements SqlDocumentFilterConverter
 {
 	static SqlDefaultDocumentFilterConverter newInstance(final SqlEntityBinding entityBinding)
 	{
-		return new SqlDefaultDocumentFilterConverter(entityBinding);
+		return new SqlDefaultDocumentFilterConverter(entityBinding, SqlViewBinding.getIncludedEntitiesDescriptors(entityBinding));
 	}
 
-	private final SqlEntityBinding entityBinding;
-
-	private SqlDefaultDocumentFilterConverter(final @NonNull SqlEntityBinding entityBinding)
-	{
-		this.entityBinding = entityBinding;
-	}
+	@NonNull private final SqlEntityBinding entityBinding;
+	@NonNull private final ImmutableMap<DetailId, SqlDocumentEntityDataBindingDescriptor> includedEntities;
 
 	@Override
 	public String toString()
@@ -92,12 +98,14 @@ import java.util.List;
 	@Override
 	public FilterSql getSql(
 			@NonNull final DocumentFilter filter,
-			@NonNull final SqlOptions sqlOpts,
+			@NonNull final SqlOptions sqlOptsParam,
 			@NonNull final SqlDocumentFilterConverterContext context)
 	{
 		final String filterId = filter.getFilterId();
 
-		final SqlAndParams.Builder sql = SqlAndParams.builder();
+		final SqlAndParams.Builder mainTabSql = SqlAndParams.builder();
+		final HashMap<DetailId, SqlAndParams.Builder> includedTabSqlByTabId = new HashMap<>();
+
 		for (final DocumentFilterParam filterParam : filter.getParameters())
 		{
 			if (filterParam.getValue() == null && filterParam.getSqlWhereClause() == null)
@@ -107,21 +115,58 @@ import java.util.List;
 				continue;
 			}
 
+			final DetailId includedTabId = filterParam.getFieldName() != null
+					? ParameterNameFQ.ofParameterNameFQ(filterParam.getFieldName()).getTabId()
+					: null;
+			
+			final SqlOptions sqlOpts = includedTabId == null
+					? sqlOptsParam
+					: SqlOptions.usingTableAlias(includedTabId.getTableAlias());
+
 			final SqlAndParams sqlFilterParam = buildSqlWhereClause(filterId, filterParam, sqlOpts);
 			if (sqlFilterParam == null || sqlFilterParam.isEmpty())
 			{
 				continue;
 			}
 
-			if (sql.length() > 0)
+			final SqlAndParams.Builder sql = includedTabId == null
+					? mainTabSql
+					: includedTabSqlByTabId.computeIfAbsent(includedTabId, (k) -> SqlAndParams.builder());
+
+			if (!sql.isEmpty())
 			{
 				sql.append(filterParam.isJoinAnd() ? " AND " : " OR ");
 			}
-
 			sql.append("(").append(sqlFilterParam).append(")");
 		}
 
-		return FilterSql.ofWhereClause(sql.build());
+		//
+		//
+		for (final Map.Entry<DetailId, SqlAndParams.Builder> tabIdAndSql : includedTabSqlByTabId.entrySet())
+		{
+			final SqlAndParams.Builder includedTabSql = tabIdAndSql.getValue();
+			if (includedTabSql.isEmpty())
+			{
+				continue;
+			}
+
+			final DetailId tabId = tabIdAndSql.getKey();
+			final SqlDocumentEntityDataBindingDescriptor includedEntityBinding = getIncludedEntityBinding(tabId);
+
+			if (!mainTabSql.isEmpty())
+			{
+				mainTabSql.append("\n AND ");
+			}
+			mainTabSql.append("EXISTS (select 1 from ").append(includedEntityBinding.getTableName()).append(" ").append(tabId.getTableAlias())
+					.append(" where ")
+					.append(tabId.getTableAlias()).append(".").append(includedEntityBinding.getLinkColumnName()).append("=").append(sqlOptsParam.getTableNameOrAlias()).append(".").append(includedEntityBinding.getParentLinkColumnName())
+					.append(" AND ").append(includedTabSql)
+					.append(")");
+		}
+
+		//
+		//
+		return FilterSql.ofWhereClause(mainTabSql.build());
 	}
 
 	/**
@@ -152,11 +197,11 @@ import java.util.List;
 
 		//
 		// Labels filter
-		final String parameterName = filterParam.getFieldName();
-		final DocumentFieldWidgetType widgetType = getParameterWidgetType(parameterName);
+		final ParameterNameFQ parameterNameFQ = ParameterNameFQ.ofParameterNameFQ(filterParam.getFieldName());
+		final DocumentFieldWidgetType widgetType = getParameterWidgetType(parameterNameFQ);
 		if (widgetType == DocumentFieldWidgetType.Labels)
 		{
-			final DocumentFilterParamDescriptor paramDescriptor = getParameterDescriptor(filterId, parameterName);
+			final DocumentFilterParamDescriptor paramDescriptor = getParameterDescriptor(filterId, parameterNameFQ);
 			return buildSqlWhereClause_LabelsWidget(filterParam, paramDescriptor, sqlOpts);
 		}
 		//
@@ -167,19 +212,47 @@ import java.util.List;
 		}
 	}
 
-	private SqlEntityFieldBinding getParameterBinding(final String parameterName)
+	private SqlEntityFieldBinding getParameterBinding(final ParameterNameFQ parameterNameFQ)
 	{
-		return entityBinding.getFieldByFieldName(parameterName);
+		if (parameterNameFQ.getTabId() == null)
+		{
+			return entityBinding.getFieldByFieldName(parameterNameFQ.getParameterName());
+		}
+		else
+		{
+			return getIncludedEntityBinding(parameterNameFQ.getTabId()).getFieldByFieldName(parameterNameFQ.getParameterName());
+		}
 	}
 
-	private DocumentFieldWidgetType getParameterWidgetType(final String parameterName)
+	@NonNull
+	private SqlDocumentEntityDataBindingDescriptor getIncludedEntityBinding(final DetailId tabId)
 	{
-		return getParameterBinding(parameterName).getWidgetType();
+		final SqlDocumentEntityDataBindingDescriptor includedEntityBinding = includedEntities.get(tabId);
+		if (includedEntityBinding == null)
+		{
+			throw new AdempiereException("Included entity `" + tabId + "` not found");
+		}
+		return includedEntityBinding;
 	}
 
-	private DocumentFilterParamDescriptor getParameterDescriptor(final String filterId, final String parameterName)
+	private DocumentFieldWidgetType getParameterWidgetType(final ParameterNameFQ parameterNameFQ)
 	{
-		return entityBinding.getFilterDescriptors().getByFilterId(filterId).getParameterByName(parameterName);
+		return getParameterBinding(parameterNameFQ).getWidgetType();
+	}
+
+	private DocumentFilterParamDescriptor getParameterDescriptor(@NonNull final String filterId, @NonNull final ParameterNameFQ parameterNameFQ)
+	{
+		if (parameterNameFQ.getTabId() == null)
+		{
+			return entityBinding.getFilterDescriptors().getByFilterId(filterId).getParameterByName(parameterNameFQ.getParameterName());
+		}
+		else
+		{
+			return getIncludedEntityBinding(parameterNameFQ.getTabId())
+					.getFilterDescriptors()
+					.getByFilterId(parameterNameFQ.getIncludedFilterId())
+					.getParameterByName(parameterNameFQ.getParameterName());
+		}
 	}
 
 	private static IQueryFilterModifier extractFieldModifier(final DocumentFieldWidgetType widgetType)
@@ -223,7 +296,7 @@ import java.util.List;
 	@Nullable
 	private SqlAndParams buildSqlWhereClause_StandardWidget(final DocumentFilterParam filterParam, final SqlOptions sqlOpts)
 	{
-		final SqlEntityFieldBinding paramBinding = getParameterBinding(filterParam.getFieldName());
+		final SqlEntityFieldBinding paramBinding = getParameterBinding(ParameterNameFQ.ofParameterNameFQ(filterParam.getFieldName()));
 		final DocumentFieldWidgetType widgetType = paramBinding.getWidgetType();
 
 		final String columnSqlString;
@@ -507,4 +580,51 @@ import java.util.List;
 		}
 	}
 
+	public static String includedFilterParameterName(@NonNull final DetailId tabId, @NonNull final String filterId, @NonNull final String parameterName)
+	{
+		return ParameterNameFQ.of(tabId, filterId, parameterName).getAsString();
+	}
+
+	@Value(staticConstructor = "of")
+	private static class ParameterNameFQ
+	{
+		@Nullable DetailId tabId;
+		@Nullable String includedFilterId;
+		@NonNull String parameterName;
+
+		private static final Splitter SPLITTER = Splitter.on(".");
+
+		public static ParameterNameFQ ofParameterNameFQ(@NonNull String parameterNameFQ)
+		{
+			final List<String> parts = SPLITTER.splitToList(parameterNameFQ);
+			if (parts.size() == 1)
+			{
+				return of(null, null, parameterNameFQ);
+			}
+			else if (parts.size() == 3)
+			{
+				return of(
+						DetailId.fromJson(parts.get(0)),
+						parts.get(1),
+						parts.get(2)
+				);
+			}
+			else
+			{
+				throw new AdempiereException("Invalid parameter name `" + parameterNameFQ + "`");
+			}
+		}
+
+		public String getAsString()
+		{
+			if (tabId == null)
+			{
+				return parameterName;
+			}
+			else
+			{
+				return tabId.toJson() + "." + includedFilterId + "." + parameterName;
+			}
+		}
+	}
 }

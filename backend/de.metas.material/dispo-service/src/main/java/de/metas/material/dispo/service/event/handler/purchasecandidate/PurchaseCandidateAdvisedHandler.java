@@ -15,10 +15,11 @@ import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.event.MaterialEventHandler;
-import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.SupplyRequiredDescriptor;
+import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.event.purchase.PurchaseCandidateAdvisedEvent;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -93,10 +94,8 @@ public final class PurchaseCandidateAdvisedHandler
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = event.getSupplyRequiredDescriptor();
 		final DemandDetail demandDetail = DemandDetail.forSupplyRequiredDescriptorOrNull(supplyRequiredDescriptor);
 
-		final MaterialDescriptor materialDescriptor = supplyRequiredDescriptor.getMaterialDescriptor();
-
 		final PurchaseDetail purchaseDetail = PurchaseDetail.builder()
-				.qty(materialDescriptor.getQuantity())
+				.qty(supplyRequiredDescriptor.getQtyToSupplyBD())
 				.vendorRepoId(event.getVendorId())
 				.purchaseCandidateRepoId(-1)
 				.productPlanningRepoId(event.getProductPlanningId())
@@ -124,22 +123,27 @@ public final class PurchaseCandidateAdvisedHandler
 
 		// put out data into the new or preexisting candidate
 		final Candidate supplyCandidate = candidateBuilder
-				.clientAndOrgId(event.getEventDescriptor().getClientAndOrgId())
+				.clientAndOrgId(event.getClientAndOrgId())
 				.id(CandidateId.ofRepoIdOrNull(supplyRequiredDescriptor.getSupplyCandidateId()))
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PURCHASE)
-				.materialDescriptor(materialDescriptor)
+				.materialDescriptor(supplyRequiredDescriptor.getMaterialDescriptor())
 				.businessCaseDetail(purchaseDetail)
 				.additionalDemandDetail(demandDetail)
 				.simulated(supplyRequiredDescriptor.isSimulated())
 				.lotForLot(supplyRequiredDescriptor.getIsLotForLot())
 				.build();
 
-		final Candidate createdCandidate = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate, advise);
+		final MaterialDispoGroupId groupId = candidateChangeHandler.onCandidateNewOrChange(supplyCandidate, advise).getGroupId().orElse(null);
 		if (event.isDirectlyCreatePurchaseCandidate())
 		{
+			if (groupId == null)
+			{
+				throw new AdempiereException("No groupId");
+			}
+			
 			// the group contains just one item, i.e. the supplyCandidate, but for the same of generic-ness we use that same interface that's also used for production and distribution
-			requestMaterialOrderService.requestMaterialOrderForCandidates(createdCandidate.getGroupId(), event.getEventDescriptor().getTraceId());
+			requestMaterialOrderService.requestMaterialOrderForCandidates(groupId, event.getTraceId());
 		}
 	}
 }

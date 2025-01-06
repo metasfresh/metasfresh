@@ -26,6 +26,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
@@ -38,6 +39,13 @@ public class LeichMehlPluFileConfigGroup
 	@NonNull
 	String name;
 
+	/**
+	 * {@code AD_Process.Value} of the optional postgREST-Process which we can instruct externalSystems to invoke via the metasfresh process-API.
+	 * Supposed to return additional {@code PP_Order} related data.
+	 */
+	@Nullable
+	String customQueryProcessValue;
+	
 	@NonNull
 	List<ExternalSystemLeichMehlPluFileConfig> externalSystemLeichMehlPluFileConfigs;
 }

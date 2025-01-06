@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.inoutcandidate.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_ShipmentSchedule
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_ShipmentSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2097760002L;
+	private static final long serialVersionUID = 1043342538L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (final Properties ctx, final int M_ShipmentSchedule_ID, @Nullable final String trxName)
@@ -805,6 +805,14 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public static final String DOCSUBTYPE_Provision = "PRV";
 	/** ProFormaSO = PF */
 	public static final String DOCSUBTYPE_ProFormaSO = "PF";
+	/** Final Invoice = FI */
+	public static final String DOCSUBTYPE_FinalInvoice = "FI";
+	/** Final Credit Memo = FCM */
+	public static final String DOCSUBTYPE_FinalCreditMemo = "FCM";
+	/** Definitive Invoice = DS */
+	public static final String DOCSUBTYPE_DefinitiveInvoice = "DS";
+	/** DefinitiveCreditMemo = DCM */
+	public static final String DOCSUBTYPE_DefinitiveCreditMemo = "DCM";
 	@Override
 	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{
@@ -877,7 +885,7 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
-	public boolean isCatchWeight() 
+	public boolean isCatchWeight()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCatchWeight);
 	}
@@ -942,6 +950,18 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
+	public void setIsShippingNotificationRequired (final boolean IsShippingNotificationRequired)
+	{
+		set_Value (COLUMNNAME_IsShippingNotificationRequired, IsShippingNotificationRequired);
+	}
+
+	@Override
+	public boolean isShippingNotificationRequired()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsShippingNotificationRequired);
+	}
+
+	@Override
 	public void setIsToRecompute (final boolean IsToRecompute)
 	{
 		throw new IllegalArgumentException ("IsToRecompute is virtual column");	}
@@ -990,6 +1010,21 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public int getM_AttributeSetInstance_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
+	}
+
+	@Override
+	public void setM_HU_PI_Item_Product_Calculated_ID (final int M_HU_PI_Item_Product_Calculated_ID)
+	{
+		if (M_HU_PI_Item_Product_Calculated_ID < 1) 
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_Calculated_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_HU_PI_Item_Product_Calculated_ID, M_HU_PI_Item_Product_Calculated_ID);
+	}
+
+	@Override
+	public int getM_HU_PI_Item_Product_Calculated_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_HU_PI_Item_Product_Calculated_ID);
 	}
 
 	@Override

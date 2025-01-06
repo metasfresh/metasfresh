@@ -25,8 +25,8 @@ package de.metas.invoice.acct;
 import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.impl.ElementValueId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -49,8 +49,8 @@ public class InvoiceAcctRule
 	boolean matches(
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final AccountConceptualName accountConceptualName,
-			@Nullable final InvoiceLineId invoiceLineId)
+			@Nullable final InvoiceAndLineId invoiceAndLineId)
 	{
-		return matcher.matches(acctSchemaId, accountConceptualName, invoiceLineId);
+		return matcher.matches(acctSchemaId, accountConceptualName, invoiceAndLineId);
 	}
 }

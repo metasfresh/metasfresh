@@ -146,6 +146,19 @@ public class ADTableDAO implements IADTableDAO
 	}
 
 	@Override
+	public boolean hasPhysicalColumn(@NonNull final TableName tableName, @NonNull final String columnName)
+	{
+		final AdTableId adTableId = AdTableId.ofRepoIdOrNull(retrieveTableId(tableName.getAsString()));
+		if (adTableId == null)
+		{
+			return false;
+		}
+
+		final MinimalColumnInfo column = getMinimalColumnInfoMap().getByColumnNameOrNull(adTableId, columnName);
+		return column != null && column.isActive() && column.isPhysicalColumn();
+	}
+
+	@Override
 	public IQueryBuilder<I_AD_Column> retrieveColumnQueryBuilder(final String tableName,
 																 final String columnName,
 																 @Nullable final String trxName)
@@ -482,6 +495,7 @@ public class ADTableDAO implements IADTableDAO
 		final ImmutableList<MinimalColumnInfo> list = DB.retrieveRows(
 				"SELECT "
 						+ " " + I_AD_Column.COLUMNNAME_ColumnName
+						+ "," + I_AD_Column.COLUMNNAME_ColumnSQL
 						+ "," + I_AD_Column.COLUMNNAME_AD_Column_ID
 						+ "," + I_AD_Column.COLUMNNAME_AD_Table_ID
 						+ "," + I_AD_Column.COLUMNNAME_IsActive
@@ -510,6 +524,7 @@ public class ADTableDAO implements IADTableDAO
 	{
 		return MinimalColumnInfo.builder()
 				.columnName(rs.getString(I_AD_Column.COLUMNNAME_ColumnName))
+				.columnSql(StringUtils.trimBlankToNull(rs.getString(I_AD_Column.COLUMNNAME_ColumnSQL)))
 				.adColumnId(AdColumnId.ofRepoId(rs.getInt(I_AD_Column.COLUMNNAME_AD_Column_ID)))
 				.adTableId(AdTableId.ofRepoId(rs.getInt(I_AD_Column.COLUMNNAME_AD_Table_ID)))
 				.isActive(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsActive)))

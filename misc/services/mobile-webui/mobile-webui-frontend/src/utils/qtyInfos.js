@@ -1,6 +1,6 @@
 export const qtyInfos = {
-  of: ({ qty, notValidMessage }) => ({
-    qtyStr: qty != null ? `${qty}` : null,
+  of: ({ qty, qtyStr, notValidMessage }) => ({
+    qtyStr: qtyStr,
     qty: qty != null ? parseFloat(qty) : null,
     isQtyValid: !notValidMessage,
     notValidMessage,
@@ -29,11 +29,27 @@ export const qtyInfos = {
     // QtyInfo data structure
     else if (typeof qtyObj === 'object') {
       const qtyInfo = qtyObj;
-      return qtyInfo.qty ?? qtyInfo.qtyStr;
+      return qtyInfo.qtyStr ?? `${qtyInfo.qty}`;
     }
     // Case: possible string
     else if (!Array.isArray(qtyObj)) {
       return `${qtyObj}`;
+    } else {
+      throw 'Invalid qtyObj: ' + JSON.stringify(qtyObj);
+    }
+  },
+
+  toNumber: (qtyObj) => {
+    if (!qtyObj) {
+      return null;
+    }
+    // QtyInfo data structure
+    else if (typeof qtyObj === 'object') {
+      return qtyObj.qty || Number(qtyObj.qtyStr);
+    }
+    // Case: possible string
+    else if (!Array.isArray(qtyObj)) {
+      return Number(qtyObj);
     } else {
       throw 'Invalid qtyObj: ' + JSON.stringify(qtyObj);
     }

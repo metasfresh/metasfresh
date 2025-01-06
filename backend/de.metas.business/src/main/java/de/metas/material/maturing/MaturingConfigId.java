@@ -59,7 +59,7 @@ public class MaturingConfigId implements RepoIdAware
 
 	private MaturingConfigId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "M_MaturingConfig_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "M_Maturing_Configuration_ID");
 	}
 
 	@JsonValue

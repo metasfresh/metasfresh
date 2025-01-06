@@ -51,5 +51,7 @@ public interface IInventoryBL extends ISingletonService
 	@NonNull
 	I_M_Inventory getById(@NonNull InventoryId inventoryId);
 
+	@NonNull I_M_InventoryLine getLineById(@NonNull InventoryLineId inventoryLineId);
+
 	boolean isReversal(@NonNull I_M_Inventory inventory);
 }

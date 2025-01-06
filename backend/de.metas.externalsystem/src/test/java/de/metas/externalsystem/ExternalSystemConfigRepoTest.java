@@ -30,6 +30,7 @@ import de.metas.externalsystem.ebay.ApiMode;
 import de.metas.externalsystem.ebay.ExternalSystemEbayConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
+import de.metas.externalsystem.leichmehl.PLUType;
 import de.metas.externalsystem.metasfresh.ExternalSystemMetasfreshConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
@@ -38,6 +39,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_Ebay_Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Metasfresh;
+import de.metas.externalsystem.model.X_ExternalSystem_Config_LeichMehl;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
@@ -55,6 +57,7 @@ import de.metas.externalsystem.shopware6.OrderProcessingConfig;
 import de.metas.externalsystem.shopware6.ProductLookup;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.tax.TaxCategoryDAO;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
@@ -80,7 +83,7 @@ class ExternalSystemConfigRepoTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		externalSystemConfigRepo = new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository());
+		externalSystemConfigRepo = new ExternalSystemConfigRepo(new ExternalSystemOtherConfigRepository(), new TaxCategoryDAO());
 	}
 
 	@Test
@@ -1172,8 +1175,11 @@ class ExternalSystemConfigRepoTest
 		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		leichMehlConfig.setExternalSystemValue("LeichMehl");
 		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
+		leichMehlConfig.setPluFileDestination(X_ExternalSystem_Config_LeichMehl.PLUFILEDESTINATION_Disk);
+		leichMehlConfig.setPluFileLocalFolder("/serverFolder");
 		leichMehlConfig.setTCP_PortNumber(8080);
 		leichMehlConfig.setTCP_Host("tcpHost");
+		leichMehlConfig.setCU_TU_PLU(PLUType.CU.getCode());
 
 		saveRecord(leichMehlConfig);
 
@@ -1199,9 +1205,10 @@ class ExternalSystemConfigRepoTest
 		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		leichMehlConfig.setExternalSystemValue(value);
 		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
+		leichMehlConfig.setPluFileDestination(X_ExternalSystem_Config_LeichMehl.PLUFILEDESTINATION_TCP);
 		leichMehlConfig.setTCP_PortNumber(8080);
 		leichMehlConfig.setTCP_Host("tcpHost");
-
+		leichMehlConfig.setCU_TU_PLU(PLUType.CU.getCode());
 		saveRecord(leichMehlConfig);
 
 		// when
@@ -1229,6 +1236,7 @@ class ExternalSystemConfigRepoTest
 		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
 		leichMehlConfig.setTCP_PortNumber(8080);
 		leichMehlConfig.setTCP_Host("tcpHost");
+		leichMehlConfig.setCU_TU_PLU(PLUType.CU.getCode());
 
 		saveRecord(leichMehlConfig);
 
@@ -1251,8 +1259,10 @@ class ExternalSystemConfigRepoTest
 		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
 		leichMehlConfig.setExternalSystemValue("testLeichMehlValue");
 		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
+		leichMehlConfig.setPluFileDestination(X_ExternalSystem_Config_LeichMehl.PLUFILEDESTINATION_TCP);
 		leichMehlConfig.setTCP_PortNumber(8080);
 		leichMehlConfig.setTCP_Host("tcpHost");
+		leichMehlConfig.setCU_TU_PLU(PLUType.CU.getCode());
 
 		saveRecord(leichMehlConfig);
 
@@ -1279,8 +1289,10 @@ class ExternalSystemConfigRepoTest
 		configLeichMehl.setExternalSystem_Config_ID(parentRecordActive.getExternalSystem_Config_ID());
 		configLeichMehl.setExternalSystemValue("testLeichMehlValue");
 		configLeichMehl.setProduct_BaseFolderName("productBaseFolderName");
+		configLeichMehl.setPluFileDestination(X_ExternalSystem_Config_LeichMehl.PLUFILEDESTINATION_TCP);
 		configLeichMehl.setTCP_PortNumber(8080);
 		configLeichMehl.setTCP_Host("tcpHost");
+		configLeichMehl.setCU_TU_PLU(PLUType.CU.getCode());
 
 		saveRecord(configLeichMehl);
 
@@ -1294,8 +1306,10 @@ class ExternalSystemConfigRepoTest
 		configLeichMehlInactive.setExternalSystem_Config_ID(parentRecordInactive.getExternalSystem_Config_ID());
 		configLeichMehlInactive.setExternalSystemValue("testLeichMehlValueInactive");
 		configLeichMehlInactive.setProduct_BaseFolderName("productBaseFolderName");
+		configLeichMehlInactive.setPluFileDestination(X_ExternalSystem_Config_LeichMehl.PLUFILEDESTINATION_TCP);
 		configLeichMehlInactive.setTCP_PortNumber(8080);
 		configLeichMehlInactive.setTCP_Host("tcpHost");
+		configLeichMehlInactive.setCU_TU_PLU(PLUType.CU.getCode());
 
 		saveRecord(configLeichMehlInactive);
 

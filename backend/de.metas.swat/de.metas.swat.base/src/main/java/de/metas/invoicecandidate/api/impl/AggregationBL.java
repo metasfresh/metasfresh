@@ -22,6 +22,7 @@ package de.metas.invoicecandidate.api.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.AggregationKey;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
@@ -48,9 +49,11 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Util;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class AggregationBL implements IAggregationBL
 {
@@ -76,6 +79,8 @@ public class AggregationBL implements IAggregationBL
 			setLineAggregationKey(ic);
 		}
 	};
+
+	private final IAttributeDAO attributesDAO = Services.get(IAttributeDAO.class);
 
 	@Override
 	public IAggregator createInvoiceLineAggregatorInstance(final I_C_Invoice_Candidate ic)
@@ -120,7 +125,7 @@ public class AggregationBL implements IAggregationBL
 	}
 
 	@Override
-	public IInvoiceLineRW mkInvoiceLine(final IInvoiceLineRW template)
+	public IInvoiceLineRW mkInvoiceLine(@NonNull final IInvoiceLineRW template)
 	{
 		final IInvoiceLineRW result = mkInvoiceLine();
 
@@ -188,38 +193,60 @@ public class AggregationBL implements IAggregationBL
 			return false; // no inout line, no dispute
 		}
 
-		final boolean iolIsInDispute = inOutLine.isInDispute();
-		return iolIsInDispute;
+		return inOutLine.isInDispute();
 	}
 
 	@Override
-	public List<IInvoiceLineAttribute> extractInvoiceLineAttributes(final I_M_InOutLine inOutLine)
+	@NonNull
+	public List<IInvoiceLineAttribute> extractInvoiceLineAttributes(@Nullable final I_M_InOutLine inOutLine)
 	{
 		if (inOutLine == null || inOutLine.getM_AttributeSetInstance_ID() <= 0)
 		{
-			return Collections.emptyList();
+			return ImmutableList.of();
 		}
 
-		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-		
-		final I_M_AttributeSetInstance attributeSetInstance = inOutLine.getM_AttributeSetInstance();
-		final List<I_M_AttributeInstance> attributeInstances = attributesRepo.retrieveAttributeInstances(attributeSetInstance);
+		final Predicate<I_M_AttributeInstance> filter = ai -> {
+			final I_M_Attribute attribute = attributesDAO.getAttributeById(ai.getM_Attribute_ID());
+			return attribute.isAttrDocumentRelevant();
+		};
+		return extractInvoiceLineAttributes(inOutLine.getM_AttributeSetInstance(), filter);
+	}
 
-		final List<IInvoiceLineAttribute> invoiceLineAttributes = new ArrayList<>(attributeInstances.size());
+	@Override
+	@NonNull
+	public List<IInvoiceLineAttribute> extractInvoiceLineAttributes(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		if (icRecord.getM_AttributeSetInstance_ID() <= 0)
+		{
+			return ImmutableList.of();
+		}
+
+		final Predicate<I_M_AttributeInstance> filter = ai -> true;
+		return extractInvoiceLineAttributes(icRecord.getM_AttributeSetInstance(), filter);
+	}
+
+
+	private ImmutableList<IInvoiceLineAttribute> extractInvoiceLineAttributes(
+			@NonNull final I_M_AttributeSetInstance attributeSetInstance, 
+			@NonNull final Predicate<I_M_AttributeInstance> filter)
+	{
+		
+		final List<I_M_AttributeInstance> attributeInstances = attributesDAO.retrieveAttributeInstances(attributeSetInstance);
+
+		final ImmutableList.Builder<IInvoiceLineAttribute> result = ImmutableList.builder();
 		for (final I_M_AttributeInstance attributeInstance : attributeInstances)
 		{
-			final I_M_Attribute attribute = attributesRepo.getAttributeById(attributeInstance.getM_Attribute_ID());
-			if (!attribute.isAttrDocumentRelevant())
+			if (!filter.test(attributeInstance))
 			{
 				continue;
 			}
 
 			final IInvoiceLineAttribute invoiceLineAttribute = new InvoiceLineAttribute(attributeInstance);
-			invoiceLineAttributes.add(invoiceLineAttribute);
+			result.add(invoiceLineAttribute);
 		}
-		return invoiceLineAttributes;
+		return result.build();
 	}
-
+	
 	@Override
 	public void setHeaderAggregationKey(@NonNull final I_C_Invoice_Candidate ic)
 	{

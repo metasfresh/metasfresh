@@ -8,19 +8,22 @@ import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedulePro
 import de.metas.i18n.TranslatableStrings;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
+import de.metas.manufacturing.job.model.ManufacturingJobFacets;
 import de.metas.manufacturing.job.model.ManufacturingJobReference;
+import de.metas.manufacturing.job.service.ManufacturingJobReferenceQuery;
 import de.metas.manufacturing.job.service.ManufacturingJobService;
 import de.metas.manufacturing.workflows_api.activity_handlers.callExternalSystem.CallExternalSystemActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.confirmation.ConfirmationActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.generateHUQRCodes.GenerateHUQRCodesActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.RawMaterialsIssueActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.RawMaterialsIssueAdjustmentActivityHandler;
+import de.metas.manufacturing.workflows_api.activity_handlers.issue.RawMaterialsIssueOnlyWhatWasReceivedActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.printReceivedHUQRCodes.PrintReceivedHUQRCodesActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialReceiptActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.scanScaleDevice.ScanScaleDeviceActivityHandler;
+import de.metas.manufacturing.workflows_api.activity_handlers.validateLocator.ValidateLocatorActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.work_report.WorkReportActivityHandler;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
-import de.metas.product.ResourceId;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityAlwaysAvailableToUser;
@@ -28,14 +31,11 @@ import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import lombok.NonNull;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
-import java.time.Instant;
 import java.util.stream.Stream;
 
 @Service
@@ -48,13 +48,14 @@ public class ManufacturingRestService
 		this.manufacturingJobService = manufacturingJobService;
 	}
 
-	public Stream<ManufacturingJobReference> streamJobReferencesForUser(
-			final @NonNull UserId responsibleId,
-			final @Nullable ResourceId plantId,
-			final @NonNull Instant now,
-			final @NonNull QueryLimit suggestedLimit)
+	public Stream<ManufacturingJobReference> streamJobReferencesForUser(@NonNull final ManufacturingJobReferenceQuery query)
 	{
-		return manufacturingJobService.streamJobReferencesForUser(responsibleId, plantId, now, suggestedLimit);
+		return manufacturingJobService.streamJobReferencesForUser(query);
+	}
+
+	public ManufacturingJobFacets.FacetsCollection getFacets(@NonNull final ManufacturingJobReferenceQuery query)
+	{
+		return manufacturingJobService.getFacets(query);
 	}
 
 	public ManufacturingJob createJob(final PPOrderId ppOrderId, final UserId responsibleId)
@@ -111,6 +112,10 @@ public class ManufacturingRestService
 				return builder.wfActivityType(ScanScaleDeviceActivityHandler.HANDLED_ACTIVITY_TYPE).build();
 			case CallExternalSystem:
 				return builder.wfActivityType(CallExternalSystemActivityHandler.HANDLED_ACTIVITY_TYPE).build();
+			case ValidateLocator:
+				return builder.wfActivityType(ValidateLocatorActivityHandler.HANDLED_ACTIVITY_TYPE).build();
+			case IssueOnlyWhatWasReceived:
+				return builder.wfActivityType(RawMaterialsIssueOnlyWhatWasReceivedActivityHandler.HANDLED_ACTIVITY_TYPE).build();
 			default:
 				throw new AdempiereException("Unknown type: " + jobActivity);
 		}
@@ -121,12 +126,11 @@ public class ManufacturingRestService
 		return WFProcess.builder()
 				.id(WFProcessId.ofIdPart(ManufacturingMobileApplication.APPLICATION_ID, job.getPpOrderId()))
 				.responsibleId(job.getResponsibleId())
-				.caption(TranslatableStrings.anyLanguage("" + job.getPpOrderId().getRepoId())) // TODO
 				.document(job)
 				.activities(job.getActivities()
-						.stream()
-						.map(ManufacturingRestService::toWFActivity)
-						.collect(ImmutableList.toImmutableList()))
+									.stream()
+									.map(ManufacturingRestService::toWFActivity)
+									.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
 

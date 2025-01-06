@@ -57,6 +57,8 @@ class DistributionJobLoader
 		return DistributionJob.builder()
 				.ddOrderId(ddOrderId)
 				.documentNo(ddOrder.getDocumentNo())
+				.salesOrderDocumentNo(loadingSupportServices.getSalesOderDocNo(ddOrder))
+				.ppOrderDocumentNo(loadingSupportServices.getPPOrderDocNo(ddOrder))
 				.customerId(BPartnerId.ofRepoId(ddOrder.getC_BPartner_ID()))
 				.dateRequired(dateRequired)
 				.pickFromWarehouse(loadingSupportServices.getWarehouseInfoByRepoId(ddOrder.getM_Warehouse_From_ID()))

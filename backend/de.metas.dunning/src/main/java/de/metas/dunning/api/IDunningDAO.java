@@ -22,6 +22,7 @@ package de.metas.dunning.api;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.dunning.DunningDocId;
 import de.metas.dunning.DunningLevel;
@@ -64,7 +65,7 @@ public interface IDunningDAO extends ISingletonService
 
 	/**
 	 * Retrieves the assigned {@link I_C_Dunning} of given business partner.
-	 *
+	 * <p>
 	 * The algorithm works as follows:
 	 * <ul>
 	 * <li>if bpartner has a dunning assigned, that dunning will be returned
@@ -76,10 +77,12 @@ public interface IDunningDAO extends ISingletonService
 
 	/**
 	 * Retrieves default dunning for given organization.
-     *
+	 *
 	 * @return {@link I_C_Dunning}
 	 */
 	I_C_Dunning retrieveDunningByOrg(OrgId orgId);
+
+	ImmutableList<I_C_Dunning> retrieveDunningsByOrg(OrgId orgId);
 
 	/**
 	 * Retrieve the active dunning-levels of the given <code>dunning</code>, orderd by their <code>DaysAfterDue</code> value.
@@ -95,14 +98,13 @@ public interface IDunningDAO extends ISingletonService
 
 	/**
 	 * Retrieve all {@link I_C_Dunning_Candidate}s for given tableId/recordId.
-	 *
+	 * <p>
 	 * Same as calling {@link #retrieveDunningCandidate(IDunningContext, int, int, I_C_DunningLevel)} with empty levels list.
 	 *
-	 * @param context used only for getting session specific parameters (i.e. ctx and trxName)
+	 * @param context  used only for getting session specific parameters (i.e. ctx and trxName)
 	 * @param tableId
 	 * @param recordId
 	 * @return matched {@link I_C_Dunning_Candidate}s
-	 *
 	 * @see #retrieveDunningCandidates(IDunningContext, int, int, List)
 	 */
 	List<I_C_Dunning_Candidate> retrieveDunningCandidates(IDunningContext dunningContext, int tableId, int recordId);
@@ -110,7 +112,7 @@ public interface IDunningDAO extends ISingletonService
 	/**
 	 * Retrieve all {@link I_C_Dunning_Candidate}s for given tableId/recordId and dunning levels.
 	 *
-	 * @param context used only for getting session specific parameters (i.e. ctx and trxName)
+	 * @param context       used only for getting session specific parameters (i.e. ctx and trxName)
 	 * @param tableId
 	 * @param recordId
 	 * @param dunningLevels if empty no C_DunningLevel_ID filter will be applied, returning candidates for all levels
@@ -154,7 +156,7 @@ public interface IDunningDAO extends ISingletonService
 
 	/**
 	 * Retrieves iterator over all {@link I_C_DunningDoc_Line_Source} that require a write-off.
-	 *
+	 * <p>
 	 * Candidates suitable for write-off are:
 	 * <ul>
 	 * <li>not processed

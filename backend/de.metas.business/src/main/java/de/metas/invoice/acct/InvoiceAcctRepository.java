@@ -5,8 +5,8 @@ import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.cache.CCache;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.organization.OrgId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -78,13 +78,13 @@ public class InvoiceAcctRepository
 	private static InvoiceAcctRuleMatcher toRuleMatcher(final I_C_Invoice_Acct record)
 	{
 		return InvoiceAcctRuleMatcher.builder()
-				.invoiceLineId(InvoiceLineId.ofRepoIdOrNull(record.getC_Invoice_ID(), record.getC_InvoiceLine_ID()))
+				.invoiceAndLineId(InvoiceAndLineId.ofRepoIdOrNull(record.getC_Invoice_ID(), record.getC_InvoiceLine_ID()))
 				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
 				.accountConceptualName(AccountConceptualName.ofNullableString(record.getAccountName()))
 				.build();
 	}
 
-	public void save(@NonNull InvoiceAcct invoiceAcct)
+	public void save(@NonNull final InvoiceAcct invoiceAcct)
 	{
 		//
 		// Delete previous records
@@ -95,7 +95,7 @@ public class InvoiceAcctRepository
 
 		//
 		// Save new
-		for (InvoiceAcctRule rule : invoiceAcct.getRulesOrdered())
+		for (final InvoiceAcctRule rule : invoiceAcct.getRulesOrdered())
 		{
 			final I_C_Invoice_Acct record = InterfaceWrapperHelper.newInstance(I_C_Invoice_Acct.class);
 			record.setC_Invoice_ID(invoiceAcct.getInvoiceId().getRepoId());
@@ -105,16 +105,16 @@ public class InvoiceAcctRepository
 		}
 	}
 
-	private void updateRecordFromRule(@NonNull I_C_Invoice_Acct record, @NonNull final InvoiceAcctRule from)
+	private void updateRecordFromRule(@NonNull final I_C_Invoice_Acct record, @NonNull final InvoiceAcctRule from)
 	{
 		updateRecordFromRuleMatcher(record, from.getMatcher());
 		record.setC_ElementValue_ID(from.getElementValueId().getRepoId());
 	}
 
-	private void updateRecordFromRuleMatcher(@NonNull I_C_Invoice_Acct record, @NonNull final InvoiceAcctRuleMatcher from)
+	private void updateRecordFromRuleMatcher(@NonNull final I_C_Invoice_Acct record, @NonNull final InvoiceAcctRuleMatcher from)
 	{
 		record.setC_AcctSchema_ID(from.getAcctSchemaId().getRepoId());
-		record.setC_InvoiceLine_ID(InvoiceLineId.toRepoId(from.getInvoiceLineId()));
+		record.setC_InvoiceLine_ID(InvoiceAndLineId.toRepoId(from.getInvoiceAndLineId()));
 		record.setAccountName(from.getAccountConceptualName() != null ? from.getAccountConceptualName().getAsString() : null);
 	}
 }

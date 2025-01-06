@@ -55,7 +55,7 @@ public class InfrastructureSupport
 	 * <p>
 	 * The drawback is that your DB is probably polluted which might be an additional reason for possible test failures.
 	 * To always run your cucumber-tests on an "unpolluted" DB,
-	 * you can use (with git bash) the three shell scripts from {@code backend/de.metas.cucumber/dev-support}.
+	 * you can use (with git bash) the three shell scripts from {@code misc/dev-support/docker/infrastructure/scripts}.
 	 */
 	public static final String ENV_DB_PORT_OF_EXTERNALLY_RUNNING_POSTGRESQL = "CUCUMBER_DB_PORT_OF_EXTERNALLY_RUNNING_POSTGRESQL";
 	public static final String ENV_EXTERNALLY_RUNNING_RABBITMQ_HOST = "CUCUMBER_EXTERNALLY_RUNNING_RABBITMQ_HOST";

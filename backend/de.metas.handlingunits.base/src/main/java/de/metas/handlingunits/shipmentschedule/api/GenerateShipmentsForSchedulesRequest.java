@@ -51,4 +51,13 @@ public class GenerateShipmentsForSchedulesRequest
 
 	@Nullable
 	Boolean isShipDateToday;
+
+	/**
+	 * The shipments are generally created via async-workpackage and this flag decides if the caller wants to wait for it.
+	 * By default, it is set to {@code true} for backwards compatibility.
+	 *
+	 * @see ShipmentService#generateShipmentsForScheduleIds(GenerateShipmentsForSchedulesRequest)
+	 */
+	@Builder.Default
+	boolean waitForShipments = true;
 }

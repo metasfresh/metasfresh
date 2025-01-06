@@ -19,6 +19,7 @@ import de.metas.invoicecandidate.model.I_C_ILCandHandler;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.lang.SOTrx;
+import de.metas.lock.api.LockOwner;
 import de.metas.order.InvoiceRule;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.invoicecandidate.C_OrderLine_Handler;
@@ -303,8 +304,10 @@ public class QtyDeliveredFromOrderToInvoiceTest
 	@Test
 	public void testQtyDelivered()
 	{
+		final LockOwner lockOwner = LockOwner.newOwner(getClass().getSimpleName() + "#generateInvoiceCandidates");
+
 		final List<I_C_Invoice_Candidate> invoiceCandidates = olHandler
-				.createCandidatesFor(InvoiceCandidateGenerateRequest.of(olHandler, orderLine))
+				.createCandidatesFor(InvoiceCandidateGenerateRequest.of(olHandler, orderLine, lockOwner))
 				.getC_Invoice_Candidates();
 		assertThat(invoiceCandidates).as("There is 1 invoice candidate").hasSize(1);
 

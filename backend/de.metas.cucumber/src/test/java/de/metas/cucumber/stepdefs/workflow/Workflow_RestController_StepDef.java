@@ -30,6 +30,7 @@ import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.distributionorder.DD_Order_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
@@ -67,7 +68,7 @@ import org.eevolution.model.I_PP_Order;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class Workflow_RestController_StepDef
 {
@@ -126,10 +127,7 @@ public class Workflow_RestController_StepDef
 	@And("update duration for AD_Workflow nodes")
 	public void update_AD_Workflow_nodes(@NonNull final DataTable dataTable)
 	{
-		for (final DataTableRow row : DataTableRow.toRows(dataTable))
-		{
-			updateADWorkflowNodes(row);
-		}
+		DataTableRows.of(dataTable).forEach(this::updateADWorkflowNodes);
 	}
 
 	@And("create JsonWFProcessStartRequest for picking and store it in context as request payload:")

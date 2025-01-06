@@ -22,7 +22,9 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.bpartner.BPGroupId;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
@@ -30,24 +32,28 @@ import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg;
+import de.metas.cucumber.stepdefs.aggregation.C_Aggregation_StepDefData;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.dunning.C_Dunning_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
+import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
 import de.metas.order.DeliveryRule;
+import de.metas.order.InvoiceRule;
+import de.metas.payment.PaymentRule;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfo;
 import de.metas.product.IProductDAO;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -76,7 +82,8 @@ import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_Pr
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient;
-import static org.assertj.core.api.Assertions.assertThat;
+import static de.metas.invoicecandidate.model.I_C_BPartner.COLUMNNAME_SO_Invoice_Aggregation_ID;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BP_Group_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
@@ -97,19 +104,21 @@ import static org.compiere.model.I_C_BPartner.COLUMNNAME_PaymentRulePO;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_Value;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
-import static org.compiere.model.X_C_BPartner.DELIVERYRULE_Force;
 
+@RequiredArgsConstructor
 public class C_BPartner_StepDef
 {
 	public static final int BP_GROUP_ID = BPGroupId.ofRepoId(1000000).getRepoId();
 
-	private final C_BPartner_StepDefData bPartnerTable;
-	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
-	private final M_PricingSystem_StepDefData pricingSystemTable;
-	private final M_Product_StepDefData productTable;
-	private final M_DiscountSchema_StepDefData discountSchemaTable;
-	private final C_Dunning_StepDefData dunningTable;
-	private final AD_Org_StepDefData orgTable;
+	@NonNull private final C_BPartner_StepDefData bPartnerTable;
+	@NonNull private final C_BPartner_Location_StepDefData bPartnerLocationTable;
+	@NonNull private final M_PricingSystem_StepDefData pricingSystemTable;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final M_DiscountSchema_StepDefData discountSchemaTable;
+	@NonNull private final C_Dunning_StepDefData dunningTable;
+	@NonNull private final C_PaymentTerm_StepDefData paymentTermTable;
+	@NonNull private final AD_Org_StepDefData orgTable;
+	@NonNull private final C_Aggregation_StepDefData aggregationTable;
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -117,42 +126,16 @@ public class C_BPartner_StepDef
 
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
 
-	public C_BPartner_StepDef(
-			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
-			@NonNull final M_PricingSystem_StepDefData pricingSystemTable,
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final M_DiscountSchema_StepDefData discountSchemaTable,
-			@NonNull final AD_Org_StepDefData orgTable,
-			@NonNull final C_Dunning_StepDefData dunningTable)
-	{
-		this.bPartnerTable = bPartnerTable;
-		this.bPartnerLocationTable = bPartnerLocationTable;
-		this.pricingSystemTable = pricingSystemTable;
-		this.productTable = productTable;
-		this.discountSchemaTable = discountSchemaTable;
-		this.dunningTable = dunningTable;
-		this.orgTable = orgTable;
-	}
-
 	@Given("metasfresh contains C_BPartners:")
 	public void metasfresh_contains_c_bpartners(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			createC_BPartner(tableRow, true);
-		}
+		DataTableRows.of(dataTable).forEach(row -> createC_BPartner(row, true));
 	}
 
 	@Given("metasfresh contains C_BPartners without locations:")
 	public void metasfresh_contains_c_bpartners_without_locations(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			createC_BPartner(tableRow, false);
-		}
+		DataTableRows.of(dataTable).forEach(row -> createC_BPartner(row, false));
 	}
 
 	@And("preexisting test data is put into tableData")
@@ -190,12 +173,9 @@ public class C_BPartner_StepDef
 	@And("the following c_bpartner is changed")
 	public void change_bpartner(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> dataRows = dataTable.asMaps();
-
-		for (final Map<String, String> row : dataRows)
-		{
-			changeBPartner(row);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_C_BPartner_ID)
+				.forEach(this::changeBPartner);
 	}
 
 	@And("locate bpartner by external identifier")
@@ -228,80 +208,73 @@ public class C_BPartner_StepDef
 		}
 	}
 
-	private void createC_BPartner(@NonNull final Map<String, String> tableRow, final boolean addDefaultLocationIfNewBPartner)
+	private void createC_BPartner(@NonNull final DataTableRow row, final boolean addDefaultLocationIfNewBPartner)
 	{
-		final String bPartnerName = tableRow.get("Name");
-		final String bPartnerValue = CoalesceUtil.coalesce(tableRow.get("Value"), bPartnerName);
+		final ValueAndName valueAndName = row.suggestValueAndName();
 
-		final Integer bpGroupId = Optional.ofNullable(DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_BP_Group_ID))
-				.orElse(BP_GROUP_ID);
+		final int bpGroupId = row.getAsOptionalInt(COLUMNNAME_C_BP_Group_ID).orElse(BP_GROUP_ID);
 
-		final int orgId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER))
+		final int orgId = row.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_AD_Org_ID)
 				.map(orgTable::get)
 				.map(I_AD_Org::getAD_Org_ID)
 				.orElse(StepDefConstants.ORG_ID.getRepoId());
 
 		final de.metas.edi.model.I_C_BPartner bPartnerRecord = InterfaceWrapperHelper.create(
 				CoalesceUtil.coalesceSuppliers(
-						() -> bpartnerDAO.retrieveBPartnerByValue(Env.getCtx(), bPartnerValue),
+						() -> bpartnerDAO.retrieveBPartnerByValue(Env.getCtx(), valueAndName.getValue()),
 						() -> InterfaceWrapperHelper.newInstance(I_C_BPartner.class)), de.metas.edi.model.I_C_BPartner.class);
 
-		bPartnerRecord.setName(bPartnerName);
-		bPartnerRecord.setValue(bPartnerValue);
+		bPartnerRecord.setName(valueAndName.getName());
+		bPartnerRecord.setValue(valueAndName.getValue());
 		bPartnerRecord.setC_BP_Group_ID(bpGroupId);
-		bPartnerRecord.setIsVendor(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsVendor), false));
-		bPartnerRecord.setIsCustomer(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsCustomer), false));
-		bPartnerRecord.setIsSalesRep(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsSalesRep), false));
+		bPartnerRecord.setIsVendor(row.getAsOptionalBoolean(COLUMNNAME_IsVendor).orElseFalse());
+		bPartnerRecord.setIsCustomer(row.getAsOptionalBoolean(COLUMNNAME_IsCustomer).orElseFalse());
+		bPartnerRecord.setIsSalesRep(row.getAsOptionalBoolean(COLUMNNAME_IsSalesRep).orElseFalse());
 		bPartnerRecord.setAD_Org_ID(orgId);
 		bPartnerRecord.setDeliveryRule(DeliveryRule.FORCE.getCode());
 
-		final String discountSchemaIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PO_DiscountSchema_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		if (EmptyUtil.isNotBlank(discountSchemaIdentifier))
+		final StepDefDataIdentifier discountSchemaIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_PO_DiscountSchema_ID).orElse(null);
+		if (discountSchemaIdentifier != null)
 		{
 			final I_M_DiscountSchema discountSchemaRecord = discountSchemaTable.get(discountSchemaIdentifier);
 			bPartnerRecord.setPO_DiscountSchema_ID(discountSchemaRecord.getM_DiscountSchema_ID());
 		}
 
-		final String invoiceRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_InvoiceRule);
+		row.getAsOptionalEnum(COLUMNNAME_InvoiceRule, InvoiceRule.class)
+				.ifPresent(invoiceRule -> bPartnerRecord.setInvoiceRule(invoiceRule.getCode()));
 
-		if (EmptyUtil.isNotBlank(invoiceRule))
-		{
-			bPartnerRecord.setInvoiceRule(invoiceRule);
-		}
+		final DeliveryRule deliveryRule = row.getAsOptionalEnum(COLUMNNAME_DeliveryRule, DeliveryRule.class).orElse(DeliveryRule.FORCE);
+		bPartnerRecord.setDeliveryRule(deliveryRule.getCode());
 
-		final String deliveryRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DeliveryRule);
-		bPartnerRecord.setDeliveryRule(CoalesceUtil.firstNotBlank(deliveryRule, DELIVERYRULE_Force));
-
-		final String pricingSystemIdentifier = tableRow.get(I_M_PricingSystem.COLUMNNAME_M_PricingSystem_ID + ".Identifier");
-		if (EmptyUtil.isNotBlank(pricingSystemIdentifier))
+		final StepDefDataIdentifier pricingSystemIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_M_PricingSystem_ID).orElse(null);
+		if (pricingSystemIdentifier != null)
 		{
 			final int pricingSystemId = pricingSystemTable.getOptional(pricingSystemIdentifier)
 					.map(I_M_PricingSystem::getM_PricingSystem_ID)
-					.orElseGet(() -> Integer.parseInt(pricingSystemIdentifier));
+					.orElseGet(pricingSystemIdentifier::getAsInt);
 
 			bPartnerRecord.setM_PricingSystem_ID(pricingSystemId);
 			bPartnerRecord.setPO_PricingSystem_ID(pricingSystemId);
 		}
 
-		final String poPricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PO_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (EmptyUtil.isNotBlank(poPricingSystemIdentifier))
+		final StepDefDataIdentifier poPricingSystemIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_PO_PricingSystem_ID).orElse(null);
+		if (poPricingSystemIdentifier != null)
 		{
 			final int poPricingSystemId = pricingSystemTable.get(poPricingSystemIdentifier).getM_PricingSystem_ID();
 			bPartnerRecord.setPO_PricingSystem_ID(poPricingSystemId);
 		}
 
-		final int paymentTermId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT.C_PaymentTerm_ID");
+		final int paymentTermId = row.getAsOptionalInt("C_PaymentTerm_ID").orElse(-1);
 		if (paymentTermId > 0)
 		{
 			bPartnerRecord.setC_PaymentTerm_ID(paymentTermId);
 			bPartnerRecord.setPO_PaymentTerm_ID(paymentTermId);
 		}
 
-		bPartnerRecord.setAD_Language(tableRow.get("OPT." + COLUMNNAME_AD_Language));
+		bPartnerRecord.setAD_Language(row.getAsOptionalString(COLUMNNAME_AD_Language).orElse(null));
 
-		final String salesRepIdentifier = tableRow.get("OPT." + COLUMNNAME_C_BPartner_SalesRep_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (EmptyUtil.isNotBlank(salesRepIdentifier))
+		final StepDefDataIdentifier salesRepIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_SalesRep_ID).orElse(null);
+		if (salesRepIdentifier != null)
 		{
 			final I_C_BPartner salesRep = bPartnerTable.get(salesRepIdentifier);
 			assertThat(salesRep).as("Missing salesrep C_BPartner record for identifier=" + salesRepIdentifier).isNotNull();
@@ -309,25 +282,19 @@ public class C_BPartner_StepDef
 			bPartnerRecord.setC_BPartner_SalesRep_ID(salesRep.getC_BPartner_ID());
 		}
 
-		final boolean isEdiDesadvRecipient = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsEdiDesadvRecipient, false);
-		final boolean isEdiInvoicRecipient = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsEdiInvoicRecipient, false);
+		final boolean isEdiDesadvRecipient = row.getAsOptionalBoolean(COLUMNNAME_IsEdiDesadvRecipient).orElseFalse();
+		final boolean isEdiInvoicRecipient = row.getAsOptionalBoolean(COLUMNNAME_IsEdiInvoicRecipient).orElseFalse();
 
 		bPartnerRecord.setIsEdiDesadvRecipient(isEdiDesadvRecipient);
 		bPartnerRecord.setIsEdiInvoicRecipient(isEdiInvoicRecipient);
 
-		final String companyName = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_CompanyName);
+		final String companyName = row.getAsOptionalString(I_C_BPartner.COLUMNNAME_CompanyName).orElse(null);
 		if (EmptyUtil.isNotBlank(companyName))
 		{
 			bPartnerRecord.setCompanyName(companyName);
 		}
 
-		final String adLanguage = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_AD_Language);
-		if (EmptyUtil.isNotBlank(adLanguage))
-		{
-			bPartnerRecord.setAD_Language(adLanguage);
-		}
-
-		final String paymentTermValue = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID + ".Value");
+		final String paymentTermValue = row.getAsOptionalString(I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID + ".Value").orElse(null);
 		if (Check.isNotBlank(paymentTermValue))
 		{
 			final I_C_PaymentTerm paymentTerm = queryBL.createQueryBuilder(I_C_PaymentTerm.class)
@@ -339,36 +306,14 @@ public class C_BPartner_StepDef
 			bPartnerRecord.setPO_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
 		}
 
-		final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PaymentRule);
-		if (Check.isNotBlank(paymentRule))
-		{
-			bPartnerRecord.setPaymentRule(paymentRule);
-		}
+		row.getAsOptionalEnum(COLUMNNAME_PaymentRule, PaymentRule.class).ifPresent(paymentRule -> bPartnerRecord.setPaymentRule(paymentRule.getCode()));
+		row.getAsOptionalEnum(COLUMNNAME_PaymentRulePO, PaymentRule.class).ifPresent(paymentRulePO -> bPartnerRecord.setPaymentRulePO(paymentRulePO.getCode()));
+		row.getAsOptionalEnum(COLUMNNAME_PO_InvoiceRule, InvoiceRule.class).ifPresent(poInvoiceRule -> bPartnerRecord.setPO_InvoiceRule(poInvoiceRule.getCode()));
+		row.getAsOptionalBoolean(COLUMNNAME_IsAllowActionPrice).ifPresent(bPartnerRecord::setIsAllowActionPrice);
 
-		final String paymentRulePO = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PaymentRulePO);
-		if (Check.isNotBlank(paymentRulePO))
-		{
-			bPartnerRecord.setPaymentRulePO(paymentRulePO);
-		}
-
-		final String poInvoiceRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PO_InvoiceRule);
-		if (EmptyUtil.isNotBlank(poInvoiceRule))
-		{
-			bPartnerRecord.setPO_InvoiceRule(poInvoiceRule);
-		}
-
-		final Boolean allowCampaignPrice = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsAllowActionPrice, null);
-		if (allowCampaignPrice != null)
-		{
-			bPartnerRecord.setIsAllowActionPrice(allowCampaignPrice);
-		}
-
-		final String bpOrgIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_AD_OrgBP_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(bpOrgIdentifier))
-		{
-			final I_AD_Org org = orgTable.get(bpOrgIdentifier);
-			bPartnerRecord.setAD_OrgBP_ID(org.getAD_Org_ID());
-		}
+		row.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_AD_OrgBP_ID)
+				.map(orgTable::getIdAsInt)
+				.ifPresent(bPartnerRecord::setAD_OrgBP_ID);
 
 		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord) && addDefaultLocationIfNewBPartner;
 		InterfaceWrapperHelper.saveRecord(bPartnerRecord);
@@ -385,7 +330,7 @@ public class C_BPartner_StepDef
 			bPartnerLocationRecord.setIsBillToDefault(true);
 			bPartnerLocationRecord.setIsShipTo(true);
 
-			final String gln = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_GLN);
+			final String gln = row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_GLN).orElse(null);
 			if (EmptyUtil.isNotBlank(gln))
 			{
 				bPartnerLocationRecord.setGLN(gln);
@@ -393,67 +338,33 @@ public class C_BPartner_StepDef
 
 			InterfaceWrapperHelper.saveRecord(bPartnerLocationRecord);
 
-			final String locationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (EmptyUtil.isNotBlank(locationIdentifier))
-			{
-				bPartnerLocationTable.put(locationIdentifier, bPartnerLocationRecord);
-			}
+			row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_Location_ID)
+					.ifPresent(locationIdentifier -> bPartnerLocationTable.put(locationIdentifier, bPartnerLocationRecord));
 		}
 
-		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "C_BPartner");
-		bPartnerTable.putOrReplace(recordIdentifier, bPartnerRecord);
+		row.getAsOptionalIdentifier()
+				.ifPresent(recordIdentifier -> bPartnerTable.putOrReplace(recordIdentifier, bPartnerRecord));
 	}
 
-	private void changeBPartner(@NonNull final Map<String, String> row)
+	private void changeBPartner(@NonNull final DataTableRow row)
 	{
-		final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + ".Identifier");
+		final StepDefDataIdentifier bpartnerIdentifier = row.getAsIdentifier();
+		final BPartnerId bpartnerId = bPartnerTable.getIdOptional(bpartnerIdentifier)
+				.orElseGet(() -> bpartnerIdentifier.getAsId(BPartnerId.class));
 
-		final Integer bPartnerId = bPartnerTable.getOptional(bPartnerIdentifier)
-				.map(I_C_BPartner::getC_BPartner_ID)
-				.orElseGet(() -> Integer.parseInt(bPartnerIdentifier));
+		final de.metas.edi.model.I_C_BPartner bPartnerRecord = bpartnerDAO.getById(bpartnerId, de.metas.edi.model.I_C_BPartner.class);
 
-		final de.metas.edi.model.I_C_BPartner bPartnerRecord = InterfaceWrapperHelper.load(bPartnerId, de.metas.edi.model.I_C_BPartner.class);
+		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_Name2).ifPresent(bPartnerRecord::setName2);
+		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_VATaxID).ifPresent(vaTaxId -> bPartnerRecord.setVATaxID(DataTableUtil.nullToken2Null(vaTaxId)));
 
-		final String name2 = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_C_BPartner.COLUMNNAME_Name2);
+		bPartnerRecord.setIsEdiDesadvRecipient(row.getAsOptionalBoolean(de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiDesadvRecipient).orElseFalse());
 
-		if (Check.isNotBlank(name2))
-		{
-			bPartnerRecord.setName2(DataTableUtil.nullToken2Null(name2));
-		}
+		row.getAsOptionalString(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiDesadvRecipientGLN).ifPresent(ediDesadvRecipientGLN -> bPartnerRecord.setEdiDesadvRecipientGLN(DataTableUtil.nullToken2Null(ediDesadvRecipientGLN)));
+		row.getAsOptionalString(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiInvoicRecipientGLN).ifPresent(ediInvoicRecipientGLN -> bPartnerRecord.setEdiInvoicRecipientGLN(DataTableUtil.nullToken2Null(ediInvoicRecipientGLN)));
 
-		final String vaTaxId = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_C_BPartner.COLUMNNAME_VATaxID);
+		bPartnerRecord.setIsEdiInvoicRecipient(row.getAsOptionalBoolean(de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient).orElseFalse());
 
-		if (Check.isNotBlank(vaTaxId))
-		{
-			bPartnerRecord.setVATaxID(DataTableUtil.nullToken2Null(vaTaxId));
-		}
-
-		final boolean isDesadvRecipient = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiDesadvRecipient, false);
-		bPartnerRecord.setIsEdiDesadvRecipient(isDesadvRecipient);
-
-		final String ediDesadvRecipientGLN = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiDesadvRecipientGLN);
-
-		if (Check.isNotBlank(ediDesadvRecipientGLN))
-		{
-			bPartnerRecord.setEdiDesadvRecipientGLN(DataTableUtil.nullToken2Null(ediDesadvRecipientGLN));
-		}
-
-		final String ediInvoicRecipientGLN = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiInvoicRecipientGLN);
-
-		if (Check.isNotBlank(ediInvoicRecipientGLN))
-		{
-			bPartnerRecord.setEdiInvoicRecipientGLN(DataTableUtil.nullToken2Null(ediInvoicRecipientGLN));
-		}
-
-		final boolean isInvoicRecipient = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient, false);
-		bPartnerRecord.setIsEdiInvoicRecipient(isInvoicRecipient);
-
-		final String deliveryRule = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + de.metas.edi.model.I_C_BPartner.COLUMNNAME_DeliveryRule);
-
-		if (Check.isNotBlank(deliveryRule))
-		{
-			bPartnerRecord.setDeliveryRule(DataTableUtil.nullToken2Null(deliveryRule));
-		}
+		row.getAsOptionalString(de.metas.edi.model.I_C_BPartner.COLUMNNAME_DeliveryRule).ifPresent(deliveryRule -> bPartnerRecord.setDeliveryRule(DataTableUtil.nullToken2Null(deliveryRule)));
 
 		InterfaceWrapperHelper.save(bPartnerRecord);
 	}
@@ -501,7 +412,7 @@ public class C_BPartner_StepDef
 	{
 		final String bPartnerIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "C_BPartner");
 
-		final I_C_BPartner bPartner = bPartnerTable.get(bPartnerIdentifier);
+		final de.metas.invoicecandidate.model.I_C_BPartner bPartner = InterfaceWrapperHelper.create(bPartnerTable.get(bPartnerIdentifier), de.metas.invoicecandidate.model.I_C_BPartner.class);
 
 		assertThat(bPartner).isNotNull();
 
@@ -529,6 +440,13 @@ public class C_BPartner_StepDef
 		{
 			final I_M_PricingSystem pricingSystem = pricingSystemTable.get(pricingSystemIdentifier);
 			bPartner.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
+		}
+
+		final String soInvoiceAggregationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_SO_Invoice_Aggregation_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(soInvoiceAggregationIdentifier))
+		{
+			final I_C_Aggregation aggregationRecord = aggregationTable.get(soInvoiceAggregationIdentifier);
+			bPartner.setSO_Invoice_Aggregation_ID(aggregationRecord.getC_Aggregation_ID());
 		}
 
 		InterfaceWrapperHelper.save(bPartner);
@@ -563,6 +481,13 @@ public class C_BPartner_StepDef
 
 			final Boolean isManuallyCreated = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_BPartner.COLUMNNAME_IsManuallyCreated, false);
 			softly.assertThat(bPartnerRecord.isManuallyCreated()).as("IsManuallyCreated").isEqualTo(isManuallyCreated);
+
+			final String paymentTermIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.C_PaymentTerm_ID" + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(paymentTermIdentifier))
+			{
+				final I_C_PaymentTerm paymentTerm = paymentTermTable.get(paymentTermIdentifier);
+				softly.assertThat(paymentTerm.getC_PaymentTerm_ID()).as("C_PaymentTerm_ID").isEqualTo(bPartnerRecord.getC_PaymentTerm_ID());
+			}
 		}
 
 		softly.assertAll();
@@ -578,13 +503,13 @@ public class C_BPartner_StepDef
 			final IQueryBuilder<I_C_BPartner> query = queryBL.createQueryBuilder(I_C_BPartner.class);
 
 			final String bPartnerName = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_Name);
-			if(!Check.isEmpty(bPartnerName))
+			if (!Check.isEmpty(bPartnerName))
 			{
 				query.addEqualsFilter(I_C_BPartner.COLUMNNAME_Name, bPartnerName);
 			}
 
 			final String bPartnerValue = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_Value);
-			if(!Check.isEmpty(bPartnerValue))
+			if (!Check.isEmpty(bPartnerValue))
 			{
 				query.addEqualsFilter(I_C_BPartner.COLUMNNAME_Value, bPartnerValue);
 			}
@@ -610,7 +535,6 @@ public class C_BPartner_StepDef
 			StepDefUtil.tryAndWait(timeoutSec, 500, QueryExecutor);
 		}
 	}
-
 
 	@Given("C_BPartner_MoveToAnotherOrg is invoked with parameters:")
 	public void C_BPartner_MoveToAnotherOrg(@NonNull final DataTable dataTable)

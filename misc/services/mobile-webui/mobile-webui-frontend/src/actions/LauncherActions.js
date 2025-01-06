@@ -1,7 +1,8 @@
 import {
+  CLEAR_LAUNCHERS,
   POPULATE_LAUNCHERS_COMPLETE,
   POPULATE_LAUNCHERS_START,
-  SET_ACTIVE_FACETS,
+  SET_ACTIVE_FILTERS,
 } from '../constants/LaunchersActionTypes';
 import { compareStringEmptyLast } from '../utils/stringUtils';
 
@@ -23,9 +24,16 @@ export const populateLaunchersComplete = ({ applicationId, applicationLaunchers 
   };
 };
 
-export const setActiveFacets = ({ applicationId, facets }) => {
+export const clearLaunchers = ({ applicationId }) => {
   return {
-    type: SET_ACTIVE_FACETS,
-    payload: { applicationId, facets },
+    type: CLEAR_LAUNCHERS,
+    payload: { applicationId },
+  };
+};
+
+export const setActiveFilters = ({ applicationId, facets, filterByDocumentNo }) => {
+  return {
+    type: SET_ACTIVE_FILTERS,
+    payload: { applicationId, facets, filterByDocumentNo },
   };
 };

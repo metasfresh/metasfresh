@@ -4,6 +4,7 @@ import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
 
@@ -727,6 +728,12 @@ public final class DisplayType
 		return StringUtils.toBoolean(value, defaultValue);
 	}
 
+	@NonNull
+	public static Boolean toBooleanNonNull(@Nullable final Object value, final boolean defaultValue)
+	{
+		return StringUtils.toBoolean(value, defaultValue);
+	}
+	
 	/**
 	 * Delegates to {@link StringUtils#toBoolean(Object, Boolean)}.
 	 */

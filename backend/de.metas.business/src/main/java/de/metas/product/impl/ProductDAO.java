@@ -28,6 +28,7 @@ import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.common.util.pair.ImmutablePair;
+import de.metas.gs1.GTIN;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
@@ -57,6 +58,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -68,6 +70,7 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_CostDetail;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
@@ -665,13 +668,40 @@ public class ProductDAO implements IProductDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
 				.filter(queryBL.createCompositeQueryFilter(I_M_Product.class)
-								.setJoinOr()
-								.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
-								.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
+						.setJoinOr()
+						.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
+						.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
 				.create()
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
 
 		return Optional.ofNullable(productId);
+	}
+
+	@Override
+	public Optional<ProductId> getProductIdByGTIN(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
+	{
+		final ProductId productId = queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_GTIN, gtin.getAsString())
+				.create()
+				.firstIdOnly(ProductId::ofRepoIdOrNull);
+
+		return Optional.ofNullable(productId);
+	}
+
+	@Override
+	public Optional<ProductId> getProductIdByValueStartsWith(@NonNull final String valuePrefix, @NonNull final ClientId clientId)
+	{
+		final ImmutableSet<ProductId> productIds = queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
+				.addStringStartsWith(I_M_Product.COLUMNNAME_Value, valuePrefix)
+				.setLimit(QueryLimit.TWO)
+				.create()
+				.listIds(ProductId::ofRepoIdOrNull);
+
+		return productIds.size() == 1 ? Optional.of(productIds.iterator().next()) : Optional.empty();
 	}
 
 	@Override
@@ -775,7 +805,7 @@ public class ProductDAO implements IProductDAO
 		else if (valueType == IssuingToleranceValueType.QUANTITY)
 		{
 			final UomId uomId = UomId.ofRepoId(product.getIssuingTolerance_UOM_ID());
-			final Quantity qty = Quantitys.create(product.getIssuingTolerance_Qty(), uomId);
+			final Quantity qty = Quantitys.of(product.getIssuingTolerance_Qty(), uomId);
 			return Optional.of(IssuingToleranceSpec.ofQuantity(qty));
 		}
 		else
@@ -806,6 +836,39 @@ public class ProductDAO implements IProductDAO
 						.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
 						.addOnlyActiveRecordsFilter()
 						.create()
+						.anyMatch()
+				||
+				queryBL // Even if a product was not yet ordered/delivered/invoiced, it might be a component and thus end up in a cost-detail..
+						.createQueryBuilder(I_M_CostDetail.class)
+						.addEqualsFilter(I_M_CostDetail.COLUMNNAME_M_Product_ID, productId.getRepoId())
+						.addOnlyActiveRecordsFilter()
+						.create()
 						.anyMatch();
 	}
+
+	@Override
+	public Set<ProductId> getProductIdsMatchingQueryString(
+			@NonNull final String queryString,
+			@NonNull final ClientId clientId,
+			@NonNull QueryLimit limit)
+	{
+		final IQueryBuilder<I_M_Product> queryBuilder = queryBL.createQueryBuilder(I_M_Product.class)
+				.setLimit(limit)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId);
+
+		queryBuilder.addCompositeQueryFilter()
+				.setJoinOr()
+				.addStringLikeFilter(I_M_Product.COLUMNNAME_Value, queryString, true)
+				.addStringLikeFilter(I_M_Product.COLUMNNAME_Name, queryString, true);
+
+		return queryBuilder.create().listIds(ProductId::ofRepoIdOrNull);
+	}
+
+	@Override
+	public void save(I_M_Product record)
+	{
+		InterfaceWrapperHelper.save(record);
+	}
+
 }

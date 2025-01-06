@@ -28,6 +28,7 @@ import lombok.Getter;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_CallOrder;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_Commission;
@@ -97,5 +98,10 @@ public enum TypeConditions implements ReferenceListAwareEnum
 	public boolean isModularOrInterim()
 	{
 		return isModularContractType() || isInterimContractType();
+	}
+
+	public boolean equalsByCode(@Nullable final String code)
+	{
+		return Objects.equals(this.code, code);
 	}
 }

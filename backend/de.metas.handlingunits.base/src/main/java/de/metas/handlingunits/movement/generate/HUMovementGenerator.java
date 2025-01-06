@@ -209,6 +209,10 @@ public class HUMovementGenerator
 		assertTopLevelHUs(husToMove);
 
 		this.locatorFromId = determineFromLocatorId(husToMove);
+		if (LocatorId.equals(locatorFromId, request.getToLocatorId()))
+		{
+			return;
+		}
 
 		//
 		// Iterate the HUs to move and create the movement lines for them
@@ -256,11 +260,6 @@ public class HUMovementGenerator
 						+ "\n Movement Locator From: " + locatorFromId
 						+ "\n HU's Locator: " + huLocatorId);
 			}
-		}
-
-		if (LocatorId.equals(locatorFromId, request.getToLocatorId()))
-		{
-			throw new HUException("Moving to the same locator makes no sense");
 		}
 
 		return locatorFromId;

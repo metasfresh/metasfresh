@@ -38,6 +38,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DB;
@@ -53,6 +54,7 @@ import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_Bpartn
 import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_UserID;
 import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_AD_User_InCharge_ID;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_M_PriceList_Version_ID;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_AD_Client_ID;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_AD_Org_ID;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_AD_User_InCharge_ExternalReference;
@@ -75,6 +77,7 @@ import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_I
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_InvoiceRule;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_IsActive;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_IsSOTrx;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_M_PriceList_Version_Name;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_M_Product_ID;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_M_Product_Value;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_OrgCode;
@@ -88,6 +91,7 @@ import static org.compiere.model.I_C_BPartner.COLUMNNAME_Value;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_UOM.COLUMNNAME_IsDefault;
 import static org.compiere.model.I_C_UOM.COLUMNNAME_X12DE355;
+import static org.compiere.model.I_M_PriceList_Version.COLUMNNAME_Name;
 
 @UtilityClass
 public class CInvoiceCandidateImportTableSqlUpdater
@@ -106,6 +110,7 @@ public class CInvoiceCandidateImportTableSqlUpdater
 		dbUpdateDocBaseType(selection);
 		dbUpdateInvoiceRule(selection);
 		dbUpdateActivity(selection);
+		dbUpdatePriceListVersion(selection);
 
 		dbUpdateErrorMessagesAfterUpdates(selection);
 	}
@@ -116,6 +121,25 @@ public class CInvoiceCandidateImportTableSqlUpdater
 				+ " WHERE I_IsImported='E' "
 				+ selection.toSqlWhereClause();
 		return DB.getSQLValueEx(ITrx.TRXNAME_ThreadInherited, sql);
+	}
+
+	private static void dbUpdatePriceListVersion(@NonNull final ImportRecordsSelection selection)
+	{
+		final String sqlPriceListVersionId = "SELECT p." + COLUMNNAME_M_PriceList_Version_ID
+				+ " FROM " + I_M_PriceList_Version.Table_Name + " p"
+				+ " WHERE p." + COLUMNNAME_Name + " = i." + COLUMNNAME_M_PriceList_Version_Name
+				+ " AND p." + COLUMNNAME_AD_Org_ID + " IN (i." + COLUMNNAME_AD_Org_ID + ", 0)"
+				+ " AND p." + COLUMNNAME_IsActive + "='Y'"
+				+ " ORDER BY p." + COLUMNNAME_AD_Org_ID + " DESC"
+				+ " LIMIT 1";
+
+		final String sql = "UPDATE " + I_I_Invoice_Candidate.Table_Name + " i "
+				+ " SET " + COLUMNNAME_M_PriceList_Version_ID + " = (" + sqlPriceListVersionId + ")"
+				+ " WHERE i." + COLUMNNAME_I_IsImported + "<>'Y'"
+				+ " AND i." + COLUMNNAME_M_PriceList_Version_ID + " IS NULL"
+				+ selection.toSqlWhereClause("i");
+
+		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private static void dbUpdateProducts(@NonNull final ImportRecordsSelection selection)
@@ -199,7 +223,6 @@ public class CInvoiceCandidateImportTableSqlUpdater
 				+ " AND er." + COLUMNNAME_Referenced_AD_Table_ID + "= " + getTableIDSelect(I_C_BPartner_Location.Table_Name)
 				+ " ORDER BY er." + COLUMNNAME_AD_Org_ID + " DESC"
 				+ " LIMIT 1";
-
 
 		final String sql = "UPDATE " + I_I_Invoice_Candidate.Table_Name + " i "
 				+ " SET " + COLUMNNAME_Bill_Location_ID + " = (" + sqlBPartnerLocationIdByExternalReference + ")"

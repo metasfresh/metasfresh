@@ -1,66 +1,72 @@
-/*
- * #%L
- * de.metas.ui.web.base
- * %%
- * Copyright (C) 2023 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.ui.web.window.datatypes;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
-import java.util.stream.Stream;
+import static de.metas.ui.web.window.datatypes.DocumentIdsSelection.ALL;
+import static de.metas.ui.web.window.datatypes.DocumentIdsSelection.EMPTY;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import static org.assertj.core.api.Assertions.*;
-
-public class DocumentIdsSelectionTest
+class DocumentIdsSelectionTest
 {
-	@Test
-	public void givenAllSelection_whenAddingDocumentIds_returnAllSelection()
+	@Nested
+	class addAll
 	{
-		final DocumentIdsSelection selection = DocumentIdsSelection.ofCommaSeparatedString("1");
+		@Test
+		void EMPTY_and_ALL()
+		{
+			assertThat(EMPTY.addAll(EMPTY)).isSameAs(EMPTY);
+			assertThat(EMPTY.addAll(ALL)).isSameAs(ALL);
+			assertThat(ALL.addAll(EMPTY)).isSameAs(ALL);
+			assertThat(ALL.addAll(ALL)).isSameAs(ALL);
+		}
 
-		final DocumentIdsSelection result = DocumentIdsSelection.ALL.addAll(selection);
+		@Test
+		void EMPTY_and_fixedSet()
+		{
+			final DocumentIdsSelection fixedSet = DocumentIdsSelection.ofCommaSeparatedString("1,2,3");
+			assertThat(EMPTY.addAll(fixedSet)).isSameAs(fixedSet);
+			assertThat(fixedSet.addAll(EMPTY)).isSameAs(fixedSet);
+		}
 
-		assertThat(result.isAll()).isTrue();
-	}
+		@Test
+		void ALL_and_fixedSet()
+		{
+			final DocumentIdsSelection fixedSet = DocumentIdsSelection.ofCommaSeparatedString("1,2,3");
+			assertThat(ALL.addAll(fixedSet)).isSameAs(ALL);
+			assertThat(fixedSet.addAll(ALL)).isSameAs(ALL);
+		}
 
-	@Test
-	public void givenDocumentIds_whenAddingAllSelection_returnAllSelection()
-	{
-		final DocumentIdsSelection selection = DocumentIdsSelection.ofCommaSeparatedString("1");
+		@Test
+		void overlapping_fixedSets()
+		{
+			final DocumentIdsSelection fixedSet1 = DocumentIdsSelection.ofCommaSeparatedString("1,2,3");
+			final DocumentIdsSelection fixedSet2 = DocumentIdsSelection.ofCommaSeparatedString("3,4,5");
+			assertThat(fixedSet1.addAll(fixedSet2)).isEqualTo(DocumentIdsSelection.ofCommaSeparatedString("1,2,3,4,5"));
+		}
 
-		final DocumentIdsSelection result = selection.addAll(DocumentIdsSelection.ALL);
+		@Test
+		void disjunct_fixedSets()
+		{
+			final DocumentIdsSelection fixedSet1 = DocumentIdsSelection.ofCommaSeparatedString("1,2,3");
+			final DocumentIdsSelection fixedSet2 = DocumentIdsSelection.ofCommaSeparatedString("7,8,9");
+			assertThat(fixedSet1.addAll(fixedSet2)).isEqualTo(DocumentIdsSelection.ofCommaSeparatedString("1,2,3,7,8,9"));
+		}
 
-		assertThat(result.isAll()).isTrue();
-	}
+		@Test
+		void sameFixedSet()
+		{
+			final DocumentIdsSelection fixedSet = DocumentIdsSelection.ofCommaSeparatedString("1,2,3");
+			assertThat(fixedSet.addAll(fixedSet)).isSameAs(fixedSet);
+		}
 
-	@Test
-	public void givenDocumentIds_whenAddingDocumentIds_returnCombinedSelection()
-	{
-		final DocumentIdsSelection reduceResult = Stream.of(DocumentIdsSelection.ofCommaSeparatedString("1"),
-															DocumentIdsSelection.ofCommaSeparatedString("2"),
-															DocumentIdsSelection.ofCommaSeparatedString("3"))
-				.reduce(DocumentIdsSelection.EMPTY, DocumentIdsSelection::addAll);
-
-		assertThat(reduceResult.toSet().size()).isEqualTo(3);
-		assertThat(reduceResult.toSet().contains(DocumentId.of("1"))).isTrue();
-		assertThat(reduceResult.toSet().contains(DocumentId.of("2"))).isTrue();
-		assertThat(reduceResult.toSet().contains(DocumentId.of("3"))).isTrue();
+		@Test
+		void included_sets()
+		{
+			final DocumentIdsSelection fixedSet1 = DocumentIdsSelection.ofCommaSeparatedString("1,2,3");
+			final DocumentIdsSelection fixedSet2 = DocumentIdsSelection.ofCommaSeparatedString("1,3");
+			assertThat(fixedSet1.addAll(fixedSet2)).isSameAs(fixedSet1);
+			assertThat(fixedSet2.addAll(fixedSet1)).isSameAs(fixedSet1);
+		}
 	}
 }

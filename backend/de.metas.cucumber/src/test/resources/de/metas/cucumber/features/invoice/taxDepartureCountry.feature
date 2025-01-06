@@ -68,7 +68,7 @@ Feature: tax departure country for SO and PO
     Then after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_ol_1     | ol_1                      | N             |
-    When 'generate shipments' process is invoked
+    When  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_ol_1                           | D            | true                | false       |
     Then after not more than 30s, M_InOut is found:
@@ -135,7 +135,7 @@ Feature: tax departure country for SO and PO
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_ol_1     | ol_1                      | N             |
       | s_ol_2     | ol_2                      | N             |
-    When 'generate shipments' process is invoked
+    When  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_ol_1                           | D            | true                | false       |
       | s_ol_2                           | D            | true                | false       |

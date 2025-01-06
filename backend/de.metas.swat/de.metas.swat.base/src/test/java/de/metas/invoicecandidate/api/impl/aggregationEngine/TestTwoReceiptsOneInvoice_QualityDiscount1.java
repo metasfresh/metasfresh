@@ -33,6 +33,7 @@ import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.material.MovementType;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import java.math.BigDecimal;
@@ -128,7 +129,7 @@ public abstract class TestTwoReceiptsOneInvoice_QualityDiscount1 extends Abstrac
 	}
 
 	@Override
-	protected void step_validate_before_aggregation(final List<I_C_Invoice_Candidate> invoiceCandidates, final List<I_M_InOutLine> ignored)
+	protected void step_validate_before_aggregation(final @NonNull List<I_C_Invoice_Candidate> invoiceCandidates, final @NonNull List<I_M_InOutLine> ignored)
 	{
 		final I_C_Invoice_Candidate ic = invoiceCandidates.get(0);
 

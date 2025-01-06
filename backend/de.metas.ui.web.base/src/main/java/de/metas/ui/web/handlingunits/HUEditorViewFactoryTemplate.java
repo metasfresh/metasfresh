@@ -48,6 +48,7 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
+import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
@@ -243,10 +244,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		{
 			// NOTE: we need to add all HU's standard fields because those might be needed for some of the standard filters defined
 			final SqlDocumentEntityDataBindingDescriptor huEntityBindings = SqlDocumentEntityDataBindingDescriptor.cast(huEntityDescriptor.getDataBinding());
-			huEntityBindings.getFields()
-					.stream()
-					.map(huField -> SqlViewBindingFactory.createViewFieldBinding(huField, displayFieldNames))
-					.forEach(sqlViewBinding::field);
+			sqlViewBinding.fields(SqlViewBindingFactory.createViewFieldBindings(huEntityBindings, displayFieldNames));
 		}
 
 		//
@@ -528,6 +526,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.setFrequentUsed(true)
 					.addParameter(DocumentFilterParamDescriptor.builder()
 							.fieldName(PARAM_Barcode)
+							.operator(DocumentFilterParam.Operator.EQUAL)
 							.displayName(barcodeCaption)
 							.widgetType(DocumentFieldWidgetType.Text)
 							.barcodeScannerType(BarcodeScannerType.QRCode))

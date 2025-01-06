@@ -19,14 +19,14 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Dunning
             )
 AS
 $$
-select ('SPC' || E'\n' || --QRType
+SELECT ('SPC' || E'\n' || --QRType
         '0200' || E'\n' || --Version
         '1' || E'\n' || --Coding
-        COALESCE(replace(qr_iban, ' ', ''), replace(iban, ' ', ''), '') || E'\n' || -- Account
+        COALESCE(REPLACE(qr_iban, ' ', ''), REPLACE(iban, ' ', ''), '') || E'\n' || -- Account
         'K' || E'\n' || -- CR - AdressTyp = Combined address
-        (case when orgbp.IsCompany = 'Y' then orgbp.Companyname else orgbp.name end) || E'\n' || --CR – Name
-        coalesce(orgl.address1, '') || E'\n' || --CR –Street and building number of P.O. Box
-        coalesce(orgl.postal, '') || ' ' || coalesce(orgl.city, '') || E'\n' || -- CR Postal code and town
+        (CASE WHEN orgbp.IsCompany = 'Y' THEN orgbp.Companyname ELSE orgbp.name END) || E'\n' || --CR – Name
+        COALESCE(orgl.address1, '') || E'\n' || --CR –Street and building number of P.O. Box
+        COALESCE(orgl.postal, '') || ' ' || COALESCE(orgl.city, '') || E'\n' || -- CR Postal code and town
         E'\n' || --Do not fill in
         E'\n' || --Do not fill in
         orgc.countrycode || E'\n' || -- CR Country
@@ -37,68 +37,76 @@ select ('SPC' || E'\n' || --QRType
         E'\n' || -- E'\n' || --UCR – Postal code
         E'\n' || -- E'\n' || --UCR – City
         E'\n' || -- E'\n' || --UCR – Country
-        to_char((i.grandtotal - coalesce(y.zuordnung, 0)), 'FM99990.00') || E'\n' ||
+        TO_CHAR((i.grandtotal - COALESCE(y.zuordnung, 0)), 'FM99990.00') || E'\n' ||
         cur.iso_code || E'\n' ||
         'K' || E'\n' || -- UD– AdressTyp = Combined address
-        (case
-             when bp.IsCompany = 'Y' then bp.companyname
-             else (coalesce(u.FirstName, '') || ' ' || coalesce(u.LastName, '')) end)
+        (CASE
+             WHEN bp.IsCompany = 'Y' THEN bp.companyname
+                                     ELSE (COALESCE(u.FirstName, '') || ' ' || COALESCE(u.LastName, ''))
+         END)
             || E'\n' || --UD – Name
-        coalesce(l.address1, '') || E'\n' || --UD –Street and building number of P.O. Box
-        coalesce(l.postal, '') || ' ' || coalesce(l.city, '') || E'\n' || -- UD Postal code and town
+        COALESCE(l.address1, '') || E'\n' || --UD –Street and building number of P.O. Box
+        COALESCE(l.postal, '') || ' ' || COALESCE(l.city, '') || E'\n' || -- UD Postal code and town
         E'\n' || --Do not fill in
         E'\n' || --Do not fill in
         c.countrycode || E'\n' || -- UD Country
-        (case
-             when nullif(trim(orgbpb.qr_iban), '') is not null and rn.referenceNo is not null then 'QRR'
-             when nullif(trim(orgbpb.iban), '') is not null and
-                  nullif(trim(orgbpb.sepa_creditoridentifier), '') is not null
-                 then 'SCOR'
-             else 'NON'
-            end) || E'\n' || --ReferenceType
-        (case
-             when nullif(trim(orgbpb.qr_iban), '') is not null and rn.referenceNo is not null then rn.ReferenceNo
-             when nullif(trim(orgbpb.iban), '') is not null and
-                  nullif(trim(orgbpb.sepa_creditoridentifier), '') is not null
-                 then 'RF' || orgbpb.sepa_creditoridentifier
-             else ''
-            end) || E'\n' || --Reference
-        coalesce(i.description, '') || E'\n' ||--Unstructured message
+        (CASE
+             WHEN NULLIF(TRIM(orgbpb.qr_iban), '') IS NOT NULL AND rn.referenceNo IS NOT NULL THEN 'QRR'
+             WHEN NULLIF(TRIM(orgbpb.iban), '') IS NOT NULL AND
+                  NULLIF(TRIM(orgbpb.sepa_creditoridentifier), '') IS NOT NULL
+                                                                                              THEN 'SCOR'
+                                                                                              ELSE 'NON'
+         END) || E'\n' || --ReferenceType
+        (CASE
+             WHEN NULLIF(TRIM(orgbpb.qr_iban), '') IS NOT NULL AND rn.referenceNo IS NOT NULL THEN rn.ReferenceNo
+             WHEN NULLIF(TRIM(orgbpb.iban), '') IS NOT NULL AND
+                  NULLIF(TRIM(orgbpb.sepa_creditoridentifier), '') IS NOT NULL
+                                                                                              THEN 'RF' || orgbpb.sepa_creditoridentifier
+                                                                                              ELSE ''
+         END) || E'\n' || --Reference
+        (CASE
+             WHEN i.DocumentNo IS NOT NULL THEN ('Rechnungs-Nr. ' || i.DocumentNo)
+                                           ELSE ''
+         END) || E'\n' ||--Unstructured message
         'EPD' || E'\n' || --Trailer
 
         '' || E'\n' --Billing information
-           )                                                                        as QR_Code,
-       COALESCE(iban, '')                                                           as CR_IBAN,
-       COALESCE(qr_iban, '')                                                        as CR_QR_IBAN,
-       (case when orgbp.IsCompany = 'Y' then orgbp.Companyname else orgbp.name end) As CR_Name,
-       ((case when nullif(trim(orgl.address1), '') is not null then (orgl.address1 || E'\n') else '' end) ||
-        coalesce(orgl.postal, '') || ' ' || coalesce(orgl.city, '') || E'\n' ||
-        orgc.countrycode)                                                           as CR_Addres,
+           )                                                                        AS QR_Code,
+       COALESCE(iban, '')                                                           AS CR_IBAN,
+       COALESCE(qr_iban, '')                                                        AS CR_QR_IBAN,
+       (CASE WHEN orgbp.IsCompany = 'Y' THEN orgbp.Companyname ELSE orgbp.name END) AS CR_Name,
+       ((CASE WHEN NULLIF(TRIM(orgl.address1), '') IS NOT NULL THEN (orgl.address1 || E'\n') ELSE '' END) ||
+        COALESCE(orgl.postal, '') || ' ' || COALESCE(orgl.city, '') || E'\n' ||
+        orgc.countrycode)                                                           AS CR_Addres,
 
-       (case
-            when nullif(trim(qr_iban), '') is not null and rn.referenceNo is not null then
-                                                    substring(rn.referenceNo, 1, 2) || ' ' ||
-                                                    substring(rn.referenceNo, 3, 5) || ' ' ||
-                                                    substring(rn.referenceNo, 8, 5) || ' ' ||
-                                                    substring(rn.referenceNo, 13, 5) || ' ' ||
-                                                    substring(rn.referenceNo, 18, 5) || ' ' ||
-                                                    substring(rn.referenceNo, 23, 7)
-            when nullif(trim(iban), '') is not null and nullif(trim(orgbpb.sepa_creditoridentifier), '') is not null
-                then 'RF' || orgbpb.sepa_creditoridentifier
-            else ''
-           end)
+       (CASE
+            WHEN NULLIF(TRIM(qr_iban), '') IS NOT NULL AND rn.referenceNo IS NOT NULL THEN
+                SUBSTRING(rn.referenceNo, 1, 2) || ' ' ||
+                SUBSTRING(rn.referenceNo, 3, 5) || ' ' ||
+                SUBSTRING(rn.referenceNo, 8, 5) || ' ' ||
+                SUBSTRING(rn.referenceNo, 13, 5) || ' ' ||
+                SUBSTRING(rn.referenceNo, 18, 5) || ' ' ||
+                SUBSTRING(rn.referenceNo, 23, 7)
+            WHEN NULLIF(TRIM(iban), '') IS NOT NULL AND NULLIF(TRIM(orgbpb.sepa_creditoridentifier), '') IS NOT NULL
+                                                                                      THEN 'RF' || orgbpb.sepa_creditoridentifier
+                                                                                      ELSE ''
+        END)
                                                                                     AS referenceno,
 
-       ((case
-             when bp.IsCompany = 'Y' then bp.companyname
-             else (coalesce(u.FirstName, '') || ' ' || coalesce(u.LastName, '')) end) || E'\n' ||
-        coalesce(l.address1, '') || E'\n' ||
-        coalesce(l.postal, '') || ' ' || coalesce(l.city, ''))                      as DR_Address,
-       i.grandtotal - coalesce(y.zuordnung, 0)                                      as Amount,
-       cur.iso_code                                                                 as currency,
-       i.description                                                                as additional_informations,
-       orgbpb.sepa_creditoridentifier                                               as SCOR,
-       cl.referenceno                                                               as codeline,
+       ((CASE
+             WHEN bp.IsCompany = 'Y' THEN bp.companyname
+                                     ELSE (COALESCE(u.FirstName, '') || ' ' || COALESCE(u.LastName, ''))
+         END) || E'\n' ||
+        COALESCE(l.address1, '') || E'\n' ||
+        COALESCE(l.postal, '') || ' ' || COALESCE(l.city, ''))                      AS DR_Address,
+       i.grandtotal - COALESCE(y.zuordnung, 0)                                      AS Amount,
+       cur.iso_code                                                                 AS currency,
+       (CASE
+            WHEN i.DocumentNo IS NOT NULL THEN ('Rechnungs-Nr. ' || i.DocumentNo)
+                                          ELSE ''
+        END)                                                                        AS additional_informations,
+       orgbpb.sepa_creditoridentifier                                               AS SCOR,
+       cl.referenceno                                                               AS codeline,
        i.DocumentNo,
        y.zuordnung
 
@@ -109,47 +117,43 @@ from C_DunningDoc dd
          INNER JOIN C_Invoice i ON i.C_Invoice_ID = cand.Record_ID AND cand.AD_Table_ID = Get_Table_ID('C_Invoice')
          JOIN C_BPartner bp
               ON i.C_BPartner_ID = bp.C_BPartner_ID
-         LEFT JOIN AD_User u on i.AD_User_ID = u.AD_user_ID
-         JOIN c_bpartner_location bpl on i.c_bpartner_location_id = bpl.c_bpartner_location_id
-         JOIN c_location l on bpl.c_location_id = l.c_location_id
-         JOIN C_Country c on l.c_country_id = c.c_country_id
-         JOIN c_currency cur on i.c_currency_id = cur.c_currency_id
+         LEFT JOIN AD_User u ON i.AD_User_ID = u.AD_user_ID
+         JOIN c_bpartner_location bpl ON i.c_bpartner_location_id = bpl.c_bpartner_location_id
+         JOIN c_location l ON bpl.c_location_id = l.c_location_id
+         JOIN C_Country c ON l.c_country_id = c.c_country_id
+         JOIN c_currency cur ON i.c_currency_id = cur.c_currency_id
     --- org infos
          JOIN AD_Org o ON i.AD_Org_ID = o.AD_Org_ID
          JOIN AD_OrgInfo oi ON oi.AD_Org_ID = o.AD_Org_ID
-         join c_bpartner_location org_bpl on oi.orgbp_location_id = org_bpl.c_bpartner_location_id
-         join c_location orgl on org_bpl.c_location_id = orgl.c_location_id
-         join C_Country orgc on orgl.c_country_id = orgc.c_country_id
+         JOIN c_bpartner_location org_bpl ON oi.orgbp_location_id = org_bpl.c_bpartner_location_id
+         JOIN c_location orgl ON org_bpl.c_location_id = orgl.c_location_id
+         JOIN C_Country orgc ON orgl.c_country_id = orgc.c_country_id
          LEFT JOIN C_BPartner orgbp ON o.AD_Org_ID = orgbp.AD_OrgBP_ID
          LEFT JOIN C_BP_Bankaccount orgbpb
                    ON orgbpb.C_BPartner_ID = orgbp.C_BPartner_ID AND orgbpb.IsEsrAccount = 'Y' AND orgbpb.IsActive='Y'
     --- refno
-         LEFT JOIN (
-    SELECT rn.referenceNo, rnd.Record_ID
-    FROM C_ReferenceNo_Doc rnd
-             LEFT JOIN C_ReferenceNo rn ON rnd.C_ReferenceNo_ID = rn.C_ReferenceNo_ID
-    WHERE AD_Table_ID = get_table_id('C_Invoice')
-      AND rn.C_ReferenceNo_Type_ID =
-          (SELECT C_ReferenceNo_Type_ID FROM C_ReferenceNo_Type WHERE name = 'InvoiceReference' AND isActive = 'Y')
-      AND rnd.isActive = 'Y'
-) rn ON i.C_Invoice_ID = rn.Record_ID
+         LEFT JOIN (SELECT rn.referenceNo, rnd.Record_ID
+                    FROM C_ReferenceNo_Doc rnd
+                             LEFT JOIN C_ReferenceNo rn ON rnd.C_ReferenceNo_ID = rn.C_ReferenceNo_ID
+                    WHERE AD_Table_ID = get_table_id('C_Invoice')
+                      AND rn.C_ReferenceNo_Type_ID =
+                          (SELECT C_ReferenceNo_Type_ID FROM C_ReferenceNo_Type WHERE name = 'InvoiceReference' AND isActive = 'Y')
+                      AND rnd.isActive = 'Y') rn ON i.C_Invoice_ID = rn.Record_ID
 
     -- support old codeline
-         LEFT JOIN (
-    SELECT rn.referenceNo, rnd.Record_ID
-    FROM C_ReferenceNo_Doc rnd
-             LEFT JOIN C_ReferenceNo rn ON rnd.C_ReferenceNo_ID = rn.C_ReferenceNo_ID AND rn.isActive = 'Y'
-    WHERE AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Invoice' AND isActive = 'Y')
-      AND rn.C_ReferenceNo_Type_ID =
-          (SELECT C_ReferenceNo_Type_ID FROM C_ReferenceNo_Type WHERE name = 'ESRReferenceNumber' AND isActive = 'Y')
-      AND rnd.isActive = 'Y'
-) cl ON i.C_Invoice_ID = cl.Record_ID
+         LEFT JOIN (SELECT rn.referenceNo, rnd.Record_ID
+                    FROM C_ReferenceNo_Doc rnd
+                             LEFT JOIN C_ReferenceNo rn ON rnd.C_ReferenceNo_ID = rn.C_ReferenceNo_ID AND rn.isActive = 'Y'
+                    WHERE AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Invoice' AND isActive = 'Y')
+                      AND rn.C_ReferenceNo_Type_ID =
+                          (SELECT C_ReferenceNo_Type_ID FROM C_ReferenceNo_Type WHERE name = 'ESRReferenceNumber' AND isActive = 'Y')
+                      AND rnd.isActive = 'Y') cl ON i.C_Invoice_ID = cl.Record_ID
 
--- check allocated amount
-         LEFT JOIN LATERAL (select sum(al.amount) AS zuordnung, al.c_invoice_id
-                            from c_allocationline al
-                            where al.C_Invoice_ID = i.C_Invoice_ID
-                            GROUP BY al.c_invoice_id) y on y.c_invoice_id = i.c_invoice_id
+    -- check allocated amount
+         LEFT JOIN LATERAL (SELECT SUM(al.amount) AS zuordnung, al.c_invoice_id
+                            FROM c_allocationline al
+                            WHERE al.C_Invoice_ID = i.C_Invoice_ID
+                            GROUP BY al.c_invoice_id) y ON y.c_invoice_id = i.c_invoice_id
 
 WHERE dd.C_DunningDoc_ID = p_C_DunningDoc_ID
 

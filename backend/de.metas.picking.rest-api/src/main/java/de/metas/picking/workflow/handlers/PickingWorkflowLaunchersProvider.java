@@ -1,21 +1,20 @@
 package de.metas.picking.workflow.handlers;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfile;
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.PickingJobFieldType;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.model.PickingJobFacets;
 import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
+import de.metas.handlingunits.picking.job.model.PickingJobReferenceList;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.RenderedAddressProvider;
-import de.metas.i18n.ITranslatableString;
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.picking.config.MobileUIPickingUserProfile;
-import de.metas.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.picking.workflow.DisplayValueProvider;
 import de.metas.picking.workflow.DisplayValueProviderService;
 import de.metas.picking.workflow.PickingJobRestService;
@@ -23,6 +22,8 @@ import de.metas.picking.workflow.PickingWFProcessStartParams;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
+import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
+import de.metas.workflow.rest_api.model.WorkflowLauncherCaption.OrderBy;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
@@ -35,6 +36,7 @@ import org.adempiere.util.lang.SynchronizedMutable;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.List;
 
 import static de.metas.picking.workflow.handlers.PickingMobileApplication.APPLICATION_ID;
 
@@ -81,36 +83,34 @@ class PickingWorkflowLaunchersProvider
 		//
 		// Already started launchers
 		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
-		final ImmutableList<PickingJobReference> existingPickingJobs = pickingJobRestService.streamDraftPickingJobReferences(
+		final PickingJobReferenceList existingPickingJobs = pickingJobRestService.streamDraftPickingJobReferences(
 						PickingJobReferenceQuery.builder()
 								.pickerId(userId)
 								.onlyBPartnerIds(profile.getOnlyBPartnerIds())
 								.warehouseId(workplaceService.getWarehouseIdByUserId(userId).orElse(null))
+								.salesOrderDocumentNo(query.getFilterByDocumentNo())
 								.build())
 				.filter(facets::isMatching)
-				.collect(ImmutableList.toImmutableList());
+				.collect(PickingJobReferenceList.collect());
 
 		final DisplayValueProvider displayValueProvider = displayValueProviderService.newDisplayValueProvider(profile);
 		displayValueProvider.cacheWarmUpForPickingJobReferences(existingPickingJobs);
 
-		existingPickingJobs.stream()
+		existingPickingJobs.streamNotInProcessing()
 				.map(pickingJobReference -> toExistingWorkflowLauncher(pickingJobReference, displayValueProvider))
 				.forEach(currentResult::add);
 
 		//
 		// New launchers
-		if (!limit.isLimitHitOrExceeded(existingPickingJobs))
+		if (!limit.isLimitHitOrExceeded(currentResult))
 		{
-			final ImmutableSet<ShipmentScheduleId> shipmentScheduleIdsAlreadyInPickingJobs = existingPickingJobs.stream()
-					.flatMap(existingPickingJob -> existingPickingJob.getShipmentScheduleIds().stream())
-					.collect(ImmutableSet.toImmutableSet());
-
 			final ImmutableList<PickingJobCandidate> newPickingJobCandidates = pickingJobRestService.streamPickingJobCandidates(PickingJobQuery.builder()
 							.userId(userId)
-							.excludeShipmentScheduleIds(shipmentScheduleIdsAlreadyInPickingJobs)
+							.excludeShipmentScheduleIds(existingPickingJobs.getShipmentScheduleIds())
 							.facets(facets)
 							.onlyBPartnerIds(profile.getOnlyBPartnerIds())
 							.warehouseId(workplaceService.getWarehouseIdByUserId(userId).orElse(null))
+							.salesOrderDocumentNo(query.getFilterByDocumentNo())
 							.build())
 					.limit(limit.minusSizeOf(currentResult).toIntOr(Integer.MAX_VALUE))
 					.collect(ImmutableList.toImmutableList());
@@ -122,8 +122,14 @@ class PickingWorkflowLaunchersProvider
 					.forEach(currentResult::add);
 		}
 
+		return newWorkflowLaunchersList(currentResult);
+	}
+
+	private static WorkflowLaunchersList newWorkflowLaunchersList(final List<WorkflowLauncher> currentResult)
+	{
 		return WorkflowLaunchersList.builder()
 				.launchers(ImmutableList.copyOf(currentResult))
+				.orderByField(OrderBy.descending(PickingJobFieldType.RUESTPLATZ_NR))
 				.timestamp(SystemTime.asInstant())
 				.build();
 	}
@@ -147,7 +153,7 @@ class PickingWorkflowLaunchersProvider
 			@NonNull final PickingJobReference pickingJobReference,
 			@NonNull final DisplayValueProvider displayValueProvider)
 	{
-		final ITranslatableString caption = displayValueProvider.computeLauncherCaption(pickingJobReference);
+		final WorkflowLauncherCaption caption = displayValueProvider.computeLauncherCaption(pickingJobReference);
 
 		return WorkflowLauncher.builder()
 				.applicationId(APPLICATION_ID)
@@ -173,6 +179,7 @@ class PickingWorkflowLaunchersProvider
 						.userId(userId)
 						.onlyBPartnerIds(profile.getOnlyBPartnerIds())
 						.warehouseId(workplaceService.getWarehouseIdByUserId(userId).orElse(null))
+						.salesOrderDocumentNo(query.getFilterByDocumentNo())
 						//.facets(activeFacets) // IMPORTANT: don't filter by active facets because we want to collect all facets, not only the active ones
 						.build(),
 				PickingJobFacets.CollectingParameters.builder()

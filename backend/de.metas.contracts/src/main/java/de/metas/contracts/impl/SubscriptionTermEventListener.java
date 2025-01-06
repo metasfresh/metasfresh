@@ -1,11 +1,5 @@
 package de.metas.contracts.impl;
 
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.TimeUtil;
-
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -20,8 +14,12 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
 
-import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_ExtensionNotAllowed;
+import java.util.List;
+
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_CalculatePrice;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXTEND_CopyPrice;
 
@@ -50,8 +48,6 @@ import static de.metas.contracts.model.X_C_Flatrate_Conditions.ONFLATRATETERMEXT
 public class SubscriptionTermEventListener extends FallbackFlatrateTermEventListener
 {
 	public static final String TYPE_CONDITIONS_SUBSCRIPTION = X_C_Flatrate_Term.TYPE_CONDITIONS_Subscription;
-
-	private final static String MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED = "@MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED@";
 	private static final String MSG_TERM_ERROR_DELIVERY_ALREADY_HAS_SHIPMENT_SCHED_0P = "Term_Error_Delivery_Already_Has_Shipment_Sched";
 
 	@Override
@@ -101,12 +97,6 @@ public class SubscriptionTermEventListener extends FallbackFlatrateTermEventList
 			next.setC_UOM_ID(predecessor.getC_UOM_ID());
 			next.setC_TaxCategory_ID(predecessor.getC_TaxCategory_ID());
 			next.setIsTaxIncluded(predecessor.isTaxIncluded());
-		}
-		else if (ONFLATRATETERMEXTEND_ExtensionNotAllowed.equals(conditions.getOnFlatrateTermExtend()))
-		{
-			throw new AdempiereException(MSG_FLATRATE_CONDITIONS_EXTENSION_NOT_ALLOWED)
-					.appendParametersToMessage()
-					.setParameter("conditions", conditions);
 		}
 		else
 		{

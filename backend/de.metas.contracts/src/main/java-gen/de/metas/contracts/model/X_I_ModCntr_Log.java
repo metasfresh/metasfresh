@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_I_ModCntr_Log extends org.compiere.model.PO implements I_I_ModCntr_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2015526995L;
+	private static final long serialVersionUID = 75051L;
 
     /** Standard Constructor */
     public X_I_ModCntr_Log (final Properties ctx, final int I_ModCntr_Log_ID, @Nullable final String trxName)
@@ -468,15 +468,15 @@ public class X_I_ModCntr_Log extends org.compiere.model.PO implements I_I_ModCnt
 	}
 
 	@Override
-	public org.compiere.model.I_ModCntr_InvoicingGroup getModCntr_InvoicingGroup()
+	public de.metas.contracts.model.I_ModCntr_InvoicingGroup getModCntr_InvoicingGroup()
 	{
-		return get_ValueAsPO(COLUMNNAME_ModCntr_InvoicingGroup_ID, org.compiere.model.I_ModCntr_InvoicingGroup.class);
+		return get_ValueAsPO(COLUMNNAME_ModCntr_InvoicingGroup_ID, de.metas.contracts.model.I_ModCntr_InvoicingGroup.class);
 	}
 
 	@Override
-	public void setModCntr_InvoicingGroup(final org.compiere.model.I_ModCntr_InvoicingGroup ModCntr_InvoicingGroup)
+	public void setModCntr_InvoicingGroup(final de.metas.contracts.model.I_ModCntr_InvoicingGroup ModCntr_InvoicingGroup)
 	{
-		set_ValueFromPO(COLUMNNAME_ModCntr_InvoicingGroup_ID, org.compiere.model.I_ModCntr_InvoicingGroup.class, ModCntr_InvoicingGroup);
+		set_ValueFromPO(COLUMNNAME_ModCntr_InvoicingGroup_ID, de.metas.contracts.model.I_ModCntr_InvoicingGroup.class, ModCntr_InvoicingGroup);
 	}
 
 	@Override

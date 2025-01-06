@@ -79,6 +79,7 @@
                             <generatePackage>de.metas.banking.camt53.jaxb.camt053_001_02</generatePackage>
                             <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
                             <episode>false</episode>
+                            <noFileHeader>true</noFileHeader>
                         </configuration>
                     </execution>
                     <execution>
@@ -92,6 +93,8 @@
                             <generatePackage>de.metas.banking.camt53.jaxb.camt053_001_04</generatePackage>
                             <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
                             <episode>false</episode>
+                            <noFileHeader>true</noFileHeader>
+<!--                            <forceRegenerate>true</forceRegenerate>-->
                         </configuration>
                     </execution>
                 </executions>

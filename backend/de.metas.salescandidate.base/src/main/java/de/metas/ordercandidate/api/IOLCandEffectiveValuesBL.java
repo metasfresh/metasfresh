@@ -9,6 +9,7 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -18,6 +19,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -135,7 +137,7 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * <li><code>C_BPartner_Location_ID</code></li>
 	 * <li>the effective BPartner's ShipTo-location</li>
 	 * </ul>
-	 *
+	 * <p>
 	 * #100 FRESH-435: even if the (effective) DropShip_Location_ID is the same as the (effective) C_BPartner_Location_ID, this method shall not return 0.
 	 */
 	I_C_BPartner_Location getDropShip_Location_Effective(I_C_OLCand olCand);
@@ -167,6 +169,7 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	/**
 	 * Returns {@link #getRecordOrStockUOMId(I_C_OLCand)} (i.e. the record's own UOM-ID) if <code>IsManualPrice='Y'</code> and <code>C_UOM_Internal_ID</code> (i.e. metasfresh's pricing-engine-based UOM-ID) otherwise.
 	 */
+	@Nullable
 	UomId getEffectiveUomId(I_C_OLCand olCand);
 
 	UomId getRecordOrStockUOMId(I_C_OLCand olCandRecord);
@@ -186,4 +189,11 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 
 	@Nullable
 	HUPIItemProductId getEffectivePackingInstructions(I_C_OLCand olCand);
+
+	@NonNull
+	BigDecimal getEffectiveQtyEntered(@NonNull I_C_OLCand olCand);
+
+	Optional<StockQtyAndUOMQty> getQtyShipped(I_C_OLCand olCand);
+
+	Optional<BigDecimal> getManualQtyInPriceUOM(@NonNull I_C_OLCand record);
 }

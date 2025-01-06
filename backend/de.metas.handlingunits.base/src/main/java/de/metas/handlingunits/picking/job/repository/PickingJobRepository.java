@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.dao.ValueRestriction;
+import de.metas.document.DocumentNoFilter;
 import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.model.I_M_Picking_Job_Step;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -52,7 +53,7 @@ public class PickingJobRepository
 		return PickingJobStepId.ofRepoId(repoId);
 	}
 
-	public void save(final PickingJob pickingJob)
+	public void save(@NonNull final PickingJob pickingJob)
 	{
 		PickingJobLoaderAndSaver.forSaving().save(pickingJob);
 	}
@@ -105,14 +106,21 @@ public class PickingJobRepository
 		}
 
 		final WarehouseId warehouseId = query.getWarehouseId();
-		if (warehouseId != null)
+		final DocumentNoFilter salesOrderDocumentNo = query.getSalesOrderDocumentNo();
+		if (warehouseId != null || salesOrderDocumentNo != null)
 		{
-			final IQuery<I_C_Order> warehouseQuery = queryBL.createQueryBuilder(I_C_Order.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_C_Order.COLUMNNAME_M_Warehouse_ID, warehouseId)
-					.create();
+			final IQueryBuilder<I_C_Order> salesOrderQuery = queryBL.createQueryBuilder(I_C_Order.class)
+					.addOnlyActiveRecordsFilter();
+			if (warehouseId != null)
+			{
+				salesOrderQuery.addEqualsFilter(I_C_Order.COLUMNNAME_M_Warehouse_ID, warehouseId);
+			}
+			if (salesOrderDocumentNo != null)
+			{
+				salesOrderQuery.filter(salesOrderDocumentNo.toSqlFilter(I_C_Order.COLUMN_DocumentNo));
+			}
 
-			queryBuilder.addInSubQueryFilter(I_M_Picking_Job.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, warehouseQuery);
+			queryBuilder.addInSubQueryFilter(I_M_Picking_Job.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, salesOrderQuery.create());
 		}
 
 		final Set<PickingJobId> pickingJobIds = queryBuilder
@@ -125,8 +133,7 @@ public class PickingJobRepository
 		}
 
 		return PickingJobLoaderAndSaver.forLoading(loadingSupportServices)
-				.loadPickingJobReferences(pickingJobIds)
-				.stream();
+				.streamPickingJobReferences(pickingJobIds);
 	}
 
 	public boolean hasDraftJobsUsingPickingSlot(
@@ -156,6 +163,21 @@ public class PickingJobRepository
 				.create()
 				.firstIdOnlyOptional(PickingJobId::ofRepoIdOrNull)
 				.map(pickingJobId -> PickingJobLoaderAndSaver.forLoading(loadingSupportServices).loadById(pickingJobId));
+	}
+
+	@NonNull
+	public List<PickingJob> getDraftedByPickingSlotId(
+			@NonNull final PickingSlotId slotId,
+			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
+	{
+		final ImmutableSet<PickingJobId> pickingJobIds = queryBL.createQueryBuilder(I_M_Picking_Job.class)
+				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_DocStatus, PickingJobDocStatus.Drafted.getCode())
+				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_M_PickingSlot_ID, slotId)
+				.create()
+				.listIds(PickingJobId::ofRepoId);
+
+		return PickingJobLoaderAndSaver.forLoading(loadingSupportServices)
+				.loadByIds(pickingJobIds);
 	}
 
 	public boolean hasReadyToReview(@NonNull final ImmutableSet<PickingJobId> pickingJobIds)

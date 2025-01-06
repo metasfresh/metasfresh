@@ -1,0 +1,4 @@
+
+GET {{baseURL}}/api/v2/processes/available
+Authorization: {{authToken}}
+accept: application/json
