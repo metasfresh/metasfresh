@@ -68,4 +68,6 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 
 # github related
 .github/merge_to_master
+.github/integrate
 
+*.jasper

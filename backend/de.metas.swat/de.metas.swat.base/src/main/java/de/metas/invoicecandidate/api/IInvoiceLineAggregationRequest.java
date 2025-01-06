@@ -22,14 +22,12 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.spi.IAggregator;
 
 import java.util.List;
 import java.util.Set;
-
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
-
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.spi.IAggregator;
 
 /**
  * Immutable Invoice Line Aggregation Request to be used on {@link IAggregator}.
@@ -59,13 +57,13 @@ public interface IInvoiceLineAggregationRequest
 	List<Object> getLineAggregationKeyElements();
 
 	/** @return invoice line product attributes that shall land into invoice line */
-	Set<IInvoiceLineAttribute> getInvoiceLineAttributes();
+	Set<IInvoiceLineAttribute> getAttributesFromInoutLines();
 
 	/**
 	 * Specify if, when the aggregation is done and if {@link #getC_InvoiceCandidate_InOutLine()} is not <code>null</code> the full remaining <code>QtyToInvoice</code> of the invoice candidate shall
 	 * be allocated to the <code>icIol</code>'s invoice line, or not. If <code>false</code>, then the maximum qty to be allocated is the delivered qty.
 	 * <p>
-	 * Note that in each aggregation, we assume that there is exactly one request with {@link #isAllocateRemainingQty()} = <code>true</code>, in order to make sure that the invoice candidate's
+	 * Note that in each aggregation, we assume that there is exactly one request with this method returning <code>true</code>, in order to make sure that the invoice candidate's
 	 * qtyToInvoice is actually invoiced.
 	 */
 	boolean isAllocateRemainingQty();

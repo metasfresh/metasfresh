@@ -52,6 +52,7 @@ import java.util.stream.Stream;
 @ToString
 public final class TableRecordReferenceSet implements Iterable<TableRecordReference>
 {
+	@NonNull
 	public static TableRecordReferenceSet of(final Collection<TableRecordReference> recordRefs)
 	{
 		if (recordRefs.isEmpty())
@@ -70,6 +71,20 @@ public final class TableRecordReferenceSet implements Iterable<TableRecordRefere
 	public static TableRecordReferenceSet of(final String tableName, final int recordId)
 	{
 		return of(TableRecordReference.of(tableName, recordId));
+	}
+
+	public static <T extends RepoIdAware> TableRecordReferenceSet of(final String tableName, final Collection<T> recordIds)
+	{
+		if (recordIds.isEmpty())
+		{
+			return EMPTY;
+		}
+
+		final ImmutableSet<TableRecordReference> recordRefs = recordIds.stream()
+				.map(recordId -> TableRecordReference.of(tableName, recordId))
+				.collect(ImmutableSet.toImmutableSet());
+
+		return of(recordRefs);
 	}
 
 	public static Collector<TableRecordReference, ?, TableRecordReferenceSet> collect()
@@ -95,10 +110,13 @@ public final class TableRecordReferenceSet implements Iterable<TableRecordRefere
 	}
 
 	@Override
+	@NonNull
 	public Iterator<TableRecordReference> iterator()
 	{
 		return recordRefs.iterator();
 	}
+
+	public Stream<TableRecordReference> stream() {return recordRefs.stream();}
 
 	public TableRecordReferenceSet filter(@NonNull final Predicate<TableRecordReference> filter)
 	{

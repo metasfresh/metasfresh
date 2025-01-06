@@ -58,9 +58,9 @@ public interface ICalendarBL extends ISingletonService
 
 	boolean isCalendarNoGaps(I_C_Calendar calendar);
 
-	Timestamp getLastDayOfYear(I_C_Year year);
+	Timestamp getLastDayOfYear(@NonNull YearId yearId);
 
-	Timestamp getFirstDayOfYear(I_C_Year year);
+	Timestamp getFirstDayOfYear(@NonNull YearId yearId);
 
 	/**
 	 * Make all the validation for a calendar so it can be properly used in transactions: <br>

@@ -35,32 +35,30 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 @Repository
 public class QtyDemandSupplyRepository
 {
 	@NonNull
-	public ProductsWithDemandSupply getByProductIds(@NonNull final Collection<ProductId> productIds)
+	public ProductWithDemandSupplyCollection getByProductIds(@NonNull final Collection<ProductId> productIds)
 	{
 		if (productIds.isEmpty())
 		{
-			return ProductsWithDemandSupply.of(ImmutableMap.of());
+			return ProductWithDemandSupplyCollection.of(ImmutableMap.of());
 		}
 
-		final String sql = "SELECT * FROM getQtyDemandQtySupply( p_M_Product_IDs := ARRAY["
-				+ productIds.stream().map(productId -> "?").collect(Collectors.joining(","))
-				+ "])";
+		final ArrayList<Object> sqlParams = new ArrayList<>();
+		final String sql = "SELECT * FROM getQtyDemandQtySupply( p_M_Product_IDs :=" + DB.TO_ARRAY(productIds, sqlParams) + ")";
 
-		return DB.retrieveRows(sql, new ArrayList<>(productIds), QtyDemandSupplyRepository::ofResultSet)
+		return DB.retrieveRows(sql, sqlParams, QtyDemandSupplyRepository::ofResultSet)
 				.stream()
-				.collect(ProductsWithDemandSupply.toProductsWithDemandSupply());
+				.collect(ProductWithDemandSupplyCollection.toProductsWithDemandSupply());
 	}
 
 	@NonNull
-	private static QtyDemandQtySupply ofResultSet(@NonNull final ResultSet rs) throws SQLException
+	private static ProductWithDemandSupply ofResultSet(@NonNull final ResultSet rs) throws SQLException
 	{
-		return QtyDemandQtySupply.builder()
+		return ProductWithDemandSupply.builder()
 				.warehouseId(WarehouseId.ofRepoIdOrNull(rs.getInt("M_Warehouse_ID")))
 				.attributesKey(AttributesKey.ofString(rs.getString("AttributesKey")))
 				.productId(ProductId.ofRepoId(rs.getInt("M_Product_ID")))

@@ -29,6 +29,7 @@ import de.metas.handlingunits.modular.ModularPPOrderService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -40,6 +41,7 @@ import org.springframework.stereotype.Component;
 
 @Interceptor(I_PP_Order.class)
 @Component
+@RequiredArgsConstructor
 public class PP_Order
 {
 	private static final AdMessageKey MSG_CannotReactivateVoid = AdMessageKey.of("de.metas.handlingunits.modular.interceptor.PP_Order.CannotReactivateVoid");
@@ -47,12 +49,7 @@ public class PP_Order
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IPPOrderBL orderBL = Services.get(IPPOrderBL.class);
 
-	private final ModularPPOrderService modularPPOrderService;
-
-	public PP_Order(@NonNull final ModularPPOrderService modularPPOrderService)
-	{
-		this.modularPPOrderService = modularPPOrderService;
-	}
+	@NonNull private final ModularPPOrderService modularPPOrderService;
 
 	@DocValidate(timings = {
 			ModelValidator.TIMING_BEFORE_VOID,

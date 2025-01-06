@@ -10,6 +10,7 @@ import lombok.NonNull;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Product_Allergen;
+import org.compiere.model.I_M_Product_Ingredients;
 import org.compiere.model.I_M_Product_Nutrition;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +18,10 @@ import org.springframework.stereotype.Component;
 public class M_Product_CopyTemplateCustomizer implements CopyTemplateCustomizer
 {
 	@Override
-	public String getTableName() {return I_M_Product.Table_Name;}
+	public String getTableName()
+	{
+		return I_M_Product.Table_Name;
+	}
 
 	@Override
 	public @NonNull InSetPredicate<String> getChildTableNames()
@@ -29,6 +33,7 @@ public class M_Product_CopyTemplateCustomizer implements CopyTemplateCustomizer
 				I_M_Product_AlbertaTherapy.Table_Name,
 				I_M_Product_AlbertaPackagingUnit.Table_Name,
 				I_M_Product_Allergen.Table_Name,
+				I_M_Product_Ingredients.Table_Name,
 				I_M_Product_Nutrition.Table_Name);
 	}
 }

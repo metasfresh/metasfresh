@@ -38,6 +38,7 @@ import lombok.With;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
@@ -70,10 +71,11 @@ public class Dimension implements Comparable<Dimension>
 	@Nullable String userElementString5;
 	@Nullable String userElementString6;
 	@Nullable String userElementString7;
-	@Nullable YearAndCalendarId harvestingYearAndCalendarId;
-
+	@Nullable BigDecimal userElementNumber1;
+	@Nullable BigDecimal userElementNumber2;
 	@Nullable Instant userElementDate1;
 	@Nullable Instant userElementDate2;
+	@Nullable YearAndCalendarId harvestingYearAndCalendarId;
 
 	public static boolean equals(@Nullable final Dimension d1, @Nullable final Dimension d2)
 	{
@@ -118,6 +120,8 @@ public class Dimension implements Comparable<Dimension>
 				.userElementString5(CoalesceUtil.coalesce(this.userElementString5, other.userElementString5))
 				.userElementString6(CoalesceUtil.coalesce(this.userElementString6, other.userElementString6))
 				.userElementString7(CoalesceUtil.coalesce(this.userElementString7, other.userElementString7))
+				.userElementNumber1(CoalesceUtil.coalesce(this.userElementNumber1, other.userElementNumber1))
+				.userElementNumber2(CoalesceUtil.coalesce(this.userElementNumber2, other.userElementNumber2))
 				.harvestingYearAndCalendarId(CoalesceUtil.coalesce(this.harvestingYearAndCalendarId, other.harvestingYearAndCalendarId))
 				.build();
 
@@ -157,6 +161,8 @@ public class Dimension implements Comparable<Dimension>
 		@Nullable HashSet<Integer> user2_ID = null;
 		@Nullable HashSet<Integer> userElement1Id = null;
 		@Nullable HashSet<Integer> userElement2Id = null;
+		@Nullable HashSet<BigDecimal> userElementNumber1 = null;
+		@Nullable HashSet<BigDecimal> userElementNumber2 = null;
 		@Nullable HashSet<String> userElementString1 = null;
 		@Nullable HashSet<String> userElementString2 = null;
 		@Nullable HashSet<String> userElementString3 = null;
@@ -181,6 +187,8 @@ public class Dimension implements Comparable<Dimension>
 			user2_ID = collectValueIfPositive(user2_ID, dimension.getUser2_ID());
 			userElement1Id = collectValueIfPositive(userElement1Id, dimension.getUserElement1Id());
 			userElement2Id = collectValueIfPositive(userElement2Id, dimension.getUserElement2Id());
+			userElementNumber1 = collectValueIfNotNull(userElementNumber1, dimension.getUserElementNumber1());
+			userElementNumber2 = collectValueIfNotNull(userElementNumber2, dimension.getUserElementNumber2());
 			userElementString1 = collectValueIfNotNull(userElementString1, dimension.getUserElementString1());
 			userElementString2 = collectValueIfNotNull(userElementString2, dimension.getUserElementString2());
 			userElementString3 = collectValueIfNotNull(userElementString3, dimension.getUserElementString3());
@@ -205,6 +213,8 @@ public class Dimension implements Comparable<Dimension>
 				.user2_ID(singleElementOrZero(user2_ID))
 				.userElement1Id(singleElementOrZero(userElement1Id))
 				.userElement2Id(singleElementOrZero(userElement2Id))
+				.userElementNumber1(CollectionUtils.singleElementOrNull(userElementNumber1))
+				.userElementNumber2(CollectionUtils.singleElementOrNull(userElementNumber2))
 				.userElementString1(CollectionUtils.singleElementOrNull(userElementString1))
 				.userElementString2(CollectionUtils.singleElementOrNull(userElementString2))
 				.userElementString3(CollectionUtils.singleElementOrNull(userElementString3))

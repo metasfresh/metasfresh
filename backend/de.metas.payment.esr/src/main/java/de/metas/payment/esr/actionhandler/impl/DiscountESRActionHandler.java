@@ -16,7 +16,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 
 /**
- * Handler for {@link de.metas.payment.esr.model.X_ESR_ImportLine#EESR_PAYMENT_ACTION_Discount}. This handler discounts the open amount of the line's invoice. For lines that don't have an
+ * Handler for {@link de.metas.payment.esr.model.X_ESR_ImportLine#ESR_PAYMENT_ACTION_Discount}. This handler discounts the open amount of the line's invoice. For lines that don't have an
  * invoice, the handler does nothing.
  * 
  */

@@ -213,11 +213,13 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	{
 		if (!isAsyncBatchObserved(asyncBatchId))
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("notifyBatchFor - No observer registered to notify for asyncBatchId: {}", asyncBatchId.getRepoId());
+			// NOTE this can be a legit case the code is running on webui
+			Loggables.withLogger(logger, Level.DEBUG).addLog("notifyBatchFor - No observer registered to notify for asyncBatchId: {}", asyncBatchId.getRepoId());
 			return;
 		}
 
 		final BatchProgress asyncBatchProgress = asyncBatch2Completion.get(asyncBatchId);
+
 		asyncBatchProgress.updateWorkPackagesProgress(notifyRequest);
 	}
 

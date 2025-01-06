@@ -7,6 +7,8 @@ import org.compiere.model.I_M_InOutLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class InOutLineDimensionFactoryTest

@@ -8,11 +8,11 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.money.Money;
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductCategoryId;
+import de.metas.product.Product;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
@@ -44,9 +44,7 @@ import lombok.Singular;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
@@ -57,8 +55,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -121,7 +117,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_ProductName, //
 			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 20) })
-	private final String productName;
+	private final ITranslatableString productName;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, //
 			captionKey = I_M_Product.COLUMNNAME_M_Product_Category_ID, //
@@ -343,8 +339,8 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_M_Product_ID, //
 			widgetType = DocumentFieldWidgetType.Lookup, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_M_Product_ID, //
-			layouts = {@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 280, //
-			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)},
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 280, //
+					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) },
 			zoomInto = true)
 	private final LookupValue product;
 
@@ -423,6 +419,7 @@ public class MaterialCockpitRow implements IViewRow
 
 	@lombok.Builder(builderClassName = "MainRowBuilder", builderMethodName = "mainRowBuilder")
 	private MaterialCockpitRow(
+			@NonNull final MaterialCockpitRowCache cache,
 			@NonNull final MaterialCockpitRowLookups lookups,
 			final Quantity qtyDemandSalesOrderAtDate,
 			final Quantity qtyDemandSalesOrder,
@@ -457,7 +454,8 @@ public class MaterialCockpitRow implements IViewRow
 			final Quantity pmm_QtyPromised_NextDay,
 			@Singular final List<MaterialCockpitRow> includedRows,
 			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
-			@NonNull final Set<Integer> allIncludedStockRecordIds)
+			@NonNull final Set<Integer> allIncludedStockRecordIds,
+			@Nullable final QtyConvertor qtyConvertor)
 	{
 		this.rowType = DefaultRowType.Row;
 
@@ -476,60 +474,57 @@ public class MaterialCockpitRow implements IViewRow
 				MaterialCockpitUtil.WINDOWID_MaterialCockpitView,
 				documentId);
 
-		final IProductDAO productDAO = Services.get(IProductDAO.class);
+		final Product cockpitProduct = cache.getProductById(productId);
 
-		final I_M_Product productRecord = productDAO.getById(productId);
-		final I_M_Product_Category productCategoryRecord = productDAO.getProductCategoryById(ProductCategoryId.ofRepoId(productRecord.getM_Product_Category_ID()));
+		this.productValue = cockpitProduct.getValue();
+		this.productName = cockpitProduct.getName();
 
-		this.productValue = productRecord.getValue();
-		this.productName = productRecord.getName();
+		this.productCategoryOrSubRowName = cockpitProduct.getProductCategoryName();
 
-		this.productCategoryOrSubRowName = productCategoryRecord.getName();
+		final UomId uomId = CoalesceUtil.coalesce(cockpitProduct.getPackingUomId(), cockpitProduct.getUomId());
 
-		final UomId uomId = UomId.ofRepoId(CoalesceUtil.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID()));
+		final QtyConvertor convertor = qtyConvertor != null ? qtyConvertor : QtyConvertor.getNoOp(uomId);
+		this.uom = lookups.lookupUOMById(convertor.getTargetUomId());
 
-		this.uom = lookups.lookupUOMById(uomId);
-
-		final BPartnerId manufacturerId = BPartnerId.ofRepoIdOrNull(productRecord.getManufacturer_ID());
+		final BPartnerId manufacturerId = cockpitProduct.getManufacturerId();
 		this.manufacturer = lookups.lookupBPartnerById(manufacturerId);
 
 		this.product = lookups.lookupProductById(this.productId);
 
-
-		this.packageSize = productRecord.getPackageSize();
+		this.packageSize = cockpitProduct.getPackageSize();
 
 		this.includedRows = includedRows;
 
-		this.pmmQtyPromisedAtDate = Quantity.toBigDecimal(pmmQtyPromisedAtDate);
-		this.qtyDemandSalesOrderAtDate = Quantity.toBigDecimal(qtyDemandSalesOrderAtDate);
-		this.qtyDemandSalesOrder = Quantity.toBigDecimal(qtyDemandSalesOrder);
-		this.qtyDemandDDOrderAtDate = Quantity.toBigDecimal(qtyDemandDDOrderAtDate);
-		this.qtyDemandPPOrderAtDate = Quantity.toBigDecimal(qtyDemandPPOrderAtDate);
-		this.qtyDemandSumAtDate = Quantity.toBigDecimal(qtyDemandSumAtDate);
-		this.qtySupplyPPOrderAtDate = Quantity.toBigDecimal(qtySupplyPPOrderAtDate);
-		this.qtySupplyPurchaseOrderAtDate = Quantity.toBigDecimal(qtySupplyPurchaseOrderAtDate);
-		this.qtySupplyPurchaseOrder = Quantity.toBigDecimal(qtySupplyPurchaseOrder);
-		this.qtySupplyDDOrderAtDate = Quantity.toBigDecimal(qtySupplyDDOrderAtDate);
-		this.qtySupplySumAtDate = Quantity.toBigDecimal(qtySupplySumAtDate);
-		this.qtySupplyRequiredAtDate = Quantity.toBigDecimal(qtySupplyRequiredAtDate);
-		this.qtySupplyToScheduleAtDate = Quantity.toBigDecimal(qtySupplyToScheduleAtDate);
-		this.qtyMaterialentnahmeAtDate = Quantity.toBigDecimal(qtyMaterialentnahmeAtDate);
-		this.qtyStockCurrentAtDate = Quantity.toBigDecimal(qtyStockCurrentAtDate);
-		this.qtyExpectedSurplusAtDate = Quantity.toBigDecimal(qtyExpectedSurplusAtDate);
-		this.qtyOnHandStock = Quantity.toBigDecimal(qtyOnHandStock);
-		this.qtyStockEstimateCountAtDate = Quantity.toBigDecimal(qtyStockEstimateCountAtDate);
+		this.pmmQtyPromisedAtDate = Quantity.toBigDecimal(convertor.convert(pmmQtyPromisedAtDate));
+		this.qtyDemandSalesOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtyDemandSalesOrderAtDate));
+		this.qtyDemandSalesOrder = Quantity.toBigDecimal(convertor.convert(qtyDemandSalesOrder));
+		this.qtyDemandDDOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtyDemandDDOrderAtDate));
+		this.qtyDemandPPOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtyDemandPPOrderAtDate));
+		this.qtyDemandSumAtDate = Quantity.toBigDecimal(convertor.convert(qtyDemandSumAtDate));
+		this.qtySupplyPPOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplyPPOrderAtDate));
+		this.qtySupplyPurchaseOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplyPurchaseOrderAtDate));
+		this.qtySupplyPurchaseOrder = Quantity.toBigDecimal(convertor.convert(qtySupplyPurchaseOrder));
+		this.qtySupplyDDOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplyDDOrderAtDate));
+		this.qtySupplySumAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplySumAtDate));
+		this.qtySupplyRequiredAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplyRequiredAtDate));
+		this.qtySupplyToScheduleAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplyToScheduleAtDate));
+		this.qtyMaterialentnahmeAtDate = Quantity.toBigDecimal(convertor.convert(qtyMaterialentnahmeAtDate));
+		this.qtyStockCurrentAtDate = Quantity.toBigDecimal(convertor.convert(qtyStockCurrentAtDate));
+		this.qtyExpectedSurplusAtDate = Quantity.toBigDecimal(convertor.convert(qtyExpectedSurplusAtDate));
+		this.qtyOnHandStock = Quantity.toBigDecimal(convertor.convert(qtyOnHandStock));
+		this.qtyStockEstimateCountAtDate = Quantity.toBigDecimal(convertor.convert(qtyStockEstimateCountAtDate));
 		this.qtyStockEstimateTimeAtDate = qtyStockEstimateTimeAtDate;
 		this.qtyStockEstimateSeqNoAtDate = qtyStockEstimateSeqNoAtDate;
-		this.qtyInventoryCountAtDate = Quantity.toBigDecimal(qtyInventoryCountAtDate);
+		this.qtyInventoryCountAtDate = Quantity.toBigDecimal(convertor.convert(qtyInventoryCountAtDate));
 		this.qtyInventoryTimeAtDate = qtyInventoryTimeAtDate;
 
 		this.procurementStatus = procurementStatus;
 		this.highestPurchasePrice_AtDate = Money.toBigDecimalOrZero(highestPurchasePrice_AtDate);
-		this.qtyOrdered_PurchaseOrder_AtDate = Quantity.toBigDecimal(qtyOrdered_PurchaseOrder_AtDate);
-		this.qtyOrdered_SalesOrder_AtDate = Quantity.toBigDecimal(qtyOrdered_SalesOrder_AtDate);
-		this.availableQty_AtDate = Quantity.toBigDecimal(availableQty_AtDate);
-		this.remainingStock_AtDate = Quantity.toBigDecimal(remainingStock_AtDate);
-		this.pmm_QtyPromised_NextDay = Quantity.toBigDecimal(pmm_QtyPromised_NextDay);
+		this.qtyOrdered_PurchaseOrder_AtDate = Quantity.toBigDecimal(convertor.convert(qtyOrdered_PurchaseOrder_AtDate));
+		this.qtyOrdered_SalesOrder_AtDate = Quantity.toBigDecimal(convertor.convert(qtyOrdered_SalesOrder_AtDate));
+		this.availableQty_AtDate = Quantity.toBigDecimal(convertor.convert(availableQty_AtDate));
+		this.remainingStock_AtDate = Quantity.toBigDecimal(convertor.convert(remainingStock_AtDate));
+		this.pmm_QtyPromised_NextDay = Quantity.toBigDecimal(convertor.convert(pmm_QtyPromised_NextDay));
 
 		final List<Quantity> quantitiesToVerify = Arrays.asList(
 				pmmQtyPromisedAtDate,
@@ -572,6 +567,7 @@ public class MaterialCockpitRow implements IViewRow
 
 	@lombok.Builder(builderClassName = "AttributeSubRowBuilder", builderMethodName = "attributeSubRowBuilder")
 	private MaterialCockpitRow(
+			@NonNull final MaterialCockpitRowCache cache,
 			@NonNull final MaterialCockpitRowLookups lookups,
 			final int productId,
 			final LocalDate date,
@@ -605,7 +601,8 @@ public class MaterialCockpitRow implements IViewRow
 			final Quantity remainingStock_AtDate,
 			final Quantity pmm_QtyPromised_NextDay,
 			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
-			@NonNull final Set<Integer> allIncludedStockRecordIds)
+			@NonNull final Set<Integer> allIncludedStockRecordIds,
+			@Nullable final QtyConvertor qtyConvertor)
 	{
 		this.rowType = DefaultRowType.Line;
 
@@ -624,57 +621,58 @@ public class MaterialCockpitRow implements IViewRow
 
 		this.productId = ProductId.ofRepoId(productId);
 
-		final I_M_Product productRecord = loadOutOfTrx(productId, I_M_Product.class);
-		this.productValue = productRecord.getValue();
-		this.productName = productRecord.getName();
+		final Product cockpitProduct = cache.getProductById(this.productId);
+		this.productValue = cockpitProduct.getValue();
+		this.productName = cockpitProduct.getName();
 		this.productCategoryOrSubRowName = dimensionGroupName;
 
-		final UomId uomId = UomId.ofRepoId(CoalesceUtil.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID()));
-		this.uom = lookups.lookupUOMById(uomId);
+		final UomId uomId = CoalesceUtil.coalesce(cockpitProduct.getPackingUomId(), cockpitProduct.getUomId());
+		final QtyConvertor convertor = qtyConvertor != null ? qtyConvertor : QtyConvertor.getNoOp(uomId);
+		this.uom = lookups.lookupUOMById(convertor.getTargetUomId());
 
-		final BPartnerId manufacturerId = BPartnerId.ofRepoIdOrNull(productRecord.getManufacturer_ID());
+		final BPartnerId manufacturerId = cockpitProduct.getManufacturerId();
 		this.manufacturer = lookups.lookupBPartnerById(manufacturerId);
 
 		this.product = lookups.lookupProductById(this.productId);
 
-		this.packageSize = productRecord.getPackageSize();
+		this.packageSize = cockpitProduct.getPackageSize();
 
 		this.date = date;
 
 		this.includedRows = ImmutableList.of();
 
-		this.pmmQtyPromisedAtDate = Quantity.toBigDecimal(pmmQtyPromisedAtDate);
-		this.qtyDemandSalesOrderAtDate = Quantity.toBigDecimal(qtyDemandSalesOrderAtDate);
-		this.qtyDemandSalesOrder = Quantity.toBigDecimal(qtyDemandSalesOrder);
-		this.qtyDemandDDOrderAtDate = Quantity.toBigDecimal(qtyDemandDDOrderAtDate);
-		this.qtyDemandSumAtDate = Quantity.toBigDecimal(qtyDemandSumAtDate);
-		this.qtyDemandPPOrderAtDate = Quantity.toBigDecimal(qtyDemandPPOrderAtDate);
-		this.qtyMaterialentnahmeAtDate = Quantity.toBigDecimal(qtyMaterialentnahmeAtDate);
+		this.pmmQtyPromisedAtDate = Quantity.toBigDecimal(convertor.convert(pmmQtyPromisedAtDate));
+		this.qtyDemandSalesOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtyDemandSalesOrderAtDate));
+		this.qtyDemandSalesOrder = Quantity.toBigDecimal(convertor.convert(qtyDemandSalesOrder));
+		this.qtyDemandDDOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtyDemandDDOrderAtDate));
+		this.qtyDemandSumAtDate = Quantity.toBigDecimal(convertor.convert(qtyDemandSumAtDate));
+		this.qtyDemandPPOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtyDemandPPOrderAtDate));
+		this.qtyMaterialentnahmeAtDate = Quantity.toBigDecimal(convertor.convert(qtyMaterialentnahmeAtDate));
 
-		this.qtySupplyPurchaseOrderAtDate = Quantity.toBigDecimal(qtySupplyPurchaseOrderAtDate);
-		this.qtySupplyPurchaseOrder = Quantity.toBigDecimal(qtySupplyPurchaseOrder);
-		this.qtySupplyPPOrderAtDate = Quantity.toBigDecimal(qtySupplyPPOrderAtDate);
-		this.qtySupplyDDOrderAtDate = Quantity.toBigDecimal(qtySupplyDDOrderAtDate);
-		this.qtySupplySumAtDate = Quantity.toBigDecimal(qtySupplySumAtDate);
-		this.qtySupplyRequiredAtDate = Quantity.toBigDecimal(qtySupplyRequiredAtDate);
-		this.qtySupplyToScheduleAtDate = Quantity.toBigDecimal(qtySupplyToScheduleAtDate);
+		this.qtySupplyPurchaseOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplyPurchaseOrderAtDate));
+		this.qtySupplyPurchaseOrder = Quantity.toBigDecimal(convertor.convert(qtySupplyPurchaseOrder));
+		this.qtySupplyPPOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplyPPOrderAtDate));
+		this.qtySupplyDDOrderAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplyDDOrderAtDate));
+		this.qtySupplySumAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplySumAtDate));
+		this.qtySupplyRequiredAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplyRequiredAtDate));
+		this.qtySupplyToScheduleAtDate = Quantity.toBigDecimal(convertor.convert(qtySupplyToScheduleAtDate));
 
 		this.qtyStockCurrentAtDate = null;
-		this.qtyOnHandStock = Quantity.toBigDecimal(qtyOnHandStock);
-		this.qtyExpectedSurplusAtDate = Quantity.toBigDecimal(qtyExpectedSurplusAtDate);
-		this.qtyStockEstimateCountAtDate = Quantity.toBigDecimal(qtyStockEstimateCountAtDate);
+		this.qtyOnHandStock = Quantity.toBigDecimal(convertor.convert(qtyOnHandStock));
+		this.qtyExpectedSurplusAtDate = Quantity.toBigDecimal(convertor.convert(qtyExpectedSurplusAtDate));
+		this.qtyStockEstimateCountAtDate = Quantity.toBigDecimal(convertor.convert(qtyStockEstimateCountAtDate));
 		this.qtyStockEstimateTimeAtDate = qtyStockEstimateTimeAtDate;
 		this.qtyStockEstimateSeqNoAtDate = qtyStockEstimateSeqNoAtDate;
-		this.qtyInventoryCountAtDate = Quantity.toBigDecimal(qtyInventoryCountAtDate);
+		this.qtyInventoryCountAtDate = Quantity.toBigDecimal(convertor.convert(qtyInventoryCountAtDate));
 		this.qtyInventoryTimeAtDate = qtyInventoryTimeAtDate;
 
 		this.procurementStatus = procurementStatus;
 		this.highestPurchasePrice_AtDate = Money.toBigDecimalOrZero(highestPurchasePrice_AtDate);
-		this.qtyOrdered_PurchaseOrder_AtDate = Quantity.toBigDecimal(qtyOrdered_PurchaseOrder_AtDate);
-		this.qtyOrdered_SalesOrder_AtDate = Quantity.toBigDecimal(qtyOrdered_SalesOrder_AtDate);
-		this.availableQty_AtDate = Quantity.toBigDecimal(availableQty_AtDate);
-		this.remainingStock_AtDate = Quantity.toBigDecimal(remainingStock_AtDate);
-		this.pmm_QtyPromised_NextDay = Quantity.toBigDecimal(pmm_QtyPromised_NextDay);
+		this.qtyOrdered_PurchaseOrder_AtDate = Quantity.toBigDecimal(convertor.convert(qtyOrdered_PurchaseOrder_AtDate));
+		this.qtyOrdered_SalesOrder_AtDate = Quantity.toBigDecimal(convertor.convert(qtyOrdered_SalesOrder_AtDate));
+		this.availableQty_AtDate = Quantity.toBigDecimal(convertor.convert(availableQty_AtDate));
+		this.remainingStock_AtDate = Quantity.toBigDecimal(convertor.convert(remainingStock_AtDate));
+		this.pmm_QtyPromised_NextDay = Quantity.toBigDecimal(convertor.convert(pmm_QtyPromised_NextDay));
 
 		this.allIncludedCockpitRecordIds = ImmutableSet.copyOf(allIncludedCockpitRecordIds);
 		this.allIncludedStockRecordIds = ImmutableSet.copyOf(allIncludedStockRecordIds);
@@ -684,6 +682,7 @@ public class MaterialCockpitRow implements IViewRow
 
 	@Builder(builderClassName = "CountingSubRowBuilder", builderMethodName = "countingSubRowBuilder")
 	private MaterialCockpitRow(
+			@NonNull final MaterialCockpitRowCache cache,
 			@NonNull final MaterialCockpitRowLookups lookups,
 			final int productId,
 			@NonNull final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier,
@@ -698,7 +697,8 @@ public class MaterialCockpitRow implements IViewRow
 			@Nullable final Quantity qtyStockCurrentAtDate,
 			@Nullable final Quantity qtyOnHandStock,
 			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
-			@NonNull final Set<Integer> allIncludedStockRecordIds)
+			@NonNull final Set<Integer> allIncludedStockRecordIds,
+			@Nullable final QtyConvertor qtyConvertor)
 	{
 		this.rowType = DefaultRowType.Line;
 
@@ -723,15 +723,13 @@ public class MaterialCockpitRow implements IViewRow
 				aggregatorName = msgBL.getMsg(Env.getCtx(), "de.metas.ui.web.material.cockpit.MaterialCockpitRow.No_Plant_Info");
 			}
 		}
-		else if(detailsRowAggregation.isWarehouse())
+		else if (detailsRowAggregation.isWarehouse())
 		{
 
 			final WarehouseId warehouseId = WarehouseId.ofRepoIdOrNull(detailsRowAggregationIdentifier.getAggregationId());
-			if(warehouseId != null)
+			if (warehouseId != null)
 			{
-				final IWarehouseDAO warehousesDAO = Services.get(IWarehouseDAO.class);
-
-				aggregatorName = warehousesDAO.getWarehouseName(warehouseId);
+				aggregatorName = cache.getWarehouseById(warehouseId).getName();
 			}
 			else
 			{
@@ -755,45 +753,46 @@ public class MaterialCockpitRow implements IViewRow
 
 		this.productId = ProductId.ofRepoId(productId);
 
-		final I_M_Product productRecord = loadOutOfTrx(productId, I_M_Product.class);
-		this.productValue = productRecord.getValue();
-		this.productName = productRecord.getName();
+		final Product cockpitProduct = cache.getProductById(this.productId);
+		this.productValue = cockpitProduct.getValue();
+		this.productName = cockpitProduct.getName();
 		this.productCategoryOrSubRowName = aggregatorName;
 
-		final UomId uomId = UomId.ofRepoId(CoalesceUtil.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID()));
-		this.uom = lookups.lookupUOMById(uomId);
+		final UomId uomId = CoalesceUtil.coalesce(cockpitProduct.getPackingUomId(), cockpitProduct.getUomId());
+		final QtyConvertor convertor = qtyConvertor != null ? qtyConvertor : QtyConvertor.getNoOp(uomId);
+		this.uom = lookups.lookupUOMById(convertor.getTargetUomId());
 
-		final BPartnerId manufacturerId = BPartnerId.ofRepoIdOrNull(productRecord.getManufacturer_ID());
+		final BPartnerId manufacturerId = (cockpitProduct.getManufacturerId());
 		this.manufacturer = lookups.lookupBPartnerById(manufacturerId);
 
 		this.product = lookups.lookupProductById(this.productId);
 
-		this.packageSize = productRecord.getPackageSize();
+		this.packageSize = cockpitProduct.getPackageSize();
 
 		this.date = date;
 		this.includedRows = ImmutableList.of();
 
 		this.pmmQtyPromisedAtDate = null;
 		this.qtyDemandSalesOrderAtDate = null;
-		this.qtyDemandSalesOrder = Quantity.toBigDecimal(qtyDemandSalesOrder);
+		this.qtyDemandSalesOrder = Quantity.toBigDecimal(convertor.convert(qtyDemandSalesOrder));
 		this.qtyDemandDDOrderAtDate = null;
 		this.qtyDemandSumAtDate = null;
 		this.qtySupplyPPOrderAtDate = null;
 		this.qtySupplyPurchaseOrderAtDate = null;
-		this.qtySupplyPurchaseOrder = Quantity.toBigDecimal(qtySupplyPurchaseOrder);
+		this.qtySupplyPurchaseOrder = Quantity.toBigDecimal(convertor.convert(qtySupplyPurchaseOrder));
 		this.qtyMaterialentnahmeAtDate = null;
 		this.qtyDemandPPOrderAtDate = null;
 		this.qtySupplyDDOrderAtDate = null;
 		this.qtySupplySumAtDate = null;
 		this.qtySupplyRequiredAtDate = null;
 		this.qtySupplyToScheduleAtDate = null;
-		this.qtyStockCurrentAtDate = Quantity.toBigDecimal(qtyStockCurrentAtDate);
-		this.qtyOnHandStock = Quantity.toBigDecimal(qtyOnHandStock);
+		this.qtyStockCurrentAtDate = Quantity.toBigDecimal(convertor.convert(qtyStockCurrentAtDate));
+		this.qtyOnHandStock = Quantity.toBigDecimal(convertor.convert(qtyOnHandStock));
 		this.qtyExpectedSurplusAtDate = null;
-		this.qtyStockEstimateCountAtDate = Quantity.toBigDecimal(qtyStockEstimateCountAtDate);
+		this.qtyStockEstimateCountAtDate = Quantity.toBigDecimal(convertor.convert(qtyStockEstimateCountAtDate));
 		this.qtyStockEstimateTimeAtDate = qtyStockEstimateTimeAtDate;
 		this.qtyStockEstimateSeqNoAtDate = qtyStockEstimateSeqNoAtDate;
-		this.qtyInventoryCountAtDate = Quantity.toBigDecimal(qtyInventoryCountAtDate);
+		this.qtyInventoryCountAtDate = Quantity.toBigDecimal(convertor.convert(qtyInventoryCountAtDate));
 		this.qtyInventoryTimeAtDate = qtyInventoryTimeAtDate;
 
 		this.procurementStatus = null;

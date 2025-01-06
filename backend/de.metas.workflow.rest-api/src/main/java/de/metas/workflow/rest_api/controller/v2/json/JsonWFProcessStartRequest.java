@@ -27,7 +27,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import de.metas.workflow.rest_api.model.MobileApplicationId;
+import de.metas.mobile.application.MobileApplicationId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

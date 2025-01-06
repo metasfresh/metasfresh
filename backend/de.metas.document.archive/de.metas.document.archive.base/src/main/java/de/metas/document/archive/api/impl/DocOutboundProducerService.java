@@ -30,10 +30,10 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 import de.metas.document.archive.api.IDocOutboundProducerService;
-import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.spi.IDocOutboundProducer;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.compiere.model.I_C_Doc_Outbound_Config;
 
 /**
  * Default implementation of {@link IDocOutboundProducerService}

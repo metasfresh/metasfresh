@@ -26,6 +26,7 @@ import de.metas.logging.LogManager;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.tracking.AllEventsProcessedEvent;
 import de.metas.material.event.tracking.EventProgress;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -63,7 +64,7 @@ public class MaterialEventObserver
 
 		if (eventProgress != null)
 		{
-			logger.warn("Trace ID = {} is already registered!" + traceId);
+			logger.warn("Trace ID = {} is already registered!", traceId);
 			return;
 		}
 
@@ -72,7 +73,7 @@ public class MaterialEventObserver
 
 	public void reportEventEnqueued(@NonNull final MaterialEvent event)
 	{
-		final String eventTraceId = event.getEventDescriptor().getTraceId();
+		final String eventTraceId = event.getTraceId();
 
 		if (eventTraceId == null)
 		{
@@ -81,7 +82,7 @@ public class MaterialEventObserver
 
 		if (!traceId2EventProgress.containsKey(eventTraceId))
 		{
-			logger.warn("Trace ID = {} is not registered! registering it now..." + eventTraceId);
+			logger.warn("Trace ID = {} is not registered! registering it now...", eventTraceId);
 
 			observe(eventTraceId);
 		}
@@ -90,12 +91,12 @@ public class MaterialEventObserver
 
 		Check.assumeNotNull(eventProgress, "EventProgress cannot be null at this point! It is initialized on `observe(traceId)`");
 
-		eventProgress.enqueue(event.getEventDescriptor().getEventId());
+		eventProgress.enqueue(event.getEventId());
 	}
 
 	public void reportEventProcessed(@NonNull final MaterialEvent event)
 	{
-		final String traceId = event.getEventDescriptor().getTraceId();
+		final String traceId = event.getTraceId();
 
 		if (traceId == null)
 		{
@@ -111,7 +112,7 @@ public class MaterialEventObserver
 
 		Check.assumeNotNull(eventProgress, "EventProgress cannot be null at this point! It is initialized on `observe(traceId)`");
 
-		eventProgress.markAsProcessed(event.getEventDescriptor().getEventId());
+		eventProgress.markAsProcessed(event.getEventId());
 
 		fireAllEventsProcessedCheck(traceId);
 	}
@@ -120,7 +121,7 @@ public class MaterialEventObserver
 	{
 		if (traceId2EventProgress.get(traceId) == null)
 		{
-			logger.warn("No observer registered to notify for traceId: " + traceId);
+			logger.warn("No observer registered to notify for traceId: {}", traceId);
 			return;
 		}
 
@@ -188,8 +189,7 @@ public class MaterialEventObserver
 	private void notifyLocalAndRemoteObserver(@NonNull final String traceId)
 	{
 		final AllEventsProcessedEvent allEventsProcessedEvent = AllEventsProcessedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(Env.getAD_Client_ID(), OrgId.ANY.getRepoId()))
-				.traceId(traceId)
+				.eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(ClientAndOrgId.ofClientAndOrg(Env.getClientId(), OrgId.ANY), traceId))
 				.build();
 
 		SpringContextHolder.instance.getBean(PostMaterialEventService.class)

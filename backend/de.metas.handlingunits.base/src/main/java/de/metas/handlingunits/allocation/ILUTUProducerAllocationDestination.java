@@ -22,7 +22,9 @@ package de.metas.handlingunits.allocation;
  * #L%
  */
 
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.QtyTU;
+import de.metas.handlingunits.allocation.transfer.LUTUResult;
 import de.metas.handlingunits.document.IHUAllocations;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -44,6 +46,8 @@ import java.math.BigDecimal;
 public interface ILUTUProducerAllocationDestination extends IHUProducerAllocationDestination
 {
 	I_M_HU_PI getTUPI();
+
+	void setTUPI(@NonNull HuPackingInstructionsId tuPIId);
 
 	/**
 	 * Set the PI for the TU that shall be build.
@@ -80,6 +84,8 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	Capacity getCUPerTU(ProductId cuProductId);
 
 	I_M_HU_PI getLUPI();
+
+	public void setLUPI(final HuPackingInstructionsId luPIId);
 
 	/**
 	 * Specifies the PI for the loading unit. May be {@code null} for the case that a TU without LU is needed.
@@ -136,6 +142,8 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	void setMaxLUs(final int maxLUs);
 
 	void setMaxTUsPerLU(@NonNull QtyTU maxTUsPerLU);
+
+	void setMaxTUsPerLUInfinite();
 
 	/**
 	 * @return maximum amount of LUs to be created
@@ -212,8 +220,8 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	/**
 	 * If this instance was created via {@link ILUTUConfigurationFactory#createLUTUProducerAllocationDestination(I_M_HU_LUTU_Configuration)} then this getter shall return the config that was passed to the factory.
 	 * <p>
-	 * When the lutu config is returned by this getter, then this producer won't consider any further changes on this configuration. It is used only for {@link I_M_HU#setM_HU_LUTU_Configuration(I_M_HU_LUTU_Configuration)}.
-	 * Also, please don't rely on values from this configuration when calculating how much it will allocate but better ask methods like {@link #getQtyCUPerTU()} etc.
+	 * When the LU/TU config is returned by this getter, then this producer won't consider any further changes on this configuration. It is used only for {@link I_M_HU#setM_HU_LUTU_Configuration(I_M_HU_LUTU_Configuration)}.
+	 * Also, please don't rely on values from this configuration when calculating how much it will allocate but better ask methods like {@link #getCUPerTU(ProductId)} etc.
 	 *
 	 * @return LU/TU configuration reference or null
 	 */
@@ -249,7 +257,6 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	 * <li>positive quantity if maxium quantity could be calculated
 	 * </ul>
 	 * <p>
-	 * The UOM of returned quantity is {@link #getCUUOM()}.
 	 */
 	Quantity calculateTotalQtyCU(ProductId cuProductId);
 
@@ -271,4 +278,6 @@ public interface ILUTUProducerAllocationDestination extends IHUProducerAllocatio
 	void setExistingHUs(IHUAllocations existingHUs);
 
 	void setIsDestroyExistingHUs(boolean isDestroyExistingHUs);
+
+	LUTUResult getResult();
 }

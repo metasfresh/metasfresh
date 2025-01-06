@@ -23,6 +23,8 @@
 package de.metas.cucumber.stepdefs.contract;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.contracts.model.I_ModCntr_InvoicingGroup;
+import de.metas.contracts.model.I_ModCntr_InvoicingGroup_Product;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
@@ -39,14 +41,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_ModCntr_InvoicingGroup;
-import org.compiere.model.I_ModCntr_InvoicingGroup_Product;
 import org.compiere.util.Env;
 
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 
 public class ModCntr_InvoicingGroup_Product_StepDef

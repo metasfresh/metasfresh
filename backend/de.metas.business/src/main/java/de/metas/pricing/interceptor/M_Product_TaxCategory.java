@@ -115,7 +115,7 @@ public class M_Product_TaxCategory
 			priceListVersionQuery = queryBL.createQueryBuilder(I_M_PriceList.class)
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_M_PriceList.COLUMNNAME_C_Country_ID, productTaxCategory.getC_Country_ID())
-					.andCollectChildren(I_M_PriceList_Version.COLUMN_M_PriceList_ID)
+					.andCollectChildren(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, I_M_PriceList_Version.class)
 					.addOnlyActiveRecordsFilter()
 					.addCompareFilter(I_M_PriceList_Version.COLUMNNAME_ValidFrom, CompareQueryFilter.Operator.GREATER_OR_EQUAL, productTaxCategory.getValidFrom())
 					.create();

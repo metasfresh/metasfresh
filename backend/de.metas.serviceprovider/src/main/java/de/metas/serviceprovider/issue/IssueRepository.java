@@ -24,8 +24,8 @@ package de.metas.serviceprovider.issue;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.cache.model.ModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
@@ -325,7 +325,7 @@ public class IssueRepository
 				.roughEstimation(record.getRoughEstimation())
 				.issueEffort(Effort.ofNullable(record.getIssueEffort()))
 				.aggregatedEffort(Effort.ofNullable(record.getAggregatedEffort()))
-				.invoicableChildEffort(Quantitys.create(record.getInvoiceableChildEffort(), UomId.ofRepoId(record.getEffort_UOM_ID())))
+				.invoicableChildEffort(Quantitys.of(record.getInvoiceableChildEffort(), UomId.ofRepoId(record.getEffort_UOM_ID())))
 				.latestActivityOnIssue(TimeUtil.asInstant(record.getLatestActivity()))
 				.latestActivityOnSubIssues(TimeUtil.asInstant(record.getLatestActivityOnSubIssues()))
 				.externalIssueNo(record.getExternalIssueNo())

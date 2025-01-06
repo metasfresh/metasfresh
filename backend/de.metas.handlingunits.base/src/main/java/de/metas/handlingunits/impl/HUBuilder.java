@@ -28,6 +28,7 @@ import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUIterator;
+import de.metas.handlingunits.IHUIteratorListener;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -528,6 +529,14 @@ import java.util.stream.Collectors;
 			hu.setClearanceDate(clearanceDate != null ? clearanceDate.toTimestamp() : null);
 		}
 	}
+
+	@Override
+	public IHUBuilder setListener(@NonNull final IHUIteratorListener listener)
+	{
+		super.setListener(listener);
+		return this;
+	}
+
 
 	/**
 	 * Builder used to create {@link I_M_HU_Item}s for a given {@link I_M_HU}. Also see the comments within the code to figure out what it does.

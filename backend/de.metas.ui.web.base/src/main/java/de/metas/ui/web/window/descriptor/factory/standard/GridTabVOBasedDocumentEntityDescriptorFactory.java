@@ -73,6 +73,7 @@ import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.I_AD_UI_ElementField;
+import org.compiere.model.POInfo;
 import org.compiere.model.X_AD_UI_ElementField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Evaluatees;
@@ -183,6 +184,9 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 		collectSpecialFieldsDone();
 	}
 
+	@NonNull
+	public String getTableName() {return documentEntity().getTableNameNotNull();}
+
 	public ILogicExpression getTabDisplayLogic()
 	{
 		return documentEntity().getDisplayLogic();
@@ -241,7 +245,7 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 				.setChildToParentLinkColumnNames(extractChildParentLinkColumnNames(gridTabVO, parentTabVO))
 				.setSqlWhereClause(gridTabVO.getWhereClause());
 
-		final ILogicExpression allowInsert = ConstantLogicExpression.of(gridTabVO.isInsertRecord());
+		final ILogicExpression allowInsert = extractTabInsertLogic(gridTabVO);
 		final ILogicExpression allowDelete = ConstantLogicExpression.of(gridTabVO.isDeleteable());
 		final ILogicExpression readonlyLogic = extractTabReadonlyLogic(gridTabVO);
 		final ILogicExpression allowCreateNewLogic = allowInsert.andNot(readonlyLogic);
@@ -314,6 +318,27 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 				.message(message)
 				.detail(detail)
 				.build();
+	}
+
+	private static ILogicExpression extractTabInsertLogic(final @NonNull GridTabVO gridTabVO)
+	{
+		//
+		// Check if insert is always enabled
+		if (gridTabVO.isInsertRecord())
+		{
+			return ConstantLogicExpression.TRUE;
+		}
+
+		//
+		// Check if tab's insertLogic expression is constant
+		final ILogicExpression tabInsertLogic = gridTabVO.getInsertLogicExpr();
+		if (tabInsertLogic.isConstantTrue())
+		{
+			return ConstantLogicExpression.TRUE;
+		}
+
+		return tabInsertLogic;
+
 	}
 
 	// keyColumn==true will mean "readOnly" further down the road
@@ -755,7 +780,7 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 		{
 			if (IColumnBL.isRecordIdColumnName(fieldName))
 			{
-				final String zoomIntoTableIdFieldName = adColumnBL.getTableIdColumnName(tableName, fieldName).orElse(null);
+				final String zoomIntoTableIdFieldName = POInfo.getPOInfoNotNull(tableName).getTableIdColumnName(fieldName).orElse(null);
 				if (zoomIntoTableIdFieldName != null)
 				{
 					return ButtonFieldActionDescriptor.genericZoomInto(zoomIntoTableIdFieldName);

@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoicecandidate.SalesInvoiceCandidateDocumentId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceLineDocumentId;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
-import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -56,16 +56,16 @@ public class CommissionInstanceDAO
 	}
 
 	/**
-	 * @return true if any of the {@code salesCandDocIds}'s {@link InvoiceLineId}s is referenced by a commission instance.
+	 * @return true if any of the {@code salesCandDocIds}'s {@link InvoiceAndLineId}s is referenced by a commission instance.
 	 */
 	public boolean isILsReferencedByCommissionInstances(@NonNull final Set<SalesInvoiceLineDocumentId> salesInvoiceLineDocumentIds)
 	{
-		final ImmutableSet<InvoiceLineId> invoiceLineIds = salesInvoiceLineDocumentIds.stream()
-				.map(SalesInvoiceLineDocumentId::getInvoiceLineId)
+		final ImmutableSet<InvoiceAndLineId> invoiceAndLineIds = salesInvoiceLineDocumentIds.stream()
+				.map(SalesInvoiceLineDocumentId::getInvoiceAndLineId)
 				.collect(ImmutableSet.toImmutableSet());
 
 		return queryBL.createQueryBuilder(I_C_Commission_Instance.class)
-				.addInArrayFilter(I_C_Commission_Instance.COLUMNNAME_C_InvoiceLine_ID, invoiceLineIds)
+				.addInArrayFilter(I_C_Commission_Instance.COLUMNNAME_C_InvoiceLine_ID, invoiceAndLineIds)
 				.create()
 				.anyMatch();
 	}

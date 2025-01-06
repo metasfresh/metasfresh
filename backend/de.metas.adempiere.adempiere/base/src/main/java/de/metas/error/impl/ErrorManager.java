@@ -15,6 +15,7 @@ import de.metas.process.ProcessMDC;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -67,7 +68,6 @@ public class ErrorManager implements IErrorManager
 				.build());
 	}
 
-
 	@Override
 	@NonNull
 	public AdIssueId insertRemoteIssue(@NonNull final InsertRemoteIssueRequest request)
@@ -79,18 +79,14 @@ public class ErrorManager implements IErrorManager
 	private AdIssueId insertRemoteIssueInTrx(@NonNull final InsertRemoteIssueRequest request)
 	{
 		final I_AD_Issue issue = AdIssueFactory.prepareNewIssueRecord(Env.getCtx());
-
-		final IssueCategory issueCategory = IssueCategory.ofNullableCodeOrOther(request.getIssueCategory());
-		issue.setIssueCategory(issueCategory.getCode());
-
+		issue.setIssueCategory(IssueCategory.ofNullableCodeOrOther(request.getIssueCategory()).getCode());
 		issue.setIssueSummary(request.getIssueSummary());
-
 		issue.setSourceClassName(request.getSourceClassName());
 		issue.setSourceMethodName(request.getSourceMethodName());
 		issue.setStackTrace(request.getStacktrace());
-		issue.setAD_PInstance_ID(request.getPInstance_ID().getRepoId());
-		issue.setAD_Org_ID(request.getOrgId().getRepoId() );
-
+		issue.setAD_PInstance_ID(PInstanceId.toRepoId(request.getPInstance_ID()));
+		issue.setAD_Org_ID(request.getOrgId().getRepoId());
+		issue.setFrontendURL(StringUtils.trimBlankToNull(request.getFrontendUrl()));
 		saveRecord(issue);
 		return AdIssueId.ofRepoId(issue.getAD_Issue_ID());
 	}
@@ -131,7 +127,7 @@ public class ErrorManager implements IErrorManager
 				for (final StackTraceElement element : throwable.getStackTrace())
 				{
 					final String s = element.toString();
-					if (s.indexOf("adempiere") != -1)
+					if (s.contains("adempiere"))
 					{
 						errorTrace.append(s).append("\n");
 						if (count == 0)

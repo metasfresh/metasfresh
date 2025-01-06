@@ -20,9 +20,14 @@
  * #L%
  */
 
-const audioCtx = new AudioContext();
-export const beep = ({ beepFrequency, beepDurationMillis, vibrateMillis, beepVolume, ...others }) => {
-  console.trace('beep', { beepFrequency, beepDurationMillis, beepVolume, vibrateMillis, ...others });
+let audioCtx = null; // lazy to allow jest testing
+
+export const beep = ({ beepFrequency, beepDurationMillis, vibrateMillis, beepVolume }) => {
+  if (!audioCtx) {
+    audioCtx = new AudioContext();
+  }
+
+  // console.trace('beep', { beepFrequency, beepDurationMillis, beepVolume, vibrateMillis, audioCtx });
 
   try {
     //

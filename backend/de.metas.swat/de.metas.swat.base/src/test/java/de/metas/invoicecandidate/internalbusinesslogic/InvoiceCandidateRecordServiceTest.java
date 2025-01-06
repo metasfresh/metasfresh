@@ -21,6 +21,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_InOut;
+import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -224,6 +225,7 @@ class InvoiceCandidateRecordServiceTest
 		final I_M_Product productRecord = newInstance(I_M_Product.class);
 		productRecord.setC_UOM_ID(stockUomRecord.getC_UOM_ID());
 		productRecord.setM_Product_ID(PRODUCT_ID.getRepoId());
+		productRecord.setProductType(X_M_Product.PRODUCTTYPE_Item);
 		saveRecord(productRecord);
 
 		final I_C_UOM icUomRecord = uomConversionHelper.createUOM(2);
@@ -425,6 +427,7 @@ class InvoiceCandidateRecordServiceTest
 	private I_M_Product createProductRecord(@NonNull final I_C_UOM uom)
 	{
 		final I_M_Product productRecord = newInstance(I_M_Product.class);
+		productRecord.setProductType(X_M_Product.PRODUCTTYPE_Item);
 		productRecord.setC_UOM_ID(uom.getC_UOM_ID());
 		productRecord.setM_Product_ID(PRODUCT_ID.getRepoId());
 		saveRecord(productRecord);

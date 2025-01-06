@@ -31,10 +31,13 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceQuery;
 import de.metas.invoice.InvoiceTax;
+import de.metas.invoice.InvoiceMultiQuery;
+import de.metas.invoice.SingleInvoiceQuery;
 import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
@@ -77,11 +80,13 @@ public interface IInvoiceDAO extends ISingletonService
 	 */
 	I_C_InvoiceLine createInvoiceLine(org.compiere.model.I_C_Invoice invoice);
 
-	I_C_InvoiceLine retrieveLineById(InvoiceLineId invoiceLineId);
+	I_C_InvoiceLine retrieveLineById(InvoiceAndLineId invoiceAndLineId);
 
 	List<I_C_InvoiceLine> retrieveLines(org.compiere.model.I_C_Invoice invoice);
 
 	List<I_C_InvoiceLine> retrieveLines(@NonNull InvoiceId invoiceId);
+
+	Amount retrieveOpenAmt(org.compiere.model.I_C_Invoice invoice, boolean creditMemoAdjusted);
 
 	List<I_C_InvoiceLine> retrieveLines(org.compiere.model.I_C_Invoice invoice, String trxName);
 
@@ -98,7 +103,9 @@ public interface IInvoiceDAO extends ISingletonService
 
 	ImmutableSet<InvoiceId> retainReferencingCompletedInvoices(Collection<InvoiceId> invoiceIds, DocBaseAndSubType targetDocType);
 
-	List<I_C_InvoiceLine> retrieveReferringLines(@NonNull InvoiceLineId invoiceLineId);
+	List<I_C_InvoiceLine> retrieveReferringLines(@NonNull InvoiceAndLineId invoiceAndLineId);
+
+	I_C_InvoiceLine retrieveLineById(@NonNull InvoiceLineId invoiceLineId);
 
 	/**
 	 * Search by the invoice when the document number and the bpartner id are known.
@@ -185,21 +192,19 @@ public interface IInvoiceDAO extends ISingletonService
 
 	ImmutableMap<InvoiceId, String> getDocumentNosByInvoiceIds(@NonNull Collection<InvoiceId> invoiceIds);
 
-	org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(InvoiceLineId invoiceLineId);
+	org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(InvoiceAndLineId invoiceAndLineId);
 
 	List<I_C_Invoice> retrieveBySalesrepPartnerId(BPartnerId salesRepBPartnerId, InstantInterval invoicedDateInterval);
 
 	List<I_C_Invoice> retrieveSalesInvoiceByPartnerId(BPartnerId salesRepBPartnerId, InstantInterval invoicedDateInterval);
 
-	Optional<InvoiceId> retrieveIdByInvoiceQuery(InvoiceQuery query);
+	Optional<InvoiceId> retrieveIdByInvoiceQuery(SingleInvoiceQuery query);
 
 	<T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNo(String documentNo, OrgId orgId, Class<T> modelClass);
 
 	ImmutableList<I_C_Invoice> retrieveUnpaid(UnpaidInvoiceQuery query);
 
-	Collection<InvoiceLineId> getInvoiceLineIds(final InvoiceId id);
-
-	boolean isReferencedInvoiceReversed(I_C_Invoice invoiceExt);
+	Collection<InvoiceAndLineId> getInvoiceLineIds(final InvoiceId id);
 
 	Collection<String> retrievePaidInvoiceDocNosForFilter(IQueryFilter<org.compiere.model.I_C_Invoice> filter);
 
@@ -207,4 +212,11 @@ public interface IInvoiceDAO extends ISingletonService
 	I_C_InvoiceLine getOfInOutLine(@Nullable final I_M_InOutLine inOutLine);
 
 	Stream<org.compiere.model.I_C_Invoice> stream(@NonNull IQueryFilter<org.compiere.model.I_C_Invoice> invoiceFilter);
+
+	ImmutableSet<InvoiceId> retrieveInvoiceIds(@NonNull InvoiceMultiQuery multiQuery);
+	/**
+	 * Be sure to check the code! The method might return {@code true} at unexpected times!
+	 * E.g. if {@code invoice} references no invoice at all, then this method also returns true!
+	 */
+	boolean isReferencedInvoiceReversed(@NonNull I_C_Invoice invoice);
 }

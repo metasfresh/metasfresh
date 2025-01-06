@@ -68,7 +68,7 @@ public class InOutCostsView_CreateMatchInv extends InOutCostsViewBasedProcess
 
 		return ExplainedOptional.of(
 				CreateMatchInvoiceRequest.builder()
-						.invoiceLineId(getView().getInvoiceLineId())
+						.invoiceAndLineId(getView().getInvoiceLineId())
 						.inoutCostIds(selectedInOutCostIds)
 						.build());
 	}

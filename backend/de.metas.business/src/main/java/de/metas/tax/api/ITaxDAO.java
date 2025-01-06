@@ -40,11 +40,8 @@ public interface ITaxDAO extends ISingletonService
 	 */
 	TaxId retrieveExemptTax(OrgId orgId);
 
-	/**
-	 * getDefaultTax Get the default tax id associated with this tax category
-	 */
-	TaxId getDefaultTaxId(I_C_TaxCategory taxCategory);
-
+	Tax getDefaultTax(TaxCategoryId taxCategoryId);
+	
 	/**
 	 * If the taxBL can't find a tax, it shall return this one instead
 	 *
@@ -61,6 +58,8 @@ public interface ITaxDAO extends ISingletonService
 	Optional<TaxCategoryId> getTaxCategoryIdByName(@NonNull String name);
 
 	Percent getRateById(@NonNull TaxId taxId);
+
+	Optional<Tax> getByIfPresent(@NonNull TaxQuery taxQuery);
 
 	/**
 	 * Get tax category by criteria.

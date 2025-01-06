@@ -7,6 +7,8 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.IProductCostingBL;
+import de.metas.gs1.GTIN;
+import de.metas.handlingunits.ClearanceStatus;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
@@ -30,15 +32,21 @@ import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
+import org.compiere.model.I_C_InvoiceLine;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.MAttributeSet;
@@ -72,6 +80,7 @@ public final class ProductBL implements IProductBL
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
 	public I_M_Product getById(@NonNull final ProductId productId)
@@ -227,6 +236,32 @@ public final class ProductBL implements IProductBL
 		// NOTE: we rely on table cache config
 		final I_M_Product product = getById(productId);
 		return isStocked(product);
+	}
+
+	@Override
+	public boolean isItemType(@Nullable final ProductId productId)
+	{
+		if (productId == null)
+		{
+			logger.debug("isItemType - productId=null; -> return false");
+			return false;
+		}
+
+		// NOTE: we rely on table cache config
+		final I_M_Product product = getById(productId);
+		return isItemType(product);
+	}
+
+	private boolean isItemType(@NonNull final I_M_Product product)
+	{
+		final ProductType productType = ProductType.ofCode(product.getProductType());
+		final boolean isItemProduct = productType.isItem();
+
+		logger.debug("isItemProduct - M_Product_ID={} has type={}; -> return {}",
+					 product.getM_Product_ID(),
+					 productType,
+					 isItemProduct);
+		return isItemProduct;
 	}
 
 	@Override
@@ -389,6 +424,7 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	@NonNull
 	public String getProductValueAndName(@Nullable final ProductId productId)
 	{
 		if (productId == null)
@@ -435,7 +471,7 @@ public final class ProductBL implements IProductBL
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
 						product -> ProductId.ofRepoId(product.getM_Product_ID()),
-						product -> product.getValue()));
+						I_M_Product::getValue));
 	}
 
 	@Override
@@ -503,19 +539,26 @@ public final class ProductBL implements IProductBL
 
 	@Nullable
 	@Override
-	public I_M_AttributeSet getProductMasterDataSchemaOrNull(final ProductId productId)
+	public I_M_AttributeSet getProductMasterDataSchemaOrNull(@NonNull final ProductId productId)
 	{
-		final I_M_Product product = productsRepo.getById(productId);
-
-		final int attributeSetRepoId = product.getM_AttributeSet_ID();
-
-		final AttributeSetId attributeSetId = AttributeSetId.ofRepoIdOrNone(attributeSetRepoId);
+		final AttributeSetId attributeSetId = getMasterDataSchemaAttributeSetId(productId);
 		if (attributeSetId.isNone())
 		{
 			return null;
 		}
 
 		return attributesRepo.getAttributeSetById(attributeSetId);
+	}
+
+	@NonNull
+	@Override
+	public AttributeSetId getMasterDataSchemaAttributeSetId(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = productsRepo.getById(productId);
+
+		final int attributeSetRepoId = product.getM_AttributeSet_ID();
+
+		return AttributeSetId.ofRepoIdOrNone(attributeSetRepoId);
 	}
 
 	@Override
@@ -567,4 +610,70 @@ public final class ProductBL implements IProductBL
 	{
 		return productsRepo.getByIdsInTrx(productIds);
 	}
+
+	@Override
+	public Optional<ClearanceStatus> getInitialClearanceStatus(@NonNull final ProductId productId)
+	{
+		return ClearanceStatus.optionalOfNullableCode(productsRepo.getById(productId).getHUClearanceStatus());
+	}
+
+	@Override
+	public boolean isProductUsed(@NonNull final ProductId productId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch()
+				||
+				queryBL
+						.createQueryBuilder(I_C_InvoiceLine.class)
+						.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.anyMatch()
+				||
+				queryBL
+						.createQueryBuilder(I_M_InOutLine.class)
+						.addEqualsFilter(I_M_InOutLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.anyMatch();
+	}
+
+	@Override
+	public Optional<ProductId> getProductIdByBarcode(@NonNull String barcode, @NonNull ClientId clientId)
+	{
+		return productsRepo.getProductIdByBarcode(barcode, clientId);
+	}
+
+	@Override
+	public Optional<ProductId> getProductIdByGTIN(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
+	{
+		return productsRepo.getProductIdByGTIN(gtin, clientId);
+	}
+
+	@Override
+	public ProductId getProductIdByGTINNotNull(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
+	{
+		return getProductIdByGTIN(gtin, clientId)
+				.orElseThrow(()->new AdempiereException("@NotFound@ @M_Product_ID@: @GTIN@ "+gtin));
+	}
+
+	@Override
+	public Optional<ProductId> getProductIdByValueStartsWith(@NonNull final String valuePrefix, @NonNull final ClientId clientId)
+	{
+		return productsRepo.getProductIdByValueStartsWith(valuePrefix, clientId);
+	}
+
+	@Override
+	public Set<ProductId> getProductIdsMatchingQueryString(
+			@NonNull final String queryString,
+			@NonNull final ClientId clientId,
+			@NonNull QueryLimit limit)
+	{
+		return productsRepo.getProductIdsMatchingQueryString(queryString, clientId, limit);
+	}
+
 }

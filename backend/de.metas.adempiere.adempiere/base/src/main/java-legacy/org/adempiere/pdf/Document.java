@@ -13,13 +13,12 @@
  *****************************************************************************/
 package org.adempiere.pdf;
 
-import com.lowagie.text.FontFactory;
-import com.lowagie.text.Image;
-import com.lowagie.text.Rectangle;
-import com.lowagie.text.pdf.DefaultFontMapper;
-import com.lowagie.text.pdf.PdfContentByte;
-import com.lowagie.text.pdf.PdfTemplate;
-import com.lowagie.text.pdf.PdfWriter;
+import com.itextpdf.text.Image;
+import com.itextpdf.awt.DefaultFontMapper;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfTemplate;
+import com.itextpdf.text.pdf.PdfWriter;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.pdf.viewer.PDFViewerBean;
@@ -37,101 +36,118 @@ import java.io.OutputStream;
 
 /**
  * Generate PDF document using iText
- * @author Low Heng Sin
  *
+ * @author Low Heng Sin
  */
-public class Document {
+public class Document
+{
 
-	static {
+	static
+	{
 		FontFactory.registerDirectories();
 	}
-	
+
 	private final static String PDF_FONT_DIR = "PDF_FONT_DIR";
-	
+
 	private static void writePDF(Pageable pageable, OutputStream output)
 	{
-		try {
-            final PageFormat pf = pageable.getPageFormat(0);
-            
-            final com.lowagie.text.Document document =
-            	new com.lowagie.text.Document(new Rectangle(
-            			(int) pf.getWidth(), (int) pf.getHeight()));
-            final PdfWriter writer = PdfWriter.getInstance(
-                    document, output);
-            writer.setPdfVersion(PdfWriter.VERSION_1_2);
-            document.open();
-            final DefaultFontMapper mapper = new DefaultFontMapper();     
-            
-            //Elaine 2009/02/17 - load additional font from directory set in PDF_FONT_DIR of System Configurator 
-            String pdfFontDir = Services.get(ISysConfigBL.class).getValue(PDF_FONT_DIR, "");
-            if(pdfFontDir != null && pdfFontDir.trim().length() > 0)
-            {
-            	pdfFontDir = pdfFontDir.trim();
-	            File dir = new File(pdfFontDir);
-	            if(dir.exists() && dir.isDirectory())
-	            	mapper.insertDirectory(pdfFontDir);
-            }
-            //
-            
-            final float w = (float) pf.getWidth();
-            final float h = (float) pf.getHeight();
-            final PdfContentByte cb = writer.getDirectContent();
-            for (int page = 0; page < pageable.getNumberOfPages(); page++) {
-            	if (page != 0) {
-            		document.newPage();
-            	}
-            	
-	            final PdfTemplate tp = cb.createTemplate(w, h);
-	            final Graphics2D g2 = tp.createGraphics(w, h, mapper);
-	            tp.setWidth(w);
-	            tp.setHeight(h);
-	            pageable.getPrintable(page).print(g2, pf, page);
-	            g2.dispose();
-	            cb.addTemplate(tp, 0, 0);
-            }
-            document.close();
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-	}
-	
-	public static File getPDFAsFile(String filename, Pageable pageable) {
-        final File result = new File(filename);
-        
-        try {
-        	writePDF(pageable, new FileOutputStream(result));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        return result;
-    }
-    
-    public static byte[] getPDFAsArray(Pageable pageable) {
-        try {
-            ByteArrayOutputStream output = new ByteArrayOutputStream(10240);
-            writePDF(pageable, output);
-            return output.toByteArray();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } 
+		try
+		{
+			final PageFormat pf = pageable.getPageFormat(0);
 
-        return null;
-    }
-    
-    public static PDFViewerBean getViewer() {
-    	return new PDFViewerBean();
-    }
-    
-    public static boolean isValid(Pageable layout) {
-    	return true;
-    }
-    
-    public static boolean isLicensed() {
-    	return true;
-    }    
-    
+			final com.itextpdf.text.Document document =
+					new com.itextpdf.text.Document(new com.itextpdf.text.Rectangle((int)pf.getWidth(), (int)pf.getHeight()));
+			final PdfWriter writer = PdfWriter.getInstance(
+					document, output);
+			writer.setPdfVersion(PdfWriter.VERSION_1_2);
+			document.open();
+			final DefaultFontMapper mapper = new DefaultFontMapper();
+
+			//Elaine 2009/02/17 - load additional font from directory set in PDF_FONT_DIR of System Configurator
+			String pdfFontDir = Services.get(ISysConfigBL.class).getValue(PDF_FONT_DIR, "");
+			if (pdfFontDir != null && pdfFontDir.trim().length() > 0)
+			{
+				pdfFontDir = pdfFontDir.trim();
+				File dir = new File(pdfFontDir);
+				if (dir.exists() && dir.isDirectory())
+					mapper.insertDirectory(pdfFontDir);
+			}
+			//
+
+			final float w = (float)pf.getWidth();
+			final float h = (float)pf.getHeight();
+			final PdfContentByte cb = writer.getDirectContent();
+			for (int page = 0; page < pageable.getNumberOfPages(); page++)
+			{
+				if (page != 0)
+				{
+					document.newPage();
+				}
+
+				final PdfTemplate tp = cb.createTemplate(w, h);
+				final Graphics2D g2 = tp.createGraphics(w, h, mapper);
+				tp.setWidth(w);
+				tp.setHeight(h);
+				pageable.getPrintable(page).print(g2, pf, page);
+				g2.dispose();
+				cb.addTemplate(tp, 0, 0);
+			}
+			document.close();
+
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	public static File getPDFAsFile(String filename, Pageable pageable)
+	{
+		final File result = new File(filename);
+
+		try
+		{
+			writePDF(pageable, new FileOutputStream(result));
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+
+		return result;
+	}
+
+	public static byte[] getPDFAsArray(Pageable pageable)
+	{
+		try
+		{
+			ByteArrayOutputStream output = new ByteArrayOutputStream(10240);
+			writePDF(pageable, output);
+			return output.toByteArray();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
+	public static PDFViewerBean getViewer()
+	{
+		return new PDFViewerBean();
+	}
+
+	public static boolean isValid(Pageable layout)
+	{
+		return true;
+	}
+
+	public static boolean isLicensed()
+	{
+		return true;
+	}
+
 	/**
 	 * Converts given image to PDF.
 	 *
@@ -150,12 +166,12 @@ public class Document {
 
 			//
 			// PDF page size: image size + margins
-			final Rectangle pageSize = new Rectangle(0, 0,
-					pdfImage.getWidth() + 100,
-					pdfImage.getHeight() + 100);
+			final com.itextpdf.text.Rectangle pageSize = new com.itextpdf.text.Rectangle(0, 0,
+																						 (int)(pdfImage.getWidth() + 100),
+																						 (int)(pdfImage.getHeight() + 100));
 
 			// PDF document
-			final com.lowagie.text.Document document = new com.lowagie.text.Document(pageSize, 50, 50, 50, 50);
+			final com.itextpdf.text.Document document = new com.itextpdf.text.Document(pageSize, 50, 50, 50, 50);
 
 			//
 			// Add image to document

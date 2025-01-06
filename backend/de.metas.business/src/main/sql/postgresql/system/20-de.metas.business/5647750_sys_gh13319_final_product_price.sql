@@ -10,7 +10,7 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 
 -- 2022-07-21T17:29:25.149Z
 -- URL zum Konzept
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,555979,TO_TIMESTAMP('2022-07-21 17:29:25','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table M_CostRevaluation',1,'Y','N','Y','Y','M_CostRevaluation','N',1000000,TO_TIMESTAMP('2022-07-21 17:29:25','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (0,0,555979,TO_TIMESTAMP('2022-07-21 17:29:25','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table M_CostRevaluation',1,'Y','N','Y','Y','M_CostRevaluation',1000000,TO_TIMESTAMP('2022-07-21 17:29:25','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-07-21T17:29:25.156Z
@@ -705,7 +705,7 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 
 -- 2022-07-21T17:56:34.842Z
 -- URL zum Konzept
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,555980,TO_TIMESTAMP('2022-07-21 17:56:34','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table M_CostRevaluationLine',1,'Y','N','Y','Y','M_CostRevaluationLine','N',1000000,TO_TIMESTAMP('2022-07-21 17:56:34','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (0,0,555980,TO_TIMESTAMP('2022-07-21 17:56:34','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table M_CostRevaluationLine',1,'Y','N','Y','Y','M_CostRevaluationLine',1000000,TO_TIMESTAMP('2022-07-21 17:56:34','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-07-21T17:56:34.846Z

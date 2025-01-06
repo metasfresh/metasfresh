@@ -22,15 +22,23 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.order.OrderId;
 import org.compiere.model.I_C_Order;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
 public class C_Order_StepDefData extends StepDefData<I_C_Order>
+		implements StepDefDataGetIdAware<OrderId, I_C_Order>
 {
 	public C_Order_StepDefData()
 	{
 		super(I_C_Order.class);
+	}
+
+	@Override
+	public OrderId extractIdFromRecord(final I_C_Order record)
+	{
+		return OrderId.ofRepoId(record.getC_Order_ID());
 	}
 }

@@ -308,7 +308,7 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 
 		//
 		// Create the initial request and then ask the handler to expand it to proper models to be used.
-		final InvoiceCandidateGenerateRequest requestInitial = InvoiceCandidateGenerateRequest.of(invoiceCandiateHandler, model);
+		final InvoiceCandidateGenerateRequest requestInitial = InvoiceCandidateGenerateRequest.of(invoiceCandiateHandler, model, lockOwner);
 		final List<InvoiceCandidateGenerateRequest> requests = invoiceCandiateHandler.expandRequest(requestInitial);
 
 		final ImmutableList.Builder<I_C_Invoice_Candidate> invoiceCandidatesAll = ImmutableList.builder();
@@ -317,10 +317,10 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		// Iterate each request and generate the invoice candidates
 		for (final InvoiceCandidateGenerateRequest request : requests)
 		{
-			// Lock the "model" to make sure nobody else would generate invoice candidates for it.
+			// Lock the "models" to make sure nobody else would generate invoice candidates for them.
 			final ILock lock = lockManager.lock()
 					.setOwner(lockOwner)
-					.setRecordByModel(model)
+					.addRecordsByModel(request.getRecordsToLock())
 					.setAutoCleanup(true)
 					.setFailIfAlreadyLocked(true)
 					.acquire();

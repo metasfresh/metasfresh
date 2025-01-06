@@ -64,12 +64,18 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 	{
 		if (descriptor instanceof SqlDocumentFieldDataBindingDescriptor)
 		{
-			return (SqlDocumentFieldDataBindingDescriptor)descriptor;
+			return cast(descriptor);
 		}
 		else
 		{
 			return null;
 		}
+	}
+
+	@Nullable
+	public static SqlDocumentFieldDataBindingDescriptor cast(final DocumentFieldDataBindingDescriptor descriptor)
+	{
+		return (SqlDocumentFieldDataBindingDescriptor)descriptor;
 	}
 
 	@Getter

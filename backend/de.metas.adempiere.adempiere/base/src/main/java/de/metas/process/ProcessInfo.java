@@ -86,6 +86,7 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.Ini;
 import org.compiere.util.Util;
+import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -194,7 +195,7 @@ public final class ProcessInfo implements Serializable
 		result.setRefreshAllAfterExecution(builder.isRefreshAllAfterExecution());
 	}
 
-	private final Properties ctx;
+	private Properties ctx;
 
 	/**
 	 * Title of the Process/Report
@@ -322,6 +323,11 @@ public final class ProcessInfo implements Serializable
 	public Properties getCtx()
 	{
 		return Env.coalesce(ctx);
+	}
+
+	public void snapshotCtx()
+	{
+		this.ctx = Env.copyCtx(getCtx());
 	}
 
 	/**
@@ -686,7 +692,7 @@ public final class ProcessInfo implements Serializable
 	 * task 03685
 	 * @see JavaProcess#retrieveActiveSelectedRecordsQueryBuilder(Class)
 	 */
-	@Nullable
+	@NonNull
 	public <T> IQueryFilter<T> getQueryFilterOrElseTrue()
 	{
 		// default: use a "neutral" filter that does not exclude anything
@@ -707,6 +713,7 @@ public final class ProcessInfo implements Serializable
 	 * @param defaultQueryFilter filter to be returned if this process info does not have a whereClause set.
 	 * @return a query filter for the current m_whereClause or if there is none, return <code>defaultQueryFilter</code>
 	 */
+	@Contract("!null -> !null")
 	@Nullable
 	public <T> IQueryFilter<T> getQueryFilterOrElse(@Nullable final IQueryFilter<T> defaultQueryFilter)
 	{

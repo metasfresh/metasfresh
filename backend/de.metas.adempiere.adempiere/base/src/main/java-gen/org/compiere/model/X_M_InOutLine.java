@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -334812459L;
+	private static final long serialVersionUID = 759805621L;
 
     /** Standard Constructor */
     public X_M_InOutLine (final Properties ctx, final int M_InOutLine_ID, @Nullable final String trxName)
@@ -68,14 +68,14 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	@Override
 	public void setCatch_UOM_ID (final int Catch_UOM_ID)
 	{
-		if (Catch_UOM_ID < 1) 
+		if (Catch_UOM_ID < 1)
 			set_Value (COLUMNNAME_Catch_UOM_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_Catch_UOM_ID, Catch_UOM_ID);
 	}
 
 	@Override
-	public int getCatch_UOM_ID() 
+	public int getCatch_UOM_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_Catch_UOM_ID);
 	}
@@ -83,14 +83,14 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	@Override
 	public void setC_BPartner2_ID (final int C_BPartner2_ID)
 	{
-		if (C_BPartner2_ID < 1) 
+		if (C_BPartner2_ID < 1)
 			set_Value (COLUMNNAME_C_BPartner2_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_BPartner2_ID, C_BPartner2_ID);
 	}
 
 	@Override
-	public int getC_BPartner2_ID() 
+	public int getC_BPartner2_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner2_ID);
 	}
@@ -140,14 +140,14 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	@Override
 	public void setC_Flatrate_Term_ID (final int C_Flatrate_Term_ID)
 	{
-		if (C_Flatrate_Term_ID < 1) 
+		if (C_Flatrate_Term_ID < 1)
 			set_Value (COLUMNNAME_C_Flatrate_Term_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Flatrate_Term_ID, C_Flatrate_Term_ID);
 	}
 
 	@Override
-	public int getC_Flatrate_Term_ID() 
+	public int getC_Flatrate_Term_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Term_ID);
 	}
@@ -167,14 +167,14 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	@Override
 	public void setC_Harvesting_Calendar_ID (final int C_Harvesting_Calendar_ID)
 	{
-		if (C_Harvesting_Calendar_ID < 1) 
+		if (C_Harvesting_Calendar_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_C_Harvesting_Calendar_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_C_Harvesting_Calendar_ID, C_Harvesting_Calendar_ID);
 	}
 
 	@Override
-	public int getC_Harvesting_Calendar_ID() 
+	public int getC_Harvesting_Calendar_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Harvesting_Calendar_ID);
 	}
@@ -186,7 +186,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public BigDecimal getConfirmedQty() 
+	public BigDecimal getConfirmedQty()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ConfirmedQty);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -207,14 +207,14 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	@Override
 	public void setC_Order_ID (final int C_Order_ID)
 	{
-		if (C_Order_ID < 1) 
+		if (C_Order_ID < 1)
 			set_Value (COLUMNNAME_C_Order_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Order_ID, C_Order_ID);
 	}
 
 	@Override
-	public int getC_Order_ID() 
+	public int getC_Order_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
 	}
@@ -261,14 +261,14 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	@Override
 	public void setC_OrderSO_ID (final int C_OrderSO_ID)
 	{
-		if (C_OrderSO_ID < 1) 
+		if (C_OrderSO_ID < 1)
 			set_Value (COLUMNNAME_C_OrderSO_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_OrderSO_ID, C_OrderSO_ID);
 	}
 
 	@Override
-	public int getC_OrderSO_ID() 
+	public int getC_OrderSO_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_OrderSO_ID);
 	}
@@ -384,14 +384,14 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	@Override
 	public void setHarvesting_Year_ID (final int Harvesting_Year_ID)
 	{
-		if (Harvesting_Year_ID < 1) 
+		if (Harvesting_Year_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_Harvesting_Year_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_Harvesting_Year_ID, Harvesting_Year_ID);
 	}
 
 	@Override
-	public int getHarvesting_Year_ID() 
+	public int getHarvesting_Year_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_Harvesting_Year_ID);
 	}
@@ -535,7 +535,7 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	}
 
 	@Override
-	public BigDecimal getMovementQty() 
+	public BigDecimal getMovementQty()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MovementQty);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -598,14 +598,14 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	@Override
 	public void setM_SectionCode_ID (final int M_SectionCode_ID)
 	{
-		if (M_SectionCode_ID < 1) 
+		if (M_SectionCode_ID < 1)
 			set_Value (COLUMNNAME_M_SectionCode_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_SectionCode_ID, M_SectionCode_ID);
 	}
 
 	@Override
-	public int getM_SectionCode_ID() 
+	public int getM_SectionCode_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
 	}
@@ -769,6 +769,32 @@ public class X_M_InOutLine extends org.compiere.model.PO implements I_M_InOutLin
 	public int getUser2_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_User2_ID);
+	}
+
+	@Override
+	public void setUserElementNumber1 (final @Nullable BigDecimal UserElementNumber1)
+	{
+		set_Value (COLUMNNAME_UserElementNumber1, UserElementNumber1);
+	}
+
+	@Override
+	public BigDecimal getUserElementNumber1()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_UserElementNumber1);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setUserElementNumber2 (final @Nullable BigDecimal UserElementNumber2)
+	{
+		set_Value (COLUMNNAME_UserElementNumber2, UserElementNumber2);
+	}
+
+	@Override
+	public BigDecimal getUserElementNumber2()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_UserElementNumber2);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

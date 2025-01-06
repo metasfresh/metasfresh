@@ -17,6 +17,7 @@ import de.metas.security.requests.CreateUserAuthTokenRequest;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.hash.HashableString;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.util.web.security.UserAuthTokenFilterConfiguration;
@@ -148,16 +149,55 @@ public class AuthenticationRestController
 	@NonNull
 	private ResponseEntity<JsonAuthResponse> getResponse(@NonNull final UserAuthToken tokenInfo)
 	{
-		final String adLanguage = userBL.getUserLanguage(tokenInfo.getUserId()).getAD_Language();
+		final I_AD_User user = userBL.getById(tokenInfo.getUserId());
+		final String adLanguage = userBL.getUserLanguage(user).getAD_Language();
 		final JsonMessages messages = i18nRestController.getMessages(null, adLanguage);
 
 		return ResponseEntity.ok(
 				JsonAuthResponse.ok(tokenInfo.getAuthToken())
 						.userId(tokenInfo.getUserId().getRepoId())
+						.userFullname(buildUserFullname(user))
 						.language(adLanguage)
 						.messages(messages.getMessages())
 						.build());
 	}
+
+	private static String buildUserFullname(final org.compiere.model.I_AD_User user)
+	{
+		final StringBuilder fullname = new StringBuilder();
+		final String firstname = StringUtils.trimBlankToNull(user.getFirstname());
+		if (firstname != null)
+		{
+			fullname.append(firstname);
+		}
+
+		final String lastname = StringUtils.trimBlankToNull(user.getLastname());
+		if (lastname != null)
+		{
+			if (fullname.length() > 0)
+			{
+				fullname.append(" ");
+			}
+			fullname.append(lastname);
+		}
+
+		if (fullname.length() <= 0)
+		{
+			final String login = StringUtils.trimBlankToNull(user.getLogin());
+			if (login != null) // shall not happen to be empty
+			{
+				fullname.append(login);
+			}
+		}
+
+		if (fullname.length() <= 0)
+		{
+			fullname.append(user.getAD_User_ID());
+		}
+
+		return fullname.toString();
+	}
+
 
 	private static ClientId getClientId(
 			@NonNull final Login loginService,

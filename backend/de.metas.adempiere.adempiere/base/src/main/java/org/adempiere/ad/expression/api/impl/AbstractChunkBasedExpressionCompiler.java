@@ -7,6 +7,7 @@ import org.adempiere.ad.expression.exceptions.ExpressionCompileException;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,7 +64,7 @@ public abstract class AbstractChunkBasedExpressionCompiler<V, ET extends IExpres
 	protected abstract ET createGeneralExpression(final ExpressionContext context, final String expressionStr, final List<Object> expressionChunks);
 
 	@Override
-	public final ET compile(final ExpressionContext context, final String expressionStr)
+	public final ET compile(final ExpressionContext context, @Nullable final String expressionStr)
 	{
 		// Check if it's an empty expression
 		// NOTE: we are preserving all whitespaces from expressions, so that's why we are not trimming the string

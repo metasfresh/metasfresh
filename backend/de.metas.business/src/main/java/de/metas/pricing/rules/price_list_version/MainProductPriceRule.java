@@ -35,6 +35,7 @@ import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.pricing.service.ProductScalePriceService;
 import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.product.IProductBL;
@@ -68,6 +69,7 @@ class MainProductPriceRule extends AbstractPriceListBasedRule
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 
 	private final ProductTaxCategoryService productTaxCategoryService = SpringContextHolder.instance.getBean(ProductTaxCategoryService.class);
+	
 	private final ProductScalePriceService productScalePriceService = SpringContextHolder.instance.getBean(ProductScalePriceService.class);
 
 	@Override
@@ -85,7 +87,7 @@ class MainProductPriceRule extends AbstractPriceListBasedRule
 		}
 
 		final I_M_ProductPrice productPrice = getProductPriceOrNull(pricingCtx.getProductId(),
-				ctxPriceListVersion);
+				PriceListVersionId.ofRepoId(ctxPriceListVersion.getM_PriceList_Version_ID()));
 
 		if (productPrice == null)
 		{
@@ -148,9 +150,9 @@ class MainProductPriceRule extends AbstractPriceListBasedRule
 
 	@Nullable
 	private I_M_ProductPrice getProductPriceOrNull(final ProductId productId,
-			final I_M_PriceList_Version ctxPriceListVersion)
+			final PriceListVersionId priceListVersionId)
 	{
-		return ProductPrices.retrieveMainProductPriceOrNull(ctxPriceListVersion, productId);
+		return ProductPrices.retrieveMainProductPriceOrNull(priceListVersionId, productId);
 	}
 
 	private I_M_PriceList_Version getOrLoadPriceListVersion(

@@ -1,18 +1,19 @@
 package de.metas.externalsystem.model;
 
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ExternalSystem_Config_LeichMehl
- *  @author metasfresh (generated)
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_ExternalSystem_Config_LeichMehl
+public interface I_ExternalSystem_Config_LeichMehl 
 {
 
 	String Table_Name = "ExternalSystem_Config_LeichMehl";
 
-	//	/** AD_Table_ID=542129 */
-	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=542129 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -73,6 +74,27 @@ public interface I_ExternalSystem_Config_LeichMehl
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set CU/TU PLU.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setCU_TU_PLU (java.lang.String CU_TU_PLU);
+
+	/**
+	 * Get CU/TU PLU.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getCU_TU_PLU();
+
+	ModelColumn<I_ExternalSystem_Config_LeichMehl, Object> COLUMN_CU_TU_PLU = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl.class, "CU_TU_PLU", null);
+	String COLUMNNAME_CU_TU_PLU = "CU_TU_PLU";
 
 	/**
 	 * Set External System Config.
@@ -165,7 +187,7 @@ public interface I_ExternalSystem_Config_LeichMehl
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Enable PLU-file export audit.
+	 * Set PLU-file export audit.
 	 * If enabled, then all the changes done during the PLU-file export will be stored also in metasfresh i.e. the replaced keys from the PLU-file
 	 *
 	 * <br>Type: YesNo
@@ -175,7 +197,7 @@ public interface I_ExternalSystem_Config_LeichMehl
 	void setIsPluFileExportAuditEnabled (boolean IsPluFileExportAuditEnabled);
 
 	/**
-	 * Get Enable PLU-file export audit.
+	 * Get PLU-file export audit.
 	 * If enabled, then all the changes done during the PLU-file export will be stored also in metasfresh i.e. the replaced keys from the PLU-file
 	 *
 	 * <br>Type: YesNo
@@ -188,8 +210,52 @@ public interface I_ExternalSystem_Config_LeichMehl
 	String COLUMNNAME_IsPluFileExportAuditEnabled = "IsPluFileExportAuditEnabled";
 
 	/**
-	 * Set Product directory.
-	 * Root directly that contains all PLU Files
+	 * Set Send PLU file to.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPluFileDestination (java.lang.String PluFileDestination);
+
+	/**
+	 * Get Send PLU file to.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getPluFileDestination();
+
+	ModelColumn<I_ExternalSystem_Config_LeichMehl, Object> COLUMN_PluFileDestination = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl.class, "PluFileDestination", null);
+	String COLUMNNAME_PluFileDestination = "PluFileDestination";
+
+	/**
+	 * Set Server-Folder.
+	 * Directory on the external systems server in which a resulting PLU file is saved
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPluFileLocalFolder (@Nullable java.lang.String PluFileLocalFolder);
+
+	/**
+	 * Get Server-Folder.
+	 * Directory on the external systems server in which a resulting PLU file is saved
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPluFileLocalFolder();
+
+	ModelColumn<I_ExternalSystem_Config_LeichMehl, Object> COLUMN_PluFileLocalFolder = new ModelColumn<>(I_ExternalSystem_Config_LeichMehl.class, "PluFileLocalFolder", null);
+	String COLUMNNAME_PluFileLocalFolder = "PluFileLocalFolder";
+
+	/**
+	 * Set PLU template directory.
+	 * Root directly that contains all PLU template files
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -198,8 +264,8 @@ public interface I_ExternalSystem_Config_LeichMehl
 	void setProduct_BaseFolderName (java.lang.String Product_BaseFolderName);
 
 	/**
-	 * Get Product directory.
-	 * Root directly that contains all PLU Files
+	 * Get PLU template directory.
+	 * Root directly that contains all PLU template files
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true

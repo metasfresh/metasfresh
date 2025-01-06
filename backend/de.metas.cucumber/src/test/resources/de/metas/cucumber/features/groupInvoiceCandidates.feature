@@ -81,7 +81,7 @@ Feature: Group invoices and credit memos into a single document
       | C_Invoice_Candidate_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.IsDeliveryClosed |
       | invoiceCand_SO                    | order_SO                  | orderLine_SO                  | 0            | 8              | 0                | false                |
 
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_SO                      | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -93,8 +93,8 @@ Feature: Group invoices and credit memos into a single document
       | schedule_SO | orderLine_SO              | N             | 8                |
 
     And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo      |
-      | inventory                 | 2022-06-16T00:00:00Z | inventoryDocNo2 |
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo      |
+      | inventory                 | 2022-06-16   | inventoryDocNo2 |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
       | inventory                 | inventoryLine                 | product_SO              | 0       | 10       |
@@ -139,7 +139,7 @@ Feature: Group invoices and credit memos into a single document
       | M_HU_ID.Identifier | M_ShipmentSchedule_ID.Identifier |
       | createdCU          | schedule_CM                      |
 
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_CM                      | P            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -260,7 +260,7 @@ Feature: Group invoices and credit memos into a single document
       | C_Invoice_Candidate_ID.Identifier | OPT.C_DocType_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.IsDeliveryClosed |
       | invoiceCand_SO                    | dt_si                       | order_SO                  | orderLine_SO                  | 0            | 12             | 0                | false                |
 
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_SO                      | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -272,8 +272,8 @@ Feature: Group invoices and credit memos into a single document
       | schedule_SO | orderLine_SO              | N             | 12               |
 
     And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo      |
-      | inventory                 | 2022-06-16T00:00:00Z | inventoryDocNo2 |
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo      |
+      | inventory                 | 2022-06-16   | inventoryDocNo2 |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
       | inventory                 | inventoryLine                 | product_SO              | 0       | 10       |
@@ -318,7 +318,7 @@ Feature: Group invoices and credit memos into a single document
       | M_HU_ID.Identifier | M_ShipmentSchedule_ID.Identifier |
       | createdCU          | schedule_CM                      |
 
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_CM                      | P            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -433,7 +433,7 @@ Feature: Group invoices and credit memos into a single document
       | C_Invoice_Candidate_ID.Identifier | OPT.C_DocType_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.IsDeliveryClosed |
       | invoiceCand_SO                    | dt_si                       | order_SO                  | orderLine_SO                  | 0            | 12             | 0                | false                |
 
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_SO                      | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -445,8 +445,8 @@ Feature: Group invoices and credit memos into a single document
       | schedule_SO | orderLine_SO              | N             | 12               |
 
     And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo      |
-      | inventory                 | 2022-06-16T00:00:00Z | inventoryDocNo2 |
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo      |
+      | inventory                 | 2022-06-16   | inventoryDocNo2 |
     And metasfresh initially has M_InventoryLine data
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
       | inventory                 | inventoryLine                 | product_SO              | 0       | 10       |
@@ -491,7 +491,7 @@ Feature: Group invoices and credit memos into a single document
       | M_HU_ID.Identifier | M_ShipmentSchedule_ID.Identifier |
       | createdCU          | schedule_CM                      |
 
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_CM                      | P            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -593,7 +593,7 @@ Feature: Group invoices and credit memos into a single document
       | C_Invoice_Candidate_ID.Identifier | OPT.C_DocType_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.IsDeliveryClosed |
       | invoiceCand_SO                    | dt_si                       | order_SO                  | orderLine_SO                  | 0            | 10             | 0                | false                |
 
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_SO                      | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -626,7 +626,7 @@ Feature: Group invoices and credit memos into a single document
       | C_Invoice_Candidate_ID.Identifier | OPT.C_DocType_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.IsDeliveryClosed |
       | invoiceCand_SO_2                  | dt_si                       | order_SO_2                | orderLine_SO_2                | 0            | 12             | 0                | false                |
 
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_SO_2                    | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -718,7 +718,7 @@ Feature: Group invoices and credit memos into a single document
       | C_Invoice_Candidate_ID.Identifier | OPT.C_DocType_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.IsDeliveryClosed |
       | invoiceCand_SO                    | A                           | order_SO                  | orderLine_SO                  | 0            | 10             | 0                | false                |
 
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_SO                      | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -814,7 +814,7 @@ Feature: Group invoices and credit memos into a single document
       | C_Invoice_Candidate_ID.Identifier | OPT.C_DocType_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.IsDeliveryClosed |
       | invoiceCand_SO                    | A                           | order_SO                  | orderLine_SO                  | 0            | 10             | 0                | false                |
 
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_SO                      | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -911,7 +911,7 @@ Feature: Group invoices and credit memos into a single document
       | C_Invoice_Candidate_ID.Identifier | OPT.C_DocType_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.IsDeliveryClosed |
       | invoiceCand_SO                    | C                           | order_SO                  | orderLine_SO                  | 0            | 10             | 0                | false                |
 
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_SO                      | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -1010,7 +1010,7 @@ Feature: Group invoices and credit memos into a single document
       | C_Invoice_Candidate_ID.Identifier | OPT.C_DocType_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.IsDeliveryClosed |
       | invoiceCand_SO                    | A                           | order_SO                  | orderLine_SO                  | 0            | 10             | 0                | false                |
 
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_SO                      | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -1043,7 +1043,7 @@ Feature: Group invoices and credit memos into a single document
       | C_Invoice_Candidate_ID.Identifier | OPT.C_DocType_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.IsDeliveryClosed |
       | invoiceCand_SO_2                  | A                           | order_SO_2                | orderLine_SO_2                | 0            | 12             | 0                | false                |
 
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_SO_2                    | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -1143,7 +1143,7 @@ Feature: Group invoices and credit memos into a single document
       | C_Invoice_Candidate_ID.Identifier | OPT.C_DocType_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.IsDeliveryClosed |
       | invoiceCand_SO                    | A                           | order_SO                  | orderLine_SO                  | 0            | 10             | 0                | false                |
 
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_SO                      | D            | true                | false       |
     And after not more than 60s, M_InOut is found:
@@ -1176,7 +1176,7 @@ Feature: Group invoices and credit memos into a single document
       | C_Invoice_Candidate_ID.Identifier | OPT.C_DocType_ID.Identifier | OPT.C_Order_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.IsDeliveryClosed |
       | invoiceCand_SO_2                  | A                           | order_SO_2                | orderLine_SO_2                | 0            | 12             | 0                | false                |
 
-    And 'generate shipments' process is invoked
+    And  'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | schedule_SO_2                    | D            | true                | false       |
     And after not more than 60s, M_InOut is found:

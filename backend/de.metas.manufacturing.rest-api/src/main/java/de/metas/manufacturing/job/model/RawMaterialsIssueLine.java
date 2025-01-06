@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleId;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -32,6 +34,7 @@ public class RawMaterialsIssueLine
 
 	@NonNull Quantity qtyIssued; // computed
 	@NonNull WFActivityStatus status;
+	int seqNo;
 
 	@Builder(toBuilder = true)
 	private RawMaterialsIssueLine(
@@ -42,7 +45,8 @@ public class RawMaterialsIssueLine
 			@NonNull final Quantity qtyToIssue,
 			@Nullable final IssuingToleranceSpec issuingToleranceSpec,
 			@NonNull final ImmutableList<RawMaterialsIssueStep> steps,
-			@Nullable final String userInstructions)
+			@Nullable final String userInstructions,
+			final int seqNo)
 	{
 		this.productId = productId;
 		this.productName = productName;
@@ -54,6 +58,7 @@ public class RawMaterialsIssueLine
 		this.userInstructions = userInstructions;
 
 		this.qtyIssued = computeQtyIssued(this.steps).orElseGet(qtyToIssue::toZero);
+		this.seqNo = seqNo;
 		this.status = computeStatus(this.qtyToIssue, this.qtyIssued, this.steps);
 	}
 
@@ -111,7 +116,8 @@ public class RawMaterialsIssueLine
 		return withSteps(stepsNew);
 	}
 
-	private RawMaterialsIssueLine withSteps(final ImmutableList<RawMaterialsIssueStep> stepsNew)
+	@NonNull
+	public RawMaterialsIssueLine withSteps(final ImmutableList<RawMaterialsIssueStep> stepsNew)
 	{
 		return !Objects.equals(this.steps, stepsNew)
 				? toBuilder().steps(stepsNew).build()
@@ -121,5 +127,22 @@ public class RawMaterialsIssueLine
 	public boolean containsRawMaterialsIssueStep(final PPOrderIssueScheduleId issueScheduleId)
 	{
 		return steps.stream().anyMatch(step -> PPOrderIssueScheduleId.equals(step.getId(), issueScheduleId));
+	}
+
+	@NonNull
+	public ITranslatableString getProductValueAndProductName()
+	{
+		final TranslatableStringBuilder message = TranslatableStrings.builder()
+				.append(getProductValue())
+				.append(" ")
+				.append(getProductName());
+
+		return message.build();
+	}
+
+	@NonNull
+	public Quantity getQtyLeftToIssue()
+	{
+		return qtyToIssue.subtract(qtyIssued);
 	}
 }

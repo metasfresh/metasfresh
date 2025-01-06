@@ -96,7 +96,7 @@ import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_ErrorMsg;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_ExternalHeaderId;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_ExternalLineId;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_IsError;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class C_OLCand_StepDef
 {
@@ -491,7 +491,7 @@ public class C_OLCand_StepDef
 		assertThat(invoices).isNotEmpty();
 
 		final List<String> identifiers = StepDefUtil.splitIdentifiers(invoiceIdentifier);
-		assertThat(identifiers).hasSameSizeAs(invoices);
+		assertThat(invoices).hasSameSizeAs(identifiers);
 
 		if (invoices.size() > 1)
 		{

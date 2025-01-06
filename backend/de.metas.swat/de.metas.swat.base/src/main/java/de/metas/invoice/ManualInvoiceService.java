@@ -46,7 +46,9 @@ import de.metas.location.CountryId;
 import de.metas.location.LocationId;
 import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
-import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
@@ -61,6 +63,7 @@ import de.metas.tax.api.TaxQuery;
 import de.metas.tax.api.VatCodeId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_PriceList;
@@ -84,6 +87,7 @@ public class ManualInvoiceService
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
 	private final InvoiceAcctService invoiceAcctService;
 	private final CustomColumnService customColumnService;
@@ -139,17 +143,17 @@ public class ManualInvoiceService
 				.stream()
 				.filter(line -> line.getExtendedProps() != null)
 				.forEach(line -> {
-					final InvoiceLineId invoiceLineId = invoice.getRepoIdByExternalLineId(line.getExternalLineId());
+					final InvoiceAndLineId invoiceAndLineId = invoice.getRepoIdByExternalLineId(line.getExternalLineId());
 
-					saveInvoiceLineCustomColumns(invoiceLineId, line.getExtendedProps());
+					saveInvoiceLineCustomColumns(invoiceAndLineId, line.getExtendedProps());
 				});
 	}
 
 	private void saveInvoiceLineCustomColumns(
-			@NonNull final InvoiceLineId invoiceLineId,
+			@NonNull final InvoiceAndLineId invoiceAndLineId,
 			@NonNull final Map<String, Object> valuesByColumnName)
 	{
-		manualInvoiceRepository.applyAndSave(invoiceLineId,
+		manualInvoiceRepository.applyAndSave(invoiceAndLineId,
 				(invoiceLineRecord) -> customColumnService.setCustomColumns(InterfaceWrapperHelper.getPO(invoiceLineRecord), valuesByColumnName));
 	}
 
@@ -196,6 +200,7 @@ public class ManualInvoiceService
 		final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId = getBPartnerLocationAndCaptureId(requestHeader.getBillBPartnerLocationId());
 		final ZoneId zoneId = orgDAO.getTimeZone(requestHeader.getOrgId());
 		final PriceListId priceListId = getPriceListId(requestHeader, countryId, zoneId);
+		final PaymentTermId paymentTermId = paymentTermRepository.retrievePaymentTermIdNotNull(PaymentTermQuery.forPartner(requestHeader.getBillBPartnerId(), requestHeader.getSoTrx()));
 
 		final CreateManualInvoiceRequest.CreateManualInvoiceRequestBuilder createManualInvoiceRequestBuilder = CreateManualInvoiceRequest.builder()
 				.orgId(requestHeader.getOrgId())
@@ -210,7 +215,8 @@ public class ManualInvoiceService
 				.docTypeId(requestHeader.getDocTypeId())
 				.poReference(requestHeader.getPoReference())
 				.soTrx(requestHeader.getSoTrx())
-				.currencyId(requestHeader.getCurrencyId());
+				.currencyId(requestHeader.getCurrencyId())
+				.paymentTermId(paymentTermId);
 
 		final ImmutableList<CreateManualInvoiceLineRequest> lines = request.getLines()
 				.stream()
@@ -379,14 +385,14 @@ public class ManualInvoiceService
 	@NonNull
 	private static InvoiceAcctRule buildInvoiceAcctRule(
 			@NonNull final ElementValueId elementValueId,
-			@NonNull final InvoiceLineId invoiceLineId,
+			@NonNull final InvoiceAndLineId invoiceAndLineId,
 			@NonNull final AcctSchemaId acctSchemaId,
 			@Nullable final ProductAcctType productAcctType)
 	{
 		return InvoiceAcctRule.builder()
 				.elementValueId(elementValueId)
 				.matcher(InvoiceAcctRuleMatcher.builder()
-						.invoiceLineId(invoiceLineId)
+						.invoiceAndLineId(invoiceAndLineId)
 						.acctSchemaId(acctSchemaId)
 						.accountConceptualName(productAcctType != null ? productAcctType.getAccountConceptualName() : null)
 						.build())

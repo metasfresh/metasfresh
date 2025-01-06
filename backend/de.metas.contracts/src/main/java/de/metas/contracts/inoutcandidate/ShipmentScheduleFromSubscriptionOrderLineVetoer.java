@@ -36,7 +36,7 @@ import org.slf4j.Logger;
 
 /**
  * This implementation vetoes the creation of shipment schedule records for {@link I_C_OrderLine}s if those order lines
- * are handled by a flatrate contract.
+ * are handled by a subscription contract.
  */
 @ToString
 public class ShipmentScheduleFromSubscriptionOrderLineVetoer implements ModelWithoutShipmentScheduleVetoer

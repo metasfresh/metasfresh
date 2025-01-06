@@ -27,6 +27,7 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.document.DocumentNoFilter;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.user.UserId;
 import lombok.AccessLevel;
@@ -53,6 +54,7 @@ public class PickingJobQuery
 	@Nullable Facets facets;
 	@NonNull @Builder.Default @Getter(AccessLevel.NONE) ImmutableSet<BPartnerId> onlyBPartnerIds = ImmutableSet.of();
 	@Nullable WarehouseId warehouseId;
+	@Nullable DocumentNoFilter salesOrderDocumentNo;
 
 	@NonNull
 	public Set<BPartnerId> getOnlyBPartnerIdsEffective()

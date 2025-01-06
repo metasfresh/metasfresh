@@ -199,6 +199,7 @@ final class CreateOrderRoutingCommand
 				.milestone(activity.isMilestone())
 				.alwaysAvailableToUser(activity.getAlwaysAvailableToUser())
 				.userInstructions(activity.getUserInstructions())
+				.targetPlanningStatus(activity.getTargetPlanningStatus())
 				//
 				.resourceId(activity.getResourceId())
 				//
@@ -227,6 +228,7 @@ final class CreateOrderRoutingCommand
 				//
 				.activityTemplateId(activity.getActivityTemplateId())
 				//
+				.rawMaterialsIssueStrategy(activity.getRawMaterialsIssueStrategy())
 				.build();
 	}
 }

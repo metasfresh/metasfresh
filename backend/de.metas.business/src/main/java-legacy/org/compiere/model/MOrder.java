@@ -82,6 +82,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -133,6 +134,7 @@ public class MOrder extends X_C_Order implements IDocument
 	private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	/**************************************************************************
 	 * Default Constructor
@@ -229,7 +231,7 @@ public class MOrder extends X_C_Order implements IDocument
 		setIsSOTrx(IsSOTrx);
 		if (IsSOTrx)
 		{
-			if (DocSubType == null || DocSubType.length() == 0)
+			if (DocSubType == null || DocSubType.isEmpty())
 			{
 				orderBL.setSODocTypeTargetId(this, DocSubType_OnCredit);
 			}
@@ -439,11 +441,6 @@ public class MOrder extends X_C_Order implements IDocument
 			setC_PaymentTerm_ID(paymentTermID);
 		}
 		//
-		final int priceLisId = isSOTrx() ? bp.getM_PriceList_ID() : bp.getPO_PriceList_ID();
-		if (priceLisId != 0)
-		{
-			setM_PriceList_ID(priceLisId);
-		}
 		// Default Delivery/Via Rule
 		String ss = bp.getDeliveryRule();
 		if (!Check.isEmpty(ss, true))
@@ -1196,8 +1193,7 @@ public class MOrder extends X_C_Order implements IDocument
 		final List<MOrderLine> lines = getLinesRequeryOrderedByProduct();
 		if (lines.isEmpty())
 		{
-			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			throw AdempiereException.noLines();
 		}
 
 		// Bug 1564431
@@ -1246,7 +1242,7 @@ public class MOrder extends X_C_Order implements IDocument
 			else
 			// convert only if offer
 			{
-				if (Services.get(IDocTypeBL.class).isSalesProposalOrQuotation(dt))
+				if (docTypeBL.isSalesProposalOrQuotation(dt))
 				{
 					setC_DocType_ID(getC_DocTypeTarget_ID());
 				}
@@ -1357,6 +1353,8 @@ public class MOrder extends X_C_Order implements IDocument
 		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
+		final boolean isProForma = docTypeBL.isProformaSO(DocTypeId.ofRepoId(docTypeId));
+
 		// Always check and (un) Reserve Inventory
 		for (final MOrderLine line : lines)
 		{
@@ -1399,7 +1397,7 @@ public class MOrder extends X_C_Order implements IDocument
 
 			// Check Product - Stocked and Item
 			final MProduct product = line.getProduct();
-			if (product != null)
+			if (product != null && !isProForma)
 			{
 				if (Services.get(IProductBL.class).isStocked(product))
 				{
@@ -1529,6 +1527,7 @@ public class MOrder extends X_C_Order implements IDocument
 					newOTax.setPrecision(taxPrecision.toInt());
 					newOTax.setIsTaxIncluded(taxIncluded);
 					newOTax.setIsReverseCharge(childTax.isReverseCharge());
+					newOTax.setIsDocumentLevel(childTax.isDocumentLevel());
 					newOTax.setTaxBaseAmt(oTax.getTaxBaseAmt());
 					newOTax.setTaxAmt(calculateTaxResult.getTaxAmount());
 					newOTax.setReverseChargeTaxAmt(calculateTaxResult.getReverseChargeAmt());
@@ -1681,7 +1680,8 @@ public class MOrder extends X_C_Order implements IDocument
 		MInOut shipment = null;
 		if (X_C_DocType.DOCSUBTYPE_OnCreditOrder.equals(docSubType)        // (W)illCall(I)nvoice
 				|| X_C_DocType.DOCSUBTYPE_WarehouseOrder.equals(docSubType)    // (W)illCall(P)ickup
-				|| X_C_DocType.DOCSUBTYPE_POSOrder.equals(docSubType))            // (W)alkIn(R)eceipt
+				//|| X_C_DocType.DOCSUBTYPE_POSOrder.equals(docSubType)            // (W)alkIn(R)eceipt
+		)
 		{
 			if (!DeliveryRule.FORCE.getCode().equals(getDeliveryRule()))
 			{
@@ -1702,8 +1702,9 @@ public class MOrder extends X_C_Order implements IDocument
 		}    // Shipment
 
 		// Create SO Invoice - Always invoice complete Order
-		if (X_C_DocType.DOCSUBTYPE_POSOrder.equals(docSubType)
-				|| X_C_DocType.DOCSUBTYPE_OnCreditOrder.equals(docSubType))
+		if (X_C_DocType.DOCSUBTYPE_OnCreditOrder.equals(docSubType)
+				//|| X_C_DocType.DOCSUBTYPE_POSOrder.equals(docSubType)
+		)
 		{
 			final MInvoice invoice = createInvoice(dt, shipment, realTimePOS ? null : getDateOrdered());
 			if (invoice == null)
@@ -1881,7 +1882,8 @@ public class MOrder extends X_C_Order implements IDocument
 		// If we have a Shipment - use that as a base
 		if (shipment != null)
 		{
-			if (!INVOICERULE_AfterDelivery.equals(getInvoiceRule()))
+			if (!INVOICERULE_AfterDelivery.equals(getInvoiceRule())
+					&& !X_C_DocType.DOCSUBTYPE_POSOrder.equals(dt.getDocSubType()))
 			{
 				setInvoiceRule(INVOICERULE_AfterDelivery);
 			}

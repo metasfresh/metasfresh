@@ -343,6 +343,12 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 					.addParameter(ViewBasedProcessTemplate.PARAM_ViewId, viewRowIdsSelection.getViewId().toJson())
 					.addParameter(ViewBasedProcessTemplate.PARAM_ViewSelectedIds, viewRowIdsSelection.getRowIds().toCommaSeparatedString());
 		}
+		if(request.getViewOrderBys() != null && !request.getViewOrderBys().isEmpty())
+		{
+			processInfoBuilder
+					.setLoadParametersFromDB(true) // important: we need to load the existing parameters from database, besides the internal ones we are adding here
+					.addParameter(ViewBasedProcessTemplate.PARAM_ViewOrderBys, request.getViewOrderBys().toStringSyntax());
+		}
 		if (request.getParentViewRowIdsSelection() != null)
 		{
 			final ViewRowIdsSelection parentViewRowIdsSelection = request.getParentViewRowIdsSelection();

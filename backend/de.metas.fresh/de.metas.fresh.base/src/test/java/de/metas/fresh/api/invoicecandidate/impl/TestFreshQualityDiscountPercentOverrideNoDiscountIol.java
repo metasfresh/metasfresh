@@ -67,7 +67,7 @@ public class TestFreshQualityDiscountPercentOverrideNoDiscountIol extends TestQu
 	}
 
 	@Override
-	protected void step_validate_after_aggregation(final List<I_C_Invoice_Candidate> invoiceCandidates, final List<I_M_InOutLine> inOutLines, final List<IInvoiceHeader> invoices)
+	protected void step_validate_after_aggregation(final @NonNull List<I_C_Invoice_Candidate> invoiceCandidates, final @NonNull List<I_M_InOutLine> inOutLines, final @NonNull List<IInvoiceHeader> invoices)
 	{
 		Assertions.assertThat(invoices).as("We are expecting one invoice: " + invoices).hasSize(1);
 

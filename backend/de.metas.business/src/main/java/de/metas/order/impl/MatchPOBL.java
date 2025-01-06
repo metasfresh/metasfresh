@@ -3,8 +3,8 @@ package de.metas.order.impl;
 import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
 import de.metas.acct.api.IPostingService;
 import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.order.IMatchPOBL;
 import de.metas.order.IMatchPODAO;
 import de.metas.order.OrderLineId;
@@ -257,9 +257,9 @@ public class MatchPOBL implements IMatchPOBL
 	}
 
 	@Override
-	public void unlink(@NonNull final OrderLineId orderLineId, @NonNull final InvoiceLineId invoiceLineId)
+	public void unlink(@NonNull final OrderLineId orderLineId, @NonNull final InvoiceAndLineId invoiceAndLineId)
 	{
-		for (final I_M_MatchPO matchPO : matchPODAO.getByOrderLineAndInvoiceLine(orderLineId, invoiceLineId))
+		for (final I_M_MatchPO matchPO : matchPODAO.getByOrderLineAndInvoiceLine(orderLineId, invoiceAndLineId))
 		{
 			if (matchPO.getM_InOutLine_ID() <= 0)
 			{

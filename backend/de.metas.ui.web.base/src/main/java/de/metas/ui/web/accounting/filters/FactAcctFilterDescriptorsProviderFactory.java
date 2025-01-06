@@ -30,8 +30,8 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProviderFactory;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.NullDocumentFilterDescriptorsProvider;
+import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
-import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -39,7 +39,6 @@ import org.compiere.model.I_Fact_Acct;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 
 @Component
 public class FactAcctFilterDescriptorsProviderFactory implements DocumentFilterDescriptorsProviderFactory
@@ -54,9 +53,7 @@ public class FactAcctFilterDescriptorsProviderFactory implements DocumentFilterD
 
 	@Override
 	@NonNull
-	public DocumentFilterDescriptorsProvider createFiltersProvider(
-			@NonNull final CreateFiltersProviderContext context,
-			final @NonNull Collection<DocumentFieldDescriptor> fields)
+	public DocumentFilterDescriptorsProvider createFiltersProvider(@NonNull final CreateFiltersProviderContext context)
 	{
 		if (!isValidTable(context.getTableName()))
 		{
@@ -71,16 +68,18 @@ public class FactAcctFilterDescriptorsProviderFactory implements DocumentFilterD
 						.setDisplayName(msgBL.translatable("AccountNumber"))
 						//
 						.addParameter(DocumentFilterParamDescriptor.builder()
-								.mandatory(true)
-								.fieldName(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_FROM)
-								.displayName(msgBL.translatable(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_FROM))
-								.widgetType(DocumentFieldWidgetType.Text)
+											  .mandatory(true)
+											  .fieldName(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_FROM)
+											  .displayName(msgBL.translatable(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_FROM))
+											  .widgetType(DocumentFieldWidgetType.Text)
+											  .operator(Operator.EQUAL)
 						)
 						.addParameter(DocumentFilterParamDescriptor.builder()
-								.mandatory(true)
-								.fieldName(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_TO)
-								.displayName(msgBL.translatable(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_TO))
-								.widgetType(DocumentFieldWidgetType.Text)
+											  .mandatory(true)
+											  .fieldName(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_TO)
+											  .displayName(msgBL.translatable(FactAcctFilterConverter.PARAM_ACCOUNT_VALUE_TO))
+											  .widgetType(DocumentFieldWidgetType.Text)
+											  .operator(Operator.EQUAL)
 						)
 						//
 						.build()

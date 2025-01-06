@@ -25,6 +25,7 @@ package org.adempiere.ad.dao.impl;
 import com.google.common.base.MoreObjects;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.ad.column.ColumnSql;
 import org.adempiere.ad.dao.IQueryInsertExecutor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
@@ -124,7 +125,7 @@ class QueryInsertExecutor<ToModelType, FromModelType> implements IQueryInsertExe
 				.filter(fromTablePOInfo::isVirtualColumn)
 				.forEach(fromColumnName -> {
 					final String toColumnName = fromColumnName;
-					final String columnSql = fromTablePOInfo.getColumnSql(fromColumnName);
+					final String columnSql = ColumnSql.ofSql(fromTablePOInfo.getColumnSql(fromColumnName), fromTableName).toSqlString();
 					Check.assumeNotEmpty(columnSql, "columnSQL unexpectedly null for {}.{}", fromTableName, fromColumnName);
 					mapColumnToSql(toColumnName, columnSql);
 				});

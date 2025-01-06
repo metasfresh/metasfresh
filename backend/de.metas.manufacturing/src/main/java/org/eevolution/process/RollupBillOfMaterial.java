@@ -17,17 +17,6 @@
 
 package org.eevolution.process;
 
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.service.ClientId;
-import org.compiere.model.I_M_Cost;
-import org.compiere.model.I_M_CostElement;
-import org.compiere.model.I_M_Product;
-import org.eevolution.costing.BOMCostCalculator;
-import org.eevolution.costing.BatchProcessBOMCostCalculatorRepository;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -39,6 +28,14 @@ import de.metas.process.ProcessInfoParameter;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_M_Cost;
+import org.compiere.model.I_M_CostElement;
+import org.compiere.model.I_M_Product;
+import org.eevolution.costing.BOMCostCalculator;
+import org.eevolution.costing.BatchProcessBOMCostCalculatorRepository;
 
 /**
  * Roll-UP Bill of Material
@@ -122,19 +119,21 @@ public class RollupBillOfMaterial extends JavaProcess
 				.repository(bomCostCalculatorRepo)
 				.build();
 
-		final int maxLowLevel = getMaxLowLevel();
+		//@TODO the process is not used in WEB UI, need to be updated in necessary
+/*		final int maxLowLevel = getMaxLowLevel();
 		for (int lowLevel = maxLowLevel; lowLevel >= 0; lowLevel--)
 		{
 			for (final ProductId productId : getProductIdsByLowLevel(lowLevel))
 			{
 				calculator.rollup(productId);
 			}
-		}
+		}*/
 
-		return MSG_OK;
+		throw new UnsupportedOperationException("Process not implemented");
 	}
 
-	private int getMaxLowLevel()
+	//@TODO the process is not used in WEB UI, need to be updated in necessary
+/*	private int getMaxLowLevel()
 	{
 		return createProductsQuery()
 				.addNotNull(I_M_Product.COLUMNNAME_LowLevel)
@@ -148,7 +147,7 @@ public class RollupBillOfMaterial extends JavaProcess
 				.addEqualsFilter(I_M_Product.COLUMN_LowLevel, lowLevel)
 				.create()
 				.listIds(ProductId::ofRepoId);
-	}
+	}*/
 
 	private IQueryBuilder<I_M_Product> createProductsQuery()
 	{

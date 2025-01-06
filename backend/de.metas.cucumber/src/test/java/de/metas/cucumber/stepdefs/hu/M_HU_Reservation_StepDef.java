@@ -23,7 +23,7 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
-import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Storage;
@@ -47,7 +47,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.slf4j.Logger;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @RequiredArgsConstructor
 public class M_HU_Reservation_StepDef
@@ -62,8 +62,7 @@ public class M_HU_Reservation_StepDef
 	@And("reserve HU to order")
 	public void reserveHUToOrder(@NonNull final DataTable dataTable)
 	{
-		for (final DataTableRow row : DataTableRow.toRows(dataTable))
-		{
+		DataTableRows.of(dataTable).forEach((row) -> {
 			final I_C_OrderLine orderLine = row.getAsIdentifier("C_OrderLine_ID").lookupIn(orderLineTable);
 			final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLine.getC_OrderLine_ID());
 
@@ -74,7 +73,7 @@ public class M_HU_Reservation_StepDef
 
 			final HUReservation huReservation = huReservationService.makeReservation(
 							ReserveHUsRequest.builder()
-									.qtyToReserve(Quantitys.create(huStorageRecord.getQty(), UomId.ofRepoId(huStorageRecord.getC_UOM_ID())))
+									.qtyToReserve(Quantitys.of(huStorageRecord.getQty(), UomId.ofRepoId(huStorageRecord.getC_UOM_ID())))
 									.documentRef(HUReservationDocRef.ofSalesOrderLineId(orderLineId))
 									.productId(ProductId.ofRepoId(huStorageRecord.getM_Product_ID()))
 									.huId(huId)
@@ -84,7 +83,7 @@ public class M_HU_Reservation_StepDef
 
 			assertThat(huReservation).as("Reservation for " + huId).isNotNull();
 			logger.info("Reservation created: {}", huReservation);
-		}
+		});
 	}
 
 	private I_M_HU_Storage getHUStorageRecord(@NonNull final HuId huId)

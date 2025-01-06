@@ -37,6 +37,7 @@ SELECT
      , t.ad_process_id
      , t.issorttab
      , t.isinsertrecord
+     , t.insertlogic
      , t.isadvancedtab
      , t.ad_columnsortorder_id
      , t.ad_columnsortyesno_id
@@ -62,6 +63,7 @@ SELECT
      , t.QuickInputLayout
      , t.NotFound_Message
      , t.NotFound_MessageDetail
+     , t.IncludeFiltersStrategy
 FROM ad_tab t
          JOIN ad_table tbl ON t.ad_table_id = tbl.ad_table_id
 WHERE t.isactive = 'Y'::bpchar

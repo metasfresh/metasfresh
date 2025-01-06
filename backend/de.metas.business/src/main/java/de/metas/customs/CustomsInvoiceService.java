@@ -92,9 +92,8 @@ import java.util.function.Function;
  */
 
 @Service
-public class CustomsInvoiceService
-{
-	public static final AdMessageKey ERR_NoValidLines = AdMessageKey.of("M_InOut_Create_CustomsInvoice_NoValidLines");
+public class CustomsInvoiceService {
+    public static final AdMessageKey ERR_NoValidLines = AdMessageKey.of("M_InOut_Create_CustomsInvoice_NoValidLines");
 
 	private static final Logger logger = LogManager.getLogger(CustomsInvoiceService.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -288,7 +287,7 @@ public class CustomsInvoiceService
 		final Quantity lineQty;
 		if (inoutLineRecord.getCatch_UOM_ID() > 0 && inoutLineRecord.getQtyDeliveredCatch().signum() != 0)
 		{
-			lineQty = Quantitys.create(inoutLineRecord.getQtyDeliveredCatch(), UomId.ofRepoId(inoutLineRecord.getCatch_UOM_ID()));
+			lineQty = Quantitys.of(inoutLineRecord.getQtyDeliveredCatch(), UomId.ofRepoId(inoutLineRecord.getCatch_UOM_ID()));
 		}
 		else if (inoutLineRecord.getC_UOM_ID() > 0)
 		{

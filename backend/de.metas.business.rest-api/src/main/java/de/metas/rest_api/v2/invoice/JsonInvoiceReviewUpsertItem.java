@@ -22,10 +22,8 @@
 
 package de.metas.rest_api.v2.invoice;
 
-import de.metas.common.rest_api.v2.SwaggerDocConstants;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
@@ -38,11 +36,11 @@ import java.util.Map;
 public class JsonInvoiceReviewUpsertItem
 {
 	@Nullable
-	@Schema(description = "Optional; if omitted, then both `externalId` and `orgCode` have to be provided. Translates to `C_Invoice.C_Invoice_ID`")
+	@Schema(description = "Optional; if omitted, then both `externalId` and `orgCode` have to be provided. Translates to `C_Invoice.C_Invoice_ID`. Only completed and closed invoices are considered")
 	Integer invoiceId;
 
 	@Nullable
-	@Schema(description = "Optional; if omitted, then both `invoiceId` has to be provided. If given, then also `orgCode` has to be provided. Translates to `C_Invoice.ExternalId`")
+	@Schema(description = "Optional; if omitted, then `invoiceId` has to be provided. If given, then also `orgCode` has to be provided. Translates to `C_Invoice.ExternalId`. Only completed and closed invoices are considered")
 	String externalId;
 
 	@Schema(description = "Optional, to specify the `AD_Org_ID`.\n"

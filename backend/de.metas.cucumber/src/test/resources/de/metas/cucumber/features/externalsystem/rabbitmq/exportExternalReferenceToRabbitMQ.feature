@@ -74,17 +74,17 @@ Feature: Validate external reference is sent to RabbitMQ
       | created_bpartner         | ext-Shopware6-BPartner_ER_25032022 | shopware6code | shopware6name | shopware6cmp    | de           |
 
     And verify that S_ExternalReference was created
-      | ExternalSystem | Type             | ExternalReference      | ExternalReferenceURL |
-      | Shopware6      | BPartner         | BPartner_ER_25032022   | www.Shopware6.ro     |
-      | Shopware6      | BPartnerLocation | BPLocation_ER_25032022 | null                 |
-      | Shopware6      | UserID           | BPContact_ER_25032022  | null                 |
+      | ExternalSystem | Type             | ExternalReference      | OPT.ExternalReferenceURL |
+      | Shopware6      | BPartner         | BPartner_ER_25032022   | www.Shopware6.ro         |
+      | Shopware6      | BPartnerLocation | BPLocation_ER_25032022 | null                     |
+      | Shopware6      | UserID           | BPContact_ER_25032022  | null                     |
 
     And RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:
-      | ExternalSystem_Config_ID.Identifier | OPT.parameters.C_BPartner_ID.Identifier | OPT.parameters.JsonExternalReferenceLookupRequest                                                                                                                                             |
-      | config_1                            |                                         | {"systemName":"Shopware6","items":[{"id":"BPLocation_ER_25032022","type":"BPartnerLocation"}]}                                                                                                |
-      | config_1                            |                                         | {"systemName":"Shopware6","items":[{"id":"BPContact_ER_25032022","type":"UserID"}]}                                                                                                           |
-      | config_1                            |                                         | {"systemName":"Shopware6","items":[{"id":"BPartner_ER_25032022","type":"BPartner"},{"id":"BPLocation_ER_25032022","type":"BPartnerLocation"},{"id":"BPContact_ER_25032022","type":"UserID"}]} |
-      | config_1                            | created_bpartner                        |                                                                                                                                                                                               |
+      | ExternalSystem_Config_ID.Identifier | OPT.parameters.C_BPartner_ID.Identifier | OPT.parameters.JsonExternalReferenceLookupRequest                                                                                                                                                                                          |
+      | config_1                            |                                         | {"systemName":"Shopware6","items":[{"externalReference":"BPLocation_ER_25032022","type":"BPartnerLocation"}]}                                                                                                                              |
+      | config_1                            |                                         | {"systemName":"Shopware6","items":[{"externalReference":"BPContact_ER_25032022","type":"UserID"}]}                                                                                                                                         |
+      | config_1                            |                                         | {"systemName":"Shopware6","items":[{"externalReference":"BPartner_ER_25032022","type":"BPartner"},{"externalReference":"BPLocation_ER_25032022","type":"BPartnerLocation"},{"externalReference":"BPContact_ER_25032022","type":"UserID"}]} |
+      | config_1                            | created_bpartner                        |                                                                                                                                                                                                                                            |
 
     And deactivate ExternalSystem_Config
       | ExternalSystem_Config_ID.Identifier |
@@ -145,10 +145,10 @@ Feature: Validate external reference is sent to RabbitMQ
       | created_bpartner         | ext-Shopware6-BPartner_ER_S2_25032022 | shopware6code_25032022 | shopware6nameAudit | shopware6cmpAudit | de           |
 
     And verify that S_ExternalReference was created
-      | ExternalSystem | Type             | ExternalReference         | ExternalReferenceURL |
-      | Shopware6      | BPartner         | BPartner_ER_S2_25032022   | www.Shopware6.ro     |
-      | Shopware6      | BPartnerLocation | BPLocation_ER_S2_25032022 | null                 |
-      | Shopware6      | UserID           | BPContact_ER_S2_25032022  | null                 |
+      | ExternalSystem | Type             | ExternalReference         | OPT.ExternalReferenceURL |
+      | Shopware6      | BPartner         | BPartner_ER_S2_25032022   | www.Shopware6.ro         |
+      | Shopware6      | BPartnerLocation | BPLocation_ER_S2_25032022 | null                     |
+      | Shopware6      | UserID           | BPContact_ER_S2_25032022  | null                     |
 
     And there are no pending items for export to external system via: 'ExportExternalReferenceToRabbitMQService'
 
@@ -165,15 +165,15 @@ Feature: Validate external reference is sent to RabbitMQ
     "systemName": "Shopware6",
     "items": [
         {
-            "id": "BPartner_ER_S2_25032022",
+            "externalReference": "BPartner_ER_S2_25032022",
             "type": "BPartner"
         },
         {
-            "id": "BPLocation_ER_S2_25032022",
+            "externalReference": "BPLocation_ER_S2_25032022",
             "type": "BPartnerLocation"
         },
         {
-            "id": "BPContact_ER_S2_25032022",
+            "externalReference": "BPContact_ER_S2_25032022",
             "type": "UserID"
         }
     ]
@@ -201,8 +201,8 @@ Feature: Validate external reference is sent to RabbitMQ
       | externalRef_BPartner              | version_1   |
 
     Then RabbitMQ receives a JsonExternalSystemRequest with the following external system config and parameter:
-      | ExternalSystem_Config_ID.Identifier | OPT.parameters.JsonExternalReferenceLookupRequest                                                                                                                                                      |
-      | config_1                            | {"systemName":"Shopware6","items":[{"id":"BPartner_ER_S2_25032022","type":"BPartner"},{"id":"BPLocation_ER_S2_25032022","type":"BPartnerLocation"},{"id":"BPContact_ER_S2_25032022","type":"UserID"}]} |
+      | ExternalSystem_Config_ID.Identifier | OPT.parameters.JsonExternalReferenceLookupRequest                                                                                                                                                                                                   |
+      | config_1                            | {"systemName":"Shopware6","items":[{"externalReference":"BPartner_ER_S2_25032022","type":"BPartner"},{"externalReference":"BPLocation_ER_S2_25032022","type":"BPartnerLocation"},{"externalReference":"BPContact_ER_S2_25032022","type":"UserID"}]} |
     And deactivate ExternalSystem_Config
       | ExternalSystem_Config_ID.Identifier |
       | config_1                            |
