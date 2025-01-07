@@ -385,7 +385,7 @@ jobs:
       - name: assert success
         working-directory: docker-builds/db/init-preloaded
         run: |
-          if [ $(cat migration.exit-code) != 0 ]; then tail -1000 migrations.log && exit 1; fi
+          if [ $(cat migration.exit-code) != 0 ]; then tail -1000 migration.log && exit 1; fi
       - name: push images
         uses: nick-fields/retry@v3
         with:
