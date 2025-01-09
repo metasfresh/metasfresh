@@ -2258,7 +2258,7 @@ public final class MPayment extends X_C_Payment
 					OrgId.ofRepoId(getAD_Org_ID()));
 
 			payAmtEffective = currencyBL.convert(currencyConversionContext, payAmt, invoiceOpenAmt.getCurrencyId()).getAmountAsMoney();
-			maxAllocAmt = invoiceOpenAmt.add(currencyBL.convert(currencyConversionContext, discountAmt.add(writeOffAmt), invoiceOpenAmt.getCurrencyId()).getAmountAsMoney());
+			maxAllocAmt = invoiceOpenAmt.subtract(currencyBL.convert(currencyConversionContext, discountAmt.add(writeOffAmt), invoiceOpenAmt.getCurrencyId()).getAmountAsMoney());
 		}
 		return payAmtEffective.min(maxAllocAmt);
 	}
