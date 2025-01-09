@@ -99,7 +99,7 @@ public class ExportPPOrderToLeichMehlService extends ExportPPOrderToExternalSyst
 
 		final LeichMehlPluFileConfigGroup configGroup = productMappingConfig.getLeichMehlPluFileConfigGroup();
 		final List<ExternalSystemLeichMehlPluFileConfig> configs = configGroup.getExternalSystemLeichMehlPluFileConfigs();
-
+		
 		if (configs.isEmpty())
 		{
 			throw new AdempiereException(MISSING_PLU_CONFIG_GROUP_ENTRIES, configGroup.getName());
