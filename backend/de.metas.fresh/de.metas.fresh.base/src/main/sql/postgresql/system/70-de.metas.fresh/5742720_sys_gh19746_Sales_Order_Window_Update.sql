@@ -47,10 +47,6 @@ UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMEST
 UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2025-01-09 12:01:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=11580
 ;
 
--- 2025-01-09T15:39:09.376Z
-UPDATE AD_User SET IsAccountLocked='N', LoginFailureCount=0,Updated=TO_TIMESTAMP('2025-01-09 16:39:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=0 WHERE AD_User_ID=100
-;
-
 -- UI Element: Auftrag_OLD -> Auftrag.Abw. Kunde
 -- Column: C_Order.DropShip_BPartner_ID
 -- UI Element: Auftrag_OLD(143,D) -> Auftrag(186,D) -> main view -> 10 -> main.Abw. Kunde
