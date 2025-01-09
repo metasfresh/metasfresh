@@ -27,7 +27,6 @@ import de.metas.banking.api.BankAccountService;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
@@ -1638,10 +1637,15 @@ public final class MPayment extends X_C_Payment
 		alloc.setAD_Org_ID(getAD_Org_ID());
 		alloc.saveEx();
 
+		final Money discountAmt = getDiscountAmtAsMoney();
+		final Money writeOffAmt = getWriteOffAmtAsMoney();
 		final Money allocationAmt = getAllocationAmt(alloc.getDateTrx(),
-													 invoiceOpenAmt, 
-													 payAmt,
-													 CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()));
+				invoiceOpenAmt,
+				payAmt,
+				discountAmt,
+				writeOffAmt,
+				CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID())
+		);
 
 		MAllocationLine aLine = null;
 		if (isReceipt())
@@ -2234,26 +2238,46 @@ public final class MPayment extends X_C_Payment
 			@NonNull final Timestamp dateTrx,
 			@NonNull final Money invoiceOpenAmt,
 			@NonNull final Money payAmt,
+			@NonNull final Money discountAmt,
+			@NonNull final Money writeOffAmt,
 			@Nullable final CurrencyConversionTypeId conversionTypeId)
 	{
-		if (payAmt.getCurrencyId().equals(invoiceOpenAmt.getCurrencyId()))
+		final Money maxAllocAmt;
+		final Money payAmtEffective;
+		if (CurrencyId.equals(payAmt.getCurrencyId(), invoiceOpenAmt.getCurrencyId()))
 		{
-			return payAmt.min(invoiceOpenAmt);
+			payAmtEffective = payAmt;
+			maxAllocAmt = invoiceOpenAmt.subtract(discountAmt).subtract(writeOffAmt);
 		}
+		else
+		{
+			final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+			final CurrencyConversionContext currencyConversionContext = currencyBL.createCurrencyConversionContext(TimeUtil.asInstant(dateTrx),
+					conversionTypeId,
+					ClientId.ofRepoId(getAD_Client_ID()),
+					OrgId.ofRepoId(getAD_Org_ID()));
 
-		final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
-		final CurrencyConversionContext currencyConversionContext = currencyBL.createCurrencyConversionContext(TimeUtil.asInstant(dateTrx),
-																											   conversionTypeId,
-																											   ClientId.ofRepoId(getAD_Client_ID()),
-																											   OrgId.ofRepoId(getAD_Org_ID()));
-
-		final CurrencyConversionResult currencyConversionResult = currencyBL.convert(currencyConversionContext, payAmt, invoiceOpenAmt.getCurrencyId());
-		return currencyConversionResult.getAmountAsMoney().min(invoiceOpenAmt);
+			payAmtEffective = currencyBL.convert(currencyConversionContext, payAmt, invoiceOpenAmt.getCurrencyId()).getAmountAsMoney();
+			maxAllocAmt = invoiceOpenAmt.add(currencyBL.convert(currencyConversionContext, discountAmt.add(writeOffAmt), invoiceOpenAmt.getCurrencyId()).getAmountAsMoney());
+		}
+		return payAmtEffective.min(maxAllocAmt);
 	}
 	
 	@NonNull
 	private Money getPayAmtAsMoney()
 	{
 		return Money.of(getPayAmt(), CurrencyId.ofRepoId(getC_Currency_ID()));
+	}
+
+	@NonNull
+	private Money getDiscountAmtAsMoney()
+	{
+		return Money.of(getDiscountAmt(), CurrencyId.ofRepoId(getC_Currency_ID()));
+	}
+
+	@NonNull
+	private Money getWriteOffAmtAsMoney()
+	{
+		return Money.of(getWriteOffAmt(), CurrencyId.ofRepoId(getC_Currency_ID()));
 	}
 } // MPayment
