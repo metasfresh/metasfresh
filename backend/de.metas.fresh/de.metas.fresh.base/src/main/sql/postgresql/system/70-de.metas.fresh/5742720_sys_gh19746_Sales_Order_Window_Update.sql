@@ -47,3 +47,103 @@ UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMEST
 UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2025-01-09 12:01:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=11580
 ;
 
+-- 2025-01-09T15:39:09.376Z
+UPDATE AD_User SET IsAccountLocked='N', LoginFailureCount=0,Updated=TO_TIMESTAMP('2025-01-09 16:39:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=0 WHERE AD_User_ID=100
+;
+
+-- UI Element: Auftrag_OLD -> Auftrag.Abw. Kunde
+-- Column: C_Order.DropShip_BPartner_ID
+-- UI Element: Auftrag_OLD(143,D) -> Auftrag(186,D) -> main view -> 10 -> main.Abw. Kunde
+-- Column: C_Order.DropShip_BPartner_ID
+-- 2025-01-09T15:42:45.684Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2025-01-09 16:42:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544810
+;
+
+-- UI Element: Auftrag_OLD -> Auftrag.Abw. Lieferanschrift
+-- Column: C_Order.IsDropShip
+-- UI Element: Auftrag_OLD(143,D) -> Auftrag(186,D) -> main view -> 10 -> main.Abw. Lieferanschrift
+-- Column: C_Order.IsDropShip
+-- 2025-01-09T15:42:46.111Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2025-01-09 16:42:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544809
+;
+
+-- UI Element: Auftrag_OLD -> Auftrag.Abladeort
+-- Column: C_Order.HandOver_Location_ID
+-- UI Element: Auftrag_OLD(143,D) -> Auftrag(186,D) -> main view -> 10 -> main.Abladeort
+-- Column: C_Order.HandOver_Location_ID
+-- 2025-01-09T15:42:46.521Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2025-01-09 16:42:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=548025
+;
+
+-- UI Element: Auftrag_OLD -> Auftrag.Zugesagter Liefertermin
+-- Column: C_Order.DatePromised
+-- UI Element: Auftrag_OLD(143,D) -> Auftrag(186,D) -> main view -> 20 -> Dates.Zugesagter Liefertermin
+-- Column: C_Order.DatePromised
+-- 2025-01-09T15:42:46.930Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2025-01-09 16:42:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=1000009
+;
+
+-- UI Element: Auftrag_OLD -> Auftrag.Preissystem
+-- Column: C_Order.M_PricingSystem_ID
+-- UI Element: Auftrag_OLD(143,D) -> Auftrag(186,D) -> main view -> 10 -> pricing.Preissystem
+-- Column: C_Order.M_PricingSystem_ID
+-- 2025-01-09T15:42:47.348Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2025-01-09 16:42:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=1000210
+;
+
+-- UI Element: Auftrag_OLD -> Auftrag.Währung
+-- Column: C_Order.C_Currency_ID
+-- UI Element: Auftrag_OLD(143,D) -> Auftrag(186,D) -> main view -> 10 -> pricing.Währung
+-- Column: C_Order.C_Currency_ID
+-- 2025-01-09T15:42:47.757Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP('2025-01-09 16:42:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=541299
+;
+
+-- UI Element: Auftrag_OLD -> Auftrag.Belegstatus
+-- Column: C_Order.DocStatus
+-- UI Element: Auftrag_OLD(143,D) -> Auftrag(186,D) -> main view -> 20 -> Rest.Belegstatus
+-- Column: C_Order.DocStatus
+-- 2025-01-09T15:42:48.159Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=130,Updated=TO_TIMESTAMP('2025-01-09 16:42:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=1000024
+;
+
+-- UI Element: Auftrag_OLD -> Auftrag.Verbucht
+-- Column: C_Order.Posted
+-- UI Element: Auftrag_OLD(143,D) -> Auftrag(186,D) -> main view -> 20 -> posted.Verbucht
+-- Column: C_Order.Posted
+-- 2025-01-09T15:42:48.562Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=140,Updated=TO_TIMESTAMP('2025-01-09 16:42:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544788
+;
+
+-- UI Element: Auftrag_OLD -> Auftrag.Incoterm Standort
+-- Column: C_Order.IncotermLocation
+-- UI Element: Auftrag_OLD(143,D) -> Auftrag(186,D) -> main view -> 10 -> pricing.Incoterm Standort
+-- Column: C_Order.IncotermLocation
+-- 2025-01-09T15:42:48.966Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=150,Updated=TO_TIMESTAMP('2025-01-09 16:42:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544771
+;
+
+-- UI Element: Auftrag_OLD -> Auftrag.Organisation
+-- Column: C_Order.AD_Org_ID
+-- UI Element: Auftrag_OLD(143,D) -> Auftrag(186,D) -> main view -> 20 -> Org und Lager.Organisation
+-- Column: C_Order.AD_Org_ID
+-- 2025-01-09T15:42:49.375Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=160,Updated=TO_TIMESTAMP('2025-01-09 16:42:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=1000069
+;
+
+-- UI Element: Auftrag_OLD -> Auftrag.Abw. Lieferanschrift
+-- Column: C_Order.IsDropShip
+-- UI Element: Auftrag_OLD(143,D) -> Auftrag(186,D) -> main view -> 10 -> main.Abw. Lieferanschrift
+-- Column: C_Order.IsDropShip
+-- 2025-01-09T15:43:58.052Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2025-01-09 16:43:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544809
+;
+
+-- UI Element: Auftrag_OLD -> Auftrag.Abw. Kunde
+-- Column: C_Order.DropShip_BPartner_ID
+-- UI Element: Auftrag_OLD(143,D) -> Auftrag(186,D) -> main view -> 10 -> main.Abw. Kunde
+-- Column: C_Order.DropShip_BPartner_ID
+-- 2025-01-09T15:43:58.461Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2025-01-09 16:43:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544810
+;
+
