@@ -80,7 +80,7 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Payment_ID;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_C_DocType_ID;
@@ -370,6 +370,12 @@ public class C_Payment_StepDef
 
 		final Timestamp dateAcct = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateAcct);
 		payment.setDateAcct(CoalesceUtil.coalesceNotNull(dateAcct, TimeUtil.asTimestamp(LocalDate.now())));
+
+		final BigDecimal discountAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_DiscountAmt);
+		if(discountAmt != null)
+		{
+			payment.setDiscountAmt(discountAmt);
+		}
 
 		paymentDAO.save(payment);
 
