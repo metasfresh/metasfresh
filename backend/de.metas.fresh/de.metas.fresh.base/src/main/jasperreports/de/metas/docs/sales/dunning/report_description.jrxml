@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/dunning/report" uuid="aae3cda5-2e7a-4834-8355-ed9690a329a3">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -14,17 +16,50 @@
 	<queryString>
 		<![CDATA[select * from report.Docs_Sales_Dunning_Report_description ($P{RECORD_ID}, $P{ad_language}) ;]]>
 	</queryString>
-	<field name="doctype" class="java.lang.String"/>
-	<field name="docno" class="java.lang.String"/>
-	<field name="noteheader" class="java.lang.String"/>
-	<field name="note" class="java.lang.String"/>
-	<field name="dunningdate" class="java.sql.Timestamp"/>
-	<field name="bp_value" class="java.lang.String"/>
-	<field name="org_value" class="java.lang.String"/>
-	<field name="taxid" class="java.lang.String"/>
-	<field name="condition" class="java.lang.String"/>
-	<field name="Account_manager" class="java.lang.String"/>
-	<field name="Account_manager_mail" class="java.lang.String"/>
+	<field name="doctype" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="doctype"/>
+		<property name="com.jaspersoft.studio.field.label" value="doctype"/>
+	</field>
+	<field name="docno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="docno"/>
+		<property name="com.jaspersoft.studio.field.label" value="docno"/>
+	</field>
+	<field name="noteheader" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="noteheader"/>
+		<property name="com.jaspersoft.studio.field.label" value="noteheader"/>
+	</field>
+	<field name="note" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="note"/>
+		<property name="com.jaspersoft.studio.field.label" value="note"/>
+	</field>
+	<field name="dunningdate" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="dunningdate"/>
+		<property name="com.jaspersoft.studio.field.label" value="dunningdate"/>
+	</field>
+	<field name="bp_value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="bp_value"/>
+		<property name="com.jaspersoft.studio.field.label" value="bp_value"/>
+	</field>
+	<field name="org_value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="org_value"/>
+		<property name="com.jaspersoft.studio.field.label" value="org_value"/>
+	</field>
+	<field name="taxid" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="taxid"/>
+		<property name="com.jaspersoft.studio.field.label" value="taxid"/>
+	</field>
+	<field name="condition" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="condition"/>
+		<property name="com.jaspersoft.studio.field.label" value="condition"/>
+	</field>
+	<field name="account_manager" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="account_manager"/>
+		<property name="com.jaspersoft.studio.field.label" value="account_manager"/>
+	</field>
+	<field name="account_manager_mail" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="account_manager_mail"/>
+		<property name="com.jaspersoft.studio.field.label" value="account_manager_mail"/>
+	</field>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -119,7 +154,7 @@
 				<textElement textAlignment="Right">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{Account_manager}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{account_manager}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-5" mode="Transparent" x="352" y="34" width="60" height="13" uuid="cfee9d29-d8e8-49e0-b51a-9b9558163b55"/>
@@ -158,7 +193,7 @@
 				<textElement textAlignment="Right">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{Account_manager_mail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{account_manager_mail}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
