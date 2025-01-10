@@ -1,5 +1,6 @@
 package de.metas.acct.accounts;
 
+import de.metas.acct.AccountConceptualName;
 import de.metas.acct.AccountConceptualNameAware;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,5 +18,10 @@ public enum WarehouseAccountType implements AccountConceptualNameAware
 
 	;
 
-	@NonNull private final String accountConceptualName;
+	@NonNull private final AccountConceptualName accountConceptualName;
+
+	WarehouseAccountType(@NonNull final String accountConceptualName)
+	{
+		this.accountConceptualName = AccountConceptualName.ofString(accountConceptualName);
+	}
 }

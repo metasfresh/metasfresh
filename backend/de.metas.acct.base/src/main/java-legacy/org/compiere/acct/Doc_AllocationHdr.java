@@ -18,6 +18,7 @@ package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.Account;
+import de.metas.acct.AccountConceptualName;
 import de.metas.acct.accounts.BPartnerCustomerAccountType;
 import de.metas.acct.accounts.BPartnerGroupAccountType;
 import de.metas.acct.accounts.BPartnerVendorAccountType;
@@ -1207,7 +1208,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	 */
 	private void addInvoiceFact(final I_Fact_Acct fact)
 	{
-		final String accountConceptualName = fact.getAccountConceptualName();
+		final AccountConceptualName accountConceptualName = AccountConceptualName.ofString(fact.getAccountConceptualName());
 
 		if (TaxAcctType.isInvoiceTax(accountConceptualName))
 		{
