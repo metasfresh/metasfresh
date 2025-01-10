@@ -52,7 +52,7 @@ class MPaymentTest
 					eur("-1"),
 					eur("0"),
 					null,
-					ClientAndOrgId.MAIN_ORG);
+					ClientAndOrgId.MAIN);
 			assertThat(allocAmt).isEqualTo(eur("101"));
 		}
 
@@ -66,7 +66,7 @@ class MPaymentTest
 					eur("-1"),
 					eur("0"),
 					null,
-					ClientAndOrgId.MAIN_ORG);
+					ClientAndOrgId.MAIN);
 			assertThat(allocAmt).isEqualTo(eur("101"));
 		}
 
@@ -80,7 +80,7 @@ class MPaymentTest
 					eur("0"),
 					eur("-1"),
 					null,
-					ClientAndOrgId.MAIN_ORG);
+					ClientAndOrgId.MAIN);
 			assertThat(allocAmt).isEqualTo(eur("101"));
 		}
 
@@ -94,7 +94,7 @@ class MPaymentTest
 					eur("0"),
 					eur("-1"),
 					null,
-					ClientAndOrgId.MAIN_ORG);
+					ClientAndOrgId.MAIN);
 			assertThat(allocAmt).isEqualTo(eur("101"));
 		}
 
@@ -108,7 +108,7 @@ class MPaymentTest
 					usd("-5"),
 					usd("0"),
 					null,
-					ClientAndOrgId.MAIN_ORG);
+					ClientAndOrgId.MAIN);
 			assertThat(allocAmt).isEqualTo(eur("104"));
 		}
 
@@ -122,7 +122,7 @@ class MPaymentTest
 					usd("0"),
 					usd("0"),
 					null,
-					ClientAndOrgId.MAIN_ORG);
+					ClientAndOrgId.MAIN);
 			assertThat(allocAmt).isEqualTo(eur("100"));
 		}
 
@@ -136,7 +136,7 @@ class MPaymentTest
 					usd("0"),
 					usd("-2"),
 					null,
-					ClientAndOrgId.MAIN_ORG);
+					ClientAndOrgId.MAIN);
 			assertThat(allocAmt).isEqualTo(eur("101.6"));
 		}
 	}
