@@ -135,7 +135,7 @@ public class OrderLineBuilder
 		{
 			orderLine.setPrice_UOM_ID(manualPriceUomId.getRepoId());
 		}
-		
+
 		orderLineBL.updatePrices(orderLine);
 
 		if (!Check.isBlank(description))
@@ -175,20 +175,11 @@ public class OrderLineBuilder
 		}
 	}
 
-	private OrderFactory getParent()
-	{
-		return parent;
-	}
+	private OrderFactory getParent() {return parent;}
 
-	public OrderFactory endOrderLine()
-	{
-		return getParent();
-	}
+	public OrderFactory endOrderLine() {return getParent();}
 
-	public OrderAndLineId getCreatedOrderAndLineId()
-	{
-		return OrderAndLineId.ofRepoIds(createdOrderLine.getC_Order_ID(), createdOrderLine.getC_OrderLine_ID());
-	}
+	public OrderAndLineId getCreatedOrderAndLineId() {return OrderAndLineId.ofRepoIds(createdOrderLine.getC_Order_ID(), createdOrderLine.getC_OrderLine_ID());}
 
 	public OrderLineBuilder productId(final ProductId productId)
 	{
