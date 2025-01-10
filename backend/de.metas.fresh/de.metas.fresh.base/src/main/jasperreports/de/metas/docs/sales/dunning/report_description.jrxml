@@ -143,7 +143,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{customer}]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-3" mode="Transparent" x="412" y="34" width="129" height="13" uuid="26393df0-f984-4853-bb9f-4f59b48fd5c2"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -182,7 +182,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{email}]]></textFieldExpression>
 			</textField>
-			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-3" mode="Transparent" x="380" y="47" width="161" height="13" uuid="4a94d3bb-94c8-4277-a8d5-7272721b870a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
