@@ -184,8 +184,13 @@ public class BusinessTestHelper
 
 	public CurrencyId getEURCurrencyId()
 	{
+		return getOrCreateCurrencyId(CurrencyCode.EUR);
+	}
+
+	public CurrencyId getOrCreateCurrencyId(final CurrencyCode currencyCode)
+	{
 		final PlainCurrencyDAO currenciesRepo = (PlainCurrencyDAO)Services.get(ICurrencyDAO.class);
-		return currenciesRepo.getOrCreateByCurrencyCode(CurrencyCode.EUR).getId();
+		return currenciesRepo.getOrCreateByCurrencyCode(currencyCode).getId();
 	}
 
 	public ProductId createProductId(final String name, final I_C_UOM uom)
@@ -260,7 +265,7 @@ public class BusinessTestHelper
 
 		final I_M_Product_Category category = existingCategory.orElse(newInstance(I_M_Product_Category.class));
 
-		if(Check.isBlank(category.getName()))
+		if (Check.isBlank(category.getName()))
 		{
 			category.setName("StandardProductCategory");
 		}
@@ -281,8 +286,8 @@ public class BusinessTestHelper
 	}
 
 	public ProductId createProduct(@NonNull final String name,
-			@Nullable final I_C_UOM uom,
-			@Nullable final ProductCategoryId categoryId)
+								   @Nullable final I_C_UOM uom,
+								   @Nullable final ProductCategoryId categoryId)
 	{
 		final I_M_Product product = createProduct(name, uom);
 
@@ -292,8 +297,8 @@ public class BusinessTestHelper
 	}
 
 	public I_M_Product createProduct(@NonNull final String name,
-			@Nullable final I_C_UOM uom,
-			@NonNull final I_M_Product_Category category)
+									 @Nullable final I_C_UOM uom,
+									 @NonNull final I_M_Product_Category category)
 	{
 		final I_M_Product product = createProduct(name, uom);
 
