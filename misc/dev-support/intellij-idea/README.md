@@ -11,9 +11,7 @@ C:\work-metas
 
 If there are duplicate conflicts, you should merge the files there by using idea's [files comparator](https://www.jetbrains.com/help/idea/comparing-files-and-folders.html) to diff between the files already in the project's `.idea/` folder and this folder here.
 
-Also note that there is a script 
-misc/dev-support/bootstrap-scripts/copy_intellij-idea_to_all_workspaces.sh
-that copies the .idea fowlder to all your sibling-workspaces.
+💡Also note that there is a script `misc/dev-support/bootstrap-scripts/copy_intellij-idea_to_all_workspaces.sh` that copies the .idea fowler to all your sibling-workspaces.
 
 
 ### Reference
