@@ -38,6 +38,8 @@ import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.HUWithPickOnTheFlyStatus;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUFactory;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUSupportingServices;
 import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -157,7 +159,10 @@ public class PickingJobReopenCommand
 									pickStepHU.getQtyPicked(),
 									hu),
 							hu,
-							huContext,
+							ShipmentScheduleWithHUFactory.builder()
+									.supportingServices(ShipmentScheduleWithHUSupportingServices.getInstance())
+									.huContext(huContext)
+									.build(),
 							huIdsToPick.get(pickStepHU.getActualPickedHU().getId()).isAnonymousHuPickedOnTheFly());
 				});
 	}
