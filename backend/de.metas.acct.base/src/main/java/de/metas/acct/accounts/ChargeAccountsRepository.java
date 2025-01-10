@@ -1,7 +1,6 @@
 package de.metas.acct.accounts;
 
 import com.google.common.collect.ImmutableMap;
-import de.metas.acct.Account;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.cache.CCache;
@@ -10,6 +9,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import de.metas.acct.Account;
 import org.compiere.model.I_C_Charge_Acct;
 import org.springframework.stereotype.Repository;
 

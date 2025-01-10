@@ -7,7 +7,7 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.doc.PostingException;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.accounting.BankAccountAcctType;
-import de.metas.banking.api.BankAccountAcctRepository;
+import de.metas.banking.accounting.BankAccountAcctRepository;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -316,6 +316,6 @@ public class AccountProvider
 				.getAccounts(costElementId, acctSchemaId)
 				.getAccountId(acctType);
 
-		return Account.of(accountId, acctType.getAccountConceptualName());
+		return Account.of(accountId, acctType);
 	}
 }

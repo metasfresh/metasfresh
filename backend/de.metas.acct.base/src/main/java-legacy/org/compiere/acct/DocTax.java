@@ -87,7 +87,7 @@ final class DocTax
 	@NonNull
 	public Account getTaxCreditOrExpense(@NonNull final AcctSchema as)
 	{
-		return accountProvider.getTaxAccount(as.getId(), taxId, salesTax ? TaxAcctType.TaxExpense : TaxAcctType.TaxCredit);
+		return accountProvider.getTaxAccount(as.getId(), taxId, TaxAcctType.getAPTaxType(salesTax));
 	}
 
 	@NonNull
