@@ -316,6 +316,6 @@ public class AccountProvider
 				.getAccounts(costElementId, acctSchemaId)
 				.getAccountId(acctType);
 
-		return Account.of(accountId, acctType.getAccountConceptualName());
+		return Account.of(accountId, acctType);
 	}
 }

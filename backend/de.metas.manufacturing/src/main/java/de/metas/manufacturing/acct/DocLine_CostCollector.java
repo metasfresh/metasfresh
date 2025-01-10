@@ -122,7 +122,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 				throw newPostingException().setAcctSchema(as).setDetailMessage("No Product Account for account type " + acctType + ", product " + productId + " and " + as);
 			}
 
-			return Account.of(accountId, acctType.getAccountConceptualName());
+			return Account.of(accountId, acctType);
 		}
 	}
 
