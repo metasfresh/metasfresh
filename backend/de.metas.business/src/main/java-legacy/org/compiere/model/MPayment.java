@@ -21,6 +21,7 @@
  */
 package org.compiere.model;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.BankAccountService;
@@ -46,6 +47,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentTrxType;
@@ -286,8 +288,8 @@ public final class MPayment extends X_C_Payment
 				|| is_ValueChanged("C_Order_ID") || is_ValueChanged("C_Project_ID"))
 		{
 			setIsPrepayment(getC_Charge_ID() == 0
-									&& getC_BPartner_ID() != 0
-									&& (getC_Order_ID() != 0
+					&& getC_BPartner_ID() != 0
+					&& (getC_Order_ID() != 0
 					|| (getC_Project_ID() != 0 && getC_Invoice_ID() == 0)));
 			// metas: commented - Write off amount must not be set to 0.
 			/*
@@ -328,15 +330,15 @@ public final class MPayment extends X_C_Payment
 			{
 				final I_C_Invoice inv = getC_Invoice();
 				Check.errorIf(inv.getC_BPartner_ID() != getC_BPartner_ID(),
-							  "Payment {} has C_BPartner_ID={}, but invoice {} has C_BPartner_ID={}",
-							  this, getC_BPartner_ID(), inv, inv.getC_BPartner_ID());
+						"Payment {} has C_BPartner_ID={}, but invoice {} has C_BPartner_ID={}",
+						this, getC_BPartner_ID(), inv, inv.getC_BPartner_ID());
 			}
 			if (getC_Order_ID() != 0)
 			{
 				final I_C_Order ord = getC_Order();
 				Check.errorIf(ord.getC_BPartner_ID() != getC_BPartner_ID(),
-							  "Payment {} has C_BPartner_ID={}, but order {} has C_BPartner_ID={}",
-							  this, getC_BPartner_ID(), ord, ord.getC_BPartner_ID());
+						"Payment {} has C_BPartner_ID={}, but order {} has C_BPartner_ID={}",
+						this, getC_BPartner_ID(), ord, ord.getC_BPartner_ID());
 			}
 		}
 
@@ -770,10 +772,10 @@ public final class MPayment extends X_C_Payment
 
 		final IDocTypeDAO docTypesRepo = Services.get(IDocTypeDAO.class);
 		final DocTypeId docTypeId = docTypesRepo.getDocTypeId(DocTypeQuery.builder()
-																	  .docBaseType(isReceipt ? DocBaseType.ARReceipt : DocBaseType.APPayment)
-																	  .adClientId(getAD_Client_ID())
-																	  .adOrgId(getAD_Org_ID())
-																	  .build());
+				.docBaseType(isReceipt ? DocBaseType.ARReceipt : DocBaseType.APPayment)
+				.adClientId(getAD_Client_ID())
+				.adOrgId(getAD_Org_ID())
+				.build());
 		setC_DocType_ID(docTypeId.getRepoId());
 	}
 
@@ -1136,7 +1138,7 @@ public final class MPayment extends X_C_Payment
 
 		// Std Period open?
 		if (!MPeriod.isOpen(getCtx(), getDateAcct(),
-							isReceipt() ? DocBaseType.ARReceipt : DocBaseType.APPayment, getAD_Org_ID()))
+				isReceipt() ? DocBaseType.ARReceipt : DocBaseType.APPayment, getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return DocStatus.Invalid.getCode();
@@ -1512,9 +1514,9 @@ public final class MPayment extends X_C_Payment
 		}
 
 		final MAllocationHdr alloc = new MAllocationHdr(getCtx(), false,
-														getDateTrx(), getC_Currency_ID(),
-														Services.get(IMsgBL.class).translate(getCtx(), "C_Payment_ID") + ": " + getDocumentNo(),
-														get_TrxName());
+				getDateTrx(), getC_Currency_ID(),
+				Services.get(IMsgBL.class).translate(getCtx(), "C_Payment_ID") + ": " + getDocumentNo(),
+				get_TrxName());
 		alloc.setAD_Org_ID(getAD_Org_ID());
 		if (!alloc.save())
 		{
@@ -1528,12 +1530,12 @@ public final class MPayment extends X_C_Payment
 			if (isReceipt())
 			{
 				aLine = new MAllocationLine(alloc, pa.getAmount(),
-											pa.getDiscountAmt(), pa.getWriteOffAmt(), pa.getOverUnderAmt());
+						pa.getDiscountAmt(), pa.getWriteOffAmt(), pa.getOverUnderAmt());
 			}
 			else
 			{
 				aLine = new MAllocationLine(alloc, pa.getAmount().negate(),
-											pa.getDiscountAmt().negate(), pa.getWriteOffAmt().negate(), pa.getOverUnderAmt().negate());
+						pa.getDiscountAmt().negate(), pa.getWriteOffAmt().negate(), pa.getOverUnderAmt().negate());
 			}
 			aLine.setDocInfo(pa.getC_BPartner_ID(), 0, pa.getC_Invoice_ID());
 			aLine.setPaymentInfo(getC_Payment_ID(), 0);
@@ -1567,7 +1569,7 @@ public final class MPayment extends X_C_Payment
 		final I_C_Invoice invoice = Services.get(IInvoiceBL.class).getById(invoiceId);
 
 		Check.errorIf(invoice == null, "Invoice cannot be null since C_Invoice_ID > 0, C_Invoice_ID = {}", invoiceId);
-		
+
 		final Money invoiceOpenAmt = Services.get(IAllocationDAO.class).retrieveOpenAmtInInvoiceCurrency(invoice, false);
 		final Money payAmt = getPayAmtAsMoney();
 
@@ -1604,8 +1606,8 @@ public final class MPayment extends X_C_Payment
 //		// @formatter:on
 		//
 		final MAllocationHdr alloc = new MAllocationHdr(getCtx(), false,
-														getDateTrx(), invoiceOpenAmt.getCurrencyId().getRepoId(),
-														Services.get(IMsgBL.class).translate(getCtx(), "C_Payment_ID") + ": " + getDocumentNo() + " [1]", get_TrxName());
+				getDateTrx(), invoiceOpenAmt.getCurrencyId().getRepoId(),
+				Services.get(IMsgBL.class).translate(getCtx(), "C_Payment_ID") + ": " + getDocumentNo() + " [1]", get_TrxName());
 
 		// task 09643
 		// When the Allocation has both invoice and payment, allocation's accounting date must e the max between the invoice date and payment date
@@ -1639,24 +1641,25 @@ public final class MPayment extends X_C_Payment
 
 		final Money discountAmt = getDiscountAmtAsMoney();
 		final Money writeOffAmt = getWriteOffAmtAsMoney();
-		final Money allocationAmt = getAllocationAmt(alloc.getDateTrx(),
+		final Money allocationAmt = computeAllocationAmt(alloc.getDateTrx(),
 				invoiceOpenAmt,
 				payAmt,
 				discountAmt,
 				writeOffAmt,
-				CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID())
+				CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
+				ClientAndOrgId.ofClientAndOrg(getAD_Client_ID(), getAD_Org_ID())
 		);
 
 		MAllocationLine aLine = null;
 		if (isReceipt())
 		{
 			aLine = new MAllocationLine(alloc, allocationAmt.toBigDecimal(),
-										getDiscountAmt(), getWriteOffAmt(), getOverUnderAmt());
+					getDiscountAmt(), getWriteOffAmt(), getOverUnderAmt());
 		}
 		else
 		{
 			aLine = new MAllocationLine(alloc, allocationAmt.toBigDecimal().negate(),
-										getDiscountAmt().negate(), getWriteOffAmt().negate(), getOverUnderAmt().negate());
+					getDiscountAmt().negate(), getWriteOffAmt().negate(), getOverUnderAmt().negate());
 		}
 		aLine.setDocInfo(getC_BPartner_ID(), 0, getC_Invoice_ID());
 		aLine.setC_Payment_ID(getC_Payment_ID());
@@ -1668,7 +1671,7 @@ public final class MPayment extends X_C_Payment
 
 		// Get Project from Invoice
 		final int C_Project_ID = DB.getSQLValue(get_TrxName(),
-												"SELECT MAX(C_Project_ID) FROM C_Invoice WHERE C_Invoice_ID=?", getC_Invoice_ID());
+				"SELECT MAX(C_Project_ID) FROM C_Invoice WHERE C_Invoice_ID=?", getC_Invoice_ID());
 		if (C_Project_ID > 0 && getC_Project_ID() == 0)
 		{
 			setC_Project_ID(C_Project_ID);
@@ -1676,7 +1679,7 @@ public final class MPayment extends X_C_Payment
 		else if (C_Project_ID > 0 && getC_Project_ID() > 0 && C_Project_ID != getC_Project_ID())
 		{
 			log.warn("Invoice C_Project_ID=" + C_Project_ID
-							 + " <> Payment C_Project_ID=" + getC_Project_ID());
+					+ " <> Payment C_Project_ID=" + getC_Project_ID());
 		}
 		return true;
 	}    // allocateInvoice
@@ -1694,7 +1697,7 @@ public final class MPayment extends X_C_Payment
 		// return;
 		// De-Allocate all
 		final MAllocationHdr[] allocations = MAllocationHdr.getOfPayment(getCtx(),
-																		 getC_Payment_ID(), get_TrxName());
+				getC_Payment_ID(), get_TrxName());
 		for (MAllocationHdr allocation : allocations)
 		{
 			final DocStatus allocDocStatus = DocStatus.ofCode(allocation.getDocStatus());
@@ -1848,7 +1851,7 @@ public final class MPayment extends X_C_Payment
 		// Std Period open?
 		Timestamp dateAcct = getDateAcct();
 		if (!MPeriod.isOpen(getCtx(), dateAcct,
-							isReceipt() ? DocBaseType.ARReceipt : DocBaseType.APPayment, getAD_Org_ID()))
+				isReceipt() ? DocBaseType.ARReceipt : DocBaseType.APPayment, getAD_Org_ID()))
 		{
 			dateAcct = new Timestamp(System.currentTimeMillis());
 		}
@@ -1919,8 +1922,8 @@ public final class MPayment extends X_C_Payment
 
 		// Create automatic Allocation
 		final MAllocationHdr alloc = new MAllocationHdr(getCtx(), false,
-														getDateTrx(), getC_Currency_ID(),
-														Services.get(IMsgBL.class).translate(getCtx(), "C_Payment_ID") + ": " + reversal.getDocumentNo(), get_TrxName());
+				getDateTrx(), getC_Currency_ID(),
+				Services.get(IMsgBL.class).translate(getCtx(), "C_Payment_ID") + ": " + reversal.getDocumentNo(), get_TrxName());
 		alloc.setAD_Org_ID(getAD_Org_ID());
 		if (!alloc.save())
 		{
@@ -1930,7 +1933,7 @@ public final class MPayment extends X_C_Payment
 		{
 			// Original Allocation
 			MAllocationLine aLine = new MAllocationLine(alloc, getPayAmt(true),
-														BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+					BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
 			aLine.setDocInfo(getC_BPartner_ID(), 0, 0);
 			aLine.setPaymentInfo(getC_Payment_ID(), 0);
 			if (!aLine.save(get_TrxName()))
@@ -1939,7 +1942,7 @@ public final class MPayment extends X_C_Payment
 			}
 			// Reversal Allocation
 			aLine = new MAllocationLine(alloc, reversal.getPayAmt(true),
-										BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
+					BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO);
 			aLine.setDocInfo(reversal.getC_BPartner_ID(), 0, 0);
 			aLine.setPaymentInfo(reversal.getC_Payment_ID(), 0);
 			if (!aLine.save(get_TrxName()))
@@ -2178,8 +2181,8 @@ public final class MPayment extends X_C_Payment
 
 		final DocTypeId orderDocTypeId = DocTypeId.ofRepoId(
 				firstGreaterThanZero( // if the order and payment are linked from the order's model interceptor, we might need to fall back to the order's target-doctype
-									  order.getC_DocType_ID(),
-									  order.getC_DocTypeTarget_ID()));
+						order.getC_DocType_ID(),
+						order.getC_DocTypeTarget_ID()));
 		if (orderDocTypeId == null)
 		{
 			return; // shall not happen
@@ -2233,36 +2236,45 @@ public final class MPayment extends X_C_Payment
 		return volatileCCData.creditCardVV;
 	}
 
+	/**
+	 * @return actual amount to allocate in invoiceOpenAmt's currency
+	 */
 	@NonNull
-	private Money getAllocationAmt(
+	@VisibleForTesting
+	static Money computeAllocationAmt(
 			@NonNull final Timestamp dateTrx,
 			@NonNull final Money invoiceOpenAmt,
 			@NonNull final Money payAmt,
 			@NonNull final Money discountAmt,
 			@NonNull final Money writeOffAmt,
-			@Nullable final CurrencyConversionTypeId conversionTypeId)
+			@Nullable final CurrencyConversionTypeId conversionTypeId,
+			@NonNull final ClientAndOrgId clientAndOrgId)
 	{
-		final Money maxAllocAmt;
+		final Money discountAndWriteOffAmt = discountAmt.add(writeOffAmt);
+
 		final Money payAmtEffective;
+		final Money discountAndWriteOffAmtEffective;
 		if (CurrencyId.equals(payAmt.getCurrencyId(), invoiceOpenAmt.getCurrencyId()))
 		{
 			payAmtEffective = payAmt;
-			maxAllocAmt = invoiceOpenAmt.subtract(discountAmt).subtract(writeOffAmt);
+			discountAndWriteOffAmtEffective = discountAndWriteOffAmt;
 		}
 		else
 		{
 			final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 			final CurrencyConversionContext currencyConversionContext = currencyBL.createCurrencyConversionContext(TimeUtil.asInstant(dateTrx),
 					conversionTypeId,
-					ClientId.ofRepoId(getAD_Client_ID()),
-					OrgId.ofRepoId(getAD_Org_ID()));
+					clientAndOrgId.getClientId(),
+					clientAndOrgId.getOrgId());
 
 			payAmtEffective = currencyBL.convert(currencyConversionContext, payAmt, invoiceOpenAmt.getCurrencyId()).getAmountAsMoney();
-			maxAllocAmt = invoiceOpenAmt.subtract(currencyBL.convert(currencyConversionContext, discountAmt.add(writeOffAmt), invoiceOpenAmt.getCurrencyId()).getAmountAsMoney());
+			discountAndWriteOffAmtEffective = currencyBL.convert(currencyConversionContext, discountAndWriteOffAmt, invoiceOpenAmt.getCurrencyId()).getAmountAsMoney();
 		}
+
+		final Money maxAllocAmt = invoiceOpenAmt.subtract(discountAndWriteOffAmtEffective);
 		return payAmtEffective.min(maxAllocAmt);
 	}
-	
+
 	@NonNull
 	private Money getPayAmtAsMoney()
 	{
