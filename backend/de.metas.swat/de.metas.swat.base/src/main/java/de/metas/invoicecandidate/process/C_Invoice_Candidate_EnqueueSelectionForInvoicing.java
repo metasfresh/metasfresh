@@ -58,6 +58,8 @@ import org.compiere.util.Ini;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
+import static de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P;
+
 public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProcess implements IProcessPrecondition
 {
 	private static final String MSG_InvoiceCandidate_PerformEnqueuing = "C_InvoiceCandidate_PerformEnqueuing";
@@ -102,7 +104,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 		selectionCount = createSelection();
 		if (selectionCount <= 0)
 		{
-			throw new AdempiereException(AdMessageKey.of(IInvoiceCandidateEnqueuer.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P))
+			throw new AdempiereException(MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P)
 					.markAsUserValidationError();
 		}
 
