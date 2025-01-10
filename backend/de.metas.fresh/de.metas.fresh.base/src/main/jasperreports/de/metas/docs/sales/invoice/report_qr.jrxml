@@ -58,7 +58,7 @@
 		<property name="com.jaspersoft.studio.field.label" value="documentno"/>
 	</field>
 	<detail>
-		<band height="494">
+		<band height="482">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement mode="Transparent" x="16" y="30" width="141" height="14" uuid="315260ea-080f-45dc-a861-fca520a6a003">

@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config_LeichMehl
  *  @author metasfresh (generated) 
@@ -56,15 +56,15 @@ public class X_ExternalSystem_Config_LeichMehl extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public de.metas.externalsystem.model.I_ExternalSystem_Config getExternalSystem_Config()
+	public I_ExternalSystem_Config getExternalSystem_Config()
 	{
-		return get_ValueAsPO(COLUMNNAME_ExternalSystem_Config_ID, de.metas.externalsystem.model.I_ExternalSystem_Config.class);
+		return get_ValueAsPO(COLUMNNAME_ExternalSystem_Config_ID, I_ExternalSystem_Config.class);
 	}
 
 	@Override
-	public void setExternalSystem_Config(final de.metas.externalsystem.model.I_ExternalSystem_Config ExternalSystem_Config)
+	public void setExternalSystem_Config(final I_ExternalSystem_Config ExternalSystem_Config)
 	{
-		set_ValueFromPO(COLUMNNAME_ExternalSystem_Config_ID, de.metas.externalsystem.model.I_ExternalSystem_Config.class, ExternalSystem_Config);
+		set_ValueFromPO(COLUMNNAME_ExternalSystem_Config_ID, I_ExternalSystem_Config.class, ExternalSystem_Config);
 	}
 
 	@Override
@@ -98,13 +98,13 @@ public class X_ExternalSystem_Config_LeichMehl extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public void setExternalSystemValue (final java.lang.String ExternalSystemValue)
+	public void setExternalSystemValue (final String ExternalSystemValue)
 	{
 		set_Value (COLUMNNAME_ExternalSystemValue, ExternalSystemValue);
 	}
 
 	@Override
-	public java.lang.String getExternalSystemValue() 
+	public String getExternalSystemValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalSystemValue);
 	}
@@ -155,25 +155,25 @@ public class X_ExternalSystem_Config_LeichMehl extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public void setProduct_BaseFolderName (final java.lang.String Product_BaseFolderName)
+	public void setProduct_BaseFolderName (final String Product_BaseFolderName)
 	{
 		set_Value (COLUMNNAME_Product_BaseFolderName, Product_BaseFolderName);
 	}
 
 	@Override
-	public java.lang.String getProduct_BaseFolderName() 
+	public String getProduct_BaseFolderName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Product_BaseFolderName);
 	}
 
 	@Override
-	public void setTCP_Host (final java.lang.String TCP_Host)
+	public void setTCP_Host (final String TCP_Host)
 	{
 		set_Value (COLUMNNAME_TCP_Host, TCP_Host);
 	}
 
 	@Override
-	public java.lang.String getTCP_Host() 
+	public String getTCP_Host() 
 	{
 		return get_ValueAsString(COLUMNNAME_TCP_Host);
 	}
