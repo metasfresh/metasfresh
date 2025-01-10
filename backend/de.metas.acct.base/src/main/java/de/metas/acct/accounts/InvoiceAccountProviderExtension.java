@@ -68,7 +68,7 @@ public class InvoiceAccountProviderExtension implements AccountProviderExtension
 
 		return invoiceAccounts.getElementValueId(acctSchemaId, accountTypeName, invoiceAndLineId)
 				.map(elementValueId -> getOrCreateAccount(elementValueId, acctSchemaId))
-				.map(id -> Account.of(id, acctType.getColumnName()));
+				.map(id -> Account.of(id, acctType));
 	}
 
 	@Override

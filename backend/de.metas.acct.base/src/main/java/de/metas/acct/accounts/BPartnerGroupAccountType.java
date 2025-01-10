@@ -1,12 +1,14 @@
 package de.metas.acct.accounts;
 
+import de.metas.acct.AccountConceptualNameAware;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.model.I_C_BP_Group_Acct;
 
+@Getter
 @AllArgsConstructor
-public enum BPartnerGroupAccountType
+public enum BPartnerGroupAccountType implements AccountConceptualNameAware
 {
 	/**
 	 * Allocation - Discount Expense (AR)
@@ -28,5 +30,5 @@ public enum BPartnerGroupAccountType
 
 	;
 
-	@Getter @NonNull private final String columnName;
+	@NonNull private final String accountConceptualName;
 }
