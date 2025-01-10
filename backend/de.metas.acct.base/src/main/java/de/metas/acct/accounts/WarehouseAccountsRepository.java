@@ -1,6 +1,7 @@
 package de.metas.acct.accounts;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.acct.Account;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.cache.CCache;
@@ -9,7 +10,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
-import de.metas.acct.Account;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_M_Warehouse_Acct;
 import org.springframework.stereotype.Repository;
@@ -51,7 +51,7 @@ public class WarehouseAccountsRepository
 	{
 		return WarehouseAccounts.builder()
 				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
-				.W_Differences_Acct(Account.of(AccountId.ofRepoId(record.getW_Differences_Acct()), I_M_Warehouse_Acct.COLUMNNAME_W_Differences_Acct))
+				.W_Differences_Acct(Account.of(AccountId.ofRepoId(record.getW_Differences_Acct()), WarehouseAccountType.W_Differences_Acct))
 				.build();
 	}
 
