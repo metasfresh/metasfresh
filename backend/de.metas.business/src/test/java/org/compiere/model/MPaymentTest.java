@@ -29,9 +29,9 @@ class MPaymentTest
 		currencyDAO = (PlainCurrencyDAO)Services.get(ICurrencyDAO.class);
 
 		currencyDAO.setRate(
-				BusinessTestHelper.getOrCreateCurrencyId(CurrencyCode.EUR),
 				BusinessTestHelper.getOrCreateCurrencyId(CurrencyCode.USD),
-				new BigDecimal("0.9")
+				BusinessTestHelper.getOrCreateCurrencyId(CurrencyCode.EUR),
+				new BigDecimal("0.8")
 		);
 	}
 
@@ -98,5 +98,46 @@ class MPaymentTest
 			assertThat(allocAmt).isEqualTo(eur("101"));
 		}
 
+		@Test
+		void overPaymentWithNegativeDiscount_FullyAllocated_differentCurrency()
+		{
+			@NonNull final Money allocAmt = MPayment.computeAllocationAmt(
+					SystemTime.asTimestamp(),
+					eur("100"),
+					usd("130"),
+					usd("-5"),
+					usd("0"),
+					null,
+					ClientAndOrgId.MAIN_ORG);
+			assertThat(allocAmt).isEqualTo(eur("104"));
+		}
+
+		@Test
+		void payment_FullyAllocated_differentCurrency()
+		{
+			@NonNull final Money allocAmt = MPayment.computeAllocationAmt(
+					SystemTime.asTimestamp(),
+					eur("100"),
+					usd("125"),
+					usd("0"),
+					usd("0"),
+					null,
+					ClientAndOrgId.MAIN_ORG);
+			assertThat(allocAmt).isEqualTo(eur("100"));
+		}
+
+		@Test
+		void overPaymentWithNegativeWriteOff_PartialAllocated_differentCurrency()
+		{
+			@NonNull final Money allocAmt = MPayment.computeAllocationAmt(
+					SystemTime.asTimestamp(),
+					eur("100"),
+					usd("130"),
+					usd("0"),
+					usd("-2"),
+					null,
+					ClientAndOrgId.MAIN_ORG);
+			assertThat(allocAmt).isEqualTo(eur("101.6"));
+		}
 	}
 }
