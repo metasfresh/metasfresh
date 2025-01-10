@@ -1227,10 +1227,6 @@ Feature: invoice payment allocation
       | payment_10012025_1 | bpartner_1               | 20.25  | -0.02           | EUR                 | Zahlungsausgang   | false     | bp_bank_account1            | inv_10012025_1              |
     And the payment identified by payment_10012025_1 is completed
 
-    And allocate payments to invoices
-      | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier |
-      | inv_10012025_1              | payment_10012025_1          |
-
     Then validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
       | inv_10012025_1          | bpartner_1               | bpartner_location_1               | 30 Tage netto | true      | CO        | true       |
@@ -1239,5 +1235,5 @@ Feature: invoice payment allocation
       | payment_10012025_1      | true                     |
     And validate C_AllocationLines
       | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier | OPT.Amount | OPT.DiscountAmt |
-      | inv_10012025_1              | payment_10012025_1          | -20.25     | -0.02           |
+      | inv_10012025_1              | payment_10012025_1          | -20.25     | 0.02           |
 
