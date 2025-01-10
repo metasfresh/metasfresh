@@ -26,7 +26,7 @@ package de.metas.invoicecandidate.process;
  */
 
 import de.metas.adempiere.form.IClientUI;
-import de.metas.i18n.IMsgBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueuer;
@@ -57,7 +57,6 @@ import org.compiere.util.Ini;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Properties;
 
 public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProcess implements IProcessPrecondition
 {
@@ -65,7 +64,6 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	//
 	// Services
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final C_Invoice_Candidate_ProcessCaptionMapperHelper processCaptionMapperHelper = SpringContextHolder.instance.getBean(C_Invoice_Candidate_ProcessCaptionMapperHelper.class);
 	// Parameters
 	private InvoicingParams invoicingParams;
@@ -104,8 +102,8 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 		selectionCount = createSelection();
 		if (selectionCount <= 0)
 		{
-			final Properties ctx = getCtx();
-			throw new AdempiereException(msgBL.getMsg(ctx, IInvoiceCandidateEnqueuer.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P));
+			throw new AdempiereException(AdMessageKey.of(IInvoiceCandidateEnqueuer.MSG_INVOICE_GENERATE_NO_CANDIDATES_SELECTED_0P))
+					.markAsUserValidationError();
 		}
 
 		//
