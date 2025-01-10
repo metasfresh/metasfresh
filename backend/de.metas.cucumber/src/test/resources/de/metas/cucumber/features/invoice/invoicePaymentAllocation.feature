@@ -1223,8 +1223,8 @@ Feature: invoice payment allocation
     And the invoice identified by inv_10012025_1 is completed
 
     And metasfresh contains C_Payment
-      | Identifier         | C_BPartner_ID.Identifier | PayAmt | OPT.DiscountAmt | C_Currency.ISO_Code | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier |
-      | payment_10012025_1 | bpartner_1               | 20.23  | -0.02           | EUR                 | Zahlungsausgang   | false     | bp_bank_account1            |
+      | Identifier         | C_BPartner_ID.Identifier | PayAmt | OPT.DiscountAmt | C_Currency.ISO_Code | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier | OPT.C_Invoice_ID.Identifier |
+      | payment_10012025_1 | bpartner_1               | 20.25  | -0.02           | EUR                 | Zahlungsausgang   | false     | bp_bank_account1            | inv_10012025_1              |
     And the payment identified by payment_10012025_1 is completed
 
     And allocate payments to invoices

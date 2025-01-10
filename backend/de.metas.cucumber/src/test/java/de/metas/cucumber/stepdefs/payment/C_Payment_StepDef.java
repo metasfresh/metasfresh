@@ -82,6 +82,7 @@ import java.util.Map;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_BPartner_ID;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Payment_ID;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_C_DocType_ID;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_DateAcct;
@@ -376,6 +377,13 @@ public class C_Payment_StepDef
 		{
 			payment.setDiscountAmt(discountAmt);
 		}
+		final String invoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if(invoiceIdentifier != null)
+		{
+			final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+			payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		}
+
 
 		paymentDAO.save(payment);
 
