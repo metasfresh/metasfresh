@@ -8,9 +8,13 @@ db.version(1).stores({
 });
 
 export const saveEvent = async (event) => {
-  const record = { id: event.id, event };
-  await db.events.add(record);
-  // console.log('saveEvent', { record });
+  try {
+    const record = { id: event.id, event };
+    await db.events.add(record);
+    // console.log('saveEvent', { record });
+  } catch (error) {
+    console.error('Error saving event', error);
+  }
 };
 
 export const getAllEvents = async () => {
