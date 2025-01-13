@@ -13,7 +13,16 @@ Feature: Validate that PaymentRule is correctly set on C_Order and that it corre
 
   @from:cucumber
   Scenario: Payment rule 'Cash' (set on C_Order) correctly propagates to Invoice Candidate for packing items (making sure, the default payment rule is set to OnCredit)
-    Given metasfresh contains C_Orders:
+    Given load C_BPartner:
+      | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
+      | bpartner_1               | 2156425           |
+    And load M_PricingSystem:
+      | M_PricingSystem_ID.Identifier | OPT.M_PricingSystem_ID |
+      | ps_1                          | 2000837                |
+    And update C_BPartner:
+      | Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | bpartner_1 | ps_1                              |
+    And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.PaymentRule | DateOrdered |
       | o_1        | true    | 2156425                  | B               | 2022-03-23  |
     And metasfresh contains C_OrderLines:

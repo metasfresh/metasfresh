@@ -220,10 +220,6 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | Identifier | Name                      | IsStocked |
       | p_1        | noPriceProduct_08072022_2 | true      |
 
-    And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_1       | plv_SO                            | p_1                     | 10.0     | TU                | Normal                        |
-
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID.Identifier | Name                |
       | packingTU             | packingTU_S0163_300 |
@@ -241,6 +237,10 @@ Feature: Process order candidate and automatically generate shipment and invoice
     And metasfresh contains M_HU_PI_Item_Product:
       | OPT.M_HU_PI_Item_Product_ID | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct |
       | 5010005                     | hu_pi_item_product_1               | PCE                   | huPiItemTU                 | p_1                     | 10  | 2020-04-01 | false                  | false                 | IFCO_Test_5 x 10 PCE | false                   |
+
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | M_HU_PI_Item_Product_ID |
+      | pp_1       | plv_SO                            | p_1                     | 10.0     | TU                | Normal                        | 5010005                 |
 
     And load C_BPartner:
       | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
