@@ -35,6 +35,9 @@ Feature: Process order candidate and automatically generate shipment and invoice
     And load C_BPartner:
       | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
       | bpartner_1               | 2156425           |
+    And update C_BPartner:
+      | Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | bpartner_1 | ps_SO_20250113                    |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
@@ -128,6 +131,9 @@ Feature: Process order candidate and automatically generate shipment and invoice
     And load C_BPartner:
       | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
       | bpartner_1               | 2156425           |
+    And update C_BPartner:
+      | Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | bpartner_1 | ps_SO_20250113                    |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
@@ -239,6 +245,9 @@ Feature: Process order candidate and automatically generate shipment and invoice
     And load C_BPartner:
       | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
       | bpartner_1               | 2156425           |
+    And update C_BPartner:
+      | Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | bpartner_1 | ps_SO_20250113                    |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
@@ -409,6 +418,9 @@ Feature: Process order candidate and automatically generate shipment and invoice
     And load C_BPartner:
       | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
       | bpartner_1               | 2156425           |
+    And update C_BPartner:
+      | Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | bpartner_1 | ps_SO_20250113                    |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
