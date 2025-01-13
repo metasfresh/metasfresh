@@ -2,13 +2,16 @@
 
 DO
 $$
+    DECLARE
+        year_id numeric;
 BEGIN
+        year_id := (SELECT c_year_id from c_year where fiscalyear = '2026' and c_calendar_id = 1000000);
         IF not exists(select 1
                       from C_Period
-                      where c_year_id = 540030 and startdate = TO_TIMESTAMP('2026-01-01', 'YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-01-31', 'YYYY-MM-DD')) THEN
+                      where c_year_id = year_id and startdate = TO_TIMESTAMP('2026-01-01', 'YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-01-31', 'YYYY-MM-DD')) THEN
 
             -- 2025-01-13T09:33:55.785Z
-            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540343,540030,TO_TIMESTAMP('2025-01-13 09:33:55.756000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-01-31','YYYY-MM-DD'),'Y','Jan.-26',1,'S','N',TO_TIMESTAMP('2026-01-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:33:55.756000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540343,year_id,TO_TIMESTAMP('2025-01-13 09:33:55.756000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-01-31','YYYY-MM-DD'),'Y','Jan.-26',1,'S','N',TO_TIMESTAMP('2026-01-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:33:55.756000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
             ;
 
             -- 2025-01-13T09:33:55.839Z
@@ -183,13 +186,17 @@ $$;
 
 DO
 $$
+    DECLARE
+        year_id numeric;
+    
     BEGIN
+        year_id := (SELECT c_year_id from c_year where fiscalyear = '2026' and c_calendar_id = 1000000);
         IF not exists(select 1
                       from C_Period
-                      where c_year_id = 540030 and startdate = TO_TIMESTAMP('2026-02-01','YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-02-28','YYYY-MM-DD')) THEN
+                      where c_year_id = year_id and startdate = TO_TIMESTAMP('2026-02-01','YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-02-28','YYYY-MM-DD')) THEN
 
             -- 2025-01-13T09:34:49.591Z
-            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540344,540030,TO_TIMESTAMP('2025-01-13 09:34:49.582000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-02-28','YYYY-MM-DD'),'Y','Feb.-26',2,'S','N',TO_TIMESTAMP('2026-02-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:34:49.582000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540344,year_id,TO_TIMESTAMP('2025-01-13 09:34:49.582000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-02-28','YYYY-MM-DD'),'Y','Feb.-26',2,'S','N',TO_TIMESTAMP('2026-02-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:34:49.582000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
             ;
 
             -- 2025-01-13T09:34:49.596Z
@@ -380,13 +387,16 @@ $$;
 
 DO
 $$
+    DECLARE
+        year_id numeric;
     BEGIN
+        year_id := (SELECT c_year_id from c_year where fiscalyear = '2026' and c_calendar_id = 1000000);
         IF not exists(select 1
                       from C_Period
-                      where c_year_id = 540030 and startdate = TO_TIMESTAMP('2026-03-01','YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-03-31','YYYY-MM-DD')) THEN
+                      where c_year_id = year_id and startdate = TO_TIMESTAMP('2026-03-01','YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-03-31','YYYY-MM-DD')) THEN
 
             -- 2025-01-13T09:36:35.402Z
-            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540345,540030,TO_TIMESTAMP('2025-01-13 09:36:35.399000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-03-31','YYYY-MM-DD'),'Y','März-26',3,'S','N',TO_TIMESTAMP('2026-03-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:36:35.399000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540345,year_id,TO_TIMESTAMP('2025-01-13 09:36:35.399000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-03-31','YYYY-MM-DD'),'Y','März-26',3,'S','N',TO_TIMESTAMP('2026-03-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:36:35.399000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
             ;
 
             -- 2025-01-13T09:36:35.405Z
@@ -561,13 +571,17 @@ $$;
 
 DO
 $$
+    DECLARE
+        year_id numeric;
     BEGIN
+        year_id := (SELECT c_year_id from c_year where fiscalyear = '2026' and c_calendar_id = 1000000);
+
         IF not exists(select 1
                       from C_Period
-                      where c_year_id = 540030 and startdate = TO_TIMESTAMP('2026-04-01','YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-04-30','YYYY-MM-DD')) THEN
+                      where c_year_id = year_id and startdate = TO_TIMESTAMP('2026-04-01','YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-04-30','YYYY-MM-DD')) THEN
 
             -- 2025-01-13T09:37:24.631Z
-            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540346,540030,TO_TIMESTAMP('2025-01-13 09:37:24.628000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-04-30','YYYY-MM-DD'),'Y','Apr.-26',4,'S','N',TO_TIMESTAMP('2026-04-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:37:24.628000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540346,year_id,TO_TIMESTAMP('2025-01-13 09:37:24.628000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-04-30','YYYY-MM-DD'),'Y','Apr.-26',4,'S','N',TO_TIMESTAMP('2026-04-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:37:24.628000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
             ;
 
             -- 2025-01-13T09:37:24.634Z
@@ -742,13 +756,17 @@ $$;
 
 DO
 $$
+    DECLARE
+        year_id numeric;
     BEGIN
+        year_id := (SELECT c_year_id from c_year where fiscalyear = '2026' and c_calendar_id = 1000000);
+
         IF not exists(select 1
                       from C_Period
-                      where c_year_id = 540030 and startdate = TO_TIMESTAMP('2026-05-01','YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-05-31','YYYY-MM-DD')) THEN
+                      where c_year_id = year_id and startdate = TO_TIMESTAMP('2026-05-01','YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-05-31','YYYY-MM-DD')) THEN
 
             -- 2025-01-13T09:38:06.488Z
-            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540347,540030,TO_TIMESTAMP('2025-01-13 09:38:06.485000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-05-31','YYYY-MM-DD'),'Y','Mai-26',5,'S','N',TO_TIMESTAMP('2026-05-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:38:06.485000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540347,year_id,TO_TIMESTAMP('2025-01-13 09:38:06.485000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-05-31','YYYY-MM-DD'),'Y','Mai-26',5,'S','N',TO_TIMESTAMP('2026-05-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:38:06.485000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
             ;
 
             -- 2025-01-13T09:38:06.492Z
@@ -923,13 +941,17 @@ $$;
 
 DO
 $$
+    DECLARE
+        year_id numeric;
     BEGIN
+        year_id := (SELECT c_year_id from c_year where fiscalyear = '2026' and c_calendar_id = 1000000);
+
         IF not exists(select 1
                       from C_Period
-                      where c_year_id = 540030 and startdate = TO_TIMESTAMP('2026-06-01','YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-06-30','YYYY-MM-DD')) THEN
+                      where c_year_id = year_id and startdate = TO_TIMESTAMP('2026-06-01','YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-06-30','YYYY-MM-DD')) THEN
 
             -- 2025-01-13T09:38:47.139Z
-            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540348,540030,TO_TIMESTAMP('2025-01-13 09:38:47.134000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-06-30','YYYY-MM-DD'),'Y','Juni-26',6,'S','N',TO_TIMESTAMP('2026-06-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:38:47.134000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540348,year_id,TO_TIMESTAMP('2025-01-13 09:38:47.134000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-06-30','YYYY-MM-DD'),'Y','Juni-26',6,'S','N',TO_TIMESTAMP('2026-06-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:38:47.134000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
             ;
 
             -- 2025-01-13T09:38:47.142Z
@@ -1104,13 +1126,17 @@ $$;
 
 DO
 $$
+    DECLARE
+        year_id numeric;
     BEGIN
+        year_id := (SELECT c_year_id from c_year where fiscalyear = '2026' and c_calendar_id = 1000000);
+
         IF not exists(select 1
                       from C_Period
-                      where c_year_id = 540030 and startdate = TO_TIMESTAMP('2026-07-01','YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-07-31','YYYY-MM-DD')) THEN
+                      where c_year_id = year_id and startdate = TO_TIMESTAMP('2026-07-01','YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-07-31','YYYY-MM-DD')) THEN
 
             -- 2025-01-13T09:39:26.416Z
-            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540349,540030,TO_TIMESTAMP('2025-01-13 09:39:26.413000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-07-31','YYYY-MM-DD'),'Y','Juli-26',7,'S','N',TO_TIMESTAMP('2026-07-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:39:26.413000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540349,year_id,TO_TIMESTAMP('2025-01-13 09:39:26.413000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-07-31','YYYY-MM-DD'),'Y','Juli-26',7,'S','N',TO_TIMESTAMP('2026-07-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:39:26.413000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
             ;
 
             -- 2025-01-13T09:39:26.422Z
@@ -1285,13 +1311,17 @@ $$;
 
 DO
 $$
+    DECLARE
+        year_id numeric;
     BEGIN
+        year_id := (SELECT c_year_id from c_year where fiscalyear = '2026' and c_calendar_id = 1000000);
+
         IF not exists(select 1
                       from C_Period
-                      where c_year_id = 540030 and startdate = TO_TIMESTAMP('2026-08-01','YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-08-31','YYYY-MM-DD')) THEN
+                      where c_year_id = year_id and startdate = TO_TIMESTAMP('2026-08-01','YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-08-31','YYYY-MM-DD')) THEN
 
             -- 2025-01-13T09:40:03.568Z
-            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540350,540030,TO_TIMESTAMP('2025-01-13 09:40:03.563000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-08-31','YYYY-MM-DD'),'Y','Aug.-26',8,'S','N',TO_TIMESTAMP('2026-08-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:40:03.563000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540350,year_id,TO_TIMESTAMP('2025-01-13 09:40:03.563000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-08-31','YYYY-MM-DD'),'Y','Aug.-26',8,'S','N',TO_TIMESTAMP('2026-08-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:40:03.563000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
             ;
 
             -- 2025-01-13T09:40:03.572Z
@@ -1466,14 +1496,18 @@ $$;
 
 DO
 $$
+    DECLARE
+        year_id numeric;
     BEGIN
+        year_id := (SELECT c_year_id from c_year where fiscalyear = '2026' and c_calendar_id = 1000000);
+
         IF not exists(select 1
                       from C_Period
-                      where c_year_id = 540030 and startdate = TO_TIMESTAMP('2026-09-01','YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-09-30','YYYY-MM-DD')) THEN
+                      where c_year_id = year_id and startdate = TO_TIMESTAMP('2026-09-01','YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-09-30','YYYY-MM-DD')) THEN
 
 
             -- 2025-01-13T09:40:46.048Z
-            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540351,540030,TO_TIMESTAMP('2025-01-13 09:40:46.045000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-09-30','YYYY-MM-DD'),'Y','Sept.-26',9,'S','N',TO_TIMESTAMP('2026-09-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:40:46.045000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540351,year_id,TO_TIMESTAMP('2025-01-13 09:40:46.045000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-09-30','YYYY-MM-DD'),'Y','Sept.-26',9,'S','N',TO_TIMESTAMP('2026-09-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:40:46.045000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
             ;
 
             -- 2025-01-13T09:40:46.050Z
@@ -1648,13 +1682,17 @@ $$;
 
 DO
 $$
+    DECLARE
+        year_id numeric;
     BEGIN
+        year_id := (SELECT c_year_id from c_year where fiscalyear = '2026' and c_calendar_id = 1000000);
+
         IF not exists(select 1
                       from C_Period
-                      where c_year_id = 540030 and startdate = TO_TIMESTAMP('2026-10-01','YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-10-31','YYYY-MM-DD')) THEN
+                      where c_year_id = year_id and startdate = TO_TIMESTAMP('2026-10-01','YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-10-31','YYYY-MM-DD')) THEN
 
             -- 2025-01-13T09:41:32.432Z
-            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540352,540030,TO_TIMESTAMP('2025-01-13 09:41:32.429000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-10-31','YYYY-MM-DD'),'Y','Okt.-26',10,'S','N',TO_TIMESTAMP('2026-10-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:41:32.429000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540352,year_id,TO_TIMESTAMP('2025-01-13 09:41:32.429000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-10-31','YYYY-MM-DD'),'Y','Okt.-26',10,'S','N',TO_TIMESTAMP('2026-10-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:41:32.429000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
             ;
 
             -- 2025-01-13T09:41:32.435Z
@@ -1829,13 +1867,17 @@ $$;
 
 DO
 $$
+    DECLARE
+        year_id numeric;
     BEGIN
+        year_id := (SELECT c_year_id from c_year where fiscalyear = '2026' and c_calendar_id = 1000000);
+
         IF not exists(select 1
                       from C_Period
-                      where c_year_id = 540030 and startdate = TO_TIMESTAMP('2026-11-01','YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-11-30','YYYY-MM-DD')) THEN
+                      where c_year_id = year_id and startdate = TO_TIMESTAMP('2026-11-01','YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-11-30','YYYY-MM-DD')) THEN
 
             -- 2025-01-13T09:42:05.287Z
-            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540353,540030,TO_TIMESTAMP('2025-01-13 09:42:05.284000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-11-30','YYYY-MM-DD'),'Y','Nov.-26',11,'S','N',TO_TIMESTAMP('2026-11-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:42:05.284000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540353,year_id,TO_TIMESTAMP('2025-01-13 09:42:05.284000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-11-30','YYYY-MM-DD'),'Y','Nov.-26',11,'S','N',TO_TIMESTAMP('2026-11-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:42:05.284000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
             ;
 
             -- 2025-01-13T09:42:05.290Z
@@ -2010,13 +2052,17 @@ $$;
 
 DO
 $$
+    DECLARE
+        year_id numeric;
     BEGIN
+        year_id := (SELECT c_year_id from c_year where fiscalyear = '2026' and c_calendar_id = 1000000);
+
         IF not exists(select 1
                       from C_Period
-                      where c_year_id = 540030 and startdate = TO_TIMESTAMP('2026-12-01','YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-12-31','YYYY-MM-DD')) THEN
+                      where c_year_id = year_id and startdate = TO_TIMESTAMP('2026-12-01','YYYY-MM-DD') and enddate = TO_TIMESTAMP('2026-12-31','YYYY-MM-DD')) THEN
 
             -- 2025-01-13T09:42:39.239Z
-            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540354,540030,TO_TIMESTAMP('2025-01-13 09:42:39.236000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-12-31','YYYY-MM-DD'),'Y','Dez.-26',12,'S','N',TO_TIMESTAMP('2026-12-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:42:39.236000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+            INSERT INTO C_Period (AD_Client_ID,AD_Org_ID,C_Period_ID,C_Year_ID,Created,CreatedBy,EndDate,IsActive,Name,PeriodNo,PeriodType,Processing,StartDate,Updated,UpdatedBy) VALUES (1000000,0,540354,year_id,TO_TIMESTAMP('2025-01-13 09:42:39.236000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-12-31','YYYY-MM-DD'),'Y','Dez.-26',12,'S','N',TO_TIMESTAMP('2026-12-01','YYYY-MM-DD'),TO_TIMESTAMP('2025-01-13 09:42:39.236000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
             ;
 
             -- 2025-01-13T09:42:39.241Z
