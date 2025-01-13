@@ -11,6 +11,7 @@ import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.purchaseordercreation.remoteorder.NullVendorGatewayInvoker;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
@@ -241,6 +242,12 @@ public class PurchaseOrderItem implements PurchaseItem
 		return purchaseCandidate.getPriceEnteredEff();
 	}
 
+	@Nullable
+	public UomId getPriceUomId()
+	{
+		return purchaseCandidate.getPriceUomId();
+	}
+	
 	@Nullable
 	public Percent getDiscount()
 	{
