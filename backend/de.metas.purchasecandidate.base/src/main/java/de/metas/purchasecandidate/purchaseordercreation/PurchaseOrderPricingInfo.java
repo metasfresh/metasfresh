@@ -74,4 +74,6 @@ public class PurchaseOrderPricingInfo
 
 	@Nullable
 	CurrencyId currencyId;
+
+	boolean convertPriceToContextUOM;
 }

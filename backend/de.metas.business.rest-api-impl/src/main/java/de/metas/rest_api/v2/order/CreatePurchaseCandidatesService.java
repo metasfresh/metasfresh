@@ -162,6 +162,9 @@ public class CreatePurchaseCandidatesService
 		final AttributeSetInstanceId attributeSetInstanceId = getAttributeSetInstanceId(request.getAttributeSetInstance());
 
 		final Percent discountPercent = Percent.of(request.isManualDiscount() ? request.getDiscount() : BigDecimal.ZERO);
+		final UomId enteredPriceUomId = manualPrice 
+				? uomDAO.getUomIdByX12DE355(X12DE355.ofCode(request.getPrice().getPriceUomCode())) 
+				: quantity.getUomId();
 
 		final ActivityId activityId = ExternalIdentifier.ofOptional(request.getActivityIdentifier())
 				.map(externalIdentifier -> activityService.resolveExternalIdentifier(orgId,externalIdentifier))

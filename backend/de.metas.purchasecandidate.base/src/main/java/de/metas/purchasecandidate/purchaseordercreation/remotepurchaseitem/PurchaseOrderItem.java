@@ -255,6 +255,12 @@ public class PurchaseOrderItem implements PurchaseItem
 	}
 
 	@Nullable
+	public UomId getPriceUomId()
+	{
+		return purchaseCandidate.getPriceUomId();
+	}
+	
+	@Nullable
 	public Percent getDiscount()
 	{
 		return purchaseCandidate.getDiscountEff();

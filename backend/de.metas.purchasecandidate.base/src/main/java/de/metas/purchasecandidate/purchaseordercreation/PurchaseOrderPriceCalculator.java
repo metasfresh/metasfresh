@@ -65,7 +65,7 @@ public class PurchaseOrderPriceCalculator
 				.setProductId(pricingInfo.getProductId())
 				.setBPartnerId(pricingInfo.getBpartnerId())
 				.setQty(pricingInfo.getQuantity())
-				.setConvertPriceToContextUOM(true)
+				.setConvertPriceToContextUOM(pricingInfo.isConvertPriceToContextUOM())
 				.setSOTrx(SOTrx.PURCHASE)
 				.setCountryId(pricingInfo.getCountryId())
 				.setManualPriceEnabled(pricingInfo.getIsManualPrice());

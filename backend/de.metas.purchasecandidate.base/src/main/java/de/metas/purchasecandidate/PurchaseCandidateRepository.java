@@ -390,6 +390,7 @@ public class PurchaseCandidateRepository
 		record.setPriceInternal(purchaseCandidate.getPriceInternal());
 		record.setPriceEntered(purchaseCandidate.getPrice());
 		record.setPriceEffective(purchaseCandidate.getPriceEnteredEff());
+		record.setPrice_UOM_ID(UomId.toRepoId(purchaseCandidate.getPriceUomId()));
 		if (purchaseCandidate.getDiscount() != null)
 		{
 			record.setDiscount(purchaseCandidate.getDiscount().toBigDecimal());
@@ -544,6 +545,7 @@ public class PurchaseCandidateRepository
 				.price(record.getPriceEntered())
 				.priceInternal(record.getPriceInternal())
 				.priceEnteredEff(record.getPriceEffective())
+				.priceUomId(UomId.ofRepoIdOrNull(record.getPrice_UOM_ID()))
 				.discount(Percent.ofNullable(record.getDiscount()))
 				.discountInternal(Percent.ofNullable(record.getDiscountInternal()))
 				.discountEff(Percent.ofNullable(record.getDiscountEff()))

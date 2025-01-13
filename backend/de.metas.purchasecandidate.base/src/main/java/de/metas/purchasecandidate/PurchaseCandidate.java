@@ -119,6 +119,8 @@ public class PurchaseCandidate
 	private UomId priceUomId;
 
 	@Nullable
+	private UomId priceUomId;
+	@Nullable
 	private Percent discount;
 	@Nullable
 	private Percent discountInternal;
@@ -280,6 +282,7 @@ public class PurchaseCandidate
 		purchaseErrorItems = new ArrayList<>(from.purchaseErrorItems);
 		price = from.price;
 		priceActual = from.priceActual;
+		priceUomId = from.priceUomId;
 		discount = from.discount;
 		isManualDiscount = from.isManualDiscount;
 		isManualPrice = from.isManualPrice;
