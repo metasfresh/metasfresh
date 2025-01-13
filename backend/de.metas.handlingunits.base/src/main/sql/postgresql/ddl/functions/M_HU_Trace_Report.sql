@@ -401,7 +401,7 @@ UNION ALL
 
 UNION ALL
 -- 'MATERIAL_INVENTORY'
-(SELECT
+(SELECT DISTINCT
      t.LotNumber                                                                         AS LotNumber,
      t.hutracetype                                                                       AS HUTraceType,
      p.value || '_' || p.name                                                            AS Product,
