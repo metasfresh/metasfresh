@@ -29,7 +29,7 @@ import de.metas.banking.BankId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReferenceList;
-import de.metas.banking.api.BankAccountAcctRepository;
+import de.metas.banking.accounting.BankAccountAcctRepository;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.banking.model.BankStatementLineAmounts;

@@ -25,7 +25,7 @@ import de.metas.acct.open_items.FAOpenItemsService;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.AdRefListRepositoryOverJdbc;
 import de.metas.ad_reference.AdRefTableRepositoryOverJdbc;
-import de.metas.banking.api.BankAccountAcctRepository;
+import de.metas.banking.accounting.BankAccountAcctRepository;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.cache.model.ModelCacheInvalidationService;

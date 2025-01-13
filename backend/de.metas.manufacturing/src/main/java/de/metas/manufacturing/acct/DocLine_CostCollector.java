@@ -53,7 +53,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 		}
 		else
 		{
-		setQty(movementQty, false);
+			setQty(movementQty, false);
 		}
 		setReversalLine_ID(cc.getReversal_ID());
 	}
@@ -122,7 +122,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 				throw newPostingException().setAcctSchema(as).setDetailMessage("No Product Account for account type " + acctType + ", product " + productId + " and " + as);
 			}
 
-			return Account.of(accountId, acctType.getAccountConceptualName());
+			return Account.of(accountId, acctType);
 		}
 	}
 
@@ -132,10 +132,11 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 
 		if (isReversalLine())
 		{
-			return services.createReversalCostDetailsOrEmpty(CostDetailReverseRequest.builder()
-					.acctSchemaId(acctSchemaId)
-					.reversalDocumentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
-					.initialDocumentRef(CostingDocumentRef.ofCostCollectorId(getReversalLine_ID()))
+			return services.createReversalCostDetailsOrEmpty(
+							CostDetailReverseRequest.builder()
+									.acctSchemaId(acctSchemaId)
+									.reversalDocumentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
+									.initialDocumentRef(CostingDocumentRef.ofCostCollectorId(getReversalLine_ID()))
 									.date(getDateAcctAsInstant())
 									.build())
 					.map(CostDetailCreateResultsList::toAggregatedCostAmount);
@@ -143,15 +144,15 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 		else
 		{
 			return services.createCostDetailOrEmpty(
-					CostDetailCreateRequest.builder()
-							.acctSchemaId(acctSchemaId)
-							.clientId(getClientId())
-							.orgId(getOrgId())
-							.productId(getProductId())
-							.attributeSetInstanceId(getAttributeSetInstanceId())
-							.documentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
-							.qty(getQty())
-							.amt(CostAmount.zero(as.getCurrencyId())) // N/A
+							CostDetailCreateRequest.builder()
+									.acctSchemaId(acctSchemaId)
+									.clientId(getClientId())
+									.orgId(getOrgId())
+									.productId(getProductId())
+									.attributeSetInstanceId(getAttributeSetInstanceId())
+									.documentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
+									.qty(getQty())
+									.amt(CostAmount.zero(as.getCurrencyId())) // N/A
 									.date(getDateAcctAsInstant())
 									.build())
 					.map(CostDetailCreateResultsList::toAggregatedCostAmount);

@@ -1,6 +1,7 @@
 package de.metas.acct.accounts;
 
 import de.metas.acct.AccountConceptualName;
+import de.metas.acct.AccountConceptualNameAware;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
@@ -34,7 +35,7 @@ import javax.annotation.Nullable;
 
 @RequiredArgsConstructor
 @Getter
-public enum ProductAcctType
+public enum ProductAcctType implements AccountConceptualNameAware
 {
 	P_Revenue_Acct(I_M_Product_Acct.COLUMNNAME_P_Revenue_Acct),
 	P_Expense_Acct(I_M_Product_Acct.COLUMNNAME_P_Expense_Acct),
@@ -62,7 +63,7 @@ public enum ProductAcctType
 	;
 
 	@NonNull private final String columnName;
-	@Getter @NonNull private final AccountConceptualName accountConceptualName;
+	@NonNull private final AccountConceptualName accountConceptualName;
 
 	ProductAcctType(@NonNull final String columnName)
 	{
