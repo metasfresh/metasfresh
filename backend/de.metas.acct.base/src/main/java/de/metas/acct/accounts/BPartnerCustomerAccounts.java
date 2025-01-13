@@ -1,12 +1,12 @@
 package de.metas.acct.accounts;
 
-import de.metas.acct.Account;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.logging.LogManager;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import de.metas.acct.Account;
 import org.slf4j.Logger;
 
 @Value

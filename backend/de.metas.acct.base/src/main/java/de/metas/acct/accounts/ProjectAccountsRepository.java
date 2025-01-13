@@ -51,8 +51,8 @@ public class ProjectAccountsRepository
 	{
 		return ProjectAccounts.builder()
 				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
-				.PJ_Asset_Acct(Account.of(AccountId.ofRepoId(record.getPJ_Asset_Acct()), I_C_Project_Acct.COLUMNNAME_PJ_Asset_Acct))
-				.PJ_WIP_Acct(Account.of(AccountId.ofRepoId(record.getPJ_WIP_Acct()), I_C_Project_Acct.COLUMNNAME_PJ_WIP_Acct))
+				.PJ_Asset_Acct(Account.of(AccountId.ofRepoId(record.getPJ_Asset_Acct()), ProjectAccountType.PJ_Asset_Acct))
+				.PJ_WIP_Acct(Account.of(AccountId.ofRepoId(record.getPJ_WIP_Acct()), ProjectAccountType.PJ_WIP_Acct))
 				.build();
 	}
 }
