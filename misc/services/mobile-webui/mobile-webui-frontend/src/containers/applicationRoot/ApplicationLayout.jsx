@@ -9,6 +9,7 @@ import { isWfProcessLoaded } from '../../reducers/wfProcesses';
 import { trl } from '../../utils/translations';
 import { useApplicationInfo } from '../../reducers/applications';
 import { isApplicationFullScreen } from '../../apps';
+import { useUITraceLocationChange } from '../../utils/ui_trace/useUITraceLocationChange';
 
 export const ApplicationLayout = ({ applicationId, Component }) => {
   const history = useHistory();
@@ -32,6 +33,8 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
   useEffect(() => {
     document.title = caption;
   }, [caption]);
+
+  useUITraceLocationChange();
 
   if (redirectToHome) {
     return null;
