@@ -18,11 +18,11 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- 2025-01-09T17:58:13.160Z
-/* DDL */  select update_Column_Translation_From_AD_Element(542464) 
+/* DDL */  PERFORM update_Column_Translation_From_AD_Element(542464) 
 ;
 
 -- 2025-01-09T17:58:14.675Z
-/* DDL */ SELECT public.db_alter_table('C_PurchaseCandidate','ALTER TABLE public.C_PurchaseCandidate ADD COLUMN Price_UOM_ID NUMERIC(10)')
+/* DDL */ PERFORM public.db_alter_table('C_PurchaseCandidate','ALTER TABLE public.C_PurchaseCandidate ADD COLUMN Price_UOM_ID NUMERIC(10)')
 ;
 
 -- 2025-01-09T17:58:14.777Z
@@ -60,7 +60,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 ;
 
 -- 2025-01-09T17:58:49.538Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(542464) 
+/* DDL */  PERFORM update_FieldTranslation_From_AD_Name_Element(542464) 
 ;
 
 -- 2025-01-09T17:58:49.553Z
@@ -68,7 +68,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=734644
 ;
 
 -- 2025-01-09T17:58:49.558Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(734644)
+/* DDL */ PERFORM AD_Element_Link_Create_Missing_Field(734644)
 ;
 
 -- UI Element: Bestelldisposition -> Bestelldisposition.Preiseinheit
