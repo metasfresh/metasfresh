@@ -19,7 +19,7 @@ SELECT DISTINCT dt.name                                                         
                 i.documentno                                                                                           AS InvoiceDocumentNo,
                 il.qtyentered * (CASE WHEN dt.docbasetype IN ('APC', 'ARC') THEN -1 ELSE 1 END)::NUMERIC               AS InvoicedQty,
                 il.linenetamt * (CASE WHEN dt.docbasetype IN ('APC', 'ARC') THEN -1 ELSE 1 END)::NUMERIC               AS LineNetAmt,
-                (il.taxamt + il.linenetamt) * (CASE WHEN dt.docbasetype IN ('APC', 'ARC') THEN -1 ELSE 1 END)::NUMERIC AS LineGrossAmt
+                (il.taxamtinfo + il.linenetamt) * (CASE WHEN dt.docbasetype IN ('APC', 'ARC') THEN -1 ELSE 1 END)::NUMERIC AS LineGrossAmt
 
 
 FROM c_invoice i
