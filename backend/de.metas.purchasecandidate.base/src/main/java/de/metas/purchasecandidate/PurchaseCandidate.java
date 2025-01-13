@@ -117,9 +117,6 @@ public class PurchaseCandidate
 
 	@Nullable
 	private UomId priceUomId;
-
-	@Nullable
-	private UomId priceUomId;
 	@Nullable
 	private Percent discount;
 	@Nullable
