@@ -1,3 +1,12 @@
+
+DO
+$$
+BEGIN
+
+    IF not exists(select 1
+                  from ad_column
+                  where columnname = 'Price_UOM_ID' and ad_table_id = 540861) THEN
+
 -- Column: C_PurchaseCandidate.Price_UOM_ID
 -- Column: C_PurchaseCandidate.Price_UOM_ID
 -- 2025-01-09T17:58:13.095Z
@@ -20,12 +29,30 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ALTER TABLE C_PurchaseCandidate ADD CONSTRAINT PriceUOM_CPurchaseCandidate FOREIGN KEY (Price_UOM_ID) REFERENCES public.C_UOM DEFERRABLE INITIALLY DEFERRED
 ;
 
+-- Column: C_PurchaseCandidate.Price_UOM_ID
+-- Column: C_PurchaseCandidate.Price_UOM_ID
+-- 2025-01-09T18:16:10.974Z
+UPDATE AD_Column SET ReadOnlyLogic='@IsManualPrice@=N',Updated=TO_TIMESTAMP('2025-01-09 18:16:10.974000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=589574
+;
+
+END IF;
+END
+$$;
+
+
+DO
+$$
+    DECLARE
+        column_id numeric;
+BEGIN
+        column_id := (SELECT ad_column_id from AD_Column where columnname = 'Price_UOM_ID' and ad_table_id = 540861);
+
 -- Field: Bestelldisposition -> Bestelldisposition -> Preiseinheit
 -- Column: C_PurchaseCandidate.Price_UOM_ID
 -- Field: Bestelldisposition(540375,de.metas.purchasecandidate) -> Bestelldisposition(540894,de.metas.purchasecandidate) -> Preiseinheit
 -- Column: C_PurchaseCandidate.Price_UOM_ID
 -- 2025-01-09T17:58:49.528Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,589574,734644,0,540894,TO_TIMESTAMP('2025-01-09 17:58:49.299000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,10,'de.metas.purchasecandidate','Y','N','N','N','N','N','N','N','Preiseinheit',TO_TIMESTAMP('2025-01-09 17:58:49.299000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,column_id,734644,0,540894,TO_TIMESTAMP('2025-01-09 17:58:49.299000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,10,'de.metas.purchasecandidate','Y','N','N','N','N','N','N','N','Preiseinheit',TO_TIMESTAMP('2025-01-09 17:58:49.299000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-01-09T17:58:49.534Z
@@ -52,9 +79,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=734644
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,734644,0,540894,627788,545480,'F',TO_TIMESTAMP('2025-01-09 17:59:32.419000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N',0,'Preiseinheit',60,0,0,TO_TIMESTAMP('2025-01-09 17:59:32.419000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- Column: C_PurchaseCandidate.Price_UOM_ID
--- Column: C_PurchaseCandidate.Price_UOM_ID
--- 2025-01-09T18:16:10.974Z
-UPDATE AD_Column SET ReadOnlyLogic='@IsManualPrice@=N',Updated=TO_TIMESTAMP('2025-01-09 18:16:10.974000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=589574
-;
+
+END
+$$;
 
