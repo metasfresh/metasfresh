@@ -240,7 +240,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | M_HU_PI_Item_Product_ID |
-      | pp_1       | plv_SO                            | p_1                     | 10.0     | TU                | Normal                        | 5010005                 |
+      | pp_1       | plv_SO                            | p_1                     | 10.0     | TU                | Normal                        | hu_pi_item_product_1    |
 
     And load C_BPartner:
       | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
