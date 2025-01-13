@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementAndLineAndRefId;
 import de.metas.banking.BankStatementId;
@@ -19,7 +20,9 @@ import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.TenderType;
@@ -37,6 +40,8 @@ import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.X_C_BP_BankAccount;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -54,6 +59,8 @@ public class PaySelectionBL implements IPaySelectionBL
 	private static final AdMessageKey MSG_PaySelectionLines_No_BankAccount = AdMessageKey.of("C_PaySelection_PaySelectionLines_No_BankAccount");
 
 	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
 
 	@Override
 	public Optional<I_C_PaySelection> getById(@NonNull final PaySelectionId paySelectionId)
@@ -71,29 +78,93 @@ public class PaySelectionBL implements IPaySelectionBL
 			return;
 		}
 
-		final I_C_Invoice invoice = psl.getC_Invoice();
-
-		if (invoice == null)
-		{
-			return; // nothing to do yet, but as C_PaySelectionLine.C_Invoice_ID is mandatory, we only need to make sure this method is eventually called from a model interceptor
-		}
-
-		final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(psl.getC_Invoice_ID());
+		if (invoiceId == null) {return;}
+		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(psl);
 
-		final int partnerID = invoice.getC_BPartner_ID();
-		psl.setC_BPartner_ID(partnerID);
+		final BPartnerId partnerID = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
+		psl.setC_BPartner_ID(partnerID.getRepoId());
 
 		// task 09500 get the currency from the account of the selection header
 		// this is safe because the columns are mandatory
-		final int currencyID = psl.getC_PaySelection().getC_BP_BankAccount().getC_Currency_ID();
+		final I_C_PaySelection paySelection = Check.assumePresent(paySelectionDAO.getById(PaySelectionId.ofRepoId(psl.getC_PaySelection_ID())),"Pay Selection should be present");
+		final BankAccount bankAccount = bpBankAccountDAO.getById(BankAccountId.ofRepoId(paySelection.getC_BP_BankAccount_ID()));
+		final CurrencyId currencyID = bankAccount.getCurrencyId();
 
+		psl.setC_BP_BankAccount_ID(BankAccountId.toRepoId(getBankAccountId(invoiceId, currencyID, ctx)));
+
+		if (Check.isBlank(psl.getReference()) && InterfaceWrapperHelper.isNew(psl))
+		{
+			psl.setReference(invoice.getPOReference());
+		}
+	}
+
+	@Nullable
+	@Override
+	public BankAccountId getBankAccountId(@NonNull final InvoiceId invoiceId,
+										   @NonNull final CurrencyId currencyId,
+										   @NonNull final Properties ctx)
+	{
+		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
 		final boolean isSalesInvoice = invoice.isSOTrx();
-
-		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		final boolean isCreditMemo = invoiceBL.isCreditMemo(invoice);
 
+		final String accteptedBankAccountUsage = getAcceptedBankAccountUsage(isSalesInvoice, isCreditMemo);
+
+		final List<I_C_BP_BankAccount> bankAccts = bpBankAccountDAO.retrieveBankAccountsForPartnerAndCurrency(
+				ctx,
+				BPartnerId.ofRepoId(invoice.getC_BPartner_ID()),
+				currencyId);
+
+		if (!bankAccts.isEmpty())
+		{
+			BankAccountId primaryAcct = null;
+			BankAccountId secondaryAcct = null;
+
+			for (final I_C_BP_BankAccount account : bankAccts)
+			{
+				// FRESH-606: Only continue if the bank account has a use set
+				if (account.getBPBankAcctUse() == null)
+				{
+					continue;
+				}
+
+				final BankAccountId accountID = BankAccountId.ofRepoIdOrNull(account.getC_BP_BankAccount_ID());
+				if (accountID != null)
+				{
+					if (account.getBPBankAcctUse().equals(X_C_BP_BankAccount.BPBANKACCTUSE_Both))
+					{
+						// in case a secondary act was already found, it should be not changed.
+						// this is important because the default accounts come first from the query and they have higher priority than the non-defult ones.
+						if (secondaryAcct == null)
+						{
+							secondaryAcct = accountID;
+						}
+					}
+					else if (account.getBPBankAcctUse().equals(accteptedBankAccountUsage))
+					{
+						primaryAcct = accountID;
+						break;
+					}
+				}
+			}
+			if (primaryAcct != null)
+			{
+				return primaryAcct;
+			}
+			else if (secondaryAcct != null)
+			{
+				return secondaryAcct;
+			}
+		}
+		return null;
+	}
+
+	@NotNull
+	private static String getAcceptedBankAccountUsage(final boolean isSalesInvoice, final boolean isCreditMemo)
+	{
 		final String accteptedBankAccountUsage;
 
 		if ((isSalesInvoice && !isCreditMemo) ||
@@ -109,54 +180,7 @@ public class PaySelectionBL implements IPaySelectionBL
 			// OR it is a Credit memo with isSoTrx = 'Y'
 			accteptedBankAccountUsage = X_C_BP_BankAccount.BPBANKACCTUSE_DirectDeposit;
 		}
-
-		final List<I_C_BP_BankAccount> bankAccts = bpBankAccountDAO.retrieveBankAccountsForPartnerAndCurrency(ctx, partnerID, currencyID);
-
-		if (!bankAccts.isEmpty())
-		{
-			int primaryAcct = 0;
-			int secondaryAcct = 0;
-
-			for (final I_C_BP_BankAccount account : bankAccts)
-			{
-				// FRESH-606: Only continue if the bank account has a use set
-				if (account.getBPBankAcctUse() == null)
-				{
-					continue;
-				}
-
-				final int accountID = account.getC_BP_BankAccount_ID();
-				if (accountID > 0)
-				{
-					if (account.getBPBankAcctUse().equals(X_C_BP_BankAccount.BPBANKACCTUSE_Both))
-					{
-						// in case a secondary act was already found, it should be not changed.
-						// this is important because the default accounts come first from the query and they have higher priority than the non-defult ones.
-						if (secondaryAcct == 0)
-						{
-							secondaryAcct = accountID;
-						}
-					}
-					else if (account.getBPBankAcctUse().equals(accteptedBankAccountUsage))
-					{
-						primaryAcct = accountID;
-						break;
-					}
-				}
-			}
-			if (primaryAcct != 0)
-			{
-				psl.setC_BP_BankAccount_ID(primaryAcct);
-			}
-			else if (secondaryAcct != 0)
-			{
-				psl.setC_BP_BankAccount_ID(secondaryAcct);
-			}
-		}
-		if (Check.isBlank(psl.getReference()) && InterfaceWrapperHelper.isNew(psl))
-		{
-			psl.setReference(invoice.getPOReference());
-		}
+		return accteptedBankAccountUsage;
 	}
 
 	@Override
@@ -439,5 +463,11 @@ public class PaySelectionBL implements IPaySelectionBL
 				.map(paySelectionLine -> BPartnerId.ofRepoIdOrNull(paySelectionLine.getC_BPartner_ID()))
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public void updatePaySelectionTotalAmt(@NonNull final PaySelectionId paySelectionId)
+	{
+		paySelectionDAO.updatePaySelectionTotalAmt(paySelectionId);
 	}
 }

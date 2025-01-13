@@ -44,6 +44,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Invoice;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -54,13 +55,15 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	public List<I_C_BP_BankAccount> retrieveBankAccountsForPartnerAndCurrency(final Properties ctx, final int partnerID, final int currencyID)
+	public List<I_C_BP_BankAccount> retrieveBankAccountsForPartnerAndCurrency(@Nullable final Properties ctx,
+																			  @NonNull final BPartnerId partnerID,
+																			  @Nullable final CurrencyId currencyID)
 	{
 		final IQueryBuilder<I_C_BP_BankAccount> qb = queryBL
 				.createQueryBuilder(I_C_BP_BankAccount.class, ctx, ITrx.TRXNAME_None)
 				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, partnerID);
 
-		if (currencyID > 0)
+		if (currencyID != null)
 		{
 			qb.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_Currency_ID, currencyID);
 		}

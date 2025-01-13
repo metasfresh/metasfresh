@@ -67,7 +67,7 @@ public class PaymentRequestBL implements IPaymentRequestBL
 		}
 
 		final Boolean updated = InterfaceWrapperHelper.getDynAttribute(paySelectionLine, DYNATTR_UpdatedFromPaymentRequest);
-		return updated == null ? false : updated;
+		return updated != null && updated;
 	}
 
 	@Override

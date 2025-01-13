@@ -22,15 +22,15 @@ package de.metas.banking.payment;
  * #L%
  */
 
-
-import java.util.Properties;
-import java.util.Set;
-
+import de.metas.banking.BankAccountId;
+import de.metas.banking.model.I_C_Payment_Request;
+import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Invoice;
 
-import de.metas.banking.model.I_C_Payment_Request;
-import de.metas.util.ISingletonService;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Provides retrieval methods {@link I_C_Payment_Request}s
@@ -39,6 +39,8 @@ import de.metas.util.ISingletonService;
  */
 public interface IPaymentRequestDAO extends ISingletonService
 {
+	void createOrReplace(@NonNull I_C_Invoice invoice, @NonNull BankAccountId bankAccountId);
+
 	/**
 	 * Retrieve payment request for given invoice or null if none is found.
 	 *
