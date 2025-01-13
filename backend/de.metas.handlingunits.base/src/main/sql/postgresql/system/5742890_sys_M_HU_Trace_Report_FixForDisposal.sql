@@ -49,7 +49,7 @@ SELECT distinct
                            t.lotnumber,
                            t.ad_client_id,
                            t.ad_org_id
-        )                    AS Qty,
+    )                    AS Qty,
     u.uomsymbol              AS UOM,
     null as detail_type,
     null as finished_product_no,
@@ -278,7 +278,7 @@ UNION ALL
                                prod_trace.lotnumber,
                                t.ad_client_id,
                                t.ad_org_id
-            )                    AS prod_stock
+        )                    AS prod_stock
             ,null::numeric AS traceid
             ,to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate
 
@@ -364,7 +364,7 @@ UNION ALL
                                prod_trace.lotnumber,
                                t.ad_client_id,
                                t.ad_org_id
-            )                             AS prod_stock
+        )                             AS prod_stock
             ,prod_trace.m_hu_trace_id
             ,to_char(now(), 'DD.MM.YYYY HH24:MM') as reportdate
 
