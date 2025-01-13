@@ -145,6 +145,7 @@ public class OrderBL implements IOrderBL
 
 	private static final String SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS = "de.metas.order.MAX_HADDEX_AGE_IN_MONTHS";
 	private static final AdMessageKey MSG_HADDEX_CHECK_ERROR = AdMessageKey.of("de.metas.order.CustomerHaddexError");
+	private static final AdMessageKey MSG_PRODUCT_CANT_BE_USED_ERROR = AdMessageKey.of("de.metas.order.ProductCantBeUsedError");
 
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
@@ -1278,8 +1279,13 @@ public class OrderBL implements IOrderBL
 
 		final BigDecimal weight = lines.stream()
 				.map(line -> {
-					final I_M_Product product = productId2Product.get(ProductId.ofRepoId(line.getM_Product_ID()));
-
+					final ProductId productId = ProductId.ofRepoId(line.getM_Product_ID());
+					final I_M_Product product = productId2Product.get(productId);
+					if (product == null)
+					{
+						final String productName = productBL.getProductName(productId);
+						throw new AdempiereException(MSG_PRODUCT_CANT_BE_USED_ERROR, productName);
+					}
 					return product.getWeight().multiply(line.getQtyOrdered());
 				})
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
