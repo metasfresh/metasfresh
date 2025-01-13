@@ -124,8 +124,7 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
-	 * Set Auftragsposition.
-	 * Auftragsposition
+	 * Set Sales Orderline.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -134,8 +133,7 @@ public interface I_C_PurchaseCandidate
 	void setC_OrderLineSO_ID (int C_OrderLineSO_ID);
 
 	/**
-	 * Get Auftragsposition.
-	 * Auftragsposition
+	 * Get Sales Orderline.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -151,8 +149,7 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_C_OrderLineSO_ID = "C_OrderLineSO_ID";
 
 	/**
-	 * Set Auftrag.
-	 * Auftrag
+	 * Set Sales Order.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -161,8 +158,7 @@ public interface I_C_PurchaseCandidate
 	void setC_OrderSO_ID (int C_OrderSO_ID);
 
 	/**
-	 * Get Auftrag.
-	 * Auftrag
+	 * Get Sales Order.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -718,8 +714,7 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Lager.
-	 * Lager, an das der Lieferant eine Bestellung liefern soll.
+	 * Set Purchase Warehouse.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -728,8 +723,7 @@ public interface I_C_PurchaseCandidate
 	void setM_WarehousePO_ID (int M_WarehousePO_ID);
 
 	/**
-	 * Get Lager.
-	 * Lager, an das der Lieferant eine Bestellung liefern soll.
+	 * Get Purchase Warehouse.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -918,7 +912,6 @@ public interface I_C_PurchaseCandidate
 
 	/**
 	 * Set Purchase net.
-	 * Effektiver Einkaufspreis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -928,7 +921,6 @@ public interface I_C_PurchaseCandidate
 
 	/**
 	 * Get Purchase net.
-	 * Effektiver Einkaufspreis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -941,7 +933,6 @@ public interface I_C_PurchaseCandidate
 
 	/**
 	 * Set Sales net.
-	 * Effektiver Verkaufspreis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -951,7 +942,6 @@ public interface I_C_PurchaseCandidate
 
 	/**
 	 * Get Sales net.
-	 * Effektiver Verkaufspreis pro Einheit, minus erwartetem Skonto und vertraglicher Rückerstattung
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -984,7 +974,7 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_PurchaseDateOrdered = "PurchaseDateOrdered";
 
 	/**
-	 * Set Zugesagter Termin.
+	 * Set Date Promised.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -993,7 +983,7 @@ public interface I_C_PurchaseCandidate
 	void setPurchaseDatePromised (java.sql.Timestamp PurchaseDatePromised);
 
 	/**
-	 * Get Zugesagter Termin.
+	 * Get Date Promised.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
@@ -1026,7 +1016,7 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_PurchasedQty = "PurchasedQty";
 
 	/**
-	 * Set Rohertragspreis.
+	 * Set EK-Preis.
 	 * Einkaufspreis pro Einheit, nach Abzug des Rabattes.
 	 *
 	 * <br>Type: CostPrice
@@ -1036,7 +1026,7 @@ public interface I_C_PurchaseCandidate
 	void setPurchasePriceActual (@Nullable BigDecimal PurchasePriceActual);
 
 	/**
-	 * Get Rohertragspreis.
+	 * Get EK-Preis.
 	 * Einkaufspreis pro Einheit, nach Abzug des Rabattes.
 	 *
 	 * <br>Type: CostPrice
@@ -1049,7 +1039,7 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_PurchasePriceActual = "PurchasePriceActual";
 
 	/**
-	 * Set Menge angefragt.
+	 * Set Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1058,7 +1048,7 @@ public interface I_C_PurchaseCandidate
 	void setQtyToPurchase (BigDecimal QtyToPurchase);
 
 	/**
-	 * Get Menge angefragt.
+	 * Get Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1070,7 +1060,7 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_QtyToPurchase = "QtyToPurchase";
 
 	/**
-	 * Set Wiedervorlage Datum.
+	 * Set Reminder date.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1079,7 +1069,7 @@ public interface I_C_PurchaseCandidate
 	void setReminderDate (@Nullable java.sql.Timestamp ReminderDate);
 
 	/**
-	 * Get Wiedervorlage Datum.
+	 * Get Reminder date.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -1284,7 +1274,7 @@ public interface I_C_PurchaseCandidate
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
 
 	/**
-	 * Set Lieferant.
+	 * Set Vendor.
 	 * The Vendor of the product/service
 	 *
 	 * <br>Type: Search
@@ -1294,7 +1284,7 @@ public interface I_C_PurchaseCandidate
 	void setVendor_ID (int Vendor_ID);
 
 	/**
-	 * Get Lieferant.
+	 * Get Vendor.
 	 * The Vendor of the product/service
 	 *
 	 * <br>Type: Search

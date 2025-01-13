@@ -29,6 +29,7 @@ import de.metas.purchasecandidate.IPurchaseCandidateBL;
 import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.purchaseordercreation.PurchaseOrderPriceCalculator;
 import de.metas.purchasecandidate.purchaseordercreation.PurchaseOrderPricingInfo;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 
@@ -56,6 +57,7 @@ public class PurchaseCandidateBL implements IPurchaseCandidateBL
 		final IPricingResult priceAndDiscount = getPriceAndDiscount(pricingInfo);
 
 		final BigDecimal enteredPrice = candidate.isManualPrice() ? candidate.getPrice() : priceAndDiscount.getPriceStd();
+		final UomId enteredPriceUomId = candidate.isManualPrice() ? candidate.getPriceUomId() : priceAndDiscount.getPriceUomId();
 		final Percent discountPercent = candidate.isManualDiscount() ? candidate.getDiscount() : priceAndDiscount.getDiscount();
 
 		final BigDecimal priceActual = discountPercent.subtractFromBase(enteredPrice, priceAndDiscount.getPrecision().toInt());
@@ -63,6 +65,7 @@ public class PurchaseCandidateBL implements IPurchaseCandidateBL
 		candidate.setPrice(enteredPrice);
 		candidate.setPriceInternal(priceAndDiscount.getPriceStd());
 		candidate.setPriceEnteredEff(enteredPrice);
+		candidate.setPriceUomId(enteredPriceUomId);
 		candidate.setDiscount(discountPercent);
 		candidate.setDiscountInternal(priceAndDiscount.getDiscount());
 		candidate.setDiscountEff(discountPercent);

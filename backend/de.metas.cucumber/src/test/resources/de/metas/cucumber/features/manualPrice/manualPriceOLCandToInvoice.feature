@@ -10,6 +10,15 @@ Feature: Process order candidate and automatically generate shipment and invoice
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And metasfresh contains M_PricingSystems
+      | Identifier     | Name           | Value          | OPT.IsActive |
+      | ps_SO_20250113 | ps_SO_20250113 | ps_SO_20250113 | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name       | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_SO      | ps_SO_20250113                | DE                        | EUR                 | pl_SO_name | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID.Identifier | Name   | ValidFrom  |
+      | plv_SO     | pl_SO                     | plv_SO | 2021-01-01 |
 
   @from:cucumber
   @topic:orderCandidate
@@ -19,9 +28,16 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | Identifier | Name                      | IsStocked |
       | p_1        | noPriceProduct_10052022_1 | true      |
 
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_SO                            | p_1                     | 10.0     | PCE               | Normal                        |
+
     And load C_BPartner:
       | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
       | bpartner_1               | 2156425           |
+    And update C_BPartner:
+      | Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | bpartner_1 | ps_SO_20250113                    |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
@@ -108,9 +124,16 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | Identifier | Name                      | IsStocked |
       | p_1        | noPriceProduct_08072022_1 | true      |
 
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_SO                            | p_1                     | 10.0     | PCE               | Normal                        |
+
     And load C_BPartner:
       | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
       | bpartner_1               | 2156425           |
+    And update C_BPartner:
+      | Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | bpartner_1 | ps_SO_20250113                    |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
@@ -215,9 +238,16 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | OPT.M_HU_PI_Item_Product_ID | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct |
       | 5010005                     | hu_pi_item_product_1               | PCE                   | huPiItemTU                 | p_1                     | 10  | 2020-04-01 | false                  | false                 | IFCO_Test_5 x 10 PCE | false                   |
 
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | M_HU_PI_Item_Product_ID |
+      | pp_1       | plv_SO                            | p_1                     | 10.0     | TU                | Normal                        | hu_pi_item_product_1    |
+
     And load C_BPartner:
       | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
       | bpartner_1               | 2156425           |
+    And update C_BPartner:
+      | Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | bpartner_1 | ps_SO_20250113                    |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
@@ -381,9 +411,16 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | Identifier | Name                      | IsStocked |
       | p_1        | noPriceProduct_07072022_1 | true      |
 
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_SO                            | p_1                     | 10.0     | PCE               | Normal                        |
+
     And load C_BPartner:
       | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |
       | bpartner_1               | 2156425           |
+    And update C_BPartner:
+      | Identifier | OPT.M_PricingSystem_ID.Identifier |
+      | bpartner_1 | ps_SO_20250113                    |
     And load C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | C_BPartner_ID.Identifier |
       | bpartnerLocation_1                | 2205175                | bpartner_1               |
