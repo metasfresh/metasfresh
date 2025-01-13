@@ -551,7 +551,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 		for (final DocTax docTax : getTaxes())
 		{
 			fact.createLine()
-					.setAccount(docTax.getAccount(as))
+					.setAccount(docTax.getTaxDueAcct(as))
 					.setAmtSource(getCurrencyId(), docTax.getTaxAmt(), null)
 					.setC_Tax_ID(docTax.getC_Tax_ID())
 					.alsoAddZeroLine() // we need this for tax reports
