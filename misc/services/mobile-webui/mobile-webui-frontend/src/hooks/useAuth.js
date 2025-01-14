@@ -79,7 +79,7 @@ function createAuthObject() {
           return Promise.reject(error);
         } else {
           await loginByToken({ token, language, userFullname });
-          uiTrace.identity({ userId, username, userFullname, language });
+          uiTrace.login({ userId, username, userFullname, language, method: 'password' });
           return Promise.resolve();
         }
       })
@@ -96,7 +96,7 @@ function createAuthObject() {
           return Promise.reject(error);
         } else {
           await loginByToken({ token, language, userFullname });
-          uiTrace.identity({ userId, username, userFullname, language });
+          uiTrace.login({ userId, username, userFullname, language, method: 'qrCode' });
           return Promise.resolve();
         }
       })
@@ -107,6 +107,8 @@ function createAuthObject() {
   };
 
   const logout = () => {
+    uiTrace.logout();
+
     logoutRequest().catch((error) => {
       console.error('logout error: ', error);
     });

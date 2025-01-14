@@ -1,6 +1,9 @@
 import { useEffect } from 'react';
+import { useRouteMatch } from 'react-router-dom';
 
 export const useLocationChange = (onChange) => {
+  const currentRoute = useRouteMatch();
+
   const trackLocation = () => {
     const currentLocation = window.location.href;
     const lastKnownLocation = sessionStorage.getItem('lastKnownLocation');
@@ -10,6 +13,7 @@ export const useLocationChange = (onChange) => {
       sessionStorage.setItem('lastKnownLocation', currentLocation);
       onChange({
         currentLocation,
+        currentRoute,
         prevLocation: lastKnownLocation,
       });
     }

@@ -2,18 +2,37 @@ import axios from 'axios';
 import { getOrCreateDeviceId, saveEvent } from './db';
 import { v4 as uuidv4 } from 'uuid';
 import { doFinally } from '../index';
+import { useCallback } from 'react';
 
 const HEADER_UITraceId = 'X-Ui-Trace-Id'; // important: keep this upper/lower case because that's how the header will be formated anyway
+const PROP_applicationId = 'applicationId';
+const PROP_User = 'uiTraceUser';
 
-let identityProperties = {};
+let funcRunningContext = null;
+let modalDialog = {};
 
-export const identity = (properties = {}) => {
-  if (!properties) {
-    return;
+export const login = (properties) => {
+  const userStr = sessionStorage.getItem(PROP_User);
+  const user = userStr ? JSON.parse(userStr) : {};
+  const userChanged = { ...user, ...properties };
+  sessionStorage.setItem(PROP_User, JSON.stringify(userChanged));
+
+  trace({ eventName: 'login' });
+};
+
+export const logout = () => {
+  trace({ eventName: 'logout' });
+  sessionStorage.removeItem(PROP_User);
+};
+
+const getUser = () => {
+  let userStr;
+  try {
+    userStr = sessionStorage.getItem(PROP_User);
+    return userStr ? JSON.parse(userStr) : {};
+  } catch (error) {
+    console.log('Failed converting user from sessionStorage', { error, userStr });
   }
-
-  identityProperties = { ...identityProperties, ...properties };
-  console.log('identity', { identityProperties, properties });
 };
 
 export const trace = async (properties) => {
@@ -26,36 +45,62 @@ export const trace = async (properties) => {
 };
 
 export const traceFunction = (func, properties) => {
-  if (!func) {
-    return () => {};
-  }
+  if (!func) return func;
 
   return async (...args) => {
-    const { id } = await trace(properties);
-    setCurrentEventId(id);
-    return doFinally(func(args), clearCurrentEventId);
+    const id = uuidv4();
+    let propertiesEffective;
+    if (typeof properties === 'function') {
+      propertiesEffective = { id, ...properties(...args) };
+    } else {
+      propertiesEffective = { id, ...properties };
+    }
+
+    const prevId = setCurrentEventId(id);
+    const prevRunningContext = funcRunningContext;
+
+    funcRunningContext = prevRunningContext ? { ...prevRunningContext } : {};
+
+    return doFinally(func(...args), () => {
+      trace(propertiesEffective);
+
+      setCurrentEventId(prevId);
+      funcRunningContext = prevRunningContext;
+    });
   };
 };
 
-const setCurrentEventId = (id) => {
-  axios.defaults.headers.common[HEADER_UITraceId] = id;
+export const useTraceCallback = (func, properties) => {
+  return useCallback(traceFunction(func, properties), [func]);
 };
-const clearCurrentEventId = () => {
-  delete axios.defaults.headers.common[HEADER_UITraceId];
+
+const setCurrentEventId = (id) => {
+  const prevId = axios.defaults.headers.common[HEADER_UITraceId];
+  if (id) {
+    axios.defaults.headers.common[HEADER_UITraceId] = id;
+  } else {
+    delete axios.defaults.headers.common[HEADER_UITraceId];
+  }
+  return prevId;
 };
 
 const createEvent = async (properties) => {
+  const id = properties?.id ? properties.id : uuidv4();
+
   return {
     ...properties,
-    id: uuidv4(),
+    ...funcRunningContext,
+    id,
     timestamp: Date.now(),
     device: await getDeviceMetadata(),
-    user: identityProperties,
+    user: getUser(),
     page: {
       url: window?.location?.href,
       title: document.title,
       referrer: document?.referrer,
     },
+    modalDialog,
+    applicationId: sessionStorage.getItem(PROP_applicationId),
   };
 };
 
@@ -77,4 +122,20 @@ const getOrCreateTabId = () => {
     sessionStorage.setItem('tab_id', tabId);
   }
   return tabId;
+};
+
+export const setApplicationId = (applicationId) => {
+  sessionStorage.setItem(PROP_applicationId, applicationId);
+  //console.log('setApplicationId', { applicationId, applicationId2: sessionStorage.getItem(PROP_applicationId) });
+};
+
+export const putContext = (properties) => {
+  if (!properties) return;
+  if (funcRunningContext == null) return;
+
+  funcRunningContext = { ...funcRunningContext, ...properties };
+};
+
+export const setModalDialogName = (name) => {
+  modalDialog.name = name;
 };
