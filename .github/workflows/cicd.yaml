@@ -315,15 +315,15 @@ jobs:
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }} \
           .
-      - name: build-db-migrations
+      - name: build-db-migration-tool
         run: |
           docker buildx build \
-          --file docker-builds/Dockerfile.db-migrations \
+          --file docker-builds/Dockerfile.db-migration-tool \
           --cache-to type=inline \
-          --cache-from metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-migrations \
+          --cache-from metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
-          --tag metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-migrations \
-          --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-migrations \
+          --tag metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-images
         uses: nick-fields/retry@v3
@@ -340,8 +340,8 @@ jobs:
             docker push metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }}
             docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}
-            docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-migrations
-            docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-migrations
+            docker push metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-floating }}
             docker push metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }}
       - name: produce-summary
@@ -351,8 +351,8 @@ jobs:
           echo '* metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
-          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-migrations' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
 
   preloaded-db:
@@ -538,6 +538,8 @@ jobs:
         run: |
           docker pull metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
           docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
+          docker pull metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }}
+          docker tag metasfresh/metas-db-migration-tool:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat
           docker pull metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }}
           docker tag metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat
           docker pull metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}
@@ -567,6 +569,7 @@ jobs:
             docker push metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
+            docker push metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat
             docker push metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat
 
@@ -579,6 +582,7 @@ jobs:
           echo '* metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metasfresh-db-migration-tool:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metasfresh-edi:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metasfresh-externalsystems:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
 

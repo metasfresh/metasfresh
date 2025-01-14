@@ -22,7 +22,7 @@ services:
       replicas: 1
 
   migration:
-    image: $mfregistry/metas-db:$mfversion-migrations
+    image: $mfregistry/metas-db-migration-tool:$mfversion
     depends_on:
       db:
         condition: service_healthy
