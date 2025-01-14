@@ -627,19 +627,6 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 					.buildAndAdd();
 		}
 
-		//
-		// TaxCredit DR
-		for (final DocTax docTax : getTaxes())
-		{
-			fact.createLine()
-					.setAccount(docTax.getAccount(as))
-					.setAmtSource(currencyId, docTax.getTaxAmt(), null)
-					.setC_Tax_ID(docTax.getC_Tax_ID())
-					.alsoAddZeroLine() // we need this for tax reports
-					.buildAndAdd();
-
-		}
-
 		// Expense/InventoryClearing DR
 		for (final DocLine_Invoice line : getDocLines())
 		{
