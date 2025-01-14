@@ -12,7 +12,7 @@ import java.util.Map;
 @Builder
 public class UITraceEventCreateRequest
 {
-	@NonNull String id;
+	@NonNull UITraceExternalId id;
 	@NonNull String eventName;
 	@NonNull Instant timestamp;
 	@Nullable Map<String, Object> properties;

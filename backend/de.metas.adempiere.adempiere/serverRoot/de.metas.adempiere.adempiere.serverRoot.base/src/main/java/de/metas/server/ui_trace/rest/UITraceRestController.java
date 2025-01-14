@@ -2,6 +2,7 @@ package de.metas.server.ui_trace.rest;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.ui_trace.UITraceEventCreateRequest;
+import de.metas.ui_trace.UITraceExternalId;
 import de.metas.ui_trace.UITraceService;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.util.web.security.UserAuthTokenFilterConfiguration;
@@ -48,7 +49,7 @@ public class UITraceRestController
 	private static UITraceEventCreateRequest toUITraceEventCreateRequest(final JsonUITraceEvent json)
 	{
 		return UITraceEventCreateRequest.builder()
-				.id(json.getId())
+				.id(UITraceExternalId.ofString(json.getId()))
 				.eventName(json.getEventName())
 				.timestamp(json.getTimestamp() > 0 ? Instant.ofEpochMilli(json.getTimestamp()) : SystemTime.asInstant())
 				.properties(json.getProperties())

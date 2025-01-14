@@ -32,7 +32,7 @@ public class UITraceRepository
 
 	private void updateRecord(final I_UI_Trace record, final UITraceEventCreateRequest from)
 	{
-		record.setExternalId(from.getId());
+		record.setExternalId(from.getId().getAsString());
 		record.setEventName(from.getEventName());
 		record.setTimestamp(Timestamp.from(from.getTimestamp()));
 		record.setEventData(extractPropertiesAsJsonString(from));

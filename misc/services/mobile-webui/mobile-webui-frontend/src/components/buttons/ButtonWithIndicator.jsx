@@ -32,22 +32,16 @@ const ButtonWithIndicator = ({
 
   const displayHazardsAndAllergens = displayHazards || displayAllergens;
 
-  const fireOnClick = (event) => {
-    if (onClick) {
-      uiTrace.trace({
-        eventName: 'buttonClick',
-        caption,
-        showWarningSign,
-        completeStatus,
-        typeFASIconName,
-        hazardSymbols,
-        allergens,
-        isDanger,
-      });
-
-      onClick(event);
-    }
-  };
+  const fireOnClick = uiTrace.traceFunction(onClick, {
+    eventName: 'buttonClick',
+    caption,
+    showWarningSign,
+    completeStatus,
+    typeFASIconName,
+    hazardSymbols,
+    allergens,
+    isDanger,
+  });
 
   return (
     <button

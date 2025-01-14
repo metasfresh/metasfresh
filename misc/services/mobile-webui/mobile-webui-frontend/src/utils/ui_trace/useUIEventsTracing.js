@@ -1,15 +1,22 @@
-import { useEffect } from 'react';
 import { postEventsToBackend } from '../../api/ui_trace';
 import { clearEvents, getAllEvents } from './db';
+import { useEventListener } from '../../hooks/useEventListener';
+import { usePeriodicTask } from '../../hooks/usePeriodicTask';
 
 const SYNC_INTERVAL_MILLIS = 1000;
 
-const syncEventsToBackend = async () => {
-  const events = await getAllEvents();
+const syncEventsToBackend = async (reason = 'programmatic') => {
+  // console.log(`Attempting to sync UI events (${reason}) ...`);
 
-  if (!events?.length) return;
+  if (!navigator.onLine) {
+    console.log(`Skip syncing because not online (${reason})`);
+    return;
+  }
 
   try {
+    const events = await getAllEvents();
+    if (!events?.length) return;
+
     // console.log('Posting to backend', { events });
     await postEventsToBackend(events);
     await clearEvents();
@@ -19,37 +26,7 @@ const syncEventsToBackend = async () => {
   }
 };
 
-const useSyncToBackend = () => {
-  useEffect(() => {
-    const handleOnline = () => {
-      console.log('Back online. Attempting to sync events...');
-      // noinspection JSIgnoredPromiseFromCall
-      syncEventsToBackend();
-    };
-
-    const interval = setInterval(() => {
-      if (navigator.onLine) {
-        //console.log('Scheduled events syncing...');
-
-        // noinspection JSIgnoredPromiseFromCall
-        syncEventsToBackend();
-      } else {
-        console.log('Skip scheduled events syncing because not online');
-      }
-    }, SYNC_INTERVAL_MILLIS);
-
-    window.addEventListener('online', handleOnline);
-
-    console.log('Sync UI events to backend enabled');
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      clearInterval(interval);
-      console.log('Sync UI events to backend disabled');
-    };
-  }, []);
-};
-
 export const useUIEventsTracing = () => {
-  useSyncToBackend();
+  useEventListener('online', () => syncEventsToBackend('back online'));
+  usePeriodicTask('sync UI events to backend', SYNC_INTERVAL_MILLIS, () => syncEventsToBackend('periodic task'));
 };
