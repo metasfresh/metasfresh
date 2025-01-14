@@ -28,7 +28,7 @@ UPDATE AD_Process_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2025-01-13 15:0
 -- Name: C_BP_BankAccounts of C_BPartner with use Credit and/or Debit
 -- 2025-01-13T14:23:42.831Z
 INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540698,'C_BP_BankAccount.C_BP_BankAccount_ID IN (SELECT C_BP_BankAccount_ID FROM C_BP_BankAccount WHERE C_BPartner_ID = @C_BPartner_ID@ AND bpbankacctuse IN (''B'', ''D'', ''T'' ) AND C_Currency_ID = @C_Currency_ID@ AND isactive = ''Y'')'
-,TO_TIMESTAMP('2025-01-13 15:23:42.681','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.banking','Y','C_BP_BankAccounts of C_BPartner with use Credit and/or Debit with use Credit and/or Debit','S',TO_TIMESTAMP('2025-01-13 15:23:42.681','YYYY-MM-DD HH24:MI:SS.US'),100)
+,TO_TIMESTAMP('2025-01-13 15:23:42.681','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.banking','Y','C_BP_BankAccounts of C_BPartner with use Credit and/or Debit','S',TO_TIMESTAMP('2025-01-13 15:23:42.681','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- Process: C_Invoice_Create_Payment_Request(de.metas.banking.process.paymentdocumentform.C_Invoice_Create_Payment_Request)
