@@ -43,9 +43,9 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
+import de.metas.doctype.CopyDescriptionAndDocumentNote;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
-import de.metas.doctype.CopyDescriptionAndDocumentNote;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
@@ -156,6 +156,7 @@ public class OrderBL implements IOrderBL
 
 	private static final String SYS_CONFIG_MAX_HADDEX_AGE_IN_MONTHS = "de.metas.order.MAX_HADDEX_AGE_IN_MONTHS";
 	private static final String SYSCONFIG_USE_DEFAULT_BILL_TO_LOCATION_AS_ORDER_DEFAULT_LOCATION = "de.metas.order.impl.UseDefaultBillToLocationAsOrderDefaultLocation";
+	private static final AdMessageKey MSG_PRODUCT_CANT_BE_USED_ERROR = AdMessageKey.of("de.metas.order.ProductCantBeUsedError");
 
 	private static final AdMessageKey MSG_HADDEX_CHECK_ERROR = AdMessageKey.of("de.metas.order.CustomerHaddexError");
 	private static final ModelDynAttributeAccessor<org.compiere.model.I_C_Order, BigDecimal> DYNATTR_QtyInvoicedSum = new ModelDynAttributeAccessor<>("QtyInvoicedSum", BigDecimal.class);
@@ -165,6 +166,7 @@ public class OrderBL implements IOrderBL
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
@@ -1467,8 +1469,13 @@ public class OrderBL implements IOrderBL
 
 		final BigDecimal weight = lines.stream()
 				.map(line -> {
-					final I_M_Product product = productId2Product.get(ProductId.ofRepoId(line.getM_Product_ID()));
-
+					final ProductId productId = ProductId.ofRepoId(line.getM_Product_ID());
+					final I_M_Product product = productId2Product.get(productId);
+					if (product == null)
+					{
+						final String productName = productBL.getProductName(productId);
+						throw new AdempiereException(MSG_PRODUCT_CANT_BE_USED_ERROR, productName);
+					}
 					return product.getWeight().multiply(line.getQtyOrdered());
 				})
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
