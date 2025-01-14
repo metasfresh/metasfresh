@@ -22,9 +22,9 @@ package de.metas.banking.payment.impl;
  * #L%
  */
 
-import de.metas.banking.BankAccountId;
 import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaymentRequestDAO;
+import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.invoice.InvoiceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -56,7 +56,7 @@ public class PaymentRequestDAO implements IPaymentRequestDAO
 	}
 
 	@Override
-	public void createOrReplace(@NonNull final I_C_Invoice invoice, @NonNull final BankAccountId bankAccountId)
+	public void createOrReplace(@NonNull final I_C_Invoice invoice, @NonNull final BPartnerBankAccountId bankAccountId)
 	{
 		final I_C_Payment_Request existingRequest = retrieveRequestForInvoiceQuery(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
 				.create()

@@ -17,7 +17,10 @@ import de.metas.banking.payment.IPaySelectionDAO;
 import de.metas.banking.payment.IPaySelectionUpdater;
 import de.metas.banking.payment.IPaymentRequestBL;
 import de.metas.banking.service.IBankStatementBL;
+import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.composite.BPartnerBankAccount;
+import de.metas.bpartner.service.BPBankAcctUse;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
@@ -33,12 +36,10 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_PaySelection;
 import org.compiere.model.I_C_PaySelectionLine;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.X_C_BP_BankAccount;
 import org.compiere.util.TimeUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -96,7 +97,7 @@ public class PaySelectionBL implements IPaySelectionBL
 		final BankAccount bankAccount = bpBankAccountDAO.getById(BankAccountId.ofRepoId(paySelection.getC_BP_BankAccount_ID()));
 		final CurrencyId currencyID = bankAccount.getCurrencyId();
 
-		psl.setC_BP_BankAccount_ID(BankAccountId.toRepoId(getBankAccountId(invoiceId, currencyID)));
+		psl.setC_BP_BankAccount_ID(BPartnerBankAccountId.toRepoId(getBPartnerBankAccountId(invoiceId, currencyID)));
 
 		if (Check.isBlank(psl.getReference()) && InterfaceWrapperHelper.isNew(psl))
 		{
@@ -106,36 +107,36 @@ public class PaySelectionBL implements IPaySelectionBL
 
 	@Nullable
 	@Override
-	public BankAccountId getBankAccountId(@NonNull final InvoiceId invoiceId,
-										  @NonNull final CurrencyId currencyId)
+	public BPartnerBankAccountId getBPartnerBankAccountId(@NonNull final InvoiceId invoiceId,
+														  @NonNull final CurrencyId currencyId)
 	{
 		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
 		final boolean isSalesInvoice = invoice.isSOTrx();
 		final boolean isCreditMemo = invoiceBL.isCreditMemo(invoice);
 
-		final String accteptedBankAccountUsage = getAcceptedBankAccountUsage(isSalesInvoice, isCreditMemo);
+		final BPBankAcctUse accteptedBankAccountUsage = getAcceptedBankAccountUsage(isSalesInvoice, isCreditMemo);
 
-		final List<I_C_BP_BankAccount> bankAccts = bpBankAccountDAO.retrieveBankAccountsForPartnerAndCurrency(
+		final List<BPartnerBankAccount> bankAccts = bpBankAccountDAO.retrieveBankAccountsForPartnerAndCurrency(
 				BPartnerId.ofRepoId(invoice.getC_BPartner_ID()),
 				currencyId);
 
 		if (!bankAccts.isEmpty())
 		{
-			BankAccountId primaryAcct = null;
-			BankAccountId secondaryAcct = null;
+			BPartnerBankAccountId primaryAcct = null;
+			BPartnerBankAccountId secondaryAcct = null;
 
-			for (final I_C_BP_BankAccount account : bankAccts)
+			for (final BPartnerBankAccount account : bankAccts)
 			{
 				// FRESH-606: Only continue if the bank account has a use set
-				if (account.getBPBankAcctUse() == null)
+				if (account.getBpBankAcctUse() == null)
 				{
 					continue;
 				}
 
-				final BankAccountId accountID = BankAccountId.ofRepoIdOrNull(account.getC_BP_BankAccount_ID());
+				final BPartnerBankAccountId accountID = account.getId();
 				if (accountID != null)
 				{
-					if (account.getBPBankAcctUse().equals(X_C_BP_BankAccount.BPBANKACCTUSE_Both))
+					if (account.getBpBankAcctUse() == BPBankAcctUse.DEBIT_OR_DEPOSIT)
 					{
 						// in case a secondary act was already found, it should be not changed.
 						// this is important because the default accounts come first from the query and they have higher priority than the non-defult ones.
@@ -144,7 +145,7 @@ public class PaySelectionBL implements IPaySelectionBL
 							secondaryAcct = accountID;
 						}
 					}
-					else if (account.getBPBankAcctUse().equals(accteptedBankAccountUsage))
+					else if (account.getBpBankAcctUse() == accteptedBankAccountUsage)
 					{
 						primaryAcct = accountID;
 						break;
@@ -164,20 +165,20 @@ public class PaySelectionBL implements IPaySelectionBL
 	}
 
 	@NotNull
-	private static String getAcceptedBankAccountUsage(final boolean isSalesInvoice, final boolean isCreditMemo)
+	private static BPBankAcctUse getAcceptedBankAccountUsage(final boolean isSalesInvoice, final boolean isCreditMemo)
 	{
 		if ((isSalesInvoice && !isCreditMemo) ||
 				(!isSalesInvoice && isCreditMemo))
 		{
 			// allow a direct debit account if there is an invoice with SOTrx='Y', and not a credit memo
 			// OR it is a Credit memo with isSoTrx = 'N'
-			return X_C_BP_BankAccount.BPBANKACCTUSE_DirectDebit;
+			return BPBankAcctUse.DEBIT;
 		}
 		else
 		{
 			// allow a direct deposit account if there is an invoice with SOTrx='N', and not a credit memo
 			// OR it is a Credit memo with isSoTrx = 'Y'
-			return X_C_BP_BankAccount.BPBANKACCTUSE_DirectDeposit;
+			return BPBankAcctUse.DEPOSIT;
 		}
 	}
 

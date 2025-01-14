@@ -53,7 +53,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	public List<I_C_BP_BankAccount> retrieveBankAccountsForPartnerAndCurrency(@NonNull final BPartnerId partnerID,
+	public List<BPartnerBankAccount> retrieveBankAccountsForPartnerAndCurrency(@NonNull final BPartnerId partnerID,
 																			  @Nullable final CurrencyId currencyID)
 	{
 		final IQueryBuilder<I_C_BP_BankAccount> qb = queryBL
@@ -71,7 +71,9 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 				.addColumn(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID)
 				.endOrderBy()
 				.create()
-				.list();
+				.stream()
+				.map(this::of)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
@@ -179,6 +181,7 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 				.swiftCode(record.getSwiftCode())
 				.qrIban(record.getQR_IBAN())
 				.bankId(BankId.ofRepoIdOrNull(record.getC_Bank_ID()))
+				.bpBankAcctUse(BPBankAcctUse.ofNullableCode(record.getBPBankAcctUse()))
 				//.changeLog()
 				.build();
 	}

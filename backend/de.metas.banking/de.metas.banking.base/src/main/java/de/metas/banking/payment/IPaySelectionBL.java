@@ -1,11 +1,11 @@
 package de.metas.banking.payment;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementAndLineAndRefId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.PaySelectionId;
 import de.metas.banking.PaySelectionLineId;
+import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
@@ -23,7 +23,7 @@ import java.util.Set;
 
 public interface IPaySelectionBL extends ISingletonService
 {
-	@Nullable BankAccountId getBankAccountId(@NonNull InvoiceId invoiceId, @NonNull CurrencyId currencyId);
+	@Nullable BPartnerBankAccountId getBPartnerBankAccountId(@NonNull InvoiceId invoiceId, @NonNull CurrencyId currencyId);
 
 	/**
 	 * Creates a new pay selection updater which will create/updated/delete the {@link I_C_PaySelectionLine}s.
