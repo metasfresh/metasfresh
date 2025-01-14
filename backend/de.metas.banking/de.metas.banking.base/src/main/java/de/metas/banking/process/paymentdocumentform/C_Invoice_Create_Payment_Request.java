@@ -93,7 +93,7 @@ public class C_Invoice_Create_Payment_Request extends JavaProcess implements IPr
 			final InvoiceId invoiceId = InvoiceId.ofRepoId(getRecord_ID());
 			final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceBL.getById(invoiceId).getC_Currency_ID());
 
-			return paySelectionBL.getBankAccountId(invoiceId, currencyId, getCtx());
+			return paySelectionBL.getBankAccountId(invoiceId, currencyId);
 		}
 		else
 		{

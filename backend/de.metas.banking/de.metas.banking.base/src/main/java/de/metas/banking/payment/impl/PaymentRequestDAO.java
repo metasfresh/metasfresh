@@ -25,6 +25,7 @@ package de.metas.banking.payment.impl;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.model.I_C_Payment_Request;
 import de.metas.banking.payment.IPaymentRequestDAO;
+import de.metas.invoice.InvoiceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -45,20 +46,19 @@ import java.util.Set;
  */
 public class PaymentRequestDAO implements IPaymentRequestDAO
 {
-	private IQueryBuilder<I_C_Payment_Request> retrieveRequestForInvoiceQuery(final I_C_Invoice invoice)
+	private IQueryBuilder<I_C_Payment_Request> retrieveRequestForInvoiceQuery(@NonNull final InvoiceId invoiceId)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-		return queryBL.createQueryBuilder(I_C_Payment_Request.class, invoice)
-				.addEqualsFilter(I_C_Payment_Request.COLUMN_C_Invoice_ID, invoice.getC_Invoice_ID())
-				.addOnlyActiveRecordsFilter() // NOTE: very important, BL relies on this (i.e. assumes it gets only active requests)
-				.addOnlyContextClient();
+		return queryBL.createQueryBuilder(I_C_Payment_Request.class)
+				.addEqualsFilter(I_C_Payment_Request.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.addOnlyActiveRecordsFilter(); // NOTE: very important, BL relies on this (i.e. assumes it gets only active requests)
 	}
 
 	@Override
 	public void createOrReplace(@NonNull final I_C_Invoice invoice, @NonNull final BankAccountId bankAccountId)
 	{
-		final I_C_Payment_Request existingRequest = retrieveRequestForInvoiceQuery(invoice)
+		final I_C_Payment_Request existingRequest = retrieveRequestForInvoiceQuery(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
 				.create()
 				.firstOnly(I_C_Payment_Request.class);
 
@@ -71,17 +71,17 @@ public class PaymentRequestDAO implements IPaymentRequestDAO
 
 	@Override
 	@Nullable
-	public I_C_Payment_Request retrieveSingularRequestOrNull(final I_C_Invoice invoice)
+	public I_C_Payment_Request retrieveSingularRequestOrNull(@NonNull final InvoiceId invoiceId)
 	{
-		return retrieveRequestForInvoiceQuery(invoice)
+		return retrieveRequestForInvoiceQuery(invoiceId)
 				.create()
 				.firstOnly(I_C_Payment_Request.class);
 	}
 
 	@Override
-	public boolean hasPaymentRequests(final I_C_Invoice invoice)
+	public boolean hasPaymentRequests(@NonNull final InvoiceId invoiceId)
 	{
-		return retrieveRequestForInvoiceQuery(invoice)
+		return retrieveRequestForInvoiceQuery(invoiceId)
 				.create()
 				.anyMatch();
 	}

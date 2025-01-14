@@ -119,7 +119,7 @@ public class C_PaySelectionLine
 
 	private I_C_PaySelection getPaySelection(@NonNull final I_C_PaySelectionLine psl)
 	{
-		return paySelectionBL.getByIdOrError(PaySelectionId.ofRepoId(psl.getC_PaySelection_ID()));
+		return paySelectionBL.getByIdNotNull(PaySelectionId.ofRepoId(psl.getC_PaySelection_ID()));
 	}
 
 	@CalloutMethod(columnNames = { I_C_PaySelectionLine.COLUMNNAME_PayAmt })

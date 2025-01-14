@@ -43,7 +43,7 @@ public class C_PaySelection_CreatePayments extends JavaProcess implements IProce
 	@Override
 	protected String doIt() throws Exception
 	{
-		final I_C_PaySelection paySelection = paySelectionBL.getByIdOrError(PaySelectionId.ofRepoId(getRecord_ID()));
+		final I_C_PaySelection paySelection = paySelectionBL.getByIdNotNull(PaySelectionId.ofRepoId(getRecord_ID()));
 		paySelectionBL.createPayments(paySelection);
 		return MSG_OK;
 	}

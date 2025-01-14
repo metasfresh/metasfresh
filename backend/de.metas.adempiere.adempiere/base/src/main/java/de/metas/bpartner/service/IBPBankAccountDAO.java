@@ -13,7 +13,6 @@ import org.compiere.model.I_C_BP_BankAccount;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 
 /*
  * #%L
@@ -44,7 +43,7 @@ public interface IBPBankAccountDAO extends ISingletonService
 	 * In case the currencyID is not set (<=0) just retrieve all accounts of the bpartner
 	 * The bank accounts will be ordered by their IsDefault values, with true first.
 	 */
-	List<I_C_BP_BankAccount> retrieveBankAccountsForPartnerAndCurrency(Properties ctx, BPartnerId partnerID, CurrencyId currencyID);
+	List<I_C_BP_BankAccount> retrieveBankAccountsForPartnerAndCurrency(BPartnerId partnerID, CurrencyId currencyID);
 
 	Optional<I_C_BP_BankAccount> retrieveDefaultBankAccountInTrx(@NonNull BPartnerId bpartnerId);
 

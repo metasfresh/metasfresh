@@ -24,6 +24,7 @@ package de.metas.banking.payment;
 
 import de.metas.banking.BankAccountId;
 import de.metas.banking.model.I_C_Payment_Request;
+import de.metas.invoice.InvoiceId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -44,14 +45,14 @@ public interface IPaymentRequestDAO extends ISingletonService
 	/**
 	 * Retrieve payment request for given invoice or null if none is found.
 	 *
-	 * @param invoice
+	 * @param invoiceId
 	 * @return payment request
 	 *
 	 * @throws AdempiereException if more than one payment request is found for given invoice
 	 */
-	I_C_Payment_Request retrieveSingularRequestOrNull(I_C_Invoice invoice) throws AdempiereException;
+	I_C_Payment_Request retrieveSingularRequestOrNull(@NonNull final InvoiceId invoiceId) throws AdempiereException;
 
-	boolean hasPaymentRequests(I_C_Invoice invoice);
+	boolean hasPaymentRequests(@NonNull final InvoiceId invoiceId);
 
 	/**
 	 * Checks if {@link I_C_Payment_Request}s identified by given IDs still exist in database and are still active/valid.

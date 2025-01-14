@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 import java.util.StringJoiner;
 
@@ -63,9 +62,9 @@ public class PaySelectionBL implements IPaySelectionBL
 	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
 
 	@Override
-	public I_C_PaySelection getByIdOrError(@NonNull final PaySelectionId paySelectionId)
+	public I_C_PaySelection getByIdNotNull(@NonNull final PaySelectionId paySelectionId)
 	{
-		return Check.assumePresent(getById(paySelectionId), "Pay Selection should be present");
+		return getById(paySelectionId).orElseThrow(() -> new AdempiereException("Pay Selection should be present"));
 	}
 
 	@Override
@@ -88,18 +87,16 @@ public class PaySelectionBL implements IPaySelectionBL
 		if (invoiceId == null) {return;}
 		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(psl);
-
 		final BPartnerId partnerID = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 		psl.setC_BPartner_ID(partnerID.getRepoId());
 
 		// task 09500 get the currency from the account of the selection header
 		// this is safe because the columns are mandatory
-		final I_C_PaySelection paySelection = Check.assumePresent(paySelectionDAO.getById(PaySelectionId.ofRepoId(psl.getC_PaySelection_ID())),"Pay Selection should be present");
+		final I_C_PaySelection paySelection = getByIdNotNull(PaySelectionId.ofRepoId(psl.getC_PaySelection_ID()));
 		final BankAccount bankAccount = bpBankAccountDAO.getById(BankAccountId.ofRepoId(paySelection.getC_BP_BankAccount_ID()));
 		final CurrencyId currencyID = bankAccount.getCurrencyId();
 
-		psl.setC_BP_BankAccount_ID(BankAccountId.toRepoId(getBankAccountId(invoiceId, currencyID, ctx)));
+		psl.setC_BP_BankAccount_ID(BankAccountId.toRepoId(getBankAccountId(invoiceId, currencyID)));
 
 		if (Check.isBlank(psl.getReference()) && InterfaceWrapperHelper.isNew(psl))
 		{
@@ -110,8 +107,7 @@ public class PaySelectionBL implements IPaySelectionBL
 	@Nullable
 	@Override
 	public BankAccountId getBankAccountId(@NonNull final InvoiceId invoiceId,
-										  @NonNull final CurrencyId currencyId,
-										  @NonNull final Properties ctx)
+										  @NonNull final CurrencyId currencyId)
 	{
 		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
 		final boolean isSalesInvoice = invoice.isSOTrx();
@@ -120,7 +116,6 @@ public class PaySelectionBL implements IPaySelectionBL
 		final String accteptedBankAccountUsage = getAcceptedBankAccountUsage(isSalesInvoice, isCreditMemo);
 
 		final List<I_C_BP_BankAccount> bankAccts = bpBankAccountDAO.retrieveBankAccountsForPartnerAndCurrency(
-				ctx,
 				BPartnerId.ofRepoId(invoice.getC_BPartner_ID()),
 				currencyId);
 
@@ -171,22 +166,19 @@ public class PaySelectionBL implements IPaySelectionBL
 	@NotNull
 	private static String getAcceptedBankAccountUsage(final boolean isSalesInvoice, final boolean isCreditMemo)
 	{
-		final String accteptedBankAccountUsage;
-
 		if ((isSalesInvoice && !isCreditMemo) ||
 				(!isSalesInvoice && isCreditMemo))
 		{
 			// allow a direct debit account if there is an invoice with SOTrx='Y', and not a credit memo
 			// OR it is a Credit memo with isSoTrx = 'N'
-			accteptedBankAccountUsage = X_C_BP_BankAccount.BPBANKACCTUSE_DirectDebit;
+			return X_C_BP_BankAccount.BPBANKACCTUSE_DirectDebit;
 		}
 		else
 		{
 			// allow a direct deposit account if there is an invoice with SOTrx='N', and not a credit memo
 			// OR it is a Credit memo with isSoTrx = 'Y'
-			accteptedBankAccountUsage = X_C_BP_BankAccount.BPBANKACCTUSE_DirectDeposit;
+			return X_C_BP_BankAccount.BPBANKACCTUSE_DirectDeposit;
 		}
-		return accteptedBankAccountUsage;
 	}
 
 	@Override

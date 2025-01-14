@@ -19,14 +19,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
 
 public interface IPaySelectionBL extends ISingletonService
 {
-	@Nullable BankAccountId getBankAccountId(@NonNull InvoiceId invoiceId,
-											 @NonNull CurrencyId currencyId,
-											 @NonNull Properties ctx);
+	@Nullable BankAccountId getBankAccountId(@NonNull InvoiceId invoiceId, @NonNull CurrencyId currencyId);
 
 	/**
 	 * Creates a new pay selection updater which will create/updated/delete the {@link I_C_PaySelectionLine}s.
@@ -46,7 +43,7 @@ public interface IPaySelectionBL extends ISingletonService
 	 */
 	void unlinkPaySelectionLineFromBankStatement(Collection<BankStatementLineId> bankStatementLineIds);
 
-	I_C_PaySelection getByIdOrError(@NonNull PaySelectionId paySelectionId);
+	I_C_PaySelection getByIdNotNull(@NonNull PaySelectionId paySelectionId);
 
 	Optional<I_C_PaySelection> getById(@NonNull PaySelectionId paySelectionId);
 
