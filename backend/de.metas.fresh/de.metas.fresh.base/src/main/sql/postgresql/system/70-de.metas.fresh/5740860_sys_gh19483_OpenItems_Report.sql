@@ -128,11 +128,12 @@ FROM (SELECT i.AD_Org_ID,
                LEFT OUTER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = ci.C_AcctSchema1_ID
                LEFT OUTER JOIN C_Currency c ON acs.C_Currency_ID = c.C_Currency_ID
       WHERE TRUE
-        AND i.DocStatus IN ('CO', 'CL')) AS oi
+        AND i.DocStatus IN ('CO', 'CL', 'RE')) AS oi
          INNER JOIN C_BPartner bp ON oi.C_BPartner_ID = bp.C_BPartner_ID
          INNER JOIN C_Currency c ON oi.C_Currency_ID = c.C_Currency_ID
 WHERE TRUE
   AND oi.OpenAmt <> 0
+
 $$
     LANGUAGE sql STABLE
 ;

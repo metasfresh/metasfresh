@@ -42,6 +42,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -232,7 +233,7 @@ public class OLCandDAO implements IOLCandDAO
 		{
 			return ImmutableMap.of();
 		}
-		
+
 		return queryBL.createQueryBuilder(I_C_Order_Line_Alloc.class)
 				.addInArrayFilter(I_C_Order_Line_Alloc.COLUMNNAME_C_OLCand_ID, olCandIds)
 				.create()
@@ -241,6 +242,32 @@ public class OLCandDAO implements IOLCandDAO
 						olAlloc -> OLCandId.ofRepoId(olAlloc.getC_OLCand_ID()),
 						olAlloc -> OrderLineId.ofRepoId(olAlloc.getC_OrderLine_ID())
 				));
+	}
+
+	public boolean isAnyRecordProcessed(@NonNull final Set<OLCandId> olCandIds)
+	{
+		return queryBL.createQueryBuilder(I_C_OLCand.class)
+				.addInArrayFilter(I_C_OLCand.COLUMNNAME_C_OLCand_ID, olCandIds)
+				.addEqualsFilter(I_C_OLCand.COLUMNNAME_Processed, true)
+				.create()
+				.anyMatch();
+	}
+
+	public int deleteRecords(@NonNull final Set<OLCandId> olCandIds)
+	{
+		return queryBL.createQueryBuilder(I_C_OLCand.class)
+				.addInArrayFilter(I_C_OLCand.COLUMNNAME_C_OLCand_ID, olCandIds)
+				.create()
+				.delete();
+	}
+
+	public int deleteUnprocessedRecords(@NonNull final IQueryFilter<I_C_OLCand> queryFilter)
+	{
+		return queryBL.createQueryBuilder(I_C_OLCand.class)
+				.addEqualsFilter(I_C_OLCand.COLUMNNAME_Processed, false)
+				.filter(queryFilter)
+				.create()
+				.delete();
 	}
 
 	public void assignAsyncBatchId(@NonNull final Set<OLCandId> olCandIds, @NonNull final AsyncBatchId asyncBatchId)
