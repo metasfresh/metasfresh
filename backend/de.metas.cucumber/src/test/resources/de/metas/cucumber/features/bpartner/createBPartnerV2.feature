@@ -50,7 +50,7 @@ Feature: create or update BPartner v2
             "bpartner":{
                "code":"test_code_211122",
                "name":"test_name",
-               "companyName":"test_company",
+               "companyName":"test_name",
                "parentId":null,
                "phone":null,
                "language":"de",
@@ -219,7 +219,7 @@ Feature: create or update BPartner v2
 """
     Then verify that bPartner was created for externalIdentifier
       | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code         | Name      | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url | OPT.Group  | OPT.VatId         | OPT.M_SectionCode_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule | OPT.C_Incoterms_Customer_ID.Identifier | OPT.C_Incoterms_Vendor_ID.Identifier | OPT.PaymentRule | OPT.PaymentRulePO | OPT.IsStorageWarehouse | OPT.C_PaymentTerm_ID.Identifier | OPT.PO_PaymentTerm_ID.Identifier | OPT.Section_Group_Partner_ID.Identifier | OPT.IsProspect | OPT.Fresh_Urproduzent |
-      | created_bpartner         | ext-ALBERTA-001    | test_code_211122 | test_name | test_company    | null         | null      | de           | null    | test-group | vatId_BPartner001 | ALBERTA_001_sectionCode         | A                | S                   | Incoterms_Customer_101122              | Incoterms_Vendor_101122              | P               | B                 | Y                      | PaymentTerm_101122              | PaymentTerm_PO_101122            | sectionGroupPartner                     | true           | true                  |
+      | created_bpartner         | ext-ALBERTA-001    | test_code_211122 | test_name | test_name       | null         | null      | de           | null    | test-group | vatId_BPartner001 | ALBERTA_001_sectionCode         | A                | S                   | Incoterms_Customer_101122              | Incoterms_Vendor_101122              | P               | B                 | Y                      | PaymentTerm_101122              | PaymentTerm_PO_101122            | sectionGroupPartner                     | true           | true                  |
     And verify that location was created for bpartner
       | bpartnerIdentifier | locationIdentifier | OPT.Address1  | OPT.Address2  | OPT.PoBox  | OPT.District | OPT.Region  | OPT.City  | CountryCode | OPT.Gln | OPT.Postal | OPT.IsHandOverLocation | OPT.IsRemitTo | OPT.IsReplicationLookupDefault | OPT.VATaxId        | OPT.SAP_PaymentMethod | OPT.Name                | OPT.BPartnerName   |
       | ext-ALBERTA-001    | gln-l11            | test_address1 | test_address2 | null       | null         | null        | null      | DE          | l11     | null       | true                   | false         | false                          | null               | PAY                   | test_address1 test_name | null               |
@@ -257,7 +257,7 @@ Feature: create or update BPartner v2
       "globalId":null,
       "active":true,
       "name":"test_name",
-      "companyName":"test_company",
+      "companyName":"test_name",
       "language":"de_DE",
       "group":"test-group",
       "vendor":false,
@@ -415,7 +415,7 @@ Feature: create or update BPartner v2
             "bpartner":{
                "code":"test_code_updated",
                "name":"test_name_updated",
-               "companyName":"test_company",
+               "companyName":"test_name_updated",
                "parentId":null,
                "phone":null,
                "language":"de",
@@ -509,7 +509,7 @@ Feature: create or update BPartner v2
 """
     Then verify that bPartner was updated for externalIdentifier
       | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code          | Name              | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url     | OPT.Group  | OPT.VatId | OPT.IsStorageWarehouse | OPT.Fresh_Urproduzent |
-      | created_bpartner         | ext-ALBERTA-001    | test_code_updated | test_name_updated | test_company    | null         | null      | de           | url_updated | test-group | null      | Y                      | false                 |
+      | created_bpartner         | ext-ALBERTA-001    | test_code_updated | test_name_updated | test_name       | null         | null      | de           | url_updated | test-group | null      | Y                      | false                 |
     And verify that location was updated for bpartner
       | bpartnerIdentifier | locationIdentifier | OPT.Address1  | OPT.Address2  | OPT.PoBox  | OPT.District | OPT.Region  | OPT.City  | CountryCode | OPT.Gln | OPT.Postal | OPT.VATaxId | OPT.Name                                  |
       | ext-ALBERTA-001    | ext-ALBERTA-l22    | null          | test_address2 | test_poBox | null         | test_region | test_city | DE          | null    | null       | null        | test_city test_name                       |
@@ -725,13 +725,13 @@ Feature: create or update BPartner v2
 
   @Id:S0285_700
   Scenario: Create BPartner Account record,
-    using all supported external identifier formats:
-    - external reference
-    - iban
-    - qr_iban
-    validating:
-    - bank account creation
-    - external external reference creation
+  using all supported external identifier formats:
+  - external reference
+  - iban
+  - qr_iban
+  validating:
+  - bank account creation
+  - external external reference creation
   -> then update account records
   -> then validate retrieval
   -> then update account record with IfNotExists = FAIL & unknown identifier
@@ -746,7 +746,7 @@ Feature: create or update BPartner v2
         "bpartner": {
           "code": "test_code_updated",
           "name": "test_name_updated",
-          "companyName": "test_company",
+          "companyName": "test_name_updated",
           "parentId": null,
           "phone": null,
           "language": "de",
