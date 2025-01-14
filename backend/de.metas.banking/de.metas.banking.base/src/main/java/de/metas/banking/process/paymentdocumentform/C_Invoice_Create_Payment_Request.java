@@ -51,6 +51,7 @@ public class C_Invoice_Create_Payment_Request extends JavaProcess implements IPr
 
 	@Param(parameterName = PARAM_Bank_Account_ID, mandatory = true)
 	private BankAccountId p_BankAccountID;
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
@@ -60,16 +61,16 @@ public class C_Invoice_Create_Payment_Request extends JavaProcess implements IPr
 		}
 
 		final I_C_Invoice invoice = invoiceBL.getById(InvoiceId.ofRepoId(context.getSingleSelectedRecordId()));
-		if(invoice.isSOTrx())
+		if (invoice.isSOTrx())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Only purchase");
 		}
-		if(!invoiceBL.isComplete(invoice))
+		if (!invoiceBL.isComplete(invoice))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("Only completed");
 		}
 
-		if(invoiceBL.isCreditMemo(invoice))
+		if (invoiceBL.isCreditMemo(invoice))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("credit memo");
 		}
@@ -87,10 +88,10 @@ public class C_Invoice_Create_Payment_Request extends JavaProcess implements IPr
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
-		if(parameter.getColumnName().equals(PARAM_Bank_Account_ID))
+		if (parameter.getColumnName().equals(PARAM_Bank_Account_ID))
 		{
 			final InvoiceId invoiceId = InvoiceId.ofRepoId(getRecord_ID());
-			final CurrencyId currencyId = CurrencyId.ofRepoId( invoiceBL.getById(invoiceId).getC_Currency_ID());
+			final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceBL.getById(invoiceId).getC_Currency_ID());
 
 			return paySelectionBL.getBankAccountId(invoiceId, currencyId, getCtx());
 		}

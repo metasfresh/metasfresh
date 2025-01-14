@@ -46,6 +46,8 @@ public interface IPaySelectionBL extends ISingletonService
 	 */
 	void unlinkPaySelectionLineFromBankStatement(Collection<BankStatementLineId> bankStatementLineIds);
 
+	I_C_PaySelection getByIdOrError(@NonNull PaySelectionId paySelectionId);
+
 	Optional<I_C_PaySelection> getById(@NonNull PaySelectionId paySelectionId);
 
 	/**

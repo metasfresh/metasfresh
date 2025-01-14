@@ -4,8 +4,8 @@ import de.metas.banking.PaySelectionId;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.trx.api.ITrx;
@@ -59,11 +59,13 @@ public class C_PaySelectionLine
 	@CalloutMethod(columnNames = I_C_PaySelectionLine.COLUMNNAME_C_Invoice_ID)
 	public void invoice(final I_C_PaySelectionLine psl)
 	{
-		if(InvoiceId.ofRepoIdOrNull(psl.getC_Invoice_ID()) != null)
+		if (InvoiceId.ofRepoIdOrNull(psl.getC_Invoice_ID()) != null)
 		{
+			// NOTE!!! Please keep in sync with de.metas.banking.payment.impl.PaySelectionUpdater.buildSelectSQL
+
 			paySelectionBL.updateFromInvoice(psl);
 
-			final I_C_PaySelection paySelection = Check.assumePresent(paySelectionBL.getById(PaySelectionId.ofRepoId(psl.getC_PaySelection_ID())), "PaySelection should be present");
+			final I_C_PaySelection paySelection = getPaySelection(psl);
 			final int C_BP_BankAccount_ID = paySelection.getC_BP_BankAccount_ID();
 
 			Timestamp PayDate = paySelection.getPayDate();
@@ -115,15 +117,20 @@ public class C_PaySelectionLine
 		}
 	}
 
-	@CalloutMethod(columnNames = {I_C_PaySelectionLine.COLUMNNAME_PayAmt})
+	private I_C_PaySelection getPaySelection(@NonNull final I_C_PaySelectionLine psl)
+	{
+		return paySelectionBL.getByIdOrError(PaySelectionId.ofRepoId(psl.getC_PaySelection_ID()));
+	}
+
+	@CalloutMethod(columnNames = { I_C_PaySelectionLine.COLUMNNAME_PayAmt })
 	public void payAmt(final I_C_PaySelectionLine psl)
 	{
 		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(psl.getC_Invoice_ID());
-		if(invoiceId != null)
+		if (invoiceId != null)
 		{
 			final BigDecimal payAmt = psl.getPayAmt();
 
-			final I_C_PaySelection paySelection = Check.assumePresent(paySelectionBL.getById(PaySelectionId.ofRepoId(psl.getC_PaySelection_ID())),"Pay Selection should be present");
+			final I_C_PaySelection paySelection = getPaySelection(psl);
 			final Timestamp payDate = paySelection.getPayDate();
 
 			final BigDecimal discountAmt = calculateDiscountAmt(invoiceBL.getById(invoiceId), payAmt, payDate);
@@ -148,6 +155,12 @@ public class C_PaySelectionLine
 		}
 
 		return discountAmt;
+	}
+
+	@CalloutMethod(columnNames = { I_C_PaySelectionLine.COLUMNNAME_DiscountAmt })
+	public void discountAmt(final I_C_PaySelectionLine paySelectionLine)
+	{
+		setDifferenceAmt(paySelectionLine);
 	}
 
 	private void setDifferenceAmt(final I_C_PaySelectionLine paySelectionLine)

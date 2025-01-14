@@ -63,6 +63,12 @@ public class PaySelectionBL implements IPaySelectionBL
 	private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
 
 	@Override
+	public I_C_PaySelection getByIdOrError(@NonNull final PaySelectionId paySelectionId)
+	{
+		return Check.assumePresent(getById(paySelectionId), "Pay Selection should be present");
+	}
+
+	@Override
 	public Optional<I_C_PaySelection> getById(@NonNull final PaySelectionId paySelectionId)
 	{
 		return paySelectionDAO.getById(paySelectionId);
@@ -104,8 +110,8 @@ public class PaySelectionBL implements IPaySelectionBL
 	@Nullable
 	@Override
 	public BankAccountId getBankAccountId(@NonNull final InvoiceId invoiceId,
-										   @NonNull final CurrencyId currencyId,
-										   @NonNull final Properties ctx)
+										  @NonNull final CurrencyId currencyId,
+										  @NonNull final Properties ctx)
 	{
 		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
 		final boolean isSalesInvoice = invoice.isSOTrx();

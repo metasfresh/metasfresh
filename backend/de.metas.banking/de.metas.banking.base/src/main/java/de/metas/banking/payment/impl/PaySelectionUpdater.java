@@ -219,7 +219,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 
 	private String buildSelectSQL(final List<Object> sqlParams)
 	{
-		// NOTE!!! Please keep in sync with org.compiere.model.CalloutPaySelection.invoice(Properties, int, GridTab, GridField, Object)
+		// NOTE!!! Please keep in sync with de.metas.banking.payment.callout.C_PaySelectionLine.invoice
 
 		Check.assume(sqlParams != null && sqlParams.isEmpty(), "instantiated empty list");
 
