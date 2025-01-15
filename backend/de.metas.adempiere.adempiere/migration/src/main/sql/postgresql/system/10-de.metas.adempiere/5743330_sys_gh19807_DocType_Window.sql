@@ -221,3 +221,51 @@ UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=540405, SeqNo=110,Updated=TO_TIME
 -- 2025-01-14T18:08:18.033Z
 UPDATE AD_UI_Element SET IsAdvancedField='N',Updated=TO_TIMESTAMP('2025-01-14 18:08:18.032000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=614576
 ;
+
+-- UI Element: Belegart -> Belegart.Rechnungs-Belegart
+-- Column: C_DocType.C_DocTypeInvoice_ID
+-- UI Element: Belegart(135,D) -> Belegart(167,D) -> main -> 10 -> description.Rechnungs-Belegart
+-- Column: C_DocType.C_DocTypeInvoice_ID
+-- 2025-01-15T13:41:40.668Z
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=540406, SeqNo=40,Updated=TO_TIMESTAMP('2025-01-15 13:41:40.668000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=544062
+;
+
+-- UI Element: Belegart -> Belegart.Document Type for Shipment
+-- Column: C_DocType.C_DocTypeShipment_ID
+-- UI Element: Belegart(135,D) -> Belegart(167,D) -> main -> 10 -> description.Document Type for Shipment
+-- Column: C_DocType.C_DocTypeShipment_ID
+-- 2025-01-15T13:41:47.760Z
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=540406, SeqNo=50,Updated=TO_TIMESTAMP('2025-01-15 13:41:47.760000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=544063
+;
+
+-- UI Element: Belegart -> Belegart.Nummernfolge für Lotnummer
+-- Column: C_DocType.LotNo_Sequence_ID
+-- UI Element: Belegart(135,D) -> Belegart(167,D) -> main -> 10 -> description.Nummernfolge für Lotnummer
+-- Column: C_DocType.LotNo_Sequence_ID
+-- 2025-01-15T13:41:54.135Z
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=540406, SeqNo=60,Updated=TO_TIMESTAMP('2025-01-15 13:41:54.135000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=614576
+;
+
+-- UI Element: Belegart -> Belegart.Rechnungs-Belegart
+-- Column: C_DocType.C_DocTypeInvoice_ID
+-- UI Element: Belegart(135,D) -> Belegart(167,D) -> main -> 10 -> description.Rechnungs-Belegart
+-- Column: C_DocType.C_DocTypeInvoice_ID
+-- 2025-01-15T13:43:38.041Z
+UPDATE AD_UI_Element SET SeqNo=6,Updated=TO_TIMESTAMP('2025-01-15 13:43:38.041000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=544062
+;
+
+-- UI Element: Belegart -> Belegart.Document Type for Shipment
+-- Column: C_DocType.C_DocTypeShipment_ID
+-- UI Element: Belegart(135,D) -> Belegart(167,D) -> main -> 10 -> description.Document Type for Shipment
+-- Column: C_DocType.C_DocTypeShipment_ID
+-- 2025-01-15T13:43:43.410Z
+UPDATE AD_UI_Element SET SeqNo=7,Updated=TO_TIMESTAMP('2025-01-15 13:43:43.409000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=544063
+;
+
+-- UI Element: Belegart -> Belegart.Nummernfolge für Lotnummer
+-- Column: C_DocType.LotNo_Sequence_ID
+-- UI Element: Belegart(135,D) -> Belegart(167,D) -> main -> 10 -> description.Nummernfolge für Lotnummer
+-- Column: C_DocType.LotNo_Sequence_ID
+-- 2025-01-15T13:43:48.727Z
+UPDATE AD_UI_Element SET SeqNo=8,Updated=TO_TIMESTAMP('2025-01-15 13:43:48.727000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=614576
+;
