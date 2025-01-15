@@ -11,7 +11,7 @@ Feature: create or update BPartner v1
   Scenario: create BPartner request
     Given the user adds bpartner
       | ExternalId | OPT.Code  | Name      | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url | OPT.Group  | OPT.VatId |
-      | ext-001    | test_code | test_name | test_company    | null         | null      | de           | null    | test-group | null      |
+      | ext-001    | test_code | test_name | test_name       | null         | null      | de           | null    | test-group | null      |
 
     And the user adds locations
       | ExternalId | OPT.Address1  | OPT.Address2  | OPT.PoBox  | OPT.District | OPT.Region  | OPT.City  | CountryCode | OPT.Gln  | OPT.Postal |

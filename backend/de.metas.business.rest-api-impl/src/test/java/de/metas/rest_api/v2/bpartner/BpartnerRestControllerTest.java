@@ -490,7 +490,8 @@ class BpartnerRestControllerTest
 		bpartnerRecord.setAD_Org_ID(AD_ORG_ID);
 		bpartnerRecord.setName("bpartnerRecord.name");
 		bpartnerRecord.setValue("12345");
-		bpartnerRecord.setCompanyName("bpartnerRecord.companyName");
+		bpartnerRecord.setCompanyName("bpartnerRecord.name");
+		bpartnerRecord.setIsCompany(true);
 		bpartnerRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
 		saveRecord(bpartnerRecord);
 
