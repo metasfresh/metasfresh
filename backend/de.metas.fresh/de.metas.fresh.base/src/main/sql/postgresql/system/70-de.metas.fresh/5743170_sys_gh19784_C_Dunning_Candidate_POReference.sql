@@ -1,27 +1,12 @@
--- Run mode: SWING_CLIENT
-
--- Column: C_Dunning_Candidate.POReference
--- 2025-01-13T14:37:36.938Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,ColumnSQL,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,589575,952,0,10,540396,'POReference','(SELECT i.POReference From C_Invoice i where  i.C_Invoice_ID = C_Dunning_Candidate.Record_ID)',TO_TIMESTAMP('2025-01-13 15:37:36.085','YYYY-MM-DD HH24:MI:SS.US'),100,'N','Referenz-Nummer des Kunden','de.metas.dunning',0,40,'The business partner order reference is the order reference for this specific transaction; Often Purchase Order numbers are given to print on Invoices for easier reference.  A standard number can be defined in the Business Partner (Customer) window.','Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N',0,'Referenz',0,0,TO_TIMESTAMP('2025-01-13 15:37:36.085','YYYY-MM-DD HH24:MI:SS.US'),100,0)
-;
-
--- 2025-01-13T14:37:37Z
-INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=589575 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
-;
-
--- 2025-01-13T14:37:37.132Z
-/* DDL */  select update_Column_Translation_From_AD_Element(952)
-;
-
 -- Column: C_Dunning_Candidate.POReference
 -- 2025-01-13T14:43:18.156Z
-UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2025-01-13 15:43:18.156','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=589575
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2025-01-13 15:43:18.156','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=587660
 ;
 
 -- Column: C_Dunning_Candidate.POReference
 -- Source Table: C_Invoice
 -- 2025-01-13T14:47:33.635Z
-INSERT INTO AD_SQLColumn_SourceTableColumn (AD_Client_ID,AD_Column_ID,AD_Org_ID,AD_SQLColumn_SourceTableColumn_ID,AD_Table_ID,Created,CreatedBy,FetchTargetRecordsMethod,IsActive,Link_Column_ID,Source_Column_ID,Source_Table_ID,Updated,UpdatedBy) VALUES (0,589575,0,540170,540396,TO_TIMESTAMP('2025-01-13 15:47:32.953','YYYY-MM-DD HH24:MI:SS.US'),100,'L','Y',3785,3484,318,TO_TIMESTAMP('2025-01-13 15:47:32.953','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_SQLColumn_SourceTableColumn (AD_Client_ID,AD_Column_ID,AD_Org_ID,AD_SQLColumn_SourceTableColumn_ID,AD_Table_ID,Created,CreatedBy,FetchTargetRecordsMethod,IsActive,Link_Column_ID,Source_Column_ID,Source_Table_ID,Updated,UpdatedBy) VALUES (0,587660,0,540170,540396,TO_TIMESTAMP('2025-01-13 15:47:32.953','YYYY-MM-DD HH24:MI:SS.US'),100,'L','Y',3785,3484,318,TO_TIMESTAMP('2025-01-13 15:47:32.953','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 CREATE INDEX C_Invoice_POReference
@@ -31,7 +16,7 @@ CREATE INDEX C_Invoice_POReference
 -- Field: Mahndisposition(540154,de.metas.dunning) -> Mahndatensätze(540424,de.metas.dunning) -> Referenz
 -- Column: C_Dunning_Candidate.POReference
 -- 2025-01-13T14:56:21.884Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsForbidNewRecordCreation,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,589575,734645,0,540424,0,TO_TIMESTAMP('2025-01-13 15:56:20.853','YYYY-MM-DD HH24:MI:SS.US'),100,'Referenz-Nummer des Kunden',0,'D','The business partner order reference is the order reference for this specific transaction; Often Purchase Order numbers are given to print on Invoices for easier reference.  A standard number can be defined in the Business Partner (Customer) window.',0,'Y','Y','Y','N','N','N','N','N','N','Referenz',0,210,0,1,1,TO_TIMESTAMP('2025-01-13 15:56:20.853','YYYY-MM-DD HH24:MI:SS.US'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsForbidNewRecordCreation,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,587660,734645,0,540424,0,TO_TIMESTAMP('2025-01-13 15:56:20.853','YYYY-MM-DD HH24:MI:SS.US'),100,'Referenz-Nummer des Kunden',0,'D','The business partner order reference is the order reference for this specific transaction; Often Purchase Order numbers are given to print on Invoices for easier reference.  A standard number can be defined in the Business Partner (Customer) window.',0,'Y','Y','Y','N','N','N','N','N','N','Referenz',0,210,0,1,1,TO_TIMESTAMP('2025-01-13 15:56:20.853','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2025-01-13T14:56:21.938Z
