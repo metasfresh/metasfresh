@@ -1,11 +1,11 @@
 package de.metas.acct.accounts;
 
-import de.metas.acct.Account;
 import de.metas.acct.api.AcctSchemaId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import de.metas.acct.Account;
 
 @Value
 @Builder

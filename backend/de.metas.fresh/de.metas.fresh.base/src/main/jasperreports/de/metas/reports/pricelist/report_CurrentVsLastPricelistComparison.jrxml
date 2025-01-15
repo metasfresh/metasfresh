@@ -206,7 +206,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$R{BPartner}]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField-16" x="169" y="12" width="134" height="12" forecolor="#000000" uuid="c6318e08-fa7a-4683-a880-3bc41fd8deaf"/>
 					<textElement markup="none">
 						<font fontName="Arial" size="10" isBold="false"/>
@@ -226,7 +226,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Date}]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField-20" x="423" y="0" width="91" height="12" forecolor="#000000" uuid="0945443b-def7-4253-a6e1-6a6d932f115c"/>
 					<textElement textAlignment="Right" markup="none">
 						<font fontName="Arial" size="10" isBold="false"/>
@@ -246,7 +246,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[( $R{price_validity})]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField-20" x="423" y="12" width="91" height="12" forecolor="#000000" uuid="fdf874a4-3c0e-44a3-93bb-9fbe92aea8e9"/>
 					<textElement textAlignment="Right" markup="none">
 						<font fontName="Arial" size="10" isBold="false"/>
@@ -260,7 +260,7 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Pricelist}]]></textFieldExpression>
 				</textField>
-				<textField>
+				<textField isBlankWhenNull="true">
 					<reportElement key="textField-16" x="169" y="0" width="179" height="12" forecolor="#000000" uuid="1f2b7aa1-e820-49af-beda-2942a3a679f8"/>
 					<textElement markup="none">
 						<font fontName="Arial" size="10" isBold="true"/>

@@ -1,11 +1,13 @@
 package de.metas.acct.accounts;
 
 import de.metas.acct.AccountConceptualName;
+import de.metas.acct.AccountConceptualNameAware;
 import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.model.I_C_BP_Vendor_Acct;
 
-public enum BPartnerVendorAccountType
+@Getter
+public enum BPartnerVendorAccountType implements AccountConceptualNameAware
 {
 	/**
 	 * Invoice - AP
@@ -23,10 +25,15 @@ public enum BPartnerVendorAccountType
 
 	;
 
-	@Getter @NonNull private final AccountConceptualName accountConceptualName;
+	@NonNull private final AccountConceptualName accountConceptualName;
 
 	BPartnerVendorAccountType(final @NonNull String columnName)
 	{
 		this.accountConceptualName = AccountConceptualName.ofString(columnName);
+	}
+
+	public static boolean isVendorLiability(final AccountConceptualName accountConceptualName)
+	{
+		return V_Liability.accountConceptualName.equals(accountConceptualName);
 	}
 }

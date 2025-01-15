@@ -1,8 +1,31 @@
+package de.metas.banking.accounting;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import de.metas.acct.Account;
+import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.banking.BankAccountId;
+import de.metas.cache.CCache;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.ToString;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_AcctSchema_Default;
+import org.compiere.model.I_C_BP_BankAccount_Acct;
+import org.compiere.util.DB;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2024 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -19,30 +42,6 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-package de.metas.banking.api;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import de.metas.acct.Account;
-import de.metas.acct.api.AccountId;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.banking.BankAccountId;
-import de.metas.banking.accounting.BankAccountAcct;
-import de.metas.cache.CCache;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.ToString;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_AcctSchema_Default;
-import org.compiere.model.I_C_BP_BankAccount_Acct;
-import org.compiere.util.DB;
-import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 @Repository
 public class BankAccountAcctRepository
@@ -85,17 +84,17 @@ public class BankAccountAcctRepository
 				.bankAccountId(BankAccountId.ofRepoId(record.getC_BP_BankAccount_ID()))
 				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
 				//
-				.B_Asset_Acct(Account.of(AccountId.ofRepoId(record.getB_Asset_Acct()), I_C_BP_BankAccount_Acct.COLUMNNAME_B_Asset_Acct))
-				.B_UnallocatedCash_Acct(Account.of(AccountId.ofRepoId(record.getB_UnallocatedCash_Acct()), I_C_BP_BankAccount_Acct.COLUMNNAME_B_UnallocatedCash_Acct))
-				.B_InTransit_Acct(Account.of(AccountId.ofRepoId(record.getB_InTransit_Acct()), I_C_BP_BankAccount_Acct.COLUMNNAME_B_InTransit_Acct))
-				.B_PaymentSelect_Acct(Account.of(AccountId.ofRepoId(record.getB_PaymentSelect_Acct()), I_C_BP_BankAccount_Acct.COLUMNNAME_B_PaymentSelect_Acct))
-				.B_InterestRev_Acct(Account.of(AccountId.ofRepoId(record.getB_InterestRev_Acct()), I_C_BP_BankAccount_Acct.COLUMNNAME_B_InterestRev_Acct))
-				.B_InterestExp_Acct(Account.of(AccountId.ofRepoId(record.getB_InterestExp_Acct()), I_C_BP_BankAccount_Acct.COLUMNNAME_B_InterestExp_Acct))
-				.PayBankFee_Acct(Account.of(AccountId.ofRepoId(record.getPayBankFee_Acct()), I_C_BP_BankAccount_Acct.COLUMNNAME_PayBankFee_Acct))
-				.RealizedGain_Acct(Account.of(AccountId.ofRepoId(record.getRealizedGain_Acct()), I_C_BP_BankAccount_Acct.COLUMNNAME_RealizedGain_Acct))
-				.RealizedLoss_Acct(Account.of(AccountId.ofRepoId(record.getRealizedLoss_Acct()), I_C_BP_BankAccount_Acct.COLUMNNAME_RealizedLoss_Acct))
+				.B_Asset_Acct(Account.of(AccountId.ofRepoId(record.getB_Asset_Acct()), BankAccountAcctType.B_Asset_Acct))
+				.B_UnallocatedCash_Acct(Account.of(AccountId.ofRepoId(record.getB_UnallocatedCash_Acct()), BankAccountAcctType.B_UnallocatedCash_Acct))
+				.B_InTransit_Acct(Account.of(AccountId.ofRepoId(record.getB_InTransit_Acct()), BankAccountAcctType.B_InTransit_Acct))
+				.B_PaymentSelect_Acct(Account.of(AccountId.ofRepoId(record.getB_PaymentSelect_Acct()), BankAccountAcctType.B_PaymentSelect_Acct))
+				.B_InterestRev_Acct(Account.of(AccountId.ofRepoId(record.getB_InterestRev_Acct()), BankAccountAcctType.B_InterestRev_Acct))
+				.B_InterestExp_Acct(Account.of(AccountId.ofRepoId(record.getB_InterestExp_Acct()), BankAccountAcctType.B_InterestExp_Acct))
+				.PayBankFee_Acct(Account.of(AccountId.ofRepoId(record.getPayBankFee_Acct()), BankAccountAcctType.PayBankFee_Acct))
+				.RealizedGain_Acct(Account.of(AccountId.ofRepoId(record.getRealizedGain_Acct()), BankAccountAcctType.RealizedGain_Acct))
+				.RealizedLoss_Acct(Account.of(AccountId.ofRepoId(record.getRealizedLoss_Acct()), BankAccountAcctType.RealizedLoss_Acct))
 				.Payment_WriteOff_Acct(AccountId.optionalOfRepoId(record.getPayment_WriteOff_Acct()).
-											   map(accountId -> Account.of(accountId, I_C_BP_BankAccount_Acct.COLUMNNAME_Payment_WriteOff_Acct)))
+						map(accountId -> Account.of(accountId, BankAccountAcctType.Payment_WriteOff_Acct)))
 				//
 				.build();
 	}
