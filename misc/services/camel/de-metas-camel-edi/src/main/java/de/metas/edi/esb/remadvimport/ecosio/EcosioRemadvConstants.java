@@ -31,7 +31,7 @@ public interface EcosioRemadvConstants
 	String INPUT_REMADV_LOCAL = "edi.file.remadv.ecosio";
 
 	String ECOSIO_AUTH_TOKEN = "{{metasfresh.api.auth}}";
-	String CREATE_REMADV_MF_URL = "{{metasfresh.api.baseurl}}/payment/remittanceAdvice";
+	String CREATE_REMADV_MF_URL = "{{metasfresh.api.baseurl}}/payments/remittanceAdvice";
 
 	String NUMBER_OF_ITEMS = "NumberOfItems";
 	String AUTHORIZATION = "Authorization";
