@@ -24,6 +24,7 @@ package de.metas.banking.camt53.wrapper.v02;
 
 import de.metas.banking.camt53.jaxb.camt053_001_02.EntryTransaction2;
 import de.metas.banking.camt53.jaxb.camt053_001_02.PartyIdentification32;
+import de.metas.banking.camt53.jaxb.camt053_001_02.RemittanceInformation5;
 import de.metas.banking.camt53.jaxb.camt053_001_02.TransactionParty2;
 import de.metas.banking.camt53.wrapper.TransactionDtlsWrapper;
 import lombok.Builder;
@@ -78,9 +79,14 @@ public class TransactionDtls2Wrapper extends TransactionDtlsWrapper
 	}
 
 	@Override
-	protected @NonNull String getUnstructuredRemittanceInfo(final @NonNull String delimiter)
+	protected @Nullable String getUnstructuredRemittanceInfo(final @NonNull String delimiter)
 	{
-		return String.join(delimiter, entryDtls.getRmtInf().getUstrd());
+		final RemittanceInformation5 rmtInf = entryDtls.getRmtInf();
+		if(rmtInf == null)
+		{
+			return null;
+		}
+		return String.join(delimiter, rmtInf.getUstrd());
 	}
 
 	@Override
