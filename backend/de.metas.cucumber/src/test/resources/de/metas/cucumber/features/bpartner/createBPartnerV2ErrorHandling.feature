@@ -70,8 +70,9 @@ Feature: Error handling during: create or update BPartner v2
          "bpartnerIdentifier":"gln-gln123456",
          "bpartnerComposite":{
             "bpartner":{
-               "code":"EH_MissingName",
-               "name":null,
+               "code":"DiffNameAndCmpName",
+               "name":"name",
+               "companyName":"cmp_name",
                "parentId":null,
                "phone":null,
                "language":"de",
