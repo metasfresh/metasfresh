@@ -1,5 +1,6 @@
 package de.metas.ui_trace;
 
+import de.metas.mobile.application.MobileApplicationId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -19,7 +20,7 @@ public class UITraceEventCreateRequest
 	@Nullable String url;
 	@Nullable String username;
 	@Nullable String caption;
-	@Nullable String applicationId;
+	@Nullable MobileApplicationId applicationId;
 	@Nullable String deviceId;
 	@Nullable String tabId;
 	@Nullable String userAgent;

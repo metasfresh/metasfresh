@@ -3,10 +3,12 @@ package de.metas.server.ui_trace.rest;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import de.metas.mobile.application.MobileApplicationId;
 import lombok.Data;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Data
@@ -30,7 +32,7 @@ public class JsonUITraceEvent
 
 	public Optional<String> getCaption() {return getByPathAsString("caption");}
 
-	public Optional<String> getApplicationId() {return getByPathAsString("applicationId");}
+	public Optional<MobileApplicationId> getApplicationId() {return getByPathAsString("applicationId").map(MobileApplicationId::ofNullableString);}
 
 	public Optional<String> getDeviceId() {return getByPathAsString("device", "deviceId");}
 
@@ -75,6 +77,7 @@ public class JsonUITraceEvent
 				.stream()
 				.filter(e -> e.getKey().equalsIgnoreCase(key))
 				.map(Map.Entry::getValue)
+				.filter(Objects::nonNull)
 				.findFirst();
 	}
 }

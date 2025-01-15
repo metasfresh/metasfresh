@@ -38,7 +38,7 @@ public class UITraceRepository
 		record.setURL(from.getUrl());
 		record.setUserName(from.getUsername());
 		record.setCaption(from.getCaption());
-		record.setUI_ApplicationId(from.getApplicationId());
+		record.setUI_ApplicationId(from.getApplicationId() != null ? from.getApplicationId().getAsString() : null);
 		record.setUI_DeviceId(from.getDeviceId());
 		record.setUI_TabId(from.getTabId());
 		record.setUserAgent(from.getUserAgent());

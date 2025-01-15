@@ -26,7 +26,7 @@ export const logout = () => {
 };
 
 const getUser = () => {
-  let userStr;
+  let userStr = null;
   try {
     userStr = sessionStorage.getItem(PROP_User);
     return userStr ? JSON.parse(userStr) : {};
@@ -125,7 +125,11 @@ const getOrCreateTabId = () => {
 };
 
 export const setApplicationId = (applicationId) => {
-  sessionStorage.setItem(PROP_applicationId, applicationId);
+  if (applicationId) {
+    sessionStorage.setItem(PROP_applicationId, applicationId);
+  } else {
+    sessionStorage.removeItem(PROP_applicationId);
+  }
   //console.log('setApplicationId', { applicationId, applicationId2: sessionStorage.getItem(PROP_applicationId) });
 };
 
