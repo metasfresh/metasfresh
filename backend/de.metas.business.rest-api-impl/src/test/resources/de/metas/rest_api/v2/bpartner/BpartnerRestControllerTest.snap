@@ -12,7 +12,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       },
       "code": "12345",
       "company": true,
-      "companyName": "bpartnerRecord.companyName",
+      "companyName": "bpartnerRecord.name_updated",
       "customer": false,
       "group": "bpGroupRecord.name",
       "isProspect": false,
@@ -78,7 +78,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
         "tableName": "C_BPartner"
       },
       "company": true,
-      "companyName": "bPartner.companyName",
+      "companyName": "bPartner.name",
       "customer": false,
       "customerPaymentTermId": 1000002,
       "excludeFromPromotions": false,
