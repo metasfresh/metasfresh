@@ -22,8 +22,8 @@ package de.metas.banking.payment;
  * #L%
  */
 
+import de.metas.banking.BankAccountId;
 import de.metas.banking.model.I_C_Payment_Request;
-import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.invoice.InvoiceId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -40,7 +40,7 @@ import java.util.Set;
  */
 public interface IPaymentRequestDAO extends ISingletonService
 {
-	void createOrReplace(@NonNull I_C_Invoice invoice, @NonNull BPartnerBankAccountId bankAccountId);
+	void createOrReplace(@NonNull I_C_Invoice invoice, @NonNull BankAccountId bankAccountId);
 
 	/**
 	 * Retrieve payment request for given invoice or null if none is found.

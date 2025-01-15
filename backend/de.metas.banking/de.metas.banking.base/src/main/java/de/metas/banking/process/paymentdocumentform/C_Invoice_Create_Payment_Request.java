@@ -22,10 +22,10 @@
 
 package de.metas.banking.process.paymentdocumentform;
 
+import de.metas.banking.BankAccountId;
 import de.metas.banking.model.X_C_Payment_Request;
 import de.metas.banking.payment.IPaySelectionBL;
 import de.metas.banking.payment.IPaymentRequestDAO;
-import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyId;
@@ -50,7 +50,7 @@ public class C_Invoice_Create_Payment_Request extends JavaProcess implements IPr
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	@Param(parameterName = PARAM_Bank_Account_ID, mandatory = true)
-	private BPartnerBankAccountId p_BankAccountID;
+	private BankAccountId p_BankAccountID;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -93,7 +93,7 @@ public class C_Invoice_Create_Payment_Request extends JavaProcess implements IPr
 			final InvoiceId invoiceId = InvoiceId.ofRepoId(getRecord_ID());
 			final CurrencyId currencyId = CurrencyId.ofRepoId(invoiceBL.getById(invoiceId).getC_Currency_ID());
 
-			return paySelectionBL.getBPartnerBankAccountId(invoiceId, currencyId);
+			return BankAccountId.ofRepoId(paySelectionBL.getBPartnerBankAccountId(invoiceId, currencyId).getRepoId());
 		}
 		else
 		{
