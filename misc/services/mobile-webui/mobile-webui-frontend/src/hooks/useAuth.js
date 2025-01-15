@@ -118,7 +118,7 @@ function createAuthObject() {
     Cookies.remove('Token', { expires: COOKIE_EXPIRATION });
     Cookies.remove('UserFullname', { expires: COOKIE_EXPIRATION });
 
-    axios.defaults.headers.common['Authorization'] = null;
+    delete axios.defaults.headers.common['Authorization'];
 
     return Promise.resolve();
   };

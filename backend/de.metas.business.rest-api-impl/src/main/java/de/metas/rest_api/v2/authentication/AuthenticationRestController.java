@@ -62,7 +62,7 @@ public class AuthenticationRestController
 		this.userAuthTokenService = userAuthTokenService;
 		this.i18nRestController = i18nRestController;
 
-		userAuthTokenFilterConfiguration.excludePathContaining(ENDPOINT);
+		userAuthTokenFilterConfiguration.doNotAuthenticatePathsContaining(ENDPOINT);
 	}
 
 	@PostMapping

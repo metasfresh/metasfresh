@@ -5,6 +5,7 @@ import de.metas.ui_trace.UITraceEventCreateRequest;
 import de.metas.ui_trace.UITraceExternalId;
 import de.metas.ui_trace.UITraceService;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import de.metas.util.web.security.AuthResolution;
 import de.metas.util.web.security.UserAuthTokenFilterConfiguration;
 import lombok.NonNull;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,7 +30,7 @@ public class UITraceRestController
 	{
 		this.traceService = traceService;
 
-		userAuthTokenFilterConfiguration.excludePathContaining(ENDPOINT);
+		userAuthTokenFilterConfiguration.addAuthResolutionForPathsContaining(ENDPOINT, AuthResolution.AUTHENTICATE_IF_TOKEN_AVAILABLE);
 	}
 
 	@PostMapping
