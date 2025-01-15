@@ -3,6 +3,7 @@ package de.metas.server.ui_trace.rest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.mobile.application.MobileApplicationId;
 import de.metas.util.Check;
 import org.adempiere.exceptions.AdempiereException;
 import org.assertj.core.api.SoftAssertions;
@@ -70,7 +71,7 @@ class JsonUITraceEventTest
 		softly.assertThat(event.getUrl()).contains("http://localhost:3001/mobile/picking/wf/picking-1000006/scan/A/A1/");
 		softly.assertThat(event.getUsername()).contains("teo");
 		softly.assertThat(event.getCaption()).contains("107.0");
-		softly.assertThat(event.getApplicationId()).contains("picking");
+		softly.assertThat(event.getApplicationId()).contains(MobileApplicationId.ofString("picking"));
 		softly.assertThat(event.getDeviceId()).contains("dabbb790-9ae9-4a90-a752-c9439b5fdf6c");
 		softly.assertThat(event.getTabId()).contains("6f848a12-5b69-44e7-9f21-db13a3943980");
 		softly.assertThat(event.getUserAgent()).contains("Mozilla/5.0 (Linux; Android 13; SM-G981B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36");
