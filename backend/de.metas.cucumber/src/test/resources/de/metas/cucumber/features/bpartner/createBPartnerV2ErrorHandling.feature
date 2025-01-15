@@ -14,7 +14,7 @@ Feature: Error handling during: create or update BPartner v2
 {
    "requestItems":[
       {
-         "bpartnerIdentifier":"val-EH_MissingName",
+         "bpartnerIdentifier":"gln-gln123456",
          "bpartnerComposite":{
             "bpartner":{
                "code":"EH_MissingName",
@@ -67,7 +67,7 @@ Feature: Error handling during: create or update BPartner v2
 {
    "requestItems":[
       {
-         "bpartnerIdentifier":"val-EH_MissingName",
+         "bpartnerIdentifier":"gln-gln123456",
          "bpartnerComposite":{
             "bpartner":{
                "code":"EH_MissingName",
