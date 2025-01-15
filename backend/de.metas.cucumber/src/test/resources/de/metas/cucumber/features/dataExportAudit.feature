@@ -127,7 +127,7 @@ Feature: data export audit using bpartner metasfresh api
                 "bpartner": {
                     "code": "shopware6codeAudit",
                     "name": "shopware6nameAudit",
-                    "companyName": "shopware6cmpAudit",
+                    "companyName": "shopware6nameAudit",
                     "language": "de"
                 },
                 "locations": {
@@ -163,8 +163,8 @@ Feature: data export audit using bpartner metasfresh api
 }
 """
     And verify that bPartner was created for externalIdentifier
-      | C_BPartner_ID.Identifier | externalIdentifier                       | OPT.Code           | Name               | OPT.CompanyName   | OPT.Language |
-      | created_bpartner         | ext-Shopware6-BPartner_ER_Audit_25032022 | shopware6codeAudit | shopware6nameAudit | shopware6cmpAudit | de           |
+      | C_BPartner_ID.Identifier | externalIdentifier                       | OPT.Code           | Name               | OPT.CompanyName    | OPT.Language |
+      | created_bpartner         | ext-Shopware6-BPartner_ER_Audit_25032022 | shopware6codeAudit | shopware6nameAudit | shopware6nameAudit | de           |
 
     And verify that S_ExternalReference was created
       | ExternalSystem | Type             | ExternalReference            | ExternalReferenceURL |

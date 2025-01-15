@@ -37,7 +37,7 @@ Feature: Import Invoice Candidates via DataImportRestController
                     "code": "ext-Other-S0325",
                     "active": true,
                     "name": "partnerNameS0325",
-                    "companyName": "companyNameS0325",
+                    "companyName": "partnerNameS0325",
                     "vendor": true,
                     "customer": true,
                     "phone": "+49 123456789",
