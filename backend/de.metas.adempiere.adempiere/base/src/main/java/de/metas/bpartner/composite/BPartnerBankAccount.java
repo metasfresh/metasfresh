@@ -88,7 +88,7 @@ public class BPartnerBankAccount
 	@JsonIgnore
 	private BPartnerId bpartnerId;
 
-	@NonNull
+	@Nullable
 	private String iban;
 
 	@Nullable
@@ -121,7 +121,7 @@ public class BPartnerBankAccount
 	@Builder(toBuilder = true)
 	private BPartnerBankAccount(
 			@Nullable final BPartnerBankAccountId id,
-			@NonNull final String iban,
+			@Nullable final String iban,
 			@Nullable final String swiftCode,
 			@Nullable final String qrIban,
 			@Nullable final String name,
