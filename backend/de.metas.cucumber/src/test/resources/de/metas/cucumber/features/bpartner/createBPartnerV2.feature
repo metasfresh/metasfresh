@@ -508,8 +508,8 @@ Feature: create or update BPartner v2
 }
 """
     Then verify that bPartner was updated for externalIdentifier
-      | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code          | Name              | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url     | OPT.Group  | OPT.VatId | OPT.IsStorageWarehouse | OPT.Fresh_Urproduzent |
-      | created_bpartner         | ext-ALBERTA-001    | test_code_updated | test_name_updated | test_name       | null         | null      | de           | url_updated | test-group | null      | Y                      | false                 |
+      | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code          | Name              | OPT.CompanyName   | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url     | OPT.Group  | OPT.VatId | OPT.IsStorageWarehouse | OPT.Fresh_Urproduzent |
+      | created_bpartner         | ext-ALBERTA-001    | test_code_updated | test_name_updated | test_name_updated | null         | null      | de           | url_updated | test-group | null      | Y                      | false                 |
     And verify that location was updated for bpartner
       | bpartnerIdentifier | locationIdentifier | OPT.Address1  | OPT.Address2  | OPT.PoBox  | OPT.District | OPT.Region  | OPT.City  | CountryCode | OPT.Gln | OPT.Postal | OPT.VATaxId | OPT.Name                                  |
       | ext-ALBERTA-001    | ext-ALBERTA-l22    | null          | test_address2 | test_poBox | null         | test_region | test_city | DE          | null    | null       | null        | test_city test_name                       |
@@ -638,7 +638,7 @@ Feature: create or update BPartner v2
             "bpartner":{
                "code":"ext-ALBERTA-BPartnerTestCode1",
                "name":"BPartnerTestName1",
-               "companyName":"BPartnerTestCompany1",
+               "companyName":"BPartnerTestName1",
                "language":"de",
                "group":"test-group"
             }
@@ -659,8 +659,8 @@ Feature: create or update BPartner v2
       | ALBERTA        | BPartnerValue | BPartnerTestCode1 | providedOrg              |
       | ALBERTA        | BPartner      | bPartner1         | providedOrg              |
     And verify that bPartner was created for externalIdentifier
-      | C_BPartner_ID.Identifier | externalIdentifier    | Name              | OPT.CompanyName      | OPT.AD_Org_ID.Identifier |
-      | bpartner                 | ext-ALBERTA-bPartner1 | BPartnerTestName1 | BPartnerTestCompany1 | providedOrg              |
+      | C_BPartner_ID.Identifier | externalIdentifier    | Name              | OPT.CompanyName   | OPT.AD_Org_ID.Identifier |
+      | bpartner                 | ext-ALBERTA-bPartner1 | BPartnerTestName1 | BPartnerTestName1 | providedOrg              |
 
   @Id:S0285_600
   @from:cucumber
@@ -684,7 +684,7 @@ Feature: create or update BPartner v2
             "bpartner":{
                "code":"ext-ALBERTA-BPartnerTestCode2",
                "name":"BPartnerTestName2",
-               "companyName":"BPartnerTestCompany2",
+               "companyName":"BPartnerTestName2",
                "group":"test-group"
             }
          }
@@ -696,7 +696,7 @@ Feature: create or update BPartner v2
             "bpartner":{
                "code":"ext-ALBERTA-BPartnerTestCode3",
                "name":"BPartnerTestName3",
-               "companyName":"BPartnerTestCompany3",
+               "companyName":"BPartnerTestName3",
                "language":"de",
                "group":"test-group"
             }
@@ -719,9 +719,9 @@ Feature: create or update BPartner v2
       | ALBERTA        | BPartnerValue | BPartnerTestCode3 | bPartner3_orgCode        |
       | ALBERTA        | BPartner      | bPartner3         | bPartner3_orgCode        |
     And verify that bPartner was created for externalIdentifier
-      | C_BPartner_ID.Identifier | externalIdentifier    | Name              | OPT.CompanyName      | OPT.AD_Org_ID.Identifier |
-      | bpartner2                | ext-ALBERTA-bPartner2 | BPartnerTestName2 | BPartnerTestCompany2 | bPartner2_orgCode        |
-      | bpartner3                | ext-ALBERTA-bPartner3 | BPartnerTestName3 | BPartnerTestCompany3 | bPartner3_orgCode        |
+      | C_BPartner_ID.Identifier | externalIdentifier    | Name              | OPT.CompanyName   | OPT.AD_Org_ID.Identifier |
+      | bpartner2                | ext-ALBERTA-bPartner2 | BPartnerTestName2 | BPartnerTestName2 | bPartner2_orgCode        |
+      | bpartner3                | ext-ALBERTA-bPartner3 | BPartnerTestName3 | BPartnerTestName3 | bPartner3_orgCode        |
 
   @Id:S0285_700
   Scenario: Create BPartner Account record,

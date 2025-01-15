@@ -46,7 +46,7 @@ Feature: Error handling during: create or update BPartner v2
                      }
                   }
                ]
-            },
+            }
          }
       }
    ],
@@ -99,7 +99,7 @@ Feature: Error handling during: create or update BPartner v2
                      }
                   }
                ]
-            },
+            }
          }
       }
    ],
