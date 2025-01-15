@@ -52,6 +52,13 @@ public class UITraceRestController
 				.id(UITraceExternalId.ofString(json.getId()))
 				.eventName(json.getEventName())
 				.timestamp(json.getTimestamp() > 0 ? Instant.ofEpochMilli(json.getTimestamp()) : SystemTime.asInstant())
+				.url(json.getUrl().orElse(null))
+				.username(json.getUsername().orElse(null))
+				.caption(json.getCaption().orElse(null))
+				.applicationId(json.getApplicationId().orElse(null))
+				.deviceId(json.getDeviceId().orElse(null))
+				.tabId(json.getTabId().orElse(null))
+				.userAgent(json.getUserAgent().orElse(null))
 				.properties(json.getProperties())
 				.build();
 	}

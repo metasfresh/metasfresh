@@ -35,6 +35,13 @@ public class UITraceRepository
 		record.setExternalId(from.getId().getAsString());
 		record.setEventName(from.getEventName());
 		record.setTimestamp(Timestamp.from(from.getTimestamp()));
+		record.setURL(from.getUrl());
+		record.setUserName(from.getUsername());
+		record.setCaption(from.getCaption());
+		record.setUI_ApplicationId(from.getApplicationId());
+		record.setUI_DeviceId(from.getDeviceId());
+		record.setUI_TabId(from.getTabId());
+		record.setUserAgent(from.getUserAgent());
 		record.setEventData(extractPropertiesAsJsonString(from));
 	}
 

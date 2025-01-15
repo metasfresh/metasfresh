@@ -51,6 +51,27 @@ public interface I_UI_Trace
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Caption.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCaption (@Nullable java.lang.String Caption);
+
+	/**
+	 * Get Caption.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCaption();
+
+	ModelColumn<I_UI_Trace, Object> COLUMN_Caption = new ModelColumn<>(I_UI_Trace.class, "Caption", null);
+	String COLUMNNAME_Caption = "Caption";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -183,6 +204,69 @@ public interface I_UI_Trace
 	String COLUMNNAME_Timestamp = "Timestamp";
 
 	/**
+	 * Set Application.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUI_ApplicationId (@Nullable java.lang.String UI_ApplicationId);
+
+	/**
+	 * Get Application.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUI_ApplicationId();
+
+	ModelColumn<I_UI_Trace, Object> COLUMN_UI_ApplicationId = new ModelColumn<>(I_UI_Trace.class, "UI_ApplicationId", null);
+	String COLUMNNAME_UI_ApplicationId = "UI_ApplicationId";
+
+	/**
+	 * Set Device ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUI_DeviceId (@Nullable java.lang.String UI_DeviceId);
+
+	/**
+	 * Get Device ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUI_DeviceId();
+
+	ModelColumn<I_UI_Trace, Object> COLUMN_UI_DeviceId = new ModelColumn<>(I_UI_Trace.class, "UI_DeviceId", null);
+	String COLUMNNAME_UI_DeviceId = "UI_DeviceId";
+
+	/**
+	 * Set Tab ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUI_TabId (@Nullable java.lang.String UI_TabId);
+
+	/**
+	 * Get Tab ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUI_TabId();
+
+	ModelColumn<I_UI_Trace, Object> COLUMN_UI_TabId = new ModelColumn<>(I_UI_Trace.class, "UI_TabId", null);
+	String COLUMNNAME_UI_TabId = "UI_TabId";
+
+	/**
 	 * Set UI Trace.
 	 *
 	 * <br>Type: ID
@@ -227,4 +311,73 @@ public interface I_UI_Trace
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set URL.
+	 * Full URL address - e.g. https://www.metasfresh.com
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setURL (@Nullable java.lang.String URL);
+
+	/**
+	 * Get URL.
+	 * Full URL address - e.g. https://www.metasfresh.com
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getURL();
+
+	ModelColumn<I_UI_Trace, Object> COLUMN_URL = new ModelColumn<>(I_UI_Trace.class, "URL", null);
+	String COLUMNNAME_URL = "URL";
+
+	/**
+	 * Set User Agent.
+	 * Browser Used
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserAgent (@Nullable java.lang.String UserAgent);
+
+	/**
+	 * Get User Agent.
+	 * Browser Used
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserAgent();
+
+	ModelColumn<I_UI_Trace, Object> COLUMN_UserAgent = new ModelColumn<>(I_UI_Trace.class, "UserAgent", null);
+	String COLUMNNAME_UserAgent = "UserAgent";
+
+	/**
+	 * Set UserName.
+	 * UserName / Login to use for login
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUserName (@Nullable java.lang.String UserName);
+
+	/**
+	 * Get UserName.
+	 * UserName / Login to use for login
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUserName();
+
+	ModelColumn<I_UI_Trace, Object> COLUMN_UserName = new ModelColumn<>(I_UI_Trace.class, "UserName", null);
+	String COLUMNNAME_UserName = "UserName";
 }

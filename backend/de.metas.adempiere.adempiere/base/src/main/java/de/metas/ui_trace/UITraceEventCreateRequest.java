@@ -15,5 +15,14 @@ public class UITraceEventCreateRequest
 	@NonNull UITraceExternalId id;
 	@NonNull String eventName;
 	@NonNull Instant timestamp;
+
+	@Nullable String url;
+	@Nullable String username;
+	@Nullable String caption;
+	@Nullable String applicationId;
+	@Nullable String deviceId;
+	@Nullable String tabId;
+	@Nullable String userAgent;
+
 	@Nullable Map<String, Object> properties;
 }
