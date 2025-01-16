@@ -57,8 +57,8 @@ Feature: Error handling during: create or update BPartner v2
 }
 """
     Then validate the following content is present in the response
-      | Content                                  |
-      | Error, can't set C_BPartner.Name to null |
+      | Content                                                     |
+      | Fehler, C_BPartner.Name kann nicht auf null gesetzt werden. |
 
 
   Scenario: Setting bPartner.companyName to a different value than bpartner.name generates a validation error
@@ -112,5 +112,5 @@ Feature: Error handling during: create or update BPartner v2
 """
 
     Then validate the following content is present in the response
-      | Content                                            |
-      | Error, inconsistent properties in the request-body |
+      | Content                                               |
+      | Fehler, inkonsistente Eigenschaften im Anfragekörper. |
