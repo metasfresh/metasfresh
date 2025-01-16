@@ -116,6 +116,7 @@ import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.ValueMappingHelper;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.jsonpersister.helper.BPartnerNameConsolidationHelper;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.sectionCode.SectionCodeService;
 import de.metas.user.UserId;
@@ -927,18 +928,10 @@ public class JsonPersisterService
 			bpartner.setGlobalId(StringUtils.trim(jsonBPartner.getGlobalId()));
 		}
 
-		// companyName
-		if (jsonBPartner.isCompanyNameSet())
-		{
-			bpartner.setCompanyName(StringUtils.trim(jsonBPartner.getCompanyName()));
-			bpartner.setCompany(Check.isNotBlank(jsonBPartner.getCompanyName()));
-		}
-
-		// name
-		if (jsonBPartner.isNameSet())
-		{
-			bpartner.setName(StringUtils.trim(jsonBPartner.getName()));
-		}
+		final BPartnerNameConsolidationHelper.Result result = BPartnerNameConsolidationHelper.consolidate(jsonBPartner, bpartner);
+		bpartner.setName(result.getName());
+		bpartner.setCompanyName(result.getCompanyName());
+		bpartner.setCompany(result.isCompany());
 
 		// name2
 		if (jsonBPartner.isName2Set())

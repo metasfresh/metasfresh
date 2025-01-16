@@ -37,7 +37,7 @@ Feature: Validate BPartner is sent to RabbitMQ
                 "bpartner": {
                     "code": "test_code_export",
                     "name": "test_name_export",
-                    "companyName": "test_company_export",
+                    "companyName": "test_name_export",
                     "language": "de"
                 }
             }
@@ -50,8 +50,8 @@ Feature: Validate BPartner is sent to RabbitMQ
 }
 """
     Then verify that bPartner was created for externalIdentifier
-      | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code         | Name             | OPT.CompanyName     | OPT.CreatedBy | OPT.Language |
-      | created_bpartner         | ext-Shopware6-001  | test_code_export | test_name_export | test_company_export | testUser_1    | de           |
+      | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code         | Name             | OPT.CompanyName  | OPT.CreatedBy | OPT.Language |
+      | created_bpartner         | ext-Shopware6-001  | test_code_export | test_name_export | test_name_export | testUser_1    | de           |
     And RabbitMQ receives a JsonExternalSystemRequest with the following external system config and bpartnerId as parameters:
       | C_BPartner_ID.Identifier | ExternalSystem_Config_ID.Identifier |
       | created_bpartner         | config_1                            |
