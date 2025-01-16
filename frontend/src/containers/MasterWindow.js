@@ -25,6 +25,7 @@ import {
 import MasterWindow from '../components/app/MasterWindow';
 import { toOrderBysCommaSeparatedString } from '../utils/windowHelpers';
 import { fetchTopActions } from '../actions/Actions';
+import { getIndicatorFromState } from '../reducers/windowHandler';
 
 /**
  * @file Class based component.
@@ -321,7 +322,7 @@ const mapStateToProps = (state) => ({
   rawModal: state.windowHandler.rawModal,
   pluginModal: state.windowHandler.pluginModal,
   overlay: state.windowHandler.overlay,
-  indicator: state.windowHandler.indicator,
+  indicator: getIndicatorFromState({ state, isModal: false }),
   includedView: state.viewHandler.includedView,
   allowShortcut: state.windowHandler.allowShortcut,
   enableTutorial: state.appHandler.enableTutorial,

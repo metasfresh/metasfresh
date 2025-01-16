@@ -36,6 +36,7 @@ import {
   getDocActionElementFromState,
   getDocSummaryDataFromState,
 } from '../../reducers/windowHandlerUtils';
+import { getIndicatorFromState } from '../../reducers/windowHandler';
 
 /**
  * @file The Header component is shown in every view besides Modal or RawModal in frontend. It defines
@@ -969,7 +970,6 @@ Header.propTypes = {
 
 const mapStateToProps = (state) => {
   const {
-    indicator,
     master: { saveStatus },
   } = state.windowHandler;
 
@@ -979,7 +979,7 @@ const mapStateToProps = (state) => {
     plugins: state.pluginsHandler.files,
     docStatus: getDocActionElementFromState(state),
     docSummaryData: getDocSummaryDataFromState(state),
-    indicator,
+    indicator: getIndicatorFromState({ state }),
     saveStatus,
   };
 };
