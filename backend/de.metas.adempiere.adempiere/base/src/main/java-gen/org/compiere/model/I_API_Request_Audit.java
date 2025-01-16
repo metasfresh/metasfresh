@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for API_Request_Audit
  *  @author metasfresh (generated) 
@@ -434,6 +433,27 @@ public interface I_API_Request_Audit
 
 	ModelColumn<I_API_Request_Audit, Object> COLUMN_Time = new ModelColumn<>(I_API_Request_Audit.class, "Time", null);
 	String COLUMNNAME_Time = "Time";
+
+	/**
+	 * Set UI Trace External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUI_Trace_ExternalId (@Nullable java.lang.String UI_Trace_ExternalId);
+
+	/**
+	 * Get UI Trace External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUI_Trace_ExternalId();
+
+	ModelColumn<I_API_Request_Audit, Object> COLUMN_UI_Trace_ExternalId = new ModelColumn<>(I_API_Request_Audit.class, "UI_Trace_ExternalId", null);
+	String COLUMNNAME_UI_Trace_ExternalId = "UI_Trace_ExternalId";
 
 	/**
 	 * Get Updated.

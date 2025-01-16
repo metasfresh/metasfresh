@@ -170,7 +170,8 @@ public final class DescriptorsFactoryHelper
 		else if (displayType == DisplayType.DateTime)
 		{
 			if (WindowConstants.FIELDNAME_Created.equals(columnName)
-					|| WindowConstants.FIELDNAME_Updated.equals(columnName))
+					|| WindowConstants.FIELDNAME_Updated.equals(columnName)
+					|| columnName.contains("Timestamp"))
 			{
 				return DocumentFieldWidgetType.Timestamp;
 			}
