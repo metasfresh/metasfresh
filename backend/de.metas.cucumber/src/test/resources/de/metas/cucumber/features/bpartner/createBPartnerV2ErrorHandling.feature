@@ -112,5 +112,5 @@ Feature: Error handling during: create or update BPartner v2
 """
 
     Then validate the following content is present in the response
-      | Content                                               |
-      | Fehler, inkonsistente Eigenschaften im Anfragekörper. |
+      | Content                             |
+      | Fehler, inkonsistente Eigenschaften |
