@@ -355,10 +355,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		to.setC_Payment_ID(0);
 		to.setC_CashLine_ID(0);
 		to.setIsPaid(false);
+		to.setIsPartiallyPaid(false);
 		to.setIsInDispute(false);
 		//
 		// Amounts are updated by trigger when adding lines
 		to.setGrandTotal(BigDecimal.ZERO);
+		to.setOpenAmt(BigDecimal.ZERO);
 		to.setTotalLines(BigDecimal.ZERO);
 		//
 		to.setIsTransferred(false);
@@ -538,14 +540,28 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				total = total.negate();
 			}
 
-			final boolean test = total.compareTo(alloc) == 0;
-			change = test != invoice.isPaid();
+			final BigDecimal openAmt = total.subtract(alloc);
+			final boolean fullyPaid = openAmt.signum() == 0;
+			change = fullyPaid != invoice.isPaid();
 			if (change)
 			{
-				invoice.setIsPaid(test);
+				invoice.setIsPaid(fullyPaid);
 			}
 
-			log.debug("IsPaid={} (allocated={}, invoiceGrandTotal={})", test, alloc, total);
+			final boolean isPartiallyPaid = !fullyPaid && hasAllocations;
+			change = isPartiallyPaid != invoice.isPartiallyPaid();
+			if (change)
+			{
+				invoice.setIsPartiallyPaid(isPartiallyPaid);
+			}
+			
+			change = openAmt.compareTo(invoice.getOpenAmt()) != 0;
+			if (change)
+			{
+				invoice.setOpenAmt(openAmt);	
+			}
+			
+			log.debug("IsPaid={} IsPartiallyPaid={} (allocated={}, invoiceGrandTotal={})", fullyPaid, isPartiallyPaid, alloc, total);
 		}
 
 		return change;

@@ -183,7 +183,7 @@ public interface IInvoiceBL extends ISingletonService
 	 *
 	 * @param invoice the invoice to be checked
 	 * @param ignoreProcessed if true, then the change will be done even if the given <code>invoice</code> currently still have <code>Processed='N'</code>.
-	 * @return true if the isPaid value was changed
+	 * @return true if the isPaid value or isPartiallyPaid value or openAmt value was changed
 	 */
 	boolean testAllocation(I_C_Invoice invoice, boolean ignoreProcessed);
 
