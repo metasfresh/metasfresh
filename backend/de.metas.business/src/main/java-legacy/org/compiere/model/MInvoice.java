@@ -201,13 +201,18 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			setChargeAmt(BigDecimal.ZERO);
 			setTotalLines(BigDecimal.ZERO);
 			setGrandTotal(BigDecimal.ZERO);
+<<<<<<< HEAD
 			setCashRoundingAmt(BigDecimal.ZERO);
+=======
+			setOpenAmt(BigDecimal.ZERO);
+>>>>>>> 262753d417 (Add C_Invoice IsPartiallyPaid and OpenAmt (#19835))
 			//
 			setIsSOTrx(true);
 			setIsTaxIncluded(false);
 			setIsApproved(false);
 			setIsDiscountPrinted(false);
 			setIsPaid(false);
+			setIsPartiallyPaid(false);
 			setSendEMail(false);
 			setIsPrinted(false);
 			setIsTransferred(false);
@@ -1023,8 +1028,13 @@ public class MInvoice extends X_C_Invoice implements IDocument
 
 		//
 		setTotalLines(totalLines);
+<<<<<<< HEAD
 		setGrandTotal(roundedGrandTotal);
 		setCashRoundingAmt(roundedGrandTotal.subtract(grandTotalNoRounding));
+=======
+		setGrandTotal(grandTotal);
+		setOpenAmt(grandTotal);
+>>>>>>> 262753d417 (Add C_Invoice IsPartiallyPaid and OpenAmt (#19835))
 		return true;
 	}    // calculateTaxTotal
 
@@ -1412,6 +1422,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			}
 			addDescription(Msg.getMsg(getCtx(), "Voided"));
 			setIsPaid(true);
+			setIsPartiallyPaid(false);
 			setC_Payment_ID(0);
 		}
 		else
@@ -1517,6 +1528,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		}
 		reversal.setC_Payment_ID(0);
 		reversal.setIsPaid(true);
+		reversal.setIsPartiallyPaid(false);
 		reversal.closeIt();
 		reversal.setProcessing(false);
 		reversal.setDocStatus(DocStatus.Reversed.getCode());
@@ -1560,6 +1572,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		setDocAction(DOCACTION_None);
 		setC_Payment_ID(0);
 		setIsPaid(true);
+		setIsPartiallyPaid(false);
 
 		//
 		// Create Allocation: allocate the reversal invoice against the original invoice
@@ -1674,6 +1687,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		setSalesRep_ID(rma.getSalesRep_ID());
 
 		setGrandTotal(rma.getAmt());
+		setOpenAmt(rma.getAmt());
 		setIsSOTrx(rma.isSOTrx());
 		setTotalLines(rma.getAmt());
 		setCashRoundingAmt(BigDecimal.ZERO);

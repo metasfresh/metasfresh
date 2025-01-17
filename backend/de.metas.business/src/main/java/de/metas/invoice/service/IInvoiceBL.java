@@ -215,6 +215,7 @@ public interface IInvoiceBL extends ISingletonService {
      */
     boolean testAllocation(I_C_Invoice invoice, boolean ignoreProcessed);
 
+<<<<<<< HEAD
     /**
      * @param docTypeTargetId invoice's document type
      * @param dateInvoiced    may be <code>null</code>
@@ -226,6 +227,16 @@ public interface IInvoiceBL extends ISingletonService {
             DocTypeId docTypeTargetId,
             LocalDate dateInvoiced,
             LocalDate dateAcct);
+=======
+	/**
+	 * Test Allocation (and set paid flag)
+	 *
+	 * @param invoice the invoice to be checked
+	 * @param ignoreProcessed if true, then the change will be done even if the given <code>invoice</code> currently still have <code>Processed='N'</code>.
+	 * @return true if the isPaid value or isPartiallyPaid value or openAmt value was changed
+	 */
+	boolean testAllocation(I_C_Invoice invoice, boolean ignoreProcessed);
+>>>>>>> 262753d417 (Add C_Invoice IsPartiallyPaid and OpenAmt (#19835))
 
     void setFromOrder(I_C_Invoice invoice, I_C_Order order);
 

@@ -536,6 +536,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_DunningLevel_ID = "C_DunningLevel_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Foreign Exchange Contract.
 	 *
 	 * <br>Type: Search
@@ -609,6 +610,8 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_Harvesting_Calendar_ID = "C_Harvesting_Calendar_ID";
 
 	/**
+=======
+>>>>>>> 262753d417 (Add C_Invoice IsPartiallyPaid and OpenAmt (#19835))
 	 * Set Incoterms.
 	 *
 	 * <br>Type: TableDir
@@ -657,6 +660,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Copy BOM Lines From.
 	 * Copy BOM Lines from an exising BOM
 	 *
@@ -680,6 +684,8 @@ public interface I_C_Invoice
 	String COLUMNNAME_CopyFrom = "CopyFrom";
 
 	/**
+=======
+>>>>>>> 262753d417 (Add C_Invoice IsPartiallyPaid and OpenAmt (#19835))
 	 * Set Sales order.
 	 * Order
 	 *
@@ -798,6 +804,55 @@ public interface I_C_Invoice
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Set Charge amount.
+	 * Charge Amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setChargeAmt (@Nullable BigDecimal ChargeAmt);
+
+	/**
+	 * Get Charge amount.
+	 * Charge Amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getChargeAmt();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_ChargeAmt = new ModelColumn<>(I_C_Invoice.class, "ChargeAmt", null);
+	String COLUMNNAME_ChargeAmt = "ChargeAmt";
+
+	/**
+	 * Set Copy BOM Lines From.
+	 * Copy BOM Lines from an exising BOM
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCopyFrom (@Nullable java.lang.String CopyFrom);
+
+	/**
+	 * Get Copy BOM Lines From.
+	 * Copy BOM Lines from an exising BOM
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCopyFrom();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_CopyFrom = new ModelColumn<>(I_C_Invoice.class, "CopyFrom", null);
+	String COLUMNNAME_CopyFrom = "CopyFrom";
+
+	/**
+>>>>>>> 262753d417 (Add C_Invoice IsPartiallyPaid and OpenAmt (#19835))
 	 * Set Adjustment Charge.
 	 *
 	 * <br>Type: Button
@@ -1244,6 +1299,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
+<<<<<<< HEAD
 	 * Set FEC Rate.
 	 *
 	 * <br>Type: Number
@@ -1325,6 +1381,8 @@ public interface I_C_Invoice
 	String COLUMNNAME_FEC_To_Currency_ID = "FEC_To_Currency_ID";
 
 	/**
+=======
+>>>>>>> 262753d417 (Add C_Invoice IsPartiallyPaid and OpenAmt (#19835))
 	 * Set Generate Invoice from Receipt.
 	 * Create and process Invoice from this receipt.  The receipt should be correct and completed.
 	 *
@@ -1371,6 +1429,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_GrandTotal = "GrandTotal";
 
 	/**
+<<<<<<< HEAD
 	 * Set Harvesting Year.
 	 *
 	 * <br>Type: Search
@@ -1396,6 +1455,8 @@ public interface I_C_Invoice
 	String COLUMNNAME_Harvesting_Year_ID = "Harvesting_Year_ID";
 
 	/**
+=======
+>>>>>>> 262753d417 (Add C_Invoice IsPartiallyPaid and OpenAmt (#19835))
 	 * Set Incoterm Location.
 	 * Anzugebender Ort für Handelsklausel
 	 *
@@ -1419,6 +1480,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_IncotermLocation = "IncotermLocation";
 
 	/**
+<<<<<<< HEAD
 	 * Set Additional Text for Invoice.
 	 *
 	 * <br>Type: Text
@@ -1463,6 +1525,8 @@ public interface I_C_Invoice
 	String COLUMNNAME_InvoiceCollectionType = "InvoiceCollectionType";
 
 	/**
+=======
+>>>>>>> 262753d417 (Add C_Invoice IsPartiallyPaid and OpenAmt (#19835))
 	 * Set Invoice_includedTab.
 	 *
 	 * <br>Type: String
@@ -1482,6 +1546,29 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_Invoice_includedTab = new ModelColumn<>(I_C_Invoice.class, "Invoice_includedTab", null);
 	String COLUMNNAME_Invoice_includedTab = "Invoice_includedTab";
+
+	/**
+	 * Set Collection Status.
+	 * Invoice Collection Status
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoiceCollectionType (@Nullable java.lang.String InvoiceCollectionType);
+
+	/**
+	 * Get Collection Status.
+	 * Invoice Collection Status
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInvoiceCollectionType();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_InvoiceCollectionType = new ModelColumn<>(I_C_Invoice.class, "InvoiceCollectionType", null);
+	String COLUMNNAME_InvoiceCollectionType = "InvoiceCollectionType";
 
 	/**
 	 * Set Active.
@@ -1618,6 +1705,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_IsInDispute = "IsInDispute";
 
 	/**
+<<<<<<< HEAD
 	 * Set Do not show Country of Origin.
 	 * If is NO, then the Country of Origin of the products is displayed in the invoice report
 	 *
@@ -1641,6 +1729,8 @@ public interface I_C_Invoice
 	String COLUMNNAME_IsNotShowOriginCountry = "IsNotShowOriginCountry";
 
 	/**
+=======
+>>>>>>> 262753d417 (Add C_Invoice IsPartiallyPaid and OpenAmt (#19835))
 	 * Set Paid.
 	 * The document is paid
 	 *
@@ -1662,6 +1752,27 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_IsPaid = new ModelColumn<>(I_C_Invoice.class, "IsPaid", null);
 	String COLUMNNAME_IsPaid = "IsPaid";
+
+	/**
+	 * Set Partially Paid.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPartiallyPaid (boolean IsPartiallyPaid);
+
+	/**
+	 * Get Partially Paid.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPartiallyPaid();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_IsPartiallyPaid = new ModelColumn<>(I_C_Invoice.class, "IsPartiallyPaid", null);
+	String COLUMNNAME_IsPartiallyPaid = "IsPartiallyPaid";
 
 	/**
 	 * Set Pay Schedule valid.
@@ -1965,6 +2076,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set Organisation Bank Account.
 	 *
 	 * <br>Type: Search
@@ -1983,6 +2095,29 @@ public interface I_C_Invoice
 	int getOrg_BP_Account_ID();
 
 	String COLUMNNAME_Org_BP_Account_ID = "Org_BP_Account_ID";
+=======
+	 * Set Open Amount.
+	 * Open item amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOpenAmt (@Nullable BigDecimal OpenAmt);
+
+	/**
+	 * Get Open Amount.
+	 * Open item amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getOpenAmt();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_OpenAmt = new ModelColumn<>(I_C_Invoice.class, "OpenAmt", null);
+	String COLUMNNAME_OpenAmt = "OpenAmt";
+>>>>>>> 262753d417 (Add C_Invoice IsPartiallyPaid and OpenAmt (#19835))
 
 	/**
 	 * Set Payment Rule.
@@ -2326,6 +2461,11 @@ public interface I_C_Invoice
 	 */
 	int getUser1_ID();
 
+	@Nullable org.compiere.model.I_C_ElementValue getUser1();
+
+	void setUser1(@Nullable org.compiere.model.I_C_ElementValue User1);
+
+	ModelColumn<I_C_Invoice, org.compiere.model.I_C_ElementValue> COLUMN_User1_ID = new ModelColumn<>(I_C_Invoice.class, "User1_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_User1_ID = "User1_ID";
 
 	/**
@@ -2346,9 +2486,15 @@ public interface I_C_Invoice
 	 */
 	int getUser2_ID();
 
+	@Nullable org.compiere.model.I_C_ElementValue getUser2();
+
+	void setUser2(@Nullable org.compiere.model.I_C_ElementValue User2);
+
+	ModelColumn<I_C_Invoice, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new ModelColumn<>(I_C_Invoice.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_User2_ID = "User2_ID";
 
 	/**
+<<<<<<< HEAD
 	 * Set UserElementString1.
 	 *
 	 * <br>Type: String
@@ -2496,6 +2642,8 @@ public interface I_C_Invoice
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
 
 	/**
+=======
+>>>>>>> 262753d417 (Add C_Invoice IsPartiallyPaid and OpenAmt (#19835))
 	 * Set User 1.
 	 *
 	 * <br>Type: String
