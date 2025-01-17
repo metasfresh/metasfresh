@@ -36,7 +36,6 @@ class UserAuthTokenServiceTest
 		AdempiereTestHelper.get().init();
 
 		final UserAuthTokenRepository userAuthTokenRepo = new UserAuthTokenRepository();
-		this.userAuthTokenService = new UserAuthTokenService(userAuthTokenRepo);
 
 		this.token = userAuthTokenRepo.createNew(CreateUserAuthTokenRequest.builder()
 				.userId(UserId.METASFRESH)
@@ -44,8 +43,9 @@ class UserAuthTokenServiceTest
 				.orgId(OrgId.MAIN)
 				.roleId(roleId)
 				.build());
+		
 		createAndRegisterUserRolePermissionsDAO(token);
-
+		this.userAuthTokenService = new UserAuthTokenService(userAuthTokenRepo);
 	}
 
 	private static void createAndRegisterUserRolePermissionsDAO(final UserAuthToken token)
