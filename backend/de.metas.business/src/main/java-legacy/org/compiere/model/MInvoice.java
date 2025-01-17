@@ -36,6 +36,7 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.Msg;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoicePaymentStatus;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IMatchInvBL;
@@ -190,7 +191,8 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			setDocAction(DOCACTION_Complete);
 			//
 			// FRESH-488: Get the default payment rule form the system configuration
-			setPaymentRule(Services.get(IInvoiceBL.class).getDefaultPaymentRule().getCode());
+			final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+			setPaymentRule(invoiceBL.getDefaultPaymentRule().getCode());
 
 			setDateInvoiced(new Timestamp(System.currentTimeMillis()));
 			setDateAcct(new Timestamp(System.currentTimeMillis()));
@@ -198,14 +200,12 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			setChargeAmt(BigDecimal.ZERO);
 			setTotalLines(BigDecimal.ZERO);
 			setGrandTotal(BigDecimal.ZERO);
-			setOpenAmt(BigDecimal.ZERO);
+			invoiceBL.setPaymentStatus(this, BigDecimal.ZERO, InvoicePaymentStatus.NOT_PAID);
 			//
 			setIsSOTrx(true);
 			setIsTaxIncluded(false);
 			setIsApproved(false);
 			setIsDiscountPrinted(false);
-			setIsPaid(false);
-			setIsPartiallyPaid(false);
 			setSendEMail(false);
 			setIsPrinted(false);
 			setIsTransferred(false);
@@ -1351,8 +1351,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 				}
 			}
 			addDescription(Msg.getMsg(getCtx(), "Voided"));
-			setIsPaid(true);
-			setIsPartiallyPaid(false);
+			Services.get(IInvoiceBL.class).setPaymentStatus(this, BigDecimal.ZERO, InvoicePaymentStatus.FULLY_PAID);
 			setC_Payment_ID(0);
 		}
 		else
@@ -1466,8 +1465,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			throw new AdempiereException("Reversal ERROR: " + reversal.getProcessMsg());
 		}
 		reversal.setC_Payment_ID(0);
-		reversal.setIsPaid(true);
-		reversal.setIsPartiallyPaid(false);
+		Services.get(IInvoiceBL.class).setPaymentStatus(reversal, BigDecimal.ZERO, InvoicePaymentStatus.FULLY_PAID);
 		reversal.closeIt();
 		reversal.setProcessing(false);
 		reversal.setDocStatus(DocStatus.Reversed.getCode());
@@ -1507,8 +1505,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		setDocStatus(DocStatus.Reversed.getCode());    // may come from void
 		setDocAction(DOCACTION_None);
 		setC_Payment_ID(0);
-		setIsPaid(true);
-		setIsPartiallyPaid(false);
+		Services.get(IInvoiceBL.class).setPaymentStatus(this, BigDecimal.ZERO, InvoicePaymentStatus.FULLY_PAID);
 
 		//
 		// Create Allocation: allocate the reversal invoice against the original invoice
