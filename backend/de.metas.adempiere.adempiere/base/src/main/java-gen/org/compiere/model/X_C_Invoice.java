@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 456361077L;
+	private static final long serialVersionUID = 591845225L;
 
     /** Standard Constructor */
     public X_C_Invoice (final Properties ctx, final int C_Invoice_ID, @Nullable final String trxName)
@@ -1196,6 +1196,18 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
+	public void setIsPartiallyPaid (final boolean IsPartiallyPaid)
+	{
+		set_Value (COLUMNNAME_IsPartiallyPaid, IsPartiallyPaid);
+	}
+
+	@Override
+	public boolean isPartiallyPaid() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPartiallyPaid);
+	}
+
+	@Override
 	public void setIsPayScheduleValid (final boolean IsPayScheduleValid)
 	{
 		set_ValueNoCheck (COLUMNNAME_IsPayScheduleValid, IsPayScheduleValid);
@@ -1424,6 +1436,19 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public int getOrg_BP_Account_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Org_BP_Account_ID);
+	}
+
+	@Override
+	public void setOpenAmt (final @Nullable BigDecimal OpenAmt)
+	{
+		set_Value (COLUMNNAME_OpenAmt, OpenAmt);
+	}
+
+	@Override
+	public BigDecimal getOpenAmt()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_OpenAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	/** 
