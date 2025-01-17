@@ -77,7 +77,7 @@ public class AuthenticateGithubService implements IAuthenticateGithubService
 
 			if (Check.isBlank(githubSiganture))
 			{
-				throw new UserNotAuthorizedException(null, null);
+				throw new UserNotAuthorizedException();
 			}
 
 			final I_S_GithubConfig githubConfig = authenticate(githubSiganture, requestWrapper.getRequestBodyAsString());
@@ -94,7 +94,7 @@ public class AuthenticateGithubService implements IAuthenticateGithubService
 		{
 			logger.error("Got error while trying to authenticate github request:" + ex.getLocalizedMessage(), ex);
 
-			throw new UserNotAuthorizedException(null, null);
+			throw new UserNotAuthorizedException();
 		}
 	}
 
