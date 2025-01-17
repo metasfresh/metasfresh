@@ -547,7 +547,7 @@ public class C_Invoice_StepDef
 															.onlyInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
 															.build()).get(0);
 				softly.assertThat(invoiceToAllocate.getOpenAmountConverted().getAsBigDecimal()).as("OpenAmountConverted").isEqualByComparingTo(invoiceOpenAmt);
-				softly.assertThat(invoice.getOpenAmt().abs()).as("C_Invoice.OpenAmt").isEqualByComparingTo(invoiceOpenAmt);
+				softly.assertThat(invoice.getOpenAmt()).as("C_Invoice.OpenAmt").isEqualByComparingTo(invoiceOpenAmt);
 			}
 		}
 

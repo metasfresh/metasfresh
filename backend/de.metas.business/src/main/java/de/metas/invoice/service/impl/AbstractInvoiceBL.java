@@ -530,7 +530,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				return false;
 			}
 
-			final BigDecimal openAmt = grandTotal.subtract(allocationAmt);
+			final BigDecimal openAmt = getOpenAmtAbs(invoice, grandTotal, allocationAmt);
 			final InvoicePaymentStatus paymentStatus = computePaymentStatus(openAmt, hasAllocations);
 			return setPaymentStatus(invoice, openAmt, paymentStatus);
 		}
@@ -2049,5 +2049,32 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public I_C_InvoiceLine getLineById(@NonNull final InvoiceAndLineId invoiceAndLineId)
 	{
 		return invoiceDAO.retrieveLineById(invoiceAndLineId);
+	}
+
+	@NonNull
+	private BigDecimal getOpenAmtAbs(
+			@NonNull final org.compiere.model.I_C_Invoice invoice,
+			@NonNull final BigDecimal grandTotal,
+			@NonNull final BigDecimal allocationAmt)
+	{
+		BigDecimal openAmt = grandTotal.subtract(allocationAmt);
+		if (grandTotal.signum() == 0)
+		{
+			return openAmt;
+		}
+
+		// AP/AR adjustment
+		if (!invoice.isSOTrx())
+		{
+			openAmt = openAmt.negate();
+		}
+
+		// CM adjustment
+		if (isCreditMemo(invoice))
+		{
+			openAmt = openAmt.negate();
+		}
+
+		return openAmt;
 	}
 }
