@@ -21,6 +21,7 @@ import { renderHeaderProperties } from '../../utils/documentListHelper';
 import Tooltips from '../tooltips/Tooltips.js';
 import Indicator from './Indicator';
 import ModalButton from './ModalButton';
+import { getIndicatorFromState } from '../../reducers/windowHandler';
 
 /**
  * @file Class based component.
@@ -427,7 +428,7 @@ const mapStateToProps = ({ windowHandler, tables }, ownProps) => {
     rawModal: windowHandler.rawModal,
     requests: windowHandler.patches.requests,
     success: windowHandler.patches.success,
-    indicator: windowHandler.indicator,
+    indicator: getIndicatorFromState({ windowHandler, isModal: true }),
     modalTableSelectedId: selectedId,
   };
 };

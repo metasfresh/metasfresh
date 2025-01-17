@@ -38,6 +38,7 @@ import Stomp from 'stompjs/lib/stomp.min.js';
 import ChangeCurrentWorkplace, {
   STATIC_MODAL_TYPE_ChangeCurrentWorkplace,
 } from './ChangeCurrentWorkplace';
+import { getIndicatorFromState } from '../../reducers/windowHandler';
 
 /**
  * @file Modal is an overlay view that can be opened over the main view.
@@ -930,7 +931,7 @@ const mapStateToProps = (state, props) => {
   return {
     parentSelection: parentSelector(state, parentViewTableId),
     activeTabId: state.windowHandler.master.layout.activeTab,
-    indicator: state.windowHandler.indicator,
+    indicator: getIndicatorFromState({ state, isModal: true }),
     parentViewId,
     parentId,
     viewOrderBy: parentView?.orderBy,
