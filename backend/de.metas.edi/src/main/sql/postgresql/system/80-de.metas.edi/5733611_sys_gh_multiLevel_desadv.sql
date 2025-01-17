@@ -4,8 +4,18 @@ drop view if exists M_InOut_DesadvLine_V
 
 DROP VIEW IF EXISTS edi_desadvpack_sscc_label;
 
-SELECT public.db_alter_table('EDI_DesadvLine','ALTER TABLE public.EDI_DesadvLine RENAME COLUMN GTIN TO GTIN_CU')
-;
+--on some systems already renamed in another file
+DO $$
+    BEGIN
+        SELECT public.db_alter_table('EDI_DesadvLine','ALTER TABLE public.EDI_DesadvLine RENAME COLUMN GTIN TO GTIN_CU')
+        ;
+
+    EXCEPTION WHEN UNDEFINED_COLUMN THEN
+
+        RAISE NOTICE 'column GTIN is already renamed to GTIN_CU';
+    end $$;
+
+
 
 
 create or replace view M_InOut_DesadvLine_V as
