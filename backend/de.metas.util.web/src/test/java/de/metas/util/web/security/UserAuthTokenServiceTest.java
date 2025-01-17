@@ -11,9 +11,11 @@ import de.metas.security.requests.CreateUserAuthTokenRequest;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.model.I_AD_User;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -38,14 +40,15 @@ class UserAuthTokenServiceTest
 		final UserAuthTokenRepository userAuthTokenRepo = new UserAuthTokenRepository();
 
 		this.token = userAuthTokenRepo.createNew(CreateUserAuthTokenRequest.builder()
-				.userId(UserId.METASFRESH)
+				.userId(createUserId())
 				.clientId(ClientId.METASFRESH)
 				.orgId(OrgId.MAIN)
 				.roleId(roleId)
 				.build());
-		
+
 		createAndRegisterUserRolePermissionsDAO(token);
 		this.userAuthTokenService = new UserAuthTokenService(userAuthTokenRepo);
+
 	}
 
 	private static void createAndRegisterUserRolePermissionsDAO(final UserAuthToken token)
@@ -59,6 +62,14 @@ class UserAuthTokenServiceTest
 		Mockito.doReturn(permissions).when(userRolePermissionsDAO).getUserRolePermissions(Mockito.any());
 
 		Services.registerService(IUserRolePermissionsDAO.class, userRolePermissionsDAO);
+	}
+
+	private static UserId createUserId()
+	{
+		final I_AD_User record = InterfaceWrapperHelper.newInstance(I_AD_User.class);
+		record.setAD_Language("de_DE");
+		InterfaceWrapperHelper.save(record);
+		return UserId.ofRepoId(record.getAD_User_ID());
 	}
 
 	private void assertContextMatchesToken(final SoftAssertions softly)
