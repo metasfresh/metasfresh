@@ -4,7 +4,7 @@ drop view if exists M_InOut_DesadvLine_Pack_V;
 --on some systems already changed in 5733560_sys_gh_multiLevel_desadv.sql
 DO $$
     BEGIN
-        SELECT public.db_alter_table('EDI_Desadv_Pack','ALTER TABLE public.EDI_Desadv_Pack RENAME COLUMN M_HU_PackagingCode_LU_ID TO M_HU_PackagingCode_ID')
+        PERFORM public.db_alter_table('EDI_Desadv_Pack','ALTER TABLE public.EDI_Desadv_Pack RENAME COLUMN M_HU_PackagingCode_LU_ID TO M_HU_PackagingCode_ID')
         ;
 
     EXCEPTION WHEN UNDEFINED_COLUMN THEN
@@ -14,7 +14,7 @@ DO $$
 
 DO $$
     BEGIN
-        SELECT public.db_alter_table('EDI_Desadv_Pack','ALTER TABLE public.EDI_Desadv_Pack RENAME COLUMN M_HU_PackagingCode_LU_ID TO M_HU_PackagingCode_ID')
+        PERFORM public.db_alter_table('EDI_Desadv_Pack','ALTER TABLE public.EDI_Desadv_Pack RENAME COLUMN M_HU_PackagingCode_LU_ID TO M_HU_PackagingCode_ID')
         ;
 
     EXCEPTION WHEN UNDEFINED_COLUMN THEN
