@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Properties;
 
 import static org.adempiere.ad.wrapper.AbstractInterfaceWrapperHelperTest.ITable1.COLUMNNNAME_Name;
+import static org.adempiere.ad.wrapper.AbstractInterfaceWrapperHelperTest.ITable1.COLUMNNNAME_Name2;
 import static org.adempiere.ad.wrapper.AbstractInterfaceWrapperHelperTest.ITable1.COLUMNNNAME_Table1_ID;
 import static org.adempiere.ad.wrapper.AbstractInterfaceWrapperHelperTest.ITable1.COLUMNNNAME_Table1_Value_ID;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -63,9 +64,13 @@ class AbstractInterfaceWrapperHelperTest
 		int getTable1_Value_ID();
 		void setTable1_Value_ID(int value);
 
-		String COLUMNNNAME_Table1_Override_Value_ID = "Table1_Value_ID";
+		String COLUMNNNAME_Table1_Override_Value_ID = "Table1_Override_Value_ID";
 		int getTable1_Override_Value_ID();
 		void setTable1_Override_Value_ID(int value);
+
+		String COLUMNNNAME_Name2 = "Name2";
+		String getName2();
+		void setName2(String name);
 		
 		// @formatter:on
 	}
@@ -98,6 +103,8 @@ class AbstractInterfaceWrapperHelperTest
 
 		record.setTable1_Value_ID(1235);
 		record.setTable1_Override_Value_ID(2235);
+
+		record.setName2("name2");
 		
 		POJOWrapper.save(record);
 
@@ -111,5 +118,7 @@ class AbstractInterfaceWrapperHelperTest
 		final Integer value3 = InterfaceWrapperHelper.getValueOverrideOrValue(record, COLUMNNNAME_Table1_Value_ID);
 		assertThat(value3).as("change ..._Value_ID for ..._Override_Value_ID").isEqualTo(2235);
 
+		final String value4 = InterfaceWrapperHelper.getValueOverrideOrValue(record, COLUMNNNAME_Name2);
+		assertThat(value4).isEqualTo("name2");
 	}
 }
