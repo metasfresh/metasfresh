@@ -14,7 +14,7 @@ DO $$
 
 DO $$
     BEGIN
-        PERFORM public.db_alter_table('EDI_Desadv_Pack','ALTER TABLE public.EDI_Desadv_Pack RENAME COLUMN M_HU_PackagingCode_LU_ID TO M_HU_PackagingCode_ID')
+        PERFORM public.db_alter_table('EDI_Desadv_Pack','ALTER TABLE public.EDI_Desadv_Pack RENAME COLUMN GTIN_LU_PackingMaterial TO GTIN_PackingMaterial')
         ;
 
     EXCEPTION WHEN UNDEFINED_COLUMN THEN
