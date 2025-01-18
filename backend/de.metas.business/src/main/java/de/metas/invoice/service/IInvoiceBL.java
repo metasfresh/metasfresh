@@ -15,6 +15,7 @@ import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoicePaymentStatus;
 import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
 import de.metas.lang.SOTrx;
@@ -186,6 +187,14 @@ public interface IInvoiceBL extends ISingletonService
 	 * @return true if the isPaid value or isPartiallyPaid value or openAmt value was changed
 	 */
 	boolean testAllocation(I_C_Invoice invoice, boolean ignoreProcessed);
+
+	/**
+	 * @return true if there was any change
+	 */
+	boolean setPaymentStatus(
+			@NonNull I_C_Invoice invoice,
+			@NonNull BigDecimal openAmt,
+			@NonNull InvoicePaymentStatus paymentStatus);
 
 	/**
 	 * @param docTypeTargetId invoice's document type
