@@ -120,7 +120,7 @@ public class ESRImportTest extends ESRTestBase
 
 		// check invoice
 		refresh(getC_Invoice(), true);
-		assertThat(getC_Invoice().isPaid(), is(true));
+		assertInvoiceFullyPaid();
 
 		// check the created payments
 
@@ -253,7 +253,7 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrImportLine2.getESR_Invoice_Openamt(), comparesEqualTo(new BigDecimal(-25)));
 
 		// check invoice
-		assertThat(esrImportLine1.getC_Invoice().isPaid(), is(true));
+		assertInvoiceFullyPaid(esrImportLine1.getC_Invoice());
 
 		// check the created payments - first payment
 		final PaymentId esrImportLine1PaymentId = PaymentId.ofRepoIdOrNull(esrImportLine1.getC_Payment_ID());
@@ -371,7 +371,7 @@ public class ESRImportTest extends ESRTestBase
 
 		// check if invoice is paid
 		refresh(inv1, true);
-		assertThat(inv1.isPaid(), is(true));
+		assertInvoiceFullyPaid(inv1);
 
 		// check the created payments
 		// reload payment
@@ -447,7 +447,7 @@ public class ESRImportTest extends ESRTestBase
 		esrImportBL.complete(esrImport, "Complete");
 
 		refresh(getC_Invoice(), true);
-		assertThat(getC_Invoice().isPaid(), is(true));
+		assertInvoiceFullyPaid();
 
 		// check import line
 		refresh(esrImportLine, true);
@@ -535,7 +535,7 @@ public class ESRImportTest extends ESRTestBase
 
 		// check the invoice
 		refresh(getC_Invoice(), true);
-		assertThat(getC_Invoice().isPaid(), is(true));
+		assertInvoiceFullyPaid();
 
 		// check import line
 		refresh(esrImportLine, true);
@@ -627,7 +627,7 @@ public class ESRImportTest extends ESRTestBase
 
 		// check the invoice
 		refresh(getC_Invoice(), true);
-		assertThat(getC_Invoice().isPaid(), is(true));
+		assertInvoiceFullyPaid();
 
 		// check import line
 		refresh(esrImportLine, true);
@@ -761,7 +761,7 @@ public class ESRImportTest extends ESRTestBase
 
 		// check invoice
 		refresh(inv, true);
-		assertThat(inv.isPaid(), is(true));
+		assertInvoiceFullyPaid(inv);
 
 		// check import line
 		refresh(esrImportLine, true);
@@ -913,7 +913,7 @@ public class ESRImportTest extends ESRTestBase
 
 		// check invoice
 		refresh(inv, true);
-		assertThat(inv.isPaid(), is(true));
+		assertInvoiceFullyPaid(inv);
 
 		// check import line
 		refresh(esrImportLine, true);

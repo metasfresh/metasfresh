@@ -33,6 +33,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
+ import java.math.BigDecimal;
+
 @EqualsAndHashCode
 @ToString
 public final class InvoiceAmtMultiplier
@@ -81,6 +83,24 @@ public final class InvoiceAmtMultiplier
 		return toRealValueMultiplier > 0 ? money : money.negate();
 	}
 
+	public BigDecimal convertToRealValue(@NonNull final BigDecimal amountBD)
+	{
+		int toRealValueMultiplier = getToRealValueMultiplier();
+		return toRealValueMultiplier > 0 ? amountBD : amountBD.negate();
+	}
+
+	public Money convertToRelativeValue(@NonNull final Money realValue)
+	{
+		int toRelativeValueMultiplier = getToRelativeValueMultiplier();
+		return toRelativeValueMultiplier > 0 ? realValue : realValue.negate();
+	}
+
+	public Amount convertToRelativeValue(@NonNull final Amount realValue)
+	{
+		int toRelativeValueMultiplier = getToRelativeValueMultiplier();
+		return toRelativeValueMultiplier > 0 ? realValue : realValue.negate();
+	}
+
 	public boolean isNegateToConvertToRealValue()
 	{
 		return getToRealValueMultiplier() < 0;
@@ -115,6 +135,12 @@ public final class InvoiceAmtMultiplier
 		}
 
 		return multiplier;
+	}
+
+	private int getToRelativeValueMultiplier()
+	{
+		// NOTE: the relative->real and real->relative value multipliers are the same
+		return getToRealValueMultiplier();
 	}
 
 	public Money fromNotAdjustedAmount(@NonNull final Money money)
