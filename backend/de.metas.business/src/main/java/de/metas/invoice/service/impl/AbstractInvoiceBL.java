@@ -78,7 +78,6 @@ import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoicePaymentStatus;
-import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
@@ -535,7 +534,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				return false;
 			}
 
-			final BigDecimal openAmt = getOpenAmtAbs(invoice, grandTotal, allocationAmt);
+			final BigDecimal openAmt = getOpenAmt_AP_CM_Adjusted(invoice, grandTotal, allocationAmt);
 			final InvoicePaymentStatus paymentStatus = computePaymentStatus(openAmt, hasAllocations);
 			return setPaymentStatus(invoice, openAmt, paymentStatus);
 		}
@@ -2151,7 +2150,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@NonNull
-	private BigDecimal getOpenAmtAbs(
+	private BigDecimal getOpenAmt_AP_CM_Adjusted(
 			@NonNull final org.compiere.model.I_C_Invoice invoice,
 			@NonNull final BigDecimal grandTotal,
 			@NonNull final BigDecimal allocationAmt)
