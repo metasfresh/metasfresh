@@ -77,6 +77,7 @@ import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoicePaymentStatus;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
@@ -380,13 +381,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		to.setIsApproved(false);
 		to.setC_Payment_ID(0);
 		to.setC_CashLine_ID(0);
-		to.setIsPaid(false);
-		to.setIsPartiallyPaid(false);
 		to.setIsInDispute(false);
 		//
 		// Amounts are updated by trigger when adding lines
 		to.setGrandTotal(BigDecimal.ZERO);
-		to.setOpenAmt(BigDecimal.ZERO);
+		Services.get(IInvoiceBL.class).setPaymentStatus(to, BigDecimal.ZERO, InvoicePaymentStatus.NOT_PAID);
 		to.setTotalLines(BigDecimal.ZERO);
 		to.setCashRoundingAmt(BigDecimal.ZERO);
 		//
@@ -514,62 +513,80 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final boolean testAllocation(final org.compiere.model.I_C_Invoice invoice, final boolean ignoreProcessed)
 	{
-		boolean change = false;
-
 		if (invoice.isProcessed() || ignoreProcessed)
 		{
-			BigDecimal alloc = Services.get(IAllocationDAO.class).retrieveAllocatedAmt(invoice); // absolute
-			final boolean hasAllocations = alloc != null; // metas: tsa: 01955
-			if (alloc == null)
+			BigDecimal allocationAmt = Services.get(IAllocationDAO.class).retrieveAllocatedAmt(invoice); // absolute
+			final boolean hasAllocations = allocationAmt != null;
+			if (allocationAmt == null)
 			{
-				alloc = BigDecimal.ZERO;
+				allocationAmt = BigDecimal.ZERO;
 			}
-			BigDecimal total = invoice.getGrandTotal();
-			// metas: tsa: begin: 01955:
-			// If is an zero invoice, it has no allocations and the AutoPayZeroAmt is not set
+
+			final BigDecimal grandTotal = getGrandTotalAbs(invoice);
+
+			// If is a zero invoice, it has no allocations and the AutoPayZeroAmt is not set
 			// then don't touch the invoice
-			if (total.signum() == 0 && !hasAllocations
+			if (grandTotal.signum() == 0
+					&& !hasAllocations
 					&& !Services.get(ISysConfigBL.class).getBooleanValue(AbstractInvoiceBL.SYSCONFIG_AutoPayZeroAmt, true, invoice.getAD_Client_ID()))
 			{
 				// don't touch the IsPaid flag, return not changed
 				return false;
 			}
-			// metas: tsa: end: 01955
-			if (!invoice.isSOTrx())
-			{
-				total = total.negate();
-			}
-			if (isCreditMemo(invoice))
-			{
-				total = total.negate();
-			}
 
-			final BigDecimal openAmt = total.subtract(alloc);
-			final boolean fullyPaid = openAmt.signum() == 0;
-			change = fullyPaid != invoice.isPaid();
-			if (change)
-			{
-				invoice.setIsPaid(fullyPaid);
-			}
+			final BigDecimal openAmt = getOpenAmt_AP_CM_Adjusted(invoice, grandTotal, allocationAmt);
+			final InvoicePaymentStatus paymentStatus = computePaymentStatus(openAmt, hasAllocations);
+			return setPaymentStatus(invoice, openAmt, paymentStatus);
+		}
+		else
+		{
+			return false;
+		}
+	}    // testAllocation
 
-			final boolean isPartiallyPaid = !fullyPaid && hasAllocations;
-			change = isPartiallyPaid != invoice.isPartiallyPaid();
-			if (change)
-			{
-				invoice.setIsPartiallyPaid(isPartiallyPaid);
-			}
-			
-			change = openAmt.compareTo(invoice.getOpenAmt()) != 0;
-			if (change)
-			{
-				invoice.setOpenAmt(openAmt);	
-			}
-			
-			log.debug("IsPaid={} IsPartiallyPaid={} (allocated={}, invoiceGrandTotal={})", fullyPaid, isPartiallyPaid, alloc, total);
+	@NonNull
+	private static InvoicePaymentStatus computePaymentStatus(@NonNull final BigDecimal openAmt, final boolean hasAllocations)
+	{
+		if (!hasAllocations)
+		{
+			return InvoicePaymentStatus.NOT_PAID;
+		}
+		else if (openAmt.signum() == 0)
+		{
+			return InvoicePaymentStatus.FULLY_PAID;
+		}
+		else
+		{
+			return InvoicePaymentStatus.PARTIALLY_PAID;
+		}
+	}
+
+	@Override
+	public boolean setPaymentStatus(
+			@NonNull final org.compiere.model.I_C_Invoice invoice,
+			@NonNull final BigDecimal openAmt,
+			@NonNull final InvoicePaymentStatus paymentStatus)
+	{
+		final boolean isOpenAmtChanged = openAmt.compareTo(invoice.getOpenAmt()) != 0;
+		if (isOpenAmtChanged)
+		{
+			invoice.setOpenAmt(openAmt);
 		}
 
-		return change;
-	}    // testAllocation
+		final boolean isFullyPaidChanged = paymentStatus.isFullyPaid() != invoice.isPaid();
+		if (isFullyPaidChanged)
+		{
+			invoice.setIsPaid(paymentStatus.isFullyPaid());
+		}
+
+		final boolean isPartiallyPaidChanged = paymentStatus.isPartiallyPaid() != invoice.isPartiallyPaid();
+		if (isPartiallyPaidChanged)
+		{
+			invoice.setIsPartiallyPaid(paymentStatus.isPartiallyPaid());
+		}
+		
+		return isOpenAmtChanged || isFullyPaidChanged || isPartiallyPaidChanged;
+	}
 
 	/**
 	 * Gets Invoice Grand Total (absolute value).
@@ -2130,6 +2147,33 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return grandTotal;
 		}
 		return NumberUtils.roundTo5Cent(grandTotal);
+	}
+
+	@NonNull
+	private BigDecimal getOpenAmt_AP_CM_Adjusted(
+			@NonNull final org.compiere.model.I_C_Invoice invoice,
+			@NonNull final BigDecimal grandTotal,
+			@NonNull final BigDecimal allocationAmt)
+	{
+		BigDecimal openAmt = grandTotal.subtract(allocationAmt);
+		if (grandTotal.signum() == 0)
+		{
+			return openAmt;
+		}
+
+		// AP/AR adjustment
+		if (!invoice.isSOTrx())
+		{
+			openAmt = openAmt.negate();
+		}
+
+		// CM adjustment
+		if (isCreditMemo(invoice))
+		{
+			openAmt = openAmt.negate();
+		}
+
+		return openAmt;
 	}
 }
 

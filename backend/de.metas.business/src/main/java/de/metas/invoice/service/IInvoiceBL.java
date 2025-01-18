@@ -41,6 +41,7 @@ import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoicePaymentStatus;
 import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -227,7 +228,15 @@ public interface IInvoiceBL extends ISingletonService {
             LocalDate dateInvoiced,
             LocalDate dateAcct);
 
-    void setFromOrder(I_C_Invoice invoice, I_C_Order order);
+	/**
+	 * @return true if there was any change
+	 */
+	boolean setPaymentStatus(
+			@NonNull I_C_Invoice invoice,
+			@NonNull BigDecimal openAmt,
+			@NonNull InvoicePaymentStatus paymentStatus);
+
+	void setFromOrder(I_C_Invoice invoice, I_C_Order order);
 
     void updateFromBPartner(I_C_Invoice invoice);
 
