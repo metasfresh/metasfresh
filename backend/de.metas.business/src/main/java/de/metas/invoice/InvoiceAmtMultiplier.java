@@ -33,8 +33,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
- import java.math.BigDecimal;
-
 @EqualsAndHashCode
 @ToString
 public final class InvoiceAmtMultiplier
@@ -81,12 +79,6 @@ public final class InvoiceAmtMultiplier
 	{
 		int toRealValueMultiplier = getToRealValueMultiplier();
 		return toRealValueMultiplier > 0 ? money : money.negate();
-	}
-
-	public BigDecimal convertToRealValue(@NonNull final BigDecimal amountBD)
-	{
-		int toRealValueMultiplier = getToRealValueMultiplier();
-		return toRealValueMultiplier > 0 ? amountBD : amountBD.negate();
 	}
 
 	public Money convertToRelativeValue(@NonNull final Money realValue)

@@ -166,8 +166,6 @@ public class InvoiceAmtMultiplierTest
 		};
 	}
 
-	;
-
 	@ParameterizedTest
 	@MethodSource("getTestCases")
 	void convertToRealValue(TestCase testCase)

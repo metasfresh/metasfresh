@@ -1,7 +1,6 @@
 package de.metas.payment.esr.spi.impl;
 
 import de.metas.currency.Amount;
-import de.metas.currency.CurrencyCode;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -25,7 +24,7 @@ import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ESRActionHandlerTest extends ESRTestBase
