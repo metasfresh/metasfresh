@@ -78,11 +78,13 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.BPartnerInvoicingInfo;
+import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoicePaymentStatus;
 import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
@@ -94,6 +96,7 @@ import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
@@ -185,7 +188,7 @@ import static de.metas.util.Check.assumeNotNull;
  */
 public abstract class AbstractInvoiceBL implements IInvoiceBL
 {
-	protected final transient Logger log = LogManager.getLogger(getClass());
+	protected final Logger log = LogManager.getLogger(getClass());
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
@@ -193,6 +196,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	private final SpringContextHolder.Lazy<ForexContractService> forexContractServiceLoader =
@@ -303,12 +307,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		// create the credit memo as a copy of the original invoice
 		return InterfaceWrapperHelper.create(
 				copyFrom(invoice, SystemTime.asTimestamp(),
-						 targetDocTypeId.getRepoId(),
-						 invoice.isSOTrx(),
-						 false, // counter == false
-						 creditCtx.isReferenceOriginalOrder(), // setOrderRef == creditCtx.isReferenceOriginalOrder()
-						 creditCtx.isReferenceInvoice(), // setInvoiceRef == creditCtx.isReferenceInvoice()
-						 true, // copyLines == true
+						targetDocTypeId.getRepoId(),
+						invoice.isSOTrx(),
+						false, // counter == false
+						creditCtx.isReferenceOriginalOrder(), // setOrderRef == creditCtx.isReferenceOriginalOrder()
+						creditCtx.isReferenceInvoice(), // setInvoiceRef == creditCtx.isReferenceInvoice()
+						true, // copyLines == true
 						new CreditMemoInvoiceCopyHandler(creditCtx),
 						creditCtx.isFixedInvoice()),
 				I_C_Invoice.class);
@@ -403,11 +407,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		to.setIsApproved(false);
 		to.setC_Payment_ID(0);
 		to.setC_CashLine_ID(0);
-		to.setIsPaid(false);
 		to.setIsInDispute(false);
 		//
 		// Amounts are updated by trigger when adding lines
 		to.setGrandTotal(BigDecimal.ZERO);
+		Services.get(IInvoiceBL.class).setPaymentStatus(to, BigDecimal.ZERO, InvoicePaymentStatus.NOT_PAID);
 		to.setTotalLines(BigDecimal.ZERO);
 		to.setCashRoundingAmt(BigDecimal.ZERO);
 		//
@@ -581,52 +585,87 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 							.build());
 
 			// If is a zero invoice, it has no allocations and the AutoPayZeroAmt is not set
-			// then don't touch the invoice
+		// then don't touch the invoice
 			if (invoiceOpenResult.getInvoiceGrandTotal().isZero()
 					&& !invoiceOpenResult.isHasAllocations()
 					&& !Services.get(ISysConfigBL.class).getBooleanValue(AbstractInvoiceBL.SYSCONFIG_AutoPayZeroAmt, true, invoice.getAD_Client_ID()))
-			{
-				// don't touch the IsPaid flag, return not changed
-				return false;
-			}
+		{
+			// don't touch the IsPaid flag, return not changed
+			return false;
+		}
 
-			final boolean isFullyAllocated = invoiceOpenResult.isFullyAllocated();
-			change = isFullyAllocated != invoice.isPaid();
-			if (change)
-			{
-				invoice.setIsPaid(isFullyAllocated);
-			}
-
-			log.debug("IsPaid={} ({})", isFullyAllocated, invoiceOpenResult);
+			// final boolean isFullyAllocated = invoiceOpenResult.isFullyAllocated();
+			// change = isFullyAllocated != invoice.isPaid();
+			// if (change)
+			// {
+			// 	invoice.setIsPaid(isFullyAllocated);
+			// }
+			final InvoicePaymentStatus paymentStatus = computePaymentStatus(openAmt.toMoney(), hasAllocations);
+			return setPaymentStatus(invoice, openAmt.toBigDecimal(), paymentStatus);
 		}
 
 		return change;
 	}    // testAllocation
 
-	/**
-	 * Gets Invoice Grand Total (absolute value).
-	 */
-	public final BigDecimal getGrandTotalAbs(final org.compiere.model.I_C_Invoice invoice)
+	@NonNull
+	private static InvoicePaymentStatus computePaymentStatus(@NonNull final Money openAmt, final boolean hasAllocations)
 	{
-		BigDecimal grandTotal = invoice.getGrandTotal();
-		if (grandTotal.signum() == 0)
+		if (!hasAllocations)
 		{
-			return grandTotal;
+			return InvoicePaymentStatus.NOT_PAID;
+		}
+		else if (openAmt.signum() == 0)
+		{
+			return InvoicePaymentStatus.FULLY_PAID;
+		}
+		else
+		{
+			return InvoicePaymentStatus.PARTIALLY_PAID;
+		}
+	}
+
+	@Override
+	public boolean setPaymentStatus(
+			@NonNull final org.compiere.model.I_C_Invoice invoice,
+			@NonNull final BigDecimal openAmt,
+			@NonNull final InvoicePaymentStatus paymentStatus)
+	{
+		final boolean isOpenAmtChanged = openAmt.compareTo(invoice.getOpenAmt()) != 0;
+		if (isOpenAmtChanged)
+		{
+			invoice.setOpenAmt(openAmt);
 		}
 
-		// AP/AR adjustment
-		if (!invoice.isSOTrx())
+		final boolean isFullyPaidChanged = paymentStatus.isFullyPaid() != invoice.isPaid();
+		if (isFullyPaidChanged)
 		{
-			grandTotal = grandTotal.negate();
+			invoice.setIsPaid(paymentStatus.isFullyPaid());
 		}
 
-		// CM adjustment
-		if (isCreditMemo(invoice))
+		final boolean isPartiallyPaidChanged = paymentStatus.isPartiallyPaid() != invoice.isPartiallyPaid();
+		if (isPartiallyPaidChanged)
 		{
-			grandTotal = grandTotal.negate();
+			invoice.setIsPartiallyPaid(paymentStatus.isPartiallyPaid());
 		}
 
-		return grandTotal;
+		return isOpenAmtChanged || isFullyPaidChanged || isPartiallyPaidChanged;
+	}
+
+	protected final InvoiceTotal extractGrandTotal(final org.compiere.model.I_C_Invoice invoice)
+	{
+		final Money grandTotal = Money.of(invoice.getGrandTotal(), CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
+		final InvoiceAmtMultiplier multiplier = getInvoiceAmtMultiplier(invoice);
+		return InvoiceTotal.ofRelativeValue(grandTotal, multiplier);
+	}
+
+	private InvoiceAmtMultiplier getInvoiceAmtMultiplier(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		return InvoiceAmtMultiplier.builder()
+				.soTrx(SOTrx.ofBoolean(invoice.isSOTrx()))
+				.isCreditMemo(isCreditMemo(invoice))
+				.isSOTrxAdjusted(false)
+				.isCreditMemoAdjusted(false)
+				.build();
 	}
 
 	@Override
@@ -795,12 +834,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		final BPartnerLocationId billBPartnerLocationId = getBillBPartnerLocationId(bpartnerId, soTrx);
 		final User billContact = bpartnerBL.retrieveContactOrNull(RetrieveContactRequest.builder()
-																		  .onlyActive(true)
-																		  .contactType(ContactType.BILL_TO_DEFAULT)
-																		  .bpartnerId(billBPartnerLocationId.getBpartnerId())
-																		  .bPartnerLocationId(billBPartnerLocationId)
-																		  .ifNotFound(IfNotFound.RETURN_NULL)
-																		  .build());
+				.onlyActive(true)
+				.contactType(ContactType.BILL_TO_DEFAULT)
+				.bpartnerId(billBPartnerLocationId.getBpartnerId())
+				.bPartnerLocationId(billBPartnerLocationId)
+				.ifNotFound(IfNotFound.RETURN_NULL)
+				.build());
 		final Optional<BPartnerContactId> billContactId = billContact != null
 				? Optional.of(BPartnerContactId.of(billContact.getBpartnerId(), billContact.getId()))
 				: Optional.empty();
@@ -1393,7 +1432,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				lineNetAmt = lineNetAmt.subtract(taxStdAmt).add(taxThisAmt);
 
 				log.debug("Price List includes Tax and Tax Changed on Invoice Line: New Tax Amt: "
-								  + taxThisAmt + " Standard Tax Amt: " + taxStdAmt + " Line Net Amt: " + lineNetAmt);
+						+ taxThisAmt + " Standard Tax Amt: " + taxStdAmt + " Line Net Amt: " + lineNetAmt);
 			}
 		}
 
@@ -1787,11 +1826,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final Boolean isSOTrx = adjustmentChargeCreateRequest.getIsSOTrx();
 
 		final DocTypeId targetDocTypeID = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
-																							   .docBaseType(docBaseAndSubType.getDocBaseType())
-																							   .docSubType(docBaseAndSubType.getDocSubType())
-																							   .adClientId(invoice.getAD_Client_ID())
-																							   .adOrgId(invoice.getAD_Org_ID())
-																							   .build());
+				.docBaseType(docBaseAndSubType.getDocBaseType())
+				.docSubType(docBaseAndSubType.getDocSubType())
+				.adClientId(invoice.getAD_Client_ID())
+				.adOrgId(invoice.getAD_Org_ID())
+				.build());
 		final I_C_Invoice adjustmentCharge = InterfaceWrapperHelper.create(
 				copyFrom(
 						invoice,
@@ -1806,7 +1845,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				I_C_Invoice.class);
 
 		adjustmentCharge.setDescription("Nachbelastung zu Rechnung " + invoice.getDocumentNo() + ", Order-Referenz " + invoice.getPOReference() + "\n\nUrsprünglicher Rechnungstext:\n"
-												+ invoice.getDescription());
+				+ invoice.getDescription());
 
 		adjustmentCharge.setRef_Invoice_ID(invoice.getC_Invoice_ID());
 		InterfaceWrapperHelper.save(adjustmentCharge);

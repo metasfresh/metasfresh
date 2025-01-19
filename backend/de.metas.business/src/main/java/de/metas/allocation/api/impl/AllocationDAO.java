@@ -51,6 +51,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -183,6 +184,7 @@ public class AllocationDAO implements IAllocationDAO
 	}
 
 	@Override
+	@Nullable
 	public BigDecimal retrieveAllocatedAmt(@NonNull final I_C_Invoice invoiceRecord)
 	{
 		return retrieveAllocatedAmtIgnoreGivenPaymentIDs(invoiceRecord, ImmutableSet.of());
@@ -199,7 +201,9 @@ public class AllocationDAO implements IAllocationDAO
 				.build());
 
 		// backward compatibility: method is expected to return amounts which are not AP adjusted
-		return result.getAllocatedAmt().withoutAPAdjusted().withoutCMAdjusted().toBigDecimal();
+		return result.getAllocatedAmt().withoutAPAdjusted().withoutCMAdjusted().toBigDecimal()
+				.map(Money::toBigDecimal)
+				.orElse(null);
 	}
 
 	@Override
@@ -290,6 +294,51 @@ public class AllocationDAO implements IAllocationDAO
 					.setParameter("sql", sql)
 					.setParameter("sqlParams", sqlParams)
 					.setParameter("resultParts", resultParts);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
+	}
+
+	@Override
+	public Optional<Money> retrieveAllocatedAmtAsMoney(final InvoiceId invoiceId)
+	{
+		return retrieveAllocatedAmt(invoiceId, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	protected Optional<Money> retrieveAllocatedAmt(@NonNull final InvoiceId invoiceId, final String trxName)
+	{
+		final String sql = "SELECT SUM(currencyConvert(al.Amount+al.DiscountAmt+al.WriteOffAmt,ah.C_Currency_ID, i.C_Currency_ID,ah.DateTrx,COALESCE(i.C_ConversionType_ID,0), al.AD_Client_ID,al.AD_Org_ID)) "
+				+ ", i.C_Currency_ID"
+				+ " FROM C_AllocationLine al"
+				+ " INNER JOIN C_AllocationHdr ah ON (al.C_AllocationHdr_ID=ah.C_AllocationHdr_ID)"
+				+ " INNER JOIN C_Invoice i ON (al.C_Invoice_ID=i.C_Invoice_ID) "
+				+ " WHERE al.C_Invoice_ID=? AND ah.IsActive='Y' AND al.IsActive='Y'"
+				+ " GROUP BY i.C_Invoice_ID";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+
+			pstmt = DB.prepareStatement(sql, trxName);
+			pstmt.setInt(1, invoiceId.getRepoId());
+			rs = pstmt.executeQuery();
+			if (rs.next())
+			{
+				final BigDecimal allocatedAmt = rs.getBigDecimal(1);
+				final CurrencyId currencyId = CurrencyId.ofRepoId(rs.getInt(2));
+				return Optional.of(Money.of(allocatedAmt, currencyId));
+			}
+			else
+			{
+				// IMPORTANT: return empty if there are NO allocations found
+				return Optional.empty();
+			}
+		}
+		catch (SQLException e)
+		{
+			throw new DBException(e, sql);
 		}
 		finally
 		{

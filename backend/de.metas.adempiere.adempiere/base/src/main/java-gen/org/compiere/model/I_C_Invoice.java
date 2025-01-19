@@ -1486,26 +1486,6 @@ public interface I_C_Invoice
 	ModelColumn<I_C_Invoice, Object> COLUMN_InvoiceAdditionalText = new ModelColumn<>(I_C_Invoice.class, "InvoiceAdditionalText", null);
 	String COLUMNNAME_InvoiceAdditionalText = "InvoiceAdditionalText";
 
-	/**
-	 * Set Collection Status.
-	 * Invoice Collection Status
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setInvoiceCollectionType (@Nullable java.lang.String InvoiceCollectionType);
-
-	/**
-	 * Get Collection Status.
-	 * Invoice Collection Status
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getInvoiceCollectionType();
-
 	ModelColumn<I_C_Invoice, Object> COLUMN_InvoiceCollectionType = new ModelColumn<>(I_C_Invoice.class, "InvoiceCollectionType", null);
 	String COLUMNNAME_InvoiceCollectionType = "InvoiceCollectionType";
 
@@ -1529,6 +1509,26 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_Invoice_includedTab = new ModelColumn<>(I_C_Invoice.class, "Invoice_includedTab", null);
 	String COLUMNNAME_Invoice_includedTab = "Invoice_includedTab";
+
+	/**
+	 * Set Collection Status.
+	 * Invoice Collection Status
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoiceCollectionType (@Nullable java.lang.String InvoiceCollectionType);
+
+	/**
+	 * Get Collection Status.
+	 * Invoice Collection Status
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInvoiceCollectionType();
 
 	/**
 	 * Set Active.
@@ -1709,6 +1709,27 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_IsPaid = new ModelColumn<>(I_C_Invoice.class, "IsPaid", null);
 	String COLUMNNAME_IsPaid = "IsPaid";
+
+	/**
+	 * Set Partially Paid.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPartiallyPaid (boolean IsPartiallyPaid);
+
+	/**
+	 * Get Partially Paid.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPartiallyPaid();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_IsPartiallyPaid = new ModelColumn<>(I_C_Invoice.class, "IsPartiallyPaid", null);
+	String COLUMNNAME_IsPartiallyPaid = "IsPartiallyPaid";
 
 	/**
 	 * Set Pay Schedule valid.
@@ -2031,6 +2052,29 @@ public interface I_C_Invoice
 	int getM_Warehouse_ID();
 
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+
+	/**
+	 * Set Open Amount.
+	 * Open item amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOpenAmt (@Nullable BigDecimal OpenAmt);
+
+	/**
+	 * Get Open Amount.
+	 * Open item amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getOpenAmt();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_OpenAmt = new ModelColumn<>(I_C_Invoice.class, "OpenAmt", null);
+	String COLUMNNAME_OpenAmt = "OpenAmt";
 
 	/**
 	 * Set Payment Rule.
@@ -2401,6 +2445,11 @@ public interface I_C_Invoice
 	 */
 	int getUser1_ID();
 
+	@Nullable org.compiere.model.I_C_ElementValue getUser1();
+
+	void setUser1(@Nullable org.compiere.model.I_C_ElementValue User1);
+
+	ModelColumn<I_C_Invoice, org.compiere.model.I_C_ElementValue> COLUMN_User1_ID = new ModelColumn<>(I_C_Invoice.class, "User1_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_User1_ID = "User1_ID";
 
 	/**
@@ -2421,6 +2470,11 @@ public interface I_C_Invoice
 	 */
 	int getUser2_ID();
 
+	@Nullable org.compiere.model.I_C_ElementValue getUser2();
+
+	void setUser2(@Nullable org.compiere.model.I_C_ElementValue User2);
+
+	ModelColumn<I_C_Invoice, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new ModelColumn<>(I_C_Invoice.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_User2_ID = "User2_ID";
 
 	/**
