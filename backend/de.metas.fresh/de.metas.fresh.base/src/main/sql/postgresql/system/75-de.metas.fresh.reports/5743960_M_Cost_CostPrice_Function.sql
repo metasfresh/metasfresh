@@ -1,3 +1,24 @@
+DROP FUNCTION IF EXISTS report.M_Cost_CostPrice_Function(IN p_keydate          timestamp WITH TIME ZONE,
+                                                         IN p_M_Product_ID     numeric(10, 0),
+                                                         IN p_M_Warehouse_ID   numeric(10, 0),
+                                                         IN p_showDetails      character varying,
+                                                         IN p_ad_language      character varying(6),
+                                                         IN p_AcctSchema_ID    numeric(10, 0),
+                                                         IN p_M_CostElement_ID numeric(10, 0),
+                                                         IN p_AD_Client_ID     numeric(10, 0),
+                                                         IN p_AD_Org_ID        numeric(10, 0))
+;
+
+
+DROP FUNCTION IF EXISTS report.M_Cost_CostPrice_Function(IN p_keydate        timestamp WITH TIME ZONE,
+                                                         IN p_M_Product_ID   numeric(10, 0),
+                                                         IN p_M_Warehouse_ID numeric(10, 0),
+                                                         IN p_showDetails    character varying,
+                                                         IN p_ad_language    character varying(6),
+                                                         IN p_AD_Client_ID   numeric(10, 0),
+                                                         IN p_AD_Org_ID      numeric(10, 0))
+;
+
 DROP FUNCTION IF EXISTS report.M_Cost_CostPrice_Function(
     IN p_DateAcct       timestamp WITH TIME ZONE,
     IN p_M_Product_ID   numeric(10, 0),
@@ -90,21 +111,3 @@ ORDER BY vc.combination,
 $$
     LANGUAGE sql STABLE
 ;
-
-
---
--- Test:
-/*
-SELECT r.*, 
-    (case when r.qty !=0 then round(r.TotalAmt/r.qty, 4) end) as costPrice_calc
-FROM report.M_Cost_CostPrice_Function(
-        p_keydate := '2024-12-11',
-        p_M_Product_ID := (SELECT m_product_id FROM m_product WHERE value = '104031'),
-        p_M_Warehouse_ID := 540008,
-        p_showDetails := 'Y',
-        p_ad_language := 'de_DE',
-        p_ad_client_id := 1000000,
-        p_ad_org_id := 1000000
-     ) r
-;
-*/
