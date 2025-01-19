@@ -8,6 +8,7 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -1646,6 +1647,7 @@ public class TimeUtil
 	}
 
 	@Nullable
+	@Contract("!null -> !null")
 	public static LocalDate asLocalDate(@Nullable final Timestamp ts)
 	{
 		return ts != null

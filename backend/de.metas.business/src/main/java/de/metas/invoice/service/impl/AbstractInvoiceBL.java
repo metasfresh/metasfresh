@@ -47,6 +47,7 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.BPartnerInvoicingInfo;
+import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
@@ -64,6 +65,7 @@ import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
@@ -174,10 +176,12 @@ import static de.metas.util.Check.assumeNotNull;
  */
 public abstract class AbstractInvoiceBL implements IInvoiceBL
 {
-	protected final transient Logger log = LogManager.getLogger(getClass());
+	protected final Logger log = LogManager.getLogger(getClass());
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	/**
 	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}.
@@ -509,39 +513,34 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final boolean testAllocation(final org.compiere.model.I_C_Invoice invoice, final boolean ignoreProcessed)
 	{
-		if (invoice.isProcessed() || ignoreProcessed)
+		// Skip if not processed
+		if (!invoice.isProcessed() && !ignoreProcessed)
 		{
-			BigDecimal allocationAmt = Services.get(IAllocationDAO.class).retrieveAllocatedAmt(invoice); // absolute
-			final boolean hasAllocations = allocationAmt != null;
-			if (allocationAmt == null)
-			{
-				allocationAmt = BigDecimal.ZERO;
-			}
-
-			final BigDecimal grandTotal = getGrandTotalAbs(invoice);
-
-			// If is a zero invoice, it has no allocations and the AutoPayZeroAmt is not set
-			// then don't touch the invoice
-			if (grandTotal.signum() == 0
-					&& !hasAllocations
-					&& !Services.get(ISysConfigBL.class).getBooleanValue(AbstractInvoiceBL.SYSCONFIG_AutoPayZeroAmt, true, invoice.getAD_Client_ID()))
-			{
-				// don't touch the IsPaid flag, return not changed
-				return false;
-			}
-
-			final BigDecimal openAmt = getOpenAmtAbs(invoice, grandTotal, allocationAmt);
-			final InvoicePaymentStatus paymentStatus = computePaymentStatus(openAmt, hasAllocations);
-			return setPaymentStatus(invoice, openAmt, paymentStatus);
+			return false; // not changed
 		}
-		else
+
+		final InvoiceTotal invoiceGrandTotal = extractGrandTotal(invoice);
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+		final Money allocatedAmt = allocationDAO.retrieveAllocatedAmtAsMoney(invoiceId).orElse(null);
+		final boolean hasAllocations = allocatedAmt != null;
+
+		// If is a zero invoice, it has no allocations and the AutoPayZeroAmt is not set
+		// then don't touch the invoice
+		if (invoiceGrandTotal.isZero()
+				&& !hasAllocations
+				&& !sysConfigBL.getBooleanValue(AbstractInvoiceBL.SYSCONFIG_AutoPayZeroAmt, true, invoice.getAD_Client_ID()))
 		{
+			// don't touch the IsPaid flag, return not changed
 			return false;
 		}
+
+		final InvoiceTotal openAmt = invoiceGrandTotal.subtractRealValue(allocatedAmt);
+		final InvoicePaymentStatus paymentStatus = computePaymentStatus(openAmt.toMoney(), hasAllocations);
+		return setPaymentStatus(invoice, openAmt.toBigDecimal(), paymentStatus);
 	}    // testAllocation
 
 	@NonNull
-	private static InvoicePaymentStatus computePaymentStatus(@NonNull final BigDecimal openAmt, final boolean hasAllocations)
+	private static InvoicePaymentStatus computePaymentStatus(@NonNull final Money openAmt, final boolean hasAllocations)
 	{
 		if (!hasAllocations)
 		{
@@ -580,34 +579,25 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		{
 			invoice.setIsPartiallyPaid(paymentStatus.isPartiallyPaid());
 		}
-		
+
 		return isOpenAmtChanged || isFullyPaidChanged || isPartiallyPaidChanged;
 	}
 
-	/**
-	 * Gets Invoice Grand Total (absolute value).
-	 */
-	public final BigDecimal getGrandTotalAbs(final org.compiere.model.I_C_Invoice invoice)
+	protected final InvoiceTotal extractGrandTotal(final org.compiere.model.I_C_Invoice invoice)
 	{
-		BigDecimal grandTotal = invoice.getGrandTotal();
-		if (grandTotal.signum() == 0)
-		{
-			return grandTotal;
-		}
+		final Money grandTotal = Money.of(invoice.getGrandTotal(), CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
+		final InvoiceAmtMultiplier multiplier = getInvoiceAmtMultiplier(invoice);
+		return InvoiceTotal.ofRelativeValue(grandTotal, multiplier);
+	}
 
-		// AP/AR adjustment
-		if (!invoice.isSOTrx())
-		{
-			grandTotal = grandTotal.negate();
-		}
-
-		// CM adjustment
-		if (isCreditMemo(invoice))
-		{
-			grandTotal = grandTotal.negate();
-		}
-
-		return grandTotal;
+	private InvoiceAmtMultiplier getInvoiceAmtMultiplier(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		return InvoiceAmtMultiplier.builder()
+				.soTrx(SOTrx.ofBoolean(invoice.isSOTrx()))
+				.isCreditMemo(isCreditMemo(invoice))
+				.isSOTrxAdjusted(false)
+				.isCreditMemoAdjusted(false)
+				.build();
 	}
 
 	@Override
@@ -2049,32 +2039,5 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	public I_C_InvoiceLine getLineById(@NonNull final InvoiceAndLineId invoiceAndLineId)
 	{
 		return invoiceDAO.retrieveLineById(invoiceAndLineId);
-	}
-
-	@NonNull
-	private BigDecimal getOpenAmtAbs(
-			@NonNull final org.compiere.model.I_C_Invoice invoice,
-			@NonNull final BigDecimal grandTotal,
-			@NonNull final BigDecimal allocationAmt)
-	{
-		BigDecimal openAmt = grandTotal.subtract(allocationAmt);
-		if (grandTotal.signum() == 0)
-		{
-			return openAmt;
-		}
-
-		// AP/AR adjustment
-		if (!invoice.isSOTrx())
-		{
-			openAmt = openAmt.negate();
-		}
-
-		// CM adjustment
-		if (isCreditMemo(invoice))
-		{
-			openAmt = openAmt.negate();
-		}
-
-		return openAmt;
 	}
 }
