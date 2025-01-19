@@ -89,6 +89,8 @@ SELECT cd.m_costdetail_id,
                                                                                      ELSE (SELECT loc.m_warehouse_id FROM m_locator loc WHERE loc.m_locator_id = ml.m_locatorto_id)
                                                            END)
             WHEN cd.m_inoutline_id IS NOT NULL       THEN io.m_warehouse_id
+            WHEN cd.m_costrevaluation_id IS NOT NULL           THEN null -- warehouse hot available
+            WHEN cd.m_shipping_notificationline_id IS NOT NULL THEN sn.m_warehouse_id
         END)                       AS m_warehouse_id
 FROM m_costdetail cd
          LEFT JOIN M_MatchInv mi ON mi.m_matchinv_id = cd.m_matchinv_id
