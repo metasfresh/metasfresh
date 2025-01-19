@@ -52,7 +52,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class AllocationDAO implements IAllocationDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	@Override
 	public void save(@NonNull final I_C_AllocationHdr allocationHdr)
@@ -90,7 +89,7 @@ public class AllocationDAO implements IAllocationDAO
 			openAmt = invoice.getGrandTotal();
 		}
 
-		if (creditMemoAdjusted && invoiceBL.isCreditMemo(invoice))
+		if (creditMemoAdjusted && Services.get(IInvoiceBL.class).isCreditMemo(invoice))
 		{
 			return Money.of(openAmt.negate(), invoiceCurrencyId);
 		}
