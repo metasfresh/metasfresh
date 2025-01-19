@@ -72,7 +72,24 @@ SELECT cd.m_costdetail_id,
                 cd.m_movementline_id,
                 cd.m_inoutline_id,
                 cd.m_costrevaluationline_id,
-                cd.m_shipping_notificationline_id) AS record_id
+                cd.m_shipping_notificationline_id) AS record_id,
+       (CASE
+            WHEN cd.m_matchinv_id IS NOT NULL        THEN (SELECT loc.m_warehouse_id
+                                                           FROM m_inoutline iol
+                                                                    LEFT OUTER JOIN m_locator loc ON loc.m_locator_id = iol.m_locator_id
+                                                           WHERE iol.m_inoutline_id = mi.m_inoutline_id)
+            WHEN cd.m_matchpo_id IS NOT NULL         THEN (SELECT loc.m_warehouse_id
+                                                           FROM m_inoutline iol
+                                                                    LEFT OUTER JOIN m_locator loc ON loc.m_locator_id = iol.m_locator_id
+                                                           WHERE iol.m_inoutline_id = mpo.m_inoutline_id)
+            WHEN cd.pp_cost_collector_id IS NOT NULL THEN pp.m_warehouse_id
+            WHEN cd.m_inventoryline_id IS NOT NULL   THEN inv.m_warehouse_id
+            WHEN cd.m_movementline_id IS NOT NULL    THEN (CASE
+                                                               WHEN cd.issotrx = 'Y' THEN (SELECT loc.m_warehouse_id FROM m_locator loc WHERE loc.m_locator_id = ml.m_locator_id)
+                                                                                     ELSE (SELECT loc.m_warehouse_id FROM m_locator loc WHERE loc.m_locator_id = ml.m_locatorto_id)
+                                                           END)
+            WHEN cd.m_inoutline_id IS NOT NULL       THEN io.m_warehouse_id
+        END)                       AS m_warehouse_id
 FROM m_costdetail cd
          LEFT JOIN M_MatchInv mi ON mi.m_matchinv_id = cd.m_matchinv_id
          LEFT JOIN M_MatchPO mpo ON mpo.M_MatchPO_ID = cd.m_MatchPO_ID
@@ -88,5 +105,5 @@ FROM m_costdetail cd
          LEFT JOIN M_Shipping_Notification sn ON sn.M_Shipping_Notification_ID = snl.M_Shipping_Notification_ID
 ;
 
-COMMENT ON VIEW m_costdetail_v IS 'M_CostDetail table but with some missing columns like DocStatus'
+COMMENT ON VIEW m_costdetail_v IS 'M_CostDetail table but with some helpful columns like DocStatus'
 ;
