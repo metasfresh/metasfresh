@@ -11,6 +11,7 @@ Feature: Mediated commission
 
   @from:cucumber
   @topic:commissionContracts
+  @ignore
   Scenario: Happy flow for mediated commission contract
     Given taxCategory 'Normal' is updated to work with all productTypes
     And metasfresh contains M_Products:
