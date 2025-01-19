@@ -44,9 +44,11 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoicePaymentStatus;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
@@ -104,7 +106,8 @@ public class PaymentsViewAllocateCommandTest
 
 	private MoneyService moneyService;
 	private InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
-	private IInvoiceDAO invoicesDAO;
+	private IInvoiceDAO invoiceDAO;
+	private IInvoiceBL invoiceBL;
 	private IAllocationDAO allocationDAO;
 
 	private OrgId orgId;
@@ -123,7 +126,8 @@ public class PaymentsViewAllocateCommandTest
 		invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(
 				new InvoiceProcessingServiceCompanyConfigRepository(),
 				moneyService);
-		invoicesDAO = Services.get(IInvoiceDAO.class);
+		invoiceDAO = Services.get(IInvoiceDAO.class);
+		invoiceBL = Services.get(IInvoiceBL.class);
 		allocationDAO = Services.get(IAllocationDAO.class);
 
 		euroCurrencyId = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
@@ -156,15 +160,28 @@ public class PaymentsViewAllocateCommandTest
 		return TableRecordReference.of(I_C_Invoice.Table_Name, invoiceRow.getInvoiceId());
 	}
 
-	private void assertInvoiceAllocatedAmt(final InvoiceId invoiceId, final String expectedAllocatedAmt)
+	private void assertInvoiceNotAllocated(@NonNull final InvoiceId invoiceId)
 	{
-		final I_C_Invoice invoice = invoicesDAO.getByIdInTrx(invoiceId);
-
-		final BigDecimal actualAllocatedAmt = allocationDAO.retrieveAllocatedAmt(invoice);
-
-		assertThat(actualAllocatedAmt)
+		assertThat(allocationDAO.retrieveAllocatedAmtAsMoney(invoiceId))
 				.as("Allocated amount for invoice " + invoiceId)
-				.isEqualByComparingTo(expectedAllocatedAmt);
+				.isEmpty();
+	}
+
+	private void assertInvoiceAllocatedAmt(@NonNull final InvoiceId invoiceId, @NonNull final String expectedAllocatedAmt)
+	{
+		final Money actualAllocatedAmt = allocationDAO.retrieveAllocatedAmtAsMoney(invoiceId).orElse(null);
+		assertThat(actualAllocatedAmt).isNotNull();
+		assertThat(actualAllocatedAmt.toBigDecimal()).isEqualByComparingTo(expectedAllocatedAmt);
+	}
+
+	private void assertInvoicePaymentStatus(final InvoiceId invoiceId, InvoicePaymentStatus expectedPaymentStatus, String expectedOpenAmt)
+	{
+		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
+		invoiceBL.testAllocation(invoice, true);
+
+		assertThat(invoice.isPaid()).isEqualTo(expectedPaymentStatus.isFullyPaid());
+		assertThat(invoice.isPartiallyPaid()).isEqualTo(expectedPaymentStatus.isPartiallyPaid());
+		assertThat(invoice.getOpenAmt()).isEqualTo(expectedOpenAmt);
 	}
 
 	@Builder(builderMethodName = "paymentRow", builderClassName = "$PaymentRowBuilder")
@@ -575,8 +592,10 @@ public class PaymentsViewAllocateCommandTest
 			final InvoiceRow invoiceRow = invoiceRow().docBaseType(InvoiceDocBaseType.VendorInvoice).openAmt(euro(100)).dateInvoiced("2020-04-23").build();
 			final InvoiceRow creditMemoRow = invoiceRow().docBaseType(InvoiceDocBaseType.VendorCreditMemo).openAmt(euro(-20)).dateInvoiced("2020-04-24").build();
 
-			assertInvoiceAllocatedAmt(invoiceRow.getInvoiceId(), "0");
-			assertInvoiceAllocatedAmt(creditMemoRow.getInvoiceId(), "0");
+			assertInvoiceNotAllocated(invoiceRow.getInvoiceId());
+			assertInvoicePaymentStatus(invoiceRow.getInvoiceId(), InvoicePaymentStatus.NOT_PAID, "100");
+			assertInvoiceNotAllocated(creditMemoRow.getInvoiceId());
+			assertInvoicePaymentStatus(creditMemoRow.getInvoiceId(), InvoicePaymentStatus.NOT_PAID, "20");
 
 			final PaymentAllocationResult result = PaymentsViewAllocateCommand.builder()
 					.moneyService(moneyService)
@@ -609,7 +628,9 @@ public class PaymentsViewAllocateCommandTest
 							.build());
 
 			assertInvoiceAllocatedAmt(invoiceRow.getInvoiceId(), "-20");
+			assertInvoicePaymentStatus(invoiceRow.getInvoiceId(), InvoicePaymentStatus.PARTIALLY_PAID, "80");
 			assertInvoiceAllocatedAmt(creditMemoRow.getInvoiceId(), "+20");
+			assertInvoicePaymentStatus(creditMemoRow.getInvoiceId(), InvoicePaymentStatus.FULLY_PAID, "0");
 		}
 
 		@Test

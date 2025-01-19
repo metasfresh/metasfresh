@@ -23,17 +23,26 @@ package de.metas.allocation.api.impl;
  */
 
 import de.metas.currency.ICurrencyBL;
+import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import de.metas.util.TypedAccessor;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class PlainAllocationDAO extends AllocationDAO
@@ -90,44 +99,42 @@ public class PlainAllocationDAO extends AllocationDAO
 	}
 
 	@Override
-	public BigDecimal retrieveAllocatedAmt(final org.compiere.model.@NonNull I_C_Invoice invoice)
+	protected Optional<Money> retrieveAllocatedAmt(@NonNull final InvoiceId invoiceId, final String trxName)
 	{
-		return retrieveAllocatedAmt(invoice, o -> {
-			final I_C_AllocationLine line = (I_C_AllocationLine)o;
-			return line.getAmount()
-					.add(line.getDiscountAmt())
-					.add(line.getWriteOffAmt());
-		});
-	}
+		final I_C_Invoice invoice = InterfaceWrapperHelper.create(Env.getCtx(), invoiceId.getRepoId(), I_C_Invoice.class, trxName);
+		final List<I_C_AllocationLine> allocationLines = retrieveAllocationLines(invoice);
+		if(allocationLines.isEmpty())
+		{
+			return Optional.empty();
+		}
+		
+		final CurrencyId invoiceCurrencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
+		Money allocatedAmt = Money.zero(invoiceCurrencyId);
 
-	private BigDecimal retrieveAllocatedAmt(final org.compiere.model.I_C_Invoice invoice, final TypedAccessor<BigDecimal> amountAccessor)
-	{
-		BigDecimal sum = BigDecimal.ZERO;
-		for (final I_C_AllocationLine line : retrieveAllocationLines(invoice))
+		for (final I_C_AllocationLine line : allocationLines)
 		{
 			final I_C_AllocationHdr ah = line.getC_AllocationHdr();
-			final BigDecimal lineAmt = amountAccessor.getValue(line);
-
-			if (null != ah && ah.getC_Currency_ID() != invoice.getC_Currency_ID())
+			final CurrencyId allocationCurrencyId = CurrencyId.ofRepoId(ah.getC_Currency_ID());
+			final Money lineAmt = Money.of(line.getAmount().add(line.getDiscountAmt()).add(line.getWriteOffAmt()), allocationCurrencyId);
+			final Money lineAmtConv;
+			if (ah.getC_Currency_ID() != invoice.getC_Currency_ID())
 			{
-				final BigDecimal lineAmtConv = Services.get(ICurrencyBL.class).convert(
-						lineAmt, // Amt
-						CurrencyId.ofRepoId(ah.getC_Currency_ID()), // CurFrom_ID
-						CurrencyId.ofRepoId(invoice.getC_Currency_ID()), // CurTo_ID
-						ah.getDateTrx().toInstant(), // ConvDate
-						CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
-						ClientId.ofRepoId(line.getAD_Client_ID()), 
-						OrgId.ofRepoId(line.getAD_Org_ID()));
-
-				sum = sum.add(lineAmtConv);
+				final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+				lineAmtConv = currencyBL.convert(
+						lineAmt, 
+						invoiceCurrencyId, 
+						TimeUtil.asLocalDate(ah.getDateTrx()), 
+						ClientAndOrgId.ofClientAndOrg(line.getAD_Client_ID(), line.getAD_Org_ID()));
 			}
 			else
 			{
-				sum = sum.add(lineAmt);
+				lineAmtConv = lineAmt;
 			}
+			
+			allocatedAmt = allocatedAmt.add(lineAmtConv);
 		}
 
-		return sum;
+		return Optional.of(allocatedAmt);
 	}
 
 	@Override
