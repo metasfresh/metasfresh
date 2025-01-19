@@ -28,12 +28,10 @@ import de.metas.allocation.api.MoneyWithInvoiceFlags;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.InvoiceDocBaseType;
-import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.util.Services;
@@ -45,13 +43,9 @@ import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 public class PlainAllocationDAO extends AllocationDAO
@@ -72,11 +66,14 @@ public class PlainAllocationDAO extends AllocationDAO
 		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID());
 		final CurrencyId returnInCurrencyId = request.getReturnInCurrencyId() != null
 				? request.getReturnInCurrencyId()
-				: CurrencyId.ofRepoId(invoice.getC_Invoice_ID());
+				: CurrencyId.ofRepoId(invoice.getC_Currency_ID());
 
 		Money allocatedAmt = Money.zero(returnInCurrencyId);
+		boolean hasAllocations = false;
 		for (final I_C_AllocationLine line : retrieveAllocationLines(invoice))
 		{
+			hasAllocations = true;
+
 			if (paymentIDsToIgnore != null && paymentIDsToIgnore.contains(PaymentId.ofRepoIdOrNull(line.getC_Payment_ID())))
 			{
 				continue;
@@ -88,8 +85,7 @@ public class PlainAllocationDAO extends AllocationDAO
 				throw new AdempiereException("No C_AllocationHdr_ID is set for " + line);
 			}
 			final CurrencyId allocationCurrencyId = CurrencyId.ofRepoId(ah.getC_Currency_ID());
-			Money lineAmt = Money.of(line.getAmount().add(line.getDiscountAmt()).add(line.getWriteOffAmt()), allocationCurrencyId)
-					.negateIf(docBaseType.isAP());
+			Money lineAmt = Money.of(line.getAmount().add(line.getDiscountAmt()).add(line.getWriteOffAmt()), allocationCurrencyId);
 			if (!CurrencyId.equals(lineAmt.getCurrencyId(), returnInCurrencyId))
 			{
 				final CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
@@ -104,8 +100,12 @@ public class PlainAllocationDAO extends AllocationDAO
 		}
 
 		//
-		Money invoiceGrandTotal = Money.of(invoice.getGrandTotal(), CurrencyId.ofRepoId(invoice.getC_Currency_ID()))
-				.negateIf(docBaseType.isCreditMemo());
+		MoneyWithInvoiceFlags invoiceGrandTotal = MoneyWithInvoiceFlags.builder()
+				.docBaseType(docBaseType)
+				.value(Money.of(invoice.getGrandTotal(), CurrencyId.ofRepoId(invoice.getC_Currency_ID())))
+				.isAPAdjusted(false)
+				.isCMAjusted(false)
+				.build();
 
 		if (!CurrencyId.equals(invoiceGrandTotal.getCurrencyId(), returnInCurrencyId))
 		{
@@ -114,31 +114,23 @@ public class PlainAllocationDAO extends AllocationDAO
 					conversionTypeId,
 					ClientId.ofRepoId(invoice.getAD_Client_ID()),
 					OrgId.ofRepoId(invoice.getAD_Org_ID()));
-			invoiceGrandTotal = currencyBL.convert(conversionCtx, invoiceGrandTotal, returnInCurrencyId).getAmountAsMoney();
+			
+			invoiceGrandTotal = invoiceGrandTotal.convertValue(value -> currencyBL.convert(conversionCtx, value, returnInCurrencyId).getAmountAsMoney());
 		}
 
-		final Money openAmt = invoiceGrandTotal.subtract(allocatedAmt);
+		final MoneyWithInvoiceFlags openAmt = invoiceGrandTotal.withAPAdjusted().withCMAdjusted().subtract(allocatedAmt);
 
 		return InvoiceOpenResult.builder()
 				.invoiceDocBaseType(docBaseType)
-				.invoiceGrandTotal(MoneyWithInvoiceFlags.builder()
-						.docBaseType(docBaseType)
-						.value(invoiceGrandTotal)
-						.isAPAdjusted(false)
-						.isCMAjusted(true)
-						.build())
+				.invoiceGrandTotal(invoiceGrandTotal)
 				.allocatedAmt(MoneyWithInvoiceFlags.builder()
 						.docBaseType(docBaseType)
 						.value(allocatedAmt)
-						.isAPAdjusted(true)
+						.isAPAdjusted(false)
 						.isCMAjusted(false)
 						.build())
-				.openAmt(MoneyWithInvoiceFlags.builder()
-						.docBaseType(docBaseType)
-						.value(openAmt)
-						.isAPAdjusted(true)
-						.isCMAjusted(true)
-						.build())
+				.openAmt(openAmt)
+				.hasAllocations(hasAllocations)
 				.build();
 	}
 
@@ -164,45 +156,6 @@ public class PlainAllocationDAO extends AllocationDAO
 			default:
 				return invoice.getDateInvoiced().toInstant();
 		}
-	}
-
-	@Override
-	protected Optional<Money> retrieveAllocatedAmt(@NonNull final InvoiceId invoiceId, final String trxName)
-	{
-		final I_C_Invoice invoice = InterfaceWrapperHelper.create(Env.getCtx(), invoiceId.getRepoId(), I_C_Invoice.class, trxName);
-		final List<I_C_AllocationLine> allocationLines = retrieveAllocationLines(invoice);
-		if (allocationLines.isEmpty())
-		{
-			return Optional.empty();
-		}
-
-		final CurrencyId invoiceCurrencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
-		Money allocatedAmt = Money.zero(invoiceCurrencyId);
-
-		for (final I_C_AllocationLine line : allocationLines)
-		{
-			final I_C_AllocationHdr ah = line.getC_AllocationHdr();
-			final CurrencyId allocationCurrencyId = CurrencyId.ofRepoId(ah.getC_Currency_ID());
-			final Money lineAmt = Money.of(line.getAmount().add(line.getDiscountAmt()).add(line.getWriteOffAmt()), allocationCurrencyId);
-			final Money lineAmtConv;
-			if (ah.getC_Currency_ID() != invoice.getC_Currency_ID())
-			{
-				final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
-				lineAmtConv = currencyBL.convert(
-						lineAmt,
-						invoiceCurrencyId,
-						TimeUtil.asLocalDate(ah.getDateTrx()),
-						ClientAndOrgId.ofClientAndOrg(line.getAD_Client_ID(), line.getAD_Org_ID()));
-			}
-			else
-			{
-				lineAmtConv = lineAmt;
-			}
-
-			allocatedAmt = allocatedAmt.add(lineAmtConv);
-		}
-
-		return Optional.of(allocatedAmt);
 	}
 
 	@Override

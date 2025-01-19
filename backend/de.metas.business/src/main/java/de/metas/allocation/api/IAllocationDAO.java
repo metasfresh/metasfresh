@@ -41,7 +41,6 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -83,8 +82,6 @@ public interface IAllocationDAO extends ISingletonService
 
 	InvoiceOpenResult retrieveInvoiceOpen(@NonNull InvoiceOpenRequest request);
 
-	Optional<Money> retrieveAllocatedAmtAsMoney(InvoiceId invoiceId);
-
 	/**
 	 * Retrieve the written off amount of an <code>invoice</code>.
 	 */
@@ -112,9 +109,11 @@ public interface IAllocationDAO extends ISingletonService
 
 	SetMultimap<PaymentId, InvoiceId> retrieveInvoiceIdsByPaymentIds(@NonNull Collection<PaymentId> paymentIds);
 
-	@NonNull I_C_AllocationHdr getById(@NonNull PaymentAllocationId allocationId);
+	@NonNull
+	I_C_AllocationHdr getById(@NonNull PaymentAllocationId allocationId);
 
-	@NonNull I_C_AllocationLine getLineById(@NonNull PaymentAllocationLineId lineId);
+	@NonNull
+	I_C_AllocationLine getLineById(@NonNull PaymentAllocationLineId lineId);
 
 	List<I_C_AllocationLine> retrieveAllPaymentAllocationLines(@NonNull PaymentId paymentId);
 }

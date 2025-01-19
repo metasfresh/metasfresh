@@ -569,60 +569,36 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return hasChanges;
 	}
 
-
 	@Override
 	public final boolean testAllocation(final org.compiere.model.I_C_Invoice invoice, final boolean ignoreProcessed)
 	{
-		boolean change = false;
-
-		if (invoice.isProcessed() || ignoreProcessed)
+		if (!invoice.isProcessed() && !ignoreProcessed)
 		{
-			final CurrencyId invoiceCurrencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
-			final InvoiceOpenResult invoiceOpenResult = allocationDAO.retrieveInvoiceOpen(
-					InvoiceOpenRequest.builder()
-							.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-							.returnInCurrencyId(invoiceCurrencyId)
-							.build());
+			return false;
+		}
 
-			// If is a zero invoice, it has no allocations and the AutoPayZeroAmt is not set
+		final InvoiceOpenResult invoiceOpenResult = allocationDAO.retrieveInvoiceOpen(
+				InvoiceOpenRequest.builder()
+						.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+						.returnInCurrencyId(CurrencyId.ofRepoId(invoice.getC_Currency_ID()))
+						.build());
+
+		// If is a zero invoice, it has no allocations and the AutoPayZeroAmt is not set
 		// then don't touch the invoice
-			if (invoiceOpenResult.getInvoiceGrandTotal().isZero()
-					&& !invoiceOpenResult.isHasAllocations()
-					&& !Services.get(ISysConfigBL.class).getBooleanValue(AbstractInvoiceBL.SYSCONFIG_AutoPayZeroAmt, true, invoice.getAD_Client_ID()))
+		if (invoiceOpenResult.getInvoiceGrandTotal().isZero()
+				&& !invoiceOpenResult.isHasAllocations()
+				&& !Services.get(ISysConfigBL.class).getBooleanValue(AbstractInvoiceBL.SYSCONFIG_AutoPayZeroAmt, true, invoice.getAD_Client_ID()))
 		{
 			// don't touch the IsPaid flag, return not changed
 			return false;
 		}
 
-			// final boolean isFullyAllocated = invoiceOpenResult.isFullyAllocated();
-			// change = isFullyAllocated != invoice.isPaid();
-			// if (change)
-			// {
-			// 	invoice.setIsPaid(isFullyAllocated);
-			// }
-			final InvoicePaymentStatus paymentStatus = computePaymentStatus(openAmt.toMoney(), hasAllocations);
-			return setPaymentStatus(invoice, openAmt.toBigDecimal(), paymentStatus);
-		}
-
-		return change;
+		return setPaymentStatus(
+				invoice,
+				invoiceOpenResult.getOpenAmt().withoutAPAdjusted().withoutCMAdjusted().toBigDecimal(),
+				invoiceOpenResult.getPaymentStatus()
+		);
 	}    // testAllocation
-
-	@NonNull
-	private static InvoicePaymentStatus computePaymentStatus(@NonNull final Money openAmt, final boolean hasAllocations)
-	{
-		if (!hasAllocations)
-		{
-			return InvoicePaymentStatus.NOT_PAID;
-		}
-		else if (openAmt.signum() == 0)
-		{
-			return InvoicePaymentStatus.FULLY_PAID;
-		}
-		else
-		{
-			return InvoicePaymentStatus.PARTIALLY_PAID;
-		}
-	}
 
 	@Override
 	public boolean setPaymentStatus(
@@ -978,8 +954,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			return;
 		}
 
-		@Nullable
-		final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
+		@Nullable final CopyDescriptionAndDocumentNote copyDescriptionAndDocumentNote = CopyDescriptionAndDocumentNote.ofNullableCode(docType.getCopyDescriptionAndDocumentNote());
 
 		if (copyDescriptionAndDocumentNote == null)
 		{
@@ -1423,7 +1398,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 			if (stdTax != null)
 			{
-				if(invoiceTax != null)
+				if (invoiceTax != null)
 				{
 					taxThisAmt = taxThisAmt.add(invoiceTax.calculateTax(lineNetAmt, isTaxIncluded, taxPrecision.toInt()).getTaxAmount());
 				}
@@ -1498,8 +1473,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	/**
-     * Calls {@link #isTaxIncluded(org.compiere.model.I_C_Invoice, Tax)} for the given <code>invoiceLine</code>'s <code>C_Invoice</code> and <code>C_Tax</code>.
-     */
+	 * Calls {@link #isTaxIncluded(org.compiere.model.I_C_Invoice, Tax)} for the given <code>invoiceLine</code>'s <code>C_Invoice</code> and <code>C_Tax</code>.
+	 */
 	@Override
 	public final boolean isTaxIncluded(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
@@ -2209,8 +2184,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 	@Override
 	public BigDecimal roundTo5CentIfNeeded(@NonNull final BigDecimal grandTotal,
-			@NonNull final CurrencyId currencyId,
-			@NonNull final SOTrx soTrx)
+										   @NonNull final CurrencyId currencyId,
+										   @NonNull final SOTrx soTrx)
 	{
 		if (!isApply5CentCashRounding(currencyId, soTrx))
 		{

@@ -24,6 +24,8 @@ package de.metas.banking.payment.paymentallocation.service;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.allocation.api.InvoiceOpenRequest;
+import de.metas.allocation.api.InvoiceOpenResult;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy;
 import de.metas.bpartner.BPartnerId;
@@ -373,7 +375,8 @@ public class PaymentAllocationBuilderTest
 		final I_C_Invoice invoice = invoicesDAO.getByIdInTrx(invoiceId);
 		final Money expectedAllocatedAmt = expectedAllocatedAmtBD != null ? Money.of(expectedAllocatedAmtBD, CurrencyId.ofRepoId(invoice.getC_Currency_ID())) : null;
 
-		final Money actualAllocatedAmt = allocationDAO.retrieveAllocatedAmtAsMoney(invoiceId).orElse(null);
+		final InvoiceOpenResult invoiceOpenResult = allocationDAO.retrieveInvoiceOpen(InvoiceOpenRequest.builder().invoiceId(invoiceId).build());
+		final Money actualAllocatedAmt = invoiceOpenResult.getAllocatedAmt().withoutAPAdjusted().withoutCMAdjusted().toMoney();
 
 		assertThat(actualAllocatedAmt)
 				.as("Allocated amount for invoice " + invoiceId)

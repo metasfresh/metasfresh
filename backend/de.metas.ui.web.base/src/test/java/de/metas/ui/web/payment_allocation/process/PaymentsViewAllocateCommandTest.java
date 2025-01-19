@@ -24,6 +24,8 @@ package de.metas.ui.web.payment_allocation.process;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.allocation.api.InvoiceOpenRequest;
+import de.metas.allocation.api.InvoiceOpenResult;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
 import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate;
@@ -164,14 +166,16 @@ public class PaymentsViewAllocateCommandTest
 
 	private void assertInvoiceNotAllocated(@NonNull final InvoiceId invoiceId)
 	{
-		assertThat(allocationDAO.retrieveAllocatedAmtAsMoney(invoiceId))
-				.as("Allocated amount for invoice " + invoiceId)
-				.isEmpty();
+		final InvoiceOpenResult invoiceOpenResult = allocationDAO.retrieveInvoiceOpen(InvoiceOpenRequest.builder().invoiceId(invoiceId).build());
+		assertThat(invoiceOpenResult.isHasAllocations())
+				.as("Allocated amount for invoice " + invoiceId + ": " + invoiceOpenResult)
+				.isFalse();
 	}
 
 	private void assertInvoiceAllocatedAmt(@NonNull final InvoiceId invoiceId, @NonNull final String expectedAllocatedAmt)
 	{
-		final Money actualAllocatedAmt = allocationDAO.retrieveAllocatedAmtAsMoney(invoiceId).orElse(null);
+		final InvoiceOpenResult invoiceOpenResult = allocationDAO.retrieveInvoiceOpen(InvoiceOpenRequest.builder().invoiceId(invoiceId).build());
+		final Money actualAllocatedAmt = invoiceOpenResult.getAllocatedAmt().withoutAPAdjusted().withoutCMAdjusted().toMoney();
 		assertThat(actualAllocatedAmt).isNotNull();
 		assertThat(actualAllocatedAmt.toBigDecimal()).isEqualByComparingTo(expectedAllocatedAmt);
 	}
