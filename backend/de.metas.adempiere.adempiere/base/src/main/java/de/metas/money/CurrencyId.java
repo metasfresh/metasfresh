@@ -38,6 +38,8 @@ import java.util.function.Function;
 @Value
 public class CurrencyId implements RepoIdAware
 {
+	public static final CurrencyId EUR = new CurrencyId(102);
+
 	@JsonCreator
 	public static CurrencyId ofRepoId(final int repoId)
 	{
