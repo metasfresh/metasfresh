@@ -22,4 +22,5 @@ public class DDOrderReference
 	@NonNull WarehouseId toWarehouseId;
 	@Nullable PPOrderId ppOrderId;
 	@Nullable OrderId salesOrderId;
+	boolean isJobStarted;
 }
