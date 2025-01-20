@@ -21,6 +21,7 @@ import java.util.function.UnaryOperator;
 public class MoneyWithInvoiceFlags
 {
 	@NonNull Money value;
+	/** Is Account Payable? (i.e. false for purchase, true for sales) */
 	@Getter boolean isAP;
 	@Getter boolean isCreditMemo;
 

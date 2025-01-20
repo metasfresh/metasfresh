@@ -174,28 +174,28 @@ public class InvoiceBLTest
 		void customerInvoice()
 		{
 			final I_C_Invoice invoice = invoice("100", InvoiceDocBaseType.CustomerInvoice);
-			assertThat(invoiceBL.extractGrandTotal(invoice).toRealValueAsBigDecimal()).isEqualTo("100");
+			assertThat(invoiceBL.extractGrandTotal(invoice).withAPAdjusted().withCMAdjusted().toBigDecimal()).isEqualTo("100");
 		}
 
 		@Test
 		void customerCreditMemo()
 		{
 			final I_C_Invoice invoice = invoice("100", InvoiceDocBaseType.CustomerCreditMemo);
-			assertThat(invoiceBL.extractGrandTotal(invoice).toRealValueAsBigDecimal()).isEqualTo("-100");
+			assertThat(invoiceBL.extractGrandTotal(invoice).withAPAdjusted().withCMAdjusted().toBigDecimal()).isEqualTo("-100");
 		}
 
 		@Test
 		void vendorInvoice()
 		{
 			final I_C_Invoice invoice = invoice("100", InvoiceDocBaseType.VendorInvoice);
-			assertThat(invoiceBL.extractGrandTotal(invoice).toRealValueAsBigDecimal()).isEqualTo("-100");
+			assertThat(invoiceBL.extractGrandTotal(invoice).withAPAdjusted().withCMAdjusted().toBigDecimal()).isEqualTo("-100");
 		}
 
 		@Test
 		void vendorCreditMemo()
 		{
 			final I_C_Invoice invoice = invoice("100", InvoiceDocBaseType.VendorCreditMemo);
-			assertThat(invoiceBL.extractGrandTotal(invoice).toRealValueAsBigDecimal()).isEqualTo("100");
+			assertThat(invoiceBL.extractGrandTotal(invoice).withAPAdjusted().withCMAdjusted().toBigDecimal()).isEqualTo("100");
 		}
 	}
 }

@@ -78,7 +78,6 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.BPartnerInvoicingInfo;
-import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
@@ -96,7 +95,6 @@ import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
-import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
@@ -625,23 +623,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		return isOpenAmtChanged || isFullyPaidChanged || isPartiallyPaidChanged;
-	}
-
-	protected final InvoiceTotal extractGrandTotal(final org.compiere.model.I_C_Invoice invoice)
-	{
-		final Money grandTotal = Money.of(invoice.getGrandTotal(), CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
-		final InvoiceAmtMultiplier multiplier = getInvoiceAmtMultiplier(invoice);
-		return InvoiceTotal.ofRelativeValue(grandTotal, multiplier);
-	}
-
-	private InvoiceAmtMultiplier getInvoiceAmtMultiplier(@NonNull final org.compiere.model.I_C_Invoice invoice)
-	{
-		return InvoiceAmtMultiplier.builder()
-				.soTrx(SOTrx.ofBoolean(invoice.isSOTrx()))
-				.isCreditMemo(isCreditMemo(invoice))
-				.isSOTrxAdjusted(false)
-				.isCreditMemoAdjusted(false)
-				.build();
 	}
 
 	@Override
