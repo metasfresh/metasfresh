@@ -37,6 +37,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoicePaymentStatus;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -138,7 +139,7 @@ public class PaymentAllocationBuilderTest
 
 	private Money money(@Nullable final String amount, @Nullable CurrencyId currencyId)
 	{
-		final BigDecimal amountBD = amount != null && Check.isNotBlank(amount) ? new BigDecimal(amount) : BigDecimal.ZERO;
+		final BigDecimal amountBD = Check.isNotBlank(amount) ? new BigDecimal(amount) : BigDecimal.ZERO;
 		currencyId = currencyId == null ? euroCurrencyId : currencyId;
 		return Money.of(amountBD, currencyId);
 	}
@@ -185,7 +186,8 @@ public class PaymentAllocationBuilderTest
 		{
 			assertThat(candidatesActual.get(i))
 					.as("candidate " + (i + 1) + "/" + expectedSize)
-					.isEqualToComparingFieldByField(candidatesExpected.get(i));
+					.usingRecursiveComparison()
+					.isEqualTo(candidatesExpected.get(i));
 		}
 	}
 
@@ -318,7 +320,7 @@ public class PaymentAllocationBuilderTest
 	@Builder(builderMethodName = "allocation", builderClassName = "$AllocationBuilder")
 	private AllocationLineCandidate createAllocationCandidate(
 			@NonNull final AllocationLineCandidateType type,
-			@Nullable final TableRecordReference payableRef,
+			@NonNull final TableRecordReference payableRef,
 			@Nullable final TableRecordReference paymentRef,
 			@NonNull final String date,
 			@Nullable final String allocatedAmt,
@@ -359,22 +361,23 @@ public class PaymentAllocationBuilderTest
 	{
 		System.out.println(" " + title + ": -----------------------------");
 		int index = 0;
-		for (final AllocationLineCandidate cand : candidates)
+		for (final AllocationLineCandidate candidate : candidates)
 		{
 			index++;
-			System.out.println(index + ". " + cand);
+			System.out.println(index + ". " + candidate);
 		}
 	}
 
-	private void assertInvoiceAllocatedAmt(final InvoiceId invoiceId, final BigDecimal expectedAllocatedAmt)
+	private void assertInvoiceAllocatedAmt(final InvoiceId invoiceId, final BigDecimal expectedAllocatedAmtBD)
 	{
 		final I_C_Invoice invoice = invoicesDAO.getByIdInTrx(invoiceId);
+		final Money expectedAllocatedAmt = expectedAllocatedAmtBD != null ? Money.of(expectedAllocatedAmtBD, CurrencyId.ofRepoId(invoice.getC_Currency_ID())) : null;
 
-		final BigDecimal actualAllocatedAmt = allocationDAO.retrieveAllocatedAmt(invoice);
+		final Money actualAllocatedAmt = allocationDAO.retrieveAllocatedAmtAsMoney(invoiceId).orElse(null);
 
 		assertThat(actualAllocatedAmt)
 				.as("Allocated amount for invoice " + invoiceId)
-				.isEqualByComparingTo(expectedAllocatedAmt);
+				.isEqualTo(expectedAllocatedAmt);
 	}
 
 	private void assertInvoiceAllocatedAmt(final InvoiceId invoiceId, final int expectedAllocatedAmtInt)
@@ -382,15 +385,20 @@ public class PaymentAllocationBuilderTest
 		assertInvoiceAllocatedAmt(invoiceId, BigDecimal.valueOf(expectedAllocatedAmtInt));
 	}
 
-	private void assertInvoiceAllocated(final InvoiceId invoiceId, final boolean expectedAllocated)
+	private void assertInvoicePaymentStatus(final PayableDocument invoice, InvoicePaymentStatus expectedPaymentStatus, String expectedOpenAmt)
+	{
+		assertInvoicePaymentStatus(invoice.getInvoiceId(), expectedPaymentStatus, expectedOpenAmt);
+	}
+
+	private void assertInvoicePaymentStatus(final InvoiceId invoiceId, InvoicePaymentStatus expectedPaymentStatus, String expectedOpenAmt)
 	{
 		final I_C_Invoice invoice = invoicesDAO.getByIdInTrx(invoiceId);
 		final boolean ignoreProcessed = false;
 		invoiceBL.testAllocation(invoice, ignoreProcessed);
 
-		assertThat(invoice.isPaid())
-				.as("Invoice allocated: " + invoiceId)
-				.isEqualTo(expectedAllocated);
+		assertThat(invoice.isPaid()).isEqualTo(expectedPaymentStatus.isFullyPaid());
+		assertThat(invoice.isPartiallyPaid()).isEqualTo(expectedPaymentStatus.isPartiallyPaid());
+		assertThat(invoice.getOpenAmt()).isEqualTo(expectedOpenAmt);
 	}
 
 	private void assertPaymentAllocatedAmt(final PaymentId paymentId, final BigDecimal expectedAllocatedAmt)
@@ -463,7 +471,7 @@ public class PaymentAllocationBuilderTest
 			assertExpected(candidatesExpected, builder);
 			//
 			assertInvoiceAllocatedAmt(invoice.getInvoiceId(), 6000 + 1599 + 401);
-			assertInvoiceAllocated(invoice.getInvoiceId(), false);
+			assertInvoicePaymentStatus(invoice, InvoicePaymentStatus.PARTIALLY_PAID, "1000");
 			//
 			assertPaymentAllocatedAmt(payment.getPaymentId(), 18000);
 		}
@@ -499,10 +507,10 @@ public class PaymentAllocationBuilderTest
 			assertExpected(candidatesExpected, builder);
 			//
 			assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), +999);
-			assertInvoiceAllocated(invoice1.getInvoiceId(), false);
+			assertInvoicePaymentStatus(invoice1, InvoicePaymentStatus.PARTIALLY_PAID, "4001");
 			//
 			assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), -333);
-			assertInvoiceAllocated(invoice2.getInvoiceId(), true);
+			assertInvoicePaymentStatus(invoice2, InvoicePaymentStatus.FULLY_PAID, "0");
 		}
 
 		@Test
@@ -601,7 +609,7 @@ public class PaymentAllocationBuilderTest
 		// Check
 		assertExpected(candidatesExpected, builder);
 		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), -(100 + 200));
-		assertInvoiceAllocated(invoice1.getInvoiceId(), false);
+		assertInvoicePaymentStatus(invoice1, InvoicePaymentStatus.PARTIALLY_PAID, "7700");
 	}
 
 	@Test
@@ -631,7 +639,7 @@ public class PaymentAllocationBuilderTest
 		// Check
 		assertExpected(candidatesExpected, builder);
 		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), -(5000 + 100 + 200));
-		assertInvoiceAllocated(invoice1.getInvoiceId(), false);
+		assertInvoicePaymentStatus(invoice1, InvoicePaymentStatus.PARTIALLY_PAID, "2700");
 		assertPaymentAllocatedAmt(payment1.getPaymentId(), -5000);
 	}
 
@@ -730,10 +738,10 @@ public class PaymentAllocationBuilderTest
 		assertExpected(candidatesExpected, builder);
 		//
 		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), +1000);
-		assertInvoiceAllocated(invoice1.getInvoiceId(), false);
+		assertInvoicePaymentStatus(invoice1, InvoicePaymentStatus.PARTIALLY_PAID, "4000");
 		//
 		assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), -1000);
-		assertInvoiceAllocated(invoice2.getInvoiceId(), true);
+		assertInvoicePaymentStatus(invoice2, InvoicePaymentStatus.FULLY_PAID, "0");
 	}
 
 	@Test
@@ -764,10 +772,10 @@ public class PaymentAllocationBuilderTest
 		assertExpected(candidatesExpected, builder);
 		//
 		assertInvoiceAllocatedAmt(invoice.getInvoiceId(), -1000);
-		assertInvoiceAllocated(invoice.getInvoiceId(), false);
+		assertInvoicePaymentStatus(invoice, InvoicePaymentStatus.PARTIALLY_PAID, "4000");
 		//
 		assertInvoiceAllocatedAmt(creditMemo.getInvoiceId(), +1000);
-		assertInvoiceAllocated(creditMemo.getInvoiceId(), true);
+		assertInvoicePaymentStatus(creditMemo, InvoicePaymentStatus.FULLY_PAID, "0");
 	}
 
 	@Nested
@@ -810,10 +818,10 @@ public class PaymentAllocationBuilderTest
 			assertExpected(candidatesExpected, builder);
 			//
 			assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), +1000);
-			assertInvoiceAllocated(invoice1.getInvoiceId(), false);
+			assertInvoicePaymentStatus(invoice1, InvoicePaymentStatus.PARTIALLY_PAID, "4000");
 			//
 			assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), -1000);
-			assertInvoiceAllocated(invoice2.getInvoiceId(), true);
+			assertInvoicePaymentStatus(invoice2, InvoicePaymentStatus.FULLY_PAID, "0");
 		}
 
 		@Test
@@ -906,16 +914,16 @@ public class PaymentAllocationBuilderTest
 		assertExpected(candidatesExpected, builder);
 		//
 		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), 500 + 1599 + 1 + 5000 + 500);
-		assertInvoiceAllocated(invoice1.getInvoiceId(), false);
+		assertInvoicePaymentStatus(invoice1, InvoicePaymentStatus.PARTIALLY_PAID, "400");
 		//
 		assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), 3000 + 50 + 50);
-		assertInvoiceAllocated(invoice2.getInvoiceId(), false);
+		assertInvoicePaymentStatus(invoice2, InvoicePaymentStatus.PARTIALLY_PAID, "4000");
 		//
 		assertInvoiceAllocatedAmt(invoice3.getInvoiceId(), 1500 + 100);
-		assertInvoiceAllocated(invoice3.getInvoiceId(), true);
+		assertInvoicePaymentStatus(invoice3, InvoicePaymentStatus.FULLY_PAID, "0");
 		//
 		assertInvoiceAllocatedAmt(invoice4.getInvoiceId(), -500); // credit memo
-		assertInvoiceAllocated(invoice4.getInvoiceId(), true);
+		assertInvoicePaymentStatus(invoice4, InvoicePaymentStatus.FULLY_PAID, "0");
 		//
 		assertPaymentAllocatedAmt(payment1.getPaymentId(), 5000);
 		assertPaymentAllocatedAmt(payment2.getPaymentId(), 5000);
@@ -951,7 +959,7 @@ public class PaymentAllocationBuilderTest
 		assertExpected(candidatesExpected, builder);
 		//
 		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), 30); // credit memo
-		assertInvoiceAllocated(invoice1.getInvoiceId(), false);
+		assertInvoicePaymentStatus(invoice1, InvoicePaymentStatus.PARTIALLY_PAID, "70");
 		//
 		assertPaymentAllocatedAmt(payment1.getPaymentId(), 30);
 	}
@@ -992,10 +1000,10 @@ public class PaymentAllocationBuilderTest
 		assertExpected(candidatesExpected, builder);
 		//
 		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), -(100 + 10 + 5));
-		assertInvoiceAllocated(invoice1.getInvoiceId(), false);
+		assertInvoicePaymentStatus(invoice1, InvoicePaymentStatus.PARTIALLY_PAID, "50");
 		//
 		assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), +80); // CM
-		assertInvoiceAllocated(invoice2.getInvoiceId(), true);
+		assertInvoicePaymentStatus(invoice2, InvoicePaymentStatus.FULLY_PAID, "0");
 		//
 		assertPaymentAllocatedAmt(payment1.getPaymentId(), -20);
 	}
@@ -1044,13 +1052,13 @@ public class PaymentAllocationBuilderTest
 		assertExpected(candidatesExpected, builder);
 		//
 		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), -(100 + 10 + 5));
-		assertInvoiceAllocated(invoice1.getInvoiceId(), false);
+		assertInvoicePaymentStatus(invoice1, InvoicePaymentStatus.PARTIALLY_PAID, "50");
 		//
 		assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), +80); // CM
-		assertInvoiceAllocated(invoice2.getInvoiceId(), true);
+		assertInvoicePaymentStatus(invoice2, InvoicePaymentStatus.FULLY_PAID, "0");
 		//
 		assertInvoiceAllocatedAmt(invoice3.getInvoiceId(), +10); // CM
-		assertInvoiceAllocated(invoice3.getInvoiceId(), true);
+		assertInvoicePaymentStatus(invoice3, InvoicePaymentStatus.FULLY_PAID, "0");
 		//
 		assertPaymentAllocatedAmt(payment1.getPaymentId(), -10);
 	}
@@ -1254,7 +1262,7 @@ public class PaymentAllocationBuilderTest
 		 * Each of them are processed by invoice processing company.
 		 * For each of them, the invoice processing company is retaining 10%, i.e. 10 EUR.
 		 * We allocate each other.
-		 * After allocation we expect:
+		 * After allocation, we expect:
 		 * Sales Invoice of 100 EUR to be fully allocated => zero open amount.
 		 * Sales Credit Memo of 100 EUR (i.e. actually -100 EUR because we have to given 100 EUR back) to have -20 EUR open amount,
 		 * because we still have to give 20 EUR back.
