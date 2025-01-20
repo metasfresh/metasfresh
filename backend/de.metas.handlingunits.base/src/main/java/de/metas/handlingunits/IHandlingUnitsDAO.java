@@ -351,4 +351,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	Optional<HuId> getFirstHuIdByExternalLotNo(String externalLotNo);
 
 	<T> Stream<T> streamByQuery(@NonNull final IQueryBuilder<I_M_HU> queryBuilder, @NonNull final Function<I_M_HU, T> mapper);
+
+	@NonNull
+	ImmutableSet<HuId> retrieveHuIdAndDownstream(@NonNull HuId huId);
 }

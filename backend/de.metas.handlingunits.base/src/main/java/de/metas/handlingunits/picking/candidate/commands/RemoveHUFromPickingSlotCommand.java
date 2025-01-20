@@ -1,11 +1,8 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.impl.HUIterator;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
@@ -14,9 +11,10 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.util.lang.IMutable;
 
 import javax.annotation.Nullable;
+import org.adempiere.util.lang.IMutable;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -67,21 +65,7 @@ public class RemoveHUFromPickingSlotCommand
 
 	public void perform()
 	{
-		final Set<HuId> huIdAndDownstream = new HashSet<>();
-		new HUIterator()
-			.setEnableStorageIteration(false)
-			.setListener(new HUIteratorListenerAdapter()
-			{
-				@Override
-				public Result beforeHU(IMutable<I_M_HU> hu)
-				{
-					huIdAndDownstream.add(HuId.ofRepoId(hu.getValue().getM_HU_ID()));
-					return Result.CONTINUE;
-				}
-			})
-			.iterate(handlingUnitsDAO.getById(huId));
-
-		final List<PickingCandidate> candidates = retrievePickingCandidates(ImmutableSet.copyOf(huIdAndDownstream));
+		final List<PickingCandidate> candidates = retrievePickingCandidates();
 		final Set<PickingSlotId> pickingSlotIds = PickingCandidate.extractPickingSlotIds(candidates);
 
 		pickingCandidateRepository.deletePickingCandidates(candidates);
@@ -89,8 +73,20 @@ public class RemoveHUFromPickingSlotCommand
 
 	}
 
-	private List<PickingCandidate> retrievePickingCandidates(@NonNull final ImmutableSet<HuId> huIds)
+	@NonNull
+	private List<PickingCandidate> retrievePickingCandidates()
 	{
-		return pickingCandidateRepository.getDraftedByHuIdAndPickingSlotId(huIds, pickingSlotId);
+		return pickingCandidateRepository.getDraftedByHuIdAndPickingSlotId(getHuIds(), pickingSlotId);
+	}
+
+	@NonNull
+	private ImmutableSet<HuId> getHuIds()
+	{
+		if (huId == null)
+		{
+			return ImmutableSet.of();
+		}
+
+		return handlingUnitsDAO.retrieveHuIdAndDownstream(huId);
 	}
 }
