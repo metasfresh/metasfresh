@@ -204,7 +204,29 @@ public interface I_DATEV_Export
 	String COLUMNNAME_IsExcludeAlreadyExported = "IsExcludeAlreadyExported";
 
 	/**
+	 * Set Negate Inbound Amounts.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsNegateInboundAmounts (boolean IsNegateInboundAmounts);
+
+	/**
+	 * Get Negate Inbound Amounts.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isNegateInboundAmounts();
+
+	ModelColumn<I_DATEV_Export, Object> COLUMN_IsNegateInboundAmounts = new ModelColumn<>(I_DATEV_Export.class, "IsNegateInboundAmounts", null);
+	String COLUMNNAME_IsNegateInboundAmounts = "IsNegateInboundAmounts";
+
+	/**
 	 * Set Switch Credit Memo.
+	 * If ticked, for credit memo invoices, the credit account and the debit account are swapped. The amount and tax are multiplied by -1.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -214,6 +236,7 @@ public interface I_DATEV_Export
 
 	/**
 	 * Get Switch Credit Memo.
+	 * If ticked, for credit memo invoices, the credit account and the debit account are swapped. The amount and tax are multiplied by -1.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
