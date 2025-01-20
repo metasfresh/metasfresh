@@ -12,9 +12,17 @@ DROP FUNCTION IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice(
 )
 ;
 
+DROP FUNCTION IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice(
+    p_IsOneLinePerInvoiceTax char(1),
+    p_IsSwitchCreditMemo     char(1),
+    p_IsNegateInboundAmounts char(1)
+)
+;
+
 CREATE OR REPLACE FUNCTION RV_DATEV_Export_Fact_Acct_Invoice(
     p_IsOneLinePerInvoiceTax char(1) = 'N',
-    p_IsSwitchCreditMemo     char(1) = 'N'
+    p_IsSwitchCreditMemo     char(1) = 'N',
+    p_IsNegateInboundAmounts char(1) = 'N'
 )
     RETURNS TABLE
             (
@@ -166,22 +174,30 @@ BEGIN
              bp.debtorid,
              bp.creditorid;
 
+
     IF p_IsSwitchCreditMemo = 'Y' THEN
         UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t
-        SET Amt          = t.Amt * (-1),
-            TaxAmtSource = t.TaxAmtSource * (-1),
-            dr_account   = t.cr_account,
-            cr_account   = t.dr_account
-        WHERE t.docbasetype IN ('APC', 'ARI');
+        SET dr_account = t.cr_account,
+            cr_account = t.dr_account
+        WHERE t.docbasetype IN ('APC', 'ARC');
+    END IF;
+
+    IF p_IsNegateInboundAmounts = 'Y' THEN
+    UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t
+    SET Amt          = t.Amt * (-1),
+        TaxAmtSource = t.TaxAmtSource * (-1)
+    WHERE t.docbasetype IN ('APC', 'ARI');
     END IF;
 
 
-
-    -- Use the partner's debtorId for sales invoices and creditorId for purchase invoices if they were provided.
+    -- Use the partner's debtorId or creditorId as credit account if they were provided.
     -- Important: Perform this update after the dr_account and cr_account were switched for credit memos to make sure the accounts are already in the correct place.
     UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t
-    SET dr_account = CASE WHEN t.issotrx = 'Y' AND t.BP_debtorId != '' THEN t.BP_debtorId ELSE t.dr_account END,
-        cr_account = CASE WHEN t.issotrx = 'N' AND t.BP_creditorId != '' THEN t.BP_creditorId ELSE t.cr_account END;
+    SET cr_account = CASE
+                         WHEN t.issotrx = 'Y' AND t.BP_debtorId != ''   THEN t.BP_debtorId
+                         WHEN t.issotrx = 'N' AND t.BP_creditorId != '' THEN t.BP_creditorId
+                                                                        ELSE t.cr_account
+                     END;
 
     RETURN QUERY SELECT t.dr_account,
                         t.cr_account,
