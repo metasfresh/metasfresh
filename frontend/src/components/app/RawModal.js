@@ -17,6 +17,7 @@ import ModalButton from '../modal/ModalButton';
 import ModalComponent from '../modal/ModalComponent';
 import { OIViewHeader_WINDOW_ID } from '../acctOpenItems/OIViewHeader';
 import { AcctSimulationViewHeader_WINDOW_ID } from '../acctSimulation/AcctSimulationViewHeader';
+import { getIndicatorFromState } from '../../reducers/windowHandler';
 
 /**
  * View modal
@@ -319,7 +320,7 @@ const mapStateToProps = ({ windowHandler, tables }, ownProps) => {
     rawModal: windowHandler.rawModal,
     requests: windowHandler.patches.requests,
     success: windowHandler.patches.success,
-    indicator: windowHandler.indicator,
+    indicator: getIndicatorFromState({ windowHandler, isModal: true }),
     modalTableSelectedId: selectedId,
   };
 };

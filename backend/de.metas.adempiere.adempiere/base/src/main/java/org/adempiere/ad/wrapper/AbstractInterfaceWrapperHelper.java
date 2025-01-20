@@ -2,6 +2,8 @@ package org.adempiere.ad.wrapper;
 
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -36,12 +38,9 @@ public abstract class AbstractInterfaceWrapperHelper implements IInterfaceWrappe
 
 	/**
 	 * Gets columnName's override value or null
-	 *
-	 * @param modelAccessor
-	 * @param columnName
-	 * @return
 	 */
-	protected static final <T> T getValueOverrideOrNull(final IModelInternalAccessor modelAccessor, final String columnName)
+	@Nullable
+	protected static <T> T getValueOverrideOrNull(final IModelInternalAccessor modelAccessor, final String columnName)
 	{
 		//
 		// Try ColumnName_Override
@@ -64,15 +63,21 @@ public abstract class AbstractInterfaceWrapperHelper implements IInterfaceWrappe
 		// e.g. for "C_Tax_ID", the C_Tax_Override_ID" will be checked
 		if (columnName.endsWith("_ID"))
 		{
-			final String overrideColumnName = (columnName.substring(0, columnName.length() - 3) + COLUMNNAME_SUFFIX_Override + "_ID");
+			final String overrideColumnName;
+			if (columnName.endsWith("_Value_ID"))
+			{
+				overrideColumnName = (columnName.substring(0, columnName.length() - 9) + COLUMNNAME_SUFFIX_Override + "_Value_ID");
+			}
+			else
+			{
+				overrideColumnName = (columnName.substring(0, columnName.length() - 3) + COLUMNNAME_SUFFIX_Override + "_ID");
+			}
+
 			if (modelAccessor.hasColumnName(overrideColumnName))
 			{
 				@SuppressWarnings("unchecked")
 				final T value = (T)modelAccessor.getValue(overrideColumnName, Object.class);
-				if (value != null)
-				{
-					return value;
-				}
+				return value; // might be null as well
 			}
 		}
 

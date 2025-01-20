@@ -183,6 +183,7 @@ public class AllocationDAO implements IAllocationDAO
 	}
 
 	@Override
+	@Nullable
 	public BigDecimal retrieveAllocatedAmt(@NonNull final I_C_Invoice invoiceRecord)
 	{
 		return retrieveAllocatedAmtIgnoreGivenPaymentIDs(invoiceRecord, ImmutableSet.of());
@@ -267,13 +268,13 @@ public class AllocationDAO implements IAllocationDAO
 					.allocatedAmt(MoneyWithInvoiceFlags.builder()
 							.docBaseType(docBaseType)
 							.value(Money.of(allocatedAmtBD, currencyId))
-							.isAPAdjusted(true)
+							.isAPAdjusted(false)
 							.isCMAjusted(false)
 							.build())
 					.openAmt(MoneyWithInvoiceFlags.builder()
 							.docBaseType(docBaseType)
 							.value(Money.of(openAmtBD, currencyId))
-							.isAPAdjusted(true)
+							.isAPAdjusted(false)
 							.isCMAjusted(true)
 							.build())
 					.hasAllocations(hasAllocations)

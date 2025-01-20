@@ -66,11 +66,14 @@ public class PlainAllocationDAO extends AllocationDAO
 		final CurrencyConversionTypeId conversionTypeId = CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID());
 		final CurrencyId returnInCurrencyId = request.getReturnInCurrencyId() != null
 				? request.getReturnInCurrencyId()
-				: CurrencyId.ofRepoId(invoice.getC_Invoice_ID());
+				: CurrencyId.ofRepoId(invoice.getC_Currency_ID());
 
 		Money allocatedAmt = Money.zero(returnInCurrencyId);
+		boolean hasAllocations = false;
 		for (final I_C_AllocationLine line : retrieveAllocationLines(invoice))
 		{
+			hasAllocations = true;
+
 			if (paymentIDsToIgnore != null && paymentIDsToIgnore.contains(PaymentId.ofRepoIdOrNull(line.getC_Payment_ID())))
 			{
 				continue;
@@ -82,8 +85,7 @@ public class PlainAllocationDAO extends AllocationDAO
 				throw new AdempiereException("No C_AllocationHdr_ID is set for " + line);
 			}
 			final CurrencyId allocationCurrencyId = CurrencyId.ofRepoId(ah.getC_Currency_ID());
-			Money lineAmt = Money.of(line.getAmount().add(line.getDiscountAmt()).add(line.getWriteOffAmt()), allocationCurrencyId)
-					.negateIf(docBaseType.isAP());
+			Money lineAmt = Money.of(line.getAmount().add(line.getDiscountAmt()).add(line.getWriteOffAmt()), allocationCurrencyId);
 			if (!CurrencyId.equals(lineAmt.getCurrencyId(), returnInCurrencyId))
 			{
 				final CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
@@ -98,8 +100,12 @@ public class PlainAllocationDAO extends AllocationDAO
 		}
 
 		//
-		Money invoiceGrandTotal = Money.of(invoice.getGrandTotal(), CurrencyId.ofRepoId(invoice.getC_Currency_ID()))
-				.negateIf(docBaseType.isCreditMemo());
+		MoneyWithInvoiceFlags invoiceGrandTotal = MoneyWithInvoiceFlags.builder()
+				.docBaseType(docBaseType)
+				.value(Money.of(invoice.getGrandTotal(), CurrencyId.ofRepoId(invoice.getC_Currency_ID())))
+				.isAPAdjusted(false)
+				.isCMAjusted(false)
+				.build();
 
 		if (!CurrencyId.equals(invoiceGrandTotal.getCurrencyId(), returnInCurrencyId))
 		{
@@ -108,31 +114,23 @@ public class PlainAllocationDAO extends AllocationDAO
 					conversionTypeId,
 					ClientId.ofRepoId(invoice.getAD_Client_ID()),
 					OrgId.ofRepoId(invoice.getAD_Org_ID()));
-			invoiceGrandTotal = currencyBL.convert(conversionCtx, invoiceGrandTotal, returnInCurrencyId).getAmountAsMoney();
+			
+			invoiceGrandTotal = invoiceGrandTotal.convertValue(value -> currencyBL.convert(conversionCtx, value, returnInCurrencyId).getAmountAsMoney());
 		}
 
-		final Money openAmt = invoiceGrandTotal.subtract(allocatedAmt);
+		final MoneyWithInvoiceFlags openAmt = invoiceGrandTotal.withAPAdjusted().withCMAdjusted().subtract(allocatedAmt);
 
 		return InvoiceOpenResult.builder()
 				.invoiceDocBaseType(docBaseType)
-				.invoiceGrandTotal(MoneyWithInvoiceFlags.builder()
-						.docBaseType(docBaseType)
-						.value(invoiceGrandTotal)
-						.isAPAdjusted(false)
-						.isCMAjusted(true)
-						.build())
+				.invoiceGrandTotal(invoiceGrandTotal)
 				.allocatedAmt(MoneyWithInvoiceFlags.builder()
 						.docBaseType(docBaseType)
 						.value(allocatedAmt)
-						.isAPAdjusted(true)
+						.isAPAdjusted(false)
 						.isCMAjusted(false)
 						.build())
-				.openAmt(MoneyWithInvoiceFlags.builder()
-						.docBaseType(docBaseType)
-						.value(openAmt)
-						.isAPAdjusted(true)
-						.isCMAjusted(true)
-						.build())
+				.openAmt(openAmt)
+				.hasAllocations(hasAllocations)
 				.build();
 	}
 

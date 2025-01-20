@@ -517,7 +517,7 @@ public class PickingCandidateRepository
 			@NonNull final Collection<HuId> huIds,
 			@Nullable final PickingSlotId pickingSlotId)
 	{
-		Check.assume(!huIds.isEmpty() || pickingSlotId != null, "At least one of HuId and pickingSlotId must be set!");
+		Check.assume(!huIds.isEmpty() || pickingSlotId != null, "At least one of HuIds and pickingSlotId must be set!");
 
 		final IQueryBuilder<I_M_Picking_Candidate> queryBuilder = queryBL.createQueryBuilder(I_M_Picking_Candidate.class)
 				.addOnlyActiveRecordsFilter()

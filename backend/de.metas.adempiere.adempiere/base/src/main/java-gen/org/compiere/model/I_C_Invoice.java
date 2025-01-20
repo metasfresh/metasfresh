@@ -21,7 +21,7 @@ public interface I_C_Invoice
 	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -76,7 +76,7 @@ public interface I_C_Invoice
 	 * Set Trx Organization.
 	 * Performing or initiating organization
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -86,7 +86,7 @@ public interface I_C_Invoice
 	 * Get Trx Organization.
 	 * Performing or initiating organization
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -98,7 +98,7 @@ public interface I_C_Invoice
 	 * Set Contact.
 	 * User within the system - Internal or Business Partner Contact
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -108,7 +108,7 @@ public interface I_C_Invoice
 	 * Get Contact.
 	 * User within the system - Internal or Business Partner Contact
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -201,7 +201,7 @@ public interface I_C_Invoice
 	 * Set Activity.
 	 * Business Activity
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -211,7 +211,7 @@ public interface I_C_Invoice
 	 * Get Activity.
 	 * Business Activity
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -243,7 +243,7 @@ public interface I_C_Invoice
 	/**
 	 * Set Auction.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -252,7 +252,7 @@ public interface I_C_Invoice
 	/**
 	 * Get Auction.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -288,7 +288,7 @@ public interface I_C_Invoice
 	/**
 	 * Set Location.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -297,7 +297,7 @@ public interface I_C_Invoice
 	/**
 	 * Get Location.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -376,7 +376,7 @@ public interface I_C_Invoice
 	 * Set Campaign.
 	 * Marketing Campaign
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -386,7 +386,7 @@ public interface I_C_Invoice
 	 * Get Campaign.
 	 * Marketing Campaign
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -429,7 +429,7 @@ public interface I_C_Invoice
 	/**
 	 * Set Costs.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -438,7 +438,7 @@ public interface I_C_Invoice
 	/**
 	 * Get Costs.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -449,7 +449,7 @@ public interface I_C_Invoice
 	/**
 	 * Set Conversiontype.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -458,7 +458,7 @@ public interface I_C_Invoice
 	/**
 	 * Get Conversiontype.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -470,7 +470,7 @@ public interface I_C_Invoice
 	 * Set Currency.
 	 * The Currency for this record
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -480,7 +480,7 @@ public interface I_C_Invoice
 	 * Get Currency.
 	 * The Currency for this record
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -492,7 +492,7 @@ public interface I_C_Invoice
 	 * Set Document Type.
 	 * Document type or rules
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -502,7 +502,7 @@ public interface I_C_Invoice
 	 * Get Document Type.
 	 * Document type or rules
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -514,7 +514,7 @@ public interface I_C_Invoice
 	 * Set Document Type.
 	 * Target document type for conversing documents
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -524,7 +524,7 @@ public interface I_C_Invoice
 	 * Get Document Type.
 	 * Target document type for conversing documents
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -535,7 +535,7 @@ public interface I_C_Invoice
 	/**
 	 * Set Dunning Level.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -544,7 +544,7 @@ public interface I_C_Invoice
 	/**
 	 * Get Dunning Level.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -633,7 +633,7 @@ public interface I_C_Invoice
 	/**
 	 * Set Incoterms.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -642,7 +642,7 @@ public interface I_C_Invoice
 	/**
 	 * Get Incoterms.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -779,7 +779,7 @@ public interface I_C_Invoice
 	 * Set Payment Term.
 	 * The terms of Payment (timing, discount)
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -789,7 +789,7 @@ public interface I_C_Invoice
 	 * Get Payment Term.
 	 * The terms of Payment (timing, discount)
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -801,7 +801,7 @@ public interface I_C_Invoice
 	 * Set Project.
 	 * Financial Project
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -811,7 +811,7 @@ public interface I_C_Invoice
 	 * Get Project.
 	 * Financial Project
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -878,7 +878,7 @@ public interface I_C_Invoice
 	 * Get Created By.
 	 * User who created this records
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1180,6 +1180,33 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_DocStatus = new ModelColumn<>(I_C_Invoice.class, "DocStatus", null);
 	String COLUMNNAME_DocStatus = "DocStatus";
+
+	/**
+	 * Set Doc Sub Type.
+	 * Document Sub Type
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setDocSubType (@Nullable java.lang.String DocSubType);
+
+	/**
+	 * Get Doc Sub Type.
+	 * Document Sub Type
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getDocSubType();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_DocSubType = new ModelColumn<>(I_C_Invoice.class, "DocSubType", null);
+	String COLUMNNAME_DocSubType = "DocSubType";
 
 	/**
 	 * Set Document No.
@@ -1711,6 +1738,27 @@ public interface I_C_Invoice
 	String COLUMNNAME_IsPaid = "IsPaid";
 
 	/**
+	 * Set Partially Paid.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPartiallyPaid (boolean IsPartiallyPaid);
+
+	/**
+	 * Get Partially Paid.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPartiallyPaid();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_IsPartiallyPaid = new ModelColumn<>(I_C_Invoice.class, "IsPartiallyPaid", null);
+	String COLUMNNAME_IsPartiallyPaid = "IsPartiallyPaid";
+
+	/**
 	 * Set Pay Schedule valid.
 	 * Is the Payment Schedule is valid
 	 *
@@ -1849,8 +1897,8 @@ public interface I_C_Invoice
 	String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
-	 * Set Price incl. Tax.
-	 * Tax is included in the price
+	 * Set Tax Included.
+	 * Tax Included
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1859,8 +1907,8 @@ public interface I_C_Invoice
 	void setIsTaxIncluded (boolean IsTaxIncluded);
 
 	/**
-	 * Get Price incl. Tax.
-	 * Tax is included in the price
+	 * Get Tax Included.
+	 * Tax Included
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1940,7 +1988,7 @@ public interface I_C_Invoice
 	 * Set Price List.
 	 * Unique identifier of a Price List
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1950,7 +1998,7 @@ public interface I_C_Invoice
 	 * Get Price List.
 	 * Unique identifier of a Price List
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -1962,7 +2010,7 @@ public interface I_C_Invoice
 	 * Set RMA.
 	 * Return Material Authorization
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1972,7 +2020,7 @@ public interface I_C_Invoice
 	 * Get RMA.
 	 * Return Material Authorization
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2031,6 +2079,49 @@ public interface I_C_Invoice
 	int getM_Warehouse_ID();
 
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+
+	/**
+	 * Set Open Amount.
+	 * Open item amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOpenAmt (@Nullable BigDecimal OpenAmt);
+
+	/**
+	 * Get Open Amount.
+	 * Open item amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getOpenAmt();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_OpenAmt = new ModelColumn<>(I_C_Invoice.class, "OpenAmt", null);
+	String COLUMNNAME_OpenAmt = "OpenAmt";
+
+	/**
+	 * Set Organisation Bank Account.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOrg_BP_Account_ID (int Org_BP_Account_ID);
+
+	/**
+	 * Get Organisation Bank Account.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getOrg_BP_Account_ID();
+
+	String COLUMNNAME_Org_BP_Account_ID = "Org_BP_Account_ID";
 
 	/**
 	 * Set Payment Rule.
@@ -2162,33 +2253,6 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_Processing = new ModelColumn<>(I_C_Invoice.class, "Processing", null);
 	String COLUMNNAME_Processing = "Processing";
-
-
-	/**
-	 * Set Organization Bank account.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setOrg_BP_Account_ID (int Org_BP_Account_ID);
-
-	/**
-	 * Get Organization Bank account.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getOrg_BP_Account_ID();
-
-	@Nullable org.compiere.model.I_C_BP_BankAccount getOrg_BP_Account();
-
-	void setOrg_BP_Account(@Nullable org.compiere.model.I_C_BP_BankAccount Org_BP_Account);
-
-	ModelColumn<I_C_Invoice, org.compiere.model.I_C_BP_BankAccount> COLUMN_Org_BP_Account_ID = new ModelColumn<>(I_C_Invoice.class, "Org_BP_Account_ID", org.compiere.model.I_C_BP_BankAccount.class);
-	String COLUMNNAME_Org_BP_Account_ID = "Org_BP_Account_ID";
-
 
 	/**
 	 * Set Referenced Invoice.
@@ -2373,7 +2437,7 @@ public interface I_C_Invoice
 	 * Get Updated By.
 	 * User who updated this records
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -2385,7 +2449,7 @@ public interface I_C_Invoice
 	 * Set User List 1.
 	 * User defined list element #1
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2395,7 +2459,7 @@ public interface I_C_Invoice
 	 * Get User List 1.
 	 * User defined list element #1
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2406,7 +2470,7 @@ public interface I_C_Invoice
 	/**
 	 * Set User 2.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -2415,7 +2479,7 @@ public interface I_C_Invoice
 	/**
 	 * Get User 2.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

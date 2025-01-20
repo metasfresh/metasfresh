@@ -61,6 +61,7 @@ import {
 
 import { updateTab } from '../utils';
 import { shallowEqual, useSelector } from 'react-redux';
+import { getScope } from '../utils/documentListHelper';
 
 const initialMasterState = {
   layout: {
@@ -69,6 +70,7 @@ const initialMasterState = {
   data: [],
   saveStatus: {},
   validStatus: {},
+  indicator: 'saved',
   includedTabsInfo: {},
   hasComments: false,
   docId: undefined,
@@ -94,6 +96,7 @@ const initialModalState = {
   triggerField: null,
   saveStatus: {},
   validStatus: {},
+  indicator: 'saved',
   includedTabsInfo: {},
   staticModalType: '',
 };
@@ -135,7 +138,6 @@ export const initialState = {
 
   // this only feeds data to details view now
   master: initialMasterState,
-  indicator: 'saved',
   allowShortcut: true,
   allowOutsideClick: true,
   viewId: null,
@@ -170,7 +172,7 @@ export const getElementLayout = (state, isModal, layoutPath) => {
 };
 
 export const getLayoutAndData = (state, isModal = false) => {
-  const selector = isModal ? 'modal' : 'master';
+  const selector = getScope(isModal);
   return state.windowHandler[selector] ?? {};
 };
 
@@ -329,6 +331,29 @@ const mergeTopActions = (state, tabId, topActions) => {
     });
   }
 };
+
+export const getIndicatorFromState = ({
+  state,
+  windowHandler,
+  isModal = false,
+}) => {
+  const windowHandlerEff = windowHandler ? windowHandler : state.windowHandler;
+  return windowHandlerEff[getScope(isModal)].indicator;
+};
+
+const updateIndicatorToState = ({ windowHandler, indicator, isModal }) => {
+  return update(windowHandler, {
+    [getScope(isModal)]: { indicator: { $set: indicator } },
+  });
+};
+
+//
+//
+//
+//
+//
+//
+//
 
 export default function windowHandler(state = initialState, action) {
   switch (action.type) {
@@ -738,10 +763,11 @@ export default function windowHandler(state = initialState, action) {
       };
     // INDICATOR ACTIONS
     case CHANGE_INDICATOR_STATE:
-      return {
-        ...state,
+      return updateIndicatorToState({
+        windowHandler: state,
         indicator: action.state,
-      };
+        isModal: action.isModal,
+      });
 
     // TOP ACTIONS
     case TOP_ACTIONS_LOADING: {

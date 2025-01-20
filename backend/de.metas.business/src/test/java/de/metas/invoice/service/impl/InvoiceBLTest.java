@@ -3,7 +3,10 @@ package de.metas.invoice.service.impl;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocTypeId;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.money.CurrencyId;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
@@ -18,6 +21,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -25,7 +29,7 @@ import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -51,7 +55,7 @@ import static org.assertj.core.api.Assertions.*;
 
 public class InvoiceBLTest
 {
-	private static IInvoiceBL invoiceBL;
+	private PlainInvoiceBL invoiceBL;
 
 	@BeforeEach
 	public void beforeEach()
@@ -67,26 +71,29 @@ public class InvoiceBLTest
 		Env.setContext(ctx, Env.CTXNAME_AD_Client_ID, 1);
 		Env.setContext(ctx, Env.CTXNAME_AD_Language, "de_CH");
 
-		invoiceBL = Services.get(IInvoiceBL.class);
+		invoiceBL = (PlainInvoiceBL)Services.get(IInvoiceBL.class);
 	}
 
 	private I_C_DocType createSalesOrderDocType()
 	{
-		final I_C_DocType orderDocType = docType(DocBaseType.SalesOrder, null);
-		final I_C_DocType invoiceDocType = docType(DocBaseType.SalesInvoice, null);
-		orderDocType.setC_DocTypeInvoice_ID(invoiceDocType.getC_DocType_ID());
-		InterfaceWrapperHelper.save(orderDocType);
-
-		return orderDocType;
+		final I_C_DocType salesOrderDocType = docType(DocBaseType.SalesOrder);
+		salesOrderDocType.setC_DocTypeInvoice_ID(docTypeId(DocBaseType.SalesInvoice).getRepoId());
+		InterfaceWrapperHelper.save(salesOrderDocType);
+		return salesOrderDocType;
 	}
 
-	protected I_C_DocType docType(final DocBaseType baseType, final String subType)
+	private I_C_DocType docType(final DocBaseType baseType)
 	{
 		final I_C_DocType docType = newInstance(I_C_DocType.class);
 		docType.setDocBaseType(baseType.getCode());
-		docType.setDocSubType(subType);
+		docType.setDocSubType(null);
 		saveRecord(docType);
 		return docType;
+	}
+
+	private DocTypeId docTypeId(final DocBaseType baseType)
+	{
+		return DocTypeId.ofRepoId(docType(baseType).getC_DocType_ID());
 	}
 
 	public I_C_BPartner bpartner(final String bpValue)
@@ -145,5 +152,50 @@ public class InvoiceBLTest
 				null);
 
 		assertThat(invoice).isNotNull();
+	}
+
+	@Nested
+	public class extractGrandTotal
+	{
+		@SuppressWarnings("SameParameterValue")
+		I_C_Invoice invoice(final String grandTotal, InvoiceDocBaseType docBaseType)
+		{
+			final DocTypeId docTypeId = docTypeId(docBaseType.getDocBaseType());
+			final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+			invoice.setC_DocType_ID(docTypeId.getRepoId());
+			invoice.setIsSOTrx(docBaseType.getSoTrx().toBoolean());
+			invoice.setGrandTotal(new BigDecimal(grandTotal));
+			invoice.setC_Currency_ID(CurrencyId.EUR.getRepoId());
+			InterfaceWrapperHelper.save(invoice);
+			return invoice;
+		}
+
+		@Test
+		void customerInvoice()
+		{
+			final I_C_Invoice invoice = invoice("100", InvoiceDocBaseType.CustomerInvoice);
+			assertThat(invoiceBL.extractGrandTotal(invoice).withAPAdjusted().withCMAdjusted().toBigDecimal()).isEqualTo("100");
+		}
+
+		@Test
+		void customerCreditMemo()
+		{
+			final I_C_Invoice invoice = invoice("100", InvoiceDocBaseType.CustomerCreditMemo);
+			assertThat(invoiceBL.extractGrandTotal(invoice).withAPAdjusted().withCMAdjusted().toBigDecimal()).isEqualTo("-100");
+		}
+
+		@Test
+		void vendorInvoice()
+		{
+			final I_C_Invoice invoice = invoice("100", InvoiceDocBaseType.VendorInvoice);
+			assertThat(invoiceBL.extractGrandTotal(invoice).withAPAdjusted().withCMAdjusted().toBigDecimal()).isEqualTo("-100");
+		}
+
+		@Test
+		void vendorCreditMemo()
+		{
+			final I_C_Invoice invoice = invoice("100", InvoiceDocBaseType.VendorCreditMemo);
+			assertThat(invoiceBL.extractGrandTotal(invoice).withAPAdjusted().withCMAdjusted().toBigDecimal()).isEqualTo("100");
+		}
 	}
 }

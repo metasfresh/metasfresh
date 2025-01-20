@@ -1,6 +1,7 @@
 package de.metas.allocation.api;
 
 import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -9,6 +10,7 @@ import lombok.NonNull;
 import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.util.function.UnaryOperator;
 
 //
 //
@@ -19,6 +21,7 @@ import java.math.BigDecimal;
 public class MoneyWithInvoiceFlags
 {
 	@NonNull Money value;
+	/** Is Account Payable? (i.e. false for purchase, true for sales) */
 	@Getter boolean isAP;
 	@Getter boolean isCreditMemo;
 
@@ -33,6 +36,8 @@ public class MoneyWithInvoiceFlags
 			return isAP(docBaseType.isAP()).isCreditMemo(docBaseType.isCreditMemo());
 		}
 	}
+
+	public CurrencyId getCurrencyId() {return value.getCurrencyId();}
 
 	public MoneyWithInvoiceFlags withAPAdjusted()
 	{
@@ -109,4 +114,19 @@ public class MoneyWithInvoiceFlags
 	public BigDecimal toBigDecimal() {return value.toBigDecimal();}
 
 	public boolean isZero() {return value.isZero();}
+
+	public MoneyWithInvoiceFlags convertValue(@NonNull final UnaryOperator<Money> converter)
+	{
+		return withValue(converter.apply(value));
+	}
+
+	public MoneyWithInvoiceFlags subtract(@NonNull final Money valueToSubtract)
+	{
+		return withValue(value.subtract(valueToSubtract));
+	}
+
+	private MoneyWithInvoiceFlags withValue(final Money newValue)
+	{
+		return Money.equals(value, newValue) ? this : toBuilder().value(newValue).build();
+	}
 }
