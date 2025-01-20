@@ -172,8 +172,8 @@ BEGIN
             TaxAmtSource = t.TaxAmtSource * (-1),
             dr_account   = t.cr_account,
             cr_account   = t.dr_account
-        WHERE (t.docbasetype IN ('APC', 'ARC') AND IsSOTrx = 'N')
-           OR (t.docbasetype NOT IN ('APC', 'ARC') AND IsSOTrx = 'Y');
+        WHERE ((t.docbasetype = 'APC') -- purchase credit memo
+            OR (t.docbasetype != 'ARC' AND IsSOTrx = 'Y')); -- sales invoice
     END IF;
 
 
