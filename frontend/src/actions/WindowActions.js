@@ -402,10 +402,11 @@ export function updateModal(rowId, dataId) {
   };
 }
 
-export function indicatorState(state) {
+export function indicatorState({ state, isModal }) {
   return {
     type: CHANGE_INDICATOR_STATE,
     state: state,
+    isModal: !!isModal,
   };
 }
 
@@ -914,6 +915,7 @@ export function patch(
     };
 
     await dispatch({ type: PATCH_REQUEST, symbol, options });
+    await dispatch(indicatorState({ state: 'pending', isModal }));
 
     //
     // Update the state with the new property value
@@ -1016,6 +1018,8 @@ export function patch(
 
       // Propagate the exception, so callers are aware that something went wrong.
       throw error;
+    } finally {
+      await dispatch(indicatorState({ state: 'saved', isModal }));
     }
   };
 }

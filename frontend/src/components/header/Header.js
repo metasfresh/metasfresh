@@ -38,6 +38,7 @@ import {
   getDocSummaryDataFromState,
 } from '../../reducers/windowHandlerUtils';
 import { isShowCommentsMarker } from '../../utils/tableHelpers';
+import { getIndicatorFromState } from '../../reducers/windowHandler';
 
 /**
  * @file The Header component is shown in every view besides Modal or RawModal in frontend. It defines
@@ -971,7 +972,6 @@ Header.propTypes = {
 
 const mapStateToProps = (state) => {
   const {
-    indicator,
     master: { saveStatus },
   } = state.windowHandler;
 
@@ -982,7 +982,7 @@ const mapStateToProps = (state) => {
     docStatus: getDocActionElementFromState(state),
     docSummaryData: getDocSummaryDataFromState(state),
     isShowComments: isShowCommentsMarker(state),
-    indicator,
+    indicator: getIndicatorFromState({ state }),
     saveStatus,
   };
 };

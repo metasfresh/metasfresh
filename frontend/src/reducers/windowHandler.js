@@ -8,8 +8,10 @@ import {
   ACTIVATE_TAB,
   ALLOW_OUTSIDE_CLICK,
   ALLOW_SHORTCUT,
+  ALLOW_SHORTCUT,
   CHANGE_INDICATOR_STATE,
   CLEAR_MASTER_DATA,
+  CLOSE_FILTER_BOX,
   CLOSE_FILTER_BOX,
   CLOSE_MODAL,
   CLOSE_PLUGIN_MODAL,
@@ -17,8 +19,10 @@ import {
   CLOSE_RAW_MODAL,
   DISABLE_OUTSIDE_CLICK,
   DISABLE_SHORTCUT,
+  DISABLE_SHORTCUT,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
+  OPEN_FILTER_BOX,
   OPEN_FILTER_BOX,
   OPEN_MODAL,
   OPEN_PLUGIN_MODAL,
@@ -34,11 +38,24 @@ import {
   SET_INLINE_TAB_SHOW_MORE,
   SET_INLINE_TAB_WRAPPER_DATA,
   SET_PRINTING_OPTIONS,
+  RESET_PRINTING_OPTIONS,
+  SET_INLINE_TAB_ADD_NEW,
+  SET_INLINE_TAB_ITEM_PROP,
+  SET_INLINE_TAB_LAYOUT_AND_DATA,
+  SET_INLINE_TAB_SHOW_MORE,
+  SET_INLINE_TAB_WRAPPER_DATA,
+  SET_PRINTING_OPTIONS,
   SET_RAW_MODAL_DESCRIPTION,
   SET_RAW_MODAL_TITLE,
   SET_SPINNER,
+  SET_SPINNER,
   SORT_TAB,
   TOGGLE_OVERLAY,
+  TOGGLE_PRINTING_OPTION,
+  TOP_ACTIONS_DELETE,
+  TOP_ACTIONS_FAILURE,
+  TOP_ACTIONS_LOADING,
+  TOP_ACTIONS_SUCCESS,
   TOGGLE_PRINTING_OPTION,
   TOP_ACTIONS_DELETE,
   TOP_ACTIONS_FAILURE,
@@ -53,6 +70,8 @@ import {
   UPDATE_INLINE_TAB_DATA,
   UPDATE_INLINE_TAB_ITEM_FIELDS,
   UPDATE_INLINE_TAB_WRAPPER_FIELDS,
+  UPDATE_INLINE_TAB_ITEM_FIELDS,
+  UPDATE_INLINE_TAB_WRAPPER_FIELDS,
   UPDATE_MASTER_DATA,
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
@@ -61,6 +80,7 @@ import {
 
 import { updateTab } from '../utils';
 import { shallowEqual, useSelector } from 'react-redux';
+import { getScope } from '../utils/documentListHelper';
 
 const initialMasterState = {
   layout: {
@@ -69,6 +89,7 @@ const initialMasterState = {
   data: [],
   saveStatus: {},
   validStatus: {},
+  indicator: 'saved',
   includedTabsInfo: {},
   hasComments: false,
   docId: undefined,
@@ -94,6 +115,7 @@ const initialModalState = {
   triggerField: null,
   saveStatus: {},
   validStatus: {},
+  indicator: 'saved',
   includedTabsInfo: {},
   staticModalType: '',
 };
@@ -135,7 +157,6 @@ export const initialState = {
 
   // this only feeds data to details view now
   master: initialMasterState,
-  indicator: 'saved',
   allowShortcut: true,
   allowOutsideClick: true,
   viewId: null,
@@ -329,6 +350,29 @@ const mergeTopActions = (state, tabId, topActions) => {
     });
   }
 };
+
+export const getIndicatorFromState = ({
+  state,
+  windowHandler,
+  isModal = false,
+}) => {
+  const windowHandlerEff = windowHandler ? windowHandler : state.windowHandler;
+  return windowHandlerEff[getScope(isModal)].indicator;
+};
+
+const updateIndicatorToState = ({ windowHandler, indicator, isModal }) => {
+  return update(windowHandler, {
+    [getScope(isModal)]: { indicator: { $set: indicator } },
+  });
+};
+
+//
+//
+//
+//
+//
+//
+//
 
 export default function windowHandler(state = initialState, action) {
   switch (action.type) {
@@ -738,10 +782,11 @@ export default function windowHandler(state = initialState, action) {
       };
     // INDICATOR ACTIONS
     case CHANGE_INDICATOR_STATE:
-      return {
-        ...state,
+      return updateIndicatorToState({
+        windowHandler: state,
         indicator: action.state,
-      };
+        isModal: action.isModal,
+      });
 
     // TOP ACTIONS
     case TOP_ACTIONS_LOADING: {
