@@ -1,20 +1,25 @@
 package de.metas.distribution.ddorder.lowlevel;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderQuery;
 import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine_Or_Alternative;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryUpdater;
+import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Forecast;
 import org.eevolution.api.PPOrderId;
@@ -28,6 +33,8 @@ import org.eevolution.mrp.api.IMRPDAO;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -256,6 +263,67 @@ public class DDOrderLowLevelDAO
 		// Responsible
 		query.getResponsibleId().appendFilter(queryBuilder, I_DD_Order.COLUMNNAME_AD_User_Responsible_ID);
 
+		//
+		// Warehouse From
+		if (query.getWarehouseFromIds() != null && !query.getWarehouseFromIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_DD_Order.COLUMNNAME_M_Warehouse_From_ID, query.getWarehouseFromIds());
+		}
+
+		//
+		// Warehouse To
+		if (query.getWarehouseToIds() != null && !query.getWarehouseToIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_DD_Order.COLUMNNAME_M_Warehouse_To_ID, query.getWarehouseToIds());
+		}
+
+		//
+		// Sales Order
+		if (query.getSalesOrderIds() != null && !query.getSalesOrderIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_DD_Order.COLUMNNAME_C_Order_ID, query.getSalesOrderIds());
+		}
+
+		//
+		// Manufacturing Order
+		if (query.getManufacturingOrderIds() != null && !query.getManufacturingOrderIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_DD_Order.COLUMNNAME_Forward_PP_Order_ID, query.getManufacturingOrderIds());
+		}
+
+		//
+		// Date Promised
+		if (query.getDatesPromised() != null && !query.getDatesPromised().isEmpty())
+		{
+			final ICompositeQueryFilter<I_DD_Order> filter = queryBuilder.addCompositeQueryFilter().setJoinOr();
+			for (final LocalDate datePromised : query.getDatesPromised())
+			{
+				filter.addEqualsFilter(I_DD_Order.COLUMNNAME_DatePromised, datePromised, DateTruncQueryFilterModifier.DAY);
+			}
+		}
+
+		//
+		// Line level filters
+		{
+			final ExtendedMemorizingSupplier<IQueryBuilder<I_DD_OrderLine>> lineQueryBuilderHolder = ExtendedMemorizingSupplier.of(() -> queryBL.createQueryBuilder(I_DD_OrderLine.class));
+
+			//
+			// Products
+			if (query.getProductIds() != null && !query.getProductIds().isEmpty())
+			{
+				//noinspection DataFlowIssue
+				lineQueryBuilderHolder.get().addInArrayFilter(I_DD_OrderLine.COLUMNNAME_M_Product_ID, query.getProductIds());
+			}
+
+			//
+			final IQueryBuilder<I_DD_OrderLine> lineQueryBuilder = lineQueryBuilderHolder.peek();
+			if (lineQueryBuilder != null)
+			{
+				queryBuilder.addInSubQueryFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, I_DD_OrderLine.COLUMNNAME_DD_Order_ID, lineQueryBuilder.create());
+			}
+		}
+
+		//
 		return queryBuilder;
 	}
 
@@ -313,6 +381,22 @@ public class DDOrderLowLevelDAO
 					ddOrder.setForward_PP_Order_ID(PPOrderId.toRepoId(newPPOrderId));
 					return IQueryUpdater.MODEL_UPDATED;
 				});
+	}
+
+	public Set<ProductId> getProductIdsByDDOrderIds(final Collection<DDOrderId> ddOrderIds)
+	{
+		if (ddOrderIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final List<ProductId> productIds = queryBL.createQueryBuilder(I_DD_OrderLine.class)
+				.addInArrayFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, ddOrderIds)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listDistinct(I_DD_OrderLine.COLUMNNAME_M_Product_ID, ProductId.class);
+
+		return ImmutableSet.copyOf(productIds);
 	}
 
 }
