@@ -2124,6 +2124,29 @@ public interface I_C_Invoice
 	String COLUMNNAME_Org_BP_Account_ID = "Org_BP_Account_ID";
 
 	/**
+	 * Set Open Amount.
+	 * Open item amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOpenAmt (@Nullable BigDecimal OpenAmt);
+
+	/**
+	 * Get Open Amount.
+	 * Open item amount
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getOpenAmt();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_OpenAmt = new ModelColumn<>(I_C_Invoice.class, "OpenAmt", null);
+	String COLUMNNAME_OpenAmt = "OpenAmt";
+
+	/**
 	 * Set Payment Rule.
 	 * How you pay the invoice
 	 *
