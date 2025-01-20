@@ -107,9 +107,14 @@ public final class WorkflowLaunchersFacetId
 		return WorkflowLaunchersFacetGroupId.equals(this.groupId, expectedGroupId);
 	}
 
+	@NonNull
 	public <T extends RepoIdAware> T getAsId(@NonNull final Class<T> type) {return RepoIdAwares.ofObject(value, type);}
 
+	@NonNull
 	public LocalDate getAsLocalDate() {return LocalDate.parse(value);}
+
+	@NonNull
+	public String getAsString() {return value;}
 
 	@NonNull
 	public <T> T deserializeTo(@NonNull final Class<T> targetClass)
