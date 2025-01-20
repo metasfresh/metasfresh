@@ -172,7 +172,7 @@ export const getElementLayout = (state, isModal, layoutPath) => {
 };
 
 export const getLayoutAndData = (state, isModal = false) => {
-  const selector = isModal ? 'modal' : 'master';
+  const selector = getScope(isModal);
   return state.windowHandler[selector] ?? {};
 };
 
