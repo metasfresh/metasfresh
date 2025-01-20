@@ -2,7 +2,6 @@ package de.metas.distribution.workflows_api.facets;
 
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
-import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetId;
 import lombok.NonNull;
@@ -133,6 +132,4 @@ public class DistributionFacetId
 	}
 
 	public WorkflowLaunchersFacetId toWorkflowLaunchersFacetId() {return workflowLaunchersFacetId;}
-
-	public WarehouseId getWarehouseIdNotNull() {return Check.assumeNotNull(warehouseId, "warehouseId shall not be null for {}", this);}
 }

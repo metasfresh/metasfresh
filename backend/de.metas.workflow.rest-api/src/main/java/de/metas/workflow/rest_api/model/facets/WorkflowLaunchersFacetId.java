@@ -102,11 +102,6 @@ public final class WorkflowLaunchersFacetId
 	@NonNull
 	public String toJsonString() {return groupId.getAsString() + SEPARATOR + value;}
 
-	public boolean isGroupId(@Nullable final WorkflowLaunchersFacetGroupId expectedGroupId)
-	{
-		return WorkflowLaunchersFacetGroupId.equals(this.groupId, expectedGroupId);
-	}
-
 	@NonNull
 	public <T extends RepoIdAware> T getAsId(@NonNull final Class<T> type) {return RepoIdAwares.ofObject(value, type);}
 
