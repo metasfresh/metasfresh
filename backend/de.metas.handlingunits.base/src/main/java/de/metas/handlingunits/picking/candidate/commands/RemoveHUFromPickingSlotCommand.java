@@ -11,10 +11,11 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.util.lang.IMutable;
 
 
 import javax.annotation.Nullable;
+import org.adempiere.util.lang.IMutable;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
