@@ -44,7 +44,6 @@ SELECT cd.m_costdetail_id,
        cd.m_costdetail_type,
        cd.sourceamt,
        cd.source_currency_id,
-       cd.m_shipping_notificationline_id,
        (CASE
             WHEN cd.m_matchinv_id IS NOT NULL                  THEN 'CO'
             WHEN cd.m_matchpo_id IS NOT NULL                   THEN 'CO'
@@ -62,7 +61,6 @@ SELECT cd.m_costdetail_id,
             WHEN cd.m_movementline_id IS NOT NULL              THEN 'M_MovementLine'
             WHEN cd.m_inoutline_id IS NOT NULL                 THEN 'M_InOutLine'
             WHEN cd.m_costrevaluation_id IS NOT NULL           THEN 'M_CostRevaluation'
-            WHEN cd.m_shipping_notificationline_id IS NOT NULL THEN 'M_Shipping_Notification'
         END)                                       AS tablename,
        COALESCE(cd.m_matchinv_id,
                 cd.m_matchpo_id,
