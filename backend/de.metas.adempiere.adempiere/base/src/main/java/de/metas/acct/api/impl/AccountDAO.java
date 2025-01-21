@@ -22,6 +22,7 @@ import org.compiere.model.MAccount;
 import org.compiere.util.Env;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 
 /*
@@ -148,16 +149,33 @@ public class AccountDAO implements IAccountDAO
 
 	@Override
 	@NonNull
-	public AccountId getOrCreate(@NonNull final AccountDimension dimension)
+	public AccountId getOrCreateOutOfTrx(@NonNull final AccountDimension dimension)
 	{
-		// Existing
-		final MAccount existingAccount = retrieveAccount(Env.getCtx(), dimension);
-		if (existingAccount != null)
-		{
-			return AccountId.ofRepoId(existingAccount.getC_ValidCombination_ID());
-		}
+		return Optional.ofNullable(retrieveAccount(Env.getCtx(), dimension))
+				.map(existingAccount -> AccountId.ofRepoId(existingAccount.getC_ValidCombination_ID()))
+				.orElseGet(() -> {
+					final I_C_ValidCombination vc = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_ValidCombination.class);
+					return setValuesAndSave(vc, dimension);
+				});
+	}
 
-		final I_C_ValidCombination vc = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_ValidCombination.class);
+	@Override
+	@NonNull
+	public AccountId getOrCreateWithinTrx(@NonNull final AccountDimension dimension)
+	{
+		return Optional.ofNullable(retrieveAccount(Env.getCtx(), dimension))
+				.map(existingAccount -> AccountId.ofRepoId(existingAccount.getC_ValidCombination_ID()))
+				.orElseGet(() -> {
+					final I_C_ValidCombination vc = InterfaceWrapperHelper.newInstance(I_C_ValidCombination.class);
+					return setValuesAndSave(vc, dimension);
+				});
+	}
+	
+	@NonNull
+	private static AccountId setValuesAndSave(
+			@NonNull final I_C_ValidCombination vc,
+			@NonNull final AccountDimension dimension)
+	{
 		vc.setAD_Org_ID(dimension.getAD_Org_ID());
 		vc.setC_AcctSchema_ID(AcctSchemaId.toRepoId(dimension.getAcctSchemaId()));
 		vc.setAccount_ID(dimension.getC_ElementValue_ID());
@@ -185,6 +203,5 @@ public class AccountDAO implements IAccountDAO
 		InterfaceWrapperHelper.save(vc);
 
 		return AccountId.ofRepoId(vc.getC_ValidCombination_ID());
-	}    // get
-
+	}
 }
