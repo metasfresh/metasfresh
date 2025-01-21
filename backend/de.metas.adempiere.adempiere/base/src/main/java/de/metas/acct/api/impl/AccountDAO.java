@@ -24,6 +24,7 @@ import org.compiere.util.Env;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -51,8 +52,10 @@ public class AccountDAO implements IAccountDAO
 {
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	/** Maps {@link AcctSegmentType} to {@link I_C_ValidCombination}'s column name */
-	private static final Map<AcctSegmentType, String> segmentType2column = ImmutableMap.<AcctSegmentType, String> builder()
+	/**
+	 * Maps {@link AcctSegmentType} to {@link I_C_ValidCombination}'s column name
+	 */
+	private static final Map<AcctSegmentType, String> segmentType2column = ImmutableMap.<AcctSegmentType, String>builder()
 			.put(AcctSegmentType.Client, I_C_ValidCombination.COLUMNNAME_AD_Client_ID)
 			.put(AcctSegmentType.Organization, I_C_ValidCombination.COLUMNNAME_AD_Org_ID)
 			.put(AcctSegmentType.Account, I_C_ValidCombination.COLUMNNAME_Account_ID)
@@ -112,7 +115,7 @@ public class AccountDAO implements IAccountDAO
 
 			final Object value = dimension.getSegmentValue(segmentType);
 
-			if(value instanceof String)
+			if (value instanceof String)
 			{
 				queryBuilder.addEqualsFilter(columnName, String.valueOf(value));
 			}
@@ -149,24 +152,27 @@ public class AccountDAO implements IAccountDAO
 
 	@Override
 	@NonNull
-	public AccountId getOrCreateOutOfTrx(@NonNull final AccountDimension dimension)
+	public AccountId getOrCreateWithinTrx(@NonNull final AccountDimension dimension)
 	{
-		return Optional.ofNullable(retrieveAccount(Env.getCtx(), dimension))
-				.map(existingAccount -> AccountId.ofRepoId(existingAccount.getC_ValidCombination_ID()))
-				.orElseGet(() -> {
-					final I_C_ValidCombination vc = InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_ValidCombination.class);
-					return setValuesAndSave(vc, dimension);
-				});
+		return getOrCreate(dimension, () -> InterfaceWrapperHelper.newInstance(I_C_ValidCombination.class));
 	}
 
 	@Override
 	@NonNull
-	public AccountId getOrCreateWithinTrx(@NonNull final AccountDimension dimension)
+	public AccountId getOrCreateOutOfTrx(@NonNull final AccountDimension dimension)
+	{
+		return getOrCreate(dimension, () -> InterfaceWrapperHelper.newInstanceOutOfTrx(I_C_ValidCombination.class));
+	}
+
+	@NonNull
+	private AccountId getOrCreate(
+			@NonNull final AccountDimension dimension,
+			@NonNull final Supplier<I_C_ValidCombination> newInstanceSupplier)
 	{
 		return Optional.ofNullable(retrieveAccount(Env.getCtx(), dimension))
 				.map(existingAccount -> AccountId.ofRepoId(existingAccount.getC_ValidCombination_ID()))
 				.orElseGet(() -> {
-					final I_C_ValidCombination vc = InterfaceWrapperHelper.newInstance(I_C_ValidCombination.class);
+					final I_C_ValidCombination vc = newInstanceSupplier.get();
 					return setValuesAndSave(vc, dimension);
 				});
 	}
