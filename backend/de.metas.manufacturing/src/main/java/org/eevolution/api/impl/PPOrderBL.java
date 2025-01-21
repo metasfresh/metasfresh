@@ -27,9 +27,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.common.util.time.SystemTime;
-import de.metas.document.DocSubType;
 import de.metas.device.accessor.DeviceAccessorsHubFactory;
 import de.metas.device.accessor.DeviceId;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
@@ -154,6 +154,12 @@ public class PPOrderBL implements IPPOrderBL
 	public Collection<I_PP_Order> getByIds(@NonNull final Set<PPOrderId> ids)
 	{
 		return ppOrdersRepo.getByIds(ids);
+	}
+
+	@Override
+	public String getDocumentNoById(@NonNull final PPOrderId ppOrderId)
+	{
+		return getById(ppOrderId).getDocumentNo();
 	}
 
 	@Override
@@ -344,11 +350,11 @@ public class PPOrderBL implements IPPOrderBL
 			@NonNull final DocSubType docSubType)
 	{
 		final DocTypeId docTypeId = docTypesRepo.getDocTypeId(DocTypeQuery.builder()
-																	  .docBaseType(docBaseType.toDocBaseType())
-																	  .docSubType(docSubType)
-																	  .adClientId(ppOrder.getAD_Client_ID())
-																	  .adOrgId(ppOrder.getAD_Org_ID())
-																	  .build());
+				.docBaseType(docBaseType.toDocBaseType())
+				.docSubType(docSubType)
+				.adClientId(ppOrder.getAD_Client_ID())
+				.adOrgId(ppOrder.getAD_Org_ID())
+				.build());
 
 		ppOrder.setC_DocTypeTarget_ID(docTypeId.getRepoId());
 		ppOrder.setC_DocType_ID(docTypeId.getRepoId());
@@ -497,13 +503,13 @@ public class PPOrderBL implements IPPOrderBL
 						.build();
 
 				costCollectorsService.createActivityControl(ActivityControlCreateRequest.builder()
-																	.order(orderRecord)
-																	.orderActivity(activity)
-																	.movementDate(reportDate)
-																	.qtyMoved(qtyToProcess)
-																	.durationSetup(setupTimeRemaining)
-																	.duration(durationRemaining.getDuration())
-																	.build());
+						.order(orderRecord)
+						.orderActivity(activity)
+						.movementDate(reportDate)
+						.qtyMoved(qtyToProcess)
+						.durationSetup(setupTimeRemaining)
+						.duration(durationRemaining.getDuration())
+						.build());
 			}
 		}
 	}

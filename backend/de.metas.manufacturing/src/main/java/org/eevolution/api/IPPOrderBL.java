@@ -26,6 +26,8 @@ public interface IPPOrderBL extends ISingletonService
 
 	Collection<I_PP_Order> getByIds(@NonNull Set<PPOrderId> ids);
 
+	String getDocumentNoById(@NonNull PPOrderId ppOrderId);
+
 	void save(I_PP_Order ppOrder);
 
 	I_PP_Order createOrder(PPOrderCreateRequest request);

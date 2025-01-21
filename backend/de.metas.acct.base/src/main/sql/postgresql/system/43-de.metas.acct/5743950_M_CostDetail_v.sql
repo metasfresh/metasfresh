@@ -107,5 +107,5 @@ FROM m_costdetail cd
          LEFT JOIN M_Shipping_Notification sn ON sn.M_Shipping_Notification_ID = snl.M_Shipping_Notification_ID
 ;
 
-COMMENT ON VIEW m_costdetail_v IS 'M_CostDetail table but with some helpful columns like DocStatus'
+COMMENT ON VIEW m_costdetail_v IS 'M_CostDetail table but with some helpful columns like DateAcct'
 ;
