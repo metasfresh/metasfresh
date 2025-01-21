@@ -161,49 +161,6 @@ public class MAccount extends X_C_ValidCombination
 		logger.debug("New: {}", newAccount);
 		return newAccount;
 	}	// get
-	
-	public static I_C_ValidCombination getCreate(final AccountDimension dimension)
-	{
-		// services
-		final IAccountDAO accountDAO = Services.get(IAccountDAO.class);
-
-		// Existing
-		final MAccount existingAccount = accountDAO.retrieveAccount(Env.getCtx(), dimension);
-		if (existingAccount != null)
-		{
-			return existingAccount;
-		}
-
-		final I_C_ValidCombination vc = InterfaceWrapperHelper.newInstance(I_C_ValidCombination.class);
-		vc.setAD_Org_ID(dimension.getAD_Org_ID());
-		vc.setC_AcctSchema_ID(AcctSchemaId.toRepoId(dimension.getAcctSchemaId()));
-		vc.setAccount_ID(dimension.getC_ElementValue_ID());
-		vc.setC_SubAcct_ID(dimension.getC_SubAcct_ID());
-		vc.setM_Product_ID(dimension.getM_Product_ID());
-		vc.setC_BPartner_ID(dimension.getC_BPartner_ID());
-		vc.setAD_OrgTrx_ID(dimension.getAD_OrgTrx_ID());
-		vc.setC_LocFrom_ID(dimension.getC_LocFrom_ID());
-		vc.setC_LocTo_ID(dimension.getC_LocTo_ID());
-		vc.setC_SalesRegion_ID(dimension.getC_SalesRegion_ID());
-		vc.setC_Project_ID(dimension.getC_Project_ID());
-		vc.setC_Campaign_ID(dimension.getC_Campaign_ID());
-		vc.setC_Activity_ID(dimension.getC_Activity_ID());
-		vc.setUser1_ID(dimension.getUser1_ID());
-		vc.setUser2_ID(dimension.getUser2_ID());
-		vc.setUserElement1_ID(dimension.getUserElement1_ID());
-		vc.setUserElement2_ID(dimension.getUserElement2_ID());
-		vc.setUserElementString1(dimension.getUserElementString1());
-		vc.setUserElementString2(dimension.getUserElementString2());
-		vc.setUserElementString3(dimension.getUserElementString3());
-		vc.setUserElementString4(dimension.getUserElementString4());
-		vc.setUserElementString5(dimension.getUserElementString5());
-		vc.setUserElementString6(dimension.getUserElementString6());
-		vc.setUserElementString7(dimension.getUserElementString7());
-		InterfaceWrapperHelper.save(vc);
-		
-		return vc;
-	}	// get
-
 
 	/**
 	 * Factory: default combination
