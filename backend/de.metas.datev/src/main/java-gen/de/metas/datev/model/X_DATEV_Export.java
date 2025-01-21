@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_DATEV_Export extends org.compiere.model.PO implements I_DATEV_Export, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 623345890L;
+	private static final long serialVersionUID = -533775328L;
 
     /** Standard Constructor */
     public X_DATEV_Export (final Properties ctx, final int DATEV_Export_ID, @Nullable final String trxName)
@@ -95,6 +95,30 @@ public class X_DATEV_Export extends org.compiere.model.PO implements I_DATEV_Exp
 	public boolean isExcludeAlreadyExported() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsExcludeAlreadyExported);
+	}
+
+	@Override
+	public void setIsNegateInboundAmounts (final boolean IsNegateInboundAmounts)
+	{
+		set_Value (COLUMNNAME_IsNegateInboundAmounts, IsNegateInboundAmounts);
+	}
+
+	@Override
+	public boolean isNegateInboundAmounts() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsNegateInboundAmounts);
+	}
+
+	@Override
+	public void setIsPlaceBPAccountsOnCredit (final boolean IsPlaceBPAccountsOnCredit)
+	{
+		set_Value (COLUMNNAME_IsPlaceBPAccountsOnCredit, IsPlaceBPAccountsOnCredit);
+	}
+
+	@Override
+	public boolean isPlaceBPAccountsOnCredit() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPlaceBPAccountsOnCredit);
 	}
 
 	@Override
