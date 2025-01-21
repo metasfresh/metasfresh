@@ -75,8 +75,12 @@ public class DistributionRestService
 
 	public Stream<DDOrderReference> streamJobReferencesForUser(@NonNull final DDOrderReferenceQuery query)
 	{
-		final DDOrderReferenceCollector collector = new DDOrderReferenceCollector();
+		final DDOrderReferenceCollector collector = DDOrderReferenceCollector.builder()
+				.ddOrderService(ddOrderService)
+				.build();
+
 		collect(query, collector);
+		
 		return collector.streamCollectedItems();
 	}
 

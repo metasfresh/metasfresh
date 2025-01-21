@@ -10,11 +10,8 @@ import de.metas.order.OrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
-import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.util.TimeUtil;
@@ -29,8 +26,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 
+import static de.metas.distribution.workflows_api.DDOrderReferenceCollector.extractQtyEntered;
+
 @Builder
-@RequiredArgsConstructor
 public class DistributionFacetsCollector implements DistributionOrderCollector<DistributionFacet>
 {
 	@NonNull private final IWarehouseBL warehouseBL;
@@ -173,7 +171,7 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 
 	private void collectQuantity(final I_DD_OrderLine ddOrderLine)
 	{
-		collectQuantity(Quantitys.of(ddOrderLine.getQtyEntered(), UomId.ofRepoId(ddOrderLine.getC_UOM_ID())));
+		collectQuantity(extractQtyEntered(ddOrderLine));
 	}
 
 	private void collectQuantity(final Quantity qty)

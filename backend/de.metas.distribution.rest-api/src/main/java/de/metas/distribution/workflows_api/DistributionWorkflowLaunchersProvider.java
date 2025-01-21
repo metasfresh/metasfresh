@@ -10,6 +10,7 @@ import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.order.IOrderBL;
 import de.metas.organization.IOrgDAO;
+import de.metas.product.IProductBL;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
@@ -32,6 +33,7 @@ import java.util.Optional;
 class DistributionWorkflowLaunchersProvider
 {
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
@@ -93,23 +95,32 @@ class DistributionWorkflowLaunchersProvider
 	@NonNull
 	private WorkflowLauncherCaption computeCaption(@NonNull final DDOrderReference ddOrderReference)
 	{
-		final TranslatableStringBuilder translatableStringBuilder = TranslatableStrings.builder();
+		final TranslatableStringBuilder captionBuilder = TranslatableStrings.builder();
 		getSourceDocumentTypeAndNo(ddOrderReference)
-				.ifPresent(sourceDocTypeAndNo -> translatableStringBuilder
+				.ifPresent(sourceDocTypeAndNo -> captionBuilder
 						.append(sourceDocTypeAndNo.getLeft())
 						.append(" ")
 						.append(sourceDocTypeAndNo.getRight())
 						.append(" | "));
 
-		return WorkflowLauncherCaption.of(
-				translatableStringBuilder
-						.append(warehouseBL.getWarehouseName(ddOrderReference.getFromWarehouseId()))
-						.append(" > ")
-						.append(warehouseBL.getWarehouseName(ddOrderReference.getToWarehouseId()))
-						.append(" | ")
-						.appendDateTime(ddOrderReference.getDatePromised().toZonedDateTime(orgDAO::getTimeZone))
-						.build()
-		);
+		captionBuilder
+				.append(warehouseBL.getWarehouseName(ddOrderReference.getFromWarehouseId()))
+				.append(" > ")
+				.append(warehouseBL.getWarehouseName(ddOrderReference.getToWarehouseId()))
+				.append(" | ")
+				.appendDateTime(ddOrderReference.getDatePromised().toZonedDateTime(orgDAO::getTimeZone));
+
+		if (ddOrderReference.getProductId() != null)
+		{
+			captionBuilder.append(" | ").append(productBL.getProductValueAndName(ddOrderReference.getProductId()));
+		}
+
+		if (ddOrderReference.getQty() != null)
+		{
+			captionBuilder.append(" | ").appendQty(ddOrderReference.getQty().toBigDecimal(), ddOrderReference.getQty().getUOMSymbol());
+		}
+
+		return WorkflowLauncherCaption.of(captionBuilder.build());
 	}
 
 	@NonNull
