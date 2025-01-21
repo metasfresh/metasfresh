@@ -23,6 +23,7 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
@@ -83,7 +84,7 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 			return;
 		}
 
-		collect(DistributionFacet.of(facetId, getWarehouseName(warehouseId)));
+		collect(DistributionFacet.of(facetId, 0, getWarehouseName(warehouseId)));
 	}
 
 	private void collectWarehouseTo(final I_DD_Order ddOrder)
@@ -100,7 +101,7 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 			return;
 		}
 
-		collect(DistributionFacet.of(facetId, getWarehouseName(warehouseId)));
+		collect(DistributionFacet.of(facetId, 0, getWarehouseName(warehouseId)));
 	}
 
 	private void collectSalesOrder(final I_DD_Order ddOrder)
@@ -117,7 +118,7 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 			return;
 		}
 
-		collect(DistributionFacet.of(facetId, getSalesOrderDocumentNo(salesOrderId)));
+		collect(DistributionFacet.of(facetId, 0, getSalesOrderDocumentNo(salesOrderId)));
 	}
 
 	private void collectManufacturingOrder(final I_DD_Order ddOrder)
@@ -134,7 +135,7 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 			return;
 		}
 
-		collect(DistributionFacet.of(facetId, getManufacturingOrderDocumentNo(manufacturingOrderId)));
+		collect(DistributionFacet.of(facetId, 0, getManufacturingOrderDocumentNo(manufacturingOrderId)));
 	}
 
 	private void collectDatePromised(final I_DD_Order ddOrder)
@@ -146,7 +147,7 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 			return;
 		}
 
-		collect(DistributionFacet.of(facetId, TranslatableStrings.date(datePromised)));
+		collect(DistributionFacet.of(facetId, datePromised.toEpochDay(), TranslatableStrings.date(datePromised)));
 	}
 
 	private void collectProducts(final I_DD_Order ddOrder)
@@ -162,7 +163,7 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 			return;
 		}
 
-		collect(DistributionFacet.of(facetId, getProductName(productId)));
+		collect(DistributionFacet.of(facetId, 0, getProductName(productId)));
 	}
 
 	private void collectQuantities(final I_DD_Order ddOrder)
@@ -183,7 +184,8 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 			return;
 		}
 
-		collect(DistributionFacet.of(facetId, TranslatableStrings.quantity(qty.toBigDecimal(), qty.getUOMSymbol())));
+		final long sortNo = qty.toBigDecimal().multiply(new BigDecimal("10000")).longValue();
+		collect(DistributionFacet.of(facetId, sortNo, TranslatableStrings.quantity(qty.toBigDecimal(), qty.getUOMSymbol())));
 	}
 
 	private void collect(DistributionFacet facet) {_result.add(facet);}

@@ -14,6 +14,7 @@ import javax.annotation.Nullable;
 public class DistributionFacet
 {
 	@NonNull DistributionFacetId facetId;
+	long sortNo;
 	@NonNull ITranslatableString caption;
 
 	public WorkflowLaunchersFacetGroup.WorkflowLaunchersFacetGroupBuilder newWorkflowLaunchersFacetGroupBuilder()
@@ -29,6 +30,7 @@ public class DistributionFacet
 				.facetId(facetId)
 				.caption(caption)
 				.isActive(activeFacetIds != null && activeFacetIds.contains(facetId))
+				.sortNo(sortNo)
 				.build();
 	}
 
