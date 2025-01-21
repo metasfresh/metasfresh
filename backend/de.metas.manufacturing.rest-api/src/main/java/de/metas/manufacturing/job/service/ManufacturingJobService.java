@@ -241,7 +241,7 @@ public class ManufacturingJobService
 		private final HashSet<ResourceTypeId> seenResourceTypeIds = new HashSet<>();
 
 		@Override
-		public void collect(final I_PP_Order ppOrder, final boolean isJobStarted)
+		public void collect(final I_PP_Order ppOrder, final boolean isJobStarted_NOTUSED)
 		{
 			final ResourceId resourceId = ResourceId.ofRepoId(ppOrder.getS_Resource_ID());
 			if (!seenResourceIds.add(resourceId))

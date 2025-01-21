@@ -8,8 +8,9 @@ import de.metas.distribution.workflows_api.activity_handlers.CompleteDistributio
 import de.metas.distribution.workflows_api.activity_handlers.MoveWFActivityHandler;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.user.UserId;
 import de.metas.mobile.application.MobileApplicationId;
+import de.metas.mobile.application.MobileApplicationInfo;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityId;
@@ -19,11 +20,11 @@ import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
+import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
-import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -51,17 +52,24 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
 
 	@Override
+	@NonNull
+	public MobileApplicationInfo customizeApplicationInfo(@NonNull final MobileApplicationInfo applicationInfo, @NonNull final UserId loggedUserId)
+	{
+		return applicationInfo.toBuilder()
+				.showFilters(true)
+				.build();
+	}
+
+	@Override
 	public WorkflowLaunchersList provideLaunchers(@NonNull final WorkflowLaunchersQuery query)
 	{
-		if (query.getFilterByQRCode() != null)
-		{
-			throw new AdempiereException("Invalid QR Code: " + query.getFilterByQRCode());
-		}
+		return wfLaunchersProvider.provideLaunchers(query);
+	}
 
-		@NonNull final UserId userId = query.getUserId();
-		@NonNull final QueryLimit suggestedLimit = query.getLimit().orElse(QueryLimit.NO_LIMIT);
-
-		return wfLaunchersProvider.provideLaunchers(userId, suggestedLimit);
+	@Override
+	public WorkflowLaunchersFacetGroupList getFacets(final WorkflowLaunchersFacetQuery query)
+	{
+		return wfLaunchersProvider.getFacets(query);
 	}
 
 	@Override
@@ -188,26 +196,26 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 		if (Check.isNotBlank(job.getSalesOrderDocumentNo()))
 		{
 			builder.entry(WFProcessHeaderProperty.builder()
-								  .caption(TranslatableStrings.adElementOrMessage("C_Order_DocumentNo"))
-								  .value(job.getSalesOrderDocumentNo())
-								  .build());
+					.caption(TranslatableStrings.adElementOrMessage("C_Order_DocumentNo"))
+					.value(job.getSalesOrderDocumentNo())
+					.build());
 		}
 
 		if (Check.isNotBlank(job.getPpOrderDocumentNo()))
 		{
 			builder.entry(WFProcessHeaderProperty.builder()
-								  .caption(TranslatableStrings.adElementOrMessage("PP_Order_DocumentNo"))
-								  .value(job.getPpOrderDocumentNo())
-								  .build());
+					.caption(TranslatableStrings.adElementOrMessage("PP_Order_DocumentNo"))
+					.value(job.getPpOrderDocumentNo())
+					.build());
 		}
 
 		return builder.build();
 	}
 
-	public WFProcess processEvent(final JsonDistributionEvent event, final UserId callerId)
+	public void processEvent(final JsonDistributionEvent event, final UserId callerId)
 	{
 		final WFProcessId wfProcessId = WFProcessId.ofString(event.getWfProcessId());
-		return changeWFProcessById(
+		changeWFProcessById(
 				wfProcessId,
 				(wfProcess, job) -> {
 					wfProcess.assertHasAccess(callerId);
