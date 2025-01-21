@@ -54,7 +54,7 @@ public class FactAcctBL implements IFactAcctBL
 	public Account getAccount(@NonNull final I_Fact_Acct factAcct)
 	{
 		final AccountDimension accountDimension = IFactAcctBL.extractAccountDimension(factAcct);
-		@NonNull final AccountId accountId = accountDAO.getOrCreate(accountDimension);
+		@NonNull final AccountId accountId = accountDAO.getOrCreateOutOfTrx(accountDimension);
 		return Account.ofId(accountId).withAccountConceptualName(FactAcctDAO.extractAccountConceptualName(factAcct));
 	}
 
