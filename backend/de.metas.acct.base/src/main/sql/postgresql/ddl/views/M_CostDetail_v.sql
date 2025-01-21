@@ -53,7 +53,6 @@ SELECT cd.m_costdetail_id,
             WHEN cd.m_movementline_id IS NOT NULL              THEN m.docstatus
             WHEN cd.m_inoutline_id IS NOT NULL                 THEN io.docstatus
             WHEN cd.m_costrevaluation_id IS NOT NULL           THEN cr.docstatus
-            WHEN cd.m_shipping_notificationline_id IS NOT NULL THEN sn.docstatus
         END)                                       AS docstatus,
        (CASE
             WHEN cd.m_matchinv_id IS NOT NULL                  THEN 'M_MatchInv'
@@ -70,11 +69,6 @@ SELECT cd.m_costdetail_id,
                 cd.pp_cost_collector_id,
                 cd.m_inventoryline_id,
                 cd.m_movementline_id,
-<<<<<<< HEAD
-                cd.m_inoutline_id,
-                cd.m_costrevaluationline_id,
-                cd.m_shipping_notificationline_id) AS record_id
-=======
                 cd.m_inoutline_id) AS record_id,
        (CASE
             WHEN cd.m_matchinv_id IS NOT NULL        THEN (SELECT loc.m_warehouse_id
@@ -93,7 +87,6 @@ SELECT cd.m_costdetail_id,
                                                            END)
             WHEN cd.m_inoutline_id IS NOT NULL       THEN io.m_warehouse_id
         END)                       AS m_warehouse_id
->>>>>>> 9ddc798bcb (Fix Lagerwert(Excel) report (#19844))
 FROM m_costdetail cd
          LEFT JOIN M_MatchInv mi ON mi.m_matchinv_id = cd.m_matchinv_id
          LEFT JOIN M_MatchPO mpo ON mpo.M_MatchPO_ID = cd.m_MatchPO_ID
@@ -105,13 +98,7 @@ FROM m_costdetail cd
          LEFT JOIN m_inoutline iol ON iol.m_inoutline_id = cd.m_inoutline_id
          LEFT JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID
          LEFT OUTER JOIN M_CostRevaluation cr ON cr.M_CostRevaluation_ID = cd.M_CostRevaluation_ID
-         LEFT JOIN M_Shipping_NotificationLine snl ON snl.M_Shipping_NotificationLine_ID = cd.M_Shipping_NotificationLine_ID
-         LEFT JOIN M_Shipping_Notification sn ON sn.M_Shipping_Notification_ID = snl.M_Shipping_Notification_ID
 ;
 
-<<<<<<< HEAD
-COMMENT ON VIEW m_costdetail_v IS 'M_CostDetail table but with some missing columns like DocStatus'
-=======
 COMMENT ON VIEW m_costdetail_v IS 'M_CostDetail table but with some helpful columns like DateAcct'
->>>>>>> 9ddc798bcb (Fix Lagerwert(Excel) report (#19844))
 ;
