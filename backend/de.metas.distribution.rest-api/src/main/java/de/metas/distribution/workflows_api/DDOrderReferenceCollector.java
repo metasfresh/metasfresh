@@ -12,6 +12,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
@@ -87,15 +88,17 @@ public class DDOrderReferenceCollector implements DistributionOrderCollector<DDO
 
 	private static DDOrderReference updateDDOrderReference(final DDOrderReference reference, final List<I_DD_OrderLine> lines)
 	{
-		if (lines.size() != 1)
+		final HashSet<ProductId> productIds = new HashSet<>();
+		final HashSet<Quantity> qtysEntered = new HashSet<>();
+		for (final I_DD_OrderLine line : lines)
 		{
-			return reference;
+			productIds.add(ProductId.ofRepoId(line.getM_Product_ID()));
+			qtysEntered.add(extractQtyEntered(line));
 		}
 
-		final I_DD_OrderLine singleLine = lines.get(0);
 		return reference.toBuilder()
-				.productId(ProductId.ofRepoId(singleLine.getM_Product_ID()))
-				.qty(extractQtyEntered(singleLine))
+				.productId(CollectionUtils.singleElementOrNull(productIds))
+				.qty(CollectionUtils.singleElementOrNull(qtysEntered))
 				.build();
 	}
 
