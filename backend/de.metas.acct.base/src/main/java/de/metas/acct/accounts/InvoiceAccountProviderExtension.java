@@ -94,7 +94,7 @@ public class InvoiceAccountProviderExtension implements AccountProviderExtension
 			@NonNull final ElementValueId elementValueId,
 			@NonNull final AcctSchemaId acctSchemaId)
 	{
-		return accountDAO.getOrCreate(
+		return accountDAO.getOrCreateOutOfTrx(
 				AccountDimension.builder()
 						.setAcctSchemaId(acctSchemaId)
 						.setC_ElementValue_ID(elementValueId.getRepoId())
