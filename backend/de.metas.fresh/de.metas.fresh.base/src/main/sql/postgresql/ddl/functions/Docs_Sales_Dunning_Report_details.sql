@@ -23,7 +23,7 @@ AS
 $$
 WITH TableIds AS (SELECT get_table_id('C_Invoice') AS InvoiceTableId,
                          get_table_id('C_Order')   AS OrderTableId),
-     DunningDetails AS MATERIALIZED (SELECT dd.C_DunningDoc_ID,
+     DunningDetails AS (SELECT dd.C_DunningDoc_ID,
                                             dl.C_DunningDoc_Line_ID,
                                             dl.amt                                           AS FeeAmt,
                                             dc.C_Dunning_Candidate_ID,

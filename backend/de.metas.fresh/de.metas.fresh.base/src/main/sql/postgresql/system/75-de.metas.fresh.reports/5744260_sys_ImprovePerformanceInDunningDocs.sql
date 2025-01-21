@@ -23,7 +23,7 @@ AS
 $$
 WITH TableIds AS (SELECT get_table_id('C_Invoice') AS InvoiceTableId,
                          get_table_id('C_Order')   AS OrderTableId),
-     DunningDetails AS MATERIALIZED (SELECT dd.C_DunningDoc_ID,
+     DunningDetails AS (SELECT dd.C_DunningDoc_ID,
                                             dl.C_DunningDoc_Line_ID,
                                             dl.amt                                           AS FeeAmt,
                                             dc.C_Dunning_Candidate_ID,
@@ -103,7 +103,7 @@ AS
 $$
 WITH TableIds AS (SELECT get_table_id('C_Invoice') AS InvoiceTableId,
                          get_table_id('C_Order')   AS OrderTableId),
-     DunningCandidates AS MATERIALIZED (SELECT dc.C_Dunning_Candidate_ID,
+     DunningCandidates AS (SELECT dc.C_Dunning_Candidate_ID,
                                                Documentpaid(dc.Record_ID, dc.AD_Table_ID, dc.C_Currency_ID,
                                                             (CASE
                                                                  WHEN charat(COALESCE(di.docbasetype, dor.docbasetype)::character varying, 2)::text = ANY (ARRAY ['P'::text, 'E'::text]) THEN (-1)
