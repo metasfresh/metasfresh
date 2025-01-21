@@ -205,6 +205,7 @@ public interface I_DATEV_Export
 
 	/**
 	 * Set Negate Inbound Amounts.
+	 * When ticked, the tax and amount of 'APC' and 'ARI' invoices are negated.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -214,6 +215,7 @@ public interface I_DATEV_Export
 
 	/**
 	 * Get Negate Inbound Amounts.
+	 * When ticked, the tax and amount of 'APC' and 'ARI' invoices are negated.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -223,6 +225,29 @@ public interface I_DATEV_Export
 
 	ModelColumn<I_DATEV_Export, Object> COLUMN_IsNegateInboundAmounts = new ModelColumn<>(I_DATEV_Export.class, "IsNegateInboundAmounts", null);
 	String COLUMNNAME_IsNegateInboundAmounts = "IsNegateInboundAmounts";
+
+	/**
+	 * Set Place BP Accounts On Credit.
+	 * When ticked, the partner accounts are moved from debit to credit side.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPlaceBPAccountsOnCredit (boolean IsPlaceBPAccountsOnCredit);
+
+	/**
+	 * Get Place BP Accounts On Credit.
+	 * When ticked, the partner accounts are moved from debit to credit side.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPlaceBPAccountsOnCredit();
+
+	ModelColumn<I_DATEV_Export, Object> COLUMN_IsPlaceBPAccountsOnCredit = new ModelColumn<>(I_DATEV_Export.class, "IsPlaceBPAccountsOnCredit", null);
+	String COLUMNNAME_IsPlaceBPAccountsOnCredit = "IsPlaceBPAccountsOnCredit";
 
 	/**
 	 * Set Switch Credit Memo.

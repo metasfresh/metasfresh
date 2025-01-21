@@ -1,12 +1,3 @@
-DROP VIEW IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice
-;
-
-DROP FUNCTION IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice(
-    p_IsOneLinePerInvoiceTax char(1),
-    p_IsSwitchCreditMemo     char(1),
-    p_IsNegateInboundAmounts char(1)
-)
-;
 
 DROP FUNCTION IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice(
     p_IsOneLinePerInvoiceTax    char(1),
