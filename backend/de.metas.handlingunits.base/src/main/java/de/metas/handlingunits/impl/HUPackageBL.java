@@ -241,6 +241,7 @@ public class HUPackageBL implements IHUPackageBL
 	{
 		return huPackageDAO.retrievePackages(packageIds).stream()
 				.map(I_M_Package::getPOReference)
+				.filter(Objects::nonNull)
 				.distinct()
 				.collect(Collectors.joining(", "));
 	}
