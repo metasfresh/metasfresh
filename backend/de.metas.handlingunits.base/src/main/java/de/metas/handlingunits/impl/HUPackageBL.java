@@ -10,8 +10,8 @@ import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.inout.IInOutDAO;
-import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.mpackage.PackageId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShippingPackage;
@@ -21,11 +21,13 @@ import lombok.NonNull;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -97,7 +99,7 @@ public class HUPackageBL implements IHUPackageBL
 		mpackage.setC_BPartner_ID(hu.getC_BPartner_ID());
 		mpackage.setC_BPartner_Location_ID(hu.getC_BPartner_Location_ID());
 
-		getShipmentForHU(hu).ifPresent(inOutId -> mpackage.setM_InOut_ID(inOutId.getRepoId()));
+		getShipmentForHU(hu).ifPresent(inOut -> updateFromInOut(mpackage, inOut));
 
 		save(mpackage);
 
@@ -108,6 +110,12 @@ public class HUPackageBL implements IHUPackageBL
 		save(mpackageHU);
 
 		return mpackage;
+	}
+
+	private void updateFromInOut(@NonNull final I_M_Package mpackage, @NonNull final I_M_InOut inOut)
+	{
+		mpackage.setM_InOut_ID(inOut.getM_InOut_ID());
+		mpackage.setPOReference(inOut.getPOReference());
 	}
 
 	@Override
@@ -136,7 +144,7 @@ public class HUPackageBL implements IHUPackageBL
 
 			//
 			// Update M_Package
-			mpackage.setM_InOut_ID(inout.getM_InOut_ID());
+			updateFromInOut(mpackage, inout);
 			mpackage.setProcessed(true);
 			save(mpackage);
 
@@ -189,12 +197,13 @@ public class HUPackageBL implements IHUPackageBL
 			//
 			// Update M_Package
 			mpackage.setM_InOut_ID(-1);
+			mpackage.setPOReference(null);
 			mpackage.setProcessed(false);
 			save(mpackage);
 		}
 	}
 
-	private Optional<InOutId> getShipmentForHU(@NonNull final I_M_HU hu)
+	private Optional<I_M_InOut> getShipmentForHU(@NonNull final I_M_HU hu)
 	{
 		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedList = huShipmentScheduleDAO.retrieveSchedsQtyPickedForHU(hu);
 
@@ -216,10 +225,7 @@ public class HUPackageBL implements IHUPackageBL
 
 		final Map<InOutLineId, I_M_InOut> shipmentByLineId = inOutDAO.retrieveInOutByLineIds(shipmentLineIds);
 
-		final Set<InOutId> inOutIds = shipmentByLineId.values().stream()
-				.map(I_M_InOut::getM_InOut_ID)
-				.map(InOutId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
+		final Set<I_M_InOut> inOutIds = ImmutableSet.copyOf(shipmentByLineId.values());
 
 		if (inOutIds.size() != 1)
 		{
@@ -228,4 +234,15 @@ public class HUPackageBL implements IHUPackageBL
 
 		return Optional.of(inOutIds.iterator().next());
 	}
+
+	@Override
+	@NonNull
+	public String getPoReference(@NonNull final Collection<PackageId> packageIds)
+	{
+		return huPackageDAO.retrievePackages(packageIds).stream()
+				.map(I_M_Package::getPOReference)
+				.distinct()
+				.collect(Collectors.joining(", "));
+	}
+
 }

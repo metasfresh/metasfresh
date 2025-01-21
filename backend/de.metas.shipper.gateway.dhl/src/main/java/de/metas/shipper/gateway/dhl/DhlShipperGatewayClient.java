@@ -291,6 +291,8 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 				// (2.2)  the shipment
 				final ShipmentOrderType.Shipment shipmentOrderTypeShipment = objectFactory.createShipmentOrderTypeShipment();
 
+				shipmentOrderTypeShipment.setShipperReference(deliveryOrder.getCustomerReference());
+
 				final ContactPerson deliveryContact = deliveryOrder.getDeliveryContact();
 
 				{
