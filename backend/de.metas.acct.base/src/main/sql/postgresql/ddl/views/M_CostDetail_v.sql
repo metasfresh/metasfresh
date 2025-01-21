@@ -44,6 +44,7 @@ SELECT cd.m_costdetail_id,
        cd.m_costdetail_type,
        cd.sourceamt,
        cd.source_currency_id,
+       cd.m_shipping_notificationline_id,
        (CASE
             WHEN cd.m_matchinv_id IS NOT NULL                  THEN 'CO'
             WHEN cd.m_matchpo_id IS NOT NULL                   THEN 'CO'
@@ -52,6 +53,7 @@ SELECT cd.m_costdetail_id,
             WHEN cd.m_movementline_id IS NOT NULL              THEN m.docstatus
             WHEN cd.m_inoutline_id IS NOT NULL                 THEN io.docstatus
             WHEN cd.m_costrevaluation_id IS NOT NULL           THEN cr.docstatus
+            WHEN cd.m_shipping_notificationline_id IS NOT NULL THEN sn.docstatus
         END)                                       AS docstatus,
        (CASE
             WHEN cd.m_matchinv_id IS NOT NULL                  THEN 'M_MatchInv'
@@ -61,6 +63,7 @@ SELECT cd.m_costdetail_id,
             WHEN cd.m_movementline_id IS NOT NULL              THEN 'M_MovementLine'
             WHEN cd.m_inoutline_id IS NOT NULL                 THEN 'M_InOutLine'
             WHEN cd.m_costrevaluation_id IS NOT NULL           THEN 'M_CostRevaluation'
+            WHEN cd.m_shipping_notificationline_id IS NOT NULL THEN 'M_Shipping_Notification'
         END)                                       AS tablename,
        COALESCE(cd.m_matchinv_id,
                 cd.m_matchpo_id,
@@ -100,7 +103,9 @@ FROM m_costdetail cd
          LEFT JOIN m_inoutline iol ON iol.m_inoutline_id = cd.m_inoutline_id
          LEFT JOIN M_InOut io ON iol.M_InOut_ID = io.M_InOut_ID
          LEFT OUTER JOIN M_CostRevaluation cr ON cr.M_CostRevaluation_ID = cd.M_CostRevaluation_ID
+         LEFT JOIN M_Shipping_NotificationLine snl ON snl.M_Shipping_NotificationLine_ID = cd.M_Shipping_NotificationLine_ID
+         LEFT JOIN M_Shipping_Notification sn ON sn.M_Shipping_Notification_ID = snl.M_Shipping_Notification_ID
 ;
 
-COMMENT ON VIEW m_costdetail_v IS 'M_CostDetail table but with some helpful columns like DateAcct'
+COMMENT ON VIEW m_costdetail_v IS 'M_CostDetail table but with some helpful columns like DocStatus'
 ;
