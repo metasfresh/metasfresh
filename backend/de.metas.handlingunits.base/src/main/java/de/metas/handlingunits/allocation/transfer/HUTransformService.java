@@ -369,7 +369,7 @@ public class HUTransformService
 
 	private IHUProductStorage getSingleProductStorage(@NonNull final I_M_HU hu)
 	{
-		return huContext.getHUStorageFactory().getStorage(hu).getSingleHUProductStorage();
+		return huContext.getSingleHUProductStorage(hu);
 	}
 
 	/**
@@ -1109,7 +1109,7 @@ public class HUTransformService
 				InterfaceWrapperHelper.save(huItemOfLU);
 
 				huAttributesBL.updateHUAttribute(huContext, lu, sourceTuHU, AttributeConstants.ATTR_LotNumber);
-				
+
 				return LUTUResult.ofLU(lu, TU.ofAggregatedTU(sourceTuHU, qtyTUEffective));
 			}
 			else
