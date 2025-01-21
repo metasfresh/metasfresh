@@ -22,6 +22,9 @@ package org.adempiere.util.lang;
  * #L%
  */
 
+import de.metas.util.Check;
+import lombok.NonNull;
+
 import javax.annotation.Nullable;
 import java.io.Serializable;
 
@@ -77,6 +80,9 @@ public final class ExtendedMemorizingSupplier<T> implements java.util.function.S
 		}
 		return value;
 	}
+
+	@NonNull
+	public T getNotNull() {return Check.assumeNotNull(get(), "Supplier is expected to return non null value");}
 
 	/**
 	 * @return memorized value or <code>null</code> if not initialized

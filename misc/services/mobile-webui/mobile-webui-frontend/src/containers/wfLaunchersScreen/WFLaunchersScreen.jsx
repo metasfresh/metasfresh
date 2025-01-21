@@ -45,6 +45,11 @@ const WFLaunchersScreen = () => {
     isEnabled: !isWorkplaceLoading,
   });
 
+  useEffect(() => {
+    // IMPORTANT, else it won't restore the title when we move back to this screen
+    dispatch(pushHeaderEntry({ location: url }));
+  }, []);
+
   const workplaceName = workplace?.name;
   useEffect(() => {
     if (workplaceName) {

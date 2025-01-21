@@ -132,6 +132,12 @@ public class PPOrderBL implements IPPOrderBL
 	}
 
 	@Override
+	public String getDocumentNoById(@NonNull final PPOrderId ppOrderId)
+	{
+		return getById(ppOrderId).getDocumentNo();
+	}
+
+	@Override
 	public void save(final I_PP_Order ppOrder)
 	{
 		ppOrdersRepo.save(ppOrder);
@@ -319,8 +325,8 @@ public class PPOrderBL implements IPPOrderBL
 			@NonNull final DocSubType docSubType)
 	{
 		final DocTypeId docTypeId = docTypesRepo.getDocTypeId(DocTypeQuery.builder()
-																	  .docBaseType(docBaseType.toDocBaseType())
-																	  .docSubType(docSubType)
+				.docBaseType(docBaseType.toDocBaseType())
+				.docSubType(docSubType)
 				.adClientId(ppOrder.getAD_Client_ID())
 				.adOrgId(ppOrder.getAD_Org_ID())
 				.build());

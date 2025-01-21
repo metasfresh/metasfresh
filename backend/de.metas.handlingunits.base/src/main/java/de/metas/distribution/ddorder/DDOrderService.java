@@ -274,9 +274,9 @@ public class DDOrderService
 	public void generateDirectMovements(@NonNull final I_DD_Order ddOrder)
 	{
 		final DDOrderMovePlan plan = ddOrderMoveScheduleService.createPlan(DDOrderMovePlanCreateRequest.builder()
-																				   .ddOrder(ddOrder)
-																				   .failIfNotFullAllocated(true)
-																				   .build());
+				.ddOrder(ddOrder)
+				.failIfNotFullAllocated(true)
+				.build());
 
 		final ImmutableList<DDOrderMoveSchedule> schedules = ddOrderMoveScheduleService.savePlan(plan);
 
@@ -337,4 +337,15 @@ public class DDOrderService
 		ddOrder.setAD_User_Responsible_ID(-1);
 		save(ddOrder);
 	}
+
+	public Set<ProductId> getProductIdsByDDOrderIds(final Collection<DDOrderId> ddOrderIds)
+	{
+		return ddOrderLowLevelDAO.getProductIdsByDDOrderIds(ddOrderIds);
+	}
+
+	public Stream<I_DD_OrderLine> streamLinesByDDOrderIds(@NonNull final Collection<DDOrderId> ddOrderIds)
+	{
+		return ddOrderLowLevelDAO.streamLinesByDDOrderIds(ddOrderIds);
+	}
+
 }
