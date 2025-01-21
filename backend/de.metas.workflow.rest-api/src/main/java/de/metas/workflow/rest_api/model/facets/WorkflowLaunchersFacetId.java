@@ -25,6 +25,7 @@ package de.metas.workflow.rest_api.model.facets;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Splitter;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.util.JSONObjectMapper;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
@@ -33,7 +34,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ImmutablePair;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
