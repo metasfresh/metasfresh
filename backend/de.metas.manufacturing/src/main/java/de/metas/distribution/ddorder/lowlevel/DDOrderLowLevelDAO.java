@@ -8,6 +8,7 @@ import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine_Or_Alternativ
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -97,6 +98,23 @@ public class DDOrderLowLevelDAO
 		}
 
 		return ddOrderLines;
+	}
+
+	public Stream<I_DD_OrderLine> streamLinesByDDOrderIds(@NonNull final Collection<DDOrderId> ddOrderIds)
+	{
+		if (ddOrderIds.isEmpty())
+		{
+			return Stream.empty();
+		}
+
+		return queryBL.createQueryBuilder(I_DD_OrderLine.class)
+				.addInArrayFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, ddOrderIds)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_DD_OrderLine.COLUMNNAME_DD_Order_ID)
+				.orderBy(I_DD_OrderLine.COLUMNNAME_Line)
+				.orderBy(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID)
+				.create()
+				.stream();
 	}
 
 	public List<I_DD_OrderLine_Alternative> retrieveAllAlternatives(final I_DD_OrderLine ddOrderLine)
@@ -311,8 +329,20 @@ public class DDOrderLowLevelDAO
 			// Products
 			if (query.getProductIds() != null && !query.getProductIds().isEmpty())
 			{
-				//noinspection DataFlowIssue
-				lineQueryBuilderHolder.get().addInArrayFilter(I_DD_OrderLine.COLUMNNAME_M_Product_ID, query.getProductIds());
+				lineQueryBuilderHolder.getNotNull().addInArrayFilter(I_DD_OrderLine.COLUMNNAME_M_Product_ID, query.getProductIds());
+			}
+
+			//
+			// Quantities Entered
+			if (query.getQtysEntered() != null && !query.getQtysEntered().isEmpty())
+			{
+				final ICompositeQueryFilter<I_DD_OrderLine> qtysFilter = lineQueryBuilderHolder.getNotNull().addCompositeQueryFilter().setJoinOr();
+				for (final Quantity qtyEntered : query.getQtysEntered())
+				{
+					qtysFilter.addCompositeQueryFilter()
+							.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_QtyEntered, qtyEntered.toBigDecimal())
+							.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_C_UOM_ID, qtyEntered.getUomId());
+				}
 			}
 
 			//

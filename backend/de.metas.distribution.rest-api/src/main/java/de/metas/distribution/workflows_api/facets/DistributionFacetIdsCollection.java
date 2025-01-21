@@ -3,6 +3,7 @@ package de.metas.distribution.workflows_api.facets;
 import com.google.common.collect.ImmutableSet;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetId;
 import lombok.NonNull;
 import org.adempiere.warehouse.WarehouseId;
@@ -57,6 +58,8 @@ public class DistributionFacetIdsCollection implements Iterable<DistributionFace
 	public Set<LocalDate> getDatesPromised() {return getValues(DistributionFacetGroupType.DATE_PROMISED, DistributionFacetId::getDatePromised);}
 
 	public Set<ProductId> getProductIds() {return getValues(DistributionFacetGroupType.PRODUCT, DistributionFacetId::getProductId);}
+
+	public Set<Quantity> getQuantities() {return getValues(DistributionFacetGroupType.QUANTITY, DistributionFacetId::getQty);}
 
 	public <T> Set<T> getValues(DistributionFacetGroupType groupType, Function<DistributionFacetId, T> valueExtractor)
 	{

@@ -131,6 +131,7 @@ public class DistributionRestService
 				.manufacturingOrderIds(activeFacetIds.getManufacturingOrderIds())
 				.datesPromised(activeFacetIds.getDatesPromised())
 				.productIds(activeFacetIds.getProductIds())
+				.qtysEntered(activeFacetIds.getQuantities())
 				.build();
 	}
 

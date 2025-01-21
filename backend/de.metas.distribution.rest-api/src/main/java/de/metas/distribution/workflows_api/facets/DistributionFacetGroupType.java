@@ -23,6 +23,7 @@ public enum DistributionFacetGroupType
 	MANUFACTURING_ORDER_NO("mfgOrderNo", TranslatableStrings.adElementOrMessage("PP_Order_ID")),
 	DATE_PROMISED("datePromised", TranslatableStrings.adElementOrMessage("DatePromised")),
 	PRODUCT("product", TranslatableStrings.adElementOrMessage("M_Product_ID")),
+	QUANTITY("qty", TranslatableStrings.adElementOrMessage("Qty")),
 	;
 
 	private static final ImmutableMap<String, DistributionFacetGroupType> byCode = Maps.uniqueIndex(Arrays.asList(values()), DistributionFacetGroupType::getCode);

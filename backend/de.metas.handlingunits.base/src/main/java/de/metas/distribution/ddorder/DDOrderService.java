@@ -343,4 +343,9 @@ public class DDOrderService
 		return ddOrderLowLevelDAO.getProductIdsByDDOrderIds(ddOrderIds);
 	}
 
+	public Stream<I_DD_OrderLine> streamLinesByDDOrderIds(@NonNull final Collection<DDOrderId> ddOrderIds)
+	{
+		return ddOrderLowLevelDAO.streamLinesByDDOrderIds(ddOrderIds);
+	}
+
 }

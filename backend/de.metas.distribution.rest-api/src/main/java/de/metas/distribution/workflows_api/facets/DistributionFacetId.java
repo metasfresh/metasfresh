@@ -2,15 +2,20 @@ package de.metas.distribution.workflows_api.facets;
 
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.lang.RepoIdAware;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetId;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Value
@@ -23,6 +28,7 @@ public class DistributionFacetId
 	@Nullable PPOrderId manufacturingOrderId;
 	@Nullable LocalDate datePromised;
 	@Nullable ProductId productId;
+	@Nullable Quantity qty;
 
 	private DistributionFacetId(@NonNull WorkflowLaunchersFacetId workflowLaunchersFacetId)
 	{
@@ -38,6 +44,7 @@ public class DistributionFacetId
 				this.manufacturingOrderId = null;
 				this.datePromised = null;
 				this.productId = null;
+				this.qty = null;
 				break;
 			}
 			case SALES_ORDER:
@@ -47,6 +54,7 @@ public class DistributionFacetId
 				this.manufacturingOrderId = null;
 				this.datePromised = null;
 				this.productId = null;
+				this.qty = null;
 				break;
 			}
 			case MANUFACTURING_ORDER_NO:
@@ -56,6 +64,7 @@ public class DistributionFacetId
 				this.manufacturingOrderId = workflowLaunchersFacetId.getAsId(PPOrderId.class);
 				this.datePromised = null;
 				this.productId = null;
+				this.qty = null;
 				break;
 			}
 			case DATE_PROMISED:
@@ -65,6 +74,7 @@ public class DistributionFacetId
 				this.manufacturingOrderId = null;
 				this.datePromised = workflowLaunchersFacetId.getAsLocalDate();
 				this.productId = null;
+				this.qty = null;
 				break;
 			}
 			case PRODUCT:
@@ -74,8 +84,18 @@ public class DistributionFacetId
 				this.manufacturingOrderId = null;
 				this.datePromised = null;
 				this.productId = workflowLaunchersFacetId.getAsId(ProductId.class);
+				this.qty = null;
 				break;
 			}
+
+			case QUANTITY:
+				this.warehouseId = null;
+				this.salesOrderId = null;
+				this.manufacturingOrderId = null;
+				this.datePromised = null;
+				this.productId = null;
+				this.qty = getAsQuantity(workflowLaunchersFacetId);
+				break;
 			default:
 			{
 				throw new AdempiereException("Unknown group: " + group);
@@ -129,6 +149,23 @@ public class DistributionFacetId
 	{
 		final WorkflowLaunchersFacetId workflowLaunchersFacetId = WorkflowLaunchersFacetId.ofLocalDate(groupType.toWorkflowLaunchersFacetGroupId(), localDate);
 		return ofWorkflowLaunchersFacetId(workflowLaunchersFacetId);
+	}
+
+	public static DistributionFacetId ofQuantity(@NonNull Quantity qty)
+	{
+		return ofWorkflowLaunchersFacetId(
+				WorkflowLaunchersFacetId.ofQuantity(
+						DistributionFacetGroupType.QUANTITY.toWorkflowLaunchersFacetGroupId(),
+						qty.toBigDecimal(),
+						qty.getUomId()
+				)
+		);
+	}
+
+	private static Quantity getAsQuantity(final @NonNull WorkflowLaunchersFacetId workflowLaunchersFacetId)
+	{
+		final ImmutablePair<BigDecimal, Integer> parts = workflowLaunchersFacetId.getAsQuantity();
+		return Quantitys.of(parts.getLeft(), UomId.ofRepoId(parts.getRight()));
 	}
 
 	public WorkflowLaunchersFacetId toWorkflowLaunchersFacetId() {return workflowLaunchersFacetId;}
