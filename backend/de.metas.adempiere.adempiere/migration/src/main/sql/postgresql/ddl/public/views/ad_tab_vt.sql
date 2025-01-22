@@ -63,6 +63,10 @@ SELECT trl.ad_language
      , t.IncludedTabNewRecordInputMode
      , t.IsRefreshViewOnChangeEvents
      , t.IsAutodetectDefaultDateFilter
+     , trl.NotFound_Message
+     , t.NotFound_Message AS NotFound_Message_BaseLang
+     , trl.NotFound_MessageDetail
+     , t.NotFound_MessageDetail AS NotFound_MessageDetail_BaseLang
      , t.IncludeFiltersStrategy
 FROM ad_tab t
          JOIN ad_table tbl ON t.ad_table_id = tbl.ad_table_id

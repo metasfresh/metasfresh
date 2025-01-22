@@ -56,7 +56,7 @@ public class C_BPartner
 		final ClientId clientId = ClientId.ofRepoId(bpartner.getAD_Client_ID());
 		final OrgId orgId = OrgId.ofRepoIdOrAny(bpartner.getAD_Org_ID());
 
-		if(EmptyUtil.isBlank(bpartner.getValue()))
+		if (EmptyUtil.isBlank(bpartner.getValue()))
 		{
 			// we need a value for the debitor and creditor IDs; 
 			// if we don't set it here, then org.compiere.model.PO#saveNew would set it anyways
@@ -64,7 +64,7 @@ public class C_BPartner
 			bpartner.setValue(value);
 			logger.debug("On-the-fly created C_BPartner.Value={}", value);
 		}
-		
+
 		final AcctSchema as = acctSchemaDAO.getByClientAndOrgOrNull(clientId, orgId);
 		if (as == null)
 		{

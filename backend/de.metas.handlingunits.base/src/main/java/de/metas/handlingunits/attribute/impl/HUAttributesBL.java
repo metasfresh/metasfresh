@@ -152,7 +152,7 @@ public class HUAttributesBL implements IHUAttributesBL
 			if (destHUAttrStorage.hasAttribute(attributeCode))
 			{
 				final Object existingAttributeValue = sourceHUAttrStorage.getValue(attributeCode);
-				loggable.addLog("for HUID={} overwriting attribute={} from {} to {}", destHU.getM_HU_ID(), attributeCode, attributeValue,existingAttributeValue);
+				loggable.addLog("for HUID={} overwriting attribute={} from {} to {}", destHU.getM_HU_ID(), attributeCode, attributeValue, existingAttributeValue);
 			}
 			destHUAttrStorage.setValue(attributeCode, attributeValue);
 			destHUAttrStorage.saveChangesIfNeeded();
@@ -175,9 +175,9 @@ public class HUAttributesBL implements IHUAttributesBL
 	@Override
 	@Deprecated
 	public void updateHUAttributeRecursive(final I_M_HU hu,
-			final I_M_Attribute attribute,
-			final Object attributeValue,
-			final String onlyHUStatus)
+										   final I_M_Attribute attribute,
+										   final Object attributeValue,
+										   final String onlyHUStatus)
 	{
 		final ILoggable loggable = Loggables.get();
 
@@ -265,7 +265,7 @@ public class HUAttributesBL implements IHUAttributesBL
 		final ImmutableList<I_M_Attribute> attributesMandatoryOnShipment = attributeDAO.getAttributesByAttributeSetId(attributeSetId).stream()
 				.filter(attribute -> attributesBL
 						.isMandatoryOnShipment(productId,
-											   AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
+								AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
 				.collect(ImmutableList.toImmutableList());
 
 		validateMandatoryAttributes(huId, productId, attributesMandatoryOnShipment, MSG_MandatoryOnShipment);
@@ -281,9 +281,9 @@ public class HUAttributesBL implements IHUAttributesBL
 	}
 
 	private void validateMandatoryAttributes(@NonNull final HuId huId,
-			@NonNull final ProductId productId,
-			@NonNull final ImmutableList<I_M_Attribute> mandatoryAttributes,
-			@NonNull final AdMessageKey messageKey)
+											 @NonNull final ProductId productId,
+											 @NonNull final ImmutableList<I_M_Attribute> mandatoryAttributes,
+											 @NonNull final AdMessageKey messageKey)
 	{
 		final I_M_HU huRecord = handlingUnitsDAO.getById(huId);
 
@@ -347,8 +347,7 @@ public class HUAttributesBL implements IHUAttributesBL
 			final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
 			final IHUStorage huStorageFrom = storageFactory.getStorage(huTo);
 
-			final IHUProductStorage productStorage = handlingUnitsBL.getStorageFactory()
-					.getSingleHUProductStorage(huTo);
+			final IHUProductStorage productStorage = handlingUnitsBL.getSingleHUProductStorage(huTo);
 
 			final IHUAttributeTransferRequest request = new HUAttributeTransferRequestBuilder(huContext)
 					.setProductId(productStorage.getProductId())
@@ -357,7 +356,7 @@ public class HUAttributesBL implements IHUAttributesBL
 					.setAttributeStorageTo(huAttributeStorageTo)
 					.setHUStorageFrom(huStorageFrom)
 					.create();
-			
+
 			trxAttributesBuilder.transferAttributes(request);
 		});
 	}

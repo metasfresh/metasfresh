@@ -4,6 +4,9 @@ import de.metas.Profiles;
 import de.metas.distribution.workflows_api.DistributionMobileApplication;
 import de.metas.mobile.application.service.MobileApplicationService;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import de.metas.workflow.rest_api.controller.v2.WorkflowRestController;
+import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
+import de.metas.workflow.rest_api.model.WFProcess;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.util.Env;
@@ -21,6 +24,7 @@ public class DistributionRestController
 {
 	@NonNull private final MobileApplicationService mobileApplicationService;
 	@NonNull private final DistributionMobileApplication distributionMobileApplication;
+	@NonNull private final WorkflowRestController workflowRestController;
 
 	private void assertApplicationAccess()
 	{
@@ -28,9 +32,10 @@ public class DistributionRestController
 	}
 
 	@PostMapping("/event")
-	public void postEvent(@RequestBody @NonNull final JsonDistributionEvent event)
+	public JsonWFProcess postEvent(@RequestBody @NonNull final JsonDistributionEvent event)
 	{
 		assertApplicationAccess();
-		distributionMobileApplication.processEvent(event, Env.getLoggedUserId());
+		final WFProcess wfProcess = distributionMobileApplication.processEvent(event, Env.getLoggedUserId());
+		return workflowRestController.toJson(wfProcess);
 	}
 }

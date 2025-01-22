@@ -98,7 +98,7 @@ public class C_ElementValue
 		final ChartOfAccountsId chartOfAccountsId = ChartOfAccountsId.ofRepoId(elementValue.getC_Element_ID());
 		for (final AcctSchema acctSchema : acctSchemasRepo.getByChartOfAccountsId(chartOfAccountsId))
 		{
-			accountDAO.getOrCreate(accountDimensionTemplate.setAcctSchemaId(acctSchema.getId()).build());
+			accountDAO.getOrCreateWithinTrx(accountDimensionTemplate.setAcctSchemaId(acctSchema.getId()).build());
 		}
 	}
 
