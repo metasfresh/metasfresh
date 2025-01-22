@@ -8,19 +8,31 @@ import { initialState } from "../../reducers/viewHandler";
 import windowState from "../../reducers/windowHandler";
 
 import {
+  createProcess,
   createWindow,
+  handleProcessResponse,
   resetPrintingOptions,
   setPrintingOptions,
   setSpinner,
   togglePrintingOption,
-} from "../../actions/WindowActions";
-import * as ACTION_TYPES from "../../constants/ActionTypes";
-import { getScope, parseToDisplay } from "../../utils/documentListHelper";
+} from '../../actions/WindowActions';
+import * as ACTION_TYPES from '../../constants/ActionTypes';
+import { getScope, parseToDisplay } from '../../utils/documentListHelper';
 
-import masterWindowProps from "../../../test_setup/fixtures/master_window.json";
-import dataFixtures from "../../../test_setup/fixtures/master_window/data.json";
-import layoutFixtures from "../../../test_setup/fixtures/master_window/layout.json";
-import printingOptions from "../../../test_setup/fixtures/window/printingOptions.json";
+import masterWindowProps from '../../../test_setup/fixtures/master_window.json';
+import dataFixtures from '../../../test_setup/fixtures/master_window/data.json';
+import layoutFixtures
+  from '../../../test_setup/fixtures/master_window/layout.json';
+import actionsFixtures from '../../../test_setup/fixtures/process/actions.json';
+import processResponseFixtures
+  from '../../../test_setup/fixtures/process/responses.json';
+import processParameterFixtures
+  from '../../../test_setup/fixtures/process/parameters.json';
+import processStateFixtures
+  from '../../../test_setup/fixtures/process/store.json';
+import printingOptions
+  from '../../../test_setup/fixtures/window/printingOptions.json';
+import { setProcessPending, setProcessSaved } from '../../actions/AppActions';
 
 const createState = (state = {}) =>
   merge(

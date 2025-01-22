@@ -1,10 +1,10 @@
-import axios from 'axios';
-import counterpart from 'counterpart';
-import currentDevice from 'current-device';
+import axios from "axios";
+import counterpart from "counterpart";
+import currentDevice from "current-device";
 
-import history from '../services/History';
-import * as IndicatorState from '../constants/IndicatorState';
-import * as StaticModalType from '../constants/StaticModalType';
+import history from "../services/History";
+import * as IndicatorState from "../constants/IndicatorState";
+import * as StaticModalType from "../constants/StaticModalType";
 
 import {
   ACTIVATE_TAB,
@@ -44,46 +44,22 @@ import {
   UPDATE_MASTER_DATA,
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
-  UPDATE_TAB_LAYOUT,
-} from '../constants/ActionTypes';
-import { createView, patchViewAction } from './ViewActions';
-import { PROCESS_NAME } from '../constants/Constants';
-import { preFormatPostDATA, toggleFullScreen } from '../utils';
-import {
-  getInvalidDataItem,
-  getScope,
-  parseItemToDisplay,
-  parseToDisplay,
-} from '../utils/documentListHelper';
+  UPDATE_TAB_LAYOUT
+} from "../constants/ActionTypes";
+import { createView, patchViewAction } from "./ViewActions";
+import { PROCESS_NAME } from "../constants/Constants";
+import { preFormatPostDATA, toggleFullScreen } from "../utils";
+import { getInvalidDataItem, getScope, parseItemToDisplay, parseToDisplay } from "../utils/documentListHelper";
 
-import {
-  formatParentUrl,
-  getData,
-  getTabLayoutRequest,
-  getTabRequest,
-  patchRequest,
-} from '../api';
+import { formatParentUrl, getData, getTabLayoutRequest, getTabRequest, patchRequest } from "../api";
 
-import { getTableId } from '../reducers/tables';
-import {
-  addNotification,
-  deleteNotification,
-  setNotificationProgress,
-} from './AppActions';
-import { setBreadcrumbByWindowId } from './MenuActions';
-import {
-  updateCommentsPanel,
-  updateCommentsPanelOpenFlag,
-  updateCommentsPanelTextInput,
-} from './CommentsPanelActions';
-import {
-  createTabTable,
-  partialUpdateGridTableRows,
-  updateTableRowProperty,
-  updateTabTable,
-} from './TableActions';
-import { inlineTabAfterGetLayout, patchInlineTab } from './InlineTabActions';
-import { getPrintFile, getPrintUrl } from '../api/window';
+import { getTableId } from "../reducers/tables";
+import { addNotification, deleteNotification, setNotificationProgress } from "./AppActions";
+import { setBreadcrumbByWindowId } from "./MenuActions";
+import { updateCommentsPanel, updateCommentsPanelOpenFlag, updateCommentsPanelTextInput } from "./CommentsPanelActions";
+import { createTabTable, partialUpdateGridTableRows, updateTableRowProperty, updateTabTable } from "./TableActions";
+import { inlineTabAfterGetLayout, patchInlineTab } from "./InlineTabActions";
+import { getPrintFile, getPrintUrl } from "../api/window";
 
 export function toggleOverlay(data) {
   return {
