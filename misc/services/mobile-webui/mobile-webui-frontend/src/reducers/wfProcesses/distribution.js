@@ -3,6 +3,7 @@ import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
 import { current, isDraft } from 'immer';
 import { updateUserEditable } from './utils';
+import { getStepsArrayFromLine } from './index';
 
 const COMPONENT_TYPE = 'distribution/move';
 
@@ -85,20 +86,26 @@ const computeIsPickedFrom = ({ draftStep }) => {
   return draftStep.qtyPicked !== 0 || !!draftStep.qtyRejectedReasonCode;
 };
 
-const updateLineStatusFromSteps = ({ draftLine }) => {
+const updateLineFromSteps = ({ draftLine }) => {
   draftLine.completeStatus = computeLineStatusFromSteps({ draftLine });
+
+  let qtyPicked = 0;
+  for (const step of getStepsArrayFromLine(draftLine)) {
+    qtyPicked += step.qtyPicked;
+  }
+  draftLine.qtyPicked = qtyPicked;
 };
 
 const updateLineStatusFromStepsAndRollup = ({ draftWFProcess, activityId, lineId }) => {
   const draftLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
-  updateLineStatusFromSteps({ draftLine });
+  updateLineFromSteps({ draftLine });
 
   //
   // Rollup:
   updateActivityStatusFromLinesAndRollup({ draftWFProcess, activityId });
 };
 
-export const computeLineStatusFromSteps = ({ draftLine }) => {
+const computeLineStatusFromSteps = ({ draftLine }) => {
   const stepIds = extractDraftMapKeys(draftLine.steps);
 
   const stepsStatuses = stepIds.reduce((accum, stepId) => {
@@ -109,6 +116,10 @@ export const computeLineStatusFromSteps = ({ draftLine }) => {
     }
     return accum;
   }, []);
+
+  if (stepsStatuses.length === 0) {
+    return CompleteStatus.NOT_STARTED;
+  }
 
   return CompleteStatus.reduceFromCompleteStatuesUniqueArray(stepsStatuses);
 };
@@ -145,16 +156,21 @@ const computeActivityStatusFromLines = ({ draftActivityDataStored }) => {
   return CompleteStatus.reduceFromCompleteStatuesUniqueArray(linesStatuses);
 };
 
-const normalizeLines = (lines) => {
-  return lines.map((line) => {
-    return {
-      ...line,
-      steps: line.steps.reduce((accum, step) => {
-        accum[step.id] = step;
-        return accum;
-      }, {}),
-    };
-  });
+const normalizeLinesArray = (lines) => {
+  return lines.reduce((accum, line) => {
+    accum[line.lineId] = normalizeLine(line);
+    return accum;
+  }, {});
+};
+
+const normalizeLine = (line) => {
+  return {
+    ...line,
+    steps: line.steps.reduce((accum, step) => {
+      accum[step.id] = step;
+      return accum;
+    }, {}),
+  };
 };
 
 const mergeActivityDataStored = ({ draftActivityDataStored, fromActivity }) => {
@@ -162,20 +178,21 @@ const mergeActivityDataStored = ({ draftActivityDataStored, fromActivity }) => {
 
   //
   // Copy lines
-  draftActivityDataStored.lines = normalizeLines(fromActivity.componentProps.lines);
+  draftActivityDataStored.lines = normalizeLinesArray(fromActivity.componentProps.lines);
 
   //
   // Update all statuses
   const draftLines = draftActivityDataStored.lines;
-  for (let lineIdx = 0; lineIdx < draftLines.length; lineIdx++) {
-    const draftLine = draftLines[lineIdx];
+  console.log('mergeActivityDataStored', { draftLines, fromActivity });
+  for (let lineId of Object.keys(draftLines)) {
+    const draftLine = draftLines[lineId];
 
     for (let stepId of Object.keys(draftLine.steps)) {
       const draftStep = draftLine.steps[stepId];
       updateStepStatus({ draftStep });
     }
 
-    updateLineStatusFromSteps({ draftLine });
+    updateLineFromSteps({ draftLine });
   }
   updateActivityStatusFromLines({ draftActivityDataStored });
 
@@ -187,7 +204,7 @@ registerHandler({
   normalizeComponentProps: ({ componentProps }) => {
     return {
       ...componentProps,
-      lines: normalizeLines(componentProps.lines),
+      lines: normalizeLinesArray(componentProps.lines),
     };
   },
 

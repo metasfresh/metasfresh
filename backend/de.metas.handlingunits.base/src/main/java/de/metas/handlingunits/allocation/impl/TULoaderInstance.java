@@ -67,7 +67,7 @@ class TULoaderInstance
 	{
 		closeCurrentTUIfCapacityExceeded();
 
-		final IHUProductStorage cuProductStorage = huContext.getHUStorageFactory().getStorage(cuHU).getSingleHUProductStorage();
+		final IHUProductStorage cuProductStorage = huContext.getSingleHUProductStorage(cuHU);
 		Quantity cuQtyRemaining = cuProductStorage.getQty();
 
 		for (int iteration = 1; iteration <= 1000; iteration++)

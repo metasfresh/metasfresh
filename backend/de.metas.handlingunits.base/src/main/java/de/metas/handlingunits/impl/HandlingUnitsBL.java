@@ -74,6 +74,7 @@ import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
+import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.handlingunits.storage.IProductStorage;
@@ -192,6 +193,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		final IHUContext huContext = HUContextHolder.getCurrentOrNull();
 		return huContext != null ? huContext.getHUStorageFactory() : storageFactory;
 	}
+
+	@Override
+	public IHUProductStorage getSingleHUProductStorage(final HuId huId) {return getSingleHUProductStorage(getById(huId));}
+
+	@Override
+	public IHUProductStorage getSingleHUProductStorage(final I_M_HU hu) {return getStorageFactory().getSingleHUProductStorage(hu);}
 
 	@Override
 	public IMutableHUContext createMutableHUContext()
