@@ -16,6 +16,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
@@ -30,6 +31,7 @@ import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -132,6 +134,30 @@ public class InOutBL implements IInOutBL
 	private final IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
 	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 
+	private static Comparator<I_M_InOutLine> getOrderLineComparator(final HashMap<Integer, Integer> inoutLineId2orderId)
+	{
+		return (line1, line2) -> {
+			// InOut_ID
+			final int order_ID1 = inoutLineId2orderId.get(line1.getM_InOutLine_ID());
+			final int order_ID2 = inoutLineId2orderId.get(line2.getM_InOutLine_ID());
+
+			if (order_ID1 > order_ID2)
+			{
+				return 1;
+			}
+			if (order_ID1 < order_ID2)
+			{
+				return -1;
+			}
+
+			// LineNo
+			final int line1No = line1.getLine();
+			final int line2No = line2.getLine();
+
+			return Integer.compare(line1No, line2No);
+		};
+	}
+
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
 	{
@@ -214,8 +240,8 @@ public class InOutBL implements IInOutBL
 		if (pricingSystem == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@"
-					+ "\n @M_InOut_ID@: " + inOut
-					+ "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
+												 + "\n @M_InOut_ID@: " + inOut
+												 + "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
 		}
 
 		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID());
@@ -226,8 +252,8 @@ public class InOutBL implements IInOutBL
 				bpLocationId,
 				soTrx);
 		Check.errorIf(priceListId == null,
-				"No price list found for M_InOutLine_ID {}; M_InOut.M_PricingSystem_ID={}, M_InOut.C_BPartner_Location_ID={}, M_InOut.SOTrx={}",
-				inOutLine.getM_InOutLine_ID(), pricingSystemId, inOut.getC_BPartner_Location_ID(), soTrx);
+					  "No price list found for M_InOutLine_ID {}; M_InOut.M_PricingSystem_ID={}, M_InOut.C_BPartner_Location_ID={}, M_InOut.SOTrx={}",
+					  inOutLine.getM_InOutLine_ID(), pricingSystemId, inOut.getC_BPartner_Location_ID(), soTrx);
 
 		pricingCtx.setPricingSystemId(pricingSystemId);
 		pricingCtx.setPriceListId(priceListId);
@@ -304,7 +330,7 @@ public class InOutBL implements IInOutBL
 			if (throwEx)
 			{
 				throw new AdempiereException("@NotFound@ @M_PricingSystem_ID@"
-						+ "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
+													 + "\n @C_BPartner_ID@: " + inOut.getC_BPartner_ID());
 			}
 		}
 		return pricingSystem;
@@ -555,30 +581,6 @@ public class InOutBL implements IInOutBL
 		return lines;
 	}
 
-	private static Comparator<I_M_InOutLine> getOrderLineComparator(final HashMap<Integer, Integer> inoutLineId2orderId)
-	{
-		return (line1, line2) -> {
-			// InOut_ID
-			final int order_ID1 = inoutLineId2orderId.get(line1.getM_InOutLine_ID());
-			final int order_ID2 = inoutLineId2orderId.get(line2.getM_InOutLine_ID());
-
-			if (order_ID1 > order_ID2)
-			{
-				return 1;
-			}
-			if (order_ID1 < order_ID2)
-			{
-				return -1;
-			}
-
-			// LineNo
-			final int line1No = line1.getLine();
-			final int line2No = line2.getLine();
-
-			return Integer.compare(line1No, line2No);
-		};
-	}
-
 	@Override
 	public void deleteMatchInvs(final I_M_InOut inout)
 	{
@@ -797,5 +799,15 @@ public class InOutBL implements IInOutBL
 
 		return factAcctBL.getAcctBalance(factAcctQueries)
 				.orElseGet(() -> Money.zero(acctSchemaBL.getAcctCurrencyId(acctSchemaId)));
+	}
+
+	@Override
+	public ImmutableSet<InOutId> getNotVoidedNotReversedForOrderId(@NonNull final OrderId orderId)
+	{
+		final InOutQuery query = InOutQuery.builder()
+				.orderId(orderId)
+				.excludeDocStatuses(ImmutableSet.of(DocStatus.Voided, DocStatus.Reversed))
+				.build();
+		return inOutDAO.listIds(query);
 	}
 }

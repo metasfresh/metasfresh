@@ -28,6 +28,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
@@ -133,7 +134,6 @@ public class InOutDAO implements IInOutDAO
 				.listIds(InOutId::ofRepoId)
 				.asList();
 	}
-
 
 	@Override
 	public List<I_M_InOutLine> retrieveLines(final I_M_InOut inOut)
@@ -277,10 +277,10 @@ public class InOutDAO implements IInOutDAO
 	{
 		return queryBL.createQueryBuilder(I_M_InOut.class, ctx, ITrx.TRXNAME_None)
 				.addInArrayOrAllFilter(I_M_InOut.COLUMNNAME_DocStatus,
-						IDocument.STATUS_Drafted,  // task: 07448: we also need to consider drafted shipments, because that's the customer workflow, and qty in a drafted InOut don'T couln'T at picked
-						// anymore, because they are already in a shipper-transportation
-						IDocument.STATUS_InProgress,
-						IDocument.STATUS_WaitingConfirmation)
+									   IDocument.STATUS_Drafted,  // task: 07448: we also need to consider drafted shipments, because that's the customer workflow, and qty in a drafted InOut don'T couln'T at picked
+									   // anymore, because they are already in a shipper-transportation
+									   IDocument.STATUS_InProgress,
+									   IDocument.STATUS_WaitingConfirmation)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, true)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
@@ -527,5 +527,30 @@ public class InOutDAO implements IInOutDAO
 				.create()
 				.listIds(InOutId::ofRepoId)
 				.asList();
+	}
+
+	@Override
+	public ImmutableSet<InOutId> listIds(@NonNull final InOutQuery query)
+	{
+		return toSqlQuery(query).listIds(InOutId::ofRepoId);
+	}
+
+	private IQuery<I_M_InOut> toSqlQuery(@NonNull final InOutQuery query)
+	{
+		final IQueryBuilder<I_M_InOut> sqlQueryBuilder = queryBL.createQueryBuilder(I_M_InOut.class)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_M_InOut.COLUMNNAME_M_InOut_ID);
+
+		if (query.getOrderIds() != null && !query.getOrderIds().isEmpty())
+		{
+			sqlQueryBuilder.addInArrayFilter(I_M_InOut.COLUMNNAME_C_Order_ID, query.getOrderIds());
+		}
+
+		if (query.getExcludeDocStatuses() != null && !query.getExcludeDocStatuses().isEmpty())
+		{
+			sqlQueryBuilder.addNotInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, query.getExcludeDocStatuses());
+		}
+
+		return sqlQueryBuilder.create();
 	}
 }

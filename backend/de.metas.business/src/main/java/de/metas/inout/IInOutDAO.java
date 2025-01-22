@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
+import de.metas.inout.impl.InOutQuery;
 import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -143,4 +144,6 @@ public interface IInOutDAO extends ISingletonService
 	Optional<I_M_InOutLine> getReversalLineForLineId(@NonNull final InOutLineId inoutLineId);
 
 	ImmutableList<InOutId> retrieveShipmentsWithoutShipperTransportation(@NonNull Timestamp date);
+
+	ImmutableSet<InOutId> listIds(@NonNull InOutQuery query);
 }

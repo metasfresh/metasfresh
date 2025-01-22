@@ -1,8 +1,10 @@
 package de.metas.inout;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.money.Money;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
@@ -223,4 +225,6 @@ public interface IInOutBL extends ISingletonService
 	Money getCOGSBySalesOrderId(
 			@NonNull OrderLineId salesOrderLineId,
 			@NonNull AcctSchemaId acctSchemaId);
+
+	ImmutableSet<InOutId> getNotVoidedNotReversedForOrderId(@NonNull OrderId orderId);
 }
