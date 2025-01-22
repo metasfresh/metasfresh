@@ -1,76 +1,21 @@
-import * as types from '../../constants/DistributionActionTypes';
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { registerHandler } from './activityStateHandlers';
 import { current, isDraft } from 'immer';
-import { updateUserEditable } from './utils';
 import { getStepsArrayFromLine } from './index';
 
 const COMPONENT_TYPE = 'distribution/move';
 
 export const distributionReducer = ({ draftState, action }) => {
   switch (action.type) {
-    case types.UPDATE_DISTRIBUTION_PICK_FROM: {
-      return reduceOnUpdatePickFrom(draftState, action.payload);
-    }
-
-    case types.UPDATE_DISTRIBUTION_DROP_TO: {
-      return reduceOnDropTo(draftState, action.payload);
-    }
-
     default: {
       return draftState;
     }
   }
 };
 
-const reduceOnUpdatePickFrom = (draftState, payload) => {
-  const { wfProcessId, activityId, lineId, stepId, qtyPicked, qtyRejectedReasonCode } = payload;
-  const draftWFProcess = draftState[wfProcessId];
-  const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
-
-  draftStep.qtyPicked = qtyPicked;
-  draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
-
-  updateStepStatusAndRollup({
-    draftWFProcess,
-    activityId,
-    lineId,
-    stepId,
-  });
-
-  return draftState;
-};
-
-const reduceOnDropTo = (draftState, payload) => {
-  const { wfProcessId, activityId, lineId, stepId } = payload;
-
-  const draftWFProcess = draftState[wfProcessId];
-  const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
-
-  draftStep.droppedToLocator = true;
-
-  updateStepStatusAndRollup({
-    draftWFProcess,
-    activityId,
-    lineId,
-    stepId,
-  });
-
-  return draftState;
-};
-
 const updateStepStatus = ({ draftStep }) => {
   draftStep.isPickedFrom = computeIsPickedFrom({ draftStep });
   draftStep.completeStatus = computeStepStatus({ draftStep });
-};
-
-const updateStepStatusAndRollup = ({ draftWFProcess, activityId, lineId, stepId }) => {
-  const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
-  updateStepStatus({ draftStep });
-
-  //
-  // Rollup:
-  updateLineStatusFromStepsAndRollup({ draftWFProcess, activityId, lineId });
 };
 
 const computeStepStatus = ({ draftStep }) => {
@@ -96,15 +41,6 @@ const updateLineFromSteps = ({ draftLine }) => {
   draftLine.qtyPicked = qtyPicked;
 };
 
-const updateLineStatusFromStepsAndRollup = ({ draftWFProcess, activityId, lineId }) => {
-  const draftLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
-  updateLineFromSteps({ draftLine });
-
-  //
-  // Rollup:
-  updateActivityStatusFromLinesAndRollup({ draftWFProcess, activityId });
-};
-
 const computeLineStatusFromSteps = ({ draftLine }) => {
   const stepIds = extractDraftMapKeys(draftLine.steps);
 
@@ -126,15 +62,6 @@ const computeLineStatusFromSteps = ({ draftLine }) => {
 
 const updateActivityStatusFromLines = ({ draftActivityDataStored }) => {
   draftActivityDataStored.completeStatus = computeActivityStatusFromLines({ draftActivityDataStored });
-};
-
-const updateActivityStatusFromLinesAndRollup = ({ draftWFProcess, activityId }) => {
-  const draftActivityDataStored = draftWFProcess.activities[activityId].dataStored;
-  updateActivityStatusFromLines({ draftActivityDataStored });
-
-  //
-  // Rollup:
-  updateUserEditable({ draftWFProcess });
 };
 
 const extractDraftMapKeys = (draftMap) => {
