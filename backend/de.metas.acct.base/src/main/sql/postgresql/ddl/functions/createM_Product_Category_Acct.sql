@@ -17,8 +17,7 @@ BEGIN
                                   P_MethodChangeVariance_Acct, P_MixVariance_Acct, P_OutsideProcessing_Acct,
                                   P_Overhead_Acct, P_PurchasePriceVariance_Acct, P_RateVariance_Acct, P_Revenue_Acct,
                                   P_Scrap_Acct, P_TradeDiscountGrant_Acct, P_TradeDiscountRec_Acct, P_UsageVariance_Acct,
-                                  P_WIP_Acct,
-                                  P_ExternallyOwnedStock_Acct)
+                                  P_WIP_Acct)
     SELECT pc.m_product_category_id,
            asd.C_AcctSchema_ID,
            pc.AD_Client_ID,
@@ -49,8 +48,7 @@ BEGIN
            asd.P_TradeDiscountGrant_Acct,
            asd.P_TradeDiscountRec_Acct,
            asd.P_UsageVariance_Acct,
-           asd.P_WIP_Acct,
-           asd.P_ExternallyOwnedStock_Acct
+           asd.P_WIP_Acct
     FROM M_Product_Category pc
              INNER JOIN C_AcctSchema_Default asd ON asd.AD_Client_ID = pc.AD_Client_ID
     WHERE TRUE
