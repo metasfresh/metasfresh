@@ -237,7 +237,7 @@ public class HUPackageBL implements IHUPackageBL
 
 	@Override
 	@NonNull
-	public String getPoReference(@NonNull final Collection<PackageId> packageIds)
+	public String getPOReference(@NonNull final Collection<PackageId> packageIds)
 	{
 		return huPackageDAO.retrievePackages(packageIds).stream()
 				.map(I_M_Package::getPOReference)

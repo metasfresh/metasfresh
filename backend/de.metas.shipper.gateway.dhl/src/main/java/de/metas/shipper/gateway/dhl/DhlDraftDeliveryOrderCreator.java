@@ -100,7 +100,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
 		final Set<PackageId> mpackageIds = request.getMpackageIds();
 
-		final String customerReference = huPackageBL.getPoReference(mpackageIds);
+		final String customerReference = huPackageBL.getPOReference(mpackageIds);
 
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(deliveryOrderKey.getFromOrgId());
