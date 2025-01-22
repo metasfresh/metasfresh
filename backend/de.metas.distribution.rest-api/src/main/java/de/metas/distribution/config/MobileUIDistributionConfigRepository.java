@@ -16,7 +16,7 @@ public class MobileUIDistributionConfigRepository
 			.build();
 
 	private static final MobileUIDistributionConfig DEFAULT_CONFIG = MobileUIDistributionConfig.builder()
-			.allowPickingAnyHU(true)
+			.allowPickingAnyHU(false)
 			.build();
 
 	public MobileUIDistributionConfig getConfig()
