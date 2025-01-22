@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.workflow.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import de.metas.common.handlingunits.JsonHUQRCode;
+import de.metas.distribution.workflows_api.DistributionJobStepId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -33,14 +34,14 @@ import lombok.extern.jackson.Jacksonized;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JsonWFDistributionStep
 {
-	@NonNull String id;
+	@NonNull DistributionJobStepId id;
 
 	@NonNull PickFromHU pickFromHU;
 
 	@Builder
 	@Jacksonized
 	public JsonWFDistributionStep(
-			@NonNull final String id,
+			@NonNull final DistributionJobStepId id,
 			@NonNull final PickFromHU pickFromHU)
 	{
 		this.id = id;
