@@ -40,6 +40,9 @@ public interface IHUPackageBL extends ISingletonService
 	 */
 	void unassignShipmentFromPackages(I_M_InOut shipment);
 
+	/**
+     * @return the {@code POReference}-values of the given  {@code M_Packages}, separated by comma.
+     */
 	@NonNull
-	String getPoReference(@NonNull Collection<PackageId> packageIds);
+	String getPOReference(@NonNull Collection<PackageId> packageIds);
 }
