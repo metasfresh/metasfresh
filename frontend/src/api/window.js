@@ -3,6 +3,7 @@ import { post, get, delete as del } from 'axios';
 import { getData } from './view';
 import { parseToDisplay } from '../utils/documentListHelper';
 import { formatSortingQuery } from '../utils';
+import { getQueryString } from '../utils';
 
 export function topActionsRequest(windowId, documentId, tabId = null) {
   const url =
@@ -87,8 +88,18 @@ export function getTabRequest(tabId, windowType, docId, orderBy) {
     });
 }
 
-export function getTabLayoutRequest(windowId, tabId) {
-  return get(`${config.API_URL}/window/${windowId}/${tabId}/layout`);
+export function getTabLayoutRequest(windowId, tabId, isAdvanced = false) {
+  const queryParams = {};
+  if (isAdvanced) {
+    queryParams.advanced = true;
+  }
+  const queryParamsString = getQueryString(queryParams);
+
+  return get(
+    `${config.API_URL}/window/${windowId}${tabId ? `/${tabId}` : ''}/layout${
+      queryParamsString ? `?${queryParamsString}` : ''
+    }`
+  ).then(({ data }) => data); // unbox
 }
 
 /**
@@ -148,5 +159,54 @@ export function getPrintingOptions({ entity, windowId, docId, tabId, rowId }) {
       (tabId ? '/' + tabId : '') +
       (rowId ? '/' + rowId : '') +
       '/printingOptions'
+  );
+}
+
+/**
+ * @method initQuickInput
+ * @summary Fetch data for table quick input
+ * @param {string} entity - for example 'window'
+ * @param {string} windowId
+ * @param {string} docId
+ * @param {string} tabId
+ * @param {string} subentity - for example `quickInput`
+ */
+export function initQuickInput(entity, windowId, docId, tabId, subentity) {
+  tabId = tabId ? `/${tabId}` : '';
+  subentity = subentity ? `/${subentity}` : '';
+
+  return post(
+    `${config.API_URL}/${entity}/${windowId}/${docId}${tabId}${subentity}`
+  );
+}
+
+/**
+ * @method completeRequest
+ * @summary Save changes in attributes/quick input
+ * @param {string} entity - for example 'window'
+ * @param {string} windowId
+ * @param {string} docId
+ * @param {string} tabId
+ * @param {string} subentity - for example `quickInput`
+ * @param {string} subentityId
+ */
+export function completeRequest(
+  entity,
+  docType,
+  docId,
+  tabId,
+  rowId,
+  subentity,
+  subentityId
+) {
+  docType = docType ? `/${docType}` : '';
+  docId = docId ? `/${docId}` : '';
+  tabId = tabId ? `/${tabId}` : '';
+  rowId = rowId ? `/${rowId}` : '';
+  subentity = subentity ? `/${subentity}` : '';
+  subentityId = subentityId ? `/${subentityId}` : '';
+
+  return post(
+    `${config.API_URL}/${entity}${docType}${docId}${tabId}${rowId}${subentity}${subentityId}/complete`
   );
 }

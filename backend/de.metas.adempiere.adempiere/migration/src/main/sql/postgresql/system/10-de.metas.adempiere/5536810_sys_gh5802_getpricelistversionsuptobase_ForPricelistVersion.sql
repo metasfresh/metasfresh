@@ -1,6 +1,10 @@
 drop function if exists getpricelistversionsuptobase(numeric) ;
 
-CREATE OR REPLACE FUNCTION public.getpricelistversionsuptobase_ForPricelistVersion(p_start_pricelist_version_id numeric, p_datePromised timestamp with time zone)
+CREATE OR REPLACE FUNCTION public.getpricelistversionsuptobase_ForPricelistVersion
+    (
+        p_start_pricelist_version_id numeric,
+        p_datePromised timestamp with time zone
+    )
   RETURNS numeric[] AS
 $BODY$
     with recursive priceListVersion as (
