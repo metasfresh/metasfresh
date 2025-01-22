@@ -6,7 +6,7 @@ import GetQuantityDialog from './dialogs/GetQuantityDialog';
 import Button from './buttons/Button';
 import { formatQtyToHumanReadable, formatQtyToHumanReadableStr, roundToQtyPrecision } from '../utils/qtys';
 import { useBooleanSetting } from '../reducers/settings';
-import { toastError } from '../utils/toast';
+import { toastError, toastErrorFromObj } from '../utils/toast';
 import { toQRCodeString } from '../utils/qrCode/hu';
 import HUScanner from './huSelector/HUScanner';
 import BarcodeScannerComponent from './BarcodeScannerComponent';
@@ -175,7 +175,12 @@ const ScanHUAndGetQtyComponent = ({
     if (askForQty) {
       setProgressStatus(STATUS_READ_QTY);
     } else {
-      onResult({ qty: 0, reason: null, scannedBarcode: resolvedBarcodeDataNew.scannedBarcode, resolvedBarcodeData });
+      onResult({
+        qty: 0,
+        reason: null,
+        scannedBarcode: resolvedBarcodeDataNew.scannedBarcode,
+        resolvedBarcodeData,
+      })?.catch?.((error) => toastErrorFromObj(error));
     }
   };
 
@@ -273,6 +278,7 @@ const ScanHUAndGetQtyComponent = ({
             <BarcodeScannerComponent
               resolveScannedBarcode={handleResolveScannedBarcode}
               onResolvedResult={onBarcodeScanned}
+            continuousRunning={true}
             />
           )}
           {showEligibleBarcodeDebugButton && eligibleBarcode && (

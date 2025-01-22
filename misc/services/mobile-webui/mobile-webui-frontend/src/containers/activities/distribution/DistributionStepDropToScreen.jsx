@@ -1,14 +1,12 @@
 import React, { useEffect } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-
-import { toastError } from '../../../utils/toast';
 import { postDistributionDropTo } from '../../../api/distribution';
-import { updateDistributionDropTo } from '../../../actions/DistributionActions';
 import { getStepById } from '../../../reducers/wfProcesses';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
+import { updateWFProcess } from '../../../actions/WorkflowActions';
 
 const DistributionStepDropToScreen = () => {
   const {
@@ -30,28 +28,15 @@ const DistributionStepDropToScreen = () => {
     );
   }, []);
 
-  const onResult = ({ qty = 0, reason = null }) => {
-    postDistributionDropTo({
+  const onResult = () => {
+    return postDistributionDropTo({
       wfProcessId,
       activityId,
       stepId,
-    })
-      .then(() => {
-        dispatch(
-          updateDistributionDropTo({
-            wfProcessId,
-            activityId,
-            lineId,
-            stepId,
-            qtyPicked: qty,
-            qtyRejectedReasonCode: reason,
-            droppedToLocator: true,
-          })
-        );
-
-        history.go(-1);
-      })
-      .catch((axiosError) => toastError({ axiosError }));
+    }).then((wfProcess) => {
+      dispatch(updateWFProcess({ wfProcess }));
+      history.go(-1);
+    });
   };
 
   return (

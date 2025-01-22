@@ -10,11 +10,11 @@ import {
   getStepByIdFromActivity,
 } from '../../../reducers/wfProcesses';
 import { postDistributionPickFrom } from '../../../api/distribution';
-import { updateDistributionPickFrom } from '../../../actions/DistributionActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
 import { toQRCodeString } from '../../../utils/qrCode/hu';
+import { updateWFProcess } from '../../../actions/WorkflowActions';
 
 const DistributionStepPickFromScreen = () => {
   const {
@@ -22,9 +22,7 @@ const DistributionStepPickFromScreen = () => {
     params: { workflowId: wfProcessId, activityId, lineId, stepId },
   } = useRouteMatch();
 
-  const { huQRCode, qtyToMove } = useSelector((state) =>
-    getPropsFromState({ state, wfProcessId, activityId, lineId, stepId })
-  );
+  const { huQRCode } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId, stepId }));
 
   const history = useHistory();
   const dispatch = useDispatch();
@@ -46,18 +44,8 @@ const DistributionStepPickFromScreen = () => {
         qrCode: toQRCodeString(scannedBarcode),
       },
     })
-      .then(() => {
-        dispatch(
-          updateDistributionPickFrom({
-            wfProcessId,
-            activityId,
-            lineId,
-            stepId,
-            qtyPicked: qtyToMove,
-            qtyRejectedReasonCode: null,
-          })
-        );
-
+      .then((wfProcess) => {
+        dispatch(updateWFProcess({ wfProcess }));
         history.go(-2);
       })
       .catch((axiosError) => toastError({ axiosError }));
