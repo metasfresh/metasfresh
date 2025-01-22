@@ -10,7 +10,7 @@ import { addCard } from '../actions/BoardActions';
 import { getRequest } from '../actions/GenericActions';
 import { connectWS, disconnectWS } from '../utils/websockets';
 
-import BlankPage from '../components/BlankPage';
+import { BlankPage } from '../components/BlankPage';
 import Container from '../components/Container';
 import Lanes from '../components/board/Lanes';
 import Sidenav from '../components/board/Sidenav';

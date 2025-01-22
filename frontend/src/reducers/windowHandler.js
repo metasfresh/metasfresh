@@ -159,20 +159,22 @@ export const initialState = {
  * @param {boolean} isModal
  */
 export const getData = (state, isModal = false) => {
-  const selector = isModal ? 'modal' : 'master';
-
-  return state.windowHandler[selector].data;
+  return getLayoutAndData(state, isModal).data;
 };
 
 export const getElementLayout = (state, isModal, layoutPath) => {
-  const selector = isModal ? 'modal' : 'master';
-  const layout = state.windowHandler[selector].layout;
+  const layout = getLayoutAndData(state, isModal).layout;
   const [sectionIdx, columnIdx, elGroupIdx, elLineIdx, elIdx] =
     layoutPath.split('_');
 
   return layout.sections[sectionIdx].columns[columnIdx].elementGroups[
     elGroupIdx
   ].elementsLine[elLineIdx].elements[elIdx];
+};
+
+export const getLayoutAndData = (state, isModal = false) => {
+  const selector = getScope(isModal);
+  return state.windowHandler[selector] ?? {};
 };
 
 export const getInlineTabLayout = ({
@@ -424,23 +426,50 @@ export default function windowHandler(state = initialState, action) {
 
     // SCOPED ACTIONS
 
-    case INIT_LAYOUT_SUCCESS:
+    case INIT_LAYOUT_SUCCESS: {
       return {
         ...state,
         [action.scope]: {
           ...state[action.scope],
-          layout: action.layout,
+          layout: {
+            activeTab: state[action.scope].layout.activeTab, // preserve activeTab. In future consider extracting activeTab out of layout object
+            ...action.layout,
+          },
         },
       };
+    }
+    case INIT_DATA_SUCCESS: {
+      let layout = state[action.scope].layout ?? {};
 
-    case INIT_DATA_SUCCESS:
+      // If the action data is for another windowId then reset the layout.
+      // "INIT_LAYOUT_SUCCESS" action to come afterward and set the actual layout.
+      if (
+        action.windowId !== undefined &&
+        layout.windowId !== action.windowId
+      ) {
+        layout = {};
+      }
+
+      if (action.notFoundMessage !== undefined) {
+        layout = {
+          ...layout,
+          notFoundMessage: action.notFoundMessage,
+        };
+      }
+      if (action.notFoundMessageDetail !== undefined) {
+        layout = {
+          ...layout,
+          notFoundMessageDetail: action.notFoundMessageDetail,
+        };
+      }
+
       return {
         ...state,
         [action.scope]: {
           ...state[action.scope],
           data: action.data,
           docId: action.docId,
-          layout: {},
+          layout,
           saveStatus: action.saveStatus,
           standardActions: action.standardActions,
           validStatus: action.validStatus,
@@ -449,6 +478,7 @@ export default function windowHandler(state = initialState, action) {
           hasComments: action.hasComments,
         },
       };
+    }
     case UPDATE_MASTER_DATA:
       return {
         ...state,
