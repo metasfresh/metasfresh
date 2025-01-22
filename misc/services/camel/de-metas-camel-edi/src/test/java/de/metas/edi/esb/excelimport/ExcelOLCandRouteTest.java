@@ -125,7 +125,7 @@ public class ExcelOLCandRouteTest extends CamelTestSupport
 		assertThat(oLCandType).isNotNull();
 
 		assertThat(oLCandType.getADInputDataSourceID()).isEqualTo(BigInteger.valueOf(160));
-		assertThat(oLCandType.getADOrgID()).isEqualTo(BigInteger.valueOf(100000));
+		assertThat(oLCandType.getADOrgID()).isEqualTo(BigInteger.valueOf(1000000));
 		assertThat(oLCandType.getADUserEnteredByID()).isEqualTo(BigInteger.valueOf(160));
 
 		assertThat(oLCandType.getCBPartnerID()).isEqualTo(BigInteger.valueOf(1000001));
