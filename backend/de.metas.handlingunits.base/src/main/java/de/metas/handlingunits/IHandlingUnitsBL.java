@@ -42,6 +42,7 @@ import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.event.commons.AttributesKey;
@@ -116,6 +117,10 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * @return default storage factory
 	 */
 	IHUStorageFactory getStorageFactory();
+
+	IHUProductStorage getSingleHUProductStorage(HuId huId);
+
+	IHUProductStorage getSingleHUProductStorage(I_M_HU hu);
 
 	IMutableHUContext createMutableHUContext();
 

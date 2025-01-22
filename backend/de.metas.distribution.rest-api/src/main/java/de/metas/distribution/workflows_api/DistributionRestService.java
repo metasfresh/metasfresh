@@ -3,19 +3,18 @@ package de.metas.distribution.workflows_api;
 import com.google.common.collect.ImmutableList;
 import de.metas.ad_reference.ADRefList;
 import de.metas.dao.ValueRestriction;
+import de.metas.distribution.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderQuery;
 import de.metas.distribution.ddorder.DDOrderService;
-import de.metas.distribution.ddorder.movement.schedule.DDOrderDropToRequest;
-import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
-import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
-import de.metas.distribution.ddorder.movement.schedule.DDOrderPickFromRequest;
 import de.metas.distribution.rest_api.JsonDistributionEvent;
+import de.metas.distribution.workflows_api.DistributionEventProcessCommand.DistributionEventProcessCommandBuilder;
 import de.metas.distribution.workflows_api.facets.DistributionFacetIdsCollection;
 import de.metas.distribution.workflows_api.facets.DistributionFacetsCollection;
 import de.metas.distribution.workflows_api.facets.DistributionFacetsCollector;
 import de.metas.document.engine.DocStatus;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.order.IOrderBL;
 import de.metas.organization.IOrgDAO;
@@ -41,22 +40,28 @@ public class DistributionRestService
 	@NonNull private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
 	@NonNull private final DistributionJobHUReservationService distributionJobHUReservationService;
 	@NonNull private final DistributionJobLoaderSupportingServices loadingSupportServices;
+	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	public DistributionRestService(
+			final @NonNull MobileUIDistributionConfigRepository configRepository,
 			final @NonNull DDOrderService ddOrderService,
 			final @NonNull DDOrderMoveScheduleService ddOrderMoveScheduleService,
 			final @NonNull DistributionJobHUReservationService distributionJobHUReservationService,
-			final @NonNull HUQRCodesService huQRCodeService)
+			final @NonNull HUQRCodesService huQRCodeService,
+			final @NonNull HUQRCodesService huQRCodesService)
 	{
 		this.ddOrderService = ddOrderService;
 		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
 		this.distributionJobHUReservationService = distributionJobHUReservationService;
+		this.huQRCodesService = huQRCodesService;
 
 		this.loadingSupportServices = DistributionJobLoaderSupportingServices.builder()
+				.configRepository(configRepository)
 				.ddOrderService(ddOrderService)
 				.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
 				.huQRCodeService(huQRCodeService)
@@ -167,11 +172,12 @@ public class DistributionRestService
 	}
 
 	public DistributionJob assignJob(
-			final @NonNull DDOrderId ddOrderId,
+			final @NonNull DistributionJobId jobId,
 			final @NonNull UserId newResponsibleId)
 	{
 		final DistributionJobLoader loader = newLoader();
 
+		final DDOrderId ddOrderId = jobId.toDDOrderId();
 		final I_DD_Order ddOrderRecord = loader.getDDOrder(ddOrderId);
 		final UserId oldResponsibleId = DistributionJobLoader.extractResponsibleId(ddOrderRecord);
 		if (oldResponsibleId == null)
@@ -190,6 +196,11 @@ public class DistributionRestService
 		return loader.load(ddOrderRecord);
 	}
 
+	public DistributionJob getJobById(final DistributionJobId jobId)
+	{
+		return newLoader().load(jobId);
+	}
+
 	public DistributionJob getJobById(final DDOrderId ddOrderId)
 	{
 		return newLoader().load(ddOrderId);
@@ -203,31 +214,21 @@ public class DistributionRestService
 
 	public DistributionJob processEvent(@NonNull final DistributionJob job, @NonNull final JsonDistributionEvent event)
 	{
-		final DDOrderMoveScheduleId scheduleId = DDOrderMoveScheduleId.ofJson(event.getDistributionStepId());
+		return newProcessCommand()
+				.job(job)
+				.event(event)
+				.build()
+				.execute();
+	}
 
-		if (event.getPickFrom() != null)
-		{
-			final DDOrderMoveSchedule changedSchedule = ddOrderMoveScheduleService.pickFromHU(DDOrderPickFromRequest.builder()
-					.scheduleId(scheduleId)
-					//.huQRCode(StringUtils.trimBlankToOptional(event.getPickFrom().getQrCode()).map(HUQRCode::fromGlobalQRCodeJsonString).orElse(null))
-					.build());
-
-			final DistributionJobStep changedStep = DistributionJobLoader.toDistributionJobStep(changedSchedule, loadingSupportServices);
-			return job.withChangedStep(scheduleId, ignored -> changedStep);
-		}
-		else if (event.getDropTo() != null)
-		{
-			final DDOrderMoveSchedule changedSchedule = ddOrderMoveScheduleService.dropTo(DDOrderDropToRequest.builder()
-					.scheduleId(scheduleId)
-					.build());
-
-			final DistributionJobStep changedStep = DistributionJobLoader.toDistributionJobStep(changedSchedule, loadingSupportServices);
-			return job.withChangedStep(scheduleId, ignored -> changedStep);
-		}
-		else
-		{
-			throw new AdempiereException("Cannot handle: " + event);
-		}
+	private DistributionEventProcessCommandBuilder newProcessCommand()
+	{
+		return DistributionEventProcessCommand.builder()
+				.trxManager(trxManager)
+				.huQRCodesService(huQRCodesService)
+				.handlingUnitsBL(handlingUnitsBL)
+				.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
+				.loadingSupportServices(loadingSupportServices);
 	}
 
 	public DistributionJob complete(@NonNull final DistributionJob job)

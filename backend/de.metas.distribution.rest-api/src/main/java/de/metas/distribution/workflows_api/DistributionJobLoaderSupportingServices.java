@@ -1,5 +1,7 @@
 package de.metas.distribution.workflows_api;
 
+import de.metas.distribution.config.MobileUIDistributionConfig;
+import de.metas.distribution.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
@@ -33,6 +35,7 @@ import java.util.Optional;
 
 public class DistributionJobLoaderSupportingServices
 {
+	private final MobileUIDistributionConfigRepository configRepository;
 	private final DDOrderService ddOrderService;
 	private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
 	private final HUQRCodesService huQRCodeService;
@@ -44,6 +47,7 @@ public class DistributionJobLoaderSupportingServices
 
 	@Builder
 	private DistributionJobLoaderSupportingServices(
+			@NonNull final MobileUIDistributionConfigRepository configRepository,
 			@NonNull final DDOrderService ddOrderService,
 			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService,
 			@NonNull final HUQRCodesService huQRCodeService,
@@ -53,6 +57,7 @@ public class DistributionJobLoaderSupportingServices
 			@NonNull final IOrderBL orderBL,
 			@NonNull final IPPOrderBL ppOrderBL)
 	{
+		this.configRepository = configRepository;
 		this.ddOrderService = ddOrderService;
 		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
 		this.huQRCodeService = huQRCodeService;
@@ -62,6 +67,8 @@ public class DistributionJobLoaderSupportingServices
 		this.orderBL = orderBL;
 		this.ppOrderBL = ppOrderBL;
 	}
+
+	public MobileUIDistributionConfig getConfig() {return configRepository.getConfig();}
 
 	public ProductInfo getProductInfo(@NonNull final ProductId productId)
 	{
