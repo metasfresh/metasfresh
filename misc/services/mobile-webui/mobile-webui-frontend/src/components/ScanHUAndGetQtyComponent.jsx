@@ -278,7 +278,7 @@ const ScanHUAndGetQtyComponent = ({
             <BarcodeScannerComponent
               resolveScannedBarcode={handleResolveScannedBarcode}
               onResolvedResult={onBarcodeScanned}
-            continuousRunning={true}
+              continuousRunning={true}
             />
           )}
           {showEligibleBarcodeDebugButton && eligibleBarcode && (
