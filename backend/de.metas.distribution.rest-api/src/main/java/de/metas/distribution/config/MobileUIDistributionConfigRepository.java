@@ -3,8 +3,11 @@ package de.metas.distribution.config;
 import de.metas.cache.CCache;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_MobileUI_UserProfile_DD;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 @Repository
 public class MobileUIDistributionConfigRepository
@@ -26,11 +29,16 @@ public class MobileUIDistributionConfigRepository
 
 	private MobileUIDistributionConfig retrieveConfig()
 	{
-		return queryBL.createQueryBuilder(I_MobileUI_UserProfile_DD.class)
-				.addOnlyActiveRecordsFilter()
-				.firstOnlyOptional()
+		return retrieveRecord()
 				.map(MobileUIDistributionConfigRepository::fromRecord)
 				.orElse(DEFAULT_CONFIG);
+	}
+
+	private Optional<I_MobileUI_UserProfile_DD> retrieveRecord()
+	{
+		return queryBL.createQueryBuilder(I_MobileUI_UserProfile_DD.class)
+				.addOnlyActiveRecordsFilter()
+				.firstOnlyOptional();
 	}
 
 	private static MobileUIDistributionConfig fromRecord(final I_MobileUI_UserProfile_DD record)
@@ -38,5 +46,16 @@ public class MobileUIDistributionConfigRepository
 		return MobileUIDistributionConfig.builder()
 				.allowPickingAnyHU(record.isAllowPickingAnyHU())
 				.build();
+	}
+
+	public void save(final MobileUIDistributionConfig newConfig)
+	{
+		final I_MobileUI_UserProfile_DD record = retrieveRecord()
+				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_DD.class));
+
+		record.setIsAllowPickingAnyHU(newConfig.isAllowPickingAnyHU());
+		record.setIsActive(true);
+
+		InterfaceWrapperHelper.save(record);
 	}
 }

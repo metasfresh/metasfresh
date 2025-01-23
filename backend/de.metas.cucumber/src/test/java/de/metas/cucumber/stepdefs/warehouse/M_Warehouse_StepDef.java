@@ -28,6 +28,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.ValueAndName;
@@ -45,6 +46,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_M_Locator;
 
 import java.util.List;
 import java.util.Map;
@@ -64,6 +66,7 @@ public class M_Warehouse_StepDef
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final M_Locator_StepDefData locatorTable;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 	@NonNull private final S_Resource_StepDefData resourceTable;
@@ -159,7 +162,9 @@ public class M_Warehouse_StepDef
 
 					saveRecord(warehouseRecord);
 
-					warehouseBL.getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID()));
+					final I_M_Locator locator = warehouseBL.getOrCreateDefaultLocator(WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID()));
+					row.getAsOptionalIdentifier(I_M_Locator.COLUMNNAME_M_Locator_ID)
+							.ifPresent(locatorIdentifier -> locatorTable.put(locatorIdentifier, locator));
 
 					row.getAsIdentifier().put(warehouseTable, warehouseRecord);
 				});

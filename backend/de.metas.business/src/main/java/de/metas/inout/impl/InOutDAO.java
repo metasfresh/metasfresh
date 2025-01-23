@@ -675,6 +675,7 @@ public class InOutDAO implements IInOutDAO
 	private IQueryBuilder<I_M_InOut> toSqlQuery(@NonNull final InOutQuery query)
 	{
 		final IQueryBuilder<I_M_InOut> sqlQueryBuilder = queryBL.createQueryBuilder(I_M_InOut.class)
+				.setLimit(query.getLimit())
 				.addOnlyActiveRecordsFilter();
 
 		if (query.getMovementDateFrom() != null)
@@ -688,6 +689,10 @@ public class InOutDAO implements IInOutDAO
 		if (query.getDocStatus() != null)
 		{
 			sqlQueryBuilder.addEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, query.getDocStatus());
+		}
+		if (query.getExcludeDocStatuses() != null && !query.getExcludeDocStatuses().isEmpty())
+		{
+			sqlQueryBuilder.addNotInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, query.getExcludeDocStatuses());
 		}
 		if (!query.getOrderIds().isEmpty())
 		{

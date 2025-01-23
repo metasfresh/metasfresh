@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.ad.dao.QueryLimit;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -18,5 +19,9 @@ public class InOutQuery
 	@Nullable Instant movementDateFrom;
 	@Nullable Instant movementDateTo;
 	@Nullable DocStatus docStatus;
+	@Nullable @Singular ImmutableSet<DocStatus> excludeDocStatuses;
+
 	@NonNull @Singular ImmutableSet<OrderId> orderIds;
+
+	@Builder.Default QueryLimit limit = QueryLimit.ONE_HUNDRED;
 }

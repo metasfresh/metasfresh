@@ -26,6 +26,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -65,6 +66,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
@@ -96,6 +98,7 @@ public class M_Inventory_StepDef
 	@NonNull private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	@NonNull private final M_HU_StepDefData huTable;
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final M_Locator_StepDefData locatorTable;
 	@NonNull private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	@NonNull private final C_Flatrate_Term_StepDefData flatrateTermTable;
 	@NonNull private final C_DocType_StepDefData docTypeTable;
@@ -239,7 +242,12 @@ public class M_Inventory_StepDef
 		final ProductId productId = productTable.getIdOptional(productIdentifier)
 				.orElseGet(() -> productIdentifier.getAsId(ProductId.class));
 
-		inventoryLine.setM_Locator_ID(warehouseBL.getOrCreateDefaultLocatorId(warehouseId).getRepoId());
+		final LocatorId locatorId = row.getAsOptionalIdentifier(I_M_InventoryLine.COLUMNNAME_M_Locator_ID)
+				.map(locatorTable::getId)
+				.orElseGet(() -> warehouseBL.getOrCreateDefaultLocatorId(warehouseId));
+		assertThat(locatorId.getWarehouseId()).as("line locator is matching header warehouse").isEqualTo(warehouseId);
+
+		inventoryLine.setM_Locator_ID(locatorId.getRepoId());
 		inventoryLine.setM_Product_ID(productId.getRepoId());
 
 		inventoryLine.setQtyCount(row.getAsBigDecimal("QtyCount"));
