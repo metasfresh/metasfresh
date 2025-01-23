@@ -29,6 +29,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -61,7 +62,13 @@ public interface IInOutBL extends ISingletonService
 {
 	I_M_InOut getById(@NonNull InOutId inoutId);
 
+	List<I_M_InOut> getByOrderId(@NonNull OrderId orderId);
+
+	List<I_M_InOut> getByIds(@NonNull Set<InOutId> inoutIds);
+
 	void save(I_M_InOut inout);
+
+	void save(@NonNull I_M_InOutLine inoutLine);
 
 	List<I_M_InOutLine> getLines(@NonNull I_M_InOut inout);
 
@@ -79,6 +86,7 @@ public interface IInOutBL extends ISingletonService
 
 	/**
 	 * @return return movementQty and qtyEntered.
+	 * @see #getMovementQty(I_M_InOutLine)
 	 */
 	StockQtyAndUOMQty getStockQtyAndQtyInUOM(I_M_InOutLine inoutLine);
 
@@ -92,13 +100,15 @@ public interface IInOutBL extends ISingletonService
 
 	Set<InOutAndLineId> getLineIdsByOrderLineIds(Set<OrderLineId> orderLineIds);
 
+	Stream<I_M_InOutLine> streamLines(@NonNull InOutLineQuery query);
+
 	/**
 	 * Create the pricing context for the given inoutline The pricing context contains information about <code>M_PricingSystem</code> and <code>M_PriceList</code> (among other infos, ofc)
 	 * <p>
 	 * When picking the pricing system, first check if the given <code>inOutLine</code>'s <code>M_InOut</code>'s bpartner has an pricingsystem set directly in its <code>C_BPartner</code> record that matches the <code>M_InOut.IsSOTrx</code>.
 	 * <p>
 	 * If the bpartner's <code>C_BPartner.M_PricingSystem_ID</code> (for <code>M_InOut.IsSOTrx='Y'</code>) or <code>C_BPartner.PO_PricingSystem_ID</code> (for <code>M_InOut.IsSOTrx='N'</code>) is <code>NULL</code>,<br>
-	 * <i>and</i> if <code>M_OnOut.MovementType</code> is a "returning-type" (see {@link #isReturnMovementType(String)}),<br>
+	 * <i>and</i> if <code>M_OnOut.MovementType</code> is a "returning-type",<br>
 	 * then also check for the opposite pricing system of the BPartner.
 	 * <p>
 	 * For example, if a bpartner is both customer and vendor, has <b>no</b> <code>M_PricingSystem</code>,<br>
