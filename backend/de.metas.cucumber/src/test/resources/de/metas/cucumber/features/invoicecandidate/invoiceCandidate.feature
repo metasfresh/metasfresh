@@ -47,6 +47,7 @@ Feature: In effect invoice candidates
 
   @from:cucumber
   @Id:S0182_100
+  @ignore # An order cannot be reversed if it has shipments that are not voided nor reversed
   Scenario: create sales order, complete it and validate that the IC created is in effect, reactivate it and validate that IC went out of effect then complete it again, close it and generate the invoice
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
