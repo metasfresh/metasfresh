@@ -24,6 +24,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.inout.InOutQuery;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoice.service.IMatchInvDAO;
@@ -802,12 +803,12 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
-	public ImmutableSet<InOutId> getNotVoidedNotReversedForOrderId(@NonNull final OrderId orderId)
+	public ImmutableSet<I_M_InOut> getNotVoidedNotReversedForOrderId(@NonNull final OrderId orderId)
 	{
 		final InOutQuery query = InOutQuery.builder()
 				.orderId(orderId)
 				.excludeDocStatuses(ImmutableSet.of(DocStatus.Voided, DocStatus.Reversed))
 				.build();
-		return inOutDAO.listIds(query);
+		return inOutDAO.retrieveByQuery(query).collect(ImmutableSet.toImmutableSet());
 	}
 }

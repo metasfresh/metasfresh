@@ -226,5 +226,5 @@ public interface IInOutBL extends ISingletonService
 			@NonNull OrderLineId salesOrderLineId,
 			@NonNull AcctSchemaId acctSchemaId);
 
-	ImmutableSet<InOutId> getNotVoidedNotReversedForOrderId(@NonNull OrderId orderId);
+	ImmutableSet<I_M_InOut> getNotVoidedNotReversedForOrderId(@NonNull OrderId orderId);
 }

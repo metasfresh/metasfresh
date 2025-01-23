@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutBL;
-import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -21,10 +20,12 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Interceptor(I_C_Order.class)
 @Component
@@ -78,14 +79,13 @@ public class C_Order_ShipmentSchedule
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE })
 	public void reactivateIfNoActiveShipment(final I_C_Order order)
 	{
-		final ImmutableSet<InOutId> notVoidedNotReversedForOrderId = inOutBL.getNotVoidedNotReversedForOrderId(OrderId.ofRepoId(order.getC_Order_ID()));
+		final ImmutableSet<I_M_InOut> activeShipments = inOutBL.getNotVoidedNotReversedForOrderId(OrderId.ofRepoId(order.getC_Order_ID()));
 
-
-		if (!notVoidedNotReversedForOrderId.isEmpty())
+		if (!activeShipments.isEmpty())
 		{
 			throw new AdempiereException(
 					ERR_NoReactivationIfNotVoidedNotReversedShipments,
-					notVoidedNotReversedForOrderId);
+					activeShipments.stream().map(I_M_InOut::getDocumentNo).collect(Collectors.joining(", ")));
 		}
 	}
 }

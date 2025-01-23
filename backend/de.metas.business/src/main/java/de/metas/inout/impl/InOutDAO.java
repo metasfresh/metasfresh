@@ -10,6 +10,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.inout.InOutQuery;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
@@ -28,7 +29,6 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
@@ -530,27 +530,38 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
-	public ImmutableSet<InOutId> listIds(@NonNull final InOutQuery query)
+	public Stream<I_M_InOut> retrieveByQuery(@NonNull final InOutQuery query)
 	{
-		return toSqlQuery(query).listIds(InOutId::ofRepoId);
+		return toSqlQuery(query).create().stream();
 	}
 
-	private IQuery<I_M_InOut> toSqlQuery(@NonNull final InOutQuery query)
+	private IQueryBuilder<I_M_InOut> toSqlQuery(@NonNull final InOutQuery query)
 	{
 		final IQueryBuilder<I_M_InOut> sqlQueryBuilder = queryBL.createQueryBuilder(I_M_InOut.class)
-				.addOnlyActiveRecordsFilter()
-				.orderBy(I_M_InOut.COLUMNNAME_M_InOut_ID);
+				.setLimit(query.getLimit())
+				.addOnlyActiveRecordsFilter();
 
-		if (query.getOrderIds() != null && !query.getOrderIds().isEmpty())
+		if (query.getMovementDateFrom() != null)
 		{
-			sqlQueryBuilder.addInArrayFilter(I_M_InOut.COLUMNNAME_C_Order_ID, query.getOrderIds());
+			sqlQueryBuilder.addCompareFilter(I_M_InOut.COLUMNNAME_MovementDate, Operator.GREATER_OR_EQUAL, query.getMovementDateFrom());
 		}
-
+		if (query.getMovementDateTo() != null)
+		{
+			sqlQueryBuilder.addCompareFilter(I_M_InOut.COLUMNNAME_MovementDate, Operator.LESS_OR_EQUAL, query.getMovementDateTo());
+		}
+		if (query.getDocStatus() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, query.getDocStatus());
+		}
 		if (query.getExcludeDocStatuses() != null && !query.getExcludeDocStatuses().isEmpty())
 		{
 			sqlQueryBuilder.addNotInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, query.getExcludeDocStatuses());
 		}
+		if (!query.getOrderIds().isEmpty())
+		{
+			sqlQueryBuilder.addInArrayFilter(I_M_InOut.COLUMNNAME_C_Order_ID, query.getOrderIds());
+		}
 
-		return sqlQueryBuilder.create();
+		return sqlQueryBuilder;
 	}
 }
