@@ -39,6 +39,7 @@ import de.metas.handlingunits.model.I_M_MovementLine;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_M_Movement;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
@@ -77,6 +78,8 @@ import java.util.List;
  */
 public class HUMovementGenerator
 {
+	private static final AdMessageKey MSG_HULocatorNotMatchingPickFromLocator = AdMessageKey.of("HULocatorNotMatchingPickFromLocator");
+
 	// services
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
@@ -256,9 +259,9 @@ public class HUMovementGenerator
 			}
 			else if (!LocatorId.equals(locatorFromId, huLocatorId))
 			{
-				throw new HUException("HU's locator does not match movement's locator from."
-						+ "\n Movement Locator From: " + locatorFromId
-						+ "\n HU's Locator: " + huLocatorId);
+				throw new HUException(MSG_HULocatorNotMatchingPickFromLocator)
+						.setParameter("PickFrom_Locator_ID", locatorFromId)
+						.setParameter("HU_Locator_ID", huLocatorId);
 			}
 		}
 
