@@ -23,6 +23,10 @@
 package de.metas.cucumber.stepdefs.distributionorder;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
@@ -38,12 +42,17 @@ import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.util.Check;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -59,6 +68,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Env;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
@@ -70,13 +80,17 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import javax.annotation.Nullable;
 
 @RequiredArgsConstructor
 public class DD_Order_StepDef
 {
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final DDOrderService ddOrderService = SpringContextHolder.instance.getBean(DDOrderService.class);
+	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final C_BPartner_StepDefData bPartnerTable;
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 	@NonNull private final DD_Order_StepDefData ddOrderTable;
@@ -103,43 +117,56 @@ public class DD_Order_StepDef
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(I_DD_Order.COLUMNNAME_DD_Order_ID)
 				.forEach(row -> {
-					final BPartnerId bpartnerId = row.getAsIdentifier(I_DD_Order.COLUMNNAME_C_BPartner_ID).lookupIdIn(bPartnerTable);
+					final OrgId orgId = Env.getOrgId();
+					final BPartnerId bpartnerId = Optionals.firstPresentOfSuppliers(
+									() -> row.getAsOptionalIdentifier(I_DD_Order.COLUMNNAME_C_BPartner_ID).map(bPartnerTable::getId),
+									() -> bpartnerOrgBL.retrieveLinkedBPartnerId(orgId)
+							)
+							.orElse(null);
+
+					final BPartnerLocationId bpartnerLocationId = bpartnerId != null
+							? bpartnerDAO.retrieveBPartnerLocationId(BPartnerLocationQuery.builder().bpartnerId(bpartnerId).type(BPartnerLocationQuery.Type.SHIP_TO).build())
+							: null;
 
 					final WarehouseId fromWarehouseId = row.getAsIdentifier("M_Warehouse_ID.From").lookupIdIn(warehouseTable);
 					final WarehouseId toWarehouseId = row.getAsIdentifier("M_Warehouse_ID.To").lookupIdIn(warehouseTable);
 					final WarehouseId transitWarehouseId = row.getAsIdentifier("M_Warehouse_ID.Transit").lookupIdIn(warehouseTable);
 
-					final StepDefDataIdentifier plantIdentifier = row.getAsIdentifier("S_Resource_ID");
-					final ResourceId plantId = resourceTable.getIdOptional(plantIdentifier).orElseGet(() -> plantIdentifier.getAsId(ResourceId.class));
-
 					final I_DD_Order ddOrder = InterfaceWrapperHelper.newInstanceOutOfTrx(I_DD_Order.class);
-
-					ddOrder.setC_BPartner_ID(bpartnerId.getRepoId());
+					ddOrder.setAD_Org_ID(orgId.getRepoId());
+					ddOrder.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
+					ddOrder.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
 					ddOrder.setM_Warehouse_From_ID(fromWarehouseId.getRepoId());
 					ddOrder.setM_Warehouse_To_ID(toWarehouseId.getRepoId());
 					ddOrder.setM_Warehouse_ID(transitWarehouseId.getRepoId());
-					ddOrder.setPP_Plant_ID(plantId.getRepoId());
 					ddOrder.setIsInDispute(false);
 					ddOrder.setIsSOTrx(false);
 					ddOrder.setIsInTransit(false);
 					ddOrder.setDeliveryRule(X_DD_Order.DELIVERYRULE_Availability);
 
-					row.getAsOptionalString(I_DD_Order.COLUMNNAME_C_DocType_ID + "." + I_C_DocType.COLUMNNAME_Name)
-							.ifPresent(docTypeDistributionName -> {
-								final DocTypeId docTypeId = queryBL.createQueryBuilder(I_C_DocType.class)
-										.addEqualsFilter(I_C_DocType.COLUMNNAME_Name, docTypeDistributionName)
-										.create()
-										.firstId(DocTypeId::ofRepoIdOrNull);
+					row.getAsOptionalIdentifier("S_Resource_ID")
+							.map(plantIdentifier -> resourceTable.getIdOptional(plantIdentifier).orElseGet(() -> plantIdentifier.getAsId(ResourceId.class)))
+							.ifPresent(plantId -> ddOrder.setPP_Plant_ID(plantId.getRepoId()));
 
-								assertThat(docTypeId).isNotNull();
-								ddOrder.setC_DocType_ID(docTypeId.getRepoId());
-							});
+					final String docTypeName = row.getAsOptionalString(I_DD_Order.COLUMNNAME_C_DocType_ID + "." + I_C_DocType.COLUMNNAME_Name).orElse(null);
+					final DocTypeId docTypeId = findDocTypeId(orgId, docTypeName);
+					ddOrder.setC_DocType_ID(docTypeId.getRepoId());
 
 					ddOrderService.save(ddOrder);
 
 					row.getAsOptionalIdentifier().ifPresent(identifier -> ddOrderTable.putOrReplace(identifier, ddOrder));
 				});
 	}
+
+	private DocTypeId findDocTypeId(@NonNull final OrgId orgId, @Nullable final String docTypeName)
+	{
+		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
+				.docBaseType(DocBaseType.DistributionOrder)
+				.name(docTypeName)
+				.clientAndOrgId(Env.getClientId(), orgId)
+				.build());
+	}
+
 
 	@And("^the dd_order identified by (.*) is (completed|reactivated|reversed|voided|closed)$")
 	public void order_action(@NonNull final String orderIdentifier, @NonNull final String action)

@@ -864,4 +864,14 @@ public class InOutBL implements IInOutBL
 	{
 		return docTypeBL.isProformaShipment(DocTypeId.ofRepoId(inOutRecord.getC_DocType_ID()));
 	}
+
+	@Override
+	public ImmutableSet<I_M_InOut> getNotVoidedNotReversedForOrderId(@NonNull final OrderId orderId)
+	{
+		final InOutQuery query = InOutQuery.builder()
+				.orderId(orderId)
+				.excludeDocStatuses(ImmutableSet.of(DocStatus.Voided, DocStatus.Reversed))
+				.build();
+		return inOutDAO.retrieveByQuery(query).collect(ImmutableSet.toImmutableSet());
+	}
 }
