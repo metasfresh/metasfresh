@@ -44,6 +44,7 @@ import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.order.OrderId;
@@ -184,6 +185,12 @@ public class DD_Order_StepDef
 	private void validateDDOrder(final I_DD_Order actual, @NonNull final DataTableRow expected)
 	{
 		final SoftAssertions softly = new SoftAssertions();
+
+		expected.getAsOptionalEnum("DocStatus", DocStatus.class)
+				.ifPresent(expectedDocStatus -> {
+					final DocStatus actualDocStatus = DocStatus.ofNullableCodeOrUnknown(actual.getDocStatus());
+					softly.assertThat(actualDocStatus).as("DocStatus").isEqualTo(expectedDocStatus);
+				});
 
 		final StepDefDataIdentifier ppOrderIdentifier = expected.getAsOptionalIdentifier(I_DD_Order.COLUMNNAME_Forward_PP_Order_ID).orElse(null);
 		if (ppOrderIdentifier != null)
