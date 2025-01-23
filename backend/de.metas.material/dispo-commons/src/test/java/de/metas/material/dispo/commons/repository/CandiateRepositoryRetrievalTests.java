@@ -1,6 +1,8 @@
 package de.metas.material.dispo.commons.repository;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
@@ -34,8 +36,6 @@ import de.metas.shipping.ShipperId;
 import de.metas.util.InSetPredicate;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;

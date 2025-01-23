@@ -18,8 +18,7 @@ BEGIN
                          P_InvoicePriceVariance_Acct, P_Labor_Acct, P_MethodChangeVariance_Acct, P_MixVariance_Acct,
                          P_OutsideProcessing_Acct, P_Overhead_Acct, P_PurchasePriceVariance_Acct, P_RateVariance_Acct,
                          P_Revenue_Acct, P_Scrap_Acct, P_TradeDiscountGrant_Acct, P_TradeDiscountRec_Acct,
-                         P_UsageVariance_Acct, P_WIP_Acct,
-                         P_ExternallyOwnedStock_Acct)
+                         P_UsageVariance_Acct, P_WIP_Acct)
     SELECT p.m_product_id,
            pca.C_AcctSchema_ID,
            p.AD_Client_ID,
@@ -50,8 +49,7 @@ BEGIN
            pca.P_TradeDiscountGrant_Acct,
            pca.P_TradeDiscountRec_Acct,
            pca.P_UsageVariance_Acct,
-           pca.P_WIP_Acct,
-           pca.P_ExternallyOwnedStock_Acct
+           pca.P_WIP_Acct
     FROM M_Product p
              LEFT OUTER JOIN M_Product_Category_Acct pca ON pca.M_Product_Category_ID = p.M_Product_Category_ID
     WHERE TRUE

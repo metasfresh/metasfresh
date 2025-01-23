@@ -1,23 +1,21 @@
 package de.metas.ui.web.order.sales.purchasePlanning.process;
 
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
-
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Multimaps;
-
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.purchasecandidate.availability.AvailabilityResult.Type;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRow;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRowChangeRequest;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRowChangeRequest.PurchaseRowChangeRequestBuilder;
-import de.metas.util.Check;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseRowId;
 import de.metas.ui.web.order.sales.purchasePlanning.view.PurchaseView;
+import de.metas.util.Check;
 import lombok.NonNull;
 
 /*

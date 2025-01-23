@@ -6,7 +6,7 @@ import { discardNewRequest } from '../../api';
 import { getTableId } from '../../reducers/tables';
 import history from '../../services/History';
 
-import BlankPage from '../BlankPage';
+import { BlankPage } from '../BlankPage';
 import Container from '../Container';
 import SectionGroup from '../SectionGroup';
 import Overlay from '../app/Overlay';
@@ -338,7 +338,11 @@ export default class MasterWindow extends PureComponent {
         <Overlay data={overlay.data} showOverlay={overlay.visible} />
 
         {dataId === 'notfound' ? (
-          <BlankPage what="Document" />
+          <BlankPage
+            what="Document"
+            title={master.layout.notFoundMessage}
+            description={master.layout.notFoundMessageDetail}
+          />
         ) : (
           <SectionGroup
             key="window"

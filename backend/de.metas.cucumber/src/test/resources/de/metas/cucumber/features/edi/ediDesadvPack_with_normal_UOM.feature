@@ -690,9 +690,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | bp_1_11212023_2                  | endcustomer              | p_2_11212023_2          | bPartnerProductGTIN_LU |
       | bp_2_11212023_2                  | endcustomer              | p_3_11212023_2          | bPartnerProductGTIN_TU |
     And metasfresh contains M_HU_PackingMaterial:
-      | M_HU_PackingMaterial_ID | M_Product_ID   |
-      | pm_1_11212023_2         | p_2_11212023_2 |
-      | pm_2_11212023_2         | p_3_11212023_2 |
+      | M_HU_PackingMaterial_ID.Identifier | M_Product_ID   |
+      | pm_1_11212023_2                    | p_2_11212023_2 |
+      | pm_2_11212023_2                    | p_3_11212023_2 |
 
     And metasfresh contains M_HU_Item:
       | M_HU_Item_ID.Identifier | M_HU_ID.Identifier   | M_HU_PI_Item_ID.Identifier | Qty | M_HU_PackingMaterial_ID.Identifier | OPT.ItemType |
@@ -762,7 +762,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @Id:S0316_036
-  Scenario: 1 Pack from 1 line with HU for entire qty.
+  Scenario: 1 Pack from 1 line with HU for partial qty.
   There are no packing-infos to go with, but an actual HU is picked with actual weight, so we use the weight from that HU and then we use the QtyToDeliverCatch_Override for the remaining qty
   in:
   C_OrderLine:
@@ -855,9 +855,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | bp_1_11212023_3                  | endcustomer              | p_2_11212023_3          | bPartnerProductGTIN_LU |
       | bp_2_11212023_3                  | endcustomer              | p_3_11212023_3          | bPartnerProductGTIN_TU |
     And metasfresh contains M_HU_PackingMaterial:
-      | M_HU_PackingMaterial_ID | M_Product_ID   |
-      | pm_1_11212023_3         | p_2_11212023_3 |
-      | pm_2_11212023_3         | p_3_11212023_3 |
+      | M_HU_PackingMaterial_ID.Identifier | M_Product_ID   |
+      | pm_1_11212023_3                    | p_2_11212023_3 |
+      | pm_2_11212023_3                    | p_3_11212023_3 |
 
     And metasfresh contains M_HU_Item:
       | M_HU_Item_ID.Identifier | M_HU_ID.Identifier   | M_HU_PI_Item_ID.Identifier | Qty | M_HU_PackingMaterial_ID.Identifier | OPT.ItemType |
@@ -975,10 +975,10 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | huPackagingCode_2_S0316_040 | CART          | TU          |
 
     And metasfresh contains M_HU_PackingMaterial:
-      | M_HU_PackingMaterial_ID | M_Product_ID  |
-      | pm_1_S0316_040          | p_2_S0316_040 |
-      | pm_2_S0316_040          | p_3_S0316_040 |
-      | pm_3_S0316_040          | p_4_S0316_040 |
+      | M_HU_PackingMaterial_ID.Identifier | M_Product_ID  |
+      | pm_1_S0316_040                     | p_2_S0316_040 |
+      | pm_2_S0316_040                     | p_3_S0316_040 |
+      | pm_3_S0316_040                     | p_4_S0316_040 |
 
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID.Identifier          |

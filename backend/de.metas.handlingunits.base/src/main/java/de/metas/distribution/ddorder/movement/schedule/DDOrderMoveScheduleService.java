@@ -56,9 +56,9 @@ public class DDOrderMoveScheduleService
 		return adReferenceService.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
 	}
 
-	public void createScheduleToMove(@NonNull final DDOrderMoveScheduleCreateRequest request)
+	public DDOrderMoveSchedule createScheduleToMove(@NonNull final DDOrderMoveScheduleCreateRequest request)
 	{
-		ddOrderMoveScheduleRepository.createScheduleToMove(request);
+		return ddOrderMoveScheduleRepository.createScheduleToMove(request);
 	}
 
 	public ImmutableList<DDOrderMoveSchedule> createScheduleToMoveBulk(@NonNull final List<DDOrderMoveScheduleCreateRequest> requests)

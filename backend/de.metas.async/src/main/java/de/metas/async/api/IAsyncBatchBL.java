@@ -10,10 +10,10 @@ import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.ImmutablePair;
 
 import javax.annotation.Nullable;
 import java.time.Duration;

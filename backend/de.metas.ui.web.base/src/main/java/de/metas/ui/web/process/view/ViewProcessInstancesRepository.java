@@ -1,6 +1,8 @@
 package de.metas.ui.web.process.view;
 
 import de.metas.cache.CCache;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.CreateProcessInstanceRequest;
 import de.metas.ui.web.process.IProcessInstanceController;
@@ -19,8 +21,6 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.ConcurrentHashMap;
