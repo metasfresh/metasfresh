@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.customs.CustomsInvoiceRepository;
+import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.mpackage.PackageId;
@@ -71,6 +72,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 
 	private final DhlClientConfigRepository clientConfigRepository;
 	private final CustomsInvoiceRepository customsInvoiceRepository;
+	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 
 	public DhlDraftDeliveryOrderCreator(@NonNull final DhlClientConfigRepository clientConfigRepository, @NonNull final CustomsInvoiceRepository customsInvoiceRepository)
 	{
@@ -98,7 +100,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
 		final Set<PackageId> mpackageIds = request.getMpackageIds();
 
-		final String customerReference = ""; // todo what is the customer reference ?
+		final String customerReference = huPackageBL.getPOReference(mpackageIds);
 
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(deliveryOrderKey.getFromOrgId());

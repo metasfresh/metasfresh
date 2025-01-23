@@ -1,3 +1,5 @@
+package de.metas.document.impl;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -20,22 +22,19 @@
  * #L%
  */
 
-package de.metas.document.impl;
-
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Objects;
-
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.common.util.pair.IPair;
 import de.metas.common.util.pair.ImmutablePair;
-import org.compiere.util.Util;
-
 import de.metas.document.ICopyHandler;
 import de.metas.document.ICopyHandlerBL;
 import de.metas.document.IDocLineCopyHandler;
 import de.metas.util.Check;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Util;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public class CopyHandlerBL implements ICopyHandlerBL
 {

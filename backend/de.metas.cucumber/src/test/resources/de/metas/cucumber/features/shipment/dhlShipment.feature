@@ -131,8 +131,6 @@ Feature: Dhl Shipment
     "closeOrder": false
 }
 """
-# why TF do we expect two invoices??
-    #
     Then process metasfresh response
       | C_Order_ID.Identifier | M_InOut_ID.Identifier | C_Invoice_ID.Identifier |
       | order_1               | shipment_1            | invoice_1               |
