@@ -1,5 +1,6 @@
 package de.metas.inout;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.engine.DocStatus;
@@ -232,4 +233,6 @@ public interface IInOutBL extends ISingletonService
     boolean isProformaShipment(@NonNull InOutId inOutId);
 
 	boolean isProformaShipment(@NonNull I_M_InOut inOutRecord);
+
+	ImmutableSet<I_M_InOut> getNotVoidedNotReversedForOrderId(@NonNull OrderId orderId);
 }

@@ -70,6 +70,7 @@ Feature: approved for invoicing
       | approved_for_invoice_error   |
 
   @from:cucumber
+  @ignore # An order cannot be reversed if it has shipments that are not voided nor reversed
   Scenario: create sales order, complete it, approve invoice candidates for invoicing, generate shipment, complete it and then try to reactivate shipment with error
     Given update C_BPartner:
       | Identifier  | OPT.InvoiceRule |

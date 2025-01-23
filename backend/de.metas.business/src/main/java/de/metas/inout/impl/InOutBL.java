@@ -29,6 +29,7 @@ import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.InOutLineQuery;
+import de.metas.inout.InOutQuery;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.lang.SOTrx;
@@ -863,5 +864,15 @@ public class InOutBL implements IInOutBL
 	public boolean isProformaShipment(@NonNull final I_M_InOut inOutRecord)
 	{
 		return docTypeBL.isProformaShipment(DocTypeId.ofRepoId(inOutRecord.getC_DocType_ID()));
+	}
+
+	@Override
+	public ImmutableSet<I_M_InOut> getNotVoidedNotReversedForOrderId(@NonNull final OrderId orderId)
+	{
+		final InOutQuery query = InOutQuery.builder()
+				.orderId(orderId)
+				.excludeDocStatuses(ImmutableSet.of(DocStatus.Voided, DocStatus.Reversed))
+				.build();
+		return inOutDAO.retrieveByQuery(query).collect(ImmutableSet.toImmutableSet());
 	}
 }

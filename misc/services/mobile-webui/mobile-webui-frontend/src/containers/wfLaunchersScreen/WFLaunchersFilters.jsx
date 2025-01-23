@@ -41,18 +41,21 @@ const useGroups = ({ applicationId, filterByDocumentNo, activeFacetIdsInitial })
   return { groups, groupsLoading, toggleActiveFacet };
 };
 
-const useResultsCount = ({ applicationId, filterByDocumentNo, groups }) => {
+const useResultsCount = ({ applicationId, filterByDocumentNo, groupsLoading, groups }) => {
   const [resultsCountLoading, setResultsCountLoading] = useState(false);
   const [resultsCount, setResultsCount] = useState(-1);
 
   useEffect(() => {
+    // do nothing if groups are currently loading
+    if (groupsLoading) return;
+
     const facetIds = computeActiveFacetIdsFromGroups(groups);
 
     setResultsCountLoading(true);
     countLaunchers({ applicationId, filterByDocumentNo, facetIds })
       .then((count) => setResultsCount(count))
       .finally(() => setResultsCountLoading(false));
-  }, [applicationId, filterByDocumentNo, groups]);
+  }, [applicationId, filterByDocumentNo, groupsLoading, groups]);
 
   return { resultsCountLoading, resultsCount };
 };
@@ -121,7 +124,12 @@ const WFLaunchersFilters = ({
     filterByDocumentNo,
     activeFacetIdsInitial,
   });
-  const { resultsCountLoading, resultsCount } = useResultsCount({ applicationId, filterByDocumentNo, groups });
+  const { resultsCountLoading, resultsCount } = useResultsCount({
+    applicationId,
+    filterByDocumentNo,
+    groupsLoading,
+    groups,
+  });
 
   const onFilterByDocumentNoChanged = (filterByDocumentNoNew) => {
     setFilterByDocumentNo(filterByDocumentNoNew);
