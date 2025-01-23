@@ -135,6 +135,7 @@ public class InOutDAO implements IInOutDAO
 				.asList();
 	}
 
+
 	@Override
 	public List<I_M_InOutLine> retrieveLines(final I_M_InOut inOut)
 	{
@@ -277,10 +278,10 @@ public class InOutDAO implements IInOutDAO
 	{
 		return queryBL.createQueryBuilder(I_M_InOut.class, ctx, ITrx.TRXNAME_None)
 				.addInArrayOrAllFilter(I_M_InOut.COLUMNNAME_DocStatus,
-									   IDocument.STATUS_Drafted,  // task: 07448: we also need to consider drafted shipments, because that's the customer workflow, and qty in a drafted InOut don'T couln'T at picked
-									   // anymore, because they are already in a shipper-transportation
-									   IDocument.STATUS_InProgress,
-									   IDocument.STATUS_WaitingConfirmation)
+						IDocument.STATUS_Drafted,  // task: 07448: we also need to consider drafted shipments, because that's the customer workflow, and qty in a drafted InOut don'T couln'T at picked
+						// anymore, because they are already in a shipper-transportation
+						IDocument.STATUS_InProgress,
+						IDocument.STATUS_WaitingConfirmation)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_IsSOTrx, true)
 				.addOnlyActiveRecordsFilter()
 				.addOnlyContextClient()
