@@ -126,6 +126,9 @@ const translations = {
       scanLocator: 'Scan drop to Locator',
       invalidLocatorQRCode: 'Invalid locator QR code',
       invalidQtyToMove: 'Invalid qty to move',
+      qrcode: {
+        differentProduct: 'The scanned QR Product does not match',
+      },
     },
     confirmButton: {
       default: {
