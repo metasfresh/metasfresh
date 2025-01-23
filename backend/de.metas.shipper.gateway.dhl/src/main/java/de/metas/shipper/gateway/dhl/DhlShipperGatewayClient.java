@@ -25,6 +25,7 @@ package de.metas.shipper.gateway.dhl;
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
@@ -60,6 +61,7 @@ import de.metas.shipper.gateway.spi.model.OrderId;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
+import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import lombok.AccessLevel;
@@ -172,12 +174,11 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		final HttpHeaders httpHeaders = new HttpHeaders();
 		httpHeaders.setAccept(ImmutableList.of(MediaType.APPLICATION_JSON));
 		httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-		httpHeaders.set(DhlConstants.DHL_API_KEY_HTTP_HEADER, config.getApplicationToken());
 
 		final HttpEntity<JSONDhlCreateOrderRequest> entity = new HttpEntity<>(dhlOrderRequest, httpHeaders);
 		try
 		{
-			final ResponseEntity<JSONDhlCreateOrderResponse> result = restTemplate.postForEntity("/parcel/de/shipping/v2/orders", entity, JSONDhlCreateOrderResponse.class);
+			final ResponseEntity<JSONDhlCreateOrderResponse> result = restTemplate.postForEntity(config.getBaseUrl() + "/parcel/de/shipping/v2/orders", entity, JSONDhlCreateOrderResponse.class);
 			if (!result.getStatusCode().is2xxSuccessful() || result.getBody() == null)
 			{
 				throw createShipperException(dhlOrderRequest, result.getStatusCode(), String.valueOf(result.getBody()));
@@ -212,15 +213,19 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		final ContactPerson deliveryContact = deliveryOrder.getDeliveryContact();
 		for (final DeliveryOrderLine deliveryOrderLine : deliveryOrder.getDeliveryOrderLines())
 		{
+			final String customerReference = getCustomerReference(deliveryOrder);
 			final JsonDhlShipment.JsonDhlShipmentBuilder shipmentBuilder = JsonDhlShipment.builder()
 					.billingNumber(config.getAccountNumber())
-					// .refNo(deliveryOrder.getCustomerReference()) // not setting this because DHL expects a length between 5 and 30 and because we do not populate it from anywhere
 					.product(deliveryOrder.getShipperProduct().getCode())
 					.shipDate(deliveryOrder.getPickupDate().getDate().format(DateTimeFormatter.ISO_LOCAL_DATE))
 					.shipper(getJsonDhlAddress(deliveryOrder.getPickupAddress(), null))
 					.consignee(getJsonDhlAddress(deliveryOrder.getDeliveryAddress(), deliveryContact))
 					.details(getJsonDhlDetails(deliveryOrderLine))
 					.customs(getJsonCustomsDeclaration(deliveryOrder.getCustomDeliveryData(), deliveryOrderLine.getPackageId()));
+			if (customerReference != null)
+			{
+				shipmentBuilder.refNo(customerReference);
+			}
 
 			shipments.add(shipmentBuilder.build());
 
@@ -228,6 +233,28 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		orderRequestBuilder.shipments(shipments.build());
 
 		return orderRequestBuilder.build();
+	}
+
+	/**
+	 * DHL Expects a length of between 8 and 30 characters, or nothing at all
+	 */
+	@Nullable
+	private static String getCustomerReference(final @NonNull DeliveryOrder deliveryOrder)
+	{
+		final String customerReference = deliveryOrder.getCustomerReference();
+		if (Check.isBlank(customerReference))
+		{
+			return null;
+		}
+		if (customerReference.length() < 8)
+		{
+			return Strings.padEnd(customerReference, 8, ' ');
+		}
+		if (customerReference.length() > 30)
+		{
+			return customerReference.substring(0, 30);
+		}
+		return customerReference;
 	}
 
 	@Nullable
@@ -383,7 +410,10 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 		for (int i = 0; i < deliveryOrderLineCount; i++)
 		{
 			final JsonDhlItemResponse creationState = response.getItems().get(i);
-
+			if (creationState.getLabel() == null)
+			{
+				throw new AdempiereException("DHL Label is unexpectedly null for: " + creationState);
+			}
 			final byte[] pdfData = Base64.getDecoder().decode(creationState.getLabel().b64());
 
 			final DhlCustomDeliveryDataDetail detail = initialCustomDeliveryData
