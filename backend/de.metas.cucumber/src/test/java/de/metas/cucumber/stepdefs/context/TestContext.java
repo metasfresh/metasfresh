@@ -23,6 +23,8 @@
 package de.metas.cucumber.stepdefs.context;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.JsonObjectMapperHolder;
 import de.metas.cucumber.stepdefs.APIResponse;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.util.lang.RepoIdAware;
@@ -47,6 +49,29 @@ public class TestContext
 	private String endpointPath;
 
 	private final HashMap<String, String> variables = new HashMap<>();
+
+	public void setRequestPayload(@NonNull final Object requestPayload)
+	{
+		final String requestPayloadStr;
+		if (requestPayload instanceof String)
+		{
+			requestPayloadStr = (String)requestPayload;
+		}
+		else
+		{
+			try
+			{
+				final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+				requestPayloadStr = jsonObjectMapper.writeValueAsString(requestPayload);
+			}
+			catch (JsonProcessingException e)
+			{
+				throw new AdempiereException("Failed converting to json string: " + requestPayload, e);
+			}
+		}
+
+		this.requestPayload = requestPayloadStr;
+	}
 
 	public String getApiResponseBodyAsString()
 	{

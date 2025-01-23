@@ -151,17 +151,15 @@ public class REST_API_StepDef
 			@NonNull final String verb,
 			@NonNull final String statusCode) throws IOException
 	{
-		final String payload = testContext.getRequestPayload();
-
-		final APIRequest request = APIRequest.builder()
+		performHTTPRequest(
+				APIRequest.builder()
 				.endpointPath(endpointPath)
 				.verb(verb)
 				.authToken(userAuthToken)
-				.payload(payload)
+				.payload(testContext.getRequestPayload())
 				.statusCode(Integer.parseInt(statusCode))
-				.build();
-
-		performHTTPRequest(request);
+				.build()
+		);
 	}
 
 	@When("the metasfresh REST-API endpoint path {string} receives a {string} request")
