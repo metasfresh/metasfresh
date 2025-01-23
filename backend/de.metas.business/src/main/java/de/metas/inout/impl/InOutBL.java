@@ -135,30 +135,6 @@ public class InOutBL implements IInOutBL
 	private final IFactAcctBL factAcctBL = Services.get(IFactAcctBL.class);
 	private final IAcctSchemaBL acctSchemaBL = Services.get(IAcctSchemaBL.class);
 
-	private static Comparator<I_M_InOutLine> getOrderLineComparator(final HashMap<Integer, Integer> inoutLineId2orderId)
-	{
-		return (line1, line2) -> {
-			// InOut_ID
-			final int order_ID1 = inoutLineId2orderId.get(line1.getM_InOutLine_ID());
-			final int order_ID2 = inoutLineId2orderId.get(line2.getM_InOutLine_ID());
-
-			if (order_ID1 > order_ID2)
-			{
-				return 1;
-			}
-			if (order_ID1 < order_ID2)
-			{
-				return -1;
-			}
-
-			// LineNo
-			final int line1No = line1.getLine();
-			final int line2No = line2.getLine();
-
-			return Integer.compare(line1No, line2No);
-		};
-	}
-
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
 	{
@@ -580,6 +556,30 @@ public class InOutBL implements IInOutBL
 		lines.sort(mainComparator);
 
 		return lines;
+	}
+
+	private static Comparator<I_M_InOutLine> getOrderLineComparator(final HashMap<Integer, Integer> inoutLineId2orderId)
+	{
+		return (line1, line2) -> {
+			// InOut_ID
+			final int order_ID1 = inoutLineId2orderId.get(line1.getM_InOutLine_ID());
+			final int order_ID2 = inoutLineId2orderId.get(line2.getM_InOutLine_ID());
+
+			if (order_ID1 > order_ID2)
+			{
+				return 1;
+			}
+			if (order_ID1 < order_ID2)
+			{
+				return -1;
+			}
+
+			// LineNo
+			final int line1No = line1.getLine();
+			final int line2No = line2.getLine();
+
+			return Integer.compare(line1No, line2No);
+		};
 	}
 
 	@Override
