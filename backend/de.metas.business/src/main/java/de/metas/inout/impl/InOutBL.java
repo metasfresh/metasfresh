@@ -1,5 +1,6 @@
 package de.metas.inout.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -9,17 +10,20 @@ import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
+import de.metas.inout.InOutQuery;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -696,5 +700,15 @@ public class InOutBL implements IInOutBL
 		return bPartnerId != null
 				? bpartnerDAO.getById(bPartnerId, I_C_BPartner.class)
 				: null;
+	}
+
+	@Override
+	public ImmutableSet<I_M_InOut> getNotVoidedNotReversedForOrderId(@NonNull final OrderId orderId)
+	{
+		final InOutQuery query = InOutQuery.builder()
+				.orderId(orderId)
+				.excludeDocStatuses(ImmutableSet.of(DocStatus.Voided, DocStatus.Reversed))
+				.build();
+		return inOutDAO.retrieveByQuery(query).collect(ImmutableSet.toImmutableSet());
 	}
 }
