@@ -148,7 +148,7 @@ FROM M_InOutLine iol
          LEFT OUTER JOIN C_UOM uomc ON uomc.C_UOM_ID = iol.catch_uom_id
          LEFT OUTER JOIN C_UOM_Trl uomct ON uomct.c_UOM_ID = uom.C_UOM_ID AND uomct.AD_Language = p_AD_Language
     -- Attributes
-         LEFT OUTER JOIN (SELECT STRING_AGG(at.ai_value, ', '
+         LEFT OUTER JOIN LATERAL (SELECT STRING_AGG(at.ai_value, ', '
                                  ORDER BY LENGTH(at.ai_value), at.ai_value)
                                  FILTER (WHERE at.at_value NOT IN ('HU_BestBeforeDate', 'Lot-Nummer'))
                                                                               AS Attributes,
@@ -160,12 +160,9 @@ FROM M_InOutLine iol
                                  STRING_AGG(ai_value, ', ')
                                  FILTER (WHERE at.at_value LIKE 'Lot-Nummer') AS lotno
 
-                          FROM Report.fresh_Attributes at
-                                   JOIN M_InOutLine iol
-                                        ON at.M_AttributeSetInstance_ID = iol.M_AttributeSetInstance_ID AND iol.isActive = 'Y'
+                          FROM Report.fresh_Attributes(iol.M_AttributeSetInstance_ID) at
                           WHERE at.IsPrintedInDocument = 'Y'
-                            AND iol.M_InOut_ID = p_Record_ID
-                          GROUP BY at.M_AttributeSetInstance_ID) att ON iol.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID
+                          GROUP BY at.M_AttributeSetInstance_ID) att ON TRUE
 
          LEFT OUTER JOIN
      de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(p.M_Product_ID, bp.C_BPartner_ID,
