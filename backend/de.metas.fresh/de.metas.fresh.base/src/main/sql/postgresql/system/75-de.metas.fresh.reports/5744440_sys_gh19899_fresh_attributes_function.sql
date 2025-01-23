@@ -46,7 +46,7 @@ FROM (
               * The report displayed attribute values even though it should not display them. The Attribute with the ID = 0
               * Is invalid and therefore not returned by this view. That way, the Report will display nothing for ASI ID = 0
               */
-             ai.M_AttributeSetInstance_ID != 0
+             ai.M_AttributeSetInstance_ID = p_M_AttributeSetInstance_ID
            AND ai.isActive = 'Y'
      ) att
 WHERE COALESCE(ai_value, '') != ''
