@@ -1,9 +1,12 @@
 package de.metas.document;
 
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
@@ -89,6 +92,17 @@ public class DocTypeQuery
 		{
 			return docSubType(DOCSUBTYPE_NONE);
 		}
-	}
 
+		public DocTypeQueryBuilder clientAndOrgId(@NonNull final ClientAndOrgId clientAndOrgId)
+		{
+			return clientAndOrgId(clientAndOrgId.getClientId(), clientAndOrgId.getOrgId());
+		}
+
+		public DocTypeQueryBuilder clientAndOrgId(@NonNull final ClientId clientId, @NonNull OrgId orgId)
+		{
+			adClientId(clientId.getRepoId());
+			adOrgId(orgId.getRepoId());
+			return this;
+		}
+	}
 }
