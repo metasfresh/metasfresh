@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.fresh.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details (IN p_Record_ID   numeric,
                                                                                      IN p_AD_Language Character Varying(6))
 ;
@@ -149,20 +171,20 @@ FROM M_InOutLine iol
          LEFT OUTER JOIN C_UOM_Trl uomct ON uomct.c_UOM_ID = uom.C_UOM_ID AND uomct.AD_Language = p_AD_Language
     -- Attributes
          LEFT OUTER JOIN LATERAL (SELECT STRING_AGG(at.ai_value, ', '
-                                 ORDER BY LENGTH(at.ai_value), at.ai_value)
-                                 FILTER (WHERE at.at_value NOT IN ('HU_BestBeforeDate', 'Lot-Nummer'))
-                                                                              AS Attributes,
+                                         ORDER BY LENGTH(at.ai_value), at.ai_value)
+                                         FILTER (WHERE at.at_value NOT IN ('HU_BestBeforeDate', 'Lot-Nummer'))
+                                                                                      AS Attributes,
 
-                                 at.M_AttributeSetInstance_ID,
-                                 STRING_AGG(REPLACE(at.ai_value, 'MHD: ', ''), ', ')
-                                 FILTER (WHERE at.at_value LIKE 'HU_BestBeforeDate')
-                                                                              AS best_before_date,
-                                 STRING_AGG(ai_value, ', ')
-                                 FILTER (WHERE at.at_value LIKE 'Lot-Nummer') AS lotno
+                                         at.M_AttributeSetInstance_ID,
+                                         STRING_AGG(REPLACE(at.ai_value, 'MHD: ', ''), ', ')
+                                         FILTER (WHERE at.at_value LIKE 'HU_BestBeforeDate')
+                                                                                      AS best_before_date,
+                                         STRING_AGG(ai_value, ', ')
+                                         FILTER (WHERE at.at_value LIKE 'Lot-Nummer') AS lotno
 
-                          FROM Report.fresh_Attributes(iol.M_AttributeSetInstance_ID) at
-                          WHERE at.IsPrintedInDocument = 'Y'
-                          GROUP BY at.M_AttributeSetInstance_ID) att ON TRUE
+                                  FROM Report.fresh_Attributes(iol.M_AttributeSetInstance_ID) at
+                                  WHERE at.IsPrintedInDocument = 'Y'
+                                  GROUP BY at.M_AttributeSetInstance_ID) att ON TRUE
 
          LEFT OUTER JOIN
      de_metas_endcustomer_fresh_reports.getC_BPartner_Product_Details(p.M_Product_ID, bp.C_BPartner_ID,
