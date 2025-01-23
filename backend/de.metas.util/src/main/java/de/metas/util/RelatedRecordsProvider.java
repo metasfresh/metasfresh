@@ -1,12 +1,11 @@
 package de.metas.util;
 
-import java.util.List;
-
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ITableRecordReference;
-
+import de.metas.common.util.pair.IPair;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.util.lang.ITableRecordReference;
+
+import java.util.List;
 
 /*
  * #%L

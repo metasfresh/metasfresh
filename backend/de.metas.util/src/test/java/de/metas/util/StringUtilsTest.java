@@ -1,8 +1,8 @@
 package de.metas.util;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.pair.IPair;
 import de.metas.util.StringUtils.TruncateAt;
-import org.adempiere.util.lang.IPair;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 

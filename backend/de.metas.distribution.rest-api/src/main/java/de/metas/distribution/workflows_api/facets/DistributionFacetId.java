@@ -1,5 +1,6 @@
 package de.metas.distribution.workflows_api.facets;
 
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -10,7 +11,6 @@ import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetId;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderId;
 
