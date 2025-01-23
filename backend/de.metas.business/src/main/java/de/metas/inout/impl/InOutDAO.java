@@ -10,6 +10,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.inout.InOutQuery;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
@@ -527,5 +528,41 @@ public class InOutDAO implements IInOutDAO
 				.create()
 				.listIds(InOutId::ofRepoId)
 				.asList();
+	}
+
+	@Override
+	public Stream<I_M_InOut> retrieveByQuery(@NonNull final InOutQuery query)
+	{
+		return toSqlQuery(query).create().stream();
+	}
+
+	private IQueryBuilder<I_M_InOut> toSqlQuery(@NonNull final InOutQuery query)
+	{
+		final IQueryBuilder<I_M_InOut> sqlQueryBuilder = queryBL.createQueryBuilder(I_M_InOut.class)
+				.setLimit(query.getLimit())
+				.addOnlyActiveRecordsFilter();
+
+		if (query.getMovementDateFrom() != null)
+		{
+			sqlQueryBuilder.addCompareFilter(I_M_InOut.COLUMNNAME_MovementDate, Operator.GREATER_OR_EQUAL, query.getMovementDateFrom());
+		}
+		if (query.getMovementDateTo() != null)
+		{
+			sqlQueryBuilder.addCompareFilter(I_M_InOut.COLUMNNAME_MovementDate, Operator.LESS_OR_EQUAL, query.getMovementDateTo());
+		}
+		if (query.getDocStatus() != null)
+		{
+			sqlQueryBuilder.addEqualsFilter(I_M_InOut.COLUMNNAME_DocStatus, query.getDocStatus());
+		}
+		if (query.getExcludeDocStatuses() != null && !query.getExcludeDocStatuses().isEmpty())
+		{
+			sqlQueryBuilder.addNotInArrayFilter(I_M_InOut.COLUMNNAME_DocStatus, query.getExcludeDocStatuses());
+		}
+		if (!query.getOrderIds().isEmpty())
+		{
+			sqlQueryBuilder.addInArrayFilter(I_M_InOut.COLUMNNAME_C_Order_ID, query.getOrderIds());
+		}
+
+		return sqlQueryBuilder;
 	}
 }
