@@ -96,7 +96,7 @@
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_logo.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="0" y="222" width="595" height="153" uuid="57fee363-fabe-49b7-9652-20fecfd01700">
+				<reportElement key="subreport-8" positionType="Float" x="0" y="222" width="595" height="153" uuid="57fee363-fabe-49b7-9652-20fecfd01700">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
 				<subreportParameter name="ad_language">
@@ -128,23 +128,7 @@
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_bp_org_block_left.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="330" y="155" width="210" height="127" uuid="3d2f2844-1477-4ddb-8ae2-07c7b2e23bfa">
-					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-				</reportElement>
-				<subreportParameter name="org_id">
-					<subreportParameterExpression><![CDATA[$F{ad_org_id}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="IsSOTrx">
-					<subreportParameterExpression><![CDATA["Y"]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/docs/generics/report_orgblock_right.jasper"]]></subreportExpression>
-			</subreport>
-			<subreport isUsingCache="true">
-				<reportElement key="subreport-5" x="0" y="283" width="255" height="60" uuid="d20fb354-ec9e-4a16-971e-75b3a364cb9b">
+				<reportElement key="subreport-5" positionType="Float" x="0" y="224" width="255" height="60" uuid="d20fb354-ec9e-4a16-971e-75b3a364cb9b">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>

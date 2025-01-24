@@ -19,79 +19,108 @@
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Description($P{RECORD_ID}, $P{ad_language});]]>
 	</queryString>
 	<field name="description" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="description"/>
 		<property name="com.jaspersoft.studio.field.label" value="description"/>
 	</field>
 	<field name="documentno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="documentno"/>
 		<property name="com.jaspersoft.studio.field.label" value="documentno"/>
 	</field>
 	<field name="dateordered" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="dateordered"/>
 		<property name="com.jaspersoft.studio.field.label" value="dateordered"/>
 	</field>
 	<field name="reference" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="reference"/>
 		<property name="com.jaspersoft.studio.field.label" value="reference"/>
 	</field>
 	<field name="isoffer" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="isoffer"/>
 		<property name="com.jaspersoft.studio.field.label" value="isoffer"/>
 	</field>
 	<field name="isprepay" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="isprepay"/>
 		<property name="com.jaspersoft.studio.field.label" value="isprepay"/>
 	</field>
 	<field name="offervaliddate" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="offervaliddate"/>
 		<property name="com.jaspersoft.studio.field.label" value="offervaliddate"/>
 	</field>
 	<field name="offervaliddays" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="offervaliddays"/>
 		<property name="com.jaspersoft.studio.field.label" value="offervaliddays"/>
 	</field>
 	<field name="bp_value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="bp_value"/>
 		<property name="com.jaspersoft.studio.field.label" value="bp_value"/>
 	</field>
 	<field name="eori" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="eori"/>
 		<property name="com.jaspersoft.studio.field.label" value="eori"/>
 	</field>
 	<field name="cont_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cont_name"/>
 		<property name="com.jaspersoft.studio.field.label" value="cont_name"/>
 	</field>
 	<field name="cont_phone" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cont_phone"/>
 		<property name="com.jaspersoft.studio.field.label" value="cont_phone"/>
 	</field>
 	<field name="cont_fax" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cont_fax"/>
 		<property name="com.jaspersoft.studio.field.label" value="cont_fax"/>
 	</field>
 	<field name="cont_email" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cont_email"/>
 		<property name="com.jaspersoft.studio.field.label" value="cont_email"/>
 	</field>
 	<field name="sr_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="sr_name"/>
 		<property name="com.jaspersoft.studio.field.label" value="sr_name"/>
 	</field>
 	<field name="sr_phone" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="sr_phone"/>
 		<property name="com.jaspersoft.studio.field.label" value="sr_phone"/>
 	</field>
 	<field name="sr_fax" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="sr_fax"/>
 		<property name="com.jaspersoft.studio.field.label" value="sr_fax"/>
 	</field>
 	<field name="sr_email" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="sr_email"/>
 		<property name="com.jaspersoft.studio.field.label" value="sr_email"/>
 	</field>
 	<field name="printname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="printname"/>
 		<property name="com.jaspersoft.studio.field.label" value="printname"/>
 	</field>
 	<field name="datepromised" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="datepromised"/>
 		<property name="com.jaspersoft.studio.field.label" value="datepromised"/>
 	</field>
 	<field name="dt_description" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="dt_description"/>
 		<property name="com.jaspersoft.studio.field.label" value="dt_description"/>
 	</field>
 	<field name="offer_documentno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="offer_documentno"/>
 		<property name="com.jaspersoft.studio.field.label" value="offer_documentno"/>
 	</field>
 	<field name="deliverytoaddress" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="deliverytoaddress"/>
 		<property name="com.jaspersoft.studio.field.label" value="deliverytoaddress"/>
 	</field>
 	<field name="validuntil" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="validuntil"/>
 		<property name="com.jaspersoft.studio.field.label" value="validuntil"/>
 	</field>
 	<field name="versionno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="versionno"/>
 		<property name="com.jaspersoft.studio.field.label" value="versionno"/>
+	</field>
+	<field name="showdeliverytoaddress" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="showdeliverytoaddress"/>
+		<property name="com.jaspersoft.studio.field.label" value="showdeliverytoaddress"/>
 	</field>
 	<background>
 		<band splitType="Stretch"/>
@@ -284,7 +313,9 @@
 				<textFieldExpression><![CDATA[$F{eori}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-6" x="37" y="143" width="133" height="13" forecolor="#000000" uuid="7945e88b-6746-47bb-91f1-d3080a56cb84"/>
+				<reportElement key="textField-6" x="37" y="143" width="133" height="13" forecolor="#000000" uuid="7945e88b-6746-47bb-91f1-d3080a56cb84">
+					<printWhenExpression><![CDATA[new Boolean($F{showdeliverytoaddress}.equals( "Y" ))]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -297,7 +328,9 @@
 				<textFieldExpression><![CDATA[$R{shipmentaddress}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField-1" x="170" y="143" width="383" height="13" forecolor="#000000" uuid="472ea7f4-8e4e-4c9c-9525-2bebbebd7165"/>
+				<reportElement key="textField-1" x="170" y="143" width="383" height="13" forecolor="#000000" uuid="472ea7f4-8e4e-4c9c-9525-2bebbebd7165">
+					<printWhenExpression><![CDATA[new Boolean($F{showdeliverytoaddress}.equals( "Y" ))]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

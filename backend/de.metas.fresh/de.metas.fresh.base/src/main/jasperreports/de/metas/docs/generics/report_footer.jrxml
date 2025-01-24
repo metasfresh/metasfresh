@@ -28,17 +28,70 @@
 FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report($P{org_id})
 ;]]>
 	</queryString>
-	<field name="org_name" class="java.lang.String"/>
-	<field name="org_address1" class="java.lang.String"/>
-	<field name="org_postal" class="java.lang.String"/>
-	<field name="org_city" class="java.lang.String"/>
-	<field name="org_bank_acct" class="java.lang.String"/>
-	<field name="org_bank_name" class="java.lang.String"/>
-	<field name="org_bank_blz" class="java.lang.String"/>
-	<field name="org_bank_iban" class="java.lang.String"/>
-	<field name="org_bank_swift" class="java.lang.String"/>
-	<field name="org_addressline" class="java.lang.String"/>
-	<field name="description" class="java.lang.String"/>
+	<field name="org_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="org_name"/>
+		<property name="com.jaspersoft.studio.field.label" value="org_name"/>
+	</field>
+	<field name="org_address1" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="org_address1"/>
+		<property name="com.jaspersoft.studio.field.label" value="org_address1"/>
+	</field>
+	<field name="org_postal" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="org_postal"/>
+		<property name="com.jaspersoft.studio.field.label" value="org_postal"/>
+	</field>
+	<field name="org_city" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="org_city"/>
+		<property name="com.jaspersoft.studio.field.label" value="org_city"/>
+	</field>
+	<field name="org_bank_acct" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="org_bank_acct"/>
+		<property name="com.jaspersoft.studio.field.label" value="org_bank_acct"/>
+	</field>
+	<field name="org_bank_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="org_bank_name"/>
+		<property name="com.jaspersoft.studio.field.label" value="org_bank_name"/>
+	</field>
+	<field name="org_bank_blz" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="org_bank_blz"/>
+		<property name="com.jaspersoft.studio.field.label" value="org_bank_blz"/>
+	</field>
+	<field name="org_bank_iban" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="org_bank_iban"/>
+		<property name="com.jaspersoft.studio.field.label" value="org_bank_iban"/>
+	</field>
+	<field name="org_bank_swift" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="org_bank_swift"/>
+		<property name="com.jaspersoft.studio.field.label" value="org_bank_swift"/>
+	</field>
+	<field name="org_addressline" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="org_addressline"/>
+		<property name="com.jaspersoft.studio.field.label" value="org_addressline"/>
+	</field>
+	<field name="description" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="description"/>
+		<property name="com.jaspersoft.studio.field.label" value="description"/>
+	</field>
+	<field name="manager" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="manager"/>
+		<property name="com.jaspersoft.studio.field.label" value="manager"/>
+	</field>
+	<field name="vataxid" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="vataxid"/>
+		<property name="com.jaspersoft.studio.field.label" value="vataxid"/>
+	</field>
+	<field name="phone" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="phone"/>
+		<property name="com.jaspersoft.studio.field.label" value="phone"/>
+	</field>
+	<field name="fax" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="fax"/>
+		<property name="com.jaspersoft.studio.field.label" value="fax"/>
+	</field>
+	<field name="email" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="email"/>
+		<property name="com.jaspersoft.studio.field.label" value="email"/>
+	</field>
 	<variable name="conditions" class="java.lang.String">
 		<variableExpression><![CDATA["Es gelten unsere allgemeinen Liefer- und Geschäftsbedingungen"]]></variableExpression>
 		<initialValueExpression><![CDATA["Es gelten unsere allgemeinen Liefer- und Geschäftsbedingungen"]]></initialValueExpression>
@@ -52,7 +105,7 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report($P{org_id})
 				<reportElement key="line-1" x="43" y="13" width="508" height="1" forecolor="#A9A9A9" uuid="810cf2ef-38ec-4fbf-8c6f-3791cc38a16f"/>
 			</line>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-5" x="125" y="23" width="344" height="9" uuid="c46ae439-a6f1-43ee-9f29-3e0867d48262"/>
+				<reportElement key="textField-5" x="125" y="25" width="344" height="9" uuid="c46ae439-a6f1-43ee-9f29-3e0867d48262"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -60,7 +113,7 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report($P{org_id})
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center">
-					<font size="7"/>
+					<font fontName="Arial" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{placeofbusiness} + " " + $F{org_address1} + " | " + $F{org_postal} + " " + $F{org_city}]]></textFieldExpression>
 			</textField>
@@ -78,7 +131,7 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report($P{org_id})
 				<textFieldExpression><![CDATA[$F{org_name}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-7" positionType="Float" x="89" y="38" width="417" height="9" uuid="b231d9e7-2991-4ed0-b2b1-626e2925eed0"/>
+				<reportElement key="textField-7" positionType="Float" x="89" y="43" width="417" height="9" uuid="b231d9e7-2991-4ed0-b2b1-626e2925eed0"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -86,13 +139,11 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report($P{org_id})
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center">
-					<font size="7"/>
+					<font fontName="Arial" size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[//$F{org_bank_name} + " | " + $R{swift} + $F{org_bank_swift} + " | " + $R{iban} + $F{org_bank_iban}
+				<textFieldExpression><![CDATA[$F{org_bank_name}.equals("") ? ("" + (($F{org_bank_swift}==null || $F{org_bank_swift}.equals("")) ? "" + ($F{org_bank_iban}.equals("") ? "" : $R{iban} + " " + $F{org_bank_iban}) : $R{swift} + " " + $F{org_bank_swift} + ($F{org_bank_iban}.equals("") ? "" : " | " + $R{iban} + " " + $F{org_bank_iban}) )+ " | " +$R{vataxid} + " " + $F{vataxid}) 
 
-$F{org_bank_name}.equals("") ? ("" + (($F{org_bank_swift}==null || $F{org_bank_swift}.equals("")) ? "" + ($F{org_bank_iban}.equals("") ? "" : $R{iban} + " " + $F{org_bank_iban}) : $R{swift} + " " + $F{org_bank_swift} + ($F{org_bank_iban}.equals("") ? "" : " | " + $R{iban} + " " + $F{org_bank_iban}) ))
-
-: ($F{org_bank_name} + (($F{org_bank_swift}==null || $F{org_bank_swift}.equals("")) ? "" + ($F{org_bank_iban}.equals("") ? "" : " | " + $R{iban} + " " + $F{org_bank_iban}) : " | " + $R{swift} + " " + $F{org_bank_swift} + ($F{org_bank_iban}.equals("") ? "" : " | " + $R{iban} + " " + $F{org_bank_iban})))]]></textFieldExpression>
+: ($F{org_bank_name} + (($F{org_bank_swift}==null || $F{org_bank_swift}.equals("")) ? "" + ($F{org_bank_iban}.equals("") ? "" : " | " + $R{iban} + " " + $F{org_bank_iban}) : " | " + $R{swift} + " " + $F{org_bank_swift} + ($F{org_bank_iban}.equals("") ? "" : " | " + $R{iban} + " " + $F{org_bank_iban}))+ " | " +$R{vataxid} + " " + $F{vataxid})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="textField-8" x="125" y="1" width="344" height="12" uuid="2acced95-3851-4712-9669-aa6cefe5ee40"/>
@@ -103,27 +154,23 @@ $F{org_bank_name}.equals("") ? ("" + (($F{org_bank_swift}==null || $F{org_bank_s
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center">
-					<font size="8" isBold="false" pdfFontName="Helvetica"/>
+					<font fontName="Arial" size="8" isBold="false" pdfFontName="Helvetica"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{conditions}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="89" y="31" width="417" height="7" uuid="2697a4df-45de-408d-ac7d-c04709a7df84"/>
-				<textElement textAlignment="Center" verticalAlignment="Top">
-					<font size="7"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
-			</textField>
-			<image scaleImage="RetainShape" hAlign="Center" onErrorType="Blank">
-				<reportElement key="image-1" x="20" y="2" width="553" height="58" isRemoveLineWhenBlank="true" uuid="d0e5fac0-9f73-4fd2-92e0-a88d9ed6498d"/>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-5" x="125" y="34" width="344" height="9" uuid="686f839a-b37e-4247-9fb7-aa6d61d61f7f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<imageExpression><![CDATA["de/metas/org/images/ReportBottom_Logo_ID.png"]]></imageExpression>
-			</image>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{orgphone} + " " + $F{phone} + " | " + $R{orgfax} + " " + $F{fax} + " | " + $F{email}]]></textFieldExpression>
+			</textField>
 		</band>
 	</title>
 	<pageHeader>
