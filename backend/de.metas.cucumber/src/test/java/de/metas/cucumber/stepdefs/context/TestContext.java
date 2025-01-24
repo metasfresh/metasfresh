@@ -50,10 +50,14 @@ public class TestContext
 
 	private final HashMap<String, String> variables = new HashMap<>();
 
-	public void setRequestPayload(@NonNull final Object requestPayload)
+	public void setRequestPayload(@Nullable final Object requestPayload)
 	{
 		final String requestPayloadStr;
-		if (requestPayload instanceof String)
+		if (requestPayload == null)
+		{
+			requestPayloadStr = null;
+		}
+		else if (requestPayload instanceof String)
 		{
 			requestPayloadStr = (String)requestPayload;
 		}

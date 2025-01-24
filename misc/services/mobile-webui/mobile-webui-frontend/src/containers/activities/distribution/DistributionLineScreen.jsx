@@ -63,7 +63,7 @@ const DistributionLineScreen = () => {
 //
 //
 
-const useDistributionLineProps = ({ wfProcessId, activityId, lineId }) => {
+export const useDistributionLineProps = ({ wfProcessId, activityId, lineId }) => {
   return useSelector((state) => {
     const line = getLineById(state, wfProcessId, activityId, lineId);
     return {
