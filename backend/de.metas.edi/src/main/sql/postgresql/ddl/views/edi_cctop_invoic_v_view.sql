@@ -90,6 +90,7 @@ SELECT i.C_Invoice_ID                                                           
      , taxAndSurchage.GrandTotalWithSurchargeAmt
 FROM C_Invoice i
          LEFT JOIN C_DocType dt ON dt.C_DocType_ID = i.C_DocTypetarget_ID
+<<<<<<< HEAD
          LEFT JOIN C_Order o ON o.C_Order_ID = i.C_Order_ID
          LEFT JOIN LATERAL ( SELECT io.DocumentNo,
                                     io.MovementDate
@@ -98,6 +99,19 @@ FROM C_Invoice i
                                AND io.DocStatus IN ('CO', 'CL')
                              ORDER BY io.Created
                              LIMIT 1 ) shipment ON TRUE -- for the case of missing EDI_Desadv, we still get the first M_InOut; DESADV can be switched off for individual C_BPartners
+=======
+         LEFT JOIN C_Order o ON o.C_Order_ID=i.C_Order_ID
+         LEFT JOIN EDI_Desadv desadv ON desadv.EDI_Desadv_ID = o.EDI_Desadv_ID -- note that we prefer the EDI_Desadv over M_InOut. there might be multiple InOuts, all with the same POReference and the same EDI_Desadv_ID
+         LEFT JOIN LATERAL (
+    SELECT
+        io.DocumentNo, io.MovementDate
+    FROM M_InOut io
+             left join c_invoice inv on io.m_inout_id = inv.m_inout_id and inv.c_invoice_id=i.c_invoice_id
+    WHERE io.C_Order_ID=o.C_Order_ID AND io.DocStatus IN ('CO', 'CL')
+    ORDER BY inv.c_invoice_id NULLS last, io.Created
+    LIMIT 1
+    ) s ON true -- for the case of missing EDI_Desadv, we still get the first M_InOut; DESADV can be switched off for individual C_BPartners
+>>>>>>> 11d91962e7 (Fix retrieving invoice (#19915))
          LEFT JOIN C_BPartner rbp ON rbp.C_BPartner_ID = i.C_BPartner_ID
          LEFT JOIN C_BPartner_Location rl ON rl.C_BPartner_Location_ID = i.C_BPartner_Location_ID
          LEFT JOIN C_Location l ON l.C_Location_ID = rl.C_Location_ID
