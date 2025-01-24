@@ -119,7 +119,7 @@ public class AdempiereException extends RuntimeException
 	{
 		if (throwable instanceof final AdempiereException ex)
 		{
-            return ex.getMessageBuilt();
+			return ex.getMessageBuilt();
 		}
 
 		return TranslatableStrings.constant(extractMessage(throwable));
@@ -291,7 +291,12 @@ public class AdempiereException extends RuntimeException
 
 	public AdempiereException(@NonNull final AdMessageKey messageKey)
 	{
-		this(TranslatableStrings.adMessage(messageKey), true, messageKey.toAD_Message());
+		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
+		this.messageTrl = TranslatableStrings.adMessage(messageKey);
+		this.userValidationError = true;
+		this.mdcContextMap = captureMDCContextMap();
+
+		this.errorCode = messageKey.toAD_Message();
 	}
 
 	public AdempiereException(final String adLanguage, @NonNull final AdMessageKey adMessage, final Object... params)
@@ -437,7 +442,7 @@ public class AdempiereException extends RuntimeException
 			final Throwable cause = getCause();
 			if (cause instanceof final AdempiereException metasfreshCause)
 			{
-                if (metasfreshCause.appendParametersToMessage) // also append the cause's parameters
+				if (metasfreshCause.appendParametersToMessage) // also append the cause's parameters
 				{
 					metasfreshCause.appendParameters(message);
 				}

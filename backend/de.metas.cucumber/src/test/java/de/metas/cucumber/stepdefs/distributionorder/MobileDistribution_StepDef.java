@@ -1,5 +1,6 @@
 package de.metas.cucumber.stepdefs.distributionorder;
 
+import de.metas.cucumber.stepdefs.APIRequest;
 import de.metas.cucumber.stepdefs.APIResponse;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.REST_API_StepDef;
@@ -18,6 +19,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.logging.LogManager;
+import de.metas.util.StringUtils;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessStartRequest;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcessId;
@@ -29,12 +31,15 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
+import java.util.function.Consumer;
 
 @RequiredArgsConstructor
 public class MobileDistribution_StepDef
 {
-	private static final String ENDPOINT_StartWorkflow = "api/v2/userWorkflows/wfProcess/start";
+	private static final String ENDPOINT_BASE_UserWorkflows = "api/v2/userWorkflows";
+	private static final String ENDPOINT_StartWorkflow = ENDPOINT_BASE_UserWorkflows + "/wfProcess/start";
 	private static final String ENDPOINT_Event = "api/v2/distribution/event";
 
 	// services
@@ -42,7 +47,6 @@ public class MobileDistribution_StepDef
 	private final MobileUIDistributionConfigRepository configRepository = SpringContextHolder.instance.getBean(MobileUIDistributionConfigRepository.class);
 	private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 	//
-	private final DD_Order_StepDefData ddOrderTable;
 	private final DistributionWorkflow_RestController_StepDef distributionWorkflowRestControllerStepDef;
 	private final M_HU_StepDefData huTable;
 	private final REST_API_StepDef restAPIStepDef;
@@ -55,23 +59,51 @@ public class MobileDistribution_StepDef
 	private DistributionJobStepId stepId;
 	private WFActivityId lastConfirmActivityId;
 
-	private APIResponse httpPOST(@NonNull final String path, @NonNull final Object requestBody)
+	private APIResponse httpPOST(@NonNull final String path)
 	{
-		testContext.setRequestPayload(requestBody);
+		return httpPOST(requestBuilder -> requestBuilder.endpointPath(path)
+				.payload(null)
+				.expectedStatusCode(200)
+				.build()
+		);
+	}
 
+	private APIResponse httpPOST(@NonNull final String path, @Nullable final Object requestBody)
+	{
+		return httpPOST(requestBuilder -> requestBuilder.endpointPath(path)
+				.payload(requestBody)
+				.expectedStatusCode(200)
+				.build()
+		);
+	}
+
+	private APIResponse httpPOST(@NonNull final String path, @Nullable final Object requestBody, final int expectedStatusCode)
+	{
+		return httpPOST(requestBuilder -> requestBuilder.endpointPath(path)
+				.payload(requestBody)
+				.expectedStatusCode(expectedStatusCode)
+				.build()
+		);
+	}
+
+	private APIResponse httpPOST(@NonNull final Consumer<APIRequest.APIRequestBuilder> requestCustomizer)
+	{
+		APIRequest request = null;
 		try
 		{
-			restAPIStepDef.metasfresh_rest_api_endpoint_api_external_ref_receives_get_request_with_the_payload_from_context(
-					path,
-					"POST",
-					"200"
-			);
-			return testContext.getApiResponse();
+			final APIRequest.APIRequestBuilder requestBuilder = restAPIStepDef.newAPIRequest().method("POST");
+			requestCustomizer.accept(requestBuilder);
+			request = requestBuilder.build();
+			testContext.setRequestPayload(request.getPayload());
+
+			restAPIStepDef.performHTTPRequest(request);
 		}
 		catch (IOException e)
 		{
-			throw new AdempiereException("Failed posting successfully to " + path, e);
+			throw new AdempiereException("Failed executing request: " + request, e);
 		}
+
+		return testContext.getApiResponse();
 	}
 
 	private void updateContextFromWFProcessResponse(final APIResponse response)
@@ -121,8 +153,22 @@ public class MobileDistribution_StepDef
 				.pickFrom(JsonDistributionEvent.PickFrom.builder().qrCode(huQRCode.toGlobalQRCodeString()).build())
 				.build();
 
-		final APIResponse response = httpPOST(ENDPOINT_Event, request);
-		updateContextFromWFProcessResponse(response);
+		final String expectErrorContaining = row.getAsOptionalString("ExpectErrorContaining").map(StringUtils::trimBlankToNull).orElse(null);
+		final Boolean expectErrorUserFriendly = row.getAsOptionalBoolean("ExpectErrorUserFriendly").toBooleanOrNull();
+		final boolean isExpectError = expectErrorContaining != null || expectErrorUserFriendly != null;
+		final int expectedStatusCode = isExpectError ? 422 : 200;
+		final APIResponse response = httpPOST(requestBuilder -> requestBuilder.endpointPath(ENDPOINT_Event)
+				.payload(request)
+				.expectedStatusCode(expectedStatusCode)
+				.expectedErrorMessageContaining(expectErrorContaining)
+				.expectErrorUserFriendly(expectErrorUserFriendly)
+				.build()
+		);
+
+		if (expectedStatusCode == 200)
+		{
+			updateContextFromWFProcessResponse(response);
+		}
 	}
 
 	@And("Drop HU for distribution job line")
@@ -137,6 +183,16 @@ public class MobileDistribution_StepDef
 				.build();
 
 		final APIResponse response = httpPOST(ENDPOINT_Event, request);
+		updateContextFromWFProcessResponse(response);
+	}
+
+	@And("Complete current distribution job")
+	public void complete()
+	{
+		// private static final String ENDPOINT_StartWorkflow = "api/v2/userWorkflows/wfProcess/start";
+		///wfProcess/{wfProcessId}/{wfActivityId}/userConfirmation
+
+		final APIResponse response = httpPOST(ENDPOINT_BASE_UserWorkflows + "/wfProcess/" + wfProcessId.getAsString() + "/" + lastConfirmActivityId.getAsString() + "/userConfirmation");
 		updateContextFromWFProcessResponse(response);
 	}
 }

@@ -26,27 +26,24 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.audit.apirequest.request.ApiRequestAuditId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.function.UnaryOperator;
 
 @Value
 @Builder(toBuilder = true)
 public class APIResponse
 {
-	@Nullable
-	@With
-	String content;
-
-	@Nullable
-	String contentType;
-
-	@Nullable
-	JsonMetasfreshId requestId;
+	@Nullable Integer statusCode;
+	@Nullable String content;
+	@Nullable String contentType;
+	@Nullable ApiRequestAuditId requestId;
 
 	public <T> T getContentAs(@NonNull final Class<T> type) throws JsonProcessingException
 	{
@@ -60,5 +57,13 @@ public class APIResponse
 		final JsonNode rootNode = mapper.readTree(content);
 		final JsonNode node = rootNode.at(jsonPath);
 		return node.asInt();
+	}
+
+	public APIResponse withContent(@NonNull final UnaryOperator<String> mapper)
+	{
+		final String contentChanged = mapper.apply(content);
+		return !Objects.equals(this.content, contentChanged)
+				? toBuilder().content(contentChanged).build()
+				: this;
 	}
 }

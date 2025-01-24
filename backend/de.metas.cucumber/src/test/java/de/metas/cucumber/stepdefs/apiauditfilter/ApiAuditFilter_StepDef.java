@@ -29,7 +29,6 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.apirequest.request.ApiRequestAudit;
 import de.metas.audit.apirequest.request.ApiRequestAuditId;
 import de.metas.audit.apirequest.request.ApiRequestAuditRepository;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
@@ -39,24 +38,22 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 
+@RequiredArgsConstructor
 public class ApiAuditFilter_StepDef
 {
 	private final ApiRequestAuditRepository apiRequestAuditRepository = SpringContextHolder.instance.getBean(ApiRequestAuditRepository.class);
 	private final ApiRequestReplayService apiRequestReplayService = SpringContextHolder.instance.getBean(ApiRequestReplayService.class);
 	private final TestContext testContext;
-
-	public ApiAuditFilter_StepDef(@NonNull final TestContext testContext)
-	{
-		this.testContext = testContext;
-	}
 
 	@And("all the API audit data is reset")
 	public void reset_data()
@@ -70,10 +67,10 @@ public class ApiAuditFilter_StepDef
 	@When("invoke replay audit")
 	public void invoke_replay_audit()
 	{
-		final JsonMetasfreshId requestId = testContext.getApiResponse().getRequestId();
+		final ApiRequestAuditId requestId = testContext.getApiResponse().getRequestId();
 		assertThat(requestId).isNotNull();
 
-		final ImmutableList<ApiRequestAudit> responseAuditRecords = ImmutableList.of(apiRequestAuditRepository.getById(ApiRequestAuditId.ofRepoId(requestId.getValue())));
+		final ImmutableList<ApiRequestAudit> responseAuditRecords = ImmutableList.of(apiRequestAuditRepository.getById(requestId));
 
 		apiRequestReplayService.replayApiRequests(responseAuditRecords);
 	}

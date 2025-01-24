@@ -237,7 +237,8 @@ public class M_HU_StepDef
 
 			final I_M_InventoryLine inventoryLine = inventoryDAO.getLineById(inventoryLineId, I_M_InventoryLine.class);
 			assertThat(inventoryLine).isNotNull();
-			final HuId huId = HuId.ofRepoId(inventoryLine.getM_HU_ID());
+			final HuId huId = HuId.ofRepoIdOrNull(inventoryLine.getM_HU_ID());
+			assertThat(huId).as("inventory line has HU set").isNotNull();
 
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadHU(LoadHURequest.builder()
 					.huId(huId)
