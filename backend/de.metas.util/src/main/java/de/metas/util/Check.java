@@ -31,6 +31,7 @@ import javax.annotation.Nullable;
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
@@ -851,5 +852,22 @@ public final class Check
 			return true;
 		}
 		return false;
+	}
+
+	public static void assumeSingleNonNull(final String errMessage, final Object... params)
+	{
+		if (params == null)
+		{
+			throw new RuntimeException(errMessage);
+		}
+
+		final long nrOfNonNulls = Arrays.stream(params)
+				.filter(Objects::nonNull)
+				.count();
+
+		if (nrOfNonNulls != 1)
+		{
+			throw new RuntimeException(errMessage);
+		}
 	}
 }
