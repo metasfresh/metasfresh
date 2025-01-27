@@ -17,4 +17,4 @@ COPY --from=backend /backend/metasfresh-dist/dist/target/dist/install/lib .
 COPY --from=backend /backend/metasfresh-dist/dist/target/dist/sql sql/
 
 # this image expects database settings mounted to /migrations/settings.properties to properly run
-CMD ["java", "-jar", "de.metas.migration.cli.jar", "-d", ".", "-s", "migrate.properties"]
+CMD ["java", "-jar", "de.metas.migration.cli.jar", "${JAVA_OPTS}", "-d", ".", "-s", "migrate.properties"]

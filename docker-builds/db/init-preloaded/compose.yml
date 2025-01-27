@@ -23,6 +23,8 @@ services:
 
   migration:
     image: $mfregistry/metas-db-migration-tool:$mfversion
+    environment:
+      - "JAVA_OPTS=-i -v"
     depends_on:
       db:
         condition: service_healthy
