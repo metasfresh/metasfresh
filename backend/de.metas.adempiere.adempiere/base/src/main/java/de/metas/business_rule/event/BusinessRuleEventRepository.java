@@ -59,8 +59,8 @@ public class BusinessRuleEventRepository
 	public void updateAllNotProcessed(@NonNull final UnaryOperator<BusinessRuleEvent> updater, @NonNull final QueryLimit limit)
 	{
 		final String processingTag = UUID.randomUUID().toString();
-		final int count = tagForProcessing(processingTag, limit);
-		if (count <= 0)
+		final int countTagged = tagForProcessing(processingTag, limit);
+		if (countTagged <= 0)
 		{
 			//logger.debug("No events to update. Skip processing.");
 			return;

@@ -56,6 +56,7 @@ public class BusinessRuleEventProcessorWatcher
 			catch (final InterruptedException e)
 			{
 				logger.info("Got interrupt request. Exiting.");
+				Thread.currentThread().interrupt();
 				return;
 			}
 
