@@ -1,6 +1,7 @@
 package de.metas.email.mailboxes;
 
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
 import de.metas.email.EMailCustomType;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
@@ -48,4 +49,7 @@ public class MailboxQuery
 	@Nullable UserId fromUserId;
 
 	public static MailboxQuery ofClientId(@NonNull final ClientId clientId) {return MailboxQuery.builder().clientId(clientId).build();}
+
+	@Nullable public DocBaseType getDocBaseType() { return docBaseAndSubType != null ? docBaseAndSubType.getDocBaseType() : null; }
+	@Nullable public String getDocSubType() { return docBaseAndSubType != null ? docBaseAndSubType.getDocSubType() : null; }
 }

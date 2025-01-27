@@ -233,11 +233,11 @@ public final class EMail implements Serializable
 
 	public void setDebugMailToAddress(@Nullable final InternetAddress debugMailToAddress) {this._debugMailToAddress = debugMailToAddress;}
 
-	public InternetAddress getDebugMailToAddress() {return _debugMailToAddress;}
+	@Nullable public InternetAddress getDebugMailToAddress() {return _forceRealEmailRecipients ? null : _debugMailToAddress;}
 
 	public void setDebugLoggable(final ILoggable loggable) {this._debugLoggable = loggable;}
 
-	public ILoggable getDebugLoggable() {return _debugLoggable;}
+	@Nullable public ILoggable getDebugLoggable() {return _debugLoggable;}
 
 	public EMailSentStatus send()
 	{
@@ -619,7 +619,7 @@ public final class EMail implements Serializable
 		if (!isValidAddress(from))
 		{
 			final String errmsg = "No From address";
-			if (notValidReasonCollector.length() > 0)
+			if (!notValidReasonCollector.isEmpty())
 			{
 				notValidReasonCollector.append("; ");
 			}
@@ -632,7 +632,7 @@ public final class EMail implements Serializable
 		if (toList.isEmpty())
 		{
 			final String errmsg = "No To addresses";
-			if (notValidReasonCollector.length() > 0)
+			if (!notValidReasonCollector.isEmpty())
 			{
 				notValidReasonCollector.append("; ");
 			}
@@ -646,7 +646,7 @@ public final class EMail implements Serializable
 				if (!isValidAddress(to))
 				{
 					final String errmsg = "To address is invalid (" + to + ")";
-					if (notValidReasonCollector.length() > 0)
+					if (!notValidReasonCollector.isEmpty())
 					{
 						notValidReasonCollector.append("; ");
 					}
@@ -661,7 +661,7 @@ public final class EMail implements Serializable
 		if (Check.isEmpty(subject, true))
 		{
 			final String errmsg = "Subject is empty";
-			if (notValidReasonCollector.length() > 0)
+			if (!notValidReasonCollector.isEmpty())
 			{
 				notValidReasonCollector.append("; ");
 			}
@@ -716,24 +716,6 @@ public final class EMail implements Serializable
 	public void forceRealEmailRecipients()
 	{
 		_forceRealEmailRecipients = true;
-	}
-
-	private void overrideRecipients(
-			final SMTPMessage message,
-			final RecipientType type,
-			final List<? extends Address> addresses,
-			final InternetAddress debugMailTo
-	) throws MessagingException
-	{
-		if (Message.RecipientType.TO.equals(type))
-		{
-			message.setRecipient(Message.RecipientType.TO, debugMailTo);
-		}
-
-		for (final Address address : addresses)
-		{
-			message.addHeader("X-metasfreshDebug-Original-Address" + type.toString(), address.toString());
-		}
 	}
 
 	@Override

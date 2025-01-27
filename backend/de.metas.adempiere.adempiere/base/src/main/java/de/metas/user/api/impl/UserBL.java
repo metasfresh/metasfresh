@@ -5,6 +5,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
+import de.metas.email.EMailRequest;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.email.mailboxes.UserEMailConfig;
@@ -178,7 +179,12 @@ public class UserBL implements IUserBL
 				.customType(MAILCONFIG_CUSTOMTYPE_UserPasswordReset)
 				.build();
 
-		mailService().sendEMail(mailboxQuery, emailTo, mailText);
+		mailService().sendEMail(EMailRequest.builder()
+				.mailboxQuery(mailboxQuery)
+				.to(emailTo)
+				.mailText(mailText)
+				.forceRealEmailRecipients(true)
+				.build());
 	}
 
 	private MailText createResetPasswordByEMailText(@NonNull final I_AD_User user)

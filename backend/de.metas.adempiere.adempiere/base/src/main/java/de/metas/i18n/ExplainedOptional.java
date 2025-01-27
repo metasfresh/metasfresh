@@ -100,18 +100,6 @@ public final class ExplainedOptional<T>
 		}
 	}
 
-	public <E extends RuntimeException> T orElseThrow(@NonNull final Function<ITranslatableString, E> exceptionFactory)
-	{
-		if (value != null)
-		{
-			return value;
-		}
-		else
-		{
-			throw exceptionFactory.apply(explanation);
-		}
-	}
-
 	public T get()
 	{
 		return orElseThrow();

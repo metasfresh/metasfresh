@@ -174,6 +174,10 @@ public class MailService
 			email.setDebugMode(true);
 			email.setDebugLoggable(debugLoggable);
 		}
+		if(request.isForceRealEmailRecipients())
+		{
+			email.forceRealEmailRecipients();
+		}
 
 		request.getToList().forEach(email::addTo);
 		request.getAttachments().forEach(email::addAttachment);
