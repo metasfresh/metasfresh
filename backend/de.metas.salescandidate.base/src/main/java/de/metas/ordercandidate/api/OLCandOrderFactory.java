@@ -549,7 +549,6 @@ class OLCandOrderFactory
 			if (candidate.isManualPrice())
 			{
 				currentOrderLine.setPriceEntered(candidate.getPriceActual());
-				currentOrderLine.setPrice_UOM_ID(candidate.getQty().getUomId().getRepoId());
 			}
 			else
 			{

@@ -55,6 +55,9 @@ import de.metas.rest_api.utils.RestApiUtilsV2;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.warehouse.WarehouseService;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -86,6 +89,7 @@ public class CreatePurchaseCandidatesService
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IPurchaseCandidateBL purchaseCandidateBL = Services.get(IPurchaseCandidateBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private final PurchaseCandidateRepository purchaseCandidateRepo;
 	private final JsonRetrieverService jsonRetrieverService;
@@ -150,6 +154,9 @@ public class CreatePurchaseCandidatesService
 
 		final BigDecimal enteredPrice = manualPrice ? request.getPrice().getValue() : BigDecimal.ZERO;
 		final Percent discountPercent = Percent.of(request.isManualDiscount() ? request.getDiscount() : BigDecimal.ZERO);
+		final UomId enteredPriceUomId = manualPrice 
+				? uomDAO.getUomIdByX12DE355(X12DE355.ofCode(request.getPrice().getPriceUomCode())) 
+				: quantity.getUomId();
 
 		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
 				.orgId(orgId)
@@ -166,6 +173,7 @@ public class CreatePurchaseCandidatesService
 				.qtyToPurchase(quantity)
 				.groupReference(DemandGroupReference.EMPTY)
 				.price(enteredPrice)
+				.priceUomId(enteredPriceUomId)
 				.discount(discountPercent)
 				.isManualDiscount(request.isManualDiscount())
 				.isManualPrice(manualPrice)

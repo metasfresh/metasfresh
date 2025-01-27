@@ -1,15 +1,7 @@
 package de.metas.handlingunits.trace;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_UOM;
-import org.springframework.stereotype.Service;
-
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -22,6 +14,13 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_UOM;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L

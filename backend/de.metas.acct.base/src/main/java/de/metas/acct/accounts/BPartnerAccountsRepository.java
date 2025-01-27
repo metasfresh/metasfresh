@@ -59,9 +59,9 @@ public class BPartnerAccountsRepository
 	{
 		return BPartnerVendorAccounts.builder()
 				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
-				.V_Liability_Acct(Account.of(AccountId.ofRepoId(record.getV_Liability_Acct()), I_C_BP_Vendor_Acct.COLUMNNAME_V_Liability_Acct))
-				.V_Liability_Services_Acct(Account.of(AccountId.ofRepoId(record.getV_Liability_Services_Acct()), I_C_BP_Vendor_Acct.COLUMNNAME_V_Liability_Services_Acct))
-				.V_Prepayment_Acct(Account.of(AccountId.ofRepoId(record.getV_Prepayment_Acct()), I_C_BP_Vendor_Acct.COLUMNNAME_V_Prepayment_Acct))
+				.V_Liability_Acct(Account.of(AccountId.ofRepoId(record.getV_Liability_Acct()), BPartnerVendorAccountType.V_Liability))
+				.V_Liability_Services_Acct(Account.of(AccountId.ofRepoId(record.getV_Liability_Services_Acct()), BPartnerVendorAccountType.V_Liability_Services))
+				.V_Prepayment_Acct(Account.of(AccountId.ofRepoId(record.getV_Prepayment_Acct()), BPartnerVendorAccountType.V_Prepayment))
 				.build();
 	}
 
@@ -94,9 +94,9 @@ public class BPartnerAccountsRepository
 	{
 		return BPartnerCustomerAccounts.builder()
 				.acctSchemaId(AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID()))
-				.C_Receivable_Acct(Account.of(AccountId.ofRepoId(record.getC_Receivable_Acct()), I_C_BP_Customer_Acct.COLUMNNAME_C_Receivable_Acct))
-				.C_Receivable_Services_Acct(Account.of(AccountId.ofRepoId(record.getC_Receivable_Services_Acct()), I_C_BP_Customer_Acct.COLUMNNAME_C_Receivable_Services_Acct))
-				.C_Prepayment_Acct(Account.of(AccountId.ofRepoId(record.getC_Prepayment_Acct()), I_C_BP_Customer_Acct.COLUMNNAME_C_Prepayment_Acct))
+				.C_Receivable_Acct(Account.of(AccountId.ofRepoId(record.getC_Receivable_Acct()), BPartnerCustomerAccountType.C_Receivable))
+				.C_Receivable_Services_Acct(Account.of(AccountId.ofRepoId(record.getC_Receivable_Services_Acct()), BPartnerCustomerAccountType.C_Receivable_Services))
+				.C_Prepayment_Acct(Account.of(AccountId.ofRepoId(record.getC_Prepayment_Acct()), BPartnerCustomerAccountType.C_Prepayment))
 				.build();
 	}
 }

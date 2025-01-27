@@ -22,12 +22,13 @@ package de.metas.handlingunits.impl;
  * #L%
  */
 
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.handlingunits.IHUPackageDAO;
+import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_Package_HU;
+import de.metas.mpackage.PackageId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -35,12 +36,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 
-import de.metas.handlingunits.IHUPackageDAO;
-import de.metas.handlingunits.exceptions.HUException;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_Package_HU;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
 
 public class HUPackageDAO implements IHUPackageDAO
 {
@@ -70,7 +69,7 @@ public class HUPackageDAO implements IHUPackageDAO
 	}
 
 	@Override
-	public List<I_M_Package> retrievePackages(final Properties ctx, final Collection<Integer> packageIds)
+	public List<I_M_Package> retrievePackages(final Collection<PackageId> packageIds)
 	{
 		if (packageIds == null || packageIds.isEmpty())
 		{
@@ -78,7 +77,7 @@ public class HUPackageDAO implements IHUPackageDAO
 		}
 
 		return Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_Package.class, ctx, ITrx.TRXNAME_None)
+				.createQueryBuilder(I_M_Package.class)
 				.addInArrayOrAllFilter(org.compiere.model.I_M_Package.COLUMNNAME_M_Package_ID, packageIds)
 				.create()
 				.list(I_M_Package.class);

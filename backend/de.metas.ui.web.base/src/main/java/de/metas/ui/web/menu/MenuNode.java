@@ -3,12 +3,12 @@ package de.metas.ui.web.menu;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.ui.web.menu.MenuNode.MenuNodeFilter.MenuNodeFilterResolution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.util.Check;
 import lombok.NonNull;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;

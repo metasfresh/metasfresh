@@ -25,6 +25,7 @@ package de.metas.handlingunits;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.pair.IPair;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
@@ -44,7 +45,6 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.IPair;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_M_Warehouse;
 
@@ -343,4 +343,7 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	void save(@NonNull I_M_HU_PI huPi);
 
 	Optional<HuId> getFirstHuIdByExternalLotNo(String externalLotNo);
+
+	@NonNull
+	ImmutableSet<HuId> retrieveHuIdAndDownstream(@NonNull HuId huId);
 }

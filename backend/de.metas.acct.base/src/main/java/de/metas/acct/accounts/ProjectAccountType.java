@@ -1,12 +1,13 @@
 package de.metas.acct.accounts;
 
-import lombok.AllArgsConstructor;
+import de.metas.acct.AccountConceptualName;
+import de.metas.acct.AccountConceptualNameAware;
 import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.model.I_C_Project_Acct;
 
-@AllArgsConstructor
-public enum ProjectAccountType
+@Getter
+public enum ProjectAccountType implements AccountConceptualNameAware
 {
 	/**
 	 * Project Accounts - Assets
@@ -19,5 +20,10 @@ public enum ProjectAccountType
 
 	;
 
-	@Getter @NonNull private final String columnName;
+	@NonNull private final AccountConceptualName accountConceptualName;
+
+	ProjectAccountType(@NonNull final String accountConceptualName)
+	{
+		this.accountConceptualName = AccountConceptualName.ofString(accountConceptualName);
+	}
 }

@@ -327,8 +327,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 			return false;
 		}
 
-		final IHUProductStorage productStorage = handlingUnitsBL.getStorageFactory()
-				.getSingleHUProductStorage(hu);
+		final IHUProductStorage productStorage = handlingUnitsBL.getSingleHUProductStorage(hu);
 
 		final List<MaturingConfigLine> maturingConfigLines = maturingConfigRepository.get().getByFromProductId(productStorage.getProductId());
 
@@ -340,10 +339,10 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		final MaturingConfigLine maturingConfigLine = CollectionUtils.singleElement(maturingConfigLines);
 
 		return productPlanningDAO.find(IProductPlanningDAO.ProductPlanningQuery.builder()
-											   .productId(maturedProductId)
-											   .warehouseId(locatorId.getWarehouseId())
-											   .maturingConfigLineId(maturingConfigLine.getId())
-											   .build())
+						.productId(maturedProductId)
+						.warehouseId(locatorId.getWarehouseId())
+						.maturingConfigLineId(maturingConfigLine.getId())
+						.build())
 				.map(ProductPlanning::isMatured)
 				.orElse(false);
 	}

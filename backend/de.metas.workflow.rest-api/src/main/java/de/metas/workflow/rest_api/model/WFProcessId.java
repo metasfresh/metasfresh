@@ -114,7 +114,21 @@ public final class WFProcessId
 		{
 			throw new AdempiereException("Failed converting " + this + " to ID", ex);
 		}
+	}
 
+	@NonNull
+	public <ID extends RepoIdAware> ID getRepoIdAssumingApplicationId(@NonNull MobileApplicationId expectedApplicationId, @NonNull final Function<Integer, ID> idMapper)
+	{
+		assertApplicationId(expectedApplicationId);
+		return getRepoId(idMapper);
+	}
+
+	public void assertApplicationId(@NonNull final MobileApplicationId expectedApplicationId)
+	{
+		if (!Objects.equals(this.applicationId, expectedApplicationId))
+		{
+			throw new AdempiereException("Expected applicationId `" + expectedApplicationId + "` but was `" + this.applicationId + "`");
+		}
 	}
 
 	public static boolean equals(@Nullable final WFProcessId id1, @Nullable final WFProcessId id2) {return Objects.equals(id1, id2);}

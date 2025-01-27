@@ -30,4 +30,5 @@ public class JsonFinishedGoodsReceiveLine
 	@Nullable JsonHUQRCodeTarget currentReceivingHU;
 
 	@NonNull JsonNewLUTargetsList availableReceivingTargets;
+	@NonNull JsonNewTUTargetList availableReceivingTUTargets;
 }

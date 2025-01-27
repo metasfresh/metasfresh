@@ -26,6 +26,7 @@ import com.google.common.collect.SetMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.lang.SOTrx;
+import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
@@ -39,6 +40,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -77,6 +79,8 @@ public interface IAllocationDAO extends ISingletonService
 	 * Retrieve that part of the given <code>invoice</code>'s <code>GrandTotal</code> that has already been allocated.
 	 */
 	BigDecimal retrieveAllocatedAmt(I_C_Invoice invoice);
+
+	Optional<Money> retrieveAllocatedAmtAsMoney(InvoiceId invoiceId);
 
 	/**
 	 * Retrieve the written off amount of an <code>invoice</code>.

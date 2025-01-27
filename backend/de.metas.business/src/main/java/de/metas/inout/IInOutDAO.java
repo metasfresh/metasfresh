@@ -143,4 +143,6 @@ public interface IInOutDAO extends ISingletonService
 	Optional<I_M_InOutLine> getReversalLineForLineId(@NonNull final InOutLineId inoutLineId);
 
 	ImmutableList<InOutId> retrieveShipmentsWithoutShipperTransportation(@NonNull Timestamp date);
+
+	Stream<I_M_InOut> retrieveByQuery(@NonNull de.metas.inout.InOutQuery query);
 }

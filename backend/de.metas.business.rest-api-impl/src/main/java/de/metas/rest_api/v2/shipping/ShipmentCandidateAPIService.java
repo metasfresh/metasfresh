@@ -54,6 +54,7 @@ import de.metas.common.shipping.v2.shipmentcandidate.JsonResponseShipmentCandida
 import de.metas.common.shipping.v2.shipmentcandidate.JsonResponseShipmentCandidates.JsonResponseShipmentCandidatesBuilder;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.common.util.pair.IPair;
 import de.metas.common.util.time.SystemTime;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
@@ -105,7 +106,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.Env;

@@ -10,8 +10,11 @@ const COMPONENT_TYPE = 'manufacturing/materialReceipt';
 
 export const manufacturingReducer = ({ draftState, action }) => {
   switch (action.type) {
-    case types.UPDATE_MANUFACTURING_RECEIPT_TARGET: {
-      return reduceOnUpdateReceiptTarget(draftState, action.payload);
+    case types.UPDATE_MANUFACTURING_LU_RECEIPT_TARGET: {
+      return reduceOnUpdateLUReceiptTarget(draftState, action.payload);
+    }
+    case types.UPDATE_MANUFACTURING_TU_RECEIPT_TARGET: {
+      return reduceOnUpdateTUReceiptTarget(draftState, action.payload);
     }
     case types.UPDATE_MANUFACTURING_RECEIPT_QTY: {
       return reduceOnUpdateQtyReceived(draftState, action.payload);
@@ -22,24 +25,27 @@ export const manufacturingReducer = ({ draftState, action }) => {
   }
 };
 
-const reduceOnUpdateReceiptTarget = (draftState, { wfProcessId, activityId, lineId, target }) => {
+const reduceOnUpdateLUReceiptTarget = (draftState, { wfProcessId, activityId, lineId, target }) => {
+  return reduceOnUpdateReceiptTarget(draftState, { wfProcessId, activityId, lineId, luTarget: target });
+};
+
+const reduceOnUpdateTUReceiptTarget = (draftState, { wfProcessId, activityId, lineId, target }) => {
+  return reduceOnUpdateReceiptTarget(draftState, { wfProcessId, activityId, lineId, tuTarget: target });
+};
+
+const reduceOnUpdateReceiptTarget = (draftState, { wfProcessId, activityId, lineId, luTarget, tuTarget }) => {
   const draftWFProcess = draftState[wfProcessId];
   const draftActivityLine = getLineByIdFromWFProcess(draftWFProcess, activityId, lineId);
 
-  if (!target) {
+  if (luTarget) {
+    draftActivityLine.aggregateToLU = getAggregateToLU({ draftActivityLine, luTarget });
+    draftActivityLine.aggregateToTU = null;
+  } else if (tuTarget) {
     draftActivityLine.aggregateToLU = null;
-  } else if (target.huQRCode) {
-    const tuPIItemProductId = draftActivityLine.availableReceivingTargets.values[0].tuPIItemProductId;
-    draftActivityLine.aggregateToLU = {
-      existingLU: {
-        huQRCode: toQRCodeObject(target.huQRCode),
-        tuPIItemProductId,
-      },
-    };
+    draftActivityLine.aggregateToTU = getAggregateToTU({ tuTarget });
   } else {
-    draftActivityLine.aggregateToLU = {
-      newLU: { ...target },
-    };
+    draftActivityLine.aggregateToLU = null;
+    draftActivityLine.aggregateToTU = null;
   }
 
   updateLineStatusAndRollup({
@@ -49,6 +55,28 @@ const reduceOnUpdateReceiptTarget = (draftState, { wfProcessId, activityId, line
   });
 
   return draftState;
+};
+
+const getAggregateToLU = ({ draftActivityLine, luTarget }) => {
+  if (luTarget.huQRCode) {
+    const tuPIItemProductId = draftActivityLine.availableReceivingTargets.values[0].tuPIItemProductId;
+    return {
+      existingLU: {
+        huQRCode: toQRCodeObject(luTarget.huQRCode),
+        tuPIItemProductId,
+      },
+    };
+  } else {
+    return {
+      newLU: { ...luTarget },
+    };
+  }
+};
+
+const getAggregateToTU = ({ tuTarget }) => {
+  return {
+    newTU: { ...tuTarget },
+  };
 };
 
 const reduceOnUpdateQtyReceived = (draftState, { wfProcessId, activityId, lineId, qtyReceived }) => {

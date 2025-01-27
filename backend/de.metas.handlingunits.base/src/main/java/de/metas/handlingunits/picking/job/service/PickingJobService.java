@@ -11,6 +11,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inventory.InventoryService;
@@ -37,6 +38,7 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCompleteCom
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobPickCommand;
+import de.metas.handlingunits.picking.job.service.commands.PickingJobReopenCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.HUToReportWrapper;
@@ -44,8 +46,11 @@ import de.metas.handlingunits.report.labels.HULabelPrintRequest;
 import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.IShipmentService;
 import de.metas.i18n.AdMessageKey;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.order.OrderId;
 import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
@@ -66,6 +71,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -82,6 +88,9 @@ public class PickingJobService
 	@NonNull private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+	@NonNull private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	@NonNull private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingJobLockService pickingJobLockService;
 	@NonNull private final PickingJobSlotService pickingSlotService;
@@ -97,6 +106,7 @@ public class PickingJobService
 	@NonNull private final WorkplaceService workplaceService;
 	@NonNull private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
 
+	@NonNull
 	public PickingJob getById(final PickingJobId pickingJobId)
 	{
 		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
@@ -614,5 +624,33 @@ public class PickingJobService
 		}
 
 		return setPickTarget(pickingJob, (TUPickingTarget)null);
+	}
+
+	public void reopenPickingJobs(@NonNull final ReopenPickingJobRequest request)
+	{
+		final Map<ShipmentScheduleId, List<PickingJobId>> scheduleId2JobIds = pickingJobRepository
+				.getPickingJobIdsByScheduleId(request.getShipmentScheduleIds());
+
+		final PickingJobReopenCommand.PickingJobReopenCommandBuilder commandBuilder = PickingJobReopenCommand.builder()
+				.handlingUnitsBL(handlingUnitsBL)
+				.pickingSlotService(pickingSlotService)
+				.huContextFactory(huContextFactory)
+				.huShipmentScheduleBL(huShipmentScheduleBL)
+				.shipmentScheduleBL(shipmentScheduleBL)
+				.pickingJobRepository(pickingJobRepository);
+
+		scheduleId2JobIds.values().stream()
+				.flatMap(List::stream)
+				.collect(ImmutableSet.toImmutableSet())
+				.stream()
+				.map(this::getById)
+				.filter(pickingJob -> pickingJob.getPickedHuIds()
+						.stream()
+						.anyMatch(huId -> request.getHuIds().contains(huId)))
+				.map(job -> commandBuilder
+						.jobToReopen(job)
+						.huIdsToPick(request.getHuInfoList())
+						.build())
+				.forEach(PickingJobReopenCommand::execute);
 	}
 }

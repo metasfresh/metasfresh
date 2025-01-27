@@ -22,16 +22,20 @@
 
 package de.metas.shipper.gateway.dhl.model;
 
-import de.metas.util.Check;
+import de.metas.mpackage.PackageId;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
 @Value
+@AllArgsConstructor
+@Builder(toBuilder = true)
 public class DhlCustomDeliveryDataDetail
 {
-	int packageId;
+	@NonNull PackageId packageId;
 
 	@Nullable
 	DhlSequenceNumber sequenceNumber;
@@ -47,34 +51,7 @@ public class DhlCustomDeliveryDataDetail
 
 	boolean internationalDelivery;
 
-	//	@Nullable
-	//	DhlCustomsDocument customsDocument;
-
-	@Builder(toBuilder = true)
-	private DhlCustomDeliveryDataDetail(
-			final int packageId,
-			@Nullable final DhlSequenceNumber sequenceNumber,
-			@Nullable final byte[] pdfLabelData,
-			@Nullable final String awb,
-			@Nullable final String trackingUrl,
-			final boolean internationalDelivery
-			//			@Nullable final DhlCustomsDocument customsDocument
-	)
-	{
-		Check.assumeGreaterThanZero(packageId, "packageId");
-
-		this.packageId = packageId;
-		this.sequenceNumber = sequenceNumber;
-		this.pdfLabelData = pdfLabelData;
-		this.awb = awb;
-		this.trackingUrl = trackingUrl;
-		this.internationalDelivery = internationalDelivery;
-//		if (internationalDelivery && customsDocument == null)
-//		{
-//			throw new AdempiereException("International delivery must have a valid Customs Document");
-//		}
-//		this.customsDocument = customsDocument;
-	}
-
+	@Nullable
+	DhlCustomsDocument customsDocument;
 }
 

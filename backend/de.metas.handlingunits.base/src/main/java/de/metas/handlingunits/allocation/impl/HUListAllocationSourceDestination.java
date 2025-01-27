@@ -24,6 +24,8 @@ package de.metas.handlingunits.allocation.impl;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
@@ -48,8 +50,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 

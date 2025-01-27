@@ -1,23 +1,21 @@
 package de.metas.invoice.order.restart;
 
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
+import de.metas.order.OrderId;
+import de.metas.util.RelatedRecordsProvider;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.order.OrderId;
-import de.metas.util.RelatedRecordsProvider;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.List;
 
 /*
  * #%L

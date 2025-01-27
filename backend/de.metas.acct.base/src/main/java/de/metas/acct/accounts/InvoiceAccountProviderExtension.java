@@ -65,7 +65,7 @@ public class InvoiceAccountProviderExtension implements AccountProviderExtension
 	{
 		return invoiceAccounts.getElementValueId(acctSchemaId, acctType.getAccountConceptualName(), invoiceAndLineId)
 				.map(elementValueId -> getOrCreateAccount(elementValueId, acctSchemaId))
-				.map(id -> Account.of(id, acctType.getAccountConceptualName()));
+				.map(id -> Account.of(id, acctType));
 	}
 
 	@Override
@@ -94,7 +94,7 @@ public class InvoiceAccountProviderExtension implements AccountProviderExtension
 			@NonNull final ElementValueId elementValueId,
 			@NonNull final AcctSchemaId acctSchemaId)
 	{
-		return accountDAO.getOrCreate(
+		return accountDAO.getOrCreateOutOfTrx(
 				AccountDimension.builder()
 						.setAcctSchemaId(acctSchemaId)
 						.setC_ElementValue_ID(elementValueId.getRepoId())

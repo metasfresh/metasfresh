@@ -18,9 +18,11 @@ package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.Account;
+import de.metas.acct.AccountConceptualName;
 import de.metas.acct.accounts.BPartnerCustomerAccountType;
 import de.metas.acct.accounts.BPartnerGroupAccountType;
 import de.metas.acct.accounts.BPartnerVendorAccountType;
+import de.metas.acct.accounts.TaxAcctType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
@@ -1206,11 +1208,15 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 	 */
 	private void addInvoiceFact(final I_Fact_Acct fact)
 	{
-		if (fact.getC_Tax_ID() > 0)
+		final AccountConceptualName accountConceptualName = AccountConceptualName.ofString(fact.getAccountConceptualName());
+
+		if (TaxAcctType.isInvoiceTax(accountConceptualName))
 		{
+			Check.assume(fact.getC_Tax_ID() > 0, "tax line shall have C_Tax_ID set");
 			_invoiceTaxFacts.add(fact);
 		}
-		else
+		else if (BPartnerVendorAccountType.isVendorLiability(accountConceptualName)
+				|| BPartnerCustomerAccountType.isCustomerReceivable(accountConceptualName))
 		{
 			Check.assumeNull(_invoiceGrandTotalFact, "only one invoice grand total fact line set");
 			_invoiceGrandTotalFact = fact;

@@ -21,6 +21,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.common.util.time.SystemTime;
 import de.metas.costing.ChargeId;
 import de.metas.costing.impl.ChargeRepository;
@@ -47,10 +48,12 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.BPartnerInvoicingInfo;
+import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoicePaymentStatus;
 import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
@@ -63,6 +66,7 @@ import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
@@ -103,7 +107,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.comparator.ComparatorChain;
-import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
@@ -173,10 +176,12 @@ import static de.metas.util.Check.assumeNotNull;
  */
 public abstract class AbstractInvoiceBL implements IInvoiceBL
 {
-	protected final transient Logger log = LogManager.getLogger(getClass());
+	protected final Logger log = LogManager.getLogger(getClass());
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	/**
 	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}.
@@ -354,11 +359,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		to.setIsApproved(false);
 		to.setC_Payment_ID(0);
 		to.setC_CashLine_ID(0);
-		to.setIsPaid(false);
 		to.setIsInDispute(false);
 		//
 		// Amounts are updated by trigger when adding lines
 		to.setGrandTotal(BigDecimal.ZERO);
+		Services.get(IInvoiceBL.class).setPaymentStatus(to, BigDecimal.ZERO, InvoicePaymentStatus.NOT_PAID);
 		to.setTotalLines(BigDecimal.ZERO);
 		//
 		to.setIsTransferred(false);
@@ -508,73 +513,91 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	@Override
 	public final boolean testAllocation(final org.compiere.model.I_C_Invoice invoice, final boolean ignoreProcessed)
 	{
-		boolean change = false;
-
-		if (invoice.isProcessed() || ignoreProcessed)
+		// Skip if not processed
+		if (!invoice.isProcessed() && !ignoreProcessed)
 		{
-			BigDecimal alloc = Services.get(IAllocationDAO.class).retrieveAllocatedAmt(invoice); // absolute
-			final boolean hasAllocations = alloc != null; // metas: tsa: 01955
-			if (alloc == null)
-			{
-				alloc = BigDecimal.ZERO;
-			}
-			BigDecimal total = invoice.getGrandTotal();
-			// metas: tsa: begin: 01955:
-			// If is an zero invoice, it has no allocations and the AutoPayZeroAmt is not set
-			// then don't touch the invoice
-			if (total.signum() == 0 && !hasAllocations
-					&& !Services.get(ISysConfigBL.class).getBooleanValue(AbstractInvoiceBL.SYSCONFIG_AutoPayZeroAmt, true, invoice.getAD_Client_ID()))
-			{
-				// don't touch the IsPaid flag, return not changed
-				return false;
-			}
-			// metas: tsa: end: 01955
-			if (!invoice.isSOTrx())
-			{
-				total = total.negate();
-			}
-			if (isCreditMemo(invoice))
-			{
-				total = total.negate();
-			}
-
-			final boolean test = total.compareTo(alloc) == 0;
-			change = test != invoice.isPaid();
-			if (change)
-			{
-				invoice.setIsPaid(test);
-			}
-
-			log.debug("IsPaid={} (allocated={}, invoiceGrandTotal={})", test, alloc, total);
+			return false; // not changed
 		}
 
-		return change;
+		final InvoiceTotal invoiceGrandTotal = extractGrandTotal(invoice);
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+		final Money allocatedAmt = allocationDAO.retrieveAllocatedAmtAsMoney(invoiceId).orElse(null);
+		final boolean hasAllocations = allocatedAmt != null;
+
+		// If is a zero invoice, it has no allocations and the AutoPayZeroAmt is not set
+		// then don't touch the invoice
+		if (invoiceGrandTotal.isZero()
+				&& !hasAllocations
+				&& !sysConfigBL.getBooleanValue(AbstractInvoiceBL.SYSCONFIG_AutoPayZeroAmt, true, invoice.getAD_Client_ID()))
+		{
+			// don't touch the IsPaid flag, return not changed
+			return false;
+		}
+
+		final InvoiceTotal openAmt = invoiceGrandTotal.subtractRealValue(allocatedAmt);
+		final InvoicePaymentStatus paymentStatus = computePaymentStatus(openAmt.toMoney(), hasAllocations);
+		return setPaymentStatus(invoice, openAmt.toBigDecimal(), paymentStatus);
 	}    // testAllocation
 
-	/**
-	 * Gets Invoice Grand Total (absolute value).
-	 */
-	public final BigDecimal getGrandTotalAbs(final org.compiere.model.I_C_Invoice invoice)
+	@NonNull
+	private static InvoicePaymentStatus computePaymentStatus(@NonNull final Money openAmt, final boolean hasAllocations)
 	{
-		BigDecimal grandTotal = invoice.getGrandTotal();
-		if (grandTotal.signum() == 0)
+		if (!hasAllocations)
 		{
-			return grandTotal;
+			return InvoicePaymentStatus.NOT_PAID;
+		}
+		else if (openAmt.signum() == 0)
+		{
+			return InvoicePaymentStatus.FULLY_PAID;
+		}
+		else
+		{
+			return InvoicePaymentStatus.PARTIALLY_PAID;
+		}
+	}
+
+	@Override
+	public boolean setPaymentStatus(
+			@NonNull final org.compiere.model.I_C_Invoice invoice,
+			@NonNull final BigDecimal openAmt,
+			@NonNull final InvoicePaymentStatus paymentStatus)
+	{
+		final boolean isOpenAmtChanged = openAmt.compareTo(invoice.getOpenAmt()) != 0;
+		if (isOpenAmtChanged)
+		{
+			invoice.setOpenAmt(openAmt);
 		}
 
-		// AP/AR adjustment
-		if (!invoice.isSOTrx())
+		final boolean isFullyPaidChanged = paymentStatus.isFullyPaid() != invoice.isPaid();
+		if (isFullyPaidChanged)
 		{
-			grandTotal = grandTotal.negate();
+			invoice.setIsPaid(paymentStatus.isFullyPaid());
 		}
 
-		// CM adjustment
-		if (isCreditMemo(invoice))
+		final boolean isPartiallyPaidChanged = paymentStatus.isPartiallyPaid() != invoice.isPartiallyPaid();
+		if (isPartiallyPaidChanged)
 		{
-			grandTotal = grandTotal.negate();
+			invoice.setIsPartiallyPaid(paymentStatus.isPartiallyPaid());
 		}
 
-		return grandTotal;
+		return isOpenAmtChanged || isFullyPaidChanged || isPartiallyPaidChanged;
+	}
+
+	protected final InvoiceTotal extractGrandTotal(final org.compiere.model.I_C_Invoice invoice)
+	{
+		final Money grandTotal = Money.of(invoice.getGrandTotal(), CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
+		final InvoiceAmtMultiplier multiplier = getInvoiceAmtMultiplier(invoice);
+		return InvoiceTotal.ofRelativeValue(grandTotal, multiplier);
+	}
+
+	private InvoiceAmtMultiplier getInvoiceAmtMultiplier(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		return InvoiceAmtMultiplier.builder()
+				.soTrx(SOTrx.ofBoolean(invoice.isSOTrx()))
+				.isCreditMemo(isCreditMemo(invoice))
+				.isSOTrxAdjusted(false)
+				.isCreditMemoAdjusted(false)
+				.build();
 	}
 
 	@Override
@@ -1872,8 +1895,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 	@Override
 	public final void allocateCreditMemo(final I_C_Invoice invoice,
-			final I_C_Invoice creditMemo,
-			final BigDecimal openAmt)
+										 final I_C_Invoice creditMemo,
+										 final BigDecimal openAmt)
 	{
 		final Timestamp dateTrx = TimeUtil.max(invoice.getDateInvoiced(), creditMemo.getDateInvoiced());
 		final Timestamp dateAcct = TimeUtil.max(invoice.getDateAcct(), creditMemo.getDateAcct());

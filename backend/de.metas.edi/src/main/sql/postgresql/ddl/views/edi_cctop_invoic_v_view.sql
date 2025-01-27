@@ -94,9 +94,10 @@ FROM C_Invoice i
          LEFT JOIN LATERAL ( SELECT io.DocumentNo,
                                     io.MovementDate
                              FROM M_InOut io
+                             left join c_invoice inv on io.m_inout_id = inv.m_inout_id and inv.c_invoice_id=i.c_invoice_id 
                              WHERE io.C_Order_ID = o.C_Order_ID
                                AND io.DocStatus IN ('CO', 'CL')
-                             ORDER BY io.Created
+                             ORDER BY inv.c_invoice_id NULLS last,io.Created
                              LIMIT 1 ) shipment ON TRUE -- for the case of missing EDI_Desadv, we still get the first M_InOut; DESADV can be switched off for individual C_BPartners
          LEFT JOIN C_BPartner rbp ON rbp.C_BPartner_ID = i.C_BPartner_ID
          LEFT JOIN C_BPartner_Location rl ON rl.C_BPartner_Location_ID = i.C_BPartner_Location_ID

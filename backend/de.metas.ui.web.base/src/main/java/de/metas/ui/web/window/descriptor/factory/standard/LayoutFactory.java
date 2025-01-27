@@ -260,6 +260,7 @@ public class LayoutFactory
 		return DocumentLayoutSingleRow.builder()
 				.setCaption(entityDescriptor.getCaption())
 				.setDescription(entityDescriptor.getDescription())
+				.notFoundMessages(entityDescriptor.getNotFoundMessages())
 				.addSections(layoutSectionsList);
 	}
 
@@ -525,7 +526,7 @@ public class LayoutFactory
 	}
 
 	/**
-	 * Task https://github.com/metasfresh/metasfresh-webui-api/issues/778
+	 * @implSpec task <a href="https://github.com/metasfresh/metasfresh-webui-api/issues/778">778</a>
 	 */
 	private ViewEditorRenderMode computeViewEditorRenderMode(
 			@NonNull final I_AD_UI_Element uiElement,

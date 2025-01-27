@@ -5,11 +5,9 @@ import ConfirmButton from '../../../components/buttons/ConfirmButton';
 import { toastError } from '../../../utils/toast';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { appLaunchersLocation } from '../../../routes/launchers';
 import { setActivityProcessing, updateWFProcess } from '../../../actions/WorkflowActions';
 
 const ConfirmActivity = ({
-  applicationId,
   wfProcessId,
   activityId,
   caption,
@@ -30,7 +28,7 @@ const ConfirmActivity = ({
       })
       .then(() => {
         if (isLastActivity) {
-          history.push(appLaunchersLocation({ applicationId }));
+          history.go(-1);
         }
       })
       .catch((axiosError) => toastError({ axiosError }))

@@ -1,14 +1,17 @@
 package de.metas.handlingunits;
 
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Package;
-
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Package_HU;
+import de.metas.mpackage.PackageId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Package;
+
+import java.util.Collection;
 
 public interface IHUPackageBL extends ISingletonService
 {
@@ -36,4 +39,10 @@ public interface IHUPackageBL extends ISingletonService
 	 * This is the counterpart method of {@link #assignShipmentToPackages(I_M_HU, I_M_InOut, String)}.
 	 */
 	void unassignShipmentFromPackages(I_M_InOut shipment);
+
+	/**
+     * @return the {@code POReference}-values of the given  {@code M_Packages}, separated by comma.
+     */
+	@NonNull
+	String getPOReference(@NonNull Collection<PackageId> packageIds);
 }

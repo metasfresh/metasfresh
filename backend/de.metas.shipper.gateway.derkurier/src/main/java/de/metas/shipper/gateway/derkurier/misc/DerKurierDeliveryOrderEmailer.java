@@ -9,6 +9,7 @@ import de.metas.email.MailService;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.i18n.IMsgBL;
 import de.metas.shipper.gateway.derkurier.DerKurierConstants;
+import de.metas.shipper.gateway.derkurier.DerKurierDeliveryOrderService;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;

@@ -1,11 +1,13 @@
 package de.metas.banking.accounting;
 
+import de.metas.acct.AccountConceptualNameAware;
 import de.metas.acct.AccountConceptualName;
 import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.model.I_C_BP_BankAccount_Acct;
 
-public enum BankAccountAcctType
+@Getter
+public enum BankAccountAcctType implements AccountConceptualNameAware
 {
 
 	/**
