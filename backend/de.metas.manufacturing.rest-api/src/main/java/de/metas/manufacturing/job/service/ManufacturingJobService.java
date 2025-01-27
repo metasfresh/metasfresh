@@ -35,8 +35,8 @@ import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
 import de.metas.manufacturing.job.model.ReceivingTarget;
 import de.metas.manufacturing.job.model.ScaleDevice;
 import de.metas.manufacturing.job.service.commands.ReceiveGoodsCommand;
+import de.metas.manufacturing.job.service.commands.SelectedReceivingTarget;
 import de.metas.manufacturing.job.service.commands.create_job.ManufacturingJobCreateCommand;
-import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonReceivingTarget;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderTargetPlanningStatus;
 import de.metas.organization.IOrgDAO;
@@ -539,7 +539,7 @@ public class ManufacturingJobService
 	public ManufacturingJob receiveGoods(
 			@NonNull final ManufacturingJob job,
 			@NonNull final FinishedGoodsReceiveLineId lineId,
-			@NonNull final JsonReceivingTarget receivingTarget,
+			@NonNull final SelectedReceivingTarget receivingTarget,
 			@NonNull final BigDecimal qtyToReceiveBD,
 			@NonNull final ZonedDateTime date)
 	{

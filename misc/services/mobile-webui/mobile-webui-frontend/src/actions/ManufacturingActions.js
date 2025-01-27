@@ -1,7 +1,8 @@
 import {
   UPDATE_MANUFACTURING_ISSUE_QTY,
   UPDATE_MANUFACTURING_RECEIPT_QTY,
-  UPDATE_MANUFACTURING_RECEIPT_TARGET,
+  UPDATE_MANUFACTURING_LU_RECEIPT_TARGET,
+  UPDATE_MANUFACTURING_TU_RECEIPT_TARGET,
 } from '../constants/ManufacturingActionTypes';
 
 import { getLineById, getWfProcess } from '../reducers/wfProcesses';
@@ -72,9 +73,16 @@ export const updateManufacturingIssue = ({
   };
 };
 
-export const updateManufacturingReceiptTarget = ({ wfProcessId, activityId, lineId, target }) => {
+export const updateManufacturingLUReceiptTarget = ({ wfProcessId, activityId, lineId, target }) => {
   return {
-    type: UPDATE_MANUFACTURING_RECEIPT_TARGET,
+    type: UPDATE_MANUFACTURING_LU_RECEIPT_TARGET,
+    payload: { wfProcessId, activityId, lineId, target },
+  };
+};
+
+export const updateManufacturingTUReceiptTarget = ({ wfProcessId, activityId, lineId, target }) => {
+  return {
+    type: UPDATE_MANUFACTURING_TU_RECEIPT_TARGET,
     payload: { wfProcessId, activityId, lineId, target },
   };
 };
@@ -82,27 +90,36 @@ export const updateManufacturingReceiptTarget = ({ wfProcessId, activityId, line
 export const updateManufacturingReceiptQty = ({ wfProcessId, activityId, lineId, qtyReceived }) => {
   console.log('updateManufacturingReceiptQty', { wfProcessId, activityId, lineId, qtyReceived });
   return (dispatch, getState) => {
-    const aggregateToLU = getAggregateToLUTarget({ globalState: getState(), wfProcessId, activityId, lineId });
+    const { aggregateToLU, aggregateToTU } = getAggregateTarget({
+      globalState: getState(),
+      wfProcessId,
+      activityId,
+      lineId,
+    });
     return postManufacturingReceiveEvent({
       wfProcessId,
       activityId,
-      receiveFrom: { lineId, aggregateToLU, qtyReceived },
+      receiveFrom: { lineId, aggregateToLU, aggregateToTU, qtyReceived },
     }) //
       .then((response) => {
         dispatch({ type: UPDATE_MANUFACTURING_RECEIPT_QTY, payload: { wfProcessId, activityId, lineId, qtyReceived } });
-        dispatch(updateManufacturingReceiptTarget({ wfProcessId, activityId, lineId, target: response.existingLU }));
+        dispatch(updateManufacturingLUReceiptTarget({ wfProcessId, activityId, lineId, target: response.existingLU }));
       });
   };
 };
 
-const getAggregateToLUTarget = ({ globalState, wfProcessId, activityId, lineId }) => {
+const getAggregateTarget = ({ globalState, wfProcessId, activityId, lineId }) => {
   const line = getLineById(globalState, wfProcessId, activityId, lineId);
   if (line.aggregateToLU != null) {
-    return line.aggregateToLU;
+    return { aggregateToLU: line.aggregateToLU };
   } else if (line.currentReceivingHU) {
     return {
-      existingLU: line.currentReceivingHU,
+      aggregateToLU: {
+        existingLU: line.currentReceivingHU,
+      },
     };
+  } else if (line.aggregateToTU) {
+    return { aggregateToTU: line.aggregateToTU };
   } else {
     // shall not happen
     throw 'No target found';
