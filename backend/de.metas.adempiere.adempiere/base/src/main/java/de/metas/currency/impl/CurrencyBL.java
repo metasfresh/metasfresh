@@ -38,6 +38,7 @@ import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.LocalDateAndOrgId;
@@ -51,6 +52,7 @@ import org.compiere.util.Env;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -504,5 +506,35 @@ public class CurrencyBL implements ICurrencyBL
 				.orgId(conversionCtx.getOrgId())
 				.conversionDate(conversionCtx.getConversionDate())
 				.conversionTypeId(conversionCtx.getConversionTypeId());
+	}
+
+	@Override
+	public Money convert(
+			@NonNull final Money amount,
+			@NonNull final CurrencyId toCurrencyId,
+			@NonNull final LocalDate conversionDate,
+			@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		if (CurrencyId.equals(amount.getCurrencyId(), toCurrencyId))
+		{
+			return amount;
+		}
+		else if(amount.isZero())
+		{
+			return Money.zero(toCurrencyId);
+		}
+
+		final CurrencyConversionContext conversionCtx = createCurrencyConversionContext(
+				LocalDateAndOrgId.ofLocalDate(conversionDate, clientAndOrgId.getOrgId()),
+				(CurrencyConversionTypeId)null,
+				clientAndOrgId.getClientId());
+
+		final CurrencyConversionResult conversionResult = convert(
+				conversionCtx,
+				amount.toBigDecimal(),
+				amount.getCurrencyId(),
+				toCurrencyId);
+
+		return Money.of(conversionResult.getAmount(), toCurrencyId);
 	}
 }

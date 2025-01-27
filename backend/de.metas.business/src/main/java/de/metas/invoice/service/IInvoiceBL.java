@@ -41,6 +41,7 @@ import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.InvoicePaymentStatus;
 import de.metas.invoice.service.impl.AdjustmentChargeCreateRequest;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -211,7 +212,7 @@ public interface IInvoiceBL extends ISingletonService {
      *
      * @param invoice         the invoice to be checked
      * @param ignoreProcessed if true, then the change will be done even if the given <code>invoice</code> currently still have <code>Processed='N'</code>.
-     * @return true if the isPaid value was changed
+     * @return true if the isPaid value or isPartiallyPaid value or openAmt value was changed
      */
     boolean testAllocation(I_C_Invoice invoice, boolean ignoreProcessed);
 
@@ -227,7 +228,15 @@ public interface IInvoiceBL extends ISingletonService {
             LocalDate dateInvoiced,
             LocalDate dateAcct);
 
-    void setFromOrder(I_C_Invoice invoice, I_C_Order order);
+	/**
+	 * @return true if there was any change
+	 */
+	boolean setPaymentStatus(
+			@NonNull I_C_Invoice invoice,
+			@NonNull BigDecimal openAmt,
+			@NonNull InvoicePaymentStatus paymentStatus);
+
+	void setFromOrder(I_C_Invoice invoice, I_C_Order order);
 
     void updateFromBPartner(I_C_Invoice invoice);
 
