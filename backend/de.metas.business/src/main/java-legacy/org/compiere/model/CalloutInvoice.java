@@ -24,7 +24,9 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapter;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.lang.SOTrx;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -33,7 +35,9 @@ import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.security.IUserRolePermissions;
+import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.LegacyUOMConversionUtils;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -42,6 +46,7 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -71,6 +76,8 @@ public class CalloutInvoice extends CalloutEngine
 	private static final String MSG_UnderLimitPrice = "UnderLimitPrice";
 
 	protected static final String SYS_Config_C_Invoice_SOTrx_OnlyAllowBillToDefault_Contact = "C_Invoice.SOTrx_OnlyAllowBillToDefault_Contact";
+	
+	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 
 	/**
 	 * Invoice Header- BPartner.
@@ -179,7 +186,7 @@ public class CalloutInvoice extends CalloutEngine
 					}
 				}
 				// Payment Term
-				final int paymentTermId = new Integer(rs.getInt(isSOTrx ? "C_PaymentTerm_ID" : "PO_PaymentTerm_ID"));
+				final int paymentTermId = rs.getInt(isSOTrx ? "C_PaymentTerm_ID" : "PO_PaymentTerm_ID");
 				if (!rs.wasNull())
 				{
 					invoice.setC_PaymentTerm_ID(paymentTermId);
@@ -509,22 +516,25 @@ public class CalloutInvoice extends CalloutEngine
 		log.debug("Warehouse={}", warehouseID);
 
 		//
-		final int taxID = Tax.get(ctx, productID, chargeID, billDate,
-								  shipDate, orgID, warehouseID,
-								  billBPartnerLocationID,
-								  shipBPartnerLocationID,
-								  invoice.isSOTrx());
-
-		log.debug("Tax ID={}", taxID);
+		final TaxId taxID = taxBL.getTaxNotNull(invoice, 
+				null,
+				productID,
+				shipDate,
+				OrgId.ofRepoId(orgID),
+				WarehouseId.ofRepoIdOrNull(warehouseID),
+				shipBPartnerLocationID,
+				SOTrx.ofBoolean(invoice.isSOTrx()));
+		
+		log.debug("C_Tax_ID={}", taxID.getRepoId());
 
 		//
-		if (taxID <= 0)
+		if (taxID.isNoTaxId())
 		{
 			calloutField.fireDataStatusEEvent(MetasfreshLastError.retrieveError());
 		}
 		else
 		{
-			invoiceLine.setC_Tax_ID(taxID);
+			invoiceLine.setC_Tax_ID(taxID.getRepoId());
 		}
 		//
 		return amt(calloutField);
