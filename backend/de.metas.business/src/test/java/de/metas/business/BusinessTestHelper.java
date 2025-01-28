@@ -94,8 +94,14 @@ public class BusinessTestHelper
 
 	public CountryId createCountry(@NonNull final String countryCode)
 	{
+		return createCountry(countryCode, null);
+	}
+
+	public CountryId createCountry(@NonNull final String countryCode, @Nullable final String adLanguage)
+	{
 		final I_C_Country record = newInstance(I_C_Country.class);
 		record.setCountryCode(countryCode);
+		record.setAD_Language(adLanguage);
 		POJOWrapper.setInstanceName(record, countryCode);
 		saveRecord(record);
 		return CountryId.ofRepoId(record.getC_Country_ID());
