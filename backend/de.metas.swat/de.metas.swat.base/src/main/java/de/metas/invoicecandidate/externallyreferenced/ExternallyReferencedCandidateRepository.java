@@ -3,7 +3,7 @@ package de.metas.invoicecandidate.externallyreferenced;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.document.DocTypeId;
 import de.metas.invoice.detail.InvoiceDetailItem;
@@ -239,11 +239,13 @@ public class ExternallyReferencedCandidateRepository
 				.externalLineId(ExternalId.ofOrNull(icRecord.getExternalLineId()));
 
 		candidate.poReference(icRecord.getPOReference());
+		final BPartnerLocationAndCaptureId billLocation = invoiceCandBL.getBillLocationId(icRecord, false);
+		
+		final BPartnerId bpartnerId = billLocation.getBpartnerId();
 
-		final BPartnerId bpartnerId = BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID());
 		final BPartnerInfo bpartnerInfo = BPartnerInfo.builder()
-				.bpartnerId(bpartnerId)
-				.bpartnerLocationId(BPartnerLocationId.ofRepoId(bpartnerId, icRecord.getBill_Location_ID()))
+				.bpartnerId(billLocation.getBpartnerId())
+				.bpartnerLocationId(billLocation.getBpartnerLocationId())
 				.contactId(BPartnerContactId.ofRepoIdOrNull(bpartnerId, icRecord.getBill_User_ID()))
 				.build();
 		candidate.billPartnerInfo(bpartnerInfo);
