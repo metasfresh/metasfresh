@@ -1,5 +1,6 @@
 package de.metas.handlingunits.pporder.api;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -16,8 +17,8 @@ import org.eevolution.api.PPCostCollectorId;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.List;
 import java.util.Set;
+import java.util.List;
 
 /**
  * Generates manufacturing receipt candidates ({@link I_PP_Order_Qty}) together with the planning HUs.
@@ -69,4 +70,6 @@ public interface IPPOrderReceiptHUProducer
 	List<I_M_HU> receiveIndividualPlanningCUs(@NonNull Quantity qtyToReceive);
 
 	IPPOrderReceiptHUProducer withPPOrderLocatorId();
+
+	ImmutableList<I_M_HU> receiveTUs(@NonNull Quantity qtyToReceive, @NonNull HUPIItemProductId tuPIItemProductId);
 }

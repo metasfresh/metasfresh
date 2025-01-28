@@ -247,8 +247,7 @@ abstract class AbstractPPOrderReceiptHUProducer implements IPPOrderReceiptHUProd
 			@NonNull final HUPIItemProductId tuPIItemProductId,
 			@NonNull final I_M_HU existingLU)
 	{
-		final ReceiptCandidatesAndHUs tusResult = receiveTUs(qtyToReceive, tuPIItemProductId);
-		final ImmutableList<I_M_HU> tusOrVhus = tusResult.getHus();
+		final ImmutableList<I_M_HU> tusOrVhus = receiveTUs(qtyToReceive, tuPIItemProductId);
 		final HuId luId = HUTransformService.newInstance().tusToExistingLU(tusOrVhus, existingLU);
 
 		return ReceiveTUsToLUResult.builder()
@@ -257,9 +256,9 @@ abstract class AbstractPPOrderReceiptHUProducer implements IPPOrderReceiptHUProd
 				.build();
 	}
 
-	private ReceiptCandidatesAndHUs receiveTUs(@NonNull final Quantity qtyToReceive, @NonNull final HUPIItemProductId tuPIItemProductId)
+	public ImmutableList<I_M_HU> receiveTUs(@NonNull final Quantity qtyToReceive, @NonNull final HUPIItemProductId tuPIItemProductId)
 	{
-		return receiveHUs(qtyToReceive, StandardLUTUSpec.TUs_or_CUs(tuPIItemProductId));
+		return receiveHUs(qtyToReceive, StandardLUTUSpec.TUs_or_CUs(tuPIItemProductId)).getHus();
 	}
 
 	private ReceiptCandidatesAndHUs receiveHUs(@NonNull final Quantity qtyToReceive, @NonNull final LUTUSpec lutuSpec)

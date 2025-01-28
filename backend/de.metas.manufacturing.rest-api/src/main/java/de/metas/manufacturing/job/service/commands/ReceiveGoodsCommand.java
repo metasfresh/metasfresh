@@ -10,12 +10,13 @@ import de.metas.handlingunits.pporder.api.ReceiveTUsToLUResult;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
+import de.metas.i18n.AdMessageKey;
 import de.metas.manufacturing.job.model.ReceivingTarget;
 import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaver;
 import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaverSupportingServices;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonHUQRCodeTarget;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewLUTarget;
-import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonReceivingTarget;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewTUTarget;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -32,9 +33,11 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 public class ReceiveGoodsCommand
 {
+	private static final AdMessageKey ONLY_RECEIVE_TO_EXISTING_LU_IS_SUPPORTED = AdMessageKey.of("de.metas.manufacturing.job.service.commands.ONLY_RECEIVE_TO_EXISTING_LU_IS_SUPPORTED");
 
 	//
 	// Services
@@ -47,7 +50,7 @@ public class ReceiveGoodsCommand
 	// Parameters
 	final @NonNull PPOrderId ppOrderId;
 	final @Nullable PPOrderBOMLineId coProductBOMLineId;
-	final @NonNull JsonReceivingTarget receivingTarget;
+	final @NonNull SelectedReceivingTarget receivingTarget;
 	final @NonNull BigDecimal qtyToReceiveBD;
 	final @NonNull ZonedDateTime date;
 
@@ -65,7 +68,7 @@ public class ReceiveGoodsCommand
 			//
 			@NonNull final PPOrderId ppOrderId,
 			@Nullable final PPOrderBOMLineId coProductBOMLineId,
-			@NonNull final JsonReceivingTarget receivingTarget,
+			@NonNull final SelectedReceivingTarget receivingTarget,
 			@NonNull final BigDecimal qtyToReceiveBD,
 			@NonNull final ZonedDateTime date)
 	{
@@ -85,13 +88,18 @@ public class ReceiveGoodsCommand
 	public ReceivingTarget execute()
 	{
 		@Nullable final ReceivingTarget receivingTarget;
-		if (this.receivingTarget.getNewLU() != null)
+		if (this.receivingTarget.getReceiveToNewLU() != null)
 		{
-			receivingTarget = receiveToNewLU(this.receivingTarget.getNewLU());
+			receivingTarget = receiveToNewLU(this.receivingTarget.getReceiveToNewLU());
 		}
-		else if (this.receivingTarget.getExistingLU() != null)
+		else if (this.receivingTarget.getReceiveToQRCode() != null)
 		{
-			receivingTarget = receiveByQRCode(this.receivingTarget.getExistingLU());
+			receivingTarget = receiveByQRCode(this.receivingTarget.getReceiveToQRCode());
+		}
+		else if (this.receivingTarget.getReceiveToNewTU() != null)
+		{
+			receiveToNewTU(this.receivingTarget.getReceiveToNewTU());
+			receivingTarget = null;
 		}
 		else
 		{
@@ -138,7 +146,7 @@ public class ReceiveGoodsCommand
 			}
 			else
 			{
-				throw new AdempiereException("Receiving to existing HUs which are not LU is not supported");
+				throw new AdempiereException(ONLY_RECEIVE_TO_EXISTING_LU_IS_SUPPORTED);
 			}
 		}
 	}
@@ -272,5 +280,16 @@ public class ReceiveGoodsCommand
 			ManufacturingJobLoaderAndSaver.updateRecordFromReceivingTarget(ppOrder, receivingTarget);
 			ppOrderBL.save(ppOrder);
 		}
+	}
+	
+	private void receiveToNewTU(@NonNull final JsonNewTUTarget newTUTarget)
+	{
+		receiveTUs(newTUTarget.getTuPIItemProductId());
+	}
+
+	@NonNull
+	private List<I_M_HU> receiveTUs(@NonNull final HUPIItemProductId tuPIItemProductId)
+	{
+		return newHUProducer().receiveTUs(getQtyToReceive(), tuPIItemProductId);
 	}
 }

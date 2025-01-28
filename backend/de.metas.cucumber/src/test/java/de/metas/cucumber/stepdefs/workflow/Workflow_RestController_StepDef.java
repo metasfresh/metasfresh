@@ -39,8 +39,8 @@ import de.metas.cucumber.stepdefs.workflow.dto.JsonWFManufacturingStep;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonLUReceivingTarget;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewLUTarget;
-import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonReceivingTarget;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
 import de.metas.util.Services;
@@ -227,7 +227,7 @@ public class Workflow_RestController_StepDef
 					.receiveFrom(JsonManufacturingOrderEvent.ReceiveFrom.builder()
 							.lineId(workflowLine.getId())
 							.qtyReceived(workflowLine.getQtyToReceive())
-							.aggregateToLU(JsonReceivingTarget.builder()
+							.aggregateToLU(JsonLUReceivingTarget.builder()
 									.newLU(JsonNewLUTarget.builder()
 											.luCaption(receivingTargetValues.getLuCaption())
 											.tuCaption(receivingTargetValues.getTuCaption())

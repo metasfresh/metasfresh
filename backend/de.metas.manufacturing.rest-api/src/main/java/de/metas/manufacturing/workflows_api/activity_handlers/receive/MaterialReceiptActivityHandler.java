@@ -21,6 +21,8 @@ import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonF
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonHUQRCodeTargetConverters;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewLUTarget;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewLUTargetsList;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewTUTarget;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewTUTargetList;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.allergen.ProductAllergensService;
@@ -94,6 +96,14 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 			@Nullable final BPartnerId customerId,
 			@NonNull final JsonOpts jsonOpts)
 	{
+		final List<I_M_HU_PI_Item_Product> tuPIItemProducts = huPIItemProductDAO.retrieveTUs(
+				Env.getCtx(),
+				line.getProductId(),
+				customerId,
+				false);
+
+		final JsonNewTUTargetList tuTargetList = getNewTUTargets(tuPIItemProducts);
+		final JsonNewLUTargetsList newLUTargets = getNewLUTargets(tuPIItemProducts, line.getProductId(), customerId);
 		final String adLanguage = jsonOpts.getAdLanguage();
 
 		return JsonFinishedGoodsReceiveLine.builder()
@@ -106,7 +116,8 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 				.qtyToReceive(line.getQtyToReceive().toBigDecimal())
 				.qtyReceived(line.getQtyReceived().toBigDecimal())
 				.currentReceivingHU(JsonHUQRCodeTargetConverters.fromNullable(line.getReceivingTarget(), huQRCodeService))
-				.availableReceivingTargets(getNewLUTargets(line.getProductId(), customerId))
+				.availableReceivingTargets(newLUTargets)
+				.availableReceivingTUTargets(tuTargetList)
 				.build();
 	}
 
@@ -127,9 +138,11 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	}
 
 	@NonNull
-	private JsonNewLUTargetsList getNewLUTargets(@NonNull final ProductId productId, final @Nullable BPartnerId customerId)
+	private JsonNewLUTargetsList getNewLUTargets(
+			@NonNull final List<I_M_HU_PI_Item_Product> tuPIItemProducts,
+			@NonNull final ProductId productId,
+			@Nullable final BPartnerId customerId)
 	{
-		final List<I_M_HU_PI_Item_Product> tuPIItemProducts = huPIItemProductDAO.retrieveTUs(Env.getCtx(), productId, customerId, false);
 		if (tuPIItemProducts.isEmpty())
 		{
 			return JsonNewLUTargetsList.emptyBecause("No CU/TU associations found for "
@@ -182,5 +195,20 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity wfActivity)
 	{
 		return wfActivity.getStatus();
+	}
+
+	@NonNull
+	private JsonNewTUTargetList getNewTUTargets(@NonNull final List<I_M_HU_PI_Item_Product> tuPIItemProducts)
+	{
+		final List<JsonNewTUTarget> newTUTargets = tuPIItemProducts.stream()
+				.map(target -> JsonNewTUTarget.builder()
+						.caption(target.getName())
+						.tuPIItemProductId(HUPIItemProductId.ofRepoId(target.getM_HU_PI_Item_Product_ID()))
+						.build())
+				.collect(ImmutableList.toImmutableList());
+
+		return JsonNewTUTargetList.builder()
+				.values(newTUTargets)
+				.build();
 	}
 }

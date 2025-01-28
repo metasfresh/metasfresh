@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { trl } from '../../../../utils/translations';
@@ -12,6 +12,7 @@ import { getActivityById, getLineByIdFromActivity } from '../../../../reducers/w
 import PickQuantityButton from './PickQuantityButton';
 import { toQRCodeDisplayable } from '../../../../utils/qrCode/hu';
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
+import Spinner from '../../../../components/Spinner';
 
 const MaterialReceiptLineScreen = () => {
   const {
@@ -22,8 +23,9 @@ const MaterialReceiptLineScreen = () => {
   const {
     activityCaption,
     userInstructions,
-    lineProps: { aggregateToLU, currentReceivingHU, productName, uom, qtyReceived, qtyToReceive },
+    lineProps: { aggregateToLU, aggregateToTU, currentReceivingHU, productName, uom, qtyReceived, qtyToReceive },
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }));
+  const [showSpinner, setShowSpinner] = useState(false);
 
   const dispatch = useDispatch();
   useEffect(() => {
@@ -61,13 +63,16 @@ const MaterialReceiptLineScreen = () => {
   const history = useHistory();
   const handleQuantityChange = (qtyReceived) => {
     // shall not happen
-    if (aggregateToLU || currentReceivingHU) {
+    if (!aggregateToLU && !currentReceivingHU && !aggregateToTU) {
       console.log('skip receiving qty because there is no target');
+      return;
     }
 
-    dispatch(updateManufacturingReceiptQty({ wfProcessId, activityId, lineId, qtyReceived }))
+    setShowSpinner(true);
+    dispatch(updateManufacturingReceiptQty({ wfProcessId, activityId, lineId, qtyReceived: Number(qtyReceived) }))
       .then(() => history.goBack())
-      .catch((axiosError) => toastError({ axiosError }));
+      .catch((axiosError) => toastError({ axiosError }))
+      .finally(() => setShowSpinner(false));
   };
 
   const handleClick = () => {
@@ -89,24 +94,30 @@ const MaterialReceiptLineScreen = () => {
       console.warn('Unhandled aggregateToLU', aggregateToLU);
       allowReceivingQty = false;
     }
+  } else if (aggregateToTU?.newTU) {
+    btnReceiveTargetCaption = aggregateToTU.newTU?.caption;
+    allowReceivingQty = true;
   } else if (currentReceivingHU) {
     btnReceiveTargetCaption = toQRCodeDisplayable(currentReceivingHU.huQRCode);
     allowReceivingQty = true;
   }
 
   return (
-    <div className="section pt-2">
-      <ButtonWithIndicator caption={btnReceiveTargetCaption} onClick={handleClick}>
-        <div className="row is-full is-size-7">{btnReceiveTargetCaption2}</div>
-      </ButtonWithIndicator>
-      <PickQuantityButton
-        qtyTarget={qtyToReceive - qtyReceived}
-        isDisabled={!allowReceivingQty}
-        onClick={handleQuantityChange}
-        uom={uom}
-        caption={trl('activities.mfg.receipts.btnReceiveProducts')}
-      />
-    </div>
+    <>
+      {showSpinner && <Spinner />}
+      <div className="section pt-2">
+        <ButtonWithIndicator caption={btnReceiveTargetCaption} onClick={handleClick}>
+          <div className="row is-full is-size-7">{btnReceiveTargetCaption2}</div>
+        </ButtonWithIndicator>
+        <PickQuantityButton
+          qtyTarget={qtyToReceive - qtyReceived}
+          isDisabled={!allowReceivingQty}
+          onClick={handleQuantityChange}
+          uom={uom}
+          caption={trl('activities.mfg.receipts.btnReceiveProducts')}
+        />
+      </div>
+    </>
   );
 };
 

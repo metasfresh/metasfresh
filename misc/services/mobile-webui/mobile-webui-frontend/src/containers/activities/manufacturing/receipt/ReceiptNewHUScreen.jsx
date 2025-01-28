@@ -3,7 +3,10 @@ import React, { useEffect } from 'react';
 import { getLineById } from '../../../../reducers/wfProcesses';
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import { useHistory, useRouteMatch } from 'react-router-dom';
-import { updateManufacturingReceiptTarget } from '../../../../actions/ManufacturingActions';
+import {
+  updateManufacturingLUReceiptTarget,
+  updateManufacturingTUReceiptTarget,
+} from '../../../../actions/ManufacturingActions';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 import { trl } from '../../../../utils/translations';
@@ -14,10 +17,11 @@ const ReceiptNewHUScreen = () => {
     params: { workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
 
-  const { availableReceivingTargets } = useSelector((state) => {
+  const { availableReceivingTargets, availableReceivingTUTargets } = useSelector((state) => {
     const line = getLineById(state, wfProcessId, activityId, lineId);
     return {
       availableReceivingTargets: line.availableReceivingTargets,
+      availableReceivingTUTargets: line.availableReceivingTUTargets,
     };
   }, shallowEqual);
 
@@ -32,17 +36,37 @@ const ReceiptNewHUScreen = () => {
   }, []);
 
   const history = useHistory();
-  const handleClick = (target) => {
-    dispatch(updateManufacturingReceiptTarget({ wfProcessId, activityId, lineId, target }));
+  const handleLUTargetClick = (target) => {
+    submitSelection(updateManufacturingLUReceiptTarget, target);
+  };
+
+  const handleTUTargetClick = (target) => {
+    submitSelection(updateManufacturingTUReceiptTarget, target);
+  };
+
+  const submitSelection = (submitFunction, target) => {
+    dispatch(submitFunction({ wfProcessId, activityId, lineId, target }));
     history.go(-2);
   };
 
   return (
     <div className="section pt-2">
       {availableReceivingTargets.values.map((target) => (
-        <ButtonWithIndicator key={target.luPIItemId} caption={target.luCaption} onClick={() => handleClick(target)}>
+        <ButtonWithIndicator
+          key={target.luPIItemId}
+          caption={target.luCaption}
+          onClick={() => handleLUTargetClick(target)}
+        >
           <div className="row is-full is-size-7">{target.tuCaption}</div>
         </ButtonWithIndicator>
+      ))}
+      {availableReceivingTUTargets?.values?.length > 0 && <br />}
+      {availableReceivingTUTargets?.values?.map((tuTarget) => (
+        <ButtonWithIndicator
+          key={tuTarget.tuPIItemProductId}
+          caption={tuTarget.caption}
+          onClick={() => handleTUTargetClick(tuTarget)}
+        />
       ))}
     </div>
   );
