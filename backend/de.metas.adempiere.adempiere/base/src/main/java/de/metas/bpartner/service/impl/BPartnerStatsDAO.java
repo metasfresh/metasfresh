@@ -110,16 +110,14 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 		BigDecimal openItems = null;
 
-		final Object[] sqlParams = new Object[] { stats.getC_BPartner_ID() };
 		final String sql = "SELECT "
-				+ "currencyBase(openamt,C_Currency_ID,DateInvoiced,AD_Client_ID,AD_Org_ID) from de_metas_endcustomer_fresh_reports.OpenItems_Report(now()::date) where  C_BPartner_ID=?";
+				+ "COALESCE((SELECT SUM(currencyBase(openamt,C_Currency_ID,DateInvoiced,AD_Client_ID,AD_Org_ID)) from de_metas_endcustomer_fresh_reports.OpenItems_Report(now()::date, " + stats.getC_BPartner_ID() + ")), 0)";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 
 		try
 		{
 			pstmt = DB.prepareStatement(sql, trxName);
-			DB.setParameters(pstmt, sqlParams);
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
@@ -128,7 +126,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		}
 		catch (final SQLException e)
 		{
-			throw new DBException(e, sql, sqlParams);
+			throw new DBException(e, sql);
 		}
 		finally
 		{
