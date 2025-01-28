@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import lombok.NonNull;
 import org.compiere.util.Util;
 import org.compiere.util.Util.ArrayKey;
 
@@ -45,7 +47,7 @@ import de.metas.util.Services;
  */
 public final class ICHeaderAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuilder<I_C_Invoice_Candidate>
 {
-	public static final transient ICHeaderAggregationKeyBuilder_OLD instance = new ICHeaderAggregationKeyBuilder_OLD();
+	public static final ICHeaderAggregationKeyBuilder_OLD instance = new ICHeaderAggregationKeyBuilder_OLD();
 
 	private static final List<String> columnNames = Arrays.asList(
 			I_C_Invoice_Candidate.COLUMNNAME_C_DocTypeInvoice_ID,
@@ -92,7 +94,7 @@ public final class ICHeaderAggregationKeyBuilder_OLD extends AbstractAggregation
 		return new AggregationKey(key, aggregationId);
 	}
 
-	private List<Object> getValues(final I_C_Invoice_Candidate ic)
+	private List<Object> getValues(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
@@ -104,8 +106,10 @@ public final class ICHeaderAggregationKeyBuilder_OLD extends AbstractAggregation
 		values.add(invoiceDocTypeId <= 0 ? 0 : invoiceDocTypeId);
 		values.add(ic.getAD_Org_ID());
 
-		values.add(ic.getBill_BPartner_ID());
-		values.add(ic.getBill_Location_ID());
+		final BPartnerLocationAndCaptureId billLocation = invoiceCandBL.getBillLocationId(ic, false);
+		
+		values.add(billLocation.getBpartnerRepoId());
+		values.add(billLocation.getBPartnerLocationRepoId());
 
 		values.add(currencyId <= 0 ? 0 : currencyId);
 
