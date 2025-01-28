@@ -5,7 +5,7 @@ import de.metas.aggregation.api.AbstractAggregationKeyBuilder;
 import de.metas.aggregation.api.AggregationAttribute;
 import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.AggregationKey;
-import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -190,16 +190,15 @@ public class ICLineAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuild
 
 	/**
 	 * Creates a {@link NumberFormat} instance to be used to format amounts, using Bill BPartner's locale and invoice candidate currency.
-	 *
-	 * @param ic
-	 * @return
 	 */
 	private NumberFormat createCurrencyNumberFormat(final I_C_Invoice_Candidate ic)
 	{
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 		final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
-
-		final I_C_BPartner_Location billBPLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(ic.getBill_BPartner_ID(), ic.getBill_Location_ID()));
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+		
+		final BPartnerLocationAndCaptureId billLocation = invoiceCandBL.getBillLocationId(ic, false);
+		final I_C_BPartner_Location billBPLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(billLocation.getBpartnerLocationId());
 		Check.assumeNotNull(billBPLocation, "billBPLocation not null for {}", ic);
 
 		// We use the language of the bill location to determine the number format.
