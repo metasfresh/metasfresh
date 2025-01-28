@@ -49,6 +49,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import static org.compiere.model.I_C_Tax.COLUMNNAME_TypeOfDestCountry;
+import static org.compiere.model.X_C_Tax.TYPEOFDESTCOUNTRY_EU_Foreign;
+import static org.compiere.model.X_C_Tax.TYPEOFDESTCOUNTRY_Non_EUCountry;
+
 public class TaxBL implements de.metas.tax.api.ITaxBL
 {
 	private static final Logger log = LogManager.getLogger(TaxBL.class);
@@ -229,7 +233,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			sql += " AND (pl.C_Country_ID IS NULL OR pl.C_Country_ID = " + shipToCountryId.getRepoId() + ") ";
 			// metas: Abweichungen zu EU finden wenn definiert
 			sql += " AND (t.To_Country_ID IS NULL OR t.To_Country_ID = " + shipToCountryId.getRepoId() + ") ";
-			sql += " AND t.IsToEULocation = 'Y' ";
+			sql += " AND t." + COLUMNNAME_TypeOfDestCountry + " = '" + TYPEOFDESTCOUNTRY_EU_Foreign + "'";
 			if (hasTaxCertificate)
 			{
 				sql += " AND t.RequiresTaxCertificate = 'Y' ";
@@ -245,7 +249,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			sql += " AND (pl.C_Country_ID IS NULL OR pl.C_Country_ID = " + shipToCountryId.getRepoId() + ") ";
 			// Abweichungen zu Drittland finden finden wenn definiert
 			sql += " AND (t.To_Country_ID IS NULL OR t.To_Country_ID =" + shipToCountryId.getRepoId() + ") ";
-			sql += " AND t.IsToEULocation = 'N' ";
+			sql += " AND t." + COLUMNNAME_TypeOfDestCountry + " = '" + TYPEOFDESTCOUNTRY_Non_EUCountry + "'";
 		}
 		// product or charge
 		if (productId != null)

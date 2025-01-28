@@ -22,6 +22,15 @@ package de.metas.invoicecandidate.agg.key.impl;
  * #L%
  */
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import lombok.NonNull;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+
 import de.metas.aggregation.api.AbstractAggregationKeyBuilder;
 import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.AggregationKey;
@@ -34,12 +43,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.compiere.model.I_C_DocType;
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -49,7 +53,7 @@ import java.util.Optional;
  */
 public final class ICHeaderAggregationKeyBuilder_OLD extends AbstractAggregationKeyBuilder<I_C_Invoice_Candidate>
 {
-	public static final transient ICHeaderAggregationKeyBuilder_OLD instance = new ICHeaderAggregationKeyBuilder_OLD();
+	public static final ICHeaderAggregationKeyBuilder_OLD instance = new ICHeaderAggregationKeyBuilder_OLD();
 
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
@@ -99,7 +103,7 @@ public final class ICHeaderAggregationKeyBuilder_OLD extends AbstractAggregation
 		return new AggregationKey(key, aggregationId);
 	}
 
-	private List<Object> getValues(final I_C_Invoice_Candidate ic)
+	private List<Object> getValues(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		final List<Object> values = new ArrayList<>();
 
@@ -116,8 +120,10 @@ public final class ICHeaderAggregationKeyBuilder_OLD extends AbstractAggregation
 		values.add(docTypeIdToBeUsed);
 		values.add(ic.getAD_Org_ID());
 
-		values.add(ic.getBill_BPartner_ID());
-		values.add(ic.getBill_Location_ID());
+		final BPartnerLocationAndCaptureId billLocation = invoiceCandBL.getBillLocationId(ic, false);
+
+		values.add(billLocation.getBpartnerRepoId());
+		values.add(billLocation.getBPartnerLocationRepoId());
 
 		final int currencyId = ic.getC_Currency_ID();
 		values.add(currencyId <= 0 ? 0 : currencyId);
