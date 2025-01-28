@@ -33,6 +33,7 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.util.List;
 
 public class ReceiveGoodsCommand
 {
