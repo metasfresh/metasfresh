@@ -290,6 +290,6 @@ public class ReceiveGoodsCommand
 	@NonNull
 	private List<I_M_HU> receiveTUs(@NonNull final HUPIItemProductId tuPIItemProductId)
 	{
-		return newHUProducer().receiveTUs(getQtyToReceive(), tuPIItemProductId).getHus();
+		return newHUProducer().receiveTUs(getQtyToReceive(), tuPIItemProductId);
 	}
 }
