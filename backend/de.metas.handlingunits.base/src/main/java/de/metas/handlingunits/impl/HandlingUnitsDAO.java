@@ -493,7 +493,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 	@Override
 	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
-			@NonNull HuPackingInstructionsId piId,
+			@NonNull final HuPackingInstructionsId piId,
 			@NonNull final HuPackingInstructionsId includedPIId,
 			@Nullable final BPartnerId bpartnerId)
 	{
