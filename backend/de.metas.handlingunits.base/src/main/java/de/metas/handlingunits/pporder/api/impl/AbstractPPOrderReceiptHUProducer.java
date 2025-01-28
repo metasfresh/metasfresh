@@ -257,7 +257,7 @@ abstract class AbstractPPOrderReceiptHUProducer implements IPPOrderReceiptHUProd
 				.build();
 	}
 
-	private ReceiptCandidatesAndHUs receiveTUs(@NonNull final Quantity qtyToReceive, @NonNull final HUPIItemProductId tuPIItemProductId)
+	public ReceiptCandidatesAndHUs receiveTUs(@NonNull final Quantity qtyToReceive, @NonNull final HUPIItemProductId tuPIItemProductId)
 	{
 		return receiveHUs(qtyToReceive, StandardLUTUSpec.TUs_or_CUs(tuPIItemProductId));
 	}

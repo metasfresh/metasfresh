@@ -69,4 +69,6 @@ public interface IPPOrderReceiptHUProducer
 	List<I_M_HU> receiveIndividualPlanningCUs(@NonNull Quantity qtyToReceive);
 
 	IPPOrderReceiptHUProducer withPPOrderLocatorId();
+
+	ReceiptCandidatesAndHUs receiveTUs(@NonNull Quantity qtyToReceive, @NonNull HUPIItemProductId tuPIItemProductId);
 }
