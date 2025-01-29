@@ -148,7 +148,7 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 		final Quantity qtyToIssue = request.getLineQtyToIssue().min(quantityToIssueForWhatWasReceived);
 		if (qtyToIssue.signum() <= 0)
 		{
-			throw new AdempiereException(NO_QTY_TO_ISSUE);
+			return;
 		}
 
 		final ProductId productId = request.getLine().getProductId();
