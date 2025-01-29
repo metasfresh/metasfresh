@@ -135,6 +135,9 @@ public final class EMail implements Serializable
 	@JsonIgnore
 	private transient EMailSentStatus _sentStatus = EMailSentStatus.NOT_SENT;
 
+	@JsonIgnore
+	private boolean _forceRealEmailRecipients = false;
+
 	EMail(
 			@NonNull final Mailbox mailbox,
 			@Nullable final EMailAddress to,
@@ -230,11 +233,11 @@ public final class EMail implements Serializable
 
 	public void setDebugMailToAddress(@Nullable final InternetAddress debugMailToAddress) {this._debugMailToAddress = debugMailToAddress;}
 
-	public InternetAddress getDebugMailToAddress() {return _debugMailToAddress;}
+	@Nullable public InternetAddress getDebugMailToAddress() {return _forceRealEmailRecipients ? null : _debugMailToAddress;}
 
 	public void setDebugLoggable(final ILoggable loggable) {this._debugLoggable = loggable;}
 
-	public ILoggable getDebugLoggable() {return _debugLoggable;}
+	@Nullable public ILoggable getDebugLoggable() {return _debugLoggable;}
 
 	public EMailSentStatus send()
 	{
@@ -705,6 +708,14 @@ public final class EMail implements Serializable
 	public List<EMailAttachment> getAttachments()
 	{
 		return ImmutableList.copyOf(_attachments);
+	}
+
+	/**
+	   *  Do send the mail to the respective mail address, even if the {@code DebugMailTo} SysConfig is set.
+	   */
+	public void forceRealEmailRecipients()
+	{
+		_forceRealEmailRecipients = true;
 	}
 
 	@Override
