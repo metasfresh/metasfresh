@@ -1,6 +1,7 @@
 package de.metas.business_rule.log;
 
 import de.metas.business_rule.descriptor.model.BusinessRuleId;
+import de.metas.business_rule.descriptor.model.BusinessRulePreconditionId;
 import de.metas.business_rule.descriptor.model.BusinessRuleTriggerId;
 import de.metas.business_rule.event.BusinessRuleEventId;
 import de.metas.error.AdIssueId;
@@ -25,6 +26,7 @@ public class BusinessRuleLogEntryRequest
 	//
 	// Context
 	@Nullable BusinessRuleId businessRuleId;
+	@Nullable BusinessRulePreconditionId preconditionId;
 	@Nullable BusinessRuleTriggerId triggerId;
 	@Nullable BusinessRuleEventId eventId;
 	@Nullable TableRecordReference sourceRecordRef;
@@ -35,6 +37,7 @@ public class BusinessRuleLogEntryRequest
 		return builder()
 				.moduleName(context.getModuleName())
 				.businessRuleId(context.getBusinessRuleId())
+				.preconditionId(context.getPreconditionId())
 				.triggerId(context.getTriggerId())
 				.sourceRecordRef(context.getSourceRecordRef())
 				.targetRecordRef(context.getTargetRecordRef())

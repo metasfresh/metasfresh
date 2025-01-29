@@ -142,6 +142,27 @@ public interface I_AD_BusinessRule
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Debug.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDebug (boolean IsDebug);
+
+	/**
+	 * Get Debug.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDebug();
+
+	ModelColumn<I_AD_BusinessRule, Object> COLUMN_IsDebug = new ModelColumn<>(I_AD_BusinessRule.class, "IsDebug", null);
+	String COLUMNNAME_IsDebug = "IsDebug";
+
+	/**
 	 * Set Name.
 	 *
 	 * <br>Type: String
