@@ -25,6 +25,7 @@ package org.adempiere.ad.validationRule.impl;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.util.GuavaCollectors;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -38,6 +39,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collector;
 
 /**
  * Immutable composite validation rule consist of a collection of child validation rules.
@@ -54,6 +56,16 @@ public final class CompositeValidationRule implements IValidationRule
 	public static Builder builder()
 	{
 		return new Builder();
+	}
+
+	public static Collector<IValidationRule, ?, IValidationRule> collect()
+	{
+		return GuavaCollectors.collectUsingListAccumulator(CompositeValidationRule::ofList);
+	}
+
+	public static IValidationRule ofList(final List<IValidationRule> rules)
+	{
+		return builder().addAll(rules).build();
 	}
 
 	private final ImmutableList<IValidationRule> rules;
@@ -208,12 +220,6 @@ public final class CompositeValidationRule implements IValidationRule
 			}
 		}
 
-		public Builder addAll(@NonNull final Collection<IValidationRule> rules)
-		{
-			rules.forEach(this::add);
-			return this;
-		}
-
 		public Builder add(final IValidationRule rule)
 		{
 			add(rule, false);
@@ -243,13 +249,24 @@ public final class CompositeValidationRule implements IValidationRule
 			if (explodeComposite && rule instanceof CompositeValidationRule)
 			{
 				final CompositeValidationRule compositeRule = (CompositeValidationRule)rule;
-				compositeRule.getValidationRules().forEach(includedRule -> add(includedRule, explodeComposite));
+				addAll(compositeRule.getValidationRules(), true);
 			}
 			else
 			{
 				rules.add(rule);
 			}
 
+			return this;
+		}
+
+		private Builder addAll(final Collection<IValidationRule> rules)
+		{
+			return addAll(rules, false);
+		}
+
+		private Builder addAll(final Collection<IValidationRule> rules, final boolean explodeComposite)
+		{
+			rules.forEach(includedRule -> add(includedRule, explodeComposite));
 			return this;
 		}
 	}

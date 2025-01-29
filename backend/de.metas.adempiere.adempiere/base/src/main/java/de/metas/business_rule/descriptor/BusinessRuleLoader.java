@@ -5,12 +5,14 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.business_rule.descriptor.model.BusinessRule;
 import de.metas.business_rule.descriptor.model.BusinessRuleId;
 import de.metas.business_rule.descriptor.model.BusinessRulePrecondition;
+import de.metas.business_rule.descriptor.model.BusinessRulePreconditionId;
 import de.metas.business_rule.descriptor.model.BusinessRuleTrigger;
 import de.metas.business_rule.descriptor.model.BusinessRuleTriggerId;
 import de.metas.business_rule.descriptor.model.BusinessRulesCollection;
 import de.metas.business_rule.descriptor.model.TriggerTiming;
 import de.metas.business_rule.descriptor.model.Validation;
 import de.metas.business_rule.descriptor.model.ValidationType;
+import de.metas.business_rule.log.BusinessRuleLogLevel;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.StringUtils;
 import lombok.Builder;
@@ -73,7 +75,7 @@ class BusinessRuleLoader
 				.orderBy(I_AD_BusinessRule.COLUMNNAME_AD_BusinessRule_ID)
 				.create()
 				.stream()
-				.map(record -> fromRecord(record))
+				.map(this::fromRecord)
 				.collect(GuavaCollectors.collectUsingListAccumulator(BusinessRulesCollection::ofList));
 	}
 
@@ -109,6 +111,7 @@ class BusinessRuleLoader
 		triggersById.putIfAbsent(id, record);
 	}
 
+	@SuppressWarnings("UnusedReturnValue")
 	private BusinessRule fromId(@NonNull final BusinessRuleId businessRuleId)
 	{
 		final I_AD_BusinessRule record = InterfaceWrapperHelper.load(businessRuleId, I_AD_BusinessRule.class);
@@ -134,6 +137,7 @@ class BusinessRuleLoader
 						.map(BusinessRuleLoader::fromRecord)
 						.collect(ImmutableList.toImmutableList()))
 				.warningMessage(record.getWarningMessage())
+				.logLevel(record.isDebug() ? BusinessRuleLogLevel.DEBUG : null)
 				.build();
 	}
 
@@ -183,6 +187,7 @@ class BusinessRuleLoader
 	private static BusinessRulePrecondition fromRecord(I_AD_BusinessRule_Precondition record)
 	{
 		return BusinessRulePrecondition.builder()
+				.id(BusinessRulePreconditionId.ofRepoId(record.getAD_BusinessRule_Precondition_ID()))
 				.validation(extractValidation(record))
 				.build();
 	}

@@ -88,6 +88,31 @@ public interface I_AD_BusinessRule_Log
 	String COLUMNNAME_AD_BusinessRule_Log_ID = "AD_BusinessRule_Log_ID";
 
 	/**
+	 * Set Business Rule Precondition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_BusinessRule_Precondition_ID (int AD_BusinessRule_Precondition_ID);
+
+	/**
+	 * Get Business Rule Precondition.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_BusinessRule_Precondition_ID();
+
+	@Nullable org.compiere.model.I_AD_BusinessRule_Precondition getAD_BusinessRule_Precondition();
+
+	void setAD_BusinessRule_Precondition(@Nullable org.compiere.model.I_AD_BusinessRule_Precondition AD_BusinessRule_Precondition);
+
+	ModelColumn<I_AD_BusinessRule_Log, org.compiere.model.I_AD_BusinessRule_Precondition> COLUMN_AD_BusinessRule_Precondition_ID = new ModelColumn<>(I_AD_BusinessRule_Log.class, "AD_BusinessRule_Precondition_ID", org.compiere.model.I_AD_BusinessRule_Precondition.class);
+	String COLUMNNAME_AD_BusinessRule_Precondition_ID = "AD_BusinessRule_Precondition_ID";
+
+	/**
 	 * Set Business Rule Trigger.
 	 *
 	 * <br>Type: Search

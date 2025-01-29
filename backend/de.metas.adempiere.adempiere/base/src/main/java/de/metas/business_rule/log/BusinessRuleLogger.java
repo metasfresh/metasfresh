@@ -82,7 +82,10 @@ public class BusinessRuleLogger
 			slf4jLogger.debug(message + " -- " + context, args);
 		}
 
-		createLogEntry(BusinessRuleLogLevel.DEBUG, duration, message, args);
+		if (context.isDebugEnabled())
+		{
+			createLogEntry(BusinessRuleLogLevel.DEBUG, duration, message, args);
+		}
 	}
 
 	private void createLogEntry(

@@ -58,6 +58,11 @@ public class SQLValidationRule implements IValidationRule
 		}
 
 		final IStringExpression sqlWhereClauseExpr = IStringExpression.compileOrDefault(sqlWhereClauseNorm, IStringExpression.NULL);
+		return ofNullableSqlWhereClause(sqlWhereClauseExpr);
+	}
+
+	public static IValidationRule ofNullableSqlWhereClause(@Nullable final IStringExpression sqlWhereClauseExpr)
+	{
 		if (sqlWhereClauseExpr == null || sqlWhereClauseExpr.isNullExpression())
 		{
 			return NullValidationRule.instance;
