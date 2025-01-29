@@ -216,7 +216,7 @@ public class BatchReportEntry2Wrapper extends BatchReportEntryWrapper
 		final List<String> lineDesc = new ArrayList<>();
 
 		final String addtlNtryInfStr = entry.getAddtlNtryInf();
-		if( addtlNtryInfStr != null )
+		if (addtlNtryInfStr != null)
 		{
 			lineDesc.addAll( Arrays.stream(addtlNtryInfStr.split(" "))
 									 .filter(Check::isNotBlank)
