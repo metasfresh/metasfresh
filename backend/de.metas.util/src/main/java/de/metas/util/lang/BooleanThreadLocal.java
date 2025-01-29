@@ -25,7 +25,7 @@ public class BooleanThreadLocal
 
 	public IAutoCloseable temporarySetToTrueIf(final boolean condition)
 	{
-		return condition ? temporarySetToTrue() : IAutoCloseable.NOOP;
+		return condition ? temporarySetToTrue() : IAutoCloseable.NOP;
 	}
 
 	public IAutoCloseable temporarySetToTrue()

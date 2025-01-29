@@ -8,6 +8,7 @@ import de.metas.business_rule.event.BusinessRuleEventProcessorCommand;
 import de.metas.business_rule.event.BusinessRuleEventRepository;
 import de.metas.business_rule.log.BusinessRuleLogger;
 import de.metas.business_rule.trigger.BusinessRuleFireTriggersCommand;
+import de.metas.business_rule.util.BusinessRuleRecordMatcher;
 import de.metas.record.warning.RecordWarningRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ public class BusinessRuleService
 	@NonNull private final BusinessRuleEventRepository eventRepository;
 	@NonNull private final RecordWarningRepository recordWarningRepository;
 	@NonNull private final BusinessRuleLogger logger;
+	@NonNull private final BusinessRuleRecordMatcher recordMatcher;
 
 	public BusinessRulesCollection getRules()
 	{
@@ -38,11 +40,13 @@ public class BusinessRuleService
 		BusinessRuleFireTriggersCommand.builder()
 				.eventRepository(eventRepository)
 				.logger(logger)
+				.recordMatcher(recordMatcher)
+				//
 				.rules(ruleRepository.getAll())
 				.sourceModel(sourceModel)
 				.timing(timing)
-				.build()
-				.execute();
+				//
+				.build().execute();
 	}
 
 	public void processEvents(@NonNull final QueryLimit limit)
@@ -52,6 +56,7 @@ public class BusinessRuleService
 				.eventRepository(eventRepository)
 				.recordWarningRepository(recordWarningRepository)
 				.logger(logger)
+				.recordMatcher(recordMatcher)
 				//
 				.limit(limit)
 				//

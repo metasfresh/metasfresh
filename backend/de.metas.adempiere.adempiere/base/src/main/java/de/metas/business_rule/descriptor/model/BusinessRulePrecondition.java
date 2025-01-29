@@ -8,5 +8,6 @@ import lombok.Value;
 @Builder
 public class BusinessRulePrecondition
 {
+	@NonNull BusinessRulePreconditionId id;
 	@NonNull Validation validation;
 }

@@ -18,7 +18,6 @@ import java.util.Set;
  * Immutable SQL Validation Rule is a validation rule which has only an SQL Where Clause.
  *
  * @author tsa
- *
  */
 @Value
 public class SQLValidationRule implements IValidationRule
@@ -59,6 +58,11 @@ public class SQLValidationRule implements IValidationRule
 		}
 
 		final IStringExpression sqlWhereClauseExpr = IStringExpression.compileOrDefault(sqlWhereClauseNorm, IStringExpression.NULL);
+		return ofNullableSqlWhereClause(sqlWhereClauseExpr);
+	}
+
+	public static IValidationRule ofNullableSqlWhereClause(@Nullable final IStringExpression sqlWhereClauseExpr)
+	{
 		if (sqlWhereClauseExpr == null || sqlWhereClauseExpr.isNullExpression())
 		{
 			return NullValidationRule.instance;

@@ -33,8 +33,8 @@ package org.adempiere.util.lang;
 @FunctionalInterface
 public interface IAutoCloseable extends AutoCloseable
 {
-	IAutoCloseable NOOP = NullAutoCloseable.instance;
-	
+	IAutoCloseable NOP = NullAutoCloseable.instance;
+
 	@Override
 	void close();
 }
