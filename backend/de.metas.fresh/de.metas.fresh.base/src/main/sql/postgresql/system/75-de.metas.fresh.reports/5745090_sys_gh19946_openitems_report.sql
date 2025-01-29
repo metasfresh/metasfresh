@@ -10,11 +10,17 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report(date
 
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report
 (
-    date,
-    character varying,
-    numeric(10)
+    Reference_Date  date,
+    switchDate      character varying,
+    p_C_BPartner_ID numeric(10)
 )
 ;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report(date,
+                                                                            character varying,
+                                                                            numeric)
+;
+
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.OpenItems_Report(IN p_Reference_Date date DEFAULT NOW(),
                                                                                IN p_SwitchDate     character varying DEFAULT 'N',
@@ -117,7 +123,7 @@ FROM (SELECT i.AD_Org_ID,
              COALESCE(
                      EXTRACT(DAY FROM (TRUNC(p_Reference_Date) - i.DueDate)),
                      DaysBetween(p_Reference_Date, ips.DueDate::timestamp with time zone)
-             )::integer                                                                                                      AS DaysDue,
+                 )::integer                                                                                                      AS DaysDue,
              COALESCE(AddDays(i.DateInvoiced::timestamp with time zone, p.DiscountDays), ips.DiscountDate)                   AS DiscountDate,
              COALESCE(ROUND(i.GrandTotal * p.Discount / 100::numeric, 2), ips.DiscountAmt)                                   AS DiscountAmt,
              COALESCE(ips.DueAmt, i.GrandTotal)                                                                              AS GrandTotal,
