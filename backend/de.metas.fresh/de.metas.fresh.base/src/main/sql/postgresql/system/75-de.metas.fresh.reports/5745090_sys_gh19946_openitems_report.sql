@@ -8,6 +8,14 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report(date
                                                                             character varying)
 ;
 
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report
+(
+    Reference_Date  date,
+    switchDate      character varying,
+    p_C_BPartner_ID numeric(10)
+)
+;
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report(date,
                                                                             character varying,
                                                                             numeric)
