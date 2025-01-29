@@ -1,4 +1,8 @@
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report(date,
+                                                                            character varying)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report(date,
                                                                             character varying,
                                                                             numeric)
 ;

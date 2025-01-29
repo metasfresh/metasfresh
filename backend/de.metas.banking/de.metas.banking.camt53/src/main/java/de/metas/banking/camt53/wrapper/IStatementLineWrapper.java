@@ -36,6 +36,8 @@ import java.util.Optional;
 
 public interface IStatementLineWrapper
 {
+	String QRR_LINE_DESCRIPTION_MARKER = "QRR";
+
 	@NonNull
 	ImmutableSet<String> getDocumentReferenceCandidates();
 
@@ -77,4 +79,6 @@ public interface IStatementLineWrapper
 	boolean isBatchTransaction();
 
 	List<ITransactionDtlsWrapper> getTransactionDtlsWrapper();
+
+	default boolean isQRRTransaction() {return getLineDescription().contains(QRR_LINE_DESCRIPTION_MARKER);}
 }

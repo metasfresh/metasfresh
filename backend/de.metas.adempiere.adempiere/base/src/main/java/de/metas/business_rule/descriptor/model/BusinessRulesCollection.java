@@ -5,12 +5,15 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.business_rule.descriptor.model.BusinessRuleAndTriggers.BusinessRuleAndTriggersBuilder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.List;
 
 @EqualsAndHashCode
@@ -21,7 +24,7 @@ public class BusinessRulesCollection
 
 	@NonNull private final ImmutableList<BusinessRule> list;
 	@NonNull private final ImmutableMap<BusinessRuleId, BusinessRule> byId;
-	@NonNull private final ImmutableListMultimap<AdTableId, BusinessRuleAndTrigger> byTriggerTableId;
+	@NonNull private final ImmutableListMultimap<AdTableId, BusinessRuleAndTriggers> byTriggerTableId;
 
 	BusinessRulesCollection(List<BusinessRule> list)
 	{
@@ -30,15 +33,26 @@ public class BusinessRulesCollection
 		this.byTriggerTableId = indexByTriggerTableId(list);
 	}
 
-	private static ImmutableListMultimap<AdTableId, BusinessRuleAndTrigger> indexByTriggerTableId(final List<BusinessRule> list)
+	private static ImmutableListMultimap<AdTableId, BusinessRuleAndTriggers> indexByTriggerTableId(final List<BusinessRule> list)
 	{
-		return list.stream()
-				.flatMap(rule -> rule.getTriggers()
-						.stream()
-						.map(trigger -> BusinessRuleAndTrigger.of(rule, trigger)))
-				.collect(ImmutableListMultimap.toImmutableListMultimap(
-						BusinessRuleAndTrigger::getTriggerTableId,
-						ruleAndTrigger -> ruleAndTrigger));
+		final HashMap<AdTableId, HashMap<BusinessRuleId, BusinessRuleAndTriggersBuilder>> buildersByTriggerTableId = new HashMap<>();
+		for (final BusinessRule rule : list)
+		{
+			for (final BusinessRuleTrigger trigger : rule.getTriggers())
+			{
+				buildersByTriggerTableId.computeIfAbsent(trigger.getTriggerTableId(), triggerTableId -> new HashMap<>())
+						.computeIfAbsent(rule.getId(), ruleId -> BusinessRuleAndTriggers.builderFrom(rule))
+						.trigger(trigger);
+			}
+		}
+
+		final ImmutableListMultimap.Builder<AdTableId, BusinessRuleAndTriggers> result = ImmutableListMultimap.builder();
+		buildersByTriggerTableId.forEach((triggerTableId, ruleBuilders) -> ruleBuilders.values()
+				.stream().map(BusinessRuleAndTriggersBuilder::build)
+				.forEach(ruleAndTriggers -> result.put(triggerTableId, ruleAndTriggers))
+		);
+
+		return result.build();
 	}
 
 	public static BusinessRulesCollection ofList(List<BusinessRule> list)
@@ -48,15 +62,21 @@ public class BusinessRulesCollection
 
 	public ImmutableSet<AdTableId> getTriggerTableIds() {return byTriggerTableId.keySet();}
 
-	public ImmutableList<BusinessRuleAndTrigger> getByTriggerTableId(@NonNull final AdTableId triggerTableId) {return this.byTriggerTableId.get(triggerTableId);}
+	public ImmutableList<BusinessRuleAndTriggers> getByTriggerTableId(@NonNull final AdTableId triggerTableId) {return this.byTriggerTableId.get(triggerTableId);}
 
-	public BusinessRule getById(final BusinessRuleId id)
+	public BusinessRule getById(@NonNull final BusinessRuleId id)
 	{
-		final BusinessRule rule = byId.get(id);
+		final BusinessRule rule = getByIdOrNull(id);
 		if (rule == null)
 		{
 			throw new AdempiereException("No rule found for id=" + id);
 		}
 		return rule;
+	}
+
+	@Nullable
+	public BusinessRule getByIdOrNull(@Nullable final BusinessRuleId id)
+	{
+		return id == null ? null : byId.get(id);
 	}
 }
