@@ -251,7 +251,7 @@ public class PickingJobUnPickCommand
 		}
 
 		final I_M_HU lu = handlingUnitsBL.getById(luId);
-		if (!handlingUnitsBL.isDestroyed(lu))
+		if (!handlingUnitsBL.isEmptyStorage(lu))
 		{
 			return pickingTarget;
 		}
