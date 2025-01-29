@@ -77,7 +77,7 @@ public final class POZoomSource implements IZoomSource
 
 	/**
 	 * @return the name of a key column that is also flagged as GenericZoomOrigin and {@code true},if there is exactly one such column.<br>
-	 *         Otherwise it returns {@code null} and {@code false}.
+	 * Otherwise it returns {@code null} and {@code false}.
 	 */
 	private static IPair<String, Boolean> extractKeyColumnNameOrNull(@NonNull final PO po)
 	{
