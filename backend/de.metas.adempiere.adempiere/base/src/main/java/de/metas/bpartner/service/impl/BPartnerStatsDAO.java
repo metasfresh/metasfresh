@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.common.util.time.SystemTime;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -21,7 +22,7 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Iterator;
+
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -115,8 +116,6 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
 
-		BigDecimal openItems = null;
-
 		final Object[] sqlParams = new Object[] { SystemTime.asTimestamp(), stats.getC_BPartner_ID() };
 		final String sql = "SELECT "
 				+ "COALESCE((SELECT SUM(currencyBase(openamt,C_Currency_ID,DateInvoiced,AD_Client_ID,AD_Org_ID)) from de_metas_endcustomer_fresh_reports.OpenItems_Report(p_Reference_Date=>?, p_c_bpartner_id=>?)), 0)";
@@ -129,8 +128,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 			rs = pstmt.executeQuery();
 			if (rs.next())
 			{
-				final BigDecimal openAmt = rs.getBigDecimal(1);
-				return openAmt != null ? openAmt : BigDecimal.ZERO;
+				return rs.getBigDecimal(1);
 			}
 			else
 			{
