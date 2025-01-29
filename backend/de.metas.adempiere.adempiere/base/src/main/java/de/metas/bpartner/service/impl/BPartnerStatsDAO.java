@@ -112,7 +112,7 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 
 		final Object[] sqlParams = new Object[] { SystemTime.asDate(), stats.getC_BPartner_ID() };
 		final String sql = "SELECT "
-				+ "COALESCE((SELECT SUM(currencyBase(openamt,C_Currency_ID,DateInvoiced,AD_Client_ID,AD_Org_ID)) from de_metas_endcustomer_fresh_reports.OpenItems_Report(?, 'N', ?)), 0)";
+				+ "COALESCE((SELECT SUM(currencyBase(openamt,C_Currency_ID,DateInvoiced,AD_Client_ID,AD_Org_ID)) from de_metas_endcustomer_fresh_reports.OpenItems_Report(?, ?)), 0)";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 
