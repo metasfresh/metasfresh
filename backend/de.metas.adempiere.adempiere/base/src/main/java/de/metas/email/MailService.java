@@ -216,7 +216,7 @@ public class MailService
 	private InternetAddress getDebugMailToAddressOrNull()
 	{
 		final Properties ctx = Env.getCtx();
-		String emailStr = StringUtils.trimBlankToNull(
+		final String emailStr = StringUtils.trimBlankToNull(
 				sysConfigBL.getValue(SYSCONFIG_DebugMailTo,
 						null,             // defaultValue
 						Env.getAD_Client_ID(ctx),
@@ -255,7 +255,7 @@ public class MailService
 		return newMailTextBuilder(mailTemplate);
 	}
 
-	public void test(@NonNull TestMailRequest request)
+	public void test(@NonNull final TestMailRequest request)
 	{
 		TestMailCommand.builder()
 				.mailService(this)
