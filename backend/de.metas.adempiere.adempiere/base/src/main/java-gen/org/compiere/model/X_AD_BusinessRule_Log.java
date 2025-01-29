@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_BusinessRule_Log extends org.compiere.model.PO implements I_AD_BusinessRule_Log, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1639707445L;
+	private static final long serialVersionUID = -1305880441L;
 
     /** Standard Constructor */
     public X_AD_BusinessRule_Log (final Properties ctx, final int AD_BusinessRule_Log_ID, @Nullable final String trxName)
@@ -101,6 +101,33 @@ public class X_AD_BusinessRule_Log extends org.compiere.model.PO implements I_AD
 	public int getAD_BusinessRule_Log_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_BusinessRule_Log_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_BusinessRule_Precondition getAD_BusinessRule_Precondition()
+	{
+		return get_ValueAsPO(COLUMNNAME_AD_BusinessRule_Precondition_ID, org.compiere.model.I_AD_BusinessRule_Precondition.class);
+	}
+
+	@Override
+	public void setAD_BusinessRule_Precondition(final org.compiere.model.I_AD_BusinessRule_Precondition AD_BusinessRule_Precondition)
+	{
+		set_ValueFromPO(COLUMNNAME_AD_BusinessRule_Precondition_ID, org.compiere.model.I_AD_BusinessRule_Precondition.class, AD_BusinessRule_Precondition);
+	}
+
+	@Override
+	public void setAD_BusinessRule_Precondition_ID (final int AD_BusinessRule_Precondition_ID)
+	{
+		if (AD_BusinessRule_Precondition_ID < 1) 
+			set_Value (COLUMNNAME_AD_BusinessRule_Precondition_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_BusinessRule_Precondition_ID, AD_BusinessRule_Precondition_ID);
+	}
+
+	@Override
+	public int getAD_BusinessRule_Precondition_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_BusinessRule_Precondition_ID);
 	}
 
 	@Override

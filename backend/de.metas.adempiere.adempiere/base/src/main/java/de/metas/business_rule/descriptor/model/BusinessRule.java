@@ -3,15 +3,20 @@ package de.metas.business_rule.descriptor.model;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.business_rule.log.BusinessRuleLogLevel;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+
 @Value
+@ToString(of = { "id", "name" })
 public class BusinessRule
 {
 	@NonNull BusinessRuleId id;
@@ -26,6 +31,8 @@ public class BusinessRule
 
 	@NonNull String warningMessage;
 
+	@Nullable BusinessRuleLogLevel logLevel;
+
 	@Builder
 	private BusinessRule(
 			@NonNull final BusinessRuleId id,
@@ -34,7 +41,8 @@ public class BusinessRule
 			@NonNull final ImmutableList<BusinessRulePrecondition> preconditions,
 			@NonNull final Validation validation,
 			@NonNull final ImmutableList<BusinessRuleTrigger> triggers,
-			@NonNull final String warningMessage)
+			@NonNull final String warningMessage,
+			@Nullable BusinessRuleLogLevel logLevel)
 	{
 		this.id = id;
 		this.name = name;
@@ -44,6 +52,7 @@ public class BusinessRule
 		this.triggers = triggers;
 		this.triggersById = Maps.uniqueIndex(triggers, BusinessRuleTrigger::getId);
 		this.warningMessage = warningMessage;
+		this.logLevel = logLevel;
 	}
 
 	@NonNull

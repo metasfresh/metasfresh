@@ -1,17 +1,15 @@
 package org.adempiere.ad.validationRule.impl;
 
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.validationRule.IValidationRule;
 
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 
 /**
  * Null validation rule. A null validation rule, does nothing. Is not filtering any records.
- * 
+ *
  * @author tsa
- * 
  */
 public final class NullValidationRule implements IValidationRule
 {
