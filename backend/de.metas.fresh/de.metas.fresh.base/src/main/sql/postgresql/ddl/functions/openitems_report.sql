@@ -4,11 +4,8 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report
 )
 ;
 
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report
-(
-    Reference_Date date,
-    switchDate     character varying
-)
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report(date,
+                                                                            character varying)
 ;
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.OpenItems_Report(IN p_Reference_Date date DEFAULT NOW(),
