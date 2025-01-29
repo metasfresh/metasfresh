@@ -233,11 +233,11 @@ public final class EMail implements Serializable
 
 	public void setDebugMailToAddress(@Nullable final InternetAddress debugMailToAddress) {this._debugMailToAddress = debugMailToAddress;}
 
-	public InternetAddress getDebugMailToAddress() {return _forceRealEmailRecipients ? null : _debugMailToAddress;}
+	@Nullable public InternetAddress getDebugMailToAddress() {return _forceRealEmailRecipients ? null : _debugMailToAddress;}
 
 	public void setDebugLoggable(final ILoggable loggable) {this._debugLoggable = loggable;}
 
-	public ILoggable getDebugLoggable() {return _debugLoggable;}
+	@Nullable public ILoggable getDebugLoggable() {return _debugLoggable;}
 
 	public EMailSentStatus send()
 	{

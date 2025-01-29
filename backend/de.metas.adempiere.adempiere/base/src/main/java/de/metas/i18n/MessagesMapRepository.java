@@ -1,6 +1,5 @@
 package de.metas.i18n;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Stopwatch;
 import de.metas.cache.CCache;
 import de.metas.logging.LogManager;
@@ -12,11 +11,12 @@ import org.compiere.model.I_AD_Message;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+
+import static de.metas.i18n.MessageFormatter.normalizeToJavaMessageFormat;
 
 class MessagesMapRepository
 {
@@ -113,44 +113,6 @@ class MessagesMapRepository
 		{
 			DB.close(rs, pstmt);
 		}
-	}
-
-	@VisibleForTesting
-	static String normalizeToJavaMessageFormat(@Nullable final String text)
-	{
-		if (text == null)
-		{
-			return "";
-		}
-		if (text.isEmpty())
-		{
-			return text;
-		}
-
-		int firstIdx = text.indexOf("{}");
-		if (firstIdx < 0)
-		{
-			return text;
-		}
-
-		String inStr = text;
-		int idx = firstIdx;
-		final StringBuilder outStr = new StringBuilder();
-		int nextPlaceholderIndex = 0;
-		while (idx != -1)
-		{
-			outStr.append(inStr, 0, idx);            // up to {}
-			inStr = inStr.substring(idx + 2);    // continue after current {}
-
-			final int placeholderIndex = nextPlaceholderIndex;
-			nextPlaceholderIndex++;
-			outStr.append("{").append(placeholderIndex).append("}");
-
-			idx = inStr.indexOf("{}");
-		}
-
-		outStr.append(inStr);                            // add remainder
-		return outStr.toString();
 	}
 
 	public void cacheReset()

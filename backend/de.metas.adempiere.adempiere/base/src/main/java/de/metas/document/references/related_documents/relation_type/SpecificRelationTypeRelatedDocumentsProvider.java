@@ -389,7 +389,7 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 
 		public boolean matchesAsSource(@NonNull final IZoomSource zoomSource)
 		{
-			if(!tableRefInfo.getTableName().equals(zoomSource.getTableName()))
+			if (!tableRefInfo.getTableName().equals(zoomSource.getTableName()))
 			{
 				logger.debug("matchesAsSource - return false because zoomSource.tableName={}; this={}", zoomSource.getTableName(), this);
 				return false;
@@ -414,7 +414,7 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 				logger.warn("matchesAsSource - return false because zoomSource.getKeyColumnNameOrNull()==null; this={}; zoomSource={}", this, zoomSource);
 				return false;
 			}
-			
+
 			final String whereClause = tableRefInfo.getWhereClause();
 			if (Check.isBlank(whereClause))
 			{
@@ -431,7 +431,7 @@ public class SpecificRelationTypeRelatedDocumentsProvider implements IRelatedDoc
 			final StringBuilder whereClauseEffective = new StringBuilder();
 			whereClauseEffective.append(parsedWhere);
 			whereClauseEffective.append(" AND ( ").append(keyColumnName).append("=").append(zoomSource.getRecord_ID()).append(" )");
-			
+
 			final boolean match = new Query(zoomSource.getCtx(), zoomSource.getTableName(), whereClauseEffective.toString(), zoomSource.getTrxName())
 					.anyMatch();
 

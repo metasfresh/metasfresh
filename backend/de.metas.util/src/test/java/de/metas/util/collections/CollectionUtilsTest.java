@@ -149,7 +149,7 @@ class CollectionUtilsTest
 	class mergeElementToMap
 	{
 		@SafeVarargs
-		private ImmutableMap<String, ImmutableMapEntry<String, String>> mapOf(
+		private final ImmutableMap<String, ImmutableMapEntry<String, String>> mapOf(
 				final ImmutableMapEntry<String, String>... entries
 		)
 		{

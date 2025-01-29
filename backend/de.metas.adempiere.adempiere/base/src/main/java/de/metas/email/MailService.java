@@ -22,6 +22,7 @@ import de.metas.email.test.TestMailCommand;
 import de.metas.email.test.TestMailRequest;
 import de.metas.logging.LogManager;
 import de.metas.user.api.IUserBL;
+import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -215,13 +216,13 @@ public class MailService
 	private InternetAddress getDebugMailToAddressOrNull()
 	{
 		final Properties ctx = Env.getCtx();
-		String emailStr = StringUtils.trimBlankToNull(
+		final String emailStr = StringUtils.trimBlankToNull(
 				sysConfigBL.getValue(SYSCONFIG_DebugMailTo,
 																	null,             // defaultValue
 																	Env.getAD_Client_ID(ctx),
 						Env.getAD_Org_ID(ctx))
 		);
-		if (emailStr == null || emailStr.equals("-"))
+		if (Check.isEmpty(emailStr, true) || emailStr.equals("-"))
 		{
 			return null;
 		}
@@ -254,7 +255,7 @@ public class MailService
 		return newMailTextBuilder(mailTemplate);
 	}
 
-	public void test(@NonNull TestMailRequest request)
+	public void test(@NonNull final TestMailRequest request)
 	{
 		TestMailCommand.builder()
 				.mailService(this)
