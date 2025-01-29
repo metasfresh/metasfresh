@@ -19,6 +19,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Optional;
 
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
+
 @Value
 @EqualsAndHashCode(doNotUseGetters = true)
 public class HUPIItemProduct
@@ -29,6 +31,7 @@ public class HUPIItemProduct
 	@NonNull HuPackingInstructionsItemId piItemId;
 	@Nullable ProductId productId;
 	@Nullable Quantity qtyCUsPerTU;
+	boolean isOrderInTuUomWhenMatched;
 
 	@Builder(toBuilder = true)
 	private HUPIItemProduct(
@@ -37,7 +40,8 @@ public class HUPIItemProduct
 			@Nullable final String description,
 			@NonNull final HuPackingInstructionsItemId piItemId,
 			@Nullable final ProductId productId,
-			@Nullable final Quantity qtyCUsPerTU)
+			@Nullable final Quantity qtyCUsPerTU,
+			@Nullable final Boolean isOrderInTuUomWhenMatched)
 	{
 		this.id = id;
 		this.name = name;
@@ -45,6 +49,7 @@ public class HUPIItemProduct
 		this.piItemId = piItemId;
 		this.productId = productId;
 		this.qtyCUsPerTU = qtyCUsPerTU != null && qtyCUsPerTU.signum() > 0 && !Quantity.isInfinite(qtyCUsPerTU.toBigDecimal()) ? qtyCUsPerTU : null;
+		this.isOrderInTuUomWhenMatched = coalesceNotNull(isOrderInTuUomWhenMatched, false);
 	}
 
 	@Override

@@ -110,6 +110,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 				.piItemId(HuPackingInstructionsItemId.ofRepoId(record.getM_HU_PI_Item_ID()))
 				.productId(record.isAllowAnyProduct() ? null : ProductId.ofRepoId(record.getM_Product_ID()))
 				.qtyCUsPerTU(record.isInfiniteCapacity() ? null : Quantitys.of(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())))
+				.isOrderInTuUomWhenMatched(record.isOrderInTuUomWhenMatched())
 				.build();
 	}
 
