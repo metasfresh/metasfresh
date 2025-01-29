@@ -1,12 +1,12 @@
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report(date,
-                                                                            numeric,
-                                                                            character varying)
+                                                                            character varying,
+                                                                            numeric)
 ;
 
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.OpenItems_Report(IN p_Reference_Date date DEFAULT NOW(),
-                                                                               IN p_c_bpartner_id              numeric DEFAULT NULL::numeric,
-                                                                               IN p_SwitchDate     character varying DEFAULT 'N')
+                                                                               IN p_SwitchDate     character varying DEFAULT 'N',
+                                                                               IN p_c_bpartner_id              numeric DEFAULT NULL::numeric)
     RETURNS table
             (
                 CurrencyCode          char(3),
