@@ -58,6 +58,17 @@ public interface ITaxBL extends ISingletonService
 			BPartnerLocationAndCaptureId shipBPartnerLocationId,
 			SOTrx soTrx);
 
+	@NonNull
+	TaxId getTaxOrNoTaxId(
+			@Nullable Object model,
+			@Nullable TaxCategoryId taxCategoryId,
+			int productId,
+			Timestamp shipDate,
+			@NonNull OrgId orgId,
+			@Nullable WarehouseId warehouseId,
+			BPartnerLocationAndCaptureId shipBPartnerLocationId,
+			SOTrx soTrx);
+	
 	/**
 	 * Calculate Tax - no rounding
 	 *

@@ -1125,13 +1125,13 @@ public class CalloutOrder extends CalloutEngine
 		log.debug("Bill BP_Location={}", billBPLocationId);
 
 		//
-		final TaxId taxId = taxBL.getTaxNotNull(order,
-				null, 
-				M_Product_ID, 
-				shipDate, 
-				OrgId.ofRepoId(AD_Org_ID), 
-				WarehouseId.ofRepoIdOrNull(M_Warehouse_ID), 
-				shipBPLocationId, 
+		final TaxId taxId = taxBL.getTaxOrNoTaxId(order,
+				null,
+				M_Product_ID,
+				shipDate,
+				OrgId.ofRepoId(AD_Org_ID),
+				WarehouseId.ofRepoIdOrNull(M_Warehouse_ID),
+				shipBPLocationId,
 				SOTrx.ofBoolean(order.isSOTrx()));
 
 		log.trace("C_Tax_ID={}", taxId.getRepoId());
