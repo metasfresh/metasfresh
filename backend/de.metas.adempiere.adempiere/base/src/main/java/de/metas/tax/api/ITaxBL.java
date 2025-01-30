@@ -35,7 +35,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 
 public interface ITaxBL extends ISingletonService
 {
@@ -70,35 +69,6 @@ public interface ITaxBL extends ISingletonService
 	 * @return tax amount (only actual tax amount, NOT reverse charge tax amt)
 	 */
 	BigDecimal calculateTaxAmt(I_C_Tax tax, BigDecimal amount, boolean taxIncluded, int scale);
-
-	/**
-	 * Get Tax ID - converts parameters to call Get Tax.
-	 *
-	 * <pre>
-	 * 	M_Product_ID/C_Charge_ID	->	C_TaxCategory_ID
-	 * 	billDate, shipDate			->	billDate, shipDate
-	 * 	AD_Org_ID					->	billFromC_Location_ID
-	 * 	M_Warehouse_ID				->	shipFromC_Location_ID
-	 * 	billC_BPartner_Location_ID  ->	billToC_Location_ID
-	 * 	shipC_BPartner_Location_ID 	->	shipToC_Location_ID
-	 *
-	 *  if IsSOTrx is false, bill and ship are reversed
-	 * </pre>
-	 *
-	 * @param billDate                   invoice date
-	 * @param shipDate                   ship date (ignored)
-	 * @param M_Warehouse_ID             warehouse (ignored)
-	 * @param billC_BPartner_Location_ID invoice location
-	 * @param shipC_BPartner_Location_ID ship location (ignored)
-	 * @return C_Tax_ID
-	 */
-	int get(Properties ctx, int M_Product_ID, int C_Charge_ID,
-			Timestamp billDate, Timestamp shipDate,
-			int AD_Org_ID, int M_Warehouse_ID,
-			BPartnerLocationAndCaptureId billC_BPartner_Location_ID,
-			BPartnerLocationAndCaptureId shipC_BPartner_Location_ID,
-			boolean IsSOTrx,
-			@Nullable VatCodeId vatCodeId);
 
 	/**
 	 * Sets the correct flags if given tax has {@link I_C_Tax#isWholeTax()} set.

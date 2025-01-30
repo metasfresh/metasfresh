@@ -37,6 +37,8 @@ import de.metas.document.location.DocumentLocation;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.lang.SOTrx;
+import de.metas.location.LocationId;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
@@ -59,6 +61,8 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.security.permissions.Access;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxId;
 import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
@@ -113,6 +117,7 @@ public class CalloutOrder extends CalloutEngine
 	private static final String SYSCONFIG_CopyOrgFromBPartner = "de.metas.order.CopyOrgFromBPartner";
 
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 
 	/**
 	 * C_Order.C_DocTypeTarget_ID changed: - InvoiceRuld/DeliveryRule/PaymentRule - temporary Document Context: - DocSubType - HasCharges - (re-sets Business Partner info of required)
@@ -330,14 +335,13 @@ public class CalloutOrder extends CalloutEngine
 			orderBL.setBPLocation(order, bpartner);
 		}
 
-
 		if (!orderBL.setBillLocation(order))
 		{
-				final String localizedMessage = new BPartnerNoBillToAddressException(bpartner).getLocalizedMessage();
-				calloutField.fireDataStatusEEvent(
-						localizedMessage,
-						localizedMessage, // this appears onHover
-						true);
+			final String localizedMessage = new BPartnerNoBillToAddressException(bpartner).getLocalizedMessage();
+			calloutField.fireDataStatusEEvent(
+					localizedMessage,
+					localizedMessage, // this appears onHover
+					true);
 		}
 
 		return NO_ERROR;
@@ -652,22 +656,22 @@ public class CalloutOrder extends CalloutEngine
 		final int adOrgId = order.getAD_Org_ID();
 
 		final DocTypeId defaultDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
-				.docBaseType(DocBaseType.SalesOrder)
-				.defaultDocType(true)
-				.adClientId(adClientId)
-				.adOrgId(adOrgId)
-				.build());
+																				   .docBaseType(DocBaseType.SalesOrder)
+																				   .defaultDocType(true)
+																				   .adClientId(adClientId)
+																				   .adOrgId(adOrgId)
+																				   .build());
 		if (defaultDocTypeId != null)
 		{
 			return defaultDocTypeId;
 		}
 
 		final DocTypeId standardOrderDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
-				.docBaseType(DocBaseType.SalesOrder)
-				.docSubType(DocSubType.StandardOrder)
-				.adClientId(adClientId)
-				.adOrgId(adOrgId)
-				.build());
+																						 .docBaseType(DocBaseType.SalesOrder)
+																						 .docSubType(DocSubType.StandardOrder)
+																						 .adClientId(adClientId)
+																						 .adOrgId(adOrgId)
+																						 .build());
 
 		return standardOrderDocTypeId;
 	}
@@ -1049,11 +1053,11 @@ public class CalloutOrder extends CalloutEngine
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-				.orderLine(ol)
-				.resultUOM(ResultUOM.CONTEXT_UOM)
-				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
-				.updateLineNetAmt(true)
-				.build());
+										 .orderLine(ol)
+										 .resultUOM(ResultUOM.CONTEXT_UOM)
+										 .updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
+										 .updateLineNetAmt(true)
+										 .build());
 
 		final Object value = calloutField.getValue();
 		if (value == null)
@@ -1118,21 +1122,25 @@ public class CalloutOrder extends CalloutEngine
 		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(ol.getC_VAT_Code_ID());
 
 		//
-		final int C_Tax_ID = Tax.get(ctx, M_Product_ID, C_Charge_ID, billDate,
-				shipDate, AD_Org_ID, M_Warehouse_ID,
-				billBPLocationId,
-				shipBPLocationId,
-				order.isSOTrx(),
-				vatCodeId);
-		log.trace("Tax ID={}", C_Tax_ID);
+		final TaxId taxId = taxBL.getTaxNotNull(order,
+												null,
+												M_Product_ID,
+												shipDate,
+												OrgId.ofRepoId(AD_Org_ID),
+												WarehouseId.ofRepoIdOrNull(M_Warehouse_ID),
+												shipBPLocationId,
+												SOTrx.ofBoolean(order.isSOTrx()),
+												vatCodeId);
+
+		log.trace("C_Tax_ID={}", taxId.getRepoId());
 		//
-		if (C_Tax_ID <= 0)
+		if (taxId.isNoTaxId())
 		{
 			calloutField.fireDataStatusEEvent(MetasfreshLastError.retrieveError());
 		}
 		else
 		{
-			ol.setC_Tax_ID(C_Tax_ID);
+			ol.setC_Tax_ID(taxId.getRepoId());
 		}
 
 		return amt(calloutField);
@@ -1164,8 +1172,8 @@ public class CalloutOrder extends CalloutEngine
 		if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(changedColumnName))
 		{
 			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.prepare(orderLine)
-					.applyPriceLimitRestrictions(false)
-					.build());
+											 .applyPriceLimitRestrictions(false)
+											 .build());
 
 			priceAndDiscount = OrderLinePriceAndDiscount.of(orderLine, pricePrecision);
 		}
@@ -1391,8 +1399,8 @@ public class CalloutOrder extends CalloutEngine
 						C_OrderLine_ID = 0;
 					}
 					BigDecimal notReserved = MOrderLine.getNotReserved(calloutField.getCtx(),
-							M_Warehouse_ID, M_Product_ID,
-							M_AttributeSetInstance_ID, C_OrderLine_ID);
+																	   M_Warehouse_ID, M_Product_ID,
+																	   M_AttributeSetInstance_ID, C_OrderLine_ID);
 					if (notReserved == null)
 					{
 						notReserved = BigDecimal.ZERO;
@@ -1607,8 +1615,8 @@ public class CalloutOrder extends CalloutEngine
 				OrderDocumentLocationAdapterFactory
 						.deliveryLocationAdapter(order)
 						.setFrom(OrderDocumentLocationAdapterFactory
-								.locationAdapter(order)
-								.toDocumentLocation());
+										 .locationAdapter(order)
+										 .toDocumentLocation());
 			}
 			else
 			{
