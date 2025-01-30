@@ -34,6 +34,7 @@ import de.metas.ui.web.kpi.data.KPIDataResult;
 import de.metas.ui.web.kpi.data.KPIPermissionsProvider;
 import de.metas.ui.web.kpi.data.KPIZoomIntoDetailsInfo;
 import de.metas.ui.web.kpi.descriptor.KPI;
+import de.metas.ui.web.kpi.descriptor.KPIChartType;
 import de.metas.ui.web.kpi.descriptor.sql.SQLDatasourceDescriptor;
 import de.metas.user.UserId;
 import lombok.Builder;
@@ -79,7 +80,15 @@ public class SQLKPIDataLoader
 	@NonNull
 	private static SQLRowLoader createSQLRowLoader(final @NonNull KPI kpi)
 	{
-		return new ValueAndUomSQLRowLoader(kpi.getFields());
+		final KPIChartType chartType = kpi.getChartType();
+		if (KPIChartType.URLs.equals(chartType))
+		{
+			return new URLsSQLRowLoader(kpi.getFields());
+		}
+		else
+		{
+			return new ValueAndUomSQLRowLoader(kpi.getFields());
+		}
 	}
 
 	public KPIDataResult retrieveData()

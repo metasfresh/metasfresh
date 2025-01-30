@@ -37,6 +37,7 @@ public enum KPIChartType implements ReferenceListAwareEnum
 	BarChart(X_WEBUI_KPI.CHARTTYPE_BarChart),
 	PieChart(X_WEBUI_KPI.CHARTTYPE_PieChart),
 	Metric(X_WEBUI_KPI.CHARTTYPE_Metric),
+	URLs(X_WEBUI_KPI.CHARTTYPE_URLs),
 	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<KPIChartType> index = ReferenceListAwareEnums.index(values());
