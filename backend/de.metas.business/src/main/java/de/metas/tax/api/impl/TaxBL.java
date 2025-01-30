@@ -1,57 +1,39 @@
 package de.metas.tax.api.impl;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
-import de.metas.location.ICountryAreaBL;
 import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
-import de.metas.product.ProductId;
 import de.metas.tax.api.CalculateTaxResult;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
-import de.metas.tax.api.TaxNotFoundException;
 import de.metas.tax.api.TaxQuery;
 import de.metas.tax.api.TaxUtils;
 import de.metas.tax.api.VatCodeId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.X_C_TaxCategory;
-import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
-
-import static org.compiere.model.I_C_Tax.COLUMNNAME_TypeOfDestCountry;
-import static org.compiere.model.X_C_Tax.TYPEOFDESTCOUNTRY_EU_Foreign;
-import static org.compiere.model.X_C_Tax.TYPEOFDESTCOUNTRY_Non_EUCountry;
 
 public class TaxBL implements de.metas.tax.api.ITaxBL
 {

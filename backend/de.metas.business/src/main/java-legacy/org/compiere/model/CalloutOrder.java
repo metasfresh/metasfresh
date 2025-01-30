@@ -335,14 +335,13 @@ public class CalloutOrder extends CalloutEngine
 			orderBL.setBPLocation(order, bpartner);
 		}
 
-
 		if (!orderBL.setBillLocation(order))
 		{
-				final String localizedMessage = new BPartnerNoBillToAddressException(bpartner).getLocalizedMessage();
-				calloutField.fireDataStatusEEvent(
-						localizedMessage,
-						localizedMessage, // this appears onHover
-						true);
+			final String localizedMessage = new BPartnerNoBillToAddressException(bpartner).getLocalizedMessage();
+			calloutField.fireDataStatusEEvent(
+					localizedMessage,
+					localizedMessage, // this appears onHover
+					true);
 		}
 
 		return NO_ERROR;
@@ -657,22 +656,22 @@ public class CalloutOrder extends CalloutEngine
 		final int adOrgId = order.getAD_Org_ID();
 
 		final DocTypeId defaultDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
-				.docBaseType(DocBaseType.SalesOrder)
-				.defaultDocType(true)
-				.adClientId(adClientId)
-				.adOrgId(adOrgId)
-				.build());
+																				   .docBaseType(DocBaseType.SalesOrder)
+																				   .defaultDocType(true)
+																				   .adClientId(adClientId)
+																				   .adOrgId(adOrgId)
+																				   .build());
 		if (defaultDocTypeId != null)
 		{
 			return defaultDocTypeId;
 		}
 
 		final DocTypeId standardOrderDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
-				.docBaseType(DocBaseType.SalesOrder)
-				.docSubType(DocSubType.StandardOrder)
-				.adClientId(adClientId)
-				.adOrgId(adOrgId)
-				.build());
+																						 .docBaseType(DocBaseType.SalesOrder)
+																						 .docSubType(DocSubType.StandardOrder)
+																						 .adClientId(adClientId)
+																						 .adOrgId(adOrgId)
+																						 .build());
 
 		return standardOrderDocTypeId;
 	}
@@ -1054,11 +1053,11 @@ public class CalloutOrder extends CalloutEngine
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-				.orderLine(ol)
-				.resultUOM(ResultUOM.CONTEXT_UOM)
-				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
-				.updateLineNetAmt(true)
-				.build());
+										 .orderLine(ol)
+										 .resultUOM(ResultUOM.CONTEXT_UOM)
+										 .updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
+										 .updateLineNetAmt(true)
+										 .build());
 
 		final Object value = calloutField.getValue();
 		if (value == null)
@@ -1124,13 +1123,14 @@ public class CalloutOrder extends CalloutEngine
 
 		//
 		final TaxId taxId = taxBL.getTaxNotNull(order,
-				null, 
-				M_Product_ID, 
-				shipDate, 
-				OrgId.ofRepoId(AD_Org_ID), 
-				WarehouseId.ofRepoIdOrNull(M_Warehouse_ID), 
-				shipBPLocationId, 
-				SOTrx.ofBoolean(order.isSOTrx()));
+												null,
+												M_Product_ID,
+												shipDate,
+												OrgId.ofRepoId(AD_Org_ID),
+												WarehouseId.ofRepoIdOrNull(M_Warehouse_ID),
+												shipBPLocationId,
+												SOTrx.ofBoolean(order.isSOTrx()),
+												vatCodeId);
 
 		log.trace("C_Tax_ID={}", taxId.getRepoId());
 		//
@@ -1172,8 +1172,8 @@ public class CalloutOrder extends CalloutEngine
 		if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(changedColumnName))
 		{
 			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.prepare(orderLine)
-					.applyPriceLimitRestrictions(false)
-					.build());
+											 .applyPriceLimitRestrictions(false)
+											 .build());
 
 			priceAndDiscount = OrderLinePriceAndDiscount.of(orderLine, pricePrecision);
 		}
@@ -1399,8 +1399,8 @@ public class CalloutOrder extends CalloutEngine
 						C_OrderLine_ID = 0;
 					}
 					BigDecimal notReserved = MOrderLine.getNotReserved(calloutField.getCtx(),
-							M_Warehouse_ID, M_Product_ID,
-							M_AttributeSetInstance_ID, C_OrderLine_ID);
+																	   M_Warehouse_ID, M_Product_ID,
+																	   M_AttributeSetInstance_ID, C_OrderLine_ID);
 					if (notReserved == null)
 					{
 						notReserved = BigDecimal.ZERO;
@@ -1615,8 +1615,8 @@ public class CalloutOrder extends CalloutEngine
 				OrderDocumentLocationAdapterFactory
 						.deliveryLocationAdapter(order)
 						.setFrom(OrderDocumentLocationAdapterFactory
-								.locationAdapter(order)
-								.toDocumentLocation());
+										 .locationAdapter(order)
+										 .toDocumentLocation());
 			}
 			else
 			{

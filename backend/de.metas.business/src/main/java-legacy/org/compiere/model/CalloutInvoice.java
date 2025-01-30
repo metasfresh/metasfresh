@@ -36,13 +36,12 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
-import de.metas.tax.api.VatCodeId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.LegacyUOMConversionUtils;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -480,7 +479,8 @@ public class CalloutInvoice extends CalloutEngine
 												OrgId.ofRepoId(orgID),
 												WarehouseId.ofRepoIdOrNull(warehouseID),
 												shipBPartnerLocationID,
-												SOTrx.ofBoolean(invoice.isSOTrx()));
+												SOTrx.ofBoolean(invoice.isSOTrx()),
+												vatCodeId);
 		
 		log.debug("C_Tax_ID={}", taxID.getRepoId());
 
