@@ -8,7 +8,6 @@ import TokenRoute from './TokenRoute';
 import LoginRoute from './LoginRoute';
 import ResetPasswordRoute from './ResetPasswordRoute';
 
-import Calendar from '../containers/Calendar';
 // import PluginContainer, { pluginWrapper } from './components/PluginContainer';
 import PaypalReservationConfirm from '../containers/PaypalReservationConfirm.js';
 
@@ -95,7 +94,6 @@ const Routes = () => {
           return <PaypalReservationConfirm token={query.token} />;
         }}
       />
-      <Route path="/calendar" component={Calendar} />
       <PrivateRoute path="/" />
     </Switch>
   );
