@@ -68,9 +68,7 @@ public class MainRowBucketId
 			@NonNull final ProductWithDemandSupply qtyRecord,
 			@NonNull final LocalDate date)
 	{
-		return new MainRowBucketId(
-				qtyRecord.getProductId(),
-				date);
+		return new MainRowBucketId(qtyRecord.getProductId(), date);
 	}
 
 	public static MainRowBucketId createPlainInstance(@NonNull final ProductId productId, @NonNull final LocalDate date)

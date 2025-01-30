@@ -20,6 +20,13 @@ public class Cell
 		this.isNull = isNull;
 	}
 
+	@Deprecated
+	@Override
+	public String toString()
+	{
+		return getAsString();
+	}
+
 	public static Cell ofNullable(@Nullable final Object valueObj)
 	{
 		if (valueObj instanceof Cell)

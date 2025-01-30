@@ -35,7 +35,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -43,7 +48,7 @@ import java.util.zip.ZipOutputStream;
 @UtilityClass
 public final class FileUtil
 {
-	public static void copy(File from, OutputStream out) throws IOException
+	public static void copy(final File from, final OutputStream out) throws IOException
 	{
 		try (final InputStream in = new FileInputStream(from))
 		{
@@ -51,7 +56,7 @@ public final class FileUtil
 		}
 	}
 
-	public static void copy(InputStream in, File to) throws IOException
+	public static void copy(final InputStream in, final File to) throws IOException
 	{
 		try (final FileOutputStream out = new FileOutputStream(to))
 		{
@@ -59,9 +64,9 @@ public final class FileUtil
 		}
 	}
 
-	public static void copy(InputStream in, OutputStream out) throws IOException
+	public static void copy(final InputStream in, final OutputStream out) throws IOException
 	{
-		byte[] buf = new byte[4096];
+		final byte[] buf = new byte[4096];
 		int len;
 		while ((len = in.read(buf)) > 0)
 		{
@@ -69,33 +74,38 @@ public final class FileUtil
 		}
 		out.flush();
 	}
+	
+	public static String getTempDir()
+	{
+		return System.getProperty("java.io.tmpdir");
+	}
 
 	public static File createTempFile(final String fileExtension, final String title)
 	{
-		final String path = System.getProperty("java.io.tmpdir");
+		final String path = getTempDir();
 		final String prefix = makeFilePrefix(title);
 
-		File file;
+		final File file;
 		try
 		{
 			file = File.createTempFile(prefix, "." + fileExtension, new File(path));
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw new RuntimeException(e.getLocalizedMessage(), e);
 		}
 		return file;
 	}
 
-	private static String makeFilePrefix(String name)
+	private static String makeFilePrefix(final String name)
 	{
 		if (name == null || name.trim().length() == 0)
 		{
 			return "Report_";
 		}
-		StringBuilder prefix = new StringBuilder();
-		char[] nameArray = name.toCharArray();
-		for (char ch : nameArray)
+		final StringBuilder prefix = new StringBuilder();
+		final char[] nameArray = name.toCharArray();
+		for (final char ch : nameArray)
 		{
 			if (Character.isLetterOrDigit(ch))
 			{
@@ -157,7 +167,7 @@ public final class FileUtil
 	/**
 	 * Change file's extension.
 	 *
-	 * @param filename filename or URL
+	 * @param filename  filename or URL
 	 * @param extension file extension to be used (with or without dot); in case the extension is null then it won't be appended so only the basename will be returned
 	 * @return filename with new file extension or same filename if the filename does not have an extension
 	 */
@@ -208,7 +218,7 @@ public final class FileUtil
 		{
 			tempFile = File.createTempFile(suffix, ".tmp");
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw new RuntimeException("Cannot create temporary directory with suffix '" + suffix + "'", e);
 		}
@@ -258,6 +268,22 @@ public final class FileUtil
 		return sb.toString();
 	}
 
+	public static Optional<Path> findNotExistingFile(@NonNull Path directory, @NonNull final String desiredFilename, final int tries)
+	{
+		final String fileBaseNameInitial = getFileBaseName(desiredFilename);
+		final String ext = StringUtils.trimBlankToNull(getFileExtension(desiredFilename));
+		Path file = directory.resolve(desiredFilename);
+		for (int i = 1; Files.exists(file) && i <= tries - 1; i++)
+		{
+			final String newFilename = fileBaseNameInitial
+					+ "_" + (i + 1)
+					+ (ext != null ? "." + ext : "");
+			file = directory.resolve(newFilename);
+		}
+
+		return !Files.exists(file) ? Optional.of(file) : Optional.empty();
+	}
+
 	public static File zip(@NonNull final List<File> files) throws IOException
 	{
 		final File zipFile = File.createTempFile("ZIP", ".zip");
@@ -294,5 +320,14 @@ public final class FileUtil
 
 			zos.closeEntry();
 		}
+	}
+
+	/**
+	 * Java 8 implemention of Files.writeString
+	 */
+	public static void writeString(final Path path, final String content, final Charset charset, final OpenOption... options) throws IOException
+	{
+		final byte[] bytes = content.getBytes(charset);
+		Files.write(path, bytes, options);
 	}
 }

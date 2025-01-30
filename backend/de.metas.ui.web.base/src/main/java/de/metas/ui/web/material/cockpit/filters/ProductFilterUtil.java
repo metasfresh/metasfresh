@@ -4,6 +4,7 @@ import com.google.common.base.Predicates;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
@@ -11,7 +12,7 @@ import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -55,7 +56,7 @@ public class ProductFilterUtil
 	private static final AdMessageKey MSG_FILTER_CAPTION = AdMessageKey.of("Product");
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-
+	
 	public static DocumentFilterDescriptor createFilterDescriptor()
 	{
 		final DocumentFilterParamDescriptor.Builder productNameParameter = DocumentFilterParamDescriptor.builder()
@@ -74,7 +75,7 @@ public class ProductFilterUtil
 				.fieldName(I_M_Product.COLUMNNAME_M_Product_Category_ID)
 				.displayName(msgBL.translatable(I_M_Product.COLUMNNAME_M_Product_Category_ID))
 				.widgetType(DocumentFieldWidgetType.Lookup)
-				.lookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Product_Category.Table_Name).provideForFilter())
+				.lookupDescriptor(LookupDescriptorProviders.sharedInstance().searchInTable(I_M_Product_Category.Table_Name).provideForFilter())
 				.operator(Operator.EQUAL);
 
 		final DocumentFilterParamDescriptor.Builder isPurchasedParameter = DocumentFilterParamDescriptor.builder()
@@ -171,7 +172,7 @@ public class ProductFilterUtil
 
 	public static IQueryFilter<I_M_Product> createProductQueryFilterOrNull(
 			@Nullable final ProductFilterVO productFilterVO,
-			@Nullable final boolean nullForEmptyFilterVO)
+			final boolean nullForEmptyFilterVO)
 	{
 		if (productFilterVO == null)
 		{
@@ -233,7 +234,7 @@ public class ProductFilterUtil
 			productFilter.addEqualsFilter(I_M_Product.COLUMN_Discontinued, isDiscontinued);
 			anyRestrictionAdded = true;
 		}
-
+		
 		//
 		if (!anyRestrictionAdded && nullForEmptyFilterVO)
 		{
@@ -310,7 +311,7 @@ public class ProductFilterUtil
 		{
 			return false;
 		}
-
+		
 		return true;
 	}
 }

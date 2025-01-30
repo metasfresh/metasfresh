@@ -25,7 +25,7 @@ import de.metas.logging.LogManager;
 import de.metas.security.IUserRolePermissions;
 import de.metas.user.UserId;
 import de.metas.util.Services;
-import org.adempiere.ad.migration.logger.MigrationScriptFileLogger;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.PLAFEditorPanel;
 import org.adempiere.plaf.UIDefaultsEditorDialog;
@@ -224,7 +224,7 @@ public final class Preference extends CDialog
 		adempiereSys.setText(msgBL.getMsg(Env.getCtx(), "AdempiereSys", true));
 		adempiereSys.setToolTipText(msgBL.getMsg(Env.getCtx(), "AdempiereSys", false));
 		logMigrationScript.setText(msgBL.getMsg(Env.getCtx(), "LogMigrationScript", true));
-		logMigrationScript.setToolTipText(MigrationScriptFileLogger.getMigrationScriptDirectory().toString());
+		logMigrationScript.setToolTipText(MigrationScriptFileLoggerHolder.getMigrationScriptDirectory().toString());
 		printPreview.setText(msgBL.getMsg(Env.getCtx(), "AlwaysPrintPreview", true));
 		printPreview.setToolTipText(msgBL.getMsg(Env.getCtx(), "AlwaysPrintPreview", false));
 		validateConnectionOnStartup.setText(msgBL.getMsg(Env.getCtx(), "ValidateConnectionOnStartup", true));
@@ -503,7 +503,7 @@ public final class Preference extends CDialog
 		// AdempiereSys
 		adempiereSys.setSelected(Ini.isPropertyBool(Ini.P_ADEMPIERESYS));
 		// LogMigrationScript
-		logMigrationScript.setSelected(Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT));
+		logMigrationScript.setSelected(MigrationScriptFileLoggerHolder.isEnabled());
 		if (Env.getAD_Client_ID(Env.getCtx()) > 20)
 		{
 			adempiereSys.setSelected(false);
@@ -638,7 +638,7 @@ public final class Preference extends CDialog
 		// AdempiereSys
 		Ini.setProperty(Ini.P_ADEMPIERESYS, adempiereSys.isSelected());
 		// LogMigrationScript
-		Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, logMigrationScript.isSelected());
+		MigrationScriptFileLoggerHolder.setEnabled(logMigrationScript.isSelected());
 		// AutoLogin
 		Ini.setProperty(Ini.P_A_LOGIN, (autoLogin.isSelected()));
 		// Save Password

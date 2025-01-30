@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Switch, Router } from 'react-router-dom';
+import { Route, Router, Switch } from 'react-router-dom';
 import queryString from 'query-string';
 
 import history from '../services/History';

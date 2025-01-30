@@ -15,7 +15,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 import de.metas.ui.web.window.model.Document.CopyMode;
-import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
+import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.util.NumberUtils;
 import de.metas.util.lang.RepoIdAware;
@@ -29,6 +29,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 /*
  * #%L
@@ -309,10 +310,10 @@ class DocumentField implements IDocumentField
 		// Apply number precision
 		if (valueConv instanceof BigDecimal)
 		{
-			final Integer precision = getWidgetType().getStandardNumberPrecision();
-			if (precision != null)
+			final OptionalInt minPrecision = getDescriptor().getMinPrecision();
+			if (minPrecision.isPresent())
 			{
-				return NumberUtils.setMinimumScale((BigDecimal)valueConv, precision);
+				return NumberUtils.setMinimumScale((BigDecimal)valueConv, minPrecision.getAsInt());
 			}
 			else
 			{

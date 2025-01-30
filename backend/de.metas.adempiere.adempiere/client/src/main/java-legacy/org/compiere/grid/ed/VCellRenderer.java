@@ -136,17 +136,6 @@ public final class VCellRenderer extends DefaultTableCellRenderer
 	/** Logger */
 	private static final transient Logger log = LogManager.getLogger(VCellRenderer.class);
 
-	/**
-	 * Get TableCell RendererComponent.
-	 * 
-	 * @param table table
-	 * @param value value
-	 * @param isSelected selected
-	 * @param hasFocus focus
-	 * @param row row
-	 * @param col col
-	 * @return component
-	 */
 	@Override
 	public Component getTableCellRendererComponent(final JTable table,
 			final Object value,

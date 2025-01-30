@@ -23,6 +23,7 @@
 package de.metas;
 
 import au.com.origin.snapshots.Expect;
+
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.user.UserId;
 import de.metas.util.JSONObjectMapper;
@@ -34,7 +35,7 @@ import java.time.Month;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(SnapshotExtension.class)
 class CreatedUpdatedInfoTest

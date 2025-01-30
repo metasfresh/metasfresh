@@ -2,7 +2,7 @@
  * #%L
  * de-metas-common-util
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -588,6 +588,7 @@ public final class Check
 	/**
 	 * @return return true if the string is null, has length 0, or contains only whitespace.
 	 */
+	@Contract("null -> true")
 	public static boolean isBlank(@Nullable final String str)
 	{
 		return EmptyUtil.isBlank(str);

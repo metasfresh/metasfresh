@@ -1,12 +1,10 @@
 import {
-  completeRequest,
   deleteRequest,
   discardNewRequest,
   formatParentUrl,
   getTabLayoutRequest,
   getTabRequest,
   getZoomIntoWindow,
-  initQuickInput,
   topActionsRequest,
 } from './window';
 import {
@@ -32,20 +30,7 @@ import {
   patchViewAttributesRequest,
   quickActionsRequest,
 } from './view';
-import {
-  checkLoginRequest,
-  getAvailableLang,
-  getAvatar,
-  getResetPasswordInfo,
-  loginCompletionRequest,
-  loginRequest,
-  loginWithToken,
-  logoutRequest,
-  resetPasswordComplete,
-  resetPasswordGetAvatar,
-  resetPasswordRequest,
-  setUserLang,
-} from './login';
+import { getResetPasswordInfo, resetPasswordComplete } from './login';
 import {
   breadcrumbRequest,
   elementPathRequest,
@@ -61,7 +46,6 @@ export {
   advSearchRequest,
   breadcrumbRequest,
   browseViewRequest,
-  completeRequest,
   createViewRequest,
   deleteRequest,
   deleteStaticFilter,
@@ -70,8 +54,6 @@ export {
   elementPathRequest,
   filterViewRequest,
   formatParentUrl,
-  getAvailableLang,
-  getAvatar,
   getData,
   getLayout,
   getNotificationsRequest,
@@ -88,14 +70,8 @@ export {
   getViewRowsByIds,
   getZoomIntoWindow,
   headerPropertiesRequest,
-  initQuickInput,
-  checkLoginRequest,
   locationConfigRequest,
   locationSearchRequest,
-  loginCompletionRequest,
-  loginRequest,
-  loginWithToken,
-  logoutRequest,
   nodePathsRequest,
   patchRequest,
   pathRequest,
@@ -104,9 +80,5 @@ export {
   quickActionsRequest,
   rootRequest,
   resetPasswordComplete,
-  resetPasswordGetAvatar,
-  resetPasswordRequest,
-  startProcess,
-  setUserLang,
   topActionsRequest,
 };

@@ -2,9 +2,12 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import SpinnerOverlay from '../app/SpinnerOverlay';
-import { deleteRequest } from '../../api';
-import { attachmentsRequest, openFile } from '../../actions/GenericActions';
 import AttachUrl from './AttachUrl';
+import {
+  deleteAttachment,
+  getAttachments,
+  getAttachmentUrl,
+} from '../../api/window';
 
 /**
  * @file Class based component.
@@ -45,7 +48,7 @@ class Attachments extends Component {
       return;
     }
 
-    attachmentsRequest('window', windowId, documentId)
+    getAttachments({ windowId, documentId })
       .then((response) => {
         this.setState({ data: response.data }, () => {
           if (this.attachments) {
@@ -91,28 +94,23 @@ class Attachments extends Component {
     this.setState({ isAttachUrlOpen: false });
   };
 
-  handleClickAttachment = (id) => {
-    const { windowType, docId } = this.props;
-    openFile('window', windowType, docId, 'attachments', id);
+  handleClickAttachment = (attachmentEntryId) => {
+    const { windowType: windowId, docId: documentId } = this.props;
+    const url = getAttachmentUrl({ windowId, documentId, attachmentEntryId });
+    window.open(url, '_blank');
   };
 
-  handleDeleteAttachment = (e, id) => {
-    const { windowType, docId } = this.props;
+  handleDeleteAttachment = (e, attachmentEntryId) => {
+    const { windowType: windowId, docId: documentId } = this.props;
     e.stopPropagation();
     if (
       window.confirm(
         `${counterpart.translate('window.attachment.deleteQuestion')}`
       )
     ) {
-      deleteRequest('window', windowType, docId, null, null, 'attachments', id)
-        .then(() => {
-          return attachmentsRequest('window', windowType, docId);
-        })
-        .then((response) => {
-          this.setState({
-            data: response.data,
-          });
-        });
+      deleteAttachment({ windowId, documentId, attachmentEntryId })
+        .then(() => getAttachments({ windowId, documentId }))
+        .then((response) => this.setState({ data: response.data }));
     }
   };
 
@@ -251,6 +249,11 @@ class Attachments extends Component {
       content = this.renderAttachmentSpinner();
     }
 
+    console.log('render', {
+      content,
+      actions,
+      isDocumentNotFound: this.isDocumentNotFound(),
+    });
     return (
       <div
         onKeyDown={this.handleKeyDown}

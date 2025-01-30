@@ -12,14 +12,12 @@ import org.adempiere.ad.table.api.TableName;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.compiere.model.copy.ColumnCloningStrategy;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Optional;
-import java.util.Properties;
 
 /**
  * PO Info Column Info Value Object
@@ -59,7 +57,7 @@ public final class POInfoColumn implements Serializable
 			final boolean isTranslated,
 			final boolean isEncrypted,
 			final boolean isAllowLogging,
-			final boolean isRestAPICustomColumn,
+			final int adSequenceID,
 			@NonNull final ColumnCloningStrategy cloningStrategy,
 			final boolean isIdentifier)
 	{
@@ -107,7 +105,7 @@ public final class POInfoColumn implements Serializable
 		IsKey = isKey;
 		IsParent = isParent;
 		//
-		AD_Reference_Value_ID = ad_Reference_Value_ID;
+		this.AD_Reference_Value_ID = ad_Reference_Value_ID;
 		// ValidationCode = validationCode;
 		this.AD_Val_Rule_ID = AD_Val_Rule_ID;
 		//
@@ -119,13 +117,13 @@ public final class POInfoColumn implements Serializable
 		IsTranslated = isTranslated;
 		IsEncrypted = isEncrypted;
 		IsAllowLogging = isAllowLogging;
+		AD_Sequence_ID = adSequenceID;
 		AD_Reference_Value_KeyColumn_DisplayType = ad_Reference_Value_KeyColumn_DisplayType;
-		IsRestAPICustomColumn = isRestAPICustomColumn;
 		IsIdentifier = isIdentifier;
 		this.cloningStrategy = cloningStrategy;
 
 		this._referencedTableName = computeReferencedTableName(this.displayType, AD_Reference_Value_TableName);
-
+		
 	}   // Column
 
 	private static boolean isString(
@@ -155,8 +153,8 @@ public final class POInfoColumn implements Serializable
 			return !isNumericKey;
 		}
 
-				return false;
-			}
+		return false;
+	}
 
 	public boolean isString()
 	{
@@ -269,8 +267,6 @@ public final class POInfoColumn implements Serializable
 	final BigDecimal ValueMax_BD;
 
 	final boolean IsIdentifier;
-
-	final boolean IsRestAPICustomColumn;
 	@Getter private final ColumnCloningStrategy cloningStrategy;
 
 	/* package */ boolean IsCalculated = false;
@@ -283,12 +279,9 @@ public final class POInfoColumn implements Serializable
 
 	private final String sqlColumnForSelect;
 
-	/**
-	 * Cached {@link MLookupInfo} for {@link Env#WINDOW_None} (most used case)
-	 */
-	@SuppressWarnings("OptionalUsedAsFieldOrParameterType") @Nullable
-	private Optional<MLookupInfo> _lookupInfoForWindowNone = null;
 	private final Optional<String> _referencedTableName;
+
+	private final int AD_Sequence_ID;
 
 	private final int AD_Reference_Value_KeyColumn_DisplayType;
 
@@ -303,7 +296,7 @@ public final class POInfoColumn implements Serializable
 		return "POInfo.Column["
 				+ ColumnName
 				+ ",ID=" + AD_Column_ID
-				+ ",DisplayType=" + displayType
+				+ ",DisplayType=" + this.displayType
 				+ ",ColumnClass=" + ColumnClass
 				+ "]";
 	}    // toString
@@ -324,8 +317,8 @@ public final class POInfoColumn implements Serializable
 		catch (final Exception ex) // i.e. NumberFormatException
 		{
 			logger.error("Cannot parse {}=`{}`. Returning null.", name, valueNorm, ex);
-		return null;
-	}
+			return null;
+		}
 	}
 
 	public String getColumnName()
@@ -393,14 +386,14 @@ public final class POInfoColumn implements Serializable
 		return org.compiere.util.DisplayType.isLookup(displayType);
 	}
 
-	public boolean isIdentifier()
+	public int getAD_Sequence_ID()
 	{
-		return this.IsIdentifier;
+		return AD_Sequence_ID;
 	}
 
-	public boolean isRestAPICustomColumn()
+	public boolean isIdentifier()
 	{
-		return IsRestAPICustomColumn;
+		return IsIdentifier;
 	}
 
 	@Nullable
@@ -426,74 +419,6 @@ public final class POInfoColumn implements Serializable
 		}
 
 		return Optional.empty();
-	}
-
-	@Nullable
-	public MLookupInfo getLookupInfo(final int windowNo)
-	{
-		//
-		// List, Table, TableDir
-		if (isLookup())
-		{
-			if (windowNo == Env.WINDOW_None)
-			{
-				if (_lookupInfoForWindowNone == null)
-				{
-					final MLookupInfo lookupInfoCached = MLookupFactory.getLookupInfo(
-							Env.WINDOW_None
-							, displayType
-							, tableName
-							, ColumnName
-							, AD_Reference_Value_ID.getRepoId()
-							, IsParent
-							, AD_Val_Rule_ID.getRepoId());
-					_lookupInfoForWindowNone = Optional.ofNullable(lookupInfoCached);
-				}
-				return _lookupInfoForWindowNone.orElse(null);
-			}
-
-			return MLookupFactory.getLookupInfo(
-					windowNo
-					, displayType
-					, tableName
-					, ColumnName
-					, AD_Reference_Value_ID.getRepoId()
-					, IsParent
-					, AD_Val_Rule_ID.getRepoId());
-		}
-		else
-		{
-			return null;
-		}
-	}
-
-	@Nullable
-	public Lookup getLookup(final Properties ctx, final int windowNo)
-	{
-		//
-		// List, Table, TableDir
-		if (isLookup())
-		{
-			try
-			{
-				final MLookupInfo lookupInfo = getLookupInfo(windowNo);
-				if (lookupInfo == null)
-				{
-					return null;
-				}
-
-				return MLookupFactory.ofLookupInfo(ctx, lookupInfo, AD_Column_ID.getRepoId());
-			}
-			catch (final Exception e)
-			{
-				return null;
-			}
-		}
-		else
-		{
-			return null;
-		}
-
 	}
 
 	public boolean isPasswordColumn()

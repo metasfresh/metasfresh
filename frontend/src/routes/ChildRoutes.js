@@ -1,8 +1,8 @@
 import React from 'react';
-import { Route, Switch, Redirect, useHistory } from 'react-router-dom';
+import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 
 import { useAuth } from '../hooks/useAuth';
-import { MasterWindowRoute, BoardRoute, DocListRoute } from './KeyRoutes';
+import { BoardRoute, DocListRoute, MasterWindowRoute } from './KeyRoutes';
 
 import Board from '../containers/Board.js';
 import Dashboard from '../containers/Dashboard.js';

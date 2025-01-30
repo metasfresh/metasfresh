@@ -8,6 +8,7 @@ import FiltersDateStepper from './FiltersDateStepper';
 import FiltersItem from './FiltersItem';
 import InlineFilterItem from './InlineFilterItem';
 import { DATE_FIELD_TYPES, TIME_FIELD_TYPES } from '../../constants/Constants';
+import { find } from 'lodash';
 
 const mainFilterClasses = `btn btn-filter btn-meta-outline-secondary btn-sm toggle-filters`;
 
@@ -29,7 +30,7 @@ class FiltersNotIncluded extends PureComponent {
   /**
    * @method toggleFilter
    * @summary Updates in the state the openFilterIdx with the given filter index (matched from the filtersActive)
-   * @param {integer} index - position that corresponds to a filter in the filtersActive
+   * @param index - position that corresponds to a filter in the filtersActive
    */
   toggleFilter = (index) => this.setState({ openFilterIdx: index });
 
@@ -75,41 +76,40 @@ class FiltersNotIncluded extends PureComponent {
       active,
       modalVisible,
       activeFiltersCaptions,
-      filterId,
       allChildFiltersCleared,
     } = this.props;
     const { openFilterIdx } = this.state;
 
     return (
       <div className="filter-wrapper filters-frequent">
-        {data.map((item, index) => {
-          if (!item.parameters) {
+        {data.map((filter, index) => {
+          if (!filter.parameters) {
             return false;
           }
-          const parameter = item.parameters[0];
-          const filterType = parameter.widgetType;
+          const firstParameter = filter.parameters[0];
+          const filterType = firstParameter.widgetType;
           const dateStepper =
             // keep implied information (e.g. for refactoring)
-            item.frequent &&
-            item.parameters.length === 1 &&
-            parameter.showIncrementDecrementButtons &&
-            item.isActive &&
+            filter.frequent &&
+            filter.parameters.length === 1 &&
+            firstParameter.showIncrementDecrementButtons &&
+            filter.isActive &&
             DATE_FIELD_TYPES.includes(filterType) &&
             !TIME_FIELD_TYPES.includes(filterType);
 
           const isActive =
-            item.isActive && activeFiltersCaptions[item.filterId]
-              ? activeFiltersCaptions[item.filterId]
+            filter.isActive && activeFiltersCaptions[filter.filterId]
+              ? activeFiltersCaptions[filter.filterId]
               : null;
 
-          if (item.inlineRenderMode === 'button') {
+          if (filter.inlineRenderMode === 'button') {
             return (
               <div className="filter-wrapper filter-inline" key={index}>
                 {dateStepper && (
                   <FiltersDateStepper
-                    active={this.findActiveFilter(item.filterId)}
+                    active={this.findActiveFilter(filter.filterId)}
                     applyFilters={applyFilters}
-                    filter={item}
+                    filter={filter}
                   />
                 )}
 
@@ -127,29 +127,29 @@ class FiltersNotIncluded extends PureComponent {
                     this.deviceType === 'desktop'
                       ? counterpart.translate('window.filters.caption2')
                       : ''
-                  }: ${item.caption}`}
+                  }: ${filter.caption}`}
                 </button>
 
                 {dateStepper && (
                   <FiltersDateStepper
-                    active={this.findActiveFilter(item.filterId)}
+                    active={this.findActiveFilter(filter.filterId)}
                     applyFilters={applyFilters}
-                    filter={item}
+                    filter={filter}
                     next
                   />
                 )}
 
                 {openFilterIdx === index && (
                   <FiltersItem
-                    captionValue={item.captionValue}
+                    captionValue={filter.captionValue}
                     key={index}
                     windowType={windowType}
-                    data={item}
+                    data={filter}
                     closeFilterMenu={this.toggleFilter}
                     clearFilters={clearFilters}
                     applyFilters={applyFilters}
                     notValidFields={notValidFields}
-                    isActive={item.isActive}
+                    isActive={filter.isActive}
                     active={active}
                     onShow={this.handleShowTrue}
                     onHide={this.handleShowFalse}
@@ -166,25 +166,26 @@ class FiltersNotIncluded extends PureComponent {
 
           return (
             <div key={index} className="inline-filters">
-              {item.parameters &&
-                item.parameters.map((filter, idx) => (
+              {filter.parameters &&
+                filter.parameters.map((parameter, idx) => (
                   <InlineFilterItem
-                    captionValue={filter.captionValue}
-                    key={`${idx}_${item.filterId}`}
+                    key={`${idx}_${filter.filterId}`}
                     id={idx}
-                    parentFilter={item}
-                    windowType={windowType}
-                    data={filter}
+                    //rootFilterId={filterId}
+                    filter={filter}
+                    filterParameter={parameter}
+                    filterData={
+                      active && active.length
+                        ? find(active, { filterId: filter.filterId })
+                        : null
+                    }
+                    filtersActive={active}
+                    windowId={windowType}
+                    viewId={viewId}
                     clearFilters={clearFilters}
                     applyFilters={applyFilters}
-                    notValidFields={notValidFields}
-                    isActive={filter.isActive}
-                    active={active}
                     onShow={this.handleShowTrue}
                     onHide={this.handleShowFalse}
-                    viewId={viewId}
-                    outsideClick={this.outsideClick}
-                    filterId={filterId}
                   />
                 ))}
             </div>

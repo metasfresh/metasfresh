@@ -1,8 +1,8 @@
 package de.metas.ui.web.window.descriptor;
 
-import java.util.Optional;
-
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -30,12 +30,11 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.Lo
  * Provides {@link LookupDescriptor} for a given {@link LookupScope}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @FunctionalInterface
 public interface LookupDescriptorProvider
 {
-	public static enum LookupScope
+	enum LookupScope
 	{
 		DocumentField, DocumentFilter
 	}
@@ -45,15 +44,9 @@ public interface LookupDescriptorProvider
 	 */
 	Optional<LookupDescriptor> provideForScope(LookupScope scope);
 
-	default Optional<LookupDescriptor> provide()
-	{
-		return provideForScope(LookupScope.DocumentField);
-	}
+	default Optional<LookupDescriptor> provide() {return provideForScope(LookupScope.DocumentField);}
 
-	default Optional<LookupDescriptor> provideForFilter()
-	{
-		return provideForScope(LookupScope.DocumentFilter);
-	}
+	default Optional<LookupDescriptor> provideForFilter() {return provideForScope(LookupScope.DocumentFilter);}
 
 	default boolean isNumericKey()
 	{
@@ -64,14 +57,12 @@ public interface LookupDescriptorProvider
 
 	default Optional<String> getTableName()
 	{
-		return provide()
-				.flatMap(LookupDescriptor::getTableName);
+		return provide().flatMap(LookupDescriptor::getTableName);
 	}
 
 	default Optional<LookupSource> getLookupSourceType()
 	{
-		return provide()
-				.map(LookupDescriptor::getLookupSourceType);
+		return provide().map(LookupDescriptor::getLookupSourceType);
 	}
 
 }

@@ -43,16 +43,19 @@ import {
   UPDATE_RAW_MODAL,
   UPDATE_TAB_LAYOUT,
 } from '../constants/ActionTypes';
-import { createView, setIncludedView, unsetIncludedView } from './ViewActions';
+import { createView, patchViewAction } from './ViewActions';
 import { PROCESS_NAME } from '../constants/Constants';
 import { preFormatPostDATA, toggleFullScreen } from '../utils';
-import { getScope, parseToDisplay } from '../utils/documentListHelper';
+import {
+  getInvalidDataItem,
+  getScope,
+  parseItemToDisplay,
+  parseToDisplay,
+} from '../utils/documentListHelper';
 
 import {
   formatParentUrl,
   getData,
-  getLayout,
-  getTabLayoutRequest,
   getTabLayoutRequest,
   getTabRequest,
   patchRequest,
@@ -72,10 +75,12 @@ import {
 } from './CommentsPanelActions';
 import {
   createTabTable,
+  partialUpdateGridTableRows,
   updateTableRowProperty,
   updateTabTable,
 } from './TableActions';
 import { inlineTabAfterGetLayout, patchInlineTab } from './InlineTabActions';
+import { getPrintFile, getPrintUrl } from '../api/window';
 import { STATIC_MODAL_TYPE_ChangeCurrentWorkplace } from '../components/app/ChangeCurrentWorkplace';
 
 export function toggleOverlay(data) {
@@ -840,6 +845,30 @@ export function callAPI({ windowId, docId, tabId, rowId, target, verb, data }) {
   };
 }
 
+export const patchWindow = ({
+  windowId,
+  documentId = 'NEW',
+  tabId = null,
+  rowId = null,
+  fieldName,
+  value,
+}) => {
+  return patch(
+    'window', // entity
+    windowId,
+    documentId,
+    tabId,
+    rowId,
+    fieldName,
+    value,
+    false, //isModal
+    false, // isAdvanced
+    null, // viewId
+    false, // isEdit
+    false // disconnected
+  );
+};
+
 /*
  * Wrapper for patch request of widget elements
  * when responses should merge store
@@ -859,6 +888,16 @@ export function patch(
   isEdit,
   disconnected
 ) {
+  if (entity === 'documentView' && isModal) {
+    return patchViewAction({
+      windowId: windowType,
+      viewId,
+      rowId,
+      fieldName: property,
+      value,
+    });
+  }
+
   return async (dispatch) => {
     const symbol = Symbol();
 
@@ -901,7 +940,11 @@ export function patch(
         response.data.documents instanceof Array
           ? response.data.documents
           : response.data;
-      const dataItem = data[0];
+
+      const invalidDataItem = getInvalidDataItem(data);
+
+      const dataItem = invalidDataItem === null ? data[0] : invalidDataItem;
+
       const includedTabsInfo =
         dataItem && dataItem.includedTabsInfo
           ? dataItem.includedTabsInfo
@@ -1350,4 +1393,30 @@ export function setSpinner(data) {
     type: SET_SPINNER,
     payload: data,
   };
+}
+
+export function printDocument({
+  windowId,
+  documentId,
+  documentNo,
+  options = {},
+}) {
+  const filename = `${windowId}_${documentNo ?? documentId}.pdf`;
+
+  let isOpenInBrowser = true;
+  if (options && options['PRINTER_OPTS_IsAlsoSendToBrowser'] !== undefined) {
+    isOpenInBrowser = !!options['PRINTER_OPTS_IsAlsoSendToBrowser'];
+  } else if (options && options['IsAlsoSendToBrowser'] !== undefined) {
+    isOpenInBrowser = !!options['IsAlsoSendToBrowser'];
+  } else {
+    isOpenInBrowser = true;
+  }
+
+  if (isOpenInBrowser) {
+    const url = getPrintUrl({ windowId, documentId, filename, options });
+    window.open(url, '_blank');
+    return Promise.resolve();
+  } else {
+    return getPrintFile({ windowId, documentId, filename, options });
+  }
 }

@@ -36,7 +36,7 @@ import java.util.Map;
 @UtilityClass
 public class RowsDataTool
 {
-	public static <T extends IViewRow> Map<DocumentId, T> extractAllRows(Collection<T> topLevelRows)
+	public static <T extends IViewRow> Map<DocumentId, T> extractAllRows(final Collection<T> topLevelRows)
 	{
 		final ImmutableMap.Builder<DocumentId, T> allRows = ImmutableMap.builder();
 		topLevelRows.forEach(topLevelRow -> {

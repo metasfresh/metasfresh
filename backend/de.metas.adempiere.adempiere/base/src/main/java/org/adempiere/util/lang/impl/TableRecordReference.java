@@ -170,7 +170,7 @@ public final class TableRecordReference implements ITableRecordReference
 	}
 
 	@Nullable
-	public static ITableRecordReference ofReferencedOrNull(@Nullable final Object model)
+	public static TableRecordReference ofReferencedOrNull(@Nullable final Object model)
 	{
 		if (model == null)
 		{
@@ -208,6 +208,14 @@ public final class TableRecordReference implements ITableRecordReference
 	public static TableRecordReference of(@JsonProperty("tableName") final String tableName, @JsonProperty("recordId") final int recordId)
 	{
 		return new TableRecordReference(tableName, recordId);
+	}
+
+	@Nullable
+	public static TableRecordReference ofNullable(@Nullable String tableName, final int recordId)
+	{
+		return tableName != null && !Check.isBlank(tableName) && recordId >= 0
+				? of(tableName, recordId)
+				: null;
 	}
 
 	public static TableRecordReference of(@NonNull final String tableName, @NonNull final RepoIdAware recordId)
@@ -404,9 +412,14 @@ public final class TableRecordReference implements ITableRecordReference
 		return tableName;
 	}
 
+	public boolean tableNameEqualsTo(@NonNull final String expectedTableName)
+	{
+		return Objects.equals(getTableName(), expectedTableName);
+	}
+
 	public void assertTableName(@NonNull final String expectedTableName)
 	{
-		if (!Objects.equals(getTableName(), expectedTableName))
+		if (!tableNameEqualsTo(expectedTableName))
 		{
 			throw new AdempiereException("Reference is expected to have '" + expectedTableName + "' table: " + this);
 		}
@@ -449,6 +462,20 @@ public final class TableRecordReference implements ITableRecordReference
 	{
 		final int repoId = getRecordIdAssumingTableName(expectedTableName);
 		return mapper.apply(repoId);
+	}
+
+	public <T extends RepoIdAware> Optional<T> getIdIfTableName(
+			@NonNull final String expectedTableName,
+			@NonNull final IntFunction<T> mapper)
+	{
+		if (tableName.equals(expectedTableName))
+		{
+			return Optional.of(mapper.apply(getRecord_ID()));
+		}
+		else
+		{
+			return Optional.empty();
+		}
 	}
 
 	@Deprecated

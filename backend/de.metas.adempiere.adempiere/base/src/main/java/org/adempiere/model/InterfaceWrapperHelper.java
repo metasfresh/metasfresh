@@ -74,6 +74,7 @@ import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -220,7 +221,7 @@ public class InterfaceWrapperHelper
 	 * Both interfaces extend the "original" <code>org.compiere.model.I_C_OrderLine</code> interface, so they have the generic properties like <code>QtyOrdered</code>, <code>M_Product_ID</code> etc. <b>plus</b> the project specific ones.<br>
 	 * The magic is once again done by this method, which returns an instance of the required <code>I_C_OrderLine</code> interface for the underlying <code>GridTab</code> or <code>PO</code>,
 	 * with only the properties that are declared by that interface.<br>
-	 * Also note that the interface passed to this method does not necessarily have to implement a "generic" interface from <code>org.compiere.model</code>.<br>
+	 * Also note that the interface passed to {@link InterfaceWrapperHelper#create(Object, Class, boolean)} does not necessarily have to implement a "generic" interface from <code>org.compiere.model</code>.<br>
 	 * Instead, we can also use some interface like <code>IProductAware</code> that just declares product related properties.
 	 * </li>
 	 * </ul>
@@ -274,7 +275,7 @@ public class InterfaceWrapperHelper
 	 * Wraps given the <code>model</code> and uses the <b>old</b> values for all model getters.
 	 * See {@link #create(Object, Class)} for more informations.
 	 */
-	public static <T> T createOld(final Object model, final Class<T> cl)
+	public static <T> T createOld(final T model, final Class<T> cl)
 	{
 		final boolean useOldValues = true;
 		return create(model, cl, useOldValues);
@@ -306,7 +307,7 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * Loads the record with the given <code>id</code>. Similar to {@link #create(Object, Class)}, but explicitly specifies the table name.<br>
+	 * Loads the record with the given <code>id</code>. Similar to {@link #create(Properties, int, Class, String)}, but explicitly specifies the table name.<br>
 	 * This is useful in case the table name can't be deduced from the given <code>cl</code>.
 	 * <p>
 	 * Notes:
@@ -388,7 +389,7 @@ public class InterfaceWrapperHelper
 		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
 		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited, UnaryOperator.identity());
 	}
-
+	
 	public static <RT, MT> List<MT> loadByRepoIdAwares(@NonNull final Set<? extends RepoIdAware> repoIdAwares, @NonNull final Class<RT> modelClass, @NonNull Function<RT, MT> modelMapper)
 	{
 		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
@@ -673,7 +674,7 @@ public class InterfaceWrapperHelper
 	 * Get context from model and setting in context AD_Client_ID and AD_Org_ID according to the model if useClientOrgFromModel is true
 	 *
 	 * @param model                 may be null
-	 * @param useClientOrgFromModel ignored, unless the given model is {@link ModelContextAware} or just a "normal" model. See {@link #getCtx(Object, boolean)}
+	 * @param useClientOrgFromModel ignored, unless the given model is {@link ModelContextAware} or just a "normal" model.
 	 */
 	public static Properties getCtx(
 			@Nullable final Object model,
@@ -846,7 +847,7 @@ public class InterfaceWrapperHelper
 	 * InterfaceWrapperHelper throws it.
 	 */
 	/* package */
-	@SuppressWarnings("serial")
+
 	static class MissingTableNameException extends AdempiereException
 	{
 		private static MissingTableNameException notFound(final Class<?> modelClass)
@@ -1239,6 +1240,12 @@ public class InterfaceWrapperHelper
 		return getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
 	}
 
+	public static BigDecimal getValueAsBigDecimalOrNull(final Object model, final String columnName)
+	{
+		final Object valueObj = getValueOrNull(model, columnName);
+		return NumberUtils.asBigDecimal(valueObj);
+	}
+
 	public static <T> Optional<T> getValue(@NonNull final Object model, final String columnName)
 	{
 		final boolean throwExIfColumnNotFound = true;
@@ -1369,7 +1376,6 @@ public class InterfaceWrapperHelper
 	 * <li>this command has effect only for {@link POWrapper}ed objects
 	 * </ul>
 	 *
-	 * @param model
 	 * @param columnName column name to be marked as changed
 	 */
 	public static void markColumnChanged(final Object model, final String columnName)
@@ -1466,8 +1472,6 @@ public class InterfaceWrapperHelper
 	 * <p>
 	 * this feature can be used when the given model shall be just a temporary "pojo" that may not be persisted.
 	 *
-	 * @param model
-	 * @param disabled
 	 * @see #isSaveDeleteDisabled(Object)
 	 */
 	public static void setSaveDeleteDisabled(final Object model, final boolean disabled)
@@ -1567,24 +1571,6 @@ public class InterfaceWrapperHelper
 		}
 	}
 
-	public static boolean recordChanged(final Object model, final String columnName)
-	{
-		Check.assumeNotNull(model, "model not null");
-
-		if (POWrapper.isHandled(model))
-		{
-			return POWrapper.isRecordChanged(model);
-		}
-		else if (POJOWrapper.isHandled(model))
-		{
-			return POJOWrapper.isRecordChanged(model);
-		}
-		else
-		{
-			throw new AdempiereException("Model wrapping is not supported for " + model + " (class:" + model.getClass() + ")");
-		}
-	}
-
 	public static boolean isValueChanged(final Object model, final String columnName)
 	{
 		return helpers.isValueChanged(model, columnName);
@@ -1635,7 +1621,6 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * @param model
 	 * @return how many times given model was loaded/reloaded
 	 */
 	public static int getLoadCount(final Object model)
@@ -1662,10 +1647,9 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * @param modelClass
-	 * @return immutable list of column names of modelClass's table
+	 * @return immutable list of physical column names of modelClass's table
 	 */
-	public static Set<String> getModelColumnNames(final Class<?> modelClass)
+	public static Set<String> getModelPhysicalColumnNames(final Class<?> modelClass)
 	{
 		if (Adempiere.isUnitTestMode())
 		{
@@ -1677,8 +1661,10 @@ public class InterfaceWrapperHelper
 		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
 		Check.assumeNotNull(poInfo, "poInfo not null for {}", tableName); // shall not happen
-
-		return poInfo.getColumnNames();
+		return poInfo.getColumnNames()
+				.stream()
+				.filter(poInfo::isPhysicalColumn)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public static IModelInternalAccessor getModelInternalAccessor(final Object model)
@@ -1724,7 +1710,7 @@ public class InterfaceWrapperHelper
 		else
 		{
 			throw new AdempiereException("Model wrapping is not supported for " + model
-					+ "\n Class: " + (model == null ? null : model.getClass()));
+					+ "\n Class: " + model.getClass());
 		}
 	}
 
@@ -1740,10 +1726,6 @@ public class InterfaceWrapperHelper
 	 * If the given <code>model</code> is not null and has all the columns which are defined inside the given <code>clazz</code>'s {@link IModelClassInfo},<br>
 	 * then return an instance using {@link #create(Object, Class)}.<br>
 	 * Otherwise, return <code>null</code> .
-	 *
-	 * @param model
-	 * @param clazz
-	 * @return
 	 */
 	public static <T> T asColumnReferenceAwareOrNull(final Object model,
 													 final Class<T> clazz)

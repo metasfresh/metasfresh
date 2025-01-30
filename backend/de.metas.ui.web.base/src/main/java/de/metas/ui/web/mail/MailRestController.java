@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.attachments.EmailAttachment;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailAttachment;
+import de.metas.email.EMailSentStatus;
 import de.metas.email.EMailRequest;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.MailboxQuery;
@@ -30,9 +31,10 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
+import de.metas.util.Check;
 import de.metas.util.Services;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
@@ -53,6 +55,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -87,7 +90,7 @@ import static de.metas.attachments.AttachmentTags.TAGNAME_SEND_VIA_EMAIL;
 
 @RestController
 @RequestMapping(MailRestController.ENDPOINT)
-@ApiModel("Outbound email endpoint")
+@Schema(description = "Outbound email endpoint")
 @RequiredArgsConstructor
 public class MailRestController
 {
@@ -135,7 +138,7 @@ public class MailRestController
 	}
 
 	@PostMapping()
-	@ApiOperation("Creates a new email")
+	@Operation(summary = "Creates a new email")
 	public JSONEmail createNewEmail(@RequestBody final JSONEmailRequest request)
 	{
 		userSession.assertLoggedIn();
@@ -196,7 +199,7 @@ public class MailRestController
 	}
 
 	@GetMapping("/{emailId}")
-	@ApiOperation("Gets email by ID")
+	@Operation(summary = "Gets email by ID")
 	public JSONEmail getEmail(@PathVariable("emailId") final String emailId)
 	{
 		userSession.assertLoggedIn();
@@ -206,7 +209,7 @@ public class MailRestController
 	}
 
 	@PostMapping("/{emailId}/send")
-	@ApiOperation("Sends the email")
+	@Operation(summary = "Sends the email")
 	public void sendEmail(@PathVariable("emailId") final String emailId)
 	{
 		userSession.assertLoggedIn();
@@ -256,7 +259,7 @@ public class MailRestController
 
 	private EMailAddress extractEMailAddress(final LookupValue userLookupValue)
 	{
-		final UserId adUserId = userLookupValue.getIdAs(UserId::ofRepoIdOrNull);
+		final UserId adUserId = extractUserIdOrNull(userLookupValue);
 		if (adUserId == null)
 		{
 			// consider the email as the DisplayName
@@ -281,8 +284,21 @@ public class MailRestController
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@Nullable
+	private static UserId extractUserIdOrNull(final LookupValue userLookupValue)
+	{
+		try
+		{
+			return userLookupValue.getIdAs(UserId::ofRepoIdOrNull);
+		}
+		catch (final Exception ex)
+		{
+			return null;
+		}
+	}
+
 	@PatchMapping("/{emailId}")
-	@ApiOperation("Changes the email")
+	@Operation(summary = "Changes the email")
 	public JSONEmail changeEmail(@PathVariable("emailId") final String emailId, @RequestBody final List<JSONDocumentChangedEvent> events)
 	{
 		userSession.assertLoggedIn();
@@ -325,14 +341,8 @@ public class MailRestController
 		final String fieldName = event.getPath();
 		if (PATCH_FIELD_To.equals(fieldName))
 		{
-			@SuppressWarnings("unchecked") final List<Object> jsonTo = (List<Object>)event.getValue();
+			newEmailBuilder.to(extractStringLookupValuesList(event));
 
-			@SuppressWarnings("unchecked") final LookupValuesList to = jsonTo.stream()
-					.map(mapObj -> (Map<String, Object>)mapObj)
-					.map(JSONLookupValue::integerLookupValueFromJsonMap)
-					.collect(LookupValuesList.collect());
-
-			newEmailBuilder.to(to);
 		}
 		else if (PATCH_FIELD_Subject.equals(fieldName))
 		{
@@ -346,18 +356,17 @@ public class MailRestController
 		}
 		else if (PATCH_FIELD_Attachments.equals(fieldName))
 		{
-			@SuppressWarnings("unchecked") final List<Object> jsonAttachments = (List<Object>)event.getValue();
-
-			@SuppressWarnings("unchecked") final LookupValuesList attachments = jsonAttachments.stream()
-					.map(mapObj -> (Map<String, Object>)mapObj)
-					.map(JSONLookupValue::stringLookupValueFromJsonMap)
-					.collect(LookupValuesList.collect());
-
-			newEmailBuilder.attachments(attachments);
+			newEmailBuilder.attachments(extractStringLookupValuesList(event));
 		}
 		else if (PATCH_FIELD_TemplateId.equals(fieldName))
 		{
-			@SuppressWarnings("unchecked") final LookupValue templateId = JSONLookupValue.integerLookupValueFromJsonMap((Map<String, Object>)event.getValue());
+			final LookupValue templateId = JSONLookupValue.integerLookupValueFromJsonMap((Map<String, Object>)event.getValue());
+
+			if (templateId == null)
+			{
+				throw new AdempiereException("Invalid " + PATCH_FIELD_TemplateId + ": " + event.getValue());
+			}
+
 			applyTemplate(email, newEmailBuilder, templateId);
 		}
 		else
@@ -369,6 +378,29 @@ public class MailRestController
 		}
 	}
 
+	private static LookupValuesList extractStringLookupValuesList(final JSONDocumentChangedEvent event)
+	{
+		@SuppressWarnings("unchecked") final List<Object> jsonList = (List<Object>)event.getValue();
+		//noinspection unchecked
+		return jsonList.stream()
+				.map(value -> toStringLookupValue(value))
+				.collect(LookupValuesList.collect());
+	}
+
+	private static LookupValue.StringLookupValue toStringLookupValue(final Object value)
+	{
+		if (value instanceof Map)
+		{
+			@SuppressWarnings("unchecked") final Map<String, Object> map = (Map<String, Object>)value;
+			return JSONLookupValue.stringLookupValueFromJsonMap(map);
+		}
+		else
+		{
+			return LookupValue.StringLookupValue.of((String)value, (String)value);
+		}
+
+	}
+
 	@EventListener
 	public void onWebuiMailRemovedFromRepository(final WebuiEmailRemovedEvent event)
 	{
@@ -378,11 +410,24 @@ public class MailRestController
 	}
 
 	@GetMapping("/{emailId}/field/to/typeahead")
-	@ApiOperation("Typeahead endpoint for any To field")
+	@Operation(summary = "Typeahead endpoint for any To field")
 	public JSONLookupValuesPage getToTypeahead(@PathVariable("emailId") final String emailId, @RequestParam("query") final String query)
 	{
 		userSession.assertLoggedIn();
-		return toJson(mailRepo.getToTypeahead(emailId, query));
+		final LookupValuesPage toTypeahead = mailRepo.getToTypeahead(emailId, query);
+		if (!toTypeahead.isEmpty())
+		{
+			return toJson(toTypeahead);
+		}
+		else if (!Check.isEmpty(query))
+		{
+			final String email = query.trim();
+			return toJson(LookupValuesPage.ofNullable(LookupValue.StringLookupValue.of(email, email)));
+		}
+		else
+		{
+			return toJson(LookupValuesPage.EMPTY.EMPTY);
+		}
 	}
 
 	private JSONLookupValuesPage toJson(final LookupValuesPage page)
@@ -391,7 +436,7 @@ public class MailRestController
 	}
 
 	@PostMapping("/{emailId}/field/attachments")
-	@ApiOperation("Attaches a file to email")
+	@Operation(summary = "Attaches a file to email")
 	public JSONEmail attachFile(@PathVariable("emailId") final String emailId, @RequestParam("file") final MultipartFile file)
 	{
 		userSession.assertLoggedIn();
@@ -425,11 +470,12 @@ public class MailRestController
 	}
 
 	@GetMapping("/templates")
-	@ApiOperation("Available Email templates")
+	@Operation(summary = "Available Email templates")
 	public JSONLookupValuesList getTemplates()
 	{
-		return MADBoilerPlate.getAll(Env.getCtx())
-				.stream()
+		userSession.assertLoggedIn();
+
+		return MADBoilerPlate.streamAllReadable(userSession.getUserRolePermissions())
 				.map(adBoilerPlate -> JSONLookupValue.of(adBoilerPlate.getAD_BoilerPlate_ID(), adBoilerPlate.getName()))
 				.collect(JSONLookupValuesList.collect());
 	}
@@ -438,6 +484,11 @@ public class MailRestController
 	{
 		final Properties ctx = Env.getCtx();
 		final MADBoilerPlate boilerPlate = MADBoilerPlate.get(ctx, templateId.getIdAsInt());
+
+		if (boilerPlate == null)
+		{
+			throw new AdempiereException("No template found for " + templateId);
+		}
 
 		//
 		// Attributes
