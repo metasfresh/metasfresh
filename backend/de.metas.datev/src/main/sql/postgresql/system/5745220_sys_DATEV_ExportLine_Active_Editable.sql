@@ -202,3 +202,113 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=10,Updated=TO_TIMESTAMP(
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP('2025-01-30 18:29:48.924','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=551051
 ;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- UI Element: Buchungen Export_OLD -> Lines.Debit Account
+-- Column: DATEV_ExportLine.DR_Account
+-- UI Element: Buchungen Export_OLD(540413,de.metas.datev) -> Lines(541037,de.metas.datev) -> main -> 10 -> default.Debit Account
+-- Column: DATEV_ExportLine.DR_Account
+-- 2025-01-30T19:13:37.828Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=10,Updated=TO_TIMESTAMP('2025-01-30 21:13:37.828','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=551039
+;
+
+-- UI Element: Buchungen Export_OLD -> Lines.Credit Account
+-- Column: DATEV_ExportLine.CR_Account
+-- UI Element: Buchungen Export_OLD(540413,de.metas.datev) -> Lines(541037,de.metas.datev) -> main -> 10 -> default.Credit Account
+-- Column: DATEV_ExportLine.CR_Account
+-- 2025-01-30T19:13:38.162Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=20,Updated=TO_TIMESTAMP('2025-01-30 21:13:38.162','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=551040
+;
+
+-- UI Element: Buchungen Export_OLD -> Lines.Betrag
+-- Column: DATEV_ExportLine.Amt
+-- UI Element: Buchungen Export_OLD(540413,de.metas.datev) -> Lines(541037,de.metas.datev) -> main -> 10 -> default.Betrag
+-- Column: DATEV_ExportLine.Amt
+-- 2025-01-30T19:13:38.486Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2025-01-30 21:13:38.486','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=551041
+;
+
+-- UI Element: Buchungen Export_OLD -> Lines.Währung
+-- Column: DATEV_ExportLine.Currency
+-- UI Element: Buchungen Export_OLD(540413,de.metas.datev) -> Lines(541037,de.metas.datev) -> main -> 10 -> default.Währung
+-- Column: DATEV_ExportLine.Currency
+-- 2025-01-30T19:13:38.812Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2025-01-30 21:13:38.812','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=605267
+;
+
+-- UI Element: Buchungen Export_OLD -> Lines.Geschäftspartner
+-- Column: DATEV_ExportLine.C_BPartner_ID
+-- UI Element: Buchungen Export_OLD(540413,de.metas.datev) -> Lines(541037,de.metas.datev) -> main -> 10 -> default.Geschäftspartner
+-- Column: DATEV_ExportLine.C_BPartner_ID
+-- 2025-01-30T19:13:39.155Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2025-01-30 21:13:39.155','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=551042
+;
+
+-- UI Element: Buchungen Export_OLD -> Lines.Rechnung
+-- Column: DATEV_ExportLine.C_Invoice_ID
+-- UI Element: Buchungen Export_OLD(540413,de.metas.datev) -> Lines(541037,de.metas.datev) -> main -> 10 -> default.Rechnung
+-- Column: DATEV_ExportLine.C_Invoice_ID
+-- 2025-01-30T19:13:39.478Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2025-01-30 21:13:39.478','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=551043
+;
+
+-- UI Element: Buchungen Export_OLD -> Lines.Activity Name
+-- Column: DATEV_ExportLine.ActivityName
+-- UI Element: Buchungen Export_OLD(540413,de.metas.datev) -> Lines(541037,de.metas.datev) -> main -> 10 -> default.Activity Name
+-- Column: DATEV_ExportLine.ActivityName
+-- 2025-01-30T19:13:39.798Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2025-01-30 21:13:39.797','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=551044
+;
+
+-- UI Element: Buchungen Export_OLD -> Lines.Buchungsdatum
+-- Column: DATEV_ExportLine.DateAcct
+-- UI Element: Buchungen Export_OLD(540413,de.metas.datev) -> Lines(541037,de.metas.datev) -> main -> 10 -> default.Buchungsdatum
+-- Column: DATEV_ExportLine.DateAcct
+-- 2025-01-30T19:13:40.123Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2025-01-30 21:13:40.123','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=551045
+;
+
+-- UI Element: Buchungen Export_OLD -> Lines.Datum Fälligkeit
+-- Column: DATEV_ExportLine.DueDate
+-- UI Element: Buchungen Export_OLD(540413,de.metas.datev) -> Lines(541037,de.metas.datev) -> main -> 10 -> default.Datum Fälligkeit
+-- Column: DATEV_ExportLine.DueDate
+-- 2025-01-30T19:13:40.445Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2025-01-30 21:13:40.445','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=551046
+;
+
+-- UI Element: Buchungen Export_OLD -> Lines.Beschreibung
+-- Column: DATEV_ExportLine.Description
+-- UI Element: Buchungen Export_OLD(540413,de.metas.datev) -> Lines(541037,de.metas.datev) -> main -> 10 -> default.Beschreibung
+-- Column: DATEV_ExportLine.Description
+-- 2025-01-30T19:13:40.774Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2025-01-30 21:13:40.773','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=551047
+;
+
+-- UI Element: Buchungen Export_OLD -> Lines.Aktiv
+-- Column: DATEV_ExportLine.IsActive
+-- UI Element: Buchungen Export_OLD(540413,de.metas.datev) -> Lines(541037,de.metas.datev) -> main -> 10 -> default.Aktiv
+-- Column: DATEV_ExportLine.IsActive
+-- 2025-01-30T19:13:41.095Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2025-01-30 21:13:41.095','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=628431
+;
+
+
+-- UI Element: Buchungen Export_OLD -> Lines.Aktiv
+-- Column: DATEV_ExportLine.IsActive
+-- UI Element: Buchungen Export_OLD(540413,de.metas.datev) -> Lines(541037,de.metas.datev) -> main -> 10 -> default.Aktiv
+-- Column: DATEV_ExportLine.IsActive
+-- 2025-01-30T19:17:04.666Z
+UPDATE AD_UI_Element SET SeqNo=240,Updated=TO_TIMESTAMP('2025-01-30 21:17:04.665','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=628431
+;
