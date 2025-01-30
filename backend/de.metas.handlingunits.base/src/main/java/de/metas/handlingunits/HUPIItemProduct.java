@@ -31,7 +31,7 @@ public class HUPIItemProduct
 	@NonNull HuPackingInstructionsItemId piItemId;
 	@Nullable ProductId productId;
 	@Nullable Quantity qtyCUsPerTU;
-	boolean isOrderInTuUomWhenMatched;
+	@NonNull Boolean isOrderInTuUomWhenMatched;
 
 	@Builder(toBuilder = true)
 	private HUPIItemProduct(
@@ -49,7 +49,7 @@ public class HUPIItemProduct
 		this.piItemId = piItemId;
 		this.productId = productId;
 		this.qtyCUsPerTU = qtyCUsPerTU != null && qtyCUsPerTU.signum() > 0 && !Quantity.isInfinite(qtyCUsPerTU.toBigDecimal()) ? qtyCUsPerTU : null;
-		this.isOrderInTuUomWhenMatched = coalesceNotNull(isOrderInTuUomWhenMatched, false);
+		this.isOrderInTuUomWhenMatched = coalesceNotNull(isOrderInTuUomWhenMatched, Boolean.FALSE);
 	}
 
 	@Override
