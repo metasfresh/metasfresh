@@ -48,7 +48,7 @@ class MailboxRoutingTableTest
 	}
 
 	@Test
-	void testDocBaseType()
+	void testDocBaseAndSubType()
 	{
 		assertBaseTypeMatching(null , null).isTrue();
 		assertBaseTypeMatching(null, DocBaseAndSubType.ofNullable(DocBaseType.PurchaseOrder.getCode(), null)).isTrue();
