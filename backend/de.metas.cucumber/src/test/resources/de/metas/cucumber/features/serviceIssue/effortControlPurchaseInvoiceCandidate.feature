@@ -258,8 +258,8 @@ Feature: Create vendor invoice candidates from effort control
       | C_Invoice_ID.Identifier           | C_Invoice_Candidate_ID.Identifier |
       | vendorInvoice300,vendorInvoice301 | vendorIC300                       |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | AD_User_ID.Identifier | processed | docStatus | OPT.C_DocType_ID.Name   | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
-      | vendorInvoice301        | vendor_PO                | vendorLocation_PO                 | vendorUser            | true      | CO        | Internal Vendor Invoice | costCenter300                | testProject                 |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | AD_User_ID.Identifier | processed | docStatus | OPT.C_DocType_ID.Name      | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
+      | vendorInvoice301        | vendor_PO                | vendorLocation_PO                 | vendorUser            | true      | CO        | Interne Kreditorenrechnung | costCenter300                | testProject                 |
     And validate invoice lines for vendorInvoice301:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description                  |
       | vendorInvoiceLine301        | invoiceableProduct      | 6           | true      | 5                | 5               | 30             | costCenter300                | testProject                 | 2510221\neffortIssue300_24102022 |
