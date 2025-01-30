@@ -25,7 +25,7 @@ class MailboxRoutingTable
 			.thenComparing(MailboxRouting::getEmailCustomType, nullsLast(naturalOrder()))
 			.thenComparing(MailboxRouting::getAdProcessId, nullsLast(naturalOrder()))
 			.thenComparing(MailboxRouting::getDocBaseType, nullsLast(naturalOrder()))
-			.thenComparing(MailboxRouting::getDocSubType, nullsLast(naturalOrder()));
+			.thenComparing(MailboxRouting::getDocSubType, reverseOrder());
 	private static final MailboxRoutingTable EMPTY = new MailboxRoutingTable(ImmutableList.of());
 
 	private final ImmutableList<MailboxRouting> listOrdered;

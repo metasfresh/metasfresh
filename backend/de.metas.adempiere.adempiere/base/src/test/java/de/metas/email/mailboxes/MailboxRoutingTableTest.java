@@ -58,13 +58,14 @@ class MailboxRoutingTableTest
 	{
 		MailboxRoutingBuilder routingTemplate = MailboxRouting.builder().clientId(ClientId.METASFRESH).orgId(OrgId.ANY).docBaseType(DocBaseType.SalesOrder).mailboxId(MailboxId.ofRepoId(1));
 		MailboxQueryBuilder queryTemplate = MailboxQuery.builder().clientId(ClientId.METASFRESH);
-		MailboxRouting routing1, routing2, routing3, routing4;
+		MailboxRouting routing0, routing1, routing2, routing3, routing4;
 		MailboxRoutingTable table;
 
 		@BeforeEach
 		void beforeEach()
 		{
 			table = MailboxRoutingTable.ofList(ImmutableList.of(
+					routing0 = MailboxRouting.builder().clientId(ClientId.METASFRESH).orgId(OrgId.ANY).mailboxId(MailboxId.ofRepoId(1)).build(),
 					routing1 = routingTemplate.docSubType(DocSubType.ANY).build(),
 					routing2 = routingTemplate.docSubType(DocSubType.NONE).build(),
 					routing3 = routingTemplate.docSubType(DocSubType.StandardOrder).build(),
@@ -75,7 +76,13 @@ class MailboxRoutingTableTest
 		@Test
 		void null_value()
 		{
-			assertThat(table.findBestMatching(queryTemplate.docBaseAndSubType(null).build())).containsSame(routing1);
+			assertThat(table.findBestMatching(queryTemplate.docBaseAndSubType(null).build())).containsSame(routing0);
+		}
+
+		@Test
+		void any()
+		{
+			assertThat(table.findBestMatching(queryTemplate.docBaseAndSubType(DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.ANY)).build())).containsSame(routing1);
 		}
 
 		@Test
