@@ -1,11 +1,17 @@
 package de.metas.email.mailboxes;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.organization.OrgId;
 import org.adempiere.service.ClientId;
+import org.assertj.core.api.AbstractBooleanAssert;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import javax.annotation.Nullable;
+
+import static org.assertj.core.api.Assertions.*;
 
 class MailboxRoutingTableTest
 {
@@ -39,5 +45,43 @@ class MailboxRoutingTableTest
 				.containsSame(routing1);
 		assertThat(table.findBestMatching(MailboxQuery.builder().clientId(ClientId.METASFRESH).orgId(OrgId.ofRepoId(2)).build()))
 				.isEmpty();
+	}
+
+	@Test
+	void testDocBaseType()
+	{
+		assertBaseTypeMatching(null , null).isTrue();
+		assertBaseTypeMatching(null, DocBaseAndSubType.ofNullable(DocBaseType.PurchaseOrder.getCode(), null)).isTrue();
+		assertBaseTypeMatching(null, DocBaseAndSubType.of(DocBaseType.PurchaseOrder, DocSubType.AP)).isTrue();
+
+		assertBaseTypeMatching(DocBaseAndSubType.ofNullable(DocBaseType.SalesOrder.getCode(), null), null).isFalse();
+
+		assertBaseTypeMatching(DocBaseAndSubType.ofNullable(DocBaseType.SalesOrder.getCode(), null), DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.AP)).isFalse();
+		assertBaseTypeMatching(DocBaseAndSubType.ofNullable(DocBaseType.SalesOrder.getCode(), null), DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.NONE)).isTrue();
+
+		assertBaseTypeMatching(DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.ANY), DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.ANY)).isTrue();
+		assertBaseTypeMatching(DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.ANY), DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.AP)).isTrue();
+
+		assertBaseTypeMatching(DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.ANY), DocBaseAndSubType.of(DocBaseType.PurchaseOrder, DocSubType.AP)).isFalse();
+	}
+
+	private AbstractBooleanAssert assertBaseTypeMatching(@Nullable final DocBaseAndSubType routingDocType, @Nullable final DocBaseAndSubType queryDocTYpe)
+	{
+		final MailboxRouting routing1 = MailboxRouting.builder()
+				.mailboxId(MailboxId.ofRepoId(1))
+				.clientId(ClientId.METASFRESH).orgId(OrgId.ofRepoId(1))
+				.docBaseAndSubType(routingDocType)
+				.build();
+
+		final MailboxRoutingTable table = MailboxRoutingTable.ofList(ImmutableList.of(routing1));
+
+		final MailboxQuery query1 = MailboxQuery.builder()
+				.clientId(ClientId.METASFRESH)
+				.orgId(OrgId.ofRepoId(1))
+				.docBaseAndSubType(queryDocTYpe)
+				.build();
+
+		return assertThat(table.isMatching(routing1, query1));
+
 	}
 }

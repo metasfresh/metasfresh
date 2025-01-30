@@ -1,5 +1,6 @@
 package de.metas.email.mailboxes;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
@@ -48,7 +49,8 @@ class MailboxRoutingTable
 				.findFirst();
 	}
 
-	private static boolean isMatching(@NonNull final MailboxRouting routing, @NonNull final MailboxQuery query)
+	@VisibleForTesting
+	public static boolean isMatching(@NonNull final MailboxRouting routing, @NonNull final MailboxQuery query)
 	{
 		return ClientId.equals(routing.getClientId(), query.getClientId())
 				&& isMatching_OrgId(routing, query)
