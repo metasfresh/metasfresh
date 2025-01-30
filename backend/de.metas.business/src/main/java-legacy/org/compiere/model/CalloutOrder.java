@@ -36,6 +36,7 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.lang.SOTrx;
 import de.metas.location.LocationId;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.order.DeliveryRule;
@@ -59,6 +60,8 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.security.permissions.Access;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.LegacyUOMConversionUtils;
@@ -112,7 +115,8 @@ public class CalloutOrder extends CalloutEngine
 	private static final String SYSCONFIG_CopyOrgFromBPartner = "de.metas.order.CopyOrgFromBPartner";
 
 	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
-
+	private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	
 	/**
 	 * C_Order.C_DocTypeTarget_ID changed: - InvoiceRuld/DeliveryRule/PaymentRule - temporary Document Context: - DocSubType - HasCharges - (re-sets Business Partner info of required)
 	 */
@@ -1121,20 +1125,24 @@ public class CalloutOrder extends CalloutEngine
 		log.debug("Bill BP_Location={}", billBPLocationId);
 
 		//
-		final int C_Tax_ID = Tax.get(ctx, M_Product_ID, C_Charge_ID, billDate,
-									 shipDate, AD_Org_ID, M_Warehouse_ID,
-									 billBPLocationId,
-									 shipBPLocationId,
-									 order.isSOTrx());
-		log.trace("Tax ID={}", C_Tax_ID);
+		final TaxId taxId = taxBL.getTaxNotNull(order,
+				null, 
+				M_Product_ID, 
+				shipDate, 
+				OrgId.ofRepoId(AD_Org_ID), 
+				WarehouseId.ofRepoIdOrNull(M_Warehouse_ID), 
+				shipBPLocationId, 
+				SOTrx.ofBoolean(order.isSOTrx()));
+
+		log.trace("C_Tax_ID={}", taxId.getRepoId());
 		//
-		if (C_Tax_ID <= 0)
+		if (taxId.isNoTaxId())
 		{
 			calloutField.fireDataStatusEEvent(MetasfreshLastError.retrieveError());
 		}
 		else
 		{
-			ol.setC_Tax_ID(C_Tax_ID);
+			ol.setC_Tax_ID(taxId.getRepoId());
 		}
 
 		return amt(calloutField);
