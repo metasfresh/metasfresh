@@ -107,8 +107,8 @@ Feature: Create vendor invoice candidates from effort control
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | vendorInvoice100        | vendorIC100                       |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | AD_User_ID.Identifier | processed | docStatus | OPT.C_DocType_ID.Name   | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
-      | vendorInvoice100        | vendor_PO                | vendorLocation_PO                 | vendorUser            | true      | CO        | Internal Vendor Invoice | costCenter100                | testProject                 |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | AD_User_ID.Identifier | processed | docStatus | OPT.C_DocType_ID.Name      | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
+      | vendorInvoice100        | vendor_PO                | vendorLocation_PO                 | vendorUser            | true      | CO        | Interne Kreditorenrechnung | costCenter100                | testProject                 |
     And validate invoice lines for vendorInvoice100:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description                  |
       | vendorInvoiceLine100        | invoiceableProduct      | 8           | true      | 5                | 5               | 40             | costCenter100                | testProject                 | 2410221\neffortIssue100_24102022 |
@@ -222,8 +222,8 @@ Feature: Create vendor invoice candidates from effort control
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | vendorInvoice300        | vendorIC300                       |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | AD_User_ID.Identifier | processed | docStatus | OPT.C_DocType_ID.Name   | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
-      | vendorInvoice300        | vendor_PO                | vendorLocation_PO                 | vendorUser            | true      | CO        | Internal Vendor Invoice | costCenter300                | testProject                 |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | AD_User_ID.Identifier | processed | docStatus | OPT.C_DocType_ID.Name      | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
+      | vendorInvoice300        | vendor_PO                | vendorLocation_PO                 | vendorUser            | true      | CO        | Interne Kreditorenrechnung | costCenter300                | testProject                 |
     And validate invoice lines for vendorInvoice300:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description                  |
       | vendorInvoiceLine300        | invoiceableProduct      | 19          | true      | 5                | 5               | 95             | costCenter300                | testProject                 | 2510221\neffortIssue300_24102022 |
@@ -313,8 +313,8 @@ Feature: Create vendor invoice candidates from effort control
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | vendorInvoice400        | vendorIC400                       |
     And validate created invoices
-      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | AD_User_ID.Identifier | processed | docStatus | OPT.C_DocType_ID.Name   | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
-      | vendorInvoice400        | vendor_PO                | vendorLocation_PO                 | vendorUser            | true      | CO        | Internal Vendor Invoice | costCenter400                | testProject                 |
+      | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | AD_User_ID.Identifier | processed | docStatus | OPT.C_DocType_ID.Name      | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
+      | vendorInvoice400        | vendor_PO                | vendorLocation_PO                 | vendorUser            | true      | CO        | Interne Kreditorenrechnung | costCenter400                | testProject                 |
     And validate invoice lines for vendorInvoice400:
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description                  |
       | vendorInvoiceLine400        | invoiceableProduct      | 22          | true      | 5                | 5               | 110            | costCenter400                | testProject                 | 2510221\neffortIssue400_24102022 |
