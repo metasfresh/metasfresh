@@ -180,6 +180,10 @@ public class LoginRestController
 		try
 		{
 			final LoginAuthenticateResponse authResponse = loginService.authenticate(username, password);
+			if (authResponse.is2FARequired())
+			{
+				return JSONLoginAuthResponse.requires2FA();
+			}
 
 			final List<Role> availableRolesList = authResponse.getAvailableRoles();
 			return continueAuthenticationSelectingRole(loginService, availableRolesList, roleToLogin);
@@ -189,35 +193,6 @@ public class LoginRestController
 			userSession.setLoggedIn(false);
 			destroyMFSession(loginService);
 			throw convertToUserFriendlyException(ex);
-		}
-	}
-
-	private JSONLoginAuthResponse continueAuthenticationSelectingRole(
-			@NonNull final Login loginService,
-			@NonNull final List<Role> availableRoles,
-			@Nullable final JSONLoginRole roleToLogin)
-	{
-		final List<JSONLoginRole> jsonAvailableRoles;
-		final JSONLoginRole roleToLoginEffective;
-		if (roleToLogin != null)
-		{
-			roleToLoginEffective = roleToLogin;
-			jsonAvailableRoles = ImmutableList.of(roleToLogin);
-		}
-		else
-		{
-			jsonAvailableRoles = createJSONLoginRoles(loginService, availableRoles);
-			roleToLoginEffective = jsonAvailableRoles.size() == 1 ? jsonAvailableRoles.get(0) : null;
-		}
-
-		if (roleToLoginEffective != null)
-		{
-			loginComplete(roleToLoginEffective);
-			return JSONLoginAuthResponse.loginComplete(roleToLoginEffective);
-		}
-		else
-		{
-			return JSONLoginAuthResponse.of(jsonAvailableRoles);
 		}
 	}
 
@@ -233,7 +208,7 @@ public class LoginRestController
 			final LoginAuthenticateResponse authResponse = loginService.authenticate2FA(otp);
 			return continueAuthenticationSelectingRole(loginService, authResponse.getAvailableRoles(), null);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw convertToUserFriendlyException(ex);
 		}

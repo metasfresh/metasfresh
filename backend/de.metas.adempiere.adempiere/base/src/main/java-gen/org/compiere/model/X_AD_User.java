@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1027701730L;
+	private static final long serialVersionUID = 68237672L;
 
     /** Standard Constructor */
     public X_AD_User (final Properties ctx, final int AD_User_ID, @Nullable final String trxName)
@@ -32,21 +32,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
-
-	@Override
-	public void setAD_BoilerPlate_Default_ID (final int AD_BoilerPlate_Default_ID)
-	{
-		if (AD_BoilerPlate_Default_ID < 1) 
-			set_Value (COLUMNNAME_AD_BoilerPlate_Default_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_BoilerPlate_Default_ID, AD_BoilerPlate_Default_ID);
-	}
-
-	@Override
-	public int getAD_BoilerPlate_Default_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_AD_BoilerPlate_Default_ID);
 	}
 
 	/** 
@@ -624,30 +609,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		return get_ValueAsString(COLUMNNAME_Fresh_xmas_Gift);
 	}
 
-	/**
-	 * Gender AD_Reference_ID=541317
-	 * Reference name: Gender_List
-	 */
-	public static final int GENDER_AD_Reference_ID=541317;
-	/** Unbekannt = 0 */
-	public static final String GENDER_Unbekannt = "0";
-	/** Weiblich = 1 */
-	public static final String GENDER_Weiblich = "1";
-	/** Männlich = 2 */
-	public static final String GENDER_Maennlich = "2";
-	/** Divers = 3 */
-	public static final String GENDER_Divers = "3";
-	@Override
-	public void setGender (final @Nullable java.lang.String Gender)
-	{
-		throw new IllegalArgumentException ("Gender is virtual column");	}
-
-	@Override
-	public java.lang.String getGender()
-	{
-		return get_ValueAsString(COLUMNNAME_Gender);
-	}
-
 	@Override
 	public void setIncluded_Tab_ID (final @Nullable java.lang.String Included_Tab_ID)
 	{
@@ -708,6 +669,17 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
+	public void setIsCustomUserRestriction (final boolean IsCustomUserRestriction)
+	{
+		throw new IllegalArgumentException ("IsCustomUserRestriction is virtual column");	}
+
+	@Override
+	public boolean isCustomUserRestriction() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCustomUserRestriction);
+	}
+
+	@Override
 	public void setIsDefaultContact (final boolean IsDefaultContact)
 	{
 		set_Value (COLUMNNAME_IsDefaultContact, IsDefaultContact);
@@ -729,18 +701,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public boolean isDunningContact() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDunningContact);
-	}
-
-	@Override
-	public void setIsDunningDefault (final boolean IsDunningDefault)
-	{
-		set_Value (COLUMNNAME_IsDunningDefault, IsDunningDefault);
-	}
-
-	@Override
-	public boolean isDunningDefault() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsDunningDefault);
 	}
 
 	@Override
