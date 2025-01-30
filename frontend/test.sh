@@ -6,4 +6,4 @@ NODE_VERSION=16
 set -e
 
 npx "--package=node@${NODE_VERSION}" yarn install
-npx "--package=node@${NODE_VERSION}" yarn start
+npx "--package=node@${NODE_VERSION}" yarn test
