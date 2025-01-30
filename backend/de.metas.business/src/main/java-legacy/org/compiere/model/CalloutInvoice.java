@@ -530,7 +530,7 @@ public class CalloutInvoice extends CalloutEngine
 		log.debug("Warehouse={}", warehouseID);
 
 		//
-		final TaxId taxID = taxBL.getTaxNotNull(invoice,
+		final TaxId taxID = taxBL.getTaxOrNoTaxId(invoice,
 				null,
 				productID,
 				shipDate,
