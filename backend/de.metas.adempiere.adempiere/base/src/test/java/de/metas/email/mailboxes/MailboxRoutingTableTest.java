@@ -65,23 +65,20 @@ class MailboxRoutingTableTest
 		assertBaseTypeMatching(DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.ANY), DocBaseAndSubType.of(DocBaseType.PurchaseOrder, DocSubType.AP)).isFalse();
 	}
 
-	private AbstractBooleanAssert assertBaseTypeMatching(@Nullable final DocBaseAndSubType routingDocType, @Nullable final DocBaseAndSubType queryDocTYpe)
+	private AbstractBooleanAssert<?> assertBaseTypeMatching(@Nullable final DocBaseAndSubType routingDocType, @Nullable final DocBaseAndSubType queryDocTYpe)
 	{
-		final MailboxRouting routing1 = MailboxRouting.builder()
+		final MailboxRouting routing = MailboxRouting.builder()
 				.mailboxId(MailboxId.ofRepoId(1))
 				.clientId(ClientId.METASFRESH).orgId(OrgId.ofRepoId(1))
 				.docBaseAndSubType(routingDocType)
 				.build();
 
-		final MailboxRoutingTable table = MailboxRoutingTable.ofList(ImmutableList.of(routing1));
-
-		final MailboxQuery query1 = MailboxQuery.builder()
+		final MailboxQuery query = MailboxQuery.builder()
 				.clientId(ClientId.METASFRESH)
 				.orgId(OrgId.ofRepoId(1))
 				.docBaseAndSubType(queryDocTYpe)
 				.build();
 
-		return assertThat(table.isMatching(routing1, query1));
-
+		return assertThat(MailboxRoutingTable.isMatching(routing, query));
 	}
 }
