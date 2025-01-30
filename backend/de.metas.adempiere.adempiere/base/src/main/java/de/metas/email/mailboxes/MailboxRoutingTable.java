@@ -76,8 +76,8 @@ class MailboxRoutingTable
 
 	private static boolean isMatching_DocBaseType(@NonNull final MailboxRouting routing, @NonNull final MailboxQuery query)
 	{
-		final DocBaseType queryDocBaseType = query.getDocBaseType();
-		return queryDocBaseType == null || DocBaseType.equals(queryDocBaseType, routing.getDocBaseType());
+		final DocBaseType routingDocBaseType = routing.getDocBaseType();
+		return routingDocBaseType == null || DocBaseType.equals(routingDocBaseType, query.getDocBaseType());
 	}
 
 	private static boolean isMatching_DocSubType(@NonNull final MailboxRouting routing, @NonNull final MailboxQuery query)
