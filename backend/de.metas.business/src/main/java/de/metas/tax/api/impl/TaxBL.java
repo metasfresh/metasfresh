@@ -35,6 +35,9 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 {
 	private static final Logger log = LogManager.getLogger(TaxBL.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	private final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 
 	@Override
 	public Tax getTaxById(final TaxId taxId)
@@ -62,43 +65,26 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			@NonNull final BPartnerLocationAndCaptureId shipBPartnerLocationId,
 			@NonNull final SOTrx soTrx)
 	{
-		if (taxCategoryId != null)
+		final CountryId countryFromId = Optional.ofNullable(warehouseId)
+				.map(warehouseBL::getCountryId)
+				.orElseGet(() -> Optional.ofNullable(bPartnerOrgBL.getOrgCountryId(orgId))
+						.orElseGet(countryDAO::getDefaultCountryId));
+
+		final Tax tax = taxDAO.getBy(TaxQuery.builder()
+				.fromCountryId(countryFromId)
+				.orgId(orgId)
+				.bPartnerLocationId(shipBPartnerLocationId)
+				.dateOfInterest(shipDate)
+				.taxCategoryId(taxCategoryId)
+				.warehouseId(warehouseId)
+				.soTrx(soTrx)
+				.build());
+
+		if (tax != null)
 		{
-			final CountryId countryFromId;
-			if (warehouseId != null)
-			{
-				countryFromId = Services.get(IWarehouseBL.class).getCountryId(warehouseId);
-			}
-			else
-			{
-				final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
-				final CountryId orgCountryId = bPartnerOrgBL.getOrgCountryId(orgId);
-				if (orgCountryId != null)
-				{
-					countryFromId = orgCountryId;
-				}
-				else
-				{
-					countryFromId = Services.get(ICountryDAO.class).getDefaultCountryId();
-				}
-			}
-
-			final Tax tax = taxDAO.getBy(TaxQuery.builder()
-					.fromCountryId(countryFromId)
-					.orgId(orgId)
-					.bPartnerLocationId(shipBPartnerLocationId)
-					.dateOfInterest(shipDate)
-					.taxCategoryId(taxCategoryId)
-					.warehouseId(warehouseId)
-					.soTrx(soTrx)
-					.build());
-
-			if (tax != null)
-			{
-				return tax.getTaxId();
-			}
+			return tax.getTaxId();
 		}
-
+	
 		final AdempiereException ex = new AdempiereException(StringUtils.formatMessage(
 				"Could not retrieve C_Tax_ID; will return the Tax-Not-Found-C_Tax_ID; Method paratmers:"
 						+ "model= {}, taxCategoryId={}, productId={}, shipDate={}, adOrgId={}, "
