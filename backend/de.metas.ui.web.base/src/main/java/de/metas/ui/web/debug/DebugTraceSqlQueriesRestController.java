@@ -62,11 +62,11 @@ public class DebugTraceSqlQueriesRestController
 
 		if (enabled)
 		{
-			statisticsLogger.enableWithSqlTracing();
+			statisticsLogger.enableSqlTracing();
 		}
 		else
 		{
-			statisticsLogger.disable();
+			statisticsLogger.disableSqlTracing();
 		}
 	}
 
