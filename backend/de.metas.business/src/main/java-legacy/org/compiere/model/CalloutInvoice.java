@@ -472,7 +472,7 @@ public class CalloutInvoice extends CalloutEngine
 		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(invoiceLine.getC_VAT_Code_ID());
 
 		//
-		final TaxId taxID = taxBL.getTaxNotNull(invoice,
+		final TaxId taxID = taxBL.getTaxOrNoTaxId(invoice,
 												null,
 												productID,
 												shipDate,

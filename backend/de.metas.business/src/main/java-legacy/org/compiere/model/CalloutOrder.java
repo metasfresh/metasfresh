@@ -1122,7 +1122,7 @@ public class CalloutOrder extends CalloutEngine
 		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(ol.getC_VAT_Code_ID());
 
 		//
-		final TaxId taxId = taxBL.getTaxNotNull(order,
+		final TaxId taxId = taxBL.getTaxOrNoTaxId(order,
 												null,
 												M_Product_ID,
 												shipDate,
