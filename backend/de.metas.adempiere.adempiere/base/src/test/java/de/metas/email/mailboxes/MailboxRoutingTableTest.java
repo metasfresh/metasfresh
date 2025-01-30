@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class MailboxRoutingTableTest
@@ -118,7 +120,8 @@ class MailboxRoutingTableTest
 		final MailboxRouting routing = MailboxRouting.builder()
 				.mailboxId(MailboxId.ofRepoId(1))
 				.clientId(ClientId.METASFRESH).orgId(OrgId.ofRepoId(1))
-				.docBaseAndSubType(routingDocType)
+				.docBaseType(Optional.ofNullable(routingDocType).map(DocBaseAndSubType::getDocBaseType).orElse(null))
+				.docSubType(Optional.ofNullable(routingDocType).map(DocBaseAndSubType::getDocSubType).orElse(DocSubType.ANY))
 				.build();
 
 		final MailboxQuery query = MailboxQuery.builder()
