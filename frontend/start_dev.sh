@@ -1,8 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 
-echo If you want to start over HTTPS then pls run:
-echo export HTTPS=true
+NODE_VERSION=20
+export NODE_OPTIONS=--openssl-legacy-provider
 
-#export HTTPS=true
-export PORT=3001; yarn install && yarn start
+set -e
 
+npx "--package=node@${NODE_VERSION}" yarn install
+npx "--package=node@${NODE_VERSION}" yarn start
