@@ -1114,7 +1114,7 @@ public class CalloutOrder extends CalloutEngine
 		log.debug("Bill BP_Location={}", billBPLocationId);
 
 		//
-		final TaxId taxId = taxBL.getTaxNotNull(order,
+		final TaxId taxId = taxBL.getTaxOrNoTaxId(order,
 				null,
 				M_Product_ID,
 				shipDate,
