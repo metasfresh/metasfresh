@@ -1,6 +1,5 @@
 package de.metas.i18n;
 
-import com.google.common.base.MoreObjects;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -76,7 +75,12 @@ public final class BooleanWithReason
 		return falseBecause(TranslatableStrings.adMessage(adMessage, msgParameters));
 	}
 
-	 private static ITranslatableString toTrl(@Nullable final String reasonStr)
+	public static BooleanWithReason falseBecause(@NonNull final Exception exception)
+	{
+		return falseBecause(AdempiereException.extractMessageTrl(exception));
+	}
+
+	private static ITranslatableString toTrl(@Nullable final String reasonStr)
 	{
 		if (reasonStr == null || Check.isBlank(reasonStr))
 		{
@@ -105,15 +109,14 @@ public final class BooleanWithReason
 	@Override
 	public String toString()
 	{
+		final String valueStr = String.valueOf(value);
 		final String reasonStr = !TranslatableStrings.isBlank(reason)
 				? reason.getDefaultValue()
 				: null;
 
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("value", value)
-				.add("reason", reasonStr)
-				.toString();
+		return reasonStr != null
+				? valueStr + " because " + reasonStr
+				: valueStr;
 	}
 
 	public boolean toBoolean()

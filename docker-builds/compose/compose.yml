@@ -6,8 +6,6 @@ services:
     image: $mfregistry/metas-db:$mfversion-$dbqualifier
     ports:
       - "15432:5432"
-    volumes:
-      - ./db-data:/var/lib/postgresql/customdata
     healthcheck:
       test: pg_isready -h localhost -U metasfresh -d metasfresh -t 1
       interval: 10s
@@ -178,6 +176,28 @@ services:
     depends_on:
       webapi:
         condition: service_healthy
+      app:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  edi:
+    image: $mfregistry/metas-edi:$mfversion
+    healthcheck:
+      test: "curl localhost:8184 || exit 1"
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
+    environment:
+      JAVA_MAX_HEAP: "210M"
+      JAVA_DISABLE_JAR_CHECKING: "true"
+      RABBITMQ_HOST: "rabbitmq"
+      RABBITMQ_PORT: "5672"
+      RABBITMQ_USER: "metasfresh"
+      RABBITMQ_PASSWORD: "metasfresh"
+    depends_on:
       app:
         condition: service_healthy
     deploy:

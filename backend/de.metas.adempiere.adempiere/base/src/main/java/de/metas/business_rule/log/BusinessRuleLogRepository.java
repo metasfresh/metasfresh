@@ -1,6 +1,7 @@
 package de.metas.business_rule.log;
 
 import de.metas.business_rule.descriptor.model.BusinessRuleId;
+import de.metas.business_rule.descriptor.model.BusinessRulePreconditionId;
 import de.metas.business_rule.descriptor.model.BusinessRuleTriggerId;
 import de.metas.business_rule.event.BusinessRuleEventId;
 import de.metas.error.AdIssueId;
@@ -26,6 +27,7 @@ class BusinessRuleLogRepository
 
 		record.setModule(request.getModuleName());
 		record.setAD_BusinessRule_ID(BusinessRuleId.toRepoId(request.getBusinessRuleId()));
+		record.setAD_BusinessRule_Precondition_ID(BusinessRulePreconditionId.toRepoId(request.getPreconditionId()));
 		record.setAD_BusinessRule_Trigger_ID(BusinessRuleTriggerId.toRepoId(request.getTriggerId()));
 
 		final TableRecordReference sourceRecordRef = request.getSourceRecordRef();

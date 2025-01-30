@@ -149,7 +149,7 @@ public class UserAuthTokenService
 	{
 		if (token == null)
 		{
-			return IAutoCloseable.NOOP;
+			return IAutoCloseable.NOP;
 		}
 		else
 		{
