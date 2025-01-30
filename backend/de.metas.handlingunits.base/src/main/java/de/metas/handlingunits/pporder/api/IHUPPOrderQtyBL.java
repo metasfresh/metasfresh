@@ -44,7 +44,11 @@ public interface IHUPPOrderQtyBL extends ISingletonService
 		return uomDAO.getById(ppOrderQty.getC_UOM_ID());
 	}
 
+	@NonNull
 	DraftPPOrderQuantities getDraftPPOrderQuantities(@NonNull PPOrderId ppOrderId);
+
+	@NonNull
+	DraftPPOrderQuantities getPPOrderQuantities(@NonNull PPOrderId ppOrderId, boolean includeProcessedQty);
 
 	void updateDraftReceiptCandidate(@NonNull UpdateDraftReceiptCandidateRequest request);
 

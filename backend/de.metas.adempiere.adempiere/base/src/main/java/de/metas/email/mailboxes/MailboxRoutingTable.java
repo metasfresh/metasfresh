@@ -1,5 +1,6 @@
 package de.metas.email.mailboxes;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
@@ -48,7 +49,8 @@ class MailboxRoutingTable
 				.findFirst();
 	}
 
-	private static boolean isMatching(@NonNull final MailboxRouting routing, @NonNull final MailboxQuery query)
+	@VisibleForTesting
+	public static boolean isMatching(@NonNull final MailboxRouting routing, @NonNull final MailboxQuery query)
 	{
 		return ClientId.equals(routing.getClientId(), query.getClientId())
 				&& isMatching_OrgId(routing, query)
@@ -75,13 +77,13 @@ class MailboxRoutingTable
 
 	private static boolean isMatching_DocBaseType(@NonNull final MailboxRouting routing, @NonNull final MailboxQuery query)
 	{
-		final DocBaseType queryDocBaseType = query.getDocBaseType();
-		return queryDocBaseType == null || DocBaseType.equals(queryDocBaseType, routing.getDocBaseType());
+		final DocBaseType routingDocBaseType = routing.getDocBaseType();
+		return routingDocBaseType == null || DocBaseType.equals(routingDocBaseType, query.getDocBaseType());
 	}
 
 	private static boolean isMatching_DocSubType(@NonNull final MailboxRouting routing, @NonNull final MailboxQuery query)
 	{
-		final DocSubType queryDocSubType = query.getDocSubType();
-		return queryDocSubType.isAny() || DocSubType.equals(queryDocSubType, routing.getDocSubType());
+		final DocSubType routingDocSubType = routing.getDocSubType();
+		return routingDocSubType == null || routingDocSubType.isAny() || DocSubType.equals(routingDocSubType, query.getDocSubType());
 	}
 }
