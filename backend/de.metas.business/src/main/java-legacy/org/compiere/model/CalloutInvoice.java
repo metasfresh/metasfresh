@@ -26,6 +26,7 @@ import de.metas.document.location.adapter.DocumentLocationAdaptersRegistry;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceLineBL;
+import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.MetasfreshLastError;
 import de.metas.organization.OrgId;
@@ -38,8 +39,10 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.security.IUserRolePermissions;
+import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.VatCodeId;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.LegacyUOMConversionUtils;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -50,6 +53,7 @@ import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
@@ -81,7 +85,8 @@ public class CalloutInvoice extends CalloutEngine
 	private static final String MSG_UnderLimitPrice = "UnderLimitPrice";
 
 	protected static final String SYS_Config_C_Invoice_SOTrx_OnlyAllowBillToDefault_Contact = "C_Invoice.SOTrx_OnlyAllowBillToDefault_Contact";
-
+	
+	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final DocumentLocationAdaptersRegistry documentLocationAdaptersRegistry = SpringContextHolder.instance.getBean(DocumentLocationAdaptersRegistry.class);
@@ -195,7 +200,7 @@ public class CalloutInvoice extends CalloutEngine
 					}
 				}
 				// Payment Term
-				final int paymentTermId = new Integer(rs.getInt(isSOTrx ? "C_PaymentTerm_ID" : "PO_PaymentTerm_ID"));
+				final int paymentTermId = rs.getInt(isSOTrx ? "C_PaymentTerm_ID" : "PO_PaymentTerm_ID");
 				if (!rs.wasNull())
 				{
 					invoice.setC_PaymentTerm_ID(paymentTermId);
@@ -468,23 +473,25 @@ public class CalloutInvoice extends CalloutEngine
 		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(invoiceLine.getC_VAT_Code_ID());
 
 		//
-		final int taxID = Tax.get(ctx, productID, chargeID, billDate,
-								  shipDate, orgID, warehouseID,
-								  billBPartnerLocationID,
-								  shipBPartnerLocationID,
-								  invoice.isSOTrx(),
-				vatCodeId);
-
-		log.debug("Tax ID={}", taxID);
+		final TaxId taxID = taxBL.getTaxNotNull(invoice,
+												null,
+												productID,
+												shipDate,
+												OrgId.ofRepoId(orgID),
+												WarehouseId.ofRepoIdOrNull(warehouseID),
+												shipBPartnerLocationID,
+												SOTrx.ofBoolean(invoice.isSOTrx()));
+		
+		log.debug("C_Tax_ID={}", taxID.getRepoId());
 
 		//
-		if (taxID <= 0)
+		if (taxID.isNoTaxId())
 		{
 			calloutField.fireDataStatusEEvent(MetasfreshLastError.retrieveError());
 		}
 		else
 		{
-			invoiceLine.setC_Tax_ID(taxID);
+			invoiceLine.setC_Tax_ID(taxID.getRepoId());
 		}
 		//
 		return amt(calloutField);
