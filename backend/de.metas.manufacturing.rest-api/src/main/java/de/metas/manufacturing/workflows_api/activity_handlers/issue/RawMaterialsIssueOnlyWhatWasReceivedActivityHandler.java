@@ -70,7 +70,6 @@ import java.util.function.Function;
 public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFActivityHandler, UserConfirmationSupport
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("manufacturing.rawMaterialsIssueOnlyWhatWasReceived");
-	private static final AdMessageKey NO_QTY_TO_ISSUE = AdMessageKey.of("de.metas.manufacturing.NO_QTY_TO_ISSUE");
 	private static final AdMessageKey NOTHING_WAS_RECEIVED_YET = AdMessageKey.of("de.metas.manufacturing.NOTHING_WAS_RECEIVED_YET");
 
 	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
@@ -148,7 +147,7 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 		final Quantity qtyToIssue = request.getLineQtyToIssue().min(quantityToIssueForWhatWasReceived);
 		if (qtyToIssue.signum() <= 0)
 		{
-			throw new AdempiereException(NO_QTY_TO_ISSUE);
+			return;
 		}
 
 		final ProductId productId = request.getLine().getProductId();
