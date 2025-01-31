@@ -90,3 +90,47 @@ UPDATE AD_UI_Element SET SeqNo=125,Updated=TO_TIMESTAMP('2025-01-29 14:16:14.034
 /* DDL */ SELECT public.db_alter_table('M_HU_PI_Item_Product','ALTER TABLE public.M_HU_PI_Item_Product ADD COLUMN IsOrderInTuUomWhenMatched CHAR(1) DEFAULT ''N'' CHECK (IsOrderInTuUomWhenMatched IN (''Y'',''N'')) NOT NULL')
 ;
 
+-- Element: IsOrderInTuUomWhenMatched
+-- 2025-01-31T12:06:28.676Z
+UPDATE AD_Element_Trl SET Description='Wenn angehakt, wird bei importierten Auftragsdispo-Zeilen, die diese Packvorschrift verwenden, für die Auftragsmenge die Maßeinheit "Kollo" angenommen.',Updated=TO_TIMESTAMP('2025-01-31 12:06:28.676000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583460 AND AD_Language='fr_CH'
+;
+
+-- 2025-01-31T12:06:28.678Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583460,'fr_CH')
+;
+
+-- Element: IsOrderInTuUomWhenMatched
+-- 2025-01-31T12:06:29.707Z
+UPDATE AD_Element_Trl SET Description='Wenn angehakt, wird bei importierten Auftragsdispo-Zeilen, die diese Packvorschrift verwenden, für die Auftragsmenge die Maßeinheit "Kollo" angenommen.',Updated=TO_TIMESTAMP('2025-01-31 12:06:29.707000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583460 AND AD_Language='de_DE'
+;
+
+-- 2025-01-31T12:06:29.708Z
+UPDATE AD_Element SET Description='Wenn angehakt, wird bei importierten Auftragsdispo-Zeilen, die diese Packvorschrift verwenden, für die Auftragsmenge die Maßeinheit "Kollo" angenommen.', Updated=TO_TIMESTAMP('2025-01-31 12:06:29.708000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC' WHERE AD_Element_ID=583460
+;
+
+-- 2025-01-31T12:06:29.971Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(583460,'de_DE')
+;
+
+-- 2025-01-31T12:06:29.972Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583460,'de_DE')
+;
+
+-- Element: IsOrderInTuUomWhenMatched
+-- 2025-01-31T12:06:34.007Z
+UPDATE AD_Element_Trl SET Description='Wenn angehakt, wird bei importierten Auftragsdispo-Zeilen, die diese Packvorschrift verwenden, für die Auftragsmenge die Maßeinheit "Kollo" angenommen.',Updated=TO_TIMESTAMP('2025-01-31 12:06:34.007000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583460 AND AD_Language='de_CH'
+;
+
+-- 2025-01-31T12:06:34.009Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583460,'de_CH')
+;
+
+-- Element: IsOrderInTuUomWhenMatched
+-- 2025-01-31T12:06:46.003Z
+UPDATE AD_Element_Trl SET Description='If ticked, the unit of measurement for imported order candidates that use this packing instruction is set to "Collo".',Updated=TO_TIMESTAMP('2025-01-31 12:06:46.003000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583460 AND AD_Language='en_US'
+;
+
+-- 2025-01-31T12:06:46.006Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583460,'en_US')
+;
+
