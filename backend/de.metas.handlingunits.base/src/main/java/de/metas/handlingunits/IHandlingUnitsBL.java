@@ -657,6 +657,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	boolean isEmptyStorage(I_M_HU hu);
 
+	boolean isDestroyedOrEmptyStorage(I_M_HU hu);
+
 	void setClearanceStatusRecursively(final HuId huId, final ClearanceStatusInfo statusInfo);
 
 	boolean isHUHierarchyCleared(@NonNull I_M_HU hu);

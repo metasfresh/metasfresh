@@ -60,6 +60,18 @@ public interface ITaxBL extends ISingletonService
 			SOTrx soTrx,
 			@Nullable VatCodeId vatCodeId);
 
+	@NonNull
+	TaxId getTaxOrNoTaxId(
+			@Nullable Object model,
+			@Nullable TaxCategoryId taxCategoryId,
+			int productId,
+			Timestamp shipDate,
+			@NonNull OrgId orgId,
+			@Nullable WarehouseId warehouseId,
+			BPartnerLocationAndCaptureId shipBPartnerLocationId,
+			SOTrx soTrx,
+			@Nullable VatCodeId vatCodeId);
+
 	/**
 	 * @param taxIncluded if true tax is included in given amount
 	 */

@@ -10,7 +10,12 @@ import de.metas.organization.OrgId;
 import org.adempiere.service.ClientId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
+import org.assertj.core.api.AbstractBooleanAssert;
 import org.junit.jupiter.api.Test;
+
+import javax.annotation.Nullable;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -53,13 +58,14 @@ class MailboxRoutingTableTest
 	{
 		MailboxRoutingBuilder routingTemplate = MailboxRouting.builder().clientId(ClientId.METASFRESH).orgId(OrgId.ANY).docBaseType(DocBaseType.SalesOrder).mailboxId(MailboxId.ofRepoId(1));
 		MailboxQueryBuilder queryTemplate = MailboxQuery.builder().clientId(ClientId.METASFRESH);
-		MailboxRouting routing1, routing2, routing3, routing4;
+		MailboxRouting routing0, routing1, routing2, routing3, routing4;
 		MailboxRoutingTable table;
 
 		@BeforeEach
 		void beforeEach()
 		{
 			table = MailboxRoutingTable.ofList(ImmutableList.of(
+					routing0 = MailboxRouting.builder().clientId(ClientId.METASFRESH).orgId(OrgId.ANY).mailboxId(MailboxId.ofRepoId(1)).build(),
 					routing1 = routingTemplate.docSubType(DocSubType.ANY).build(),
 					routing2 = routingTemplate.docSubType(DocSubType.NONE).build(),
 					routing3 = routingTemplate.docSubType(DocSubType.StandardOrder).build(),
@@ -70,7 +76,13 @@ class MailboxRoutingTableTest
 		@Test
 		void null_value()
 		{
-			assertThat(table.findBestMatching(queryTemplate.docBaseAndSubType(null).build())).containsSame(routing1);
+			assertThat(table.findBestMatching(queryTemplate.docBaseAndSubType(null).build())).containsSame(routing0);
+		}
+
+		@Test
+		void any()
+		{
+			assertThat(table.findBestMatching(queryTemplate.docBaseAndSubType(DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.ANY)).build())).containsSame(routing1);
 		}
 
 		@Test
@@ -90,5 +102,41 @@ class MailboxRoutingTableTest
 		{
 			assertThat(table.findBestMatching(queryTemplate.docBaseAndSubType(DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.POSOrder)).build())).containsSame(routing4);
 		}
+	}
+
+	@Test
+	void testDocBaseAndSubType()
+	{
+		assertBaseTypeMatching(null , null).isTrue();
+		assertBaseTypeMatching(null, DocBaseAndSubType.ofNullable(DocBaseType.PurchaseOrder.getCode(), null)).isTrue();
+		assertBaseTypeMatching(null, DocBaseAndSubType.of(DocBaseType.PurchaseOrder, DocSubType.AP)).isTrue();
+
+		assertBaseTypeMatching(DocBaseAndSubType.ofNullable(DocBaseType.SalesOrder.getCode(), null), null).isFalse();
+
+		assertBaseTypeMatching(DocBaseAndSubType.ofNullable(DocBaseType.SalesOrder.getCode(), null), DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.AP)).isFalse();
+		assertBaseTypeMatching(DocBaseAndSubType.ofNullable(DocBaseType.SalesOrder.getCode(), null), DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.NONE)).isTrue();
+
+		assertBaseTypeMatching(DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.ANY), DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.ANY)).isTrue();
+		assertBaseTypeMatching(DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.ANY), DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.AP)).isTrue();
+
+		assertBaseTypeMatching(DocBaseAndSubType.of(DocBaseType.SalesOrder, DocSubType.ANY), DocBaseAndSubType.of(DocBaseType.PurchaseOrder, DocSubType.AP)).isFalse();
+	}
+
+	private AbstractBooleanAssert<?> assertBaseTypeMatching(@Nullable final DocBaseAndSubType routingDocType, @Nullable final DocBaseAndSubType queryDocTYpe)
+	{
+		final MailboxRouting routing = MailboxRouting.builder()
+				.mailboxId(MailboxId.ofRepoId(1))
+				.clientId(ClientId.METASFRESH).orgId(OrgId.ofRepoId(1))
+				.docBaseType(Optional.ofNullable(routingDocType).map(DocBaseAndSubType::getDocBaseType).orElse(null))
+				.docSubType(Optional.ofNullable(routingDocType).map(DocBaseAndSubType::getDocSubType).orElse(DocSubType.ANY))
+				.build();
+
+		final MailboxQuery query = MailboxQuery.builder()
+				.clientId(ClientId.METASFRESH)
+				.orgId(OrgId.ofRepoId(1))
+				.docBaseAndSubType(queryDocTYpe)
+				.build();
+
+		return assertThat(MailboxRoutingTable.isMatching(routing, query));
 	}
 }
