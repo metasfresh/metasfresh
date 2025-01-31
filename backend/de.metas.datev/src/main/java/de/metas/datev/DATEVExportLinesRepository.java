@@ -111,6 +111,7 @@ public class DATEVExportLinesRepository
 				.setSqlFromParameter("p_IsSwitchCreditMemo", datevExport.isSwitchCreditMemo())
 				.setSqlFromParameter("p_IsNegateInboundAmounts", datevExport.isNegateInboundAmounts())
 				.setSqlFromParameter("p_IsPlaceBPAccountsOnCredit", datevExport.isPlaceBPAccountsOnCredit())
+				.setSqlFromParameter("p_IsSOTrx", datevExport.getIsSOTrx())
 				;
 	}
 
