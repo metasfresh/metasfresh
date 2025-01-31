@@ -38,7 +38,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- Field: Geschäftspartner_OLD(123,D) -> Lieferant(224,D) -> Wareneingangsinfo
 -- Column: C_BPartner.MaterialReceiptInfo
 -- 2025-01-30T17:32:47.989Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,589627,735599,0,224,0,TO_TIMESTAMP('2025-01-30 18:32:47','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','N',0,'Wareneingangsinfo',0,0,200,0,1,1,TO_TIMESTAMP('2025-01-30 18:32:47','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,589627,735599,0,224,0,TO_TIMESTAMP('2025-01-30 18:32:47','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','Wareneingangsinfo',0,200,0,1,1,TO_TIMESTAMP('2025-01-30 18:32:47','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2025-01-30T17:32:48.151Z
@@ -85,7 +85,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- Field: Wareneingangsdisposition_OLD(540196,de.metas.inoutcandidate) -> Wareneingangsdisposition(540526,de.metas.inoutcandidate) -> Wareneingangsinfo
 -- Column: M_ReceiptSchedule.MaterialReceiptInfo
 -- 2025-01-30T17:42:14.801Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,589629,735600,0,540526,0,TO_TIMESTAMP('2025-01-30 18:42:13','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','N',0,'Wareneingangsinfo',0,0,230,0,1,1,TO_TIMESTAMP('2025-01-30 18:42:13','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,589629,735600,0,540526,0,TO_TIMESTAMP('2025-01-30 18:42:13','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','Wareneingangsinfo',0,230,0,1,1,TO_TIMESTAMP('2025-01-30 18:42:13','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2025-01-30T17:42:15.107Z
