@@ -22,10 +22,10 @@ package org.adempiere.ad.validationRule.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.util.GuavaCollectors;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.validationRule.INamePairPredicate;
@@ -33,19 +33,20 @@ import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.NamePairPredicates;
 import org.compiere.util.ValueNamePair;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collector;
 
 /**
  * Immutable composite validation rule consist of a collection of child validation rules.
  *
  * @author tsa
- *
  */
 public final class CompositeValidationRule implements IValidationRule
 {
-	public static final IValidationRule compose(final IValidationRule rule1, final IValidationRule rule2)
+	public static IValidationRule compose(final IValidationRule rule1, final IValidationRule rule2)
 	{
 		return builder()
 				.add(rule1)
@@ -53,9 +54,19 @@ public final class CompositeValidationRule implements IValidationRule
 				.build();
 	}
 
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
+	}
+
+	public static Collector<IValidationRule, ?, IValidationRule> collect()
+	{
+		return GuavaCollectors.collectUsingListAccumulator(CompositeValidationRule::ofList);
+	}
+
+	public static IValidationRule ofList(final List<IValidationRule> rules)
+	{
+		return builder().addAll(rules).build();
 	}
 
 	private final List<IValidationRule> rules;
@@ -102,7 +113,7 @@ public final class CompositeValidationRule implements IValidationRule
 	{
 		if (_allParameters == null)
 		{
-			_allParameters = ImmutableSet.<String> builder()
+			_allParameters = ImmutableSet.<String>builder()
 					.addAll(prefilterWhereClause.getParameterNames())
 					.addAll(postQueryPredicates.getParameters())
 					.build();
@@ -149,6 +160,7 @@ public final class CompositeValidationRule implements IValidationRule
 		return dependsOnTableNames;
 	}
 
+	@SuppressWarnings("UnusedReturnValue")
 	public static final class Builder
 	{
 		private final List<IValidationRule> rules = new ArrayList<>();
@@ -225,7 +237,7 @@ public final class CompositeValidationRule implements IValidationRule
 			if (explodeComposite && rule instanceof CompositeValidationRule)
 			{
 				final CompositeValidationRule compositeRule = (CompositeValidationRule)rule;
-				compositeRule.getValidationRules().forEach(includedRule -> add(includedRule, explodeComposite));
+				addAll(compositeRule.getValidationRules(), true);
 			}
 			else
 			{
@@ -234,6 +246,17 @@ public final class CompositeValidationRule implements IValidationRule
 				postQueryPredicates.add(rule.getPostQueryFilter());
 			}
 
+			return this;
+		}
+
+		private Builder addAll(final Collection<IValidationRule> rules)
+		{
+			return addAll(rules, false);
+		}
+
+		private Builder addAll(final Collection<IValidationRule> rules, final boolean explodeComposite)
+		{
+			rules.forEach(includedRule -> add(includedRule, explodeComposite));
 			return this;
 		}
 	}

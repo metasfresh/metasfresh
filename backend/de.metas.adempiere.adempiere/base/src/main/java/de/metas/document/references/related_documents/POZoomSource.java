@@ -30,7 +30,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.compiere.model.I_AD_Column;
+import org.adempiere.ad.table.api.MinimalColumnInfo;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.util.DisplayType;
@@ -77,7 +77,7 @@ public final class POZoomSource implements IZoomSource
 
 	/**
 	 * @return the name of a key column that is also flagged as GenericZoomOrigin and {@code true},if there is exactly one such column.<br>
-	 *         Otherwise it returns {@code null} and {@code false}.
+	 * Otherwise it returns {@code null} and {@code false}.
 	 */
 	private static IPair<String, Boolean> extractKeyColumnNameOrNull(@NonNull final PO po)
 	{
@@ -92,7 +92,7 @@ public final class POZoomSource implements IZoomSource
 		final ArrayList<String> eligibleKeyColumnNames = new ArrayList<>();
 		for (String element : keyColumnNamesArr)
 		{
-			final I_AD_Column column = adTableDAO.retrieveColumn(po.get_TableName(), element);
+			final MinimalColumnInfo column = adTableDAO.getMinimalColumnInfo(po.get_TableName(), element);
 			if (column.isGenericZoomOrigin())
 			{
 				eligibleKeyColumnNames.add(element);

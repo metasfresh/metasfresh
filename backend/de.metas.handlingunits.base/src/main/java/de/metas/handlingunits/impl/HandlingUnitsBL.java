@@ -1185,6 +1185,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public boolean isDestroyedOrEmptyStorage(@NonNull final I_M_HU hu)
+	{
+		return isDestroyed(hu) || isEmptyStorage(hu);
+	}
+
+	@Override
 	public CopyHUsResponse copyAsPlannedHUs(@NonNull final Collection<HuId> huIdsToCopy)
 	{
 		return copyAsPlannedHUs()
