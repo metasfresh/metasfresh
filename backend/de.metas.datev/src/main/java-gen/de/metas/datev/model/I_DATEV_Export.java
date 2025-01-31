@@ -250,6 +250,29 @@ public interface I_DATEV_Export
 	String COLUMNNAME_IsPlaceBPAccountsOnCredit = "IsPlaceBPAccountsOnCredit";
 
 	/**
+	 * Set Sales Transaction.
+	 * This is a Sales Transaction
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsSOTrx (@Nullable java.lang.String IsSOTrx);
+
+	/**
+	 * Get Sales Transaction.
+	 * This is a Sales Transaction
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsSOTrx();
+
+	ModelColumn<I_DATEV_Export, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_DATEV_Export.class, "IsSOTrx", null);
+	String COLUMNNAME_IsSOTrx = "IsSOTrx";
+
+	/**
 	 * Set Switch Credit Memo.
 	 * If ticked, for credit memo invoices, the credit account and the debit account are swapped. The amount and tax are multiplied by -1.
 	 *
