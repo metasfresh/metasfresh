@@ -2,8 +2,10 @@ package org.compiere.model;
 
 import lombok.Builder;
 import lombok.Value;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
 import java.util.OptionalInt;
 
 /*
@@ -29,6 +31,7 @@ import java.util.OptionalInt;
  */
 
 @Value
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class GridFieldDefaultFilterDescriptor
 {
 	boolean defaultFilter;
@@ -37,6 +40,7 @@ public class GridFieldDefaultFilterDescriptor
 	boolean showFilterIncrementButtons;
 	boolean showFilterInline;
 	String defaultValue;
+	@Nullable AdValRuleId adValRuleId;
 
 	boolean facetFilter;
 	int facetFilterSeqNo;
@@ -50,6 +54,7 @@ public class GridFieldDefaultFilterDescriptor
 			final boolean showFilterIncrementButtons,
 			final boolean showFilterInline,
 			final String defaultValue,
+			@Nullable AdValRuleId adValRuleId,
 			//
 			final boolean facetFilter,
 			final int facetFilterSeqNo,
@@ -70,6 +75,7 @@ public class GridFieldDefaultFilterDescriptor
 			this.showFilterIncrementButtons = showFilterIncrementButtons;
 			this.showFilterInline = showFilterInline;
 			this.defaultValue = defaultValue;
+			this.adValRuleId = adValRuleId;
 		}
 		else
 		{
@@ -79,6 +85,7 @@ public class GridFieldDefaultFilterDescriptor
 			this.showFilterIncrementButtons = false;
 			this.showFilterInline = false;
 			this.defaultValue = null;
+			this.adValRuleId = null;
 		}
 
 		//
@@ -97,3 +104,4 @@ public class GridFieldDefaultFilterDescriptor
 		}
 	}
 }
+

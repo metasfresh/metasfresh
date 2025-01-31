@@ -25,12 +25,12 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-import de.metas.util.Check;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -40,16 +40,11 @@ import java.util.Properties;
  */
 public class EndsWithQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
+	private final String columnName;
+	private final String endsWithString;
 
-	private String columnName;
-	private String endsWithString;
-
-	public EndsWithQueryFilter(final String columnName, final String endsWithString)
+	public EndsWithQueryFilter(@NonNull final String columnName, @NonNull final String endsWithString)
 	{
-		super();
-
-		Check.assumeNotNull(columnName, "columnName not null");
-		Check.assumeNotNull(endsWithString, "endsWithString not null");
 		this.columnName = columnName;
 		this.endsWithString = endsWithString;
 	}
@@ -78,13 +73,8 @@ public class EndsWithQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 		}
 		else  if (value instanceof String)
 		{
-			if (((String)value).endsWith(endsWithString))
-			{
-				return true;
-			}
-			
-			return false;
-			
+			return ((String)value).endsWith(endsWithString);
+
 		}
 		else
 		{
@@ -96,29 +86,19 @@ public class EndsWithQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 	private String sqlWhereClause = null;
 	private List<Object> sqlParams = null;
 
-	private final void buildSql()
+	private void buildSql()
 	{
 		if (sqlBuilt)
 		{
 			return;
 		}
 
-		final StringBuilder sqlWhereClause = new StringBuilder();
+		final String sqlWhereClause = columnName
+				+ " LIKE "
+				+ "'%'||? ";
+		this.sqlParams = Collections.singletonList(endsWithString);
 
-		sqlWhereClause.append(columnName);
-
-		sqlWhereClause.append(" LIKE ");
-
-		sqlWhereClause.append("'%'||? ");
-		this.sqlParams = Arrays.asList((Object)endsWithString);
-
-		this.sqlWhereClause = sqlWhereClause.toString();
+		this.sqlWhereClause = sqlWhereClause;
 		this.sqlBuilt = true;
 	}
-
-	protected void resetSqlBuilt()
-	{
-		this.sqlBuilt = false;
-	}
-
 }

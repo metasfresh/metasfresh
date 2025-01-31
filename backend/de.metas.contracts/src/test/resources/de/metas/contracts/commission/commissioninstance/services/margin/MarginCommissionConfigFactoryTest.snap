@@ -1,12 +1,12 @@
 de.metas.contracts.commission.commissioninstance.services.margin.MarginCommissionConfigFactoryTest.givenValidRequest_whenCreateForNewCommissionInstances_thenReturnOneCommissionConfig=[
   [
     {
-      "commissionProductId": 100011,
-      "customerTradeMarginLineId": 100013,
+      "commissionProductId": 1000001,
+      "customerTradeMarginLineId": 1000000,
       "marginContract": {
         "@type": "MarginContract",
         "contractOwnerBPartnerId": 1,
-        "id": 100015,
+        "id": 1000000,
         "simulation": false
       },
       "pointsPrecision": 2,

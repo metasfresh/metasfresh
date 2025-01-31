@@ -59,7 +59,7 @@ public class MainRowWithSubRows
 	@NonNull private final MaterialCockpitRowCache cache;
 	@NonNull private final MaterialCockpitRowLookups rowLookups;
     @NonNull private final QtyConvertorService qtyConvertorService;
-
+	
 	@NonNull private final MainRowBucketId productIdAndDate;
 	@NonNull private final MainRowBucket mainRow = new MainRowBucket();
 	@NonNull private final Map<DimensionSpecGroup, DimensionGroupSubRowBucket> dimensionGroupSubRows = new LinkedHashMap<>();
@@ -70,15 +70,15 @@ public class MainRowWithSubRows
 			@NonNull final MaterialCockpitRowCache cache,
 			@NonNull final MaterialCockpitRowLookups rowLookups,
 			@NonNull final MainRowBucketId productIdAndDate,
-			@Nullable final MFColor procurementStatusColor,
-			@Nullable final Money maxPurchasePrice)
+            @Nullable final MFColor procurementStatusColor,
+            @Nullable final Money maxPurchasePrice)
 	{
 		this.cache = cache;
 		this.rowLookups = rowLookups;
-
+		
 		this.productIdAndDate = productIdAndDate;
-		this.mainRow.setProcurementStatus(procurementStatusColor != null ? procurementStatusColor.toHexString() : null);
-		this.mainRow.setHighestPurchasePrice_AtDate(maxPurchasePrice);
+        this.mainRow.setProcurementStatus(procurementStatusColor != null ? procurementStatusColor.toHexString() : null);
+        this.mainRow.setHighestPurchasePrice_AtDate(maxPurchasePrice);
 		this.qtyConvertorService = SpringContextHolder.instance.getBean(QtyConvertorService.class);
 	}
 
@@ -125,13 +125,13 @@ public class MainRowWithSubRows
 			addedToAtLeastOneBucket = true;
 		}
 		if (detailsRowAggregation.isWarehouse() && (cockpitRecord.getQtyStockEstimateCount_AtDate().signum() != 0 || warehouseId != null))
-			{
+		{
 			final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
 					.aggregationId(WarehouseId.toRepoId(warehouseId))
 					.build();
 			addCockpitRecordToCounting(cockpitRecord, rowAggregationIdentifier);
-				addedToAtLeastOneBucket = true;
-			}
+			addedToAtLeastOneBucket = true;
+		}
 		if (!addedToAtLeastOneBucket)
 		{
 			addedToAtLeastOneBucket = addCockpitRecordToDimensionGroups(cockpitRecord, dimensionSpec);
@@ -285,7 +285,7 @@ public class MainRowWithSubRows
 			}
 		}
 		if (warehouseId != null)
-			{
+		{
 			if (detailsRowAggregation.isWarehouse())
 			{
 				final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
@@ -330,8 +330,8 @@ public class MainRowWithSubRows
 					.build();
 
 			final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(rowAggregationIdentifier, this::newCountingSubRowBucket);
-		countingSubRow.addStockRecord(stockRecord);
-	}
+			countingSubRow.addStockRecord(stockRecord);
+		}
 		else if (detailsRowAggregation.isWarehouse())
 		{
 			final MaterialCockpitDetailsRowAggregationIdentifier rowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder().detailsRowAggregation(detailsRowAggregation)
@@ -364,7 +364,6 @@ public class MainRowWithSubRows
 
 	public MaterialCockpitRow createMainRowWithSubRows()
 	{
-
 		final MainRowBuilder mainRowBuilder = MaterialCockpitRow.mainRowBuilder()
 				.cache(cache)
 				.lookups(rowLookups)

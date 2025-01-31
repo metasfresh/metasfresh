@@ -121,6 +121,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.getModelTranslationMap;
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
+	private final MLookupFactory lookupFactory = MLookupFactory.newInstance();
+
 	private static final String SYSCONFIG_AVAILABILITY_INFO_QUERY_TYPE = //
 			"de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.AvailabilityInfo.QueryType";
 
@@ -614,7 +616,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		{
 			return true;
 		}
-		
+
 		if (EmptyUtil.isBlank(filter))
 		{
 			return false;
@@ -667,7 +669,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		//
 		// SQL: SELECT ... FROM
-		final String sqlDisplayName = MLookupFactory.getLookup_TableDirEmbed(
+		final String sqlDisplayName = lookupFactory.getLookup_TableDirEmbed(
 				LanguageInfo.ofSpecificLanguage(evalCtx.getAD_Language()),
 				org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID, // columnName
 				null, // baseTable

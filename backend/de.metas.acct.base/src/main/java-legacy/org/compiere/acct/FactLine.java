@@ -296,7 +296,7 @@ public class FactLine
 		);
 
 		// Campaign
-		this.C_Campaign_ID = CoalesceUtil.firstGreaterThanZeroSupplier(
+		this.C_Campaign_ID = CoalesceUtil.firstGreaterThanZeroIntegerSupplier(
 				() -> campaignId != null ? campaignId : 0,
 				() -> docLine != null ? docLine.getC_Campaign_ID() : 0,
 				doc::getC_Campaign_ID,
@@ -316,14 +316,14 @@ public class FactLine
 		);
 
 		// User List 1
-		this.User1_ID = CoalesceUtil.firstGreaterThanZeroSupplier(
-				() -> (docLine != null) ? docLine.getUser1_ID() : 0,
+		this.User1_ID = CoalesceUtil.firstGreaterThanZeroIntegerSupplier(
+				() -> (docLine != null) ? docLine.getUser1_ID() : null,
 				doc::getUser1_ID,
 				() -> account != null ? account.getUser1_ID() : 0,
 				() -> 0
 		);
-		this.User2_ID = CoalesceUtil.firstGreaterThanZeroSupplier(
-				() -> (docLine != null) ? docLine.getUser2_ID() : 0,
+		this.User2_ID = CoalesceUtil.firstGreaterThanZeroIntegerSupplier(
+				() -> (docLine != null) ? docLine.getUser2_ID() : null,
 				doc::getUser2_ID,
 				() -> account != null ? account.getUser2_ID() : 0,
 				() -> 0

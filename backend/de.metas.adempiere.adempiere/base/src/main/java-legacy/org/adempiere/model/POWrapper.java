@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Wrap a PO object to a given bean interface. Example
@@ -659,6 +660,7 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 			.add("M_AttributeSet_ID".toLowerCase())
 			.add("M_AttributeSetInstance_ID".toLowerCase())
 			.add("AD_System_ID".toLowerCase())
+			.add("GL_Category_ID".toLowerCase())
 			.build();
 
 	protected Object invokeParent(final Method method, final Object[] args) throws Exception
@@ -927,6 +929,11 @@ public class POWrapper implements InvocationHandler, IInterfaceWrapper
 	{
 		@SuppressWarnings("unchecked") final T value = (T)getStrictPO(model).getDynAttribute(attributeName);
 		return value;
+	}
+
+	public static <T> T computeDynAttributeIfAbsent(@NonNull final Object model, @NonNull final String attributeName, @NonNull final Supplier<T> supplier)
+	{
+		return getStrictPO(model).computeDynAttributeIfAbsent(attributeName, supplier);
 	}
 
 	public static boolean hasModelColumnName(final Object model, final String columnName)

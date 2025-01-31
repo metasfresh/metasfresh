@@ -2,6 +2,7 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
@@ -115,6 +116,11 @@ public final class DescriptorsFactoryHelper
 		//
 		// Fallback
 		throw new IllegalArgumentException("No value class found for widgetType=" + widgetType);
+	}
+
+	public static DocumentFieldWidgetType extractWidgetType(final String columnName, @NonNull final ReferenceId displayType)
+	{
+		return extractWidgetType(columnName, displayType.getRepoId());
 	}
 
 	public static DocumentFieldWidgetType extractWidgetType(final String columnName, final int displayType)
@@ -248,6 +254,7 @@ public final class DescriptorsFactoryHelper
 		}
 	}
 
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	public static DocumentFieldWidgetType extractWidgetType(
 			final String columnName,
 			final int displayType,
@@ -286,8 +293,13 @@ public final class DescriptorsFactoryHelper
 		}
 	}
 
+	public static DocumentLayoutElementFieldDescriptor.LookupSource extractLookupSource(@NonNull final ReferenceId displayType, @Nullable final ReferenceId adReferenceValueId)
+	{
+		return extractLookupSource(displayType.getRepoId(), adReferenceValueId);
+	}
+
 	@Nullable
-	public static DocumentLayoutElementFieldDescriptor.LookupSource extractLookupSource(final int displayType, final int adReferenceValueId)
+	public static DocumentLayoutElementFieldDescriptor.LookupSource extractLookupSource(final int displayType, @Nullable final ReferenceId adReferenceValueId)
 	{
 		if (DisplayType.Search == displayType)
 		{
@@ -309,7 +321,7 @@ public final class DescriptorsFactoryHelper
 		{
 			return DocumentLayoutElementFieldDescriptor.LookupSource.lookup;
 		}
-		else if (DisplayType.Button == displayType && adReferenceValueId > 0)
+		else if (DisplayType.Button == displayType && adReferenceValueId != null)
 		{
 			return DocumentLayoutElementFieldDescriptor.LookupSource.list;
 		}

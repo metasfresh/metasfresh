@@ -67,9 +67,9 @@ import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
@@ -103,7 +103,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-@ApiResponses(value = { @ApiResponse(code = 401, message = "Unauthorized") })
+@ApiResponses(value = { @ApiResponse(responseCode = "401", description = "Unauthorized") })
 @RestController
 @RequestMapping(value = DebugRestController.ENDPOINT)
 @RequiredArgsConstructor
@@ -124,7 +124,7 @@ public class DebugRestController
 	}
 
 	@GetMapping("/cacheReset")
-	@ApiResponses({ @ApiResponse(code = 200, message = "cache reset done") })
+	@ApiResponses({ @ApiResponse(responseCode = "200", description = "cache reset done") })
 	@Deprecated
 	public JsonCacheResetResponse cacheReset(
 			@RequestParam(name = CacheRestController.CACHE_RESET_PARAM_forgetNotSavedDocuments, defaultValue = "false", required = false) final boolean forgetNotSavedDocuments)
@@ -372,7 +372,7 @@ public class DebugRestController
 	}
 
 	@GetMapping("http.cache.maxAge")
-	public Map<String, Object> setHttpCacheMaxAge(@RequestParam("value") @ApiParam("Cache-control's max age in seconds") final int httpCacheMaxAge)
+	public Map<String, Object> setHttpCacheMaxAge(@RequestParam("value") @Parameter(description = "Cache-control's max age in seconds") final int httpCacheMaxAge)
 	{
 		userSession.assertLoggedIn();
 
@@ -382,7 +382,7 @@ public class DebugRestController
 	}
 
 	@GetMapping("http.use.AcceptLanguage")
-	public Map<String, Object> setUseHttpAcceptLanguage(@RequestParam("value") @ApiParam("Cache-control's max age in seconds") final boolean useHttpAcceptLanguage)
+	public Map<String, Object> setUseHttpAcceptLanguage(@RequestParam("value") @Parameter(description = "Cache-control's max age in seconds") final boolean useHttpAcceptLanguage)
 	{
 		userSession.assertLoggedIn();
 

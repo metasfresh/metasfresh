@@ -1,5 +1,6 @@
 package org.adempiere.ad.column.model.interceptor;
 
+import de.metas.ad_reference.ReferenceId;
 import de.metas.i18n.po.POTrlRepository;
 import de.metas.logging.LogManager;
 import de.metas.security.impl.ParsedSql;
@@ -15,6 +16,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Field;
@@ -102,7 +104,8 @@ public class AD_Column
 					+ "\n 1. To reference context table name, always use the right case, e.g. C_Invoice instead of c_invoice"
 					+ "\n 2. If in your sub-query you need to join again the context table name, consider using @JoinTableNameOrAliasIncludingDot@ to reference the context table name. Pls search for examples."
 					+ "\n 3. If you think this validation is not correct, feel free to temporary deactivate this check.", ex)
-					.setParameter("Test SQL", sql);
+					.setParameter("Test SQL", sql)
+					.appendParametersToMessage();
 		}
 		finally
 		{
@@ -141,14 +144,14 @@ public class AD_Column
 			try
 			{
 				final String ctxTableName = getTableName(column);
-				lookupInfo = MLookupFactory.getLookupInfo(
+				lookupInfo = MLookupFactory.newInstance().getLookupInfo(
 						Integer.MAX_VALUE, // WindowNo
 						adReferenceId,
 						ctxTableName, // ctxTableName
 						column.getColumnName(), // ctxColumnName
-						column.getAD_Reference_Value_ID(),
+						ReferenceId.ofRepoIdOrNull(column.getAD_Reference_Value_ID()),
 						column.isParent(), // IsParent,
-						column.getAD_Val_Rule_ID() //AD_Val_Rule_ID
+						AdValRuleId.ofRepoIdOrNull(column.getAD_Val_Rule_ID()) //AD_Val_Rule_ID
 				);
 			}
 			catch (final Exception ex)

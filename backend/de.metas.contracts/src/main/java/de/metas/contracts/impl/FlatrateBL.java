@@ -73,6 +73,7 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -894,14 +895,13 @@ public class FlatrateBL implements IFlatrateBL
 		}
 
 		final POInfo poInfo = POInfo.getPOInfo(I_C_Flatrate_Term.Table_Name);
-		final Lookup columnLookup = poInfo.getColumnLookup(ctx, poInfo.getColumnIndex(I_C_Flatrate_Term.COLUMNNAME_UOMType));
 
 		final String msg = msgBL.getMsg(ctx, FlatrateBL.MSG_DATA_ENTRY_CREATE_FLAT_FEE_4P,
 				new Object[] {
 						counter,
 						flatrateTerm.getStartDate(),
 						flatrateTerm.getEndDate(),
-						columnLookup.getDisplay(flatrateTerm.getUOMType()) });
+						flatrateTerm.getUOMType() });
 		Loggables.withLogger(logger, Level.INFO).addLog(msg);
 	}
 

@@ -31,6 +31,7 @@ import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
+import de.metas.quickinput.config.QuickInputConfigLayout;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.TableAccessLevel;
 import de.metas.security.permissions.Access;
@@ -536,6 +537,11 @@ public class GridTabVO implements Evaluatee, Serializable
 	 */
 	public String OrderByClause;
 	/**
+	 * Tab Insert
+	 */
+	private static final ILogicExpression DEFAULT_InsertLogicExpr = ConstantLogicExpression.FALSE;
+	@Getter private ILogicExpression InsertLogicExpr = DEFAULT_InsertLogicExpr;
+	/**
 	 * Tab Read Only
 	 */
 	private static final ILogicExpression DEFAULT_ReadOnlyLogicExpr = ConstantLogicExpression.FALSE;
@@ -590,11 +596,15 @@ public class GridTabVO implements Evaluatee, Serializable
 
 	@Getter
 	private boolean allowQuickInput;
+	@Getter @Nullable QuickInputConfigLayout quickInputLayout;
 
 	@Getter
 	private String includedTabNewRecordInputMode;
 	@Getter
 	private boolean refreshViewOnChangeEvents = false;
+
+	@Getter
+	private boolean queryIfNoFilters = true;
 
 	@NonNull private TabIncludeFiltersStrategy includeFiltersStrategy = TabIncludeFiltersStrategy.Auto;
 
@@ -777,6 +787,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		clone.OrderByClause = OrderByClause;
 		clone.ReadOnlyLogicExpr = ReadOnlyLogicExpr;
 		clone.DisplayLogicExpr = DisplayLogicExpr;
+		clone.InsertLogicExpr = InsertLogicExpr;
 		clone.TabLevel = TabLevel;
 		clone.AD_Image_ID = AD_Image_ID;
 		clone.Included_Tab_ID = Included_Tab_ID;
@@ -793,8 +804,10 @@ public class GridTabVO implements Evaluatee, Serializable
 		clone.onlyCurrentDays = 0;
 
 		clone.allowQuickInput = allowQuickInput;
+		clone.quickInputLayout = quickInputLayout;
 		clone.includedTabNewRecordInputMode = includedTabNewRecordInputMode;
 		clone.refreshViewOnChangeEvents = refreshViewOnChangeEvents;
+		clone.queryIfNoFilters = queryIfNoFilters;
 
 		clone_metas(ctx, windowNo, clone); // metas
 

@@ -272,6 +272,7 @@ export function createGridTable(tableId, tableResponse) {
     const tableData = createTableData({
       ...tableResponse,
       ...tableLayout,
+      ...extractEmptyResultTextAndHint({ tableResponse, tableLayout }),
     });
 
     dispatch(createTable(tableId, tableData));
@@ -302,6 +303,7 @@ export function updateGridTable(tableId, tableResponse) {
       tableData = createTableData({
         ...tableResponse,
         ...tableLayout,
+        ...extractEmptyResultTextAndHint({ tableResponse, tableLayout }),
         headerElements: tableResponse.columnsByFieldName,
         keyProperty: 'id',
       });
@@ -329,6 +331,7 @@ export function updateGridTable(tableId, tableResponse) {
       tableData = createTableData({
         ...tableResponse,
         ...tableLayout,
+        ...extractEmptyResultTextAndHint({ tableResponse, tableLayout }),
         headerElements: tableResponse.columnsByFieldName,
         keyProperty: 'id',
       });
@@ -359,6 +362,25 @@ export function updateGridTable(tableId, tableResponse) {
     return Promise.resolve(true);
   };
 }
+
+const extractEmptyResultTextAndHint = ({ tableResponse, tableLayout }) => {
+  if (tableResponse?.emptyResultText) {
+    return {
+      emptyResultText: tableResponse.emptyResultText,
+      emptyResultHint: tableResponse?.emptyResultHint || '',
+    };
+  } else if (tableLayout?.emptyResultText) {
+    return {
+      emptyResultText: tableLayout.emptyResultText,
+      emptyResultHint: tableLayout?.emptyResultHint || '',
+    };
+  } else {
+    return {
+      emptyResultText: '',
+      emptyResultHint: '',
+    };
+  }
+};
 
 /*
  * @method updateGridTableData

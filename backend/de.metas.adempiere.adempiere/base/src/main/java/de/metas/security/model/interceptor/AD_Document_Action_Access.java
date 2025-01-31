@@ -38,7 +38,7 @@ public class AD_Document_Action_Access
 	public static final AD_Document_Action_Access instance = new AD_Document_Action_Access();
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE })
-	public void afterNewChangedOrDeleted(final I_AD_Document_Action_Access documentActionAccess)
+	public void afterNewChangedOrDeleted(final I_AD_Document_Action_Access documentActionAccess, final ModelChangeType changeType)
 	{
 		final ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
 		//Calling with CHANGE as NEW only resets the local cache.

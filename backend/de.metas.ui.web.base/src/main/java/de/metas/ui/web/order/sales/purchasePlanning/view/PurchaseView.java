@@ -7,6 +7,7 @@ import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IEditableView;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.ViewFilterParameterLookupEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.ViewRowsOrderBy;
@@ -16,7 +17,6 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
@@ -26,7 +26,6 @@ import lombok.NonNull;
 import lombok.Singular;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.util.Evaluatee;
 
 import java.util.List;
 import java.util.Set;
@@ -168,13 +167,13 @@ public class PurchaseView implements IEditableView
 	}
 
 	@Override
-	public LookupValuesPage getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
+	public LookupValuesPage getFilterParameterDropdown(final String filterId, final String filterParameterName, final ViewFilterParameterLookupEvaluationCtx ctx)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public LookupValuesPage getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
+	public LookupValuesPage getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final ViewFilterParameterLookupEvaluationCtx ctx)
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -249,18 +248,6 @@ public class PurchaseView implements IEditableView
 		ViewChangesCollector
 				.getCurrentOrAutoflush()
 				.collectRowChanged(this, groupRowDocumentId);
-	}
-
-	@Override
-	public LookupValuesPage getFieldTypeahead(final RowEditingContext ctx, final String fieldName, final String query)
-	{
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public LookupValuesList getFieldDropdown(final RowEditingContext ctx, final String fieldName)
-	{
-		throw new UnsupportedOperationException();
 	}
 
 	@Override

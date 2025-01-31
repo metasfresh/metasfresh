@@ -16,6 +16,8 @@ import org.compiere.util.NamePair;
 
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 /**
  * 
  * @author tsa
@@ -86,7 +88,7 @@ public final class FilterWarehouseByDocTypeValidationRule extends AbstractJavaVa
 	}
 
 	@Override
-	public Set<String> getParameters()
+	public Set<String> getParameters(@Nullable final String contextTableName)
 	{
 		return PARAMS;
 	}
