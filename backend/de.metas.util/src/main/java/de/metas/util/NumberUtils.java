@@ -28,7 +28,11 @@ import lombok.NonNull;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.stream.IntStream;
 
 /**
  * Number Utils
@@ -40,6 +44,9 @@ public final class NumberUtils
 	private NumberUtils()
 	{
 	}
+
+	private static final BigDecimal TWENTY = new BigDecimal("20");
+
 
 	/**
 	 * Remove trailing zeros after decimal separator
@@ -142,6 +149,7 @@ public final class NumberUtils
 		return asBigDecimal(value, defaultValue, failIfUnparsable);
 	}
 
+	@Nullable
 	private static BigDecimal asBigDecimal(
 			@Nullable final Object value,
 			@Nullable final BigDecimal defaultValue,
@@ -288,5 +296,87 @@ public final class NumberUtils
 		return Optional.ofNullable(value)
 				.filter(v1 -> v1 > 0)
 				.orElse(null);
+	}
+
+	public static boolean isZeroOrNull(@Nullable final BigDecimal value)
+	{
+		if (value == null)
+		{
+			return true;
+		}
+		 else return value.compareTo(BigDecimal.ZERO) == 0;
+	}
+
+	@NonNull
+	public static String toStringWithCustomDecimalSeparator(@NonNull final BigDecimal value, final char separator)
+	{
+		final DecimalFormatSymbols symbols = new DecimalFormatSymbols();
+		symbols.setDecimalSeparator(separator);
+
+		final int scale = value.scale();
+		final String format;
+
+		if (scale > 0)
+		{
+			final StringBuilder formatBuilder = new StringBuilder("0.");
+
+			IntStream.range(0, scale)
+					.forEach(ignored -> formatBuilder.append("0"));
+
+			format = formatBuilder.toString();
+		}
+		else
+		{
+			format = "0";
+		}
+
+		final DecimalFormat formatter = new DecimalFormat(format, symbols);
+
+		return formatter.format(value);
+	}
+
+	@Nullable
+	public static BigDecimal zeroToNull(@Nullable final BigDecimal value)
+	{
+		return value != null && value.signum() != 0 ? value : null;
+	}
+
+	public static boolean equalsByCompareTo(@Nullable final BigDecimal value1, @Nullable final BigDecimal value2)
+	{
+		//noinspection NumberEquality
+		return (value1 == value2) || (value1 != null && value1.compareTo(value2) == 0);
+	}
+
+	@SafeVarargs
+	public static int firstNonZero(final Supplier<Integer>... suppliers)
+	{
+		if (suppliers == null || suppliers.length == 0)
+		{
+			return 0;
+		}
+
+		for (final Supplier<Integer> supplier : suppliers)
+		{
+			if (supplier == null)
+			{
+				continue;
+			}
+
+			final Integer value = supplier.get();
+			if (value != null && value != 0)
+			{
+				return value;
+			}
+		}
+
+		return 0;
+	}
+
+	@NonNull
+	public static BigDecimal roundTo5Cent(@NonNull final BigDecimal initialValue)
+	{
+		final BigDecimal multiplyBy20 = initialValue.multiply(TWENTY);
+		final BigDecimal intPart = multiplyBy20.setScale(0, RoundingMode.HALF_UP);
+		return intPart.divide(TWENTY);
 	}
 }

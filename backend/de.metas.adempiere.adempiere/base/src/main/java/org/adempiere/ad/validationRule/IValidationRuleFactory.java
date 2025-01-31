@@ -22,21 +22,23 @@ package org.adempiere.ad.validationRule;
  * #L%
  */
 
-import de.metas.util.ISingletonService;
+import java.util.Properties;
+
 import lombok.NonNull;
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.util.Evaluatee;
 
+import de.metas.util.ISingletonService;
+
 import javax.annotation.Nullable;
-import java.util.Properties;
 
 /**
  * Factory class used to create {@link IValidationRule} instances
  *
  * @author tsa
  *
- * @task http://dewiki908/mediawiki/index.php/03271:_Extend_the_ValidationRule_feature_%282012091210000027%29
+ * @implNote task http://dewiki908/mediawiki/index.php/03271:_Extend_the_ValidationRule_feature_%282012091210000027%29
  */
 public interface IValidationRuleFactory extends ISingletonService
 {
@@ -44,35 +46,18 @@ public interface IValidationRuleFactory extends ISingletonService
 	/**
 	 * Create {@link IValidationRule} for given AD_ValRule_ID, context table and column name
 	 *
-	 * @param tableName
-	 * @param adValRuleId
-	 * @param ctxTableName
-	 * @param ctxColumnName
-	 * @return
 	 */
-	IValidationRule create(
-			@NonNull final String tableName,
-			@Nullable final AdValRuleId adValRuleId,
-			@Nullable final String ctxTableName,
-			@Nullable final String ctxColumnName);
+	IValidationRule create(@NonNull String tableName, @Nullable AdValRuleId adValRuleId, @Nullable String ctxTableName, @Nullable String ctxColumnName);
 
-	/**
-	 * Create SQL {@link IValidationRule} for given whereClause
-	 *
-	 * @param whereClause
-	 * @return
-	 */
-	IValidationRule createSQLValidationRule(String whereClause);
+	IValidationRule createSQLValidationRule(@Nullable String whereClause);
 
 	/**
 	 * Registers a table-wide validation rule.
-	 *
+	 * <p>
 	 * Each time we retrieve the validation rules for a column, if there are some table validation rules registered for target table, those rules will be composed too.
-	 *
+	 * <p>
 	 * E.g. If we register a validation rule for table "C_BPartner_Location" and we try to retrieve the validation rules for C_Order.Bill_Location_ID, our registered rule will be composed too.
 	 *
-	 * @param tableName
-	 * @param rule
 	 */
 	void registerTableValidationRule(String tableName, IValidationRule rule);
 
@@ -89,10 +74,9 @@ public interface IValidationRuleFactory extends ISingletonService
 
 	/**
 	 * Creates validation context for given <code>gridField</code>.
-	 *
+	 * <p>
 	 * If gridField is not a lookup then {@link IValidationContext#NULL} is returned.
 	 *
-	 * @param gridField
 	 * @return validation context or {@link IValidationContext#NULL}
 	 */
 	IValidationContext createValidationContext(GridField gridField);

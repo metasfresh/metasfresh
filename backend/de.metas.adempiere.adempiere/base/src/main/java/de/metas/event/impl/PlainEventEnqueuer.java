@@ -23,7 +23,6 @@
 package de.metas.event.impl;
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.common.util.pair.ImmutablePair;
 import de.metas.event.Event;
 import de.metas.event.EventEnqueuer;
 import de.metas.event.IEventBus;
@@ -31,6 +30,7 @@ import de.metas.event.IEventBusFactory;
 import de.metas.event.Topic;
 import de.metas.util.Services;
 import lombok.NonNull;
+import de.metas.common.util.pair.ImmutablePair;
 
 import java.util.concurrent.LinkedBlockingQueue;
 

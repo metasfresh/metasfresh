@@ -858,16 +858,6 @@ public class MOrder extends X_C_Order implements IDocument
 	}    // getShipments
 
 	/**
-	 * Get Document Status
-	 *
-	 * @return Document Status Clear Text
-	 */
-	public String getDocStatusName()
-	{
-		return MRefList.getListName(getCtx(), DocStatus.AD_REFERENCE_ID, getDocStatus());
-	}    // getDocStatusName
-
-	/**
 	 * Set Processed.
 	 * Propagate to Lines/Taxes
 	 *

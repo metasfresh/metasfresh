@@ -49,8 +49,6 @@ import org.compiere.apps.search.InfoWindowMenuBuilder;
 import org.compiere.grid.APanelTab;
 import org.compiere.grid.GridController;
 import org.compiere.grid.GridSynchronizer;
-import org.compiere.grid.ICreateFrom;
-import org.compiere.grid.VCreateFromFactory;
 import org.compiere.grid.VOnlyCurrentDays;
 import org.compiere.grid.VSortTab;
 import org.compiere.grid.VTabbedPane;
@@ -1236,67 +1234,70 @@ public class APanel extends CPanel
 		}
 
 		//
-		final StringBuilder where = new StringBuilder(Env.parseContext(m_ctx, m_curWindowNo, mTab.getWhereExtended(), false));
-		// Query automatically if high volume and no query
-		boolean require = mTab.isHighVolume();
-
-		// metas-2009_0021_AP1_CR064: begin
-		if (!mTab.isQueryOnLoad())
-		{
-			return MQuery.getNoRecordQuery(mTab.getTableName(), false);
-		}
-		// metas-2009_0021_AP1_CR064: end
-
-		if (!require
-				&& !m_onlyCurrentRows // No Trx Window
-				&& mTab.isQueryOnLoad())   // metas-2009_0021_AP1_CR064
-		{
-			/* Where Extended already appended above, check for variables */
-			if (query != null)
-			{
-				final String wh2 = query.getWhereClause();
-				if (wh2.length() > 0)
-				{
-					if (where.length() > 0)
-					{
-						where.append(" AND ");
-					}
-					where.append(wh2);
-				}
-			}
-			//
-			final StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM ")
-					.append(mTab.getTableName());
-			if (where.length() > 0)
-			{
-				sql.append(" WHERE ").append(where);
-			}
-			// Does not consider security
-			final int no = DB.getSQLValue(ITrx.TRXNAME_None, sql.toString());
-			//
-			require = GridTabMaxRowsRestrictionChecker.builder()
-					.setAD_Tab(mTab)
-					.build()
-					.isQueryRequire(no);
-		}
-		// Show Query
-		if (require)
-		{
-			Find find = Find.builder()
-					.setParentFrame(getCurrentFrame())
-					.setTargetWindowNo(m_curWindowNo)
-					.setGridTab(mTab)
-					.setFindFields(mTab.getFields())
-					.setWhereExtended(where.toString())
-					.setQuery(query)
-					.setMinRecords(10) // no query below 10
-					.buildFindDialog();
-			query = find.getQuery();
-			query = find.isCancel() ? null : query; // metas: teo_sarca: metas-2009_0021_AP1_G113
-			isCancel = (query == null);// Goodwill
-			find.dispose();
-			find = null;
-		}
+		// Never require a FindPanel before the actual window is opened! 
+		// I doesn't work with java-17 and x2go and that is the remaining primary mode of operation for the swing-client.
+		//
+		// final StringBuilder where = new StringBuilder(Env.parseContext(m_ctx, m_curWindowNo, mTab.getWhereExtended(), false));
+		// // Query automatically if high volume and no query
+		// boolean require = mTab.isHighVolume();
+		//
+		// // metas-2009_0021_AP1_CR064: begin
+		// if (!mTab.isQueryOnLoad())
+		// {
+		// 	return MQuery.getNoRecordQuery(mTab.getTableName(), false);
+		// }
+		// // metas-2009_0021_AP1_CR064: end
+		//
+		// if (!require
+		// 		&& !m_onlyCurrentRows // No Trx Window
+		// 		&& mTab.isQueryOnLoad())   // metas-2009_0021_AP1_CR064
+		// {
+		// 	/* Where Extended already appended above, check for variables */
+		// 	if (query != null)
+		// 	{
+		// 		final String wh2 = query.getWhereClause();
+		// 		if (wh2.length() > 0)
+		// 		{
+		// 			if (where.length() > 0)
+		// 			{
+		// 				where.append(" AND ");
+		// 			}
+		// 			where.append(wh2);
+		// 		}
+		// 	}
+		// 	//
+		// 	final StringBuilder sql = new StringBuilder("SELECT COUNT(*) FROM ")
+		// 			.append(mTab.getTableName());
+		// 	if (where.length() > 0)
+		// 	{
+		// 		sql.append(" WHERE ").append(where);
+		// 	}
+		// 	// Does not consider security
+		// 	final int no = DB.getSQLValue(ITrx.TRXNAME_None, sql.toString());
+		// 	//
+		// 	require = GridTabMaxRowsRestrictionChecker.builder()
+		// 			.setAD_Tab(mTab)
+		// 			.build()
+		// 			.isQueryRequire(no);
+		// }
+		// // Show Query
+		// if (require)
+		// {
+		// 	Find find = Find.builder()
+		// 			.setParentFrame(getCurrentFrame())
+		// 			.setTargetWindowNo(m_curWindowNo)
+		// 			.setGridTab(mTab)
+		// 			.setFindFields(mTab.getFields())
+		// 			.setWhereExtended(where.toString())
+		// 			.setQuery(query)
+		// 			.setMinRecords(10) // no query below 10
+		// 			.buildFindDialog();
+		// 	query = find.getQuery();
+		// 	query = find.isCancel() ? null : query; // metas: teo_sarca: metas-2009_0021_AP1_G113
+		// 	isCancel = (query == null);// Goodwill
+		// 	find.dispose();
+		// 	find = null;
+		// }
 		return query;
 	}	// initialQuery
 
@@ -2311,7 +2312,7 @@ public class APanel extends CPanel
 		{
 			try
 			{
-				sql = MLookupFactory.getLookup_TableDirEmbed(LanguageInfo.ofSpecificLanguage(m_ctx), keyColumnName, "[?", "?]")
+				sql = MLookupFactory.newInstance().getLookup_TableDirEmbed(LanguageInfo.ofSpecificLanguage(m_ctx), keyColumnName, "[?", "?]")
 						.replace("[?.?]", "?");
 			}
 			catch (Exception e)
@@ -2876,7 +2877,7 @@ public class APanel extends CPanel
 		}
 	}
 
-	private void actionButton0(final VButton vButton) throws Exception
+	private final void actionButton0(final VButton vButton) throws Exception
 	{
 		final IColumnBL columnBL = Services.get(IColumnBL.class);
 
@@ -2978,32 +2979,7 @@ public class APanel extends CPanel
 		// Pop up Create From
 		else if (columnName.equals("CreateFrom"))
 		{
-			// Ensure it's saved
-			if (noRowFound)
-			{
-				throw new AdempiereException("@SaveErrorRowNotFound@");
-			}
-
-			// Run form only if the button has no process defined - teo_sarca [ 1974354 ]
-			if (vButton.getProcess_ID() <= 0)
-			{
-				ICreateFrom cf = VCreateFromFactory.create(m_curTab);
-				if (cf != null)
-				{
-					if (cf.isInitOK())
-					{
-						cf.showWindow();
-						cf.closeWindow();
-						m_curTab.dataRefresh();
-					}
-					else
-					{
-						cf.closeWindow();
-					}
-					return;
-				}
-				// else may start process
-			}
+			throw new UnsupportedOperationException();
 		}  	// CreateFrom
 
 		// Posting -----

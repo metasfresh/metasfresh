@@ -12,6 +12,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.apache.ecs.xhtml.code;
 import org.compiere.util.DB;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -24,47 +25,43 @@ import static org.adempiere.ad.dao.impl.CompareQueryFilter.normalizeValue;
 
 /**
  * In Array Query filter: Checks if given columnName is in a list of values.
- *
+ * <p>
  * The built SQL where clause will look something like:
  *
  * <pre>
  * ColumnName IN (Value1, Value2 ...) - for non null values. If there are no non-null values, this part will be skipped
  * OR ColumnName IS NULL - for null values. If there are no NULL values, this part will be skipped
  * </pre>
- *
+ * <p>
  * In case your values list is empty then {@link #isDefaultReturnWhenEmpty()} constant will be used to evaluate the expression.
- *
+ * <p>
  * NOTES:
  * <ul>
  * <li>NULL case is covered (i.e. if one of your values is NULL, the built SQL will contain an "ColumnName IS NULL" check
  * <li>maximum values list length is not checked and we rely on database. However in PostgreSQL there is no limit (see
- * http://stackoverflow.com/questions/1009706/postgresql-max-number-of-parameters-in-in-clause)
+ * <a href="http://stackoverflow.com/questions/1009706/postgresql-max-number-of-parameters-in-in-clause">...</a>)
  * </ul>
  *
- * @author tsa
- *
  * @param <T>
+ * @author tsa
  */
 @EqualsAndHashCode(exclude = { "sqlBuilt", "sqlWhereClause", "sqlParams" })
 public final class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
-	protected static final String SQL_TRUE = "1=1";
-	protected static final String SQL_FALSE = "1=0";
+	static final String SQL_TRUE = "1=1";
+	static final String SQL_FALSE = "1=0";
 
 	private final String columnName;
-	private final List<Object> values;
+	@Nullable private final List<Object> values;
 	private boolean defaultReturnWhenEmpty = true;
 	private boolean embedSqlParams = false;
 
 	private boolean sqlBuilt = false; // lazy
-	private String sqlWhereClause = null; // lazy
-	private List<Object> sqlParams = null; // lazy
+	@Nullable private String sqlWhereClause = null; // lazy
+	@Nullable private List<Object> sqlParams = null; // lazy
 
 	/**
 	 * Creates filter that accepts a model if the given {@link code columnName} has one of the given {@code values}.
-	 *
-	 * @param columnName
-	 * @param values
 	 */
 	public InArrayQueryFilter(@NonNull final String columnName, final Object... values)
 	{
@@ -72,12 +69,11 @@ public final class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 	}
 
 	/**
-	 * Creates filter that accepts a model if the given {@link code columnName} has one of the given {@code values}.
+	 * Creates filter that accepts a model if the given {@code columnName} has one of the given {@code values}.
 	 *
-	 * @param columnName
 	 * @param values may also be {@link RepoIdAware}s
 	 */
-	public InArrayQueryFilter(@NonNull final String columnName, final Collection<? extends Object> values)
+	public InArrayQueryFilter(@NonNull final String columnName, final Collection<?> values)
 	{
 		this.columnName = columnName;
 
@@ -89,8 +85,30 @@ public final class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 		{
 			this.values = values
 					.stream()
-					.map(value -> normalizeValue(value))
+					.map(CompareQueryFilter::normalizeValue)
 					.collect(Collectors.toCollection(ArrayList::new)); // note that guava's immutableList doesn't allow null values
+		}
+	}
+
+	private InArrayQueryFilter(@NonNull final String columnName, @NonNull final InSetPredicate<?> values)
+	{
+		this.columnName = columnName;
+
+		if (values.isAny())
+		{
+			this.values = null;
+			//noinspection ConstantConditions
+			this.defaultReturnWhenEmpty = true;
+		}
+		else if (values.isNone())
+		{
+			this.values = null;
+			this.defaultReturnWhenEmpty = false;
+		}
+		else
+		{
+			this.values = new ArrayList<>(values.toSet());
+			this.defaultReturnWhenEmpty = false;
 		}
 	}
 
@@ -116,11 +134,8 @@ public final class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 
 	/**
 	 * Sets default value to be returned when the "values" list is empty.
-	 *
-	 * @param defaultReturnWhenEmpty
-	 * @return
 	 */
-	public InArrayQueryFilter<T> setDefaultReturnWhenEmpty(boolean defaultReturnWhenEmpty)
+	public InArrayQueryFilter<T> setDefaultReturnWhenEmpty(final boolean defaultReturnWhenEmpty)
 	{
 		this.defaultReturnWhenEmpty = defaultReturnWhenEmpty;
 		return this;

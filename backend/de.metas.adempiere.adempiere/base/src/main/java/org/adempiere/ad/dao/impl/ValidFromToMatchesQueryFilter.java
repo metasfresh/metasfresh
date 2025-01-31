@@ -22,16 +22,17 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-import com.google.common.collect.ImmutableList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.ModelColumn;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
+import com.google.common.collect.ImmutableList;
 
 public class ValidFromToMatchesQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {

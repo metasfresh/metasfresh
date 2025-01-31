@@ -69,8 +69,7 @@ public class ReferenceListAwareEnums
 	{
 		final ReferenceListAwareDescriptor descriptor = getDescriptor(clazz);
 
-		@SuppressWarnings("unchecked")
-		final T enumObj = (T)descriptor.getOfCodeFunction().apply(code);
+		@SuppressWarnings("unchecked") final T enumObj = (T)descriptor.getOfCodeFunction().apply(code);
 
 		return enumObj;
 	}
@@ -79,11 +78,9 @@ public class ReferenceListAwareEnums
 	{
 		if (ReferenceListAwareEnum.class.isAssignableFrom(enumType))
 		{
-			@SuppressWarnings("unchecked")
-			final Class<? extends ReferenceListAwareEnum> referenceListAwareEnumType = (Class<? extends ReferenceListAwareEnum>)enumType;
+			@SuppressWarnings("unchecked") final Class<? extends ReferenceListAwareEnum> referenceListAwareEnumType = (Class<? extends ReferenceListAwareEnum>)enumType;
 
-			@SuppressWarnings("unchecked")
-			final T result = (T)ofCode(code, referenceListAwareEnumType);
+			@SuppressWarnings("unchecked") final T result = (T)ofCode(code, referenceListAwareEnumType);
 
 			return result;
 		}
@@ -108,8 +105,7 @@ public class ReferenceListAwareEnums
 		final Set<ReferenceListAwareEnum> values = descriptor.getValues()
 				.orElseThrow(() -> Check.newException("Cannot extract values for " + clazz));
 
-		@SuppressWarnings("unchecked")
-		final Set<T> retValue = (Set<T>)(values);
+		@SuppressWarnings("unchecked") final Set<T> retValue = (Set<T>)(values);
 		return retValue;
 	}
 
@@ -211,8 +207,8 @@ public class ReferenceListAwareEnums
 				{
 					throw Check.mkEx("Field " + field.getName() + "is expected to have a positive value");
 				}
-
 				return adReferenceId;
+
 			}
 		}
 
@@ -238,14 +234,12 @@ public class ReferenceListAwareEnums
 			final Class<?> returnType = valuesMethod.getReturnType();
 			if (returnType.isArray())
 			{
-				@SuppressWarnings("unchecked")
-				final T[] valuesArr = (T[])invokeStaticMethod(valuesMethod);
+				@SuppressWarnings("unchecked") final T[] valuesArr = (T[])invokeStaticMethod(valuesMethod);
 				return ImmutableSet.copyOf(valuesArr);
 			}
 			else if (Collection.class.isAssignableFrom(returnType))
 			{
-				@SuppressWarnings("unchecked")
-				final Collection<T> valuesCollection = (Collection<T>)invokeStaticMethod(valuesMethod);
+				@SuppressWarnings("unchecked") final Collection<T> valuesCollection = (Collection<T>)invokeStaticMethod(valuesMethod);
 				return ImmutableSet.copyOf(valuesCollection);
 			}
 			else
@@ -354,6 +348,12 @@ public class ReferenceListAwareEnums
 				throw Check.mkEx("No " + typeName + " found for code or name: " + code);
 			}
 			return type;
+		}
+
+		@Nullable
+		public T ofNullableCodeOrName(@Nullable final String code)
+		{
+			return code != null && Check.isNotBlank(code) ? ofCodeOrName(code) : null;
 		}
 
 		@NonNull

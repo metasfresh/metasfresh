@@ -1,21 +1,9 @@
 package de.metas.ui.web.view;
 
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.i18n.Language;
 import de.metas.impexp.spreadsheet.excel.AbstractExcelExporter;
 import de.metas.impexp.spreadsheet.excel.CellValue;
@@ -35,6 +23,16 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nullable;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -107,10 +105,11 @@ import lombok.NonNull;
 		return rows.getRow(rowIndex);
 	}
 
+	@Nullable
 	private String getFieldName(final int columnIndex)
 	{
 		final Set<DocumentLayoutElementFieldDescriptor> fields = layout.getElements().get(columnIndex).getFields();
-		return fields.iterator().next().getField();
+		return !fields.isEmpty() ? fields.iterator().next().getField() : null;
 	}
 
 	private DocumentFieldWidgetType getWidgetType(final int columnIndex)
@@ -164,9 +163,14 @@ import lombok.NonNull;
 		return getWidgetType(columnIndex).getDisplayType();
 	}
 
+	@Nullable
 	private CellValue getValueAt(final int rowIndex, final int columnIndex)
 	{
 		final String fieldName = getFieldName(columnIndex);
+		if (fieldName == null)
+		{
+			return null;
+		}
 
 		final IViewRow row = getRow(rowIndex);
 		if (row == null)
@@ -196,7 +200,7 @@ import lombok.NonNull;
 			final String valueStr = jsonLookupValuesList
 					.getValues()
 					.stream()
-					.map(lookupValue -> lookupValue.getCaption())
+					.map(JSONLookupValue::getCaption)
 					.collect(Collectors.joining(", "));
 			return CellValue.ofString(valueStr);
 		}
@@ -225,18 +229,18 @@ import lombok.NonNull;
 		private final IView view;
 		private final JSONOptions jsonOpts;
 
-		private LoadingCache<PageIndex, ViewResult> cache = CacheBuilder.newBuilder()
+		private final LoadingCache<PageIndex, ViewResult> cache = CacheBuilder.newBuilder()
 				.maximumSize(2) // cache max 2 pages
 				.build(new CacheLoader<PageIndex, ViewResult>()
-				{
-					@Override
-					public ViewResult load(final PageIndex pageIndex)
-					{
-						final ViewRowsOrderBy orderBys = ViewRowsOrderBy.empty(jsonOpts); // default
-						return view.getPage(pageIndex.getFirstRow(), pageIndex.getPageLength(), orderBys);
-					}
+                {
+                    @Override
+                    public ViewResult load(@NotNull final PageIndex pageIndex)
+                    {
+                        final ViewRowsOrderBy orderBys = ViewRowsOrderBy.empty(jsonOpts); // default
+                        return view.getPage(pageIndex.getFirstRow(), pageIndex.getPageLength(), orderBys);
+                    }
 
-				});
+                });
 
 		private AllRowsSupplier(
 				@NonNull final IView view,
@@ -254,13 +258,14 @@ import lombok.NonNull;
 			{
 				return cache.get(pageIndex);
 			}
-			catch (ExecutionException e)
+			catch (final ExecutionException e)
 			{
 				throw AdempiereException.wrapIfNeeded(e);
 			}
 		}
 
 		@Override
+		@Nullable
 		public IViewRow getRow(final int rowIndex)
 		{
 			final ViewResult page = getPage(PageIndex.getPageContainingRow(rowIndex, pageSize));
@@ -292,7 +297,7 @@ import lombok.NonNull;
 	{
 		private final ImmutableList<IViewRow> rows;
 
-		private ListRowsSupplier(@NonNull final IView view, @NonNull DocumentIdsSelection rowIds)
+		private ListRowsSupplier(@NonNull final IView view, @NonNull final DocumentIdsSelection rowIds)
 		{
 			Check.assume(!rowIds.isAll(), "rowIds is not ALL");
 

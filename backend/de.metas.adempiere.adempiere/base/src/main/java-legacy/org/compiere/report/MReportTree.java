@@ -16,12 +16,15 @@
  *****************************************************************************/
 package org.compiere.report;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.acct.api.AcctSchemaElementType;
-import de.metas.cache.CCache;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import lombok.NonNull;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.Set;
+import java.util.stream.Stream;
+
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.MHierarchy;
 import org.compiere.model.MTree;
@@ -30,15 +33,16 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-import java.util.stream.Stream;
+import com.google.common.collect.ImmutableSet;
+
+import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.cache.CCache;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import lombok.NonNull;
+
+import javax.swing.tree.TreeNode;
 
 /**
  *	Report Tree Model
@@ -85,7 +89,7 @@ public class MReportTree
 	 * 	Get Child IDs
 	 *	@param ctx context
 	 *	@param PA_Hierarchy_ID optional hierarchie
-	 *	@param elementType Account Schema Element Type
+	 *	@param ElementType Account Schema Element Type
 	 *	@param ID id
 	 *	@return array of IDs
 	 */
@@ -118,7 +122,7 @@ public class MReportTree
 	 * 	Report Tree
 	 *	@param ctx context
 	 *	@param PA_Hierarchy_ID optional hierarchy
-	 *	@param elementType Account Schema Element Type
+	 *	@param ElementType Account Schema Element Type
 	 */
 	public MReportTree (Properties ctx, int PA_Hierarchy_ID, AcctSchemaElementType elementType)
 	{
@@ -267,11 +271,11 @@ public class MReportTree
 		if (node != null && node.isSummary ())
 		{
 			
-			Enumeration<MTreeNode> en = node.preorderEnumeration ();
+			Enumeration<TreeNode> en = node.preorderEnumeration ();
 			StringBuilder sb = new StringBuilder ();
 			while (en.hasMoreElements ())
 			{
-				MTreeNode nn = en.nextElement ();
+				MTreeNode nn = (MTreeNode)en.nextElement ();
 				if (!nn.isSummary ())
 				{
 					if (sb.length () > 0)

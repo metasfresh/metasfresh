@@ -21,9 +21,12 @@
  */
 package de.metas.impexp.spreadsheet.excel;
 
-import de.metas.adempiere.service.IColumnBL;
-import lombok.Builder;
-import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
 import org.compiere.model.GridField;
 import org.compiere.model.GridTab;
 import org.compiere.model.GridTabLayoutMode;
@@ -33,18 +36,18 @@ import org.compiere.model.MLookupFactory;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import de.metas.adempiere.service.IColumnBL;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
 
 /**
  * Excel Exporter Adapter for GridTab
  */
 public class GridTabExcelExporter extends AbstractExcelExporter
 {
+	private final MLookupFactory lookupFactory = MLookupFactory.newInstance();
 	private final GridTab m_tab;
-
 	private int rowNumber = 0;
 
 	@Builder
@@ -134,7 +137,7 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 		}
 
 		// Hide simple button fields without a value
-		if (f.getDisplayType() == DisplayType.Button && f.getAD_Reference_Value_ID() <= 0)
+		if (f.getDisplayType() == DisplayType.Button && f.getAD_Reference_Value_ID() == null)
 		{
 			return false;
 		}
@@ -174,13 +177,13 @@ public class GridTabExcelExporter extends AbstractExcelExporter
 		// TODO: refactor with org.compiere.grid.ed.VButton.setField(GridField)
 		if (mField.getColumnName().endsWith("_ID") && !IColumnBL.isRecordIdColumnName(mField.getColumnName()))
 		{
-			lookup = MLookupFactory.get(Env.getCtx(), mField.getWindowNo(), 0,
+			lookup = lookupFactory.get(Env.getCtx(), mField.getWindowNo(), 0,
 					mField.getAD_Column_ID(), DisplayType.Search);
 		}
-		else if (mField.getAD_Reference_Value_ID() > 0)
+		else if (mField.getAD_Reference_Value_ID() != null)
 		{
 			// Assuming List
-			lookup = MLookupFactory.get(Env.getCtx(), mField.getWindowNo(), 0,
+			lookup = lookupFactory.get(Env.getCtx(), mField.getWindowNo(), 0,
 					mField.getAD_Column_ID(), DisplayType.List);
 		}
 		//

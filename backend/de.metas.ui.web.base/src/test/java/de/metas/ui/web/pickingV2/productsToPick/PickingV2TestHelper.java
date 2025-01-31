@@ -201,7 +201,8 @@ final class PickingV2TestHelper
 				huReservationService,
 				bpartnersService,
 				ADReferenceService.newMocked(),
-				InventoryService.newInstanceForUnitTesting());
+				InventoryService.newInstanceForUnitTesting()
+		);
 
 		return ProductsToPickRowsDataFactory.builder()
 				.pickingCandidateService(pickingCandidateService)

@@ -325,7 +325,7 @@ class OrderAttachmentRowsLoader
 		final ImmutableSet.Builder<OrderId> salesOrderIds = ImmutableSet.builder();
 		salesOrderIds.addAll(orderDAO.getSalesOrderIdsViaPOAllocation(selectedPurchaseOrderId));
 
-		if (purchaseOrder.getLink_Order_ID() > 0) // C_OrderLine.Link_OrderLine_ID might be null, but there might be a 1:1 linked sales order
+		if (purchaseOrder.getLink_Order_ID() > 0) // there might be no C_PO_OrderLine_Alloc records, but a 1:1 linked sales order
 		{
 			salesOrderIds.add(OrderId.ofRepoId(purchaseOrder.getLink_Order_ID()));
 		}

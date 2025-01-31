@@ -3,7 +3,6 @@ package de.metas.util.lang;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -34,6 +33,11 @@ import javax.annotation.Nullable;
 @Value
 public class ExternalId implements Comparable<ExternalId>
 {
+	/**
+	 * Can be used to distinguish between an external ID that was not yet set and one that was already set to "can't be used or set".
+	 */
+	public static final ExternalId INVALID = ExternalId.of("INVALID");
+
 	String value;
 
 	@JsonCreator
@@ -61,6 +65,18 @@ public class ExternalId implements Comparable<ExternalId>
 			return null;
 		}
 		return externalId.getValue();
+	}
+
+	/**
+	 * @return {@code true} if the given {@code externalId} is the same as {@link #INVALID}.
+	 */
+	public static boolean isInvalid(@Nullable final ExternalId externalId)
+	{
+		if (externalId == null)
+		{
+			return false;
+		}
+		return externalId == INVALID;
 	}
 
 	@JsonValue

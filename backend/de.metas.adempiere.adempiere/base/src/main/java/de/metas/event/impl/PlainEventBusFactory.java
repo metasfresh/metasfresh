@@ -128,7 +128,7 @@ public class PlainEventBusFactory implements IEventBusFactory
 	}
 
 	@Override
-	public void unregisterUserNotificationsListener(IEventListener listener)
+	public void unregisterUserNotificationsListener(final IEventListener listener)
 	{
 		assertJUnitTestMode();
 	}

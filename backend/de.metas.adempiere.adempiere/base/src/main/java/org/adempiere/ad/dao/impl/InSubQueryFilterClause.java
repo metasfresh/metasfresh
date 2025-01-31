@@ -2,7 +2,6 @@ package org.adempiere.ad.dao.impl;
 
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IInSubQueryFilterClause;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.exceptions.AdempiereException;
@@ -35,11 +34,6 @@ import java.util.function.Consumer;
 @ToString
 public class InSubQueryFilterClause<ModelType, ParentType> implements IInSubQueryFilterClause<ModelType, ParentType>
 {
-	static <ModelType> IInSubQueryFilterClause<ModelType, ICompositeQueryFilter<ModelType>> of(final String tableName, @NonNull final ICompositeQueryFilter<ModelType> filters)
-	{
-		return new InSubQueryFilterClause<>(tableName, filters, filters::addFilter);
-	}
-
 	private final ParentType parent;
 	private final Consumer<InSubQueryFilter<ModelType>> finisher;
 	private final InSubQueryFilter.Builder<ModelType> inSubQueryBuilder;

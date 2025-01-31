@@ -47,6 +47,7 @@ import org.adempiere.ad.table.api.ColumnSqlSourceDescriptor;
 import org.adempiere.ad.table.api.ColumnSqlSourceDescriptor.FetchTargetRecordsMethod;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.table.api.MinimalColumnInfo;
+import org.adempiere.ad.table.api.TableName;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.window.api.IADWindowDAO;
@@ -128,12 +129,25 @@ public class ADTableDAO implements IADTableDAO
 	public boolean hasColumnName(final String tableName, final String columnName)
 	{
 		final AdTableId adTableId = AdTableId.ofRepoIdOrNull(retrieveTableId(tableName));
-		if(adTableId == null)
+		if (adTableId == null)
 		{
 			return false;
 		}
 
 		return getMinimalColumnInfoMap().hasColumnName(adTableId, columnName);
+	}
+
+	@Override
+	public boolean hasPhysicalColumn(@NonNull final TableName tableName, @NonNull final String columnName)
+	{
+		final AdTableId adTableId = AdTableId.ofRepoIdOrNull(retrieveTableId(tableName.getAsString()));
+		if (adTableId == null)
+		{
+			return false;
+		}
+
+		final MinimalColumnInfo column = getMinimalColumnInfoMap().getByColumnNameOrNull(adTableId, columnName);
+		return column != null && column.isActive() && column.isPhysicalColumn();
 	}
 
 	@Override
@@ -163,7 +177,6 @@ public class ADTableDAO implements IADTableDAO
 	{
 		return TableIdsCache.instance.getTableNameIfPresent(adTableId);
 	}
-
 
 	// IMPORTANT: make sure we are returning -1 in case tableName was not found (and NOT throw exception),
 	// because there is business logic which depends on this
@@ -449,6 +462,7 @@ public class ADTableDAO implements IADTableDAO
 		final ImmutableList<MinimalColumnInfo> list = DB.retrieveRows(
 				"SELECT "
 						+ " " + I_AD_Column.COLUMNNAME_ColumnName
+						+ "," + I_AD_Column.COLUMNNAME_ColumnSQL
 						+ "," + I_AD_Column.COLUMNNAME_AD_Column_ID
 						+ "," + I_AD_Column.COLUMNNAME_AD_Table_ID
 						+ "," + I_AD_Column.COLUMNNAME_IsActive
@@ -477,6 +491,7 @@ public class ADTableDAO implements IADTableDAO
 	{
 		return MinimalColumnInfo.builder()
 				.columnName(rs.getString(I_AD_Column.COLUMNNAME_ColumnName))
+				.columnSql(StringUtils.trimBlankToNull(rs.getString(I_AD_Column.COLUMNNAME_ColumnSQL)))
 				.adColumnId(AdColumnId.ofRepoId(rs.getInt(I_AD_Column.COLUMNNAME_AD_Column_ID)))
 				.adTableId(AdTableId.ofRepoId(rs.getInt(I_AD_Column.COLUMNNAME_AD_Table_ID)))
 				.isActive(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsActive)))

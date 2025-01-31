@@ -1,10 +1,11 @@
 package org.adempiere.ad.dao.impl;
 
-import com.google.common.collect.ImmutableMap;
-import de.metas.common.util.pair.IPair;
-import de.metas.common.util.pair.ImmutablePair;
-import de.metas.process.PInstanceId;
-import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryBuilderDAO;
@@ -12,12 +13,14 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.QueryLimit;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import org.compiere.model.IQuery;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import com.google.common.collect.ImmutableMap;
+
+import de.metas.process.PInstanceId;
+import lombok.NonNull;
 
 /*
  * #%L

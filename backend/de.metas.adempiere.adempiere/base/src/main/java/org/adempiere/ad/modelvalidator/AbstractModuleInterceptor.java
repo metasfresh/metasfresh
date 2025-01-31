@@ -40,7 +40,7 @@ import java.util.Set;
 
 /**
  * To be extended by module/project main interceptors.
- *
+ * <p>
  * This interceptor shall be used only for:
  * <ul>
  * <li>module configuration
@@ -49,7 +49,6 @@ import java.util.Set;
  * Note that module interceptors can also be registered in the "the normal ways" like any other model interceptor. For example via {@link IModelValidationEngine#addModelValidator(Object, I_AD_Client)}.
  *
  * @author tsa
- *
  */
 public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 {
@@ -68,7 +67,7 @@ public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 		setupMigrationScriptsLogger();
 		onAfterInit();
 	}
-	
+
 	/**
 	 * Called by {@link #onInit(IModelValidationEngine, I_AD_Client)} right before anything else.
 	 */
@@ -87,8 +86,6 @@ public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 
 	/**
 	 * Called onInit to setup module table caching
-	 *
-	 * @param cachingService
 	 */
 	protected void setupCaching(final IModelCacheService cachingService)
 	{
@@ -137,7 +134,9 @@ public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 
 	}
 
-	/** @return available user notifications topics to listen */
+	/**
+	 * @return available user notifications topics to listen
+	 */
 	protected List<Topic> getAvailableUserNotificationsTopics()
 	{
 		return ImmutableList.of();
@@ -161,16 +160,20 @@ public abstract class AbstractModuleInterceptor extends AbstractModelInterceptor
 		// nothing
 	}
 
-	/** Does nothing. Module interceptors are not allowed to intercept models or documents */
+	/**
+	 * Does nothing. Module interceptors are not allowed to intercept models or documents
+	 */
 	@Override
-	public final void onModelChange(final Object model, final ModelChangeType changeType) throws Exception
+	public final void onModelChange(final Object model, final ModelChangeType changeType)
 	{
 		// nothing
 	}
 
-	/** Does nothing. Module interceptors are not allowed to intercept models or documents */
+	/**
+	 * Does nothing. Module interceptors are not allowed to intercept models or documents
+	 */
 	@Override
-	public final void onDocValidate(final Object model, final DocTimingType timing) throws Exception
+	public final void onDocValidate(final Object model, final DocTimingType timing)
 	{
 		// nothing
 	}

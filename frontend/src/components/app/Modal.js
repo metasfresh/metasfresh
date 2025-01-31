@@ -4,18 +4,17 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import classnames from 'classnames';
 
-import { startProcess } from '../../api';
-import { openFile, processNewRecord } from '../../actions/GenericActions';
+import { startProcess } from '../../api/process';
+import { processNewRecord } from '../../actions/GenericActions';
 import { updateCommentsPanelOpenFlag } from '../../actions/CommentsPanelActions';
 import {
   callAPI,
   closeModal,
-  createProcess,
   createWindow,
   fetchChangeLog,
   fireUpdateData,
-  handleProcessResponse,
   patch,
+  printDocument,
   resetPrintingOptions,
 } from '../../actions/WindowActions';
 
@@ -35,6 +34,10 @@ import PrintingOptions from './PrintingOptions';
 
 import SockJs from 'sockjs-client';
 import Stomp from 'stompjs/lib/stomp.min.js';
+import {
+  createProcess,
+  handleProcessResponse,
+} from '../../actions/ProcessActions';
 import ChangeCurrentWorkplace, {
   STATIC_MODAL_TYPE_ChangeCurrentWorkplace,
 } from './ChangeCurrentWorkplace';
@@ -406,7 +409,7 @@ class Modal extends Component {
    * @summary Handle closing modal when the `done` button is clicked or `{esc}` key pressed
    */
   handleClose = () => {
-    const { modalSaveStatus, modalType, dispatch } = this.props;
+    const { modalSaveStatus, modalType } = this.props;
 
     if (modalType === 'process') {
       return this.closeModal(modalSaveStatus);
@@ -415,7 +418,6 @@ class Modal extends Component {
     if (modalSaveStatus || window.confirm('Do you really want to leave?')) {
       this.closeModal(modalSaveStatus);
     }
-    dispatch(resetPrintingOptions());
   };
 
   /**
@@ -456,12 +458,12 @@ class Modal extends Component {
         try {
           response = await startProcess(windowId, layout.pinstanceId);
 
-          const action = handleProcessResponse(
+          const action = handleProcessResponse({
             response,
-            windowId,
-            layout.pinstanceId,
-            parentId
-          );
+            processId: windowId,
+            pinstanceId: layout.pinstanceId,
+            parentId,
+          });
 
           await dispatch(action);
 
@@ -486,26 +488,32 @@ class Modal extends Component {
    * @summary before printing we check the available parameters from the store and we use those for forming the final printing URI
    */
   handlePrinting = () => {
-    const { windowId, modalViewDocumentIds, dataId, printingOptions } =
-      this.props;
-    const docNo = modalViewDocumentIds[0];
-    const docId = dataId;
-    const { options } = printingOptions;
-
-    let extraParams = '';
-    options.map((item) => {
-      extraParams += `${item.internalName}=${item.value}&`;
-    });
-    extraParams = extraParams ? extraParams.slice(0, -1) : extraParams;
-
-    openFile(
-      'window',
+    const {
       windowId,
-      docId,
-      'print',
-      `${windowId}_${docNo ? `${docNo}` : `${docId}`}.pdf?${extraParams}`
-    );
-    this.handleClose();
+      modalViewDocumentIds,
+      dataId,
+      printingOptions,
+      dispatch,
+    } = this.props;
+    const documentId = dataId;
+    const documentNo = modalViewDocumentIds[0] ?? documentId;
+
+    const options = printingOptions.options.reduce((acc, item) => {
+      acc[item.internalName] = item.value;
+      return acc;
+    }, {});
+
+    printDocument({
+      windowId,
+      documentId,
+      documentNo,
+      options,
+    });
+
+    this.closeModal(true);
+    dispatch(resetPrintingOptions());
+
+    return true; // stopPropagation to avoid calling the global alt-P handler
   };
 
   /**
@@ -744,7 +752,11 @@ class Modal extends Component {
             {this.renderModalBody()}
           </div>
           {layout.layoutType !== 'singleOverlayField' && (
-            <ModalContextShortcuts done={applyHandler} cancel={cancelHandler} />
+            <ModalContextShortcuts
+              done={applyHandler}
+              cancel={cancelHandler}
+              isBindPrintActionAsDone={staticModalType === 'printing'}
+            />
           )}
         </div>
       </div>

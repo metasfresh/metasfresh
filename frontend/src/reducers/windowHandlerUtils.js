@@ -5,6 +5,7 @@ export const getDocSummaryDataFromState = (state) => {
     ? master.data[documentSummaryElement.fields[0].field]
     : null;
 };
+
 export const getDocActionElementFromState = (state) => {
   const { master } = state.windowHandler;
   const { docActionElement } = master.layout;
