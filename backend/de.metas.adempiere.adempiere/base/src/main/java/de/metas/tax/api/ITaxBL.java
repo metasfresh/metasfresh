@@ -71,7 +71,7 @@ public interface ITaxBL extends ISingletonService
 			BPartnerLocationAndCaptureId shipBPartnerLocationId,
 			SOTrx soTrx,
 			@Nullable VatCodeId vatCodeId);
-	
+
 	/**
 	 * @param taxIncluded if true tax is included in given amount
 	 */
