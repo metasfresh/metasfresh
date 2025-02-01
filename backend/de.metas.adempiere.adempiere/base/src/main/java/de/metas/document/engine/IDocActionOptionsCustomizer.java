@@ -1,6 +1,9 @@
 package de.metas.document.engine;
 
+import com.google.common.collect.ImmutableSet;
 import org.springframework.stereotype.Component;
+
+import java.util.Set;
 
 /*
  * #%L
@@ -26,7 +29,6 @@ import org.springframework.stereotype.Component;
 
 /**
  * Customize the available DocActions for given document.
- * 
  * Just annotate implementations with spring's {@link Component} they will be automatically discovered.
  * 
  * @author metas-dev <dev@metasfresh.com>
@@ -41,4 +43,6 @@ public interface IDocActionOptionsCustomizer
 	String getAppliesToTableName();
 
 	void customizeValidActions(DocActionOptionsContext optionsCtx);
+
+	default Set<String> getParameters() { return ImmutableSet.of(); }
 }

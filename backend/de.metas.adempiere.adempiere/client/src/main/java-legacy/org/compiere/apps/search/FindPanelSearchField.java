@@ -1,35 +1,24 @@
 package org.compiere.apps.search;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.adempiere.exceptions.AdempiereException;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.ad_reference.ReferenceId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.compiere.grid.ed.VEditor;
 import org.compiere.grid.ed.VString;
 import org.compiere.grid.ed.api.ISwingEditorFactory;
 import org.compiere.model.GridField;
 import org.compiere.model.GridFieldLayoutConstraints;
 import org.compiere.model.GridFieldVO;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.Lookup;
 import org.compiere.swing.CLabel;
-import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
-import org.slf4j.Logger;
 
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Represents a field which can be searched in {@link FindPanel}.
@@ -57,7 +46,7 @@ public final class FindPanelSearchField implements IUserQueryField
 			}
 
 			// skip true buttons... nothing to search by
-			if (gridField.getDisplayType() == DisplayType.Button && gridField.getAD_Reference_Value_ID() <= 0)
+			if (gridField.getDisplayType() == DisplayType.Button && gridField.getAD_Reference_Value_ID() == null)
 			{
 				continue;
 			}
@@ -89,13 +78,12 @@ public final class FindPanelSearchField implements IUserQueryField
 	static final int MAX_TEXT_FIELD_COLUMNS = 20;
 
 	// services
-	private static final transient Logger logger = LogManager.getLogger(FindPanelSearchField.class);
 	private final transient ISwingEditorFactory swingEditorFactory = Services.get(ISwingEditorFactory.class);
 
 	/**
 	 * Reference ID for Yes/No
 	 */
-	private static final int AD_REFERENCE_ID_YESNO = 319;
+	private static final ReferenceId AD_REFERENCE_ID_YESNO = ReferenceId.ofRepoId(319);
 
 	private final GridField gridField;
 	private ITranslatableString _displayName;
@@ -134,7 +122,7 @@ public final class FindPanelSearchField implements IUserQueryField
 			vo.setAD_Reference_Value_ID(AD_REFERENCE_ID_YESNO);
 		}
 		// Make Button (with list) search-able as list
-		else if (displayType == DisplayType.Button && gridField.getAD_Reference_Value_ID() > 0)
+		else if (displayType == DisplayType.Button && gridField.getAD_Reference_Value_ID() != null)
 		{
 			vo.setDisplayType(DisplayType.List);
 		}
@@ -211,7 +199,7 @@ public final class FindPanelSearchField implements IUserQueryField
 		return gridField.getDisplayType();
 	}
 
-	public int getAD_Reference_Value_ID()
+	public ReferenceId getAD_Reference_Value_ID()
 	{
 		return gridField.getAD_Reference_Value_ID();
 	}
@@ -229,11 +217,6 @@ public final class FindPanelSearchField implements IUserQueryField
 	public boolean isVirtualColumn()
 	{
 		return gridField.isVirtualColumn();
-	}
-
-	public int getDisplayLength()
-	{
-		return gridField.getDisplayLength();
 	}
 
 	/**
@@ -330,118 +313,5 @@ public final class FindPanelSearchField implements IUserQueryField
 		}
 
 		return false;
-	}
-
-	public boolean isProductCategoryField()
-	{
-		return I_M_Product.COLUMNNAME_M_Product_Category_ID.equals(getColumnName());
-	}
-
-	/**
-	 * Returns a sql where string with the given category id and all of its subcategory ids. It is used as restriction in MQuery.
-	 *
-	 * @param columnSQL
-	 * @param productCategoryId
-	 * @return
-	 */
-	public String getSubCategoryWhereClause(final int productCategoryId)
-	{
-		final String columnSQL = getColumnSQL();
-		// if a node with this id is found later in the search we have a loop in the tree
-		int subTreeRootParentId = 0;
-		final StringBuilder retString = new StringBuilder(" (" + columnSQL + ") IN (");
-
-		final String sql = " SELECT M_Product_Category_ID, M_Product_Category_Parent_ID FROM M_Product_Category";
-		final List<SimpleTreeNode> categories = new ArrayList<>();
-		Statement stmt = null;
-		ResultSet rs = null;
-		try
-		{
-			stmt = DB.createStatement();
-			rs = stmt.executeQuery(sql);
-			while (rs.next())
-			{
-				if (rs.getInt(1) == productCategoryId)
-				{
-					subTreeRootParentId = rs.getInt(2);
-				}
-				categories.add(new SimpleTreeNode(rs.getInt(1), rs.getInt(2)));
-			}
-			retString.append(getSubCategoriesString(productCategoryId, categories, subTreeRootParentId));
-			retString.append(") ");
-		}
-		catch (final SQLException e)
-		{
-			logger.error(sql, e);
-			return "";
-		}
-		catch (final AdempiereException e)
-		{
-			logger.error(sql, e);
-			return "";
-		}
-		finally
-		{
-			DB.close(rs, stmt);
-			rs = null;
-			stmt = null;
-		}
-		return retString.toString();
-	}
-
-	/**
-	 * Recursive search for subcategories with loop detection.
-	 *
-	 * @param productCategoryId
-	 * @param categories
-	 * @param loopIndicatorId
-	 * @return comma separated list of category ids
-	 * @throws AdempiereException if a loop is detected
-	 */
-	private static String getSubCategoriesString(final int productCategoryId, final List<SimpleTreeNode> categories, final int loopIndicatorId)
-	{
-		String ret = "";
-		final Iterator<SimpleTreeNode> iter = categories.iterator();
-		while (iter.hasNext())
-		{
-			final SimpleTreeNode node = iter.next();
-			if (node.getParentId() == productCategoryId)
-			{
-				if (node.getNodeId() == loopIndicatorId)
-				{
-					throw new AdempiereException("The product category tree contains a loop on categoryId: " + loopIndicatorId);
-				}
-				ret = ret + getSubCategoriesString(node.getNodeId(), categories, loopIndicatorId) + ",";
-			}
-		}
-		logger.debug(ret);
-		return ret + productCategoryId;
-	}
-
-	/**
-	 * Simple tree node class for product category tree search.
-	 *
-	 * @author Karsten Thiemann, kthiemann@adempiere.org
-	 */
-	private static final class SimpleTreeNode
-	{
-		private final int nodeId;
-		private final int parentId;
-
-		public SimpleTreeNode(final int nodeId, final int parentId)
-		{
-			this.nodeId = nodeId;
-			this.parentId = parentId;
-		}
-
-		public int getNodeId()
-		{
-			return nodeId;
-		}
-
-		public int getParentId()
-		{
-			return parentId;
-		}
 	}
 }

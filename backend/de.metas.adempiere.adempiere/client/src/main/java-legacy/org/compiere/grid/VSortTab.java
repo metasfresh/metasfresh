@@ -16,11 +16,40 @@
  *****************************************************************************/
 package org.compiere.grid;
 
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.awt.AWTEvent;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseMotionListener;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.DefaultListModel;
+import javax.swing.JList;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.event.MouseInputAdapter;
+import javax.swing.event.MouseInputListener;
+
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -43,24 +72,11 @@ import org.compiere.util.NamePair;
 import org.compiere.util.TrxRunnableAdapter;
 import org.slf4j.Logger;
 
-import javax.swing.*;
-import javax.swing.event.MouseInputAdapter;
-import javax.swing.event.MouseInputListener;
-import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionAdapter;
-import java.awt.event.MouseMotionListener;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicBoolean;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 
 /**
  *	Tab to maintain Order/Sequence
@@ -72,7 +88,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * 				FR [ 1779410 ] VSortTab: display ID for not visible columns
  * @author victor.perez@e-evolution.com, e-Evolution
  * 				FR [ 2826406 ] The Tab Sort without parent column
- *				<li> https://sourceforge.net/tracker/?func=detail&atid=879335&aid=2826406&group_id=176962
  */
 public class VSortTab extends CPanel implements APanelTab
 {
@@ -85,7 +100,6 @@ public class VSortTab extends CPanel implements APanelTab
 	 * Tab Order Constructor
 	 *
 	 * @param WindowNo Window No
-	 * @param gridTabVO
 	 */
 	public VSortTab(final int WindowNo, final GridTabVO gridTabVO, final int parentTabNo)
 	{
@@ -109,7 +123,7 @@ public class VSortTab extends CPanel implements APanelTab
 	}	//	VSortTab
 
 	/**	Logger			*/
-	private static final transient Logger log = LogManager.getLogger(VSortTab.class);
+	private static final Logger log = LogManager.getLogger(VSortTab.class);
 	private final int m_WindowNo;
 	private final GridTabVO gridTabVO;
 	private final int parentTabNo;
@@ -125,13 +139,13 @@ public class VSortTab extends CPanel implements APanelTab
 	private APanel		m_aPanel = null;
 
 	//	UI variables
-	private GridBagLayout mainLayout = new GridBagLayout();
-	private CLabel noLabel = new CLabel();
-	private CLabel yesLabel = new CLabel();
-	private CButton bAdd = new CButton();
-	private CButton bRemove = new CButton();
-	private CButton bUp = new CButton();
-	private CButton bDown = new CButton();
+	private final GridBagLayout mainLayout = new GridBagLayout();
+	private final CLabel noLabel = new CLabel();
+	private final CLabel yesLabel = new CLabel();
+	private final CButton bAdd = new CButton();
+	private final CButton bRemove = new CButton();
+	private final CButton bUp = new CButton();
+	private final CButton bDown = new CButton();
 	//
 	private final DefaultListModel<ListItem> noModel = new DefaultListModel<ListItem>()
 	{
@@ -362,9 +376,8 @@ public class VSortTab extends CPanel implements APanelTab
 
 	/**
 	 * 	Static Layout
-	 * 	@throws Exception
 	 */
-	private void jbInit() throws Exception
+	private void jbInit()
 	{
 		this.setLayout(mainLayout);
 		//
@@ -405,7 +418,7 @@ public class VSortTab extends CPanel implements APanelTab
 		yesList.setCellRenderer(listRenderer);
 		noList.setCellRenderer(listRenderer);
 
-		ActionListener actionListener = ae -> migrateValueAcrossLists(ae);
+		ActionListener actionListener = this::migrateValueAcrossLists;
 
 		bAdd.setIcon(Images.getImageIcon2("Detail24"));
 		bAdd.setMargin(new Insets(2, 2, 2, 2));
@@ -421,7 +434,7 @@ public class VSortTab extends CPanel implements APanelTab
 		noList.addMouseListener(crossListMouseListener);
 		noList.addMouseMotionListener(crossListMouseListener);
 
-		actionListener = ae -> migrateValueWithinYesList(ae);
+		actionListener = this::migrateValueWithinYesList;
 
 		bUp.setIcon(Images.getImageIcon2("Previous24"));
 		bUp.setMargin(new Insets(2, 2, 2, 2));
@@ -630,7 +643,6 @@ public class VSortTab extends CPanel implements APanelTab
 		finally
 		{
 			DB.close(rs, pstmt);
-			rs = null; pstmt = null;
 		}
 
 		setIsChanged(false);
@@ -644,7 +656,6 @@ public class VSortTab extends CPanel implements APanelTab
 
 	/**
 	 * Set tab change status.
-	 * @param value
 	 */
 	private void setIsChanged(boolean value) {
 		if (m_aPanel != null) {
@@ -654,7 +665,6 @@ public class VSortTab extends CPanel implements APanelTab
 	}
 
 	/**
-	 * @param event
 	 */
 	void migrateValueAcrossLists (AWTEvent event)
 	{
@@ -792,7 +802,7 @@ public class VSortTab extends CPanel implements APanelTab
 				.runInNewTrx(new TrxRunnableAdapter()
 				{
 					@Override
-					public void run(String localTrxName) throws Exception
+					public void run(String localTrxName)
 					{
 		//	noList - Set SortColumn to null and optional YesNo Column to 'N'
 		for (int i = 0; i < noModel.getSize(); i++)

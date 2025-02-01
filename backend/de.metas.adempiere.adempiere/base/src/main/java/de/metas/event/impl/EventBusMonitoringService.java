@@ -26,7 +26,6 @@ import de.metas.event.Event;
 import de.metas.event.Topic;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import lombok.NonNull;
-
 import java.util.function.Consumer;
 
 public class EventBusMonitoringService

@@ -6,8 +6,8 @@ import { merge } from 'merge-anything';
 import * as types from '../constants/ActionTypes';
 import { SORT_TAB } from '../constants/ActionTypes';
 import { doesSelectionExist } from '../utils/documentListHelper';
-import { shallowEqual, useSelector } from 'react-redux';
 import { NUMERIC_FIELD_TYPES } from '../constants/Constants';
+import { shallowEqual, useSelector } from 'react-redux';
 
 export const initialTableState = {
   windowId: null,

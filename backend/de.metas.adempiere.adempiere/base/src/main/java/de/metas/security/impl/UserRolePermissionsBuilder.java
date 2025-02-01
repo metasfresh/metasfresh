@@ -25,6 +25,7 @@ package de.metas.security.impl;
 import de.metas.security.IRoleDAO;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.Role;
+import de.metas.security.RoleGroup;
 import de.metas.security.RoleId;
 import de.metas.security.TableAccessLevel;
 import de.metas.security.permissions.Constraints;
@@ -48,12 +49,16 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_ClientInfo;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("UnusedReturnValue")
 class UserRolePermissionsBuilder
 {
-	public static UserRolePermissionsBuilder of(final UserRolePermissionsDAO userRolePermissionsRepo, final UserRolePermissions permissions)
+	public static UserRolePermissionsBuilder of(
+			@NonNull final UserRolePermissionsDAO userRolePermissionsRepo,
+			@NonNull final UserRolePermissions permissions)
 	{
 		return new UserRolePermissionsBuilder(userRolePermissionsRepo)
 				.setRoleId(permissions.getRoleId())
@@ -300,6 +305,12 @@ class UserRolePermissionsBuilder
 	{
 		this.name = name;
 		return this;
+	}
+
+	@Nullable
+	public final RoleGroup getRoleGroup()
+	{
+		return getRole().getRoleGroup();
 	}
 
 	public UserRolePermissionsBuilder setUserId(final UserId adUserId)

@@ -6,6 +6,8 @@ import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.commission.commissioninstance.services.CommissionProductService;
 import de.metas.currency.CurrencyRepository;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Currency;
@@ -26,7 +28,7 @@ import java.util.Optional;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -62,7 +64,8 @@ class SalesInvoiceFactoryTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		
+		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
+
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 
 		salesInvoiceFactory = new SalesInvoiceFactory(new CommissionProductService());

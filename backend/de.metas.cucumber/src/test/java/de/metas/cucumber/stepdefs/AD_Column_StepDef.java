@@ -26,7 +26,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.cucumber.stepdefs.resourcetype.S_ResourceType_StepDefData;
-import de.metas.po.CustomColumnService;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -36,8 +35,10 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -49,7 +50,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.adempiere.model.InterfaceWrapperHelper.getPO;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
@@ -92,26 +92,32 @@ public class AD_Column_StepDef
 	}
 
 	@And("update AD_Column:")
-	public void update_AD_Column(@NonNull final DataTable dataTable)
+	public void update_AD_Columns(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final String tableName = DataTableUtil.extractStringForColumnName(row, "TableName");
-			final String columnName = DataTableUtil.extractStringForColumnName(row, "ColumnName");
-			final boolean isRestAPICustomColumn = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_AD_Column.COLUMNNAME_IsRestAPICustomColumn, false);
+		DataTableRows.of(dataTable).forEach(this::updateAD_Column);
+	}
 
-			final AdTableId tableId = AdTableId.ofRepoIdOrNull(tableDAO.retrieveTableId(tableName));
-			assertThat(tableId).isNotNull();
+	private void updateAD_Column(final DataTableRow row)
+	{
+		final String tableName = row.getAsString("TableName");
+		final String columnName = row.getAsString("ColumnName");
 
-			final I_AD_Column targetColumn = queryBL.createQueryBuilder(I_AD_Column.class)
-					.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, tableId)
-					.addEqualsFilter(I_AD_Column.COLUMNNAME_ColumnName, columnName)
-					.create()
-					.firstOnlyNotNull(I_AD_Column.class);
+		final I_AD_Column targetColumn = getExistingColumn(tableName, columnName);
+		row.getAsOptionalBoolean("IsRestAPICustomColumn").ifPresent(targetColumn::setIsRestAPICustomColumn);
 
-			targetColumn.setIsRestAPICustomColumn(isRestAPICustomColumn);
-			saveRecord(targetColumn);
-		}
+		saveRecord(targetColumn);
+	}
+
+	@NonNull
+	private I_AD_Column getExistingColumn(final String tableName, final String columnName)
+	{
+		final AdTableId tableId = TableIdsCache.instance.getTableIdNotNull(tableName);
+
+		return queryBL.createQueryBuilder(I_AD_Column.class)
+				.addEqualsFilter(I_AD_Column.COLUMNNAME_AD_Table_ID, tableId)
+				.addEqualsFilter(I_AD_Column.COLUMNNAME_ColumnName, columnName)
+				.create()
+				.firstOnlyNotNull(I_AD_Column.class);
 	}
 
 	@When("^set custom columns for C_Order( expecting error:|:)$")
@@ -152,7 +158,7 @@ public class AD_Column_StepDef
 			else
 			{
 				throw new RuntimeException("One of " + "OPT." + I_C_Order.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER
-												   + " OR " + "OPT." + I_S_ResourceType.COLUMNNAME_S_ResourceType_ID + "." + TABLECOLUMN_IDENTIFIER + " must be set!");
+						+ " OR " + "OPT." + I_S_ResourceType.COLUMNNAME_S_ResourceType_ID + "." + TABLECOLUMN_IDENTIFIER + " must be set!");
 			}
 
 			final String customColumnJSONValue = DataTableUtil.extractStringForColumnName(row, "CustomColumnJSONValue");
@@ -217,7 +223,8 @@ public class AD_Column_StepDef
 
 		try
 		{
-			customColumnService.setCustomColumns(getPO(order), valuesByColumnName);
+			customColumnService.setCustomColumns(InterfaceWrapperHelper.getPO(order), valuesByColumnName);
+
 			InterfaceWrapperHelper.save(order);
 
 			if (Check.isNotBlank(errorMsg))
@@ -258,7 +265,7 @@ public class AD_Column_StepDef
 		final I_S_ResourceType resourceType = resourceTypeTable.get(resourceTypeIdentifier);
 		assertThat(resourceType).isNotNull();
 
-		customColumnService.setCustomColumns(getPO(resourceType), valuesByColumnName);
+		customColumnService.setCustomColumns(InterfaceWrapperHelper.getPO(resourceType), valuesByColumnName);
 
 		InterfaceWrapperHelper.save(resourceType);
 	}
@@ -271,7 +278,7 @@ public class AD_Column_StepDef
 
 		InterfaceWrapperHelper.refresh(order);
 
-		return customColumnService.getCustomColumnsAsMap(getPO(order));
+		return customColumnService.getCustomColumnsJsonValues(InterfaceWrapperHelper.getPO(order)).toMap();
 	}
 
 	@NonNull
@@ -282,6 +289,6 @@ public class AD_Column_StepDef
 
 		InterfaceWrapperHelper.refresh(resourceType);
 
-		return customColumnService.getCustomColumnsAsMap(getPO(resourceType));
+		return customColumnService.getCustomColumnsJsonValues(InterfaceWrapperHelper.getPO(resourceType)).toMap();
 	}
 }

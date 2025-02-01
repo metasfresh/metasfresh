@@ -56,7 +56,7 @@ public class SqlAndParams
 
 	public static SqlAndParams of(@NonNull final String sql)
 	{
-		return new SqlAndParams(sql, null);
+		return new SqlAndParams(sql, ImmutableList.of());
 	}
 
 	public static SqlAndParams of(@NonNull final CharSequence sql, @Nullable final List<Object> sqlParams)
@@ -183,8 +183,15 @@ public class SqlAndParams
 
 	private SqlAndParams(@NonNull final CharSequence sql, @Nullable final Object[] sqlParamsArray)
 	{
-		this.sql = sql.toString();
-		this.sqlParams = sqlParamsArray != null && sqlParamsArray.length > 0 ? Collections.unmodifiableList(Arrays.asList(sqlParamsArray)) : ImmutableList.of();
+		this(
+				sql.toString(),
+				sqlParamsArray != null && sqlParamsArray.length > 0 ? Collections.unmodifiableList(Arrays.asList(sqlParamsArray)) : ImmutableList.of());
+	}
+
+	private SqlAndParams(@NonNull final String sql, @NonNull final List<Object> sqlParams)
+	{
+		this.sql = sql;
+		this.sqlParams = sqlParams;
 	}
 
 	public Builder toBuilder()
@@ -220,6 +227,16 @@ public class SqlAndParams
 		return !isEmpty()
 				? TypedSqlQueryFilter.of(sql, sqlParams)
 				: ConstantQueryFilter.of(true);
+	}
+
+	public SqlAndParams negate()
+	{
+		if (sql.isEmpty())
+		{
+			return this;
+		}
+
+		return new SqlAndParams("NOT (" + this.sql + ")", this.sqlParams);
 	}
 
 	//

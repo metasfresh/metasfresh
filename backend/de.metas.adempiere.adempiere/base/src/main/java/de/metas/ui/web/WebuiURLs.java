@@ -83,7 +83,7 @@ public class WebuiURLs
 			return null;
 		}
 
-		return url.trim();
+		return url;
 	}
 
 	@Nullable
@@ -95,8 +95,8 @@ public class WebuiURLs
 			return null;
 		}
 
-		final String path = sysConfigBL.getValue(pathSysConfigName, defaultsBySysConfigName.get(pathSysConfigName));
-		if (Check.isEmpty(path, true) || "-".equals(path))
+		final String path = StringUtils.trimBlankToNull(sysConfigBL.getValue(pathSysConfigName, defaultsBySysConfigName.get(pathSysConfigName)));
+		if (path == null || "-".equals(path))
 		{
 			return null;
 		}
@@ -111,11 +111,13 @@ public class WebuiURLs
 		return url;
 	}
 
+	@Nullable
 	public String getDocumentUrl(@NonNull final AdWindowId windowId, final int documentId)
 	{
 		return getDocumentUrl(String.valueOf(windowId.getRepoId()), String.valueOf(documentId));
 	}
 
+	@Nullable
 	public String getDocumentUrl(@NonNull final String windowId, @NonNull final String documentId)
 	{
 		return getFrontendURL(SYSCONFIG_DOCUMENT_PATH, ImmutableMap.<String, Object>builder()
@@ -124,11 +126,13 @@ public class WebuiURLs
 				.build());
 	}
 
+	@Nullable
 	public String getViewUrl(@NonNull final AdWindowId adWindowId, @NonNull final String viewId)
 	{
 		return getViewUrl(String.valueOf(adWindowId.getRepoId()), viewId);
 	}
 
+	@Nullable
 	public String getViewUrl(@NonNull final String windowId, @NonNull final String viewId)
 	{
 		return getFrontendURL(SYSCONFIG_VIEW_PATH, ImmutableMap.<String, Object>builder()
@@ -137,6 +141,7 @@ public class WebuiURLs
 				.build());
 	}
 
+	@Nullable
 	public String getResetPasswordUrl(final String token)
 	{
 		Check.assumeNotEmpty(token, "token is not empty");

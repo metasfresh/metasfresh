@@ -1,8 +1,5 @@
 package de.metas.ui.web.order.pricingconditions.view;
 
-import java.math.BigDecimal;
-import java.util.Set;
-
 import de.metas.lang.SOTrx;
 import de.metas.money.Money;
 import de.metas.pricing.IEditablePricingContext;
@@ -17,8 +14,13 @@ import de.metas.product.ProductId;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
+
+import java.math.BigDecimal;
+import java.util.Set;
 
 /*
  * #%L
@@ -48,9 +50,10 @@ public class ProductPricingConditionsViewFactory extends PricingConditionsViewFa
 	public static final String WINDOW_ID_STRING = "productPricingConditions";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
-	public ProductPricingConditionsViewFactory()
+	public ProductPricingConditionsViewFactory(
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
-		super(WINDOW_ID);
+		super(lookupDataSourceFactory, WINDOW_ID);
 	}
 
 	@Override
@@ -73,9 +76,9 @@ public class ProductPricingConditionsViewFactory extends PricingConditionsViewFa
 		final IPricingConditionsService pricingConditionsService = Services.get(IPricingConditionsService.class);
 
 		return pricingConditionsService.calculatePricingConditions(CalculatePricingConditionsRequest.builder()
-				.forcePricingConditionsBreak(request.getPricingConditionsBreak())
-				.pricingCtx(createPricingContext(request))
-				.build())
+						.forcePricingConditionsBreak(request.getPricingConditionsBreak())
+						.pricingCtx(createPricingContext(request))
+						.build())
 				.map(result -> Money.of(result.getPriceStdOverride(), result.getCurrencyId()))
 				.orElse(null);
 	}

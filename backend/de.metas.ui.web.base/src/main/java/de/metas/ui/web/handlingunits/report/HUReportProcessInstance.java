@@ -26,6 +26,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
@@ -328,8 +329,7 @@ final class HUReportProcessInstance implements IProcessInstanceController
 
 	public void setCopies(final int copies)
 	{
-		boolean ignoreReadonlyFlag = false;
-		parameters.processValueChange(PARAM_Copies, copies, ReasonSupplier.NONE, ignoreReadonlyFlag);
+		parameters.processValueChange(PARAM_Copies, copies, ReasonSupplier.NONE, DocumentFieldLogicExpressionResultRevaluator.ALWAYS_RETURN_FALSE);
 	}
 
 	public PrintCopies getCopies()

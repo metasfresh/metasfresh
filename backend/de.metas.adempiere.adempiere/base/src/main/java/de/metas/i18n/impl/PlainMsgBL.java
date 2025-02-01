@@ -142,7 +142,7 @@ public class PlainMsgBL implements IMsgBL
 		}
 		else
 		{
-			return TranslatableStrings.constant(adMessage.toAD_Message() + " - " + Joiner.on(", ").join(msgParameters));
+			return TranslatableStrings.constant(adMessage.toAD_Message() + " - " + Joiner.on(", ").useForNull("-").join(msgParameters));
 		}
 	}
 

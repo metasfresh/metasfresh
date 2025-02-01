@@ -116,6 +116,7 @@ public final class ProductsProposalRowsLoader
 
 	@Builder
 	private ProductsProposalRowsLoader(
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory,
 			@NonNull final BPartnerProductStatsService bpartnerProductStatsService,
 			@Nullable final CampaignPriceProvider campaignPriceProvider,
 			@Nullable final OrderProductProposalsService orderProductProposalsService,
@@ -133,7 +134,7 @@ public final class ProductsProposalRowsLoader
 		this.campaignPriceProvider = campaignPriceProvider != null ? campaignPriceProvider : CampaignPriceProviders.none();
 		this.orderProductProposalsService = orderProductProposalsService;
 
-		productLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Product.Table_Name);
+		productLookup = lookupDataSourceFactory.searchInTableLookup(I_M_Product.Table_Name);
 
 		this.priceListVersionIds = priceListVersionIds;
 

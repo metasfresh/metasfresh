@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.ui.web.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.process;
 
 import com.google.common.base.Stopwatch;
@@ -50,8 +72,8 @@ import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAwares;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -79,32 +101,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 /**
  * This is the rest controller used when processes are invoked from the <b>WebUI</b>.
  */
-@Api
+@Tag(name = "ProcessRestController")
 @RestController
 @RequestMapping(ProcessRestController.ENDPOINT)
 public class ProcessRestController
@@ -229,6 +229,10 @@ public class ProcessRestController
 			DocumentPath singleDocumentPath = jsonRequest.getSingleDocumentPath();
 			if (singleDocumentPath == null && viewSelectedRowIds.isSingleDocumentId())
 			{
+				if (viewId == null)
+				{
+					throw new AdempiereException("viewId is expected to be set");
+				}
 				final IView view = viewsRepo.getView(Check.assumeNotNull(viewId, "viewId shall not be null"));
 				singleDocumentPath = view.getById(viewSelectedRowIds.getSingleDocumentId()).getDocumentPath();
 			}
@@ -338,7 +342,7 @@ public class ProcessRestController
 		}
 	}
 
-	@ApiOperation("Retrieves and serves a report that was previously created by a reporting process.")
+	@Operation(summary = "Retrieves and serves a report that was previously created by a reporting process.")
 	@GetMapping("/{processId}/{pinstanceId}/print/{filename:.*}")
 	public ResponseEntity<Resource> getReport(
 			@PathVariable("processId") final String processIdStr,
@@ -366,7 +370,7 @@ public class ProcessRestController
 			headers.setContentType(MediaType.parseMediaType(reportContentType));
 			headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + reportFilenameEffective + "\"");
 			headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-			
+
 			return new ResponseEntity<>(reportData, headers, HttpStatus.OK);
 		}
 	}

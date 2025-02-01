@@ -48,6 +48,7 @@ import de.metas.payment.esr.model.validator.ESRBankStatementListener;
 import de.metas.ui.web.bankstatement_reconciliation.BankStatementLineAndPaymentsToReconcileRepository;
 import de.metas.ui.web.bankstatement_reconciliation.BankStatementLineRow;
 import de.metas.ui.web.bankstatement_reconciliation.PaymentToReconcileRow;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -152,7 +153,7 @@ public class ReconcilePaymentsCommandTest
 		bankStatmentPaymentBL = new BankStatementPaymentBL(bankStatementBL, moneyService, new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository()));
 		SpringContextHolder.registerJUnitBean(IBankStatementPaymentBL.class, bankStatmentPaymentBL);
 
-		this.rowsRepo = new BankStatementLineAndPaymentsToReconcileRepository(bankStatementBL, currencyRepository);
+		this.rowsRepo = new BankStatementLineAndPaymentsToReconcileRepository(bankStatementBL, currencyRepository, LookupDataSourceFactory.sharedInstance());
 		rowsRepo.setBpartnerLookup(new MockedBPartnerLookupDataSource());
 
 		createMasterdata();

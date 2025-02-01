@@ -20,6 +20,7 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -78,7 +79,6 @@ import java.util.function.IntFunction;
  * <li>{@link ClientOnlyProcess} annotation if you want to mark the process as client only
  * </ul>
  *
- *
  * @author authors of earlier versions of this class are: Jorg Janke, Teo Sarca
  * @author metas-dev <dev@metasfresh.com>
  */
@@ -99,12 +99,17 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 	//
 	// Transaction management
-	/** Process Main transaction */
+	/**
+	 * Process Main transaction
+	 */
 	@Nullable private ITrx m_trx = ITrx.TRX_None;
 	private Boolean m_trxIsLocal;
-	@Nullable private ImmutableReference<String> m_trxNameThreadInheritedBackup;
+	@Nullable
+	private ImmutableReference<String> m_trxNameThreadInheritedBackup;
 	private boolean m_dbConstraintsChanged = false;
-	/** Transaction name prefix (in case of local transaction) */
+	/**
+	 * Transaction name prefix (in case of local transaction)
+	 */
 	private static final String TRXNAME_Prefix = "JavaProcess";
 
 	// Common Return Messages
@@ -118,7 +123,9 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 */
 	protected static final String MSG_Error = "@Error@";
 
-	/** Internal cache for ProcessClassInfo */
+	/**
+	 * Internal cache for ProcessClassInfo
+	 */
 	private final transient ImmutableMap<ArrayKey, Field> _fieldsIndexedByFieldKey;
 
 	protected JavaProcess()
@@ -140,8 +147,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 */
 	public static <T extends JavaProcess> T currentInstance()
 	{
-		@SuppressWarnings("unchecked")
-		final T currentInstances = (T)currentInstanceHolder.get();
+		@SuppressWarnings("unchecked") final T currentInstances = (T)currentInstanceHolder.get();
 		if (currentInstances == null)
 		{
 			throw new AdempiereException("No active process found in this thread");
@@ -168,7 +174,6 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	}
 
 	/**
-	 *
 	 * @param overrideCurrentInstance of {@code false} and there is already an instance set, then throw an exception.
 	 */
 	private static IAutoCloseable temporaryChangeCurrentInstance(@NonNull final Object instance, final boolean overrideCurrentInstance)
@@ -232,7 +237,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	/**
 	 * Note: This method shall be called by the framework.
 	 *
-	 * @param pi Process Info
+	 * @param pi  Process Info
 	 * @param trx existing/inherited transaction if any
 	 */
 	public synchronized final void startProcess(final ProcessInfo pi, final ITrx trx)
@@ -473,7 +478,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 
 		try
 		{
-			if(!field.isAccessible())
+			if (!field.isAccessible())
 			{
 				field.setAccessible(true);
 			}
@@ -692,7 +697,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 * <b>Important:</b> This method is also run out of transaction of only the {@link #doIt()} method is annotated like this.
 	 *
 	 * @throws ProcessCanceledException in case there is a cancel request on prepare
-	 * @throws RuntimeException in case of any failure
+	 * @throws RuntimeException         in case of any failure
 	 */
 	protected void prepare()
 	{
@@ -709,7 +714,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 *
 	 * @return Message (variables are parsed)
 	 * @throws ProcessCanceledException in case there is a cancel request on doIt
-	 * @throws Exception if not successful e.g. <code>throw new AdempiereException ("@MyExceptionADMessage@");</code>
+	 * @throws Exception                if not successful e.g. <code>throw new AdempiereException ("@MyExceptionADMessage@");</code>
 	 */
 	abstract protected String doIt() throws Exception;
 
@@ -749,7 +754,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		{
 			trxManager.commit(m_trx.getTrxName());
 		}
-	}	// commit
+	}    // commit
 
 	/**
 	 * Commit and throw exception if error
@@ -819,7 +824,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		final Properties ctx = _ctx;
 		if (ctx == null)
 		{
-			log.warn("No context configured for {}. Returning global context", this);
+			log.debug("No context configured for {}. Returning global context", this);
 			return Env.getCtx();
 		}
 
@@ -884,7 +889,20 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 		return getProcessInfo().getRecord(modelClass, trxName);
 	}
 
-	/** @return selected included row IDs of current single selected document */
+	@NonNull
+	protected final TableRecordReference getRecordRef() {return getProcessInfo().getRecordRefNotNull();}
+
+	@NonNull
+	protected final <ID extends RepoIdAware> ID getRecordIdAssumingTableName(
+			@NonNull final String expectedTableName,
+			@NonNull final IntFunction<ID> mapper)
+	{
+		return getProcessInfo().getRecordRefNotNull().getIdAssumingTableName(expectedTableName, mapper);
+	}
+
+	/**
+	 * @return selected included row IDs of current single selected document
+	 */
 	protected final <T> ImmutableSet<Integer> getSelectedIncludedRecordIds(@NonNull final Class<T> modelClass)
 	{
 		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
@@ -903,8 +921,15 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	protected final <T> Integer getSingleSelectedIncludedRecordIds(final Class<T> modelClass)
+	{
+		final Set<Integer> selectedIncludedRecordIds = getSelectedIncludedRecordIds(modelClass);
+		return CollectionUtils.singleElement(selectedIncludedRecordIds);
+	}
 
-	/** @return selected included rows of current single selected document */
+	/**
+	 * @return selected included rows of current single selected document
+	 */
 	protected final <T> List<T> getSelectedIncludedRecords(final Class<T> modelClass)
 	{
 		final Set<Integer> recordIds = getSelectedIncludedRecordIds(modelClass);
@@ -987,7 +1012,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	protected final ProcessInfoParameter[] getParametersAsArray()
 	{
 		final List<ProcessInfoParameter> parameters = getProcessInfo().getParameter();
-		return parameters.toArray(new ProcessInfoParameter[parameters.size()]);
+		return parameters.toArray(new ProcessInfoParameter[0]);
 	}
 
 	/**
@@ -1016,7 +1041,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 	 */
 	public final void addLog(final int id, final Timestamp date, final BigDecimal number, final String msg)
 	{
-		addLog(id, date, number,  msg, null);
+		addLog(id, date, number, msg, null);
 	}
 
 	public final void addLog(final int id, final Timestamp date, final BigDecimal number, final String msg, final @Nullable List<String> warningMessages)
@@ -1043,7 +1068,7 @@ public abstract class JavaProcess implements ILoggable, IContextAware
 			addLog(0, SystemTime.asTimestamp(), null, StringUtils.formatMessage(msg, msgParameters), warningMessages);
 		}
 		return this;
-	}	// addLog
+	}    // addLog
 
 	/**
 	 * Return the main transaction of the current process.

@@ -3,20 +3,20 @@ import counterpart from 'counterpart';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 
-import '../assets/css/styles.css';
+import '../assets/css/styles.scss';
 import {
   initCurrentActiveLocale,
   setCurrentActiveLocale,
 } from '../utils/locale';
 import {
   addNotification,
-  connectionError,
+  setProcessSaved,
   initHotkeys,
   initKeymap,
   setLanguages,
-  setProcessSaved,
 } from '../actions/AppActions';
-import { getAvailableLang } from '../api';
+import { getAvailableLang } from '../api/login';
+import { connectionError } from '../actions/AppActions';
 // import PluginsRegistry from '../services/PluginsRegistry';
 import { useAuth } from '../hooks/useAuth';
 import useConstructor from '../hooks/useConstructor';
@@ -49,6 +49,7 @@ const computeTitleFromState = (state) => {
         return title;
       }
     }
+
     return 'metasfresh';
   } else {
     return 'Login';

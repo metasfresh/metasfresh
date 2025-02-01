@@ -96,6 +96,9 @@ public class SqlViewBinding implements SqlEntityBinding
 
 	@NonNull @Getter private final ImmutableMap<DetailId, SqlDocumentEntityDataBindingDescriptor> includedEntitiesDescriptors;
 
+	@Getter
+	private final boolean queryIfNoFilters;
+
 	public static Builder builder()
 	{
 		return new Builder();
@@ -147,6 +150,8 @@ public class SqlViewBinding implements SqlEntityBinding
 		rowIdsConverter = builder.getRowIdsConverter();
 
 		viewInvalidationAdvisor = builder.getViewInvalidationAdvisor();
+
+		queryIfNoFilters = builder.queryIfNoFilters;
 
 		includedEntitiesDescriptors = builder.includedEntitiesDescriptors != null
 				? ImmutableMap.copyOf(builder.includedEntitiesDescriptors)
@@ -323,6 +328,8 @@ public class SqlViewBinding implements SqlEntityBinding
 
 		private IViewInvalidationAdvisor viewInvalidationAdvisor = DefaultViewInvalidationAdvisor.instance;
 		private Map<DetailId, SqlDocumentEntityDataBindingDescriptor> includedEntitiesDescriptors;
+
+		private boolean queryIfNoFilters = true;
 
 		private Builder()
 		{
@@ -570,6 +577,12 @@ public class SqlViewBinding implements SqlEntityBinding
 		public Builder refreshViewOnChangeEvents(final boolean refreshViewOnChangeEvents)
 		{
 			this.refreshViewOnChangeEvents = refreshViewOnChangeEvents;
+			return this;
+		}
+
+		public Builder queryIfNoFilters(final boolean queryIfNoFilters)
+		{
+			this.queryIfNoFilters = queryIfNoFilters;
 			return this;
 		}
 

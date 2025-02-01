@@ -1,9 +1,49 @@
 package de.metas.ui.web.board;
 
+import java.math.BigDecimal;
+import java.sql.Array;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Consumer;
+
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
+import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.validationRule.AdValRuleId;
+import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.ad.validationRule.IValidationRuleFactory;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.exceptions.DBUniqueConstraintException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_User;
+import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
+import org.compiere.util.Evaluatees;
+import org.slf4j.Logger;
+import org.springframework.stereotype.Repository;
+
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.cache.CCache;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
@@ -28,6 +68,8 @@ import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.websocket.sender.WebsocketSender;
+import de.metas.websocket.WebsocketTopicName;
 import de.metas.ui.web.websocket.WebsocketTopicNames;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -48,48 +90,9 @@ import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.websocket.WebsocketTopicName;
-import de.metas.websocket.sender.WebsocketSender;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
-import org.adempiere.ad.expression.api.IStringExpression;
-import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.validationRule.AdValRuleId;
-import org.adempiere.ad.validationRule.IValidationRule;
-import org.adempiere.ad.validationRule.IValidationRuleFactory;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.exceptions.DBUniqueConstraintException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_User;
-import org.compiere.util.DB;
-import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
-import org.compiere.util.Evaluatees;
-import org.slf4j.Logger;
-import org.springframework.stereotype.Repository;
-
-import java.math.BigDecimal;
-import java.sql.Array;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Consumer;
 
 /*
  * #%L
@@ -116,11 +119,12 @@ import java.util.function.Consumer;
 @Repository
 public class BoardDescriptorRepository
 {
-	private static final transient Logger logger = LogManager.getLogger(BoardDescriptorRepository.class);
+	private static final Logger logger = LogManager.getLogger(BoardDescriptorRepository.class);
 
 	private final DocumentDescriptorFactory documentDescriptors;
 	private final WebsocketSender websocketSender;
 	private final CurrencyRepository currenciesRepo;
+	private final LookupDescriptorProviders lookupDescriptorProviders;
 
 	private final CCache<Integer, BoardDescriptor> boardDescriptors = CCache.<Integer, BoardDescriptor> builder()
 			.cacheName(I_WEBUI_Board.Table_Name + "#BoardDescriptor")
@@ -131,13 +135,15 @@ public class BoardDescriptorRepository
 			.build();
 	
 	public BoardDescriptorRepository(
-			@NonNull final DocumentDescriptorFactory documentDescriptors, 
-			@NonNull final WebsocketSender websocketSender, 
-			@NonNull final CurrencyRepository currenciesRepo)
+			@NonNull final DocumentDescriptorFactory documentDescriptors,
+			@NonNull final WebsocketSender websocketSender,
+			@NonNull final CurrencyRepository currenciesRepo,
+			@NonNull final LookupDescriptorProviders lookupDescriptorProviders)
 	{
 		this.documentDescriptors = documentDescriptors;
 		this.websocketSender = websocketSender;
 		this.currenciesRepo = currenciesRepo;
+		this.lookupDescriptorProviders = lookupDescriptorProviders;
 	}
 
 	private void sendEvents(final BoardDescriptor board, final JSONBoardChangedEventsList events)
@@ -193,14 +199,14 @@ public class BoardDescriptorRepository
 
 		//
 		// Board document lookup provider
-		final int adValRuleId = boardPO.getAD_Val_Rule_ID();
-		final LookupDescriptorProvider documentLookupDescriptorProvider = SqlLookupDescriptor.builder()
+		final AdValRuleId adValRuleId = AdValRuleId.ofRepoIdOrNull(boardPO.getAD_Val_Rule_ID());
+		final LookupDescriptorProvider documentLookupDescriptorProvider = lookupDescriptorProviders.sql()
 				.setCtxTableName(null)
 				.setCtxColumnName(keyColumnName)
 				.setDisplayType(DisplayType.Search)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setAD_Val_Rule_ID(adValRuleId)
-				.buildProvider();
+				.build();
 
 		//
 		// Board descriptor
@@ -221,10 +227,10 @@ public class BoardDescriptorRepository
 
 		//
 		// Source document filters: AD_Val_Rule_ID
-		if (adValRuleId > 0)
+		if (adValRuleId != null)
 		{
 			final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(
-					tableName, AdValRuleId.ofRepoIdOrNull(adValRuleId), null // ctx table name
+					tableName, adValRuleId, null // ctx table name
 					, null // ctx column name
 			);
 			final String sqlWhereClause = validationRule.getPrefilterWhereClause()

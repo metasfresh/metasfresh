@@ -29,6 +29,11 @@ import javax.annotation.Nullable;
 
 public class UserNotAuthorizedException extends AdempiereException
 {
+	public UserNotAuthorizedException()
+	{
+		super("Not authorized");
+	}
+
 	public UserNotAuthorizedException(@NonNull final String message)
 	{
 		super(message);

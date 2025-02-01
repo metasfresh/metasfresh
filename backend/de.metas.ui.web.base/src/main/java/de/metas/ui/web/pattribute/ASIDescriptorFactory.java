@@ -1,9 +1,12 @@
 package de.metas.ui.web.pattribute;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.cache.CCache;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
@@ -26,6 +29,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
@@ -69,12 +73,15 @@ import java.util.function.Function;
 @Component
 public class ASIDescriptorFactory
 {
+	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
+
 	private final CCache<ArrayKey, ASIDescriptor> asiDescriptorById = CCache.newLRUCache(I_M_AttributeSet.Table_Name + "#Descriptors#by#M_AttributeSet_ID", 200, 0);
 	private final CCache<AttributeId, ASILookupDescriptor> asiLookupDescriptorsByAttributeId = CCache.newLRUCache(I_M_AttributeSet.Table_Name + "#LookupDescriptors", 200, 0);
 
 	private static final ASIDataBindingDescriptorBuilder _asiBindingsBuilder = new ASIDataBindingDescriptorBuilder();
 
-	private ASIDescriptorFactory()
+	@VisibleForTesting
+	ASIDescriptorFactory()
 	{
 	}
 
@@ -152,7 +159,8 @@ public class ASIDescriptorFactory
 		return attributeSetDescriptor.build();
 	}
 
-	private DocumentFieldDescriptor.Builder createDocumentFieldDescriptor(final I_M_Attribute attribute)
+	@VisibleForTesting
+	DocumentFieldDescriptor.Builder createDocumentFieldDescriptor(final I_M_Attribute attribute)
 	{
 		final int attributeId = attribute.getM_Attribute_ID();
 		final String fieldName = attribute.getValue();
@@ -173,16 +181,38 @@ public class ASIDescriptorFactory
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attributeValueType))
 		{
-			valueClass = StringLookupValue.class;
-			widgetType = DocumentFieldWidgetType.List;
-			readMethod = I_M_AttributeInstance::getValue;
-			writeMethod = ASIAttributeFieldBinding::writeValueFromLookup;
+			// NOTE: keep in sync with the BL of de.metas.handlingunits.attribute.impl.AbstractAttributeValue.valueType and de.metas.handlingunits.attribute.impl.AbstractAttributeValue.setValue
+			final IAttributeValuesProvider attributeValuesProvider = attributesBL.createAttributeValuesProvider(attribute);
+			final String keyValueType = attributeValuesProvider != null
+					? attributeValuesProvider.getAttributeValueType()
+					: X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40;
 
+			widgetType = DocumentFieldWidgetType.List;
 			lookupDescriptor = getLookupDescriptor(attribute);
+
+			if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(keyValueType))
+			{
+				valueClass = IntegerLookupValue.class;
+				readMethod = I_M_AttributeInstance::getValueNumber;
+				writeMethod = (ai, field) -> ASIAttributeFieldBinding.writeValueFromLookup(ai, field, true);
+			}
+			else if (X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40.equals(keyValueType))
+			{
+				valueClass = StringLookupValue.class;
+				readMethod = I_M_AttributeInstance::getValue;
+				writeMethod = (ai, field) -> ASIAttributeFieldBinding.writeValueFromLookup(ai, field, false);
+			}
+			else
+			{
+				throw new AdempiereException("Key Attribute Type not supported: " + keyValueType)
+						.setParameter("attribute", attribute)
+						.setParameter("attributeValuesProvider", attributeValuesProvider)
+						.appendParametersToMessage();
+			}
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
 		{
-			final int displayType = Services.get(IAttributesBL.class).getNumberDisplayType(attribute);
+			final int displayType = attributesBL.getNumberDisplayType(attribute);
 			if (displayType == DisplayType.Integer)
 			{
 				valueClass = Integer.class;
@@ -341,25 +371,30 @@ public class ASIDescriptorFactory
 			writeMethod.accept(ai, field);
 		}
 
-		private static void writeValueFromLookup(final I_M_AttributeInstance ai, final IDocumentFieldView field)
+		private static void writeValueFromLookup(final I_M_AttributeInstance ai, final IDocumentFieldView field, boolean isNumericKey)
 		{
-			final StringLookupValue lookupValue = field.getValueAs(StringLookupValue.class);
+			final LookupValue lookupValue = isNumericKey
+					? field.getValueAs(IntegerLookupValue.class)
+					: field.getValueAs(StringLookupValue.class);
+
 			final AttributeValueId attributeValueId = field.getDescriptor().getLookupDescriptor()
-					.get()
+					.orElseThrow(() -> new AdempiereException("No lookup defined for " + field))
 					.cast(ASILookupDescriptor.class)
 					.getAttributeValueId(lookupValue);
 
+			ai.setValueNumber(lookupValue != null && isNumericKey ? BigDecimal.valueOf(lookupValue.getIdAsInt()) : null); // IMPORTANT: always setValueNumber before setValue because setValueNumber is overriden and set the Value string too. wtf?!
 			ai.setValue(lookupValue == null ? null : lookupValue.getIdAsString());
 			ai.setM_AttributeValue_ID(AttributeValueId.toRepoId(attributeValueId));
 		}
 
-		public void createAndSaveM_AttributeInstance(final I_M_AttributeSetInstance asiRecord, final IDocumentFieldView asiField)
+		public I_M_AttributeInstance createAndSaveM_AttributeInstance(final I_M_AttributeSetInstance asiRecord, final IDocumentFieldView asiField)
 		{
 			final I_M_AttributeInstance aiRecord = InterfaceWrapperHelper.newInstance(I_M_AttributeInstance.class, asiRecord);
 			aiRecord.setM_AttributeSetInstance(asiRecord);
 			aiRecord.setM_Attribute_ID(attributeId);
 			writeValue(aiRecord, asiField);
 			InterfaceWrapperHelper.save(aiRecord);
+			return aiRecord;
 		}
 
 	}

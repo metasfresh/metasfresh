@@ -12,7 +12,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Material Receipt Info', PrintN
 ;
 
 -- 2025-01-30T16:16:34.885Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583461,'en_US') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583461,'en_US')
 ;
 
 -- Column: C_BPartner.MaterialReceiptInfo
@@ -26,7 +26,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- 2025-01-30T16:21:05.260Z
-/* DDL */  select update_Column_Translation_From_AD_Element(583461) 
+/* DDL */  select update_Column_Translation_From_AD_Element(583461)
 ;
 
 -- 2025-01-30T17:23:54.532Z
@@ -38,7 +38,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- Field: Geschäftspartner_OLD(123,D) -> Lieferant(224,D) -> Wareneingangsinfo
 -- Column: C_BPartner.MaterialReceiptInfo
 -- 2025-01-30T17:32:47.989Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,589627,735599,0,224,0,TO_TIMESTAMP('2025-01-30 18:32:47','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','N',0,'Wareneingangsinfo',0,0,200,0,1,1,TO_TIMESTAMP('2025-01-30 18:32:47','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,589627,735599,0,224,0,TO_TIMESTAMP('2025-01-30 18:32:47','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','Wareneingangsinfo',0,200,0,1,1,TO_TIMESTAMP('2025-01-30 18:32:47','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2025-01-30T17:32:48.151Z
@@ -46,7 +46,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 ;
 
 -- 2025-01-30T17:32:48.202Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583461) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583461)
 ;
 
 -- 2025-01-30T17:32:48.255Z
@@ -77,7 +77,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- 2025-01-30T17:38:50.795Z
-/* DDL */  select update_Column_Translation_From_AD_Element(583461) 
+/* DDL */  select update_Column_Translation_From_AD_Element(583461)
 ;
 
 -- Field: Wareneingangsdisposition_OLD -> Wareneingangsdisposition -> Wareneingangsinfo
@@ -85,7 +85,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- Field: Wareneingangsdisposition_OLD(540196,de.metas.inoutcandidate) -> Wareneingangsdisposition(540526,de.metas.inoutcandidate) -> Wareneingangsinfo
 -- Column: M_ReceiptSchedule.MaterialReceiptInfo
 -- 2025-01-30T17:42:14.801Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,589629,735600,0,540526,0,TO_TIMESTAMP('2025-01-30 18:42:13','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','N',0,'Wareneingangsinfo',0,0,230,0,1,1,TO_TIMESTAMP('2025-01-30 18:42:13','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,589629,735600,0,540526,0,TO_TIMESTAMP('2025-01-30 18:42:13','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','Wareneingangsinfo',0,230,0,1,1,TO_TIMESTAMP('2025-01-30 18:42:13','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2025-01-30T17:42:15.107Z
@@ -93,7 +93,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 ;
 
 -- 2025-01-30T17:42:15.157Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583461) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583461)
 ;
 
 -- 2025-01-30T17:42:15.212Z

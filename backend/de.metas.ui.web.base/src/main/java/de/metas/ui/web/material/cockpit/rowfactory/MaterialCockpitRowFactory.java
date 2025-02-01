@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.ui.web.base
+ * %%
+ * Copyright (C) 2023 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.material.cockpit.rowfactory;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -14,13 +36,11 @@ import de.metas.dimension.DimensionSpecGroup;
 import de.metas.material.cockpit.ProductWithDemandSupply;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
-import de.metas.material.planning.IResourceDAO;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.order.stats.purchase_max_price.PurchaseLastMaxPriceProvider;
 import de.metas.order.stats.purchase_max_price.PurchaseLastMaxPriceRequest;
 import de.metas.order.stats.purchase_max_price.PurchaseLastMaxPriceService;
-import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.product.ResourceId;
@@ -41,7 +61,6 @@ import lombok.Singular;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseRepository;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.Adempiere;
 import org.compiere.model.X_M_Product;
 import org.springframework.stereotype.Service;
@@ -53,28 +72,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @Service
 @RequiredArgsConstructor
 public class MaterialCockpitRowFactory
@@ -84,12 +81,9 @@ public class MaterialCockpitRowFactory
 	@NonNull private final ProductRepository productRepository;
 	@NonNull private final WarehouseRepository warehouseRepository;
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
-	@NonNull private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
-	@NonNull private final IColorRepository colorRepository = Services.get(IColorRepository.class);
-	@NonNull private final ADReferenceService adReferenceService;
-	@NonNull private final PurchaseLastMaxPriceService purchaseLastMaxPriceService;
+    @NonNull private final IColorRepository colorRepository = Services.get(IColorRepository.class);
+    @NonNull private final ADReferenceService adReferenceService;
+    @NonNull private final PurchaseLastMaxPriceService purchaseLastMaxPriceService;
 
 	@VisibleForTesting
 	public static MaterialCockpitRowFactory newInstanceForUnitTesting(final MaterialCockpitRowLookups rowLookups)
@@ -100,8 +94,8 @@ public class MaterialCockpitRowFactory
 				ResourceService.newInstanceForJUnitTesting(),
 				ProductRepository.newInstanceForUnitTesting(),
 				WarehouseRepository.newInstanceForUnitTesting(),
-				ADReferenceService.get(),
-				new PurchaseLastMaxPriceService(new MoneyService(new CurrencyRepository()))
+                ADReferenceService.get(),
+                new PurchaseLastMaxPriceService(new MoneyService(new CurrencyRepository()))
 		);
 	}
 
@@ -135,9 +129,9 @@ public class MaterialCockpitRowFactory
 				.rowLookups(rowLookups)
 				.resourceService(resourceService)
 				.cache(cache)
-				.colorRepository(colorRepository)
-				.adReferenceService(adReferenceService)
-				.purchaseLastMaxPriceProvider(purchaseLastMaxPriceService.newProvider())
+                .colorRepository(colorRepository)
+                .adReferenceService(adReferenceService)
+                .purchaseLastMaxPriceProvider(purchaseLastMaxPriceService.newProvider())
 				//
 				.request(request)
 				//
@@ -151,17 +145,17 @@ public class MaterialCockpitRowFactory
 		@NonNull private final MaterialCockpitRowLookups rowLookups;
 		@NonNull private final ResourceService resourceService;
 		@NonNull private MaterialCockpitRowCache cache;
-		@NonNull private final IColorRepository colorRepository;
-		@NonNull private final ADReferenceService adReferenceService;
-		@NonNull private final PurchaseLastMaxPriceProvider purchaseLastMaxPriceProvider;
+        @NonNull private final IColorRepository colorRepository;
+        @NonNull private final ADReferenceService adReferenceService;
+        @NonNull private final PurchaseLastMaxPriceProvider purchaseLastMaxPriceProvider;
 
 		@NonNull private final CreateRowsRequest request;
 
-		private static final ReferenceId PROCUREMENTSTATUS_Reference_ID = ReferenceId.ofRepoId(X_M_Product.PROCUREMENTSTATUS_AD_Reference_ID);
+        private static final ReferenceId PROCUREMENTSTATUS_Reference_ID = ReferenceId.ofRepoId(X_M_Product.PROCUREMENTSTATUS_AD_Reference_ID);
 
 		public List<MaterialCockpitRow> execute()
 		{
-			purchaseLastMaxPriceProvider.warmUp(request.getProductIdsToListEvenIfEmpty(), request.getDate());
+			cache.warmUpProducts(request.getProductIdsToListEvenIfEmpty());
 
 			final Map<MainRowBucketId, MainRowWithSubRows> emptyRowBuckets = createEmptyRowBuckets(
 					request.getProductIdsToListEvenIfEmpty(),
@@ -204,8 +198,8 @@ public class MaterialCockpitRowFactory
 
 				if (detailsRowAggregation.isPlant())
 				{
-				for (final ResourceId plantId : plantIds)
-				{
+					for (final ResourceId plantId : plantIds)
+					{
 						final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder()
 								.detailsRowAggregation(detailsRowAggregation)
 								.aggregationId(plantId.getRepoId())
@@ -291,7 +285,7 @@ public class MaterialCockpitRowFactory
 			final MFColor procurementStatusColor = getProcurementStatusColor(mainRowBucketId.getProductId()).orElse(null);
 
 			return MainRowWithSubRows.builder()
-					.cache(cache)
+                    .cache(cache)
 					.rowLookups(rowLookups)
 					.productIdAndDate(mainRowBucketId)
 					.procurementStatusColor(procurementStatusColor)

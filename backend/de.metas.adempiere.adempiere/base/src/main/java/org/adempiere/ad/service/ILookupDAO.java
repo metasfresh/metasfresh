@@ -22,21 +22,16 @@
 
 package org.adempiere.ad.service;
 
-import de.metas.ad_reference.TableRefTable;
-import de.metas.i18n.ExplainedOptional;
+import de.metas.ad_reference.ADRefTable;
 import de.metas.util.ISingletonService;
 import de.metas.util.collections.BlindIterator;
-import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.service.impl.LookupDisplayInfo;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
-import org.compiere.model.ILookupDisplayColumn;
 import org.compiere.model.MLookupInfo;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
-
-import javax.annotation.Nullable;
-import java.util.List;
 
 /**
  * Field Lookup DAO methods
@@ -45,30 +40,6 @@ import java.util.List;
  */
 public interface ILookupDAO extends ISingletonService
 {
-	interface IColumnInfo
-	{
-		int getAD_Val_Rule_ID();
-
-		boolean isParent();
-
-		int getAD_Reference_Value_ID();
-
-		String getColumnName();
-
-		String getTableName();
-	}
-
-	interface ILookupDisplayInfo
-	{
-		boolean isTranslated();
-
-		AdWindowId getZoomWindowPO();
-
-		AdWindowId getZoomWindow();
-
-		List<ILookupDisplayColumn> getLookupDisplayColumns();
-	}
-
 	/**
 	 * Contains a set of {@link ValueNamePair} or {@link KeyNamePair} elements.
 	 *
@@ -103,30 +74,7 @@ public interface ILookupDAO extends ISingletonService
 		void close();
 	}
 
-	IColumnInfo retrieveColumnInfo(int adColumnId);
-
-	ExplainedOptional<TableRefTable> getTableRefInfo(int referenceRepoId);
-
-	/**
-	 * In case the {@link TableRefTable} was not found, an warning is logged.
-	 *
-	 * @return table reference info or <code>null</code> if not found
-	 */
-	@Nullable
-	TableRefTable retrieveTableRefInfo(int AD_Reference_Value_ID);
-
-	/**
-	 * @return true if given reference is a table reference
-	 */
-	boolean isTableReference(int AD_Reference_Value_ID);
-
-	TableRefTable retrieveTableDirectRefInfo(String columnName);
-
-	TableRefTable retrieveAccountTableRefInfo();
-
-	ILookupDisplayInfo retrieveLookupDisplayInfo(TableRefTable tableRefTable);
-
-	boolean isReferenceOrderByValue(int adReferenceId);
+	LookupDisplayInfo getLookupDisplayInfo(ADRefTable tableRefInfo);
 
 	/**
 	 * Retrieves all elements of <code>lookupInfo</code> in given <code>validationCtx</code> context
