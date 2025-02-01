@@ -714,7 +714,7 @@ jobs:
           - profile: profile7
             params: -Dcucumber.filter.tags="@ghActions:run_on_executor7 and not @flaky and not @ignore"
           - profile: flaky
-            params: -Dcucumber.filter.tags="@ghActions:flaky and not @ignore"
+            params: -Dcucumber.filter.tags="@flaky and not @ignore"
           - profile: catchall
             params: -Dcucumber.filter.tags="not @ghActions:run_on_executor1 and not @ghActions:run_on_executor2 and not @ghActions:run_on_executor3 and not @ghActions:run_on_executor4 and not @ghActions:run_on_executor5 and not @ghActions:run_on_executor6 and not @ghActions:run_on_executor7 and not @ignore and not @ghActions:flaky"
     steps:
