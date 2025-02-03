@@ -27,7 +27,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-        <poi.version>5.2.2</poi.version>
+        <poi.version>4.1.2</poi.version>
         <zxing.version>2.3.0</zxing.version>
 
         <spring-boot.version>2.4.3</spring-boot.version>
