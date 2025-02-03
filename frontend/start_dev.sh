@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NODE_VERSION=16
+NODE_VERSION=14
 #export NODE_OPTIONS=--openssl-legacy-provider
 
 set -e
