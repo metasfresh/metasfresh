@@ -325,9 +325,9 @@ public final class FileUtil
 	/**
 	 * Java 8 implemention of Files.writeString
 	 */
+	@Deprecated
 	public static void writeString(final Path path, final String content, final Charset charset, final OpenOption... options) throws IOException
 	{
-		final byte[] bytes = content.getBytes(charset);
-		Files.write(path, bytes, options);
+		Files.writeString(path , content, charset, options);
 	}
 }

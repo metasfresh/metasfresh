@@ -1,10 +1,6 @@
 /*
  * #%L
-<<<<<<<< HEAD:backend/de.metas.business/src/main/java/de/metas/product/ProductQuery.java
  * de.metas.business
-========
- * de.metas.device.scales
->>>>>>>> origin/new_dawn_uat:backend/de.metas.device.scales/src/main/java/de/metas/device/scales/request/NoDeviceResponse.java
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -24,7 +20,6 @@
  * #L%
  */
 
-<<<<<<<< HEAD:backend/de.metas.business/src/main/java/de/metas/product/ProductQuery.java
 package de.metas.product;
 
 import lombok.Builder;
@@ -41,12 +36,4 @@ public class ProductQuery
 
 	@Nullable
 	Boolean isSold;
-========
-package de.metas.device.scales.request;
-
-import de.metas.device.api.IDeviceResponse;
-
-public class NoDeviceResponse implements IDeviceResponse
-{
->>>>>>>> origin/new_dawn_uat:backend/de.metas.device.scales/src/main/java/de/metas/device/scales/request/NoDeviceResponse.java
 }
