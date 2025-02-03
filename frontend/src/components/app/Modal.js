@@ -738,8 +738,7 @@ class Modal extends Component {
           />
 
           <div
-            className="panel-modal-content js-panel-modal-content
-                          container-fluid"
+            className="panel-modal-content container-fluid"
             ref={(c) => {
               if (c) {
                 c.focus();
