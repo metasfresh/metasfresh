@@ -12,6 +12,9 @@
   height: 100%;
   width: 100%;
   overflow: hidden;
+
+  display: flex;
+  flex-flow: column;
 }
 
 .tablet, .mobile {
@@ -169,6 +172,8 @@
 
 .panel-modal-header {
   z-index: 500;
+  flex-grow: 0;
+  flex-shrink: 0;
 
   .optional {
     padding-left: inherit;
