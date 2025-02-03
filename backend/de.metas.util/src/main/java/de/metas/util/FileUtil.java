@@ -35,10 +35,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
-import java.util.Optional;
 import java.util.List;
+import java.util.Optional;
 import java.util.zip.Deflater;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -72,7 +74,7 @@ public final class FileUtil
 		}
 		out.flush();
 	}
-	
+
 	public static String getTempDir()
 	{
 		return System.getProperty("java.io.tmpdir");
@@ -318,5 +320,14 @@ public final class FileUtil
 
 			zos.closeEntry();
 		}
+	}
+
+	/**
+	 * Java 8 implemention of Files.writeString
+	 */
+	@Deprecated
+	public static void writeString(final Path path, final String content, final Charset charset, final OpenOption... options) throws IOException
+	{
+		Files.writeString(path , content, charset, options);
 	}
 }

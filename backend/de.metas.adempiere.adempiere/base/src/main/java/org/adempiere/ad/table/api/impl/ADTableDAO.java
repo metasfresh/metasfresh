@@ -478,7 +478,6 @@ public class ADTableDAO implements IADTableDAO
 		return getMinimalColumnInfoMap().getByColumnName(columnName);
 	}
 
-
 	private MinimalColumnInfoMap getMinimalColumnInfoMap()
 	{
 		return minimalColumnInfoMapCache.getOrLoad(0, this::retrieveMinimalColumnInfoMap);

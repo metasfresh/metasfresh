@@ -22,17 +22,8 @@ package de.metas.handlingunits.ordercandidate.spi.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Component;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
@@ -48,7 +39,18 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.X12DE355;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 
 /**
  * @task 08147: validate if the C_OLCand's PIIP is OK
@@ -56,6 +58,7 @@ import de.metas.util.Services;
 @Component
 public class OLCandPIIPPriceValidator implements IOLCandValidator
 {
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	/** @return {@code 30}; needs to run after {@link DefaultOLCandValidator} because it needs that validator's results. (concrete example: PricingsystemId) */
 	@Override
@@ -85,12 +88,14 @@ public class OLCandPIIPPriceValidator implements IOLCandValidator
 				final ProductId packingMaterialProductId = ProductId.ofRepoIdOrNull(pm.getM_Product_ID());
 				checkForPrice(olCand, packingMaterialProductId);
 			}
+			if (huPIItemProduct.isOrderInTuUomWhenMatched())
+			{
+				olCand.setC_UOM_Internal_ID(uomDAO.getUomIdByX12DE355(X12DE355.COLI).getRepoId());
 		}
 	}
+	}
 
-
-
-	private void checkForPrice(final I_C_OLCand olCand, final ProductId packingMaterialProductId)
+	private void checkForPrice(@NonNull final I_C_OLCand olCand, @Nullable final ProductId packingMaterialProductId)
 	{
 		final PricingSystemId pricingSystemId = PricingSystemId.ofRepoIdOrNull(olCand.getM_PricingSystem_ID());
 

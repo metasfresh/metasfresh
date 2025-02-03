@@ -425,6 +425,16 @@ public class ADProcessPostProcessService
 					.build();
 		}
 		//
+		// New Record action
+		else if (processExecutionResult.getWebuiNewRecord() != null)
+		{
+			return ProcessInstanceResult.NewRecordAction.builder()
+					.windowId(processExecutionResult.getWebuiNewRecord().getWindowId())
+					.fieldValues(processExecutionResult.getWebuiNewRecord().getFieldValues())
+					.targetTab(processExecutionResult.getWebuiNewRecord().getTargetTab())
+					.build();
+		}
+		//
 		// Calendar
 		else if (processExecutionResult.getCalendarToOpen() != null)
 		{

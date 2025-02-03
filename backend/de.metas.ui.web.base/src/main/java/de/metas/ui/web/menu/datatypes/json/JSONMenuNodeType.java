@@ -54,7 +54,7 @@ public enum JSONMenuNodeType
 		return jsonType;
 	}
 
-	private static final BiMap<MenuNodeType, JSONMenuNodeType> type2json = ImmutableBiMap.<MenuNodeType, JSONMenuNodeType> builder()
+	private static final BiMap<MenuNodeType, JSONMenuNodeType> type2json = ImmutableBiMap.<MenuNodeType, JSONMenuNodeType>builder()
 			.put(MenuNodeType.Group, group)
 			.put(MenuNodeType.Window, window)
 			.put(MenuNodeType.NewRecord, newRecord)
