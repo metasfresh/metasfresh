@@ -1624,7 +1624,6 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * @param model
 	 * @return how many times given model was loaded/reloaded
 	 */
 	public static int getLoadCount(final Object model)

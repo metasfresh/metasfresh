@@ -12,6 +12,7 @@ import de.metas.ui.web.process.ProcessInstanceResult.CloseViewAction;
 import de.metas.ui.web.process.ProcessInstanceResult.DisplayQRCodeAction;
 import de.metas.ui.web.process.ProcessInstanceResult.NewRecordAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenCalendarAction;
+import de.metas.ui.web.process.ProcessInstanceResult.NewRecordAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenReportAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenSingleDocument;

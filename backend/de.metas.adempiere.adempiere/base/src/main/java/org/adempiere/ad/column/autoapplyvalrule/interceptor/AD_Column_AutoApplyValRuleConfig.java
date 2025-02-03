@@ -1,7 +1,6 @@
 package org.adempiere.ad.column.autoapplyvalrule.interceptor;
 
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.ad_reference.ADReferenceService;
@@ -27,9 +26,6 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /*
  * #%L

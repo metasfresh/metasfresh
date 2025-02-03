@@ -1,9 +1,7 @@
 #!/bin/bash
 
-## NOTE: we cannot use node >16 yet
 NODE_VERSION=16
-#export HTTPS=true
-export PORT=3001
+#export NODE_OPTIONS=--openssl-legacy-provider
 
 set -e
 

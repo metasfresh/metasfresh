@@ -361,6 +361,7 @@ public interface I_AD_User
 
 	/**
 	 * Set CC User.
+	 * Select a user that will receive emails as CC  if the current user receives a mail. This is only applied to emails and not notifications.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -370,6 +371,7 @@ public interface I_AD_User
 
 	/**
 	 * Get CC User.
+	 * Select a user that will receive emails as CC  if the current user receives a mail. This is only applied to emails and not notifications.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
