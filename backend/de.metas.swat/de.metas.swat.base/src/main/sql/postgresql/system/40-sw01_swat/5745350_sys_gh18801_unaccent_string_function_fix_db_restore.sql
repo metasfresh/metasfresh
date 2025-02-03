@@ -1,3 +1,6 @@
+DROP INDEX IF EXISTS c_doc_outbound_log_poreference_index
+;
+
 DROP FUNCTION IF EXISTS unaccent_string(text, numeric)
 ;
 
@@ -26,3 +29,7 @@ END;
 $BODY$
     LANGUAGE plpgsql IMMUTABLE
                      COST 100;
+
+CREATE INDEX c_doc_outbound_log_poreference_index
+    ON c_doc_outbound_log (public.unaccent_string(poreference::text, 1::numeric))
+;

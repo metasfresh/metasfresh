@@ -445,10 +445,11 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
 		orderBOMsRepo.markBOMLinesAsNotProcessed(orderId);
 
-		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
-
 		setDocAction(IDocument.ACTION_Complete);
 		setProcessed(false);
+
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
+		
 		return true;
 	} // reActivateIt
 
