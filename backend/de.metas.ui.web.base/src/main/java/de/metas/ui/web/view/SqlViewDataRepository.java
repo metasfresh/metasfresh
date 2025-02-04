@@ -1,8 +1,8 @@
 package de.metas.ui.web.view;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilterList;
@@ -31,7 +31,6 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Services;
-import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -79,66 +78,31 @@ import java.util.stream.Stream;
 
 class SqlViewDataRepository implements IViewDataRepository
 {
-	private static final Logger logger = LogManager.getLogger(SqlViewDataRepository.class);
+	@NonNull private static final Logger logger = LogManager.getLogger(SqlViewDataRepository.class);
 
-	private final String tableName;
-	private final String tableAlias;
-	private final SqlViewKeyColumnNamesMap keyColumnNamesMap;
-	private final ImmutableMap<String, DocumentFieldWidgetType> widgetTypesByFieldName;
-	private final SqlViewSelectData sqlViewSelect;
-	private final ViewRowIdsOrderedSelectionFactory viewRowIdsOrderedSelectionFactory;
-	private final DocumentFilterDescriptorsProvider viewFilterDescriptors;
-	private final DocumentQueryOrderByList defaultOrderBys;
-
-	private final boolean hasIncludedRows;
-	private final ImmutableMap<String, SqlViewRowFieldLoader> rowFieldLoaders;
-	private final ViewRowCustomizer rowCustomizer;
-
-	private final SqlDocumentFilterConverter filterConverters;
-
-	@Getter
-	private final boolean queryIfNoFilters;
+	@NonNull private final SqlViewBinding sqlViewBinding;
+	@NonNull private final ViewRowIdsOrderedSelectionFactory viewRowIdsOrderedSelectionFactory;
+	@NonNull private final SqlDocumentFilterConverter filterConverters;
 
 	SqlViewDataRepository(@NonNull final SqlViewBinding sqlBindings)
 	{
-		tableName = sqlBindings.getTableName();
-		tableAlias = sqlBindings.getTableAlias();
-		keyColumnNamesMap = sqlBindings.getSqlViewKeyColumnNamesMap();
-		widgetTypesByFieldName = sqlBindings.getWidgetTypesByFieldName();
-		sqlViewSelect = sqlBindings.getSqlViewSelect();
-		viewFilterDescriptors = sqlBindings.getViewFilterDescriptors();
-		viewRowIdsOrderedSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(sqlBindings);
-		defaultOrderBys = sqlBindings.getDefaultOrderBys();
-
-		this.hasIncludedRows = sqlBindings.hasGroupingFields();
-		this.rowFieldLoaders = sqlBindings.getFields()
-				.stream()
-				.collect(ImmutableMap.toImmutableMap(SqlViewRowFieldBinding::getFieldName, SqlViewRowFieldBinding::getFieldLoader));
-		this.rowCustomizer = sqlBindings.getRowCustomizer();
-
+		this.sqlViewBinding = sqlBindings;
+		this.viewRowIdsOrderedSelectionFactory = SqlViewRowIdsOrderedSelectionFactory.of(sqlBindings);
 		this.filterConverters = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(sqlBindings);
-
-		this.queryIfNoFilters = sqlBindings.isQueryIfNoFilters();
 	}
 
 	@Override
 	public String toString()
 	{
 		return MoreObjects.toStringHelper(this)
-				.add("tableName", tableName)
+				.add("tableName", sqlViewBinding.getTableName())
 				.toString();
 	}
 
 	@Override
-	public String getTableName()
-	{
-		return tableName;
-	}
+	public String getTableName() {return sqlViewBinding.getTableName();}
 
-	private String getTableAlias()
-	{
-		return tableAlias;
-	}
+	private String getTableAlias() {return sqlViewBinding.getTableAlias();}
 
 	@Override
 	public SqlViewRowsWhereClause getSqlWhereClause(
@@ -166,9 +130,11 @@ class SqlViewDataRepository implements IViewDataRepository
 	}
 
 	@Override
-	public Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
+	public Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName() {return sqlViewBinding.getWidgetTypesByFieldName();}
+
+	public ImmutableCollection<SqlViewRowFieldBinding> getFields()
 	{
-		return widgetTypesByFieldName;
+		return sqlViewBinding.getFields();
 	}
 
 	@Override
@@ -182,7 +148,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		return viewRowIdsOrderedSelectionFactory.createOrderedSelection(viewEvalCtx,
 				viewId,
 				filters,
-				defaultOrderBys,
+				sqlViewBinding.getDefaultOrderBys(),
 				applySecurityRestrictions,
 				context);
 	}
@@ -213,7 +179,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	@Override
 	public IViewRow retrieveById(final ViewEvaluationCtx viewEvalCtx, final ViewId viewId, final DocumentId rowId)
 	{
-		final SqlAndParams sqlAndParams = sqlViewSelect.selectById()
+		final SqlAndParams sqlAndParams = sqlViewBinding.getSqlViewSelect().selectById()
 				.viewEvalCtx(viewEvalCtx)
 				.viewId(viewId)
 				.rowId(rowId)
@@ -290,7 +256,7 @@ class SqlViewDataRepository implements IViewDataRepository
 
 		//
 		// Load lines
-		if (hasIncludedRows && !rootRowIds.isEmpty())
+		if (!rootRowIds.isEmpty() && sqlViewBinding.hasGroupingFields())
 		{
 			retrieveRowLines(viewEvalCtx, viewId, DocumentIdsSelection.of(rootRowIds))
 					.forEach(line -> {
@@ -325,6 +291,7 @@ class SqlViewDataRepository implements IViewDataRepository
 
 		final ViewRow.Builder viewRowBuilder = ViewRow.builder(windowId);
 
+		final SqlViewKeyColumnNamesMap keyColumnNamesMap = sqlViewBinding.getSqlViewKeyColumnNamesMap();
 		final DocumentId parentRowId = keyColumnNamesMap.retrieveRowId(rs, SqlViewSelectData.COLUMNNAME_Paging_Parent_Prefix, false);
 		if (parentRowId != null)
 		{
@@ -344,14 +311,15 @@ class SqlViewDataRepository implements IViewDataRepository
 		}
 		viewRowBuilder.setRowId(rowId);
 
-		for (final Map.Entry<String, SqlViewRowFieldLoader> fieldNameAndLoader : rowFieldLoaders.entrySet())
+		for (SqlViewRowFieldBinding field : sqlViewBinding.getFields())
 		{
-			final String fieldName = fieldNameAndLoader.getKey();
-			final SqlViewRowFieldLoader fieldLoader = fieldNameAndLoader.getValue();
+			final String fieldName = field.getFieldName();
+			final SqlViewRowFieldLoader fieldLoader = field.getFieldLoader();
 			final Object value = fieldLoader.retrieveValue(rs, jsonOpts.getAdLanguage());
 			viewRowBuilder.putFieldValue(fieldName, value);
 		}
 
+		ViewRowCustomizer rowCustomizer = sqlViewBinding.getRowCustomizer();
 		if (rowCustomizer != null)
 		{
 			rowCustomizer.customizeViewRow(viewRowBuilder);
@@ -363,6 +331,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	@Nullable
 	private DocumentId retrieveRowId(final ResultSet rs, final JSONOptions jsonOpts) throws SQLException
 	{
+		final SqlViewKeyColumnNamesMap keyColumnNamesMap = sqlViewBinding.getSqlViewKeyColumnNamesMap();
 		if (keyColumnNamesMap.isSingleKey())
 		{
 			return retrieveRowId_SingleKey(rs, jsonOpts);
@@ -376,8 +345,9 @@ class SqlViewDataRepository implements IViewDataRepository
 	@Nullable
 	private DocumentId retrieveRowId_SingleKey(final ResultSet rs, final JSONOptions jsonOpts) throws SQLException
 	{
+		final SqlViewKeyColumnNamesMap keyColumnNamesMap = sqlViewBinding.getSqlViewKeyColumnNamesMap();
 		final String keyColumnName = keyColumnNamesMap.getSingleKeyColumnName();
-		final SqlViewRowFieldLoader fieldLoader = rowFieldLoaders.get(keyColumnName);
+		final SqlViewRowFieldLoader fieldLoader = sqlViewBinding.getFieldLoader(keyColumnName);
 		final Object rowIdObj = fieldLoader.retrieveValue(rs, jsonOpts.getAdLanguage());
 		return convertToRowId(rowIdObj);
 	}
@@ -422,14 +392,13 @@ class SqlViewDataRepository implements IViewDataRepository
 	@Nullable
 	private DocumentId retrieveRowId_MultiKey(final ResultSet rs, final String adLanguage) throws SQLException
 	{
+		final SqlViewKeyColumnNamesMap keyColumnNamesMap = sqlViewBinding.getSqlViewKeyColumnNamesMap();
 		final List<Object> rowIdParts = new ArrayList<>(keyColumnNamesMap.getKeyPartsCount());
 		boolean onlyNullValues = true;
 
 		for (final String keyColumnName : keyColumnNamesMap.getKeyColumnNames())
 		{
-			final SqlViewRowFieldLoader fieldLoader = rowFieldLoaders.get(keyColumnName);
-			// Check.assumeNotNull(fieldLoader, "fieldLoader shall exist for {}", keyColumnName);
-
+			final SqlViewRowFieldLoader fieldLoader = sqlViewBinding.getFieldLoader(keyColumnName);
 			final Object rowIdPartObj = fieldLoader.retrieveValue(rs, adLanguage);
 			if (JSONNullValue.isNull(rowIdPartObj))
 			{
@@ -475,10 +444,7 @@ class SqlViewDataRepository implements IViewDataRepository
 	}
 
 	@Override
-	public DocumentFilterDescriptorsProvider getViewFilterDescriptors()
-	{
-		return viewFilterDescriptors;
-	}
+	public DocumentFilterDescriptorsProvider getViewFilterDescriptors() {return sqlViewBinding.getViewFilterDescriptors();}
 
 	@Override
 	public List<IViewRow> retrievePage(final ViewEvaluationCtx viewEvalCtx,
@@ -490,7 +456,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		logger.debug("Using: {}", orderedSelection);
 
 		final ViewId viewId = orderedSelection.getViewId();
-		final SqlAndParams sqlAndParams = sqlViewSelect.selectByPage()
+		final SqlAndParams sqlAndParams = sqlViewBinding.getSqlViewSelect().selectByPage()
 				.viewEvalCtx(viewEvalCtx)
 				.viewId(viewId)
 				.firstRowZeroBased(firstRow)
@@ -521,15 +487,15 @@ class SqlViewDataRepository implements IViewDataRepository
 
 	@Override
 	public ImmutableList<DocumentId> retrieveRowIdsByPage(final ViewEvaluationCtx viewEvalCtx,
-												 final ViewRowIdsOrderedSelection orderedSelection,
-												 final int firstRow,
-												 final int pageLength)
+														  final ViewRowIdsOrderedSelection orderedSelection,
+														  final int firstRow,
+														  final int pageLength)
 	{
 		logger.debug("Getting page: firstRow={}, pageLength={} - {}", firstRow, pageLength, this);
 		logger.debug("Using: {}", orderedSelection);
 
 		final ViewId viewId = orderedSelection.getViewId();
-		final SqlAndParams sqlAndParams = sqlViewSelect.selectRowIdsByPage()
+		final SqlAndParams sqlAndParams = sqlViewBinding.getSqlViewSelect().selectRowIdsByPage()
 				.viewEvalCtx(viewEvalCtx)
 				.viewId(viewId)
 				.firstRowZeroBased(firstRow)
@@ -576,7 +542,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		logger.debug("Getting row lines: rowId={} - {}", rowIds, this);
 		logger.debug("Using: {}", viewId);
 
-		final SqlAndParams sqlAndParams = sqlViewSelect.selectIncludedLines()
+		final SqlAndParams sqlAndParams = sqlViewBinding.getSqlViewSelect().selectIncludedLines()
 				.viewEvalCtx(viewEvalCtx)
 				.viewId(viewId)
 				.rowIds(rowIds)
@@ -715,6 +681,8 @@ class SqlViewDataRepository implements IViewDataRepository
 			return ImmutableSet.of();
 		}
 
+		final SqlViewKeyColumnNamesMap keyColumnNamesMap = sqlViewBinding.getSqlViewKeyColumnNamesMap();
+
 		final SqlAndParams sql = SqlAndParams.builder()
 				.append("SELECT ").append(keyColumnNamesMap.getKeyColumnNamesCommaSeparated())
 				.append("\n FROM " + getTableName())
@@ -758,8 +726,8 @@ class SqlViewDataRepository implements IViewDataRepository
 			@NonNull final String fieldName,
 			final int limit)
 	{
-		final SqlViewRowFieldLoader fieldLoader = rowFieldLoaders.get(fieldName);
-		final SqlAndParams sql = sqlViewSelect.selectFieldValues(viewEvalCtx, selectionId, fieldName, limit);
+		final SqlViewRowFieldLoader fieldLoader = sqlViewBinding.getFieldLoader(fieldName);
+		final SqlAndParams sql = sqlViewBinding.getSqlViewSelect().selectFieldValues(viewEvalCtx, selectionId, fieldName, limit);
 
 		final String adLanguage = viewEvalCtx.getAdLanguage();
 		return DB.retrieveRows(
@@ -767,4 +735,6 @@ class SqlViewDataRepository implements IViewDataRepository
 				sql.getSqlParams(),
 				rs -> fieldLoader.retrieveValue(rs, adLanguage));
 	}
+
+	public boolean isQueryIfNoFilters() {return sqlViewBinding.isQueryIfNoFilters();}
 }

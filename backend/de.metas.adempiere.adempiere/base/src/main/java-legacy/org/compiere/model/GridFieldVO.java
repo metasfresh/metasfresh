@@ -33,6 +33,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import org.adempiere.ad.column.ColumnSql;
 import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -230,7 +231,7 @@ public class GridFieldVO implements Serializable
 				}
 				else if (columnName.equalsIgnoreCase(I_AD_Field.COLUMNNAME_IsDisplayedGrid))
 				{
-					vo.setIsDisplayedGrid("Y".equals(rs.getString(i)));
+					vo.setDisplayedGrid("Y".equals(rs.getString(i)));
 				}
 				else if (columnName.equalsIgnoreCase("DisplayLogic"))
 				{
@@ -361,10 +362,6 @@ public class GridFieldVO implements Serializable
 				{
 					vo.Included_Tab_ID = rs.getInt(i);
 				}
-				// else if (columnName.equalsIgnoreCase("InfoFactoryClass"))
-				// {
-				// 	vo.InfoFactoryClass = rs.getString(i);
-				// }
 				else if (columnName.equalsIgnoreCase("IsAutocomplete"))
 				{
 					vo.autocomplete = "Y".equals(rs.getString(i));
@@ -384,6 +381,10 @@ public class GridFieldVO implements Serializable
 				else if (columnName.equalsIgnoreCase(I_AD_Column.COLUMNNAME_IsUseDocSequence))
 				{
 					vo.useDocSequence = DisplayType.toBoolean(rs.getString(i));
+				}
+				else if(columnName.equalsIgnoreCase(I_AD_Field.COLUMNNAME_IsHideGridColumnIfEmpty))
+				{
+					vo.hideGridColumnIfEmpty = DisplayType.toBoolean(rs.getString(i));
 				}
 			}
 
@@ -490,7 +491,7 @@ public class GridFieldVO implements Serializable
 	 * @param rs       result set AD_Process_Para
 	 * @return MFieldVO
 	 */
-	public static GridFieldVO createParameter(final Properties ctx, final int WindowNo, final int tabNo, final ResultSet rs) throws SQLException
+	public static GridFieldVO createParameter(final Properties ctx, final int WindowNo, final int tabNo, final ResultSet rs)
 	{
 		final AdWindowId adWindowId = null;
 		final int adTabId = 0;
@@ -657,12 +658,17 @@ public class GridFieldVO implements Serializable
 		this.applyRolePermissions = applyRolePermissions;
 	}   // MFieldVO
 
-	static final long serialVersionUID = 4385061125114436797L;
+	private static final long serialVersionUID = 4385061125114436797L;
 
+	// setCtx
 	/**
 	 * Context
+	 * -- SETTER --
+	 *  Set Context including contained elements
+	 *
+
 	 */
-	private Properties ctx;
+	@Setter @Getter private Properties ctx;
 	/**
 	 * Window No
 	 */
@@ -670,7 +676,7 @@ public class GridFieldVO implements Serializable
 	/**
 	 * Tab No
 	 */
-	public final int TabNo;
+	@Getter public final int TabNo;
 	@Getter
 	private final AdWindowId adWindowId;
 	/**
@@ -691,7 +697,7 @@ public class GridFieldVO implements Serializable
 	/**
 	 * Column name
 	 */
-	private String ColumnName = "";
+	@Setter @Getter private String ColumnName = "";
 	/**
 	 * Column sql
 	 */
@@ -707,27 +713,27 @@ public class GridFieldVO implements Serializable
 	/**
 	 * Label
 	 */
-	private String header = "";
-	private Map<String, String> headerTrls = null; // lazy
+	@Getter private String header = "";
+	@Getter private Map<String, String> headerTrls = null; // lazy
 	/**
 	 * DisplayType
 	 */
-	private int displayType = 0;
+	@Getter private int displayType = 0;
 	/**
 	 * Table ID
 	 */
-	private int AD_Table_ID = 0;
+	@Getter private int AD_Table_ID = 0;
 	/**
 	 * Column ID
 	 */
-	private int AD_Column_ID = 0;
+	@Setter @Getter private int AD_Column_ID = 0;
 	/**
 	 * Field ID
 	 */
-	private AdFieldId AD_Field_ID = null; // metas
-	private GridFieldLayoutConstraints layoutConstraints = GridFieldLayoutConstraints.builder().build();
-	private int seqNo = 0;
-	private int seqNoGrid = 0;
+	@Getter private AdFieldId AD_Field_ID = null; // metas
+	@Getter private GridFieldLayoutConstraints layoutConstraints = GridFieldLayoutConstraints.builder().build();
+	@Getter private int seqNo = 0;
+	@Setter @Getter private int seqNoGrid = 0;
 	/**
 	 * Displayed
 	 */
@@ -735,7 +741,7 @@ public class GridFieldVO implements Serializable
 	/**
 	 * Displayed (grid mode)
 	 */
-	private boolean isDisplayedGrid = false;
+	@Setter private boolean isDisplayedGrid = false;
 	/**
 	 * Indicates that the field is hidden from UI
 	 *
@@ -755,7 +761,7 @@ public class GridFieldVO implements Serializable
 	/**
 	 * Default Value
 	 */
-	public String DefaultValue = "";
+	@Getter public String DefaultValue = "";
 	/**
 	 * Mandatory (in UI)
 	 */
@@ -767,11 +773,11 @@ public class GridFieldVO implements Serializable
 	/**
 	 * Read Only
 	 */
-	private boolean IsReadOnly = false;
+	@Setter private boolean IsReadOnly = false;
 	/**
 	 * Updateable
 	 */
-	private boolean IsUpdateable = false;
+	@Setter private boolean IsUpdateable = false;
 	/**
 	 * Always Updateable
 	 */
@@ -783,11 +789,11 @@ public class GridFieldVO implements Serializable
 	/**
 	 * Field Only
 	 */
-	private boolean IsFieldOnly = false;
+	@Setter private boolean IsFieldOnly = false;
 	/**
 	 * Display Encryption
 	 */
-	private boolean IsEncryptedField = false;
+	@Setter private boolean IsEncryptedField = false;
 	/**
 	 * Storage Encryption
 	 */
@@ -795,20 +801,20 @@ public class GridFieldVO implements Serializable
 	/**
 	 * Filtering info
 	 */
-	private GridFieldDefaultFilterDescriptor defaultFilterDescriptor;
+	@Getter private GridFieldDefaultFilterDescriptor defaultFilterDescriptor;
 	/**
 	 * Order By
 	 */
-	public int SortNo = 0;
+	@Getter public int SortNo = 0;
 	/**
 	 * Field Length
 	 */
-	private int fieldLength = 0;
+	@Getter private int fieldLength = 0;
 	/**
 	 * Format enforcement
 	 */
 	public String VFormat = "";
-	private String formatPattern = "";
+	@Getter private String formatPattern = "";
 	/**
 	 * Min. Value
 	 */
@@ -820,7 +826,7 @@ public class GridFieldVO implements Serializable
 	/**
 	 * Field Group
 	 */
-	private FieldGroupVO fieldGroup = FieldGroupVO.NULL;
+	@Getter private FieldGroupVO fieldGroup = FieldGroupVO.NULL;
 	/**
 	 * PK
 	 */
@@ -836,12 +842,12 @@ public class GridFieldVO implements Serializable
 	/**
 	 * Description
 	 */
-	private String description = "";
-	private Map<String, String> descriptionTrls = null; // lazy
+	@Getter private String description = "";
+	@Getter private Map<String, String> descriptionTrls = null; // lazy
 	/**
 	 * Help
 	 */
-	private String help = "";
+	@Getter private String help = "";
 	private Map<String, String> helpTrls = null; // lazy
 	/**
 	 * Mandatory Logic
@@ -863,7 +869,7 @@ public class GridFieldVO implements Serializable
 	public int IncludedTabHeight = 0; // metas
 
 	private ReferenceId AD_Reference_Value_ID = null;
-	private AdValRuleId AD_Val_Rule_ID = null;
+	@Getter private AdValRuleId AD_Val_Rule_ID = null;
 
 	/**
 	 * Process Parameter Range
@@ -880,34 +886,31 @@ public class GridFieldVO implements Serializable
 	private MLookupInfo lookupInfo = null;
 
 	// * Feature Request FR [ 1757088 ]
-	public int Included_Tab_ID = 0;
+	@Getter public int Included_Tab_ID = 0;
 
 	/**
 	 * Autocompletion for textfields - Feature Request FR [ 1757088 ]
 	 */
-	private boolean autocomplete = false;
+	@Setter @Getter private boolean autocomplete = false;
 
 	public boolean IsCalculated = false; // metas
 
 	private String fieldEntityType = null;
 
-	private boolean useDocSequence = false;
+	/**
+	 * -- GETTER --
+	 *
+	 *
+	 */
+	@Getter private boolean useDocSequence = false;
 
 	private final boolean applyRolePermissions;
 
-	private int AD_Sequence_ID = 0;
+	@Getter private int AD_Sequence_ID = 0;
 
-	private boolean forbidNewRecordCreation = false;
-
-	/**
-	 * Set Context including contained elements
-	 *
-	 * @param newCtx new context
-	 */
-	public void setCtx(final Properties newCtx)
-	{
-		ctx = newCtx;
-	}   // setCtx
+	@Getter private boolean forbidNewRecordCreation = false;
+	
+	@Getter private boolean hideGridColumnIfEmpty = false;
 
 	/**
 	 * Validate Fields and create LookupInfo if required
@@ -1103,6 +1106,7 @@ public class GridFieldVO implements Serializable
 
 		clone.AD_Sequence_ID = AD_Sequence_ID;
 		clone.forbidNewRecordCreation = forbidNewRecordCreation;
+		clone.hideGridColumnIfEmpty = hideGridColumnIfEmpty;
 
 		return clone;
 	}    // clone
@@ -1124,16 +1128,6 @@ public class GridFieldVO implements Serializable
 	public boolean isParentLink()
 	{
 		return IsParent;
-	}
-
-	public int getTabNo()
-	{
-		return TabNo;
-	}
-
-	public int getDisplayType()
-	{
-		return this.displayType;
 	}
 
 	// NOTE: not setting to package level because we call it from zkwebui
@@ -1210,16 +1204,6 @@ public class GridFieldVO implements Serializable
 		return this.IsDisplayed;
 	}
 
-	public boolean isAutocomplete()
-	{
-		return autocomplete;
-	}
-
-	public void setAutocomplete(final boolean autocomplete)
-	{
-		this.autocomplete = autocomplete;
-	}
-
 	public boolean isDisplayed(final GridTabLayoutMode tabLayoutMode)
 	{
 		if (tabLayoutMode == GridTabLayoutMode.SingleRowLayout)
@@ -1247,16 +1231,6 @@ public class GridFieldVO implements Serializable
 		this.lookupInfo = null; // reset lookup info
 	}
 
-	public void setColumnName(final String columnName)
-	{
-		this.ColumnName = columnName;
-	}
-
-	public String getColumnName()
-	{
-		return this.ColumnName;
-	}
-
 	private boolean lookupLoadFromColumn = false;
 
 	public void setLookupLoadFromColumn(final boolean lookupLoadFromColumn)
@@ -1269,64 +1243,14 @@ public class GridFieldVO implements Serializable
 		this.lookupInfo = null; // reset
 	}
 
-	public int getAD_Table_ID()
-	{
-		return this.AD_Table_ID;
-	}
-
-	public Properties getCtx()
-	{
-		return ctx;
-	}
-
-	public int getAD_Column_ID()
-	{
-		return AD_Column_ID;
-	}
-
-	public void setAD_Column_ID(final int AD_Column_ID)
-	{
-		this.AD_Column_ID = AD_Column_ID;
-	}
-
-	public int getSeqNo()
-	{
-		return seqNo;
-	}
-
 	private void setSeqNo(final int seqNo)
 	{
 		this.seqNo = seqNo;
 	}
 
-	public int getSeqNoGrid()
-	{
-		return seqNoGrid;
-	}
-
-	public void setSeqNoGrid(final int seqNoGrid)
-	{
-		this.seqNoGrid = seqNoGrid;
-	}
-
 	public boolean isDisplayedGrid()
 	{
 		return isDisplayedGrid;
-	}
-
-	public void setIsDisplayedGrid(final boolean isDisplayedGrid)
-	{
-		this.isDisplayedGrid = isDisplayedGrid;
-	}
-
-	public GridFieldLayoutConstraints getLayoutConstraints()
-	{
-		return layoutConstraints;
-	}
-
-	public AdFieldId getAD_Field_ID()
-	{
-		return AD_Field_ID;
 	}
 
 	public boolean isProcessParameter()
@@ -1350,21 +1274,6 @@ public class GridFieldVO implements Serializable
 	public boolean isCalculated()
 	{
 		return IsCalculated;
-	}
-
-	public boolean isForbidNewRecordCreation()
-	{
-		return forbidNewRecordCreation;
-	}
-
-	public FieldGroupVO getFieldGroup()
-	{
-		return fieldGroup;
-	}
-
-	public void setIsFieldOnly(final boolean isFieldOnly)
-	{
-		this.IsFieldOnly = isFieldOnly;
 	}
 
 	public boolean isFieldOnly()
@@ -1391,11 +1300,6 @@ public class GridFieldVO implements Serializable
 		return this.isHiddenFromUI;
 	}
 
-	public String getFormatPattern()
-	{
-		return formatPattern;
-	}
-
 	/**
 	 * @return true if it's mandatory in UI
 	 */
@@ -1415,16 +1319,6 @@ public class GridFieldVO implements Serializable
 	public boolean isMandatoryDB()
 	{
 		return IsMandatoryDB;
-	}
-
-	public String getHeader()
-	{
-		return header;
-	}
-
-	public Map<String, String> getHeaderTrls()
-	{
-		return headerTrls;
 	}
 
 	public void setHeader(final String header)
@@ -1448,16 +1342,6 @@ public class GridFieldVO implements Serializable
 		headerTrls.put(adLanguage, headerTrl);
 	}
 
-	public String getDescription()
-	{
-		return description;
-	}
-
-	public Map<String, String> getDescriptionTrls()
-	{
-		return descriptionTrls;
-	}
-
 	public void setDescription(final String description)
 	{
 		this.description = description;
@@ -1477,11 +1361,6 @@ public class GridFieldVO implements Serializable
 			descriptionTrls = new HashMap<>();
 		}
 		descriptionTrls.put(adLanguage, descriptionTrl);
-	}
-
-	public String getHelp()
-	{
-		return help;
 	}
 
 	public void setHelp(final String help)
@@ -1505,11 +1384,6 @@ public class GridFieldVO implements Serializable
 		return AD_Reference_Value_ID;
 	}
 
-	public AdValRuleId getAD_Val_Rule_ID()
-	{
-		return AD_Val_Rule_ID;
-	}
-
 	/**
 	 * Get Column Name or SQL .. with/without AS
 	 *
@@ -1524,7 +1398,7 @@ public class GridFieldVO implements Serializable
 			return "NULL";
 		}
 		// metas end
-		if (ColumnSQL != null && ColumnSQL.length() > 0)
+		if (ColumnSQL != null && !ColumnSQL.isEmpty())
 		{
 			if (withAS)
 			{
@@ -1550,23 +1424,13 @@ public class GridFieldVO implements Serializable
 	 */
 	public boolean isVirtualColumn()
 	{
-		return (ColumnSQL != null && ColumnSQL.length() > 0)
-				|| (ColumnClass != null && !"".equals(ColumnClass));
+		return (ColumnSQL != null && !ColumnSQL.isEmpty())
+				|| (ColumnClass != null && !ColumnClass.isEmpty());
 	}    // isColumnVirtual
-
-	public int getIncluded_Tab_ID()
-	{
-		return Included_Tab_ID;
-	}
 
 	public boolean isReadOnly()
 	{
 		return IsReadOnly;
-	}
-
-	public void setIsReadOnly(final boolean readonly)
-	{
-		this.IsReadOnly = readonly;
 	}
 
 	public boolean isUpdateable()
@@ -1574,19 +1438,9 @@ public class GridFieldVO implements Serializable
 		return IsUpdateable;
 	}
 
-	public void setIsUpdateable(final boolean updateable)
-	{
-		IsUpdateable = updateable;
-	}
-
 	public boolean isAlwaysUpdateable()
 	{
 		return IsAlwaysUpdateable;
-	}
-
-	public String getDefaultValue()
-	{
-		return DefaultValue;
 	}
 
 	public boolean isKey()
@@ -1599,29 +1453,9 @@ public class GridFieldVO implements Serializable
 		return IsEncryptedField;
 	}
 
-	public void setIsEncryptedField(final boolean isEncryptedField)
-	{
-		this.IsEncryptedField = isEncryptedField;
-	}
-
 	public boolean isEncryptedColumn()
 	{
 		return IsEncryptedColumn;
-	}
-
-	public int getFieldLength()
-	{
-		return fieldLength;
-	}
-
-	public int getSortNo()
-	{
-		return SortNo;
-	}
-
-	public GridFieldDefaultFilterDescriptor getDefaultFilterDescriptor()
-	{
-		return defaultFilterDescriptor;
 	}
 
 	public boolean isSelectionColumn()
@@ -1629,17 +1463,4 @@ public class GridFieldVO implements Serializable
 		return defaultFilterDescriptor != null;
 	}
 
-	/**
-	 * @return true if system shall auto generate a preliminary sequence value for this field
-	 * @implSpec task <a href="https://github.com/metasfresh/metasfresh/issues/2303">2303</a>
-	 */
-	public boolean isUseDocSequence()
-	{
-		return useDocSequence;
-	}
-
-	public int getAD_Sequence_ID()
-	{
-		return AD_Sequence_ID;
-	}
 }
