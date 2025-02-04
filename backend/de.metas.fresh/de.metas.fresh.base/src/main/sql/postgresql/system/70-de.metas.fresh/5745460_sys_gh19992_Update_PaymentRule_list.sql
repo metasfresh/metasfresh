@@ -42,3 +42,8 @@ UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Settlement',Updated=TO_TIMEST
 UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Compensation',Updated=TO_TIMESTAMP('2025-02-03 11:57:41.632','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='fr_CH' AND AD_Ref_List_ID=543788
 ;
 
+-- Column: C_Invoice.PaymentRule
+-- 2025-02-04T09:01:38.208Z
+UPDATE AD_Column SET AD_Reference_ID=17, IsExcludeFromZoomTargets='Y',Updated=TO_TIMESTAMP('2025-02-04 10:01:38.207','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=4020
+;
+
