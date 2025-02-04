@@ -100,6 +100,8 @@ public interface IViewRow
 		return getFieldNameAndJsonValues().getAsComparable(fieldName, jsonOpts);
 	}
 
+	default boolean isFieldEmpty(@NonNull final String fieldName) {return getFieldNameAndJsonValues().isEmpty(fieldName);}
+
 	default Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
 	{
 		return ImmutableMap.of();

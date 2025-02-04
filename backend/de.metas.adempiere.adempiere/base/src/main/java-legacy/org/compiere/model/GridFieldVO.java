@@ -382,9 +382,10 @@ public class GridFieldVO implements Serializable
 				{
 					vo.useDocSequence = DisplayType.toBoolean(rs.getString(i));
 				}
-				
-				// FIXME: introduce DB column
-				vo.hideGridColumnIfEmpty = true;
+				else if(columnName.equalsIgnoreCase(I_AD_Field.COLUMNNAME_IsHideGridColumnIfEmpty))
+				{
+					vo.hideGridColumnIfEmpty = DisplayType.toBoolean(rs.getString(i));
+				}
 			}
 
 			//

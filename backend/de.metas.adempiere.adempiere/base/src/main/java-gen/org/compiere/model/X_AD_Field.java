@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -360763912L;
+	private static final long serialVersionUID = 1867521920L;
 
     /** Standard Constructor */
     public X_AD_Field (final Properties ctx, final int AD_Field_ID, @Nullable final String trxName)
@@ -438,6 +438,27 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 		return get_ValueAsString(COLUMNNAME_InfoFactoryClass);
 	}
 
+	/** 
+	 * IsAlwaysUpdateable AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISALWAYSUPDATEABLE_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISALWAYSUPDATEABLE_Yes = "Y";
+	/** No = N */
+	public static final String ISALWAYSUPDATEABLE_No = "N";
+	@Override
+	public void setIsAlwaysUpdateable (final @Nullable java.lang.String IsAlwaysUpdateable)
+	{
+		set_Value (COLUMNNAME_IsAlwaysUpdateable, IsAlwaysUpdateable);
+	}
+
+	@Override
+	public java.lang.String getIsAlwaysUpdateable() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsAlwaysUpdateable);
+	}
+
 	@Override
 	public void setIsDisplayed (final boolean IsDisplayed)
 	{
@@ -559,6 +580,18 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	public boolean isHeading() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsHeading);
+	}
+
+	@Override
+	public void setIsHideGridColumnIfEmpty (final boolean IsHideGridColumnIfEmpty)
+	{
+		set_Value (COLUMNNAME_IsHideGridColumnIfEmpty, IsHideGridColumnIfEmpty);
+	}
+
+	@Override
+	public boolean isHideGridColumnIfEmpty() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsHideGridColumnIfEmpty);
 	}
 
 	/** 
