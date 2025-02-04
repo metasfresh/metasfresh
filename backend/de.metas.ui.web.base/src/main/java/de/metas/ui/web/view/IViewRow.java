@@ -71,7 +71,6 @@ public interface IViewRow
 
 	/**
 	 * @return a map with an entry for each of this row's fields.<br>
-	 * Where the row has <code>null</code> values, the respective entry's value is {@link #NULL_JSON_VALUE}.
 	 */
 	ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues();
 
@@ -85,6 +84,7 @@ public interface IViewRow
 		return getFieldNameAndJsonValues().getAsInt(fieldName, defaultValueIfNotFoundOrError);
 	}
 
+	@SuppressWarnings("unused")
 	default boolean getFieldValueAsBoolean(@NonNull final String fieldName, final boolean defaultValueIfNotFoundOrError)
 	{
 		return getFieldNameAndJsonValues().getAsBoolean(fieldName, defaultValueIfNotFoundOrError);
@@ -147,7 +147,7 @@ public interface IViewRow
 	{
 		return this.getIncludedRows()
 				.stream()
-				.map(includedRow -> includedRow.streamRecursive())
+				.map(IViewRow::streamRecursive)
 				.reduce(Stream.of(this), Stream::concat);
 	}
 }
