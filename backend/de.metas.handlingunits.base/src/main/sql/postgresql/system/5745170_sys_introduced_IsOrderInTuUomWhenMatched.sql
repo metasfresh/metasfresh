@@ -12,7 +12,7 @@ UPDATE AD_Element_Trl SET Name='Sales orders in Coli', PrintName='Sales orders i
 ;
 
 -- 2025-01-29T14:04:04.083Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583460,'en_US') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583460,'en_US')
 ;
 
 -- Element: IsOrderInTuUomWhenMatched
@@ -21,7 +21,7 @@ UPDATE AD_Element_Trl SET Description='If true, orders referencing this packing 
 ;
 
 -- 2025-01-29T14:08:48.117Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583460,'en_US') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583460,'en_US')
 ;
 
 -- Column: M_HU_PI_Item_Product.IsOrderInTuUomWhenMatched
@@ -35,7 +35,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- 2025-01-29T14:09:21.040Z
-/* DDL */  select update_Column_Translation_From_AD_Element(583460) 
+/* DDL */  select update_Column_Translation_From_AD_Element(583460)
 ;
 
 -- Field: Produkt -> Packvorschrift Nachweis -> Aufräge in Kollo
@@ -51,7 +51,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 ;
 
 -- 2025-01-29T14:14:22.468Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583460) 
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583460)
 ;
 
 -- 2025-01-29T14:14:22.479Z
