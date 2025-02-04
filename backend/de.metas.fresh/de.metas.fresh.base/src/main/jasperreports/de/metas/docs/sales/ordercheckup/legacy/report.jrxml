@@ -18,7 +18,7 @@
 	<parameter name="AD_Table_ID" class="java.lang.Integer">
 		<defaultValueExpression><![CDATA[new Integer(0)]]></defaultValueExpression>
 	</parameter>
-	<parameter name="RECORD_ID_ADJUSTED" class="java.lang.Integer">
+	<parameter name="RECORD_ID_ADJUSTED" class="java.lang.Integer" isForPrompting="false">
 		<parameterDescription><![CDATA[Consider the RECORD_ID param only when the report is called from C_Order table]]></parameterDescription>
 		<defaultValueExpression><![CDATA[$P{AD_Table_ID} == 259 ? $P{RECORD_ID} : null]]></defaultValueExpression>
 	</parameter>
