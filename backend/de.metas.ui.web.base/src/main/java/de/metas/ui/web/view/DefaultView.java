@@ -852,8 +852,8 @@ public final class DefaultView implements IEditableView
 	public static final class Builder
 	{
 		private ViewId viewId;
-		private JSONViewDataType viewType;
-		private ViewProfileId profileId;
+		@Getter private JSONViewDataType viewType;
+		@Getter private ViewProfileId profileId;
 		private ViewHeaderPropertiesProvider headerPropertiesProvider;
 		private Set<DocumentPath> referencingDocumentPaths;
 		private WebuiDocumentReferenceId documentReferenceId;

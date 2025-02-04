@@ -206,7 +206,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 
 		// Built values
 		@Nullable private SqlSelectDisplayValue _sqlSelectDisplayValue;
-		@Nullable private Boolean _numericKey;
+		@NonNull private OptionalBoolean _numericKey = OptionalBoolean.UNKNOWN;
 		private DocumentFieldValueLoader _documentFieldValueLoader;
 
 		private Builder()
@@ -222,12 +222,12 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 					&& sqlColumnName != null // in case of Labels, sqlColumnName is null
 					&& _lookupDescriptor instanceof ISqlLookupDescriptor)
 			{
-				_numericKey = _lookupDescriptor.isNumericKey();
+				_numericKey = OptionalBoolean.ofBoolean(_lookupDescriptor.isNumericKey());
 				_sqlSelectDisplayValue = buildSqlSelectDisplayValue();
 			}
 			else
 			{
-				_numericKey = null;
+				_numericKey = OptionalBoolean.UNKNOWN;
 				_sqlSelectDisplayValue = null;
 			}
 
@@ -315,11 +315,11 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 				final Class<?> valueClass,
 				final OptionalInt minPrecision,
 				final boolean encrypted,
-				final Boolean numericKey)
+				@NonNull final OptionalBoolean numericKey)
 		{
 			if (!Check.isEmpty(sqlDisplayColumnName))
 			{
-				return DocumentFieldValueLoaders.toLookupValue(sqlColumnName, sqlDisplayColumnName, /* descriptionColumnName, */ numericKey);
+				return DocumentFieldValueLoaders.toLookupValue(sqlColumnName, sqlDisplayColumnName, /* descriptionColumnName, */ numericKey.isTrue());
 			}
 			else if (java.lang.String.class == valueClass)
 			{
@@ -506,8 +506,7 @@ public class SqlDocumentFieldDataBindingDescriptor implements DocumentFieldDataB
 			return this;
 		}
 
-		@Nullable
-		public Boolean getNumericKey()
+		public OptionalBoolean getNumericKey()
 		{
 			return _numericKey;
 		}
