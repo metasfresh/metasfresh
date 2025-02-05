@@ -26,6 +26,7 @@ import de.metas.util.Check;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -68,7 +69,7 @@ public enum ResourcePlanningPrecision
 			case MINUTE:
 				return TimeUtil.trunc(initialDate, TRUNC_MINUTE);
 			default:
-				return initialDate;
+				throw new AdempiereException("Unknown " + ResourcePlanningPrecision.class + ": " + this);
 		}
 	}
 }
