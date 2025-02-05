@@ -176,7 +176,7 @@ export function createTableData(rawData) {
 
     // immer freezes objects to make them immutable, so we have to make a deep copy
     // of entries as otherwise we're just passing references to frozen objects
-    columns: rawData.elements ? cloneDeep(rawData.elements) : undefined,
+    columns: createTableData_Columns(rawData),
     rows: rawData.result ? cloneDeep(rawData.result) : undefined,
     orderBys: rawData.orderBys,
     defaultOrderBys: rawData.defaultOrderBys
@@ -200,6 +200,29 @@ export function createTableData(rawData) {
     {}
   );
 }
+
+const createTableData_Columns = (rawData) => {
+  if (!rawData.elements) return undefined;
+
+  const columnCustomizationByFieldName = rawData?.columnsByFieldName ?? {};
+
+  return rawData.elements.map((element) => {
+    const elementCopy = cloneDeep(element);
+    if (elementCopy.fields?.length > 0) {
+      const hidden = elementCopy.fields.every((field) => {
+        const fieldName = field.field;
+        const columnCustomization = columnCustomizationByFieldName[fieldName];
+        return !!columnCustomization?.hidden;
+      });
+
+      if (hidden) {
+        elementCopy.hidden = true;
+      }
+    }
+
+    return elementCopy;
+  });
+};
 
 // THUNK ACTION CREATORS
 

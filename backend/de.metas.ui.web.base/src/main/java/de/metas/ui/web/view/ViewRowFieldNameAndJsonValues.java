@@ -160,4 +160,10 @@ public final class ViewRowFieldNameAndJsonValues
 		final Object valueObj = map.get(fieldName);
 		return StringUtils.toBoolean(valueObj, defaultValueIfNotFoundOrError);
 	}
+
+	public boolean isEmpty(@NonNull final String fieldName)
+	{
+		final Object valueObj = map.get(fieldName);
+		return valueObj == null || JSONNullValue.isNull(valueObj) || valueObj.toString().isEmpty();
+	}
 }

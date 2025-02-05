@@ -19,6 +19,7 @@ SELECT c_trl.ad_language
      , COALESCE(f_trl.help, f.help, t.help)                       AS help
      , f.isdisplayed
      , f.isdisplayedgrid
+     , f.IsHideGridColumnIfEmpty
      , f.displaylogic
      , COALESCE(f.displaylength, 0::numeric)                      AS displaylength
      , f.columndisplaylength
@@ -80,7 +81,7 @@ SELECT c_trl.ad_language
      , (CASE WHEN f.IsFilterField = 'Y' AND f.FilterOperator IS NOT NULL THEN f.FilterOperator ELSE c.FilterOperator END)                         AS FilterOperator
      , c.IsShowFilterIncrementButtons
      , (CASE WHEN f.IsFilterField = 'Y' AND f.IsShowFilterInline IS NOT NULL THEN f.IsShowFilterInline ELSE c.IsShowFilterInline END)             AS IsShowFilterInline
-     , (CASE WHEN f.IsFilterField = 'Y' AND IsOverrideFilterDefaultValue = 'Y' THEN f.FilterDefaultValue ELSE c.FilterDefaultValue END)           AS FilterDefaultValue
+     , (CASE WHEN f.IsFilterField = 'Y' AND f.IsOverrideFilterDefaultValue = 'Y' THEN f.FilterDefaultValue ELSE c.FilterDefaultValue END)           AS FilterDefaultValue
      , (CASE WHEN f.IsFacetFilter = 'Y' THEN f.IsFacetFilter ELSE c.IsFacetFilter END)                                                            AS IsFacetFilter
      , (CASE WHEN f.IsFacetFilter = 'Y' AND COALESCE(f.FacetFilterSeqNo, 0) != 0 THEN f.FacetFilterSeqNo ELSE c.FacetFilterSeqNo END)             AS FacetFilterSeqNo
      , (CASE WHEN f.IsFacetFilter = 'Y' AND COALESCE(f.MaxFacetsToFetch, 0) != 0 THEN f.MaxFacetsToFetch ELSE c.MaxFacetsToFetch END)             AS MaxFacetsToFetch

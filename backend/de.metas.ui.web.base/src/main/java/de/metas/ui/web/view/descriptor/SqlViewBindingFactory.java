@@ -211,6 +211,7 @@ public class SqlViewBindingFactory
 				.widgetType(documentField.getWidgetType())
 				.virtualColumn(documentField.isVirtualColumn())
 				.mandatory(documentField.isMandatory())
+				.hideGridColumnIfEmpty(documentField.isHideGridColumnIfEmpty())
 				//
 				.sqlValueClass(documentField.getSqlValueClass())
 				.sqlSelectValue(documentField.getSqlSelectValue())

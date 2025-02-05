@@ -349,6 +349,10 @@ export function handleOpenNewTab({ windowId, rowIds }) {
 }
 
 export function shouldRenderColumn(column) {
+  return !column.hidden && shouldRenderColumn_checkMediaType(column);
+}
+
+function shouldRenderColumn_checkMediaType(column) {
   if (
     !column.restrictToMediaTypes ||
     column.restrictToMediaTypes.length === 0

@@ -101,7 +101,7 @@ public final class FindPanelSearchField implements IUserQueryField
 
 		// Make sure the field is flagged as displayed. Else, the lookup will not be loaded.
 		vo.setIsDisplayed(true);
-		vo.setIsDisplayedGrid(true);
+		vo.setDisplayedGrid(true);
 
 		// Make sure the field is NOT marked as label only or field only because it might be that the editor or label won't be created
 		vo.setIsHeadingOnly(false);
