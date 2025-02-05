@@ -39,9 +39,9 @@ INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLe
 
 
 -- SysConfig Name: PP_Order_Candidate_SetStartDate.rowsLimit
--- SysConfig Value: 1000
+-- SysConfig Value: 2000
 -- 2025-02-05T14:52:11.650Z
-INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541751,'S',TO_TIMESTAMP('2025-02-05 14:52:11.450000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','PP_Order_Candidate_SetStartDate.rowsLimit',TO_TIMESTAMP('2025-02-05 14:52:11.450000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'1000')
+INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541751,'S',TO_TIMESTAMP('2025-02-05 14:52:11.450000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','PP_Order_Candidate_SetStartDate.rowsLimit',TO_TIMESTAMP('2025-02-05 14:52:11.450000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'2000')
 ;
 
 -- Process: PP_Order_Candidate_SetStartDate(de.metas.manufacturing.webui.process.PP_Order_Candidate_SetStartDate)

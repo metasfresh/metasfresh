@@ -51,7 +51,7 @@ public class PP_Order_Candidate_SetStartDate extends ViewBasedProcessTemplate im
 	@Param(parameterName = PARAM_DateStart, mandatory = true)
 	private Timestamp p_DateStart;
 
-	private final int rowsLimit = sysConfigBL.getPositiveIntValue("PP_Order_Candidate_SetStartDate.rowsLimit", 1000);
+	private final int rowsLimit = sysConfigBL.getPositiveIntValue("PP_Order_Candidate_SetStartDate.rowsLimit", 2000);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
