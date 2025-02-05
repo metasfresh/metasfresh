@@ -32,9 +32,9 @@ INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,A
 -- Run mode: SWING_CLIENT
 
 -- SysConfig Name: resource.PlanningPrecision
--- SysConfig Value: m
+-- SysConfig Value: M
 -- 2025-02-05T12:34:56.984Z
-INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541750,'S',TO_TIMESTAMP('2025-02-05 12:34:56.786000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','resource.PlanningPrecision',TO_TIMESTAMP('2025-02-05 12:34:56.786000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'m')
+INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541750,'S',TO_TIMESTAMP('2025-02-05 12:34:56.786000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','resource.PlanningPrecision',TO_TIMESTAMP('2025-02-05 12:34:56.786000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'M')
 ;
 
 

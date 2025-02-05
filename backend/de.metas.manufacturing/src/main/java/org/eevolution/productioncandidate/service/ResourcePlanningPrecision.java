@@ -32,11 +32,14 @@ import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.Arrays;
 
+import static org.compiere.util.TimeUtil.TRUNC_15M;
+import static org.compiere.util.TimeUtil.TRUNC_MINUTE;
+
 @AllArgsConstructor
 public enum ResourcePlanningPrecision
 {
-	MINUTE("m"),
-	QUARTER("15m");
+	MINUTE("M"),
+	MINUTE_15("15M");
 
 	@Getter
 	private final String code;
@@ -54,16 +57,16 @@ public enum ResourcePlanningPrecision
 				.findFirst()
 				.orElse(MINUTE);
 	}
-	
+
 	@NonNull
 	public Timestamp roundDown(@NonNull final Timestamp initialDate)
 	{
 		switch (this)
 		{
-			case QUARTER:
-				return TimeUtil.roundDownToNearestQuarter(initialDate);
+			case MINUTE_15:
+				return TimeUtil.trunc(initialDate, TRUNC_15M);
 			case MINUTE:
-				return TimeUtil.roundDownToNearestMinute(initialDate);
+				return TimeUtil.trunc(initialDate, TRUNC_MINUTE);
 			default:
 				return initialDate;
 		}
