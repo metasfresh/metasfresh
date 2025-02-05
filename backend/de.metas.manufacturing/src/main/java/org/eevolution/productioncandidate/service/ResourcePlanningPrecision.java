@@ -22,7 +22,7 @@
 
 package org.eevolution.productioncandidate.service;
 
-import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
@@ -31,7 +31,6 @@ import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
-import java.util.Arrays;
 
 import static org.compiere.util.TimeUtil.TRUNC_15M;
 import static org.compiere.util.TimeUtil.TRUNC_MINUTE;
@@ -48,15 +47,19 @@ public enum ResourcePlanningPrecision
 	@NonNull
 	public static ResourcePlanningPrecision ofCodeOrMinute(@Nullable final String code)
 	{
-		if (Check.isBlank(code))
+		final String codeNorm = StringUtils.trimBlankToNull(code);
+		if (codeNorm == null)
 		{
 			return MINUTE;
 		}
-
-		return Arrays.stream(values())
-				.filter(precision -> precision.getCode().equals(code))
-				.findFirst()
-				.orElse(MINUTE);
+		else if (codeNorm.equals(MINUTE_15.getCode()))
+		{
+			return MINUTE_15;
+		}
+		else
+		{
+			throw new AdempiereException("Unknown " + ResourcePlanningPrecision.class + " code: " + codeNorm);
+		}
 	}
 
 	@NonNull
