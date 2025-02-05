@@ -21,7 +21,7 @@
         <smooks-cartridge.version>2.0.0-M3</smooks-cartridge.version>
         <jackson.version>2.13.1</jackson.version>
         <lombok.version>1.18.22</lombok.version>
-        <org.apache.poi.version>3.15</org.apache.poi.version>
+        <org.apache.poi.version>4.1.2</org.apache.poi.version>
         <jaxb.packageName>de.metas.edi.esb.jaxb.metasfresh</jaxb.packageName>
         <jaxb.orders.packageName>de.metas.edi.esb.jaxb.stepcom.orders</jaxb.orders.packageName>
         <jaxb.invoic.packageName>de.metas.edi.esb.jaxb.stepcom.invoic</jaxb.invoic.packageName>

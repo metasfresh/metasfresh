@@ -1,17 +1,17 @@
 package de.metas.report.xls.engine;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.commons.jexl2.JexlEngine;
+import de.metas.logging.LogManager;
+import org.apache.commons.jexl3.JexlBuilder;
+import org.apache.commons.jexl3.JexlEngine;
 import org.compiere.util.TimeUtil;
 import org.jxls.expression.ExpressionEvaluator;
 import org.jxls.expression.JexlExpressionEvaluator;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /*
  * #%L
@@ -51,29 +51,20 @@ public class JexlCustomFunctions
 {
 	private static final Logger logger = LogManager.getLogger(JexlCustomFunctions.class);
 
-	public static final void registerIfNeeded(final ExpressionEvaluator expressionEvaluator)
+	public static void register(final ExpressionEvaluator expressionEvaluator)
 	{
 		if (expressionEvaluator instanceof JexlExpressionEvaluator)
 		{
 			final JexlExpressionEvaluator jexlExpressionEvaluator = (JexlExpressionEvaluator)expressionEvaluator;
-			final JexlEngine jexlEngine = jexlExpressionEvaluator.getJexlEngine();
 
-			final Map<String, Object> existingFunctions = jexlEngine.getFunctions();
-			if (existingFunctions != null && existingFunctions.get(NAMESPACE) instanceof JexlCustomFunctions)
-			{
-				// already registered
-				return;
-			}
-
-			final Map<String, Object> functions = new HashMap<>();
-			if (existingFunctions != null && !existingFunctions.isEmpty())
-			{
-				functions.putAll(existingFunctions);
-			}
+			final Map<String, Object> namespaces = new HashMap<>();
 
 			final JexlCustomFunctions functionsInstance = new JexlCustomFunctions();
-			functions.put(NAMESPACE, functionsInstance);
-			jexlEngine.setFunctions(functions);
+			namespaces.put(NAMESPACE, functionsInstance);
+
+			final JexlEngine jexlEngine = new JexlBuilder().namespaces(namespaces).create();
+
+			jexlExpressionEvaluator.setJexlEngine(jexlEngine);
 
 			logger.debug("Registered {} to namespace {}", functionsInstance, NAMESPACE);
 		}
