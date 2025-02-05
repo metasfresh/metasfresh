@@ -214,15 +214,16 @@ public class POTrlRepository
 		final String keyColumnName = trlInfo.getKeyColumnName();
 		final int keyColumnValue = baseRecord.get_ID();
 		final ClientId clientId = ClientId.ofRepoId(baseRecord.getAD_Client_ID());
+		final String sqlBaseLanguage = "getBaseLanguage()"; // IMPORTANT: don't use Language.getBaseAD_Language() because this script will be logged and will be run on an intance where we might have a different base language 
 		final String sqlWhereClause;
 		if (isMasterdataTable(clientId, tableName))
 		{
-			sqlWhereClause = "(IsTranslated='N' OR AD_Language=" + DB.TO_STRING(Language.getBaseAD_Language()) + ")";
+			sqlWhereClause = "(IsTranslated='N' OR AD_Language=" + sqlBaseLanguage + ")";
 		}
 		else
 		{
 			// Application dictionary tables
-			sqlWhereClause = "AD_Language=" + DB.TO_STRING(Language.getBaseAD_Language());
+			sqlWhereClause = "AD_Language=" + sqlBaseLanguage;
 		}
 
 		//
