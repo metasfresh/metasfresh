@@ -48,7 +48,7 @@ public enum ResourcePlanningPrecision
 	public static ResourcePlanningPrecision ofCodeOrMinute(@Nullable final String code)
 	{
 		final String codeNorm = StringUtils.trimBlankToNull(code);
-		if (codeNorm == null)
+		if (codeNorm == null || codeNorm.equals(MINUTE.getCode()))
 		{
 			return MINUTE;
 		}
