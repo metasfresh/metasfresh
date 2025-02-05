@@ -1728,6 +1728,18 @@ public class TimeUtil
 		return asLocalDateTime(obj, null);
 	}
 
+	@NonNull
+	public static LocalDateTime asLocalDateTimeNonNull(@Nullable final Object obj)
+	{
+		final LocalDateTime localDateTime = asLocalDateTime(obj, null);
+		if (localDateTime == null)
+		{
+			throw new AdempiereException("Failed converting `" + obj + "` to LocalDateTime");
+		}
+
+		return localDateTime;
+	}
+
 	@Nullable
 	public static LocalDateTime asLocalDateTime(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
@@ -2391,4 +2403,21 @@ public class TimeUtil
 		return getDaysBetween360(asZonedDateTime(from), asZonedDateTime(to));
 	}
 
+	@NonNull
+	public static Timestamp roundDownToNearestQuarter(@NonNull final Timestamp initialDate)
+	{
+		final LocalDateTime initialDateAsLocalDateTime = asLocalDateTimeNonNull(initialDate);
+		final int minutes = initialDateAsLocalDateTime.getMinute();
+		final int roundedMinutes = (minutes / 15) * 15;
+
+		return asTimestamp(initialDateAsLocalDateTime.truncatedTo(ChronoUnit.HOURS).plusMinutes(roundedMinutes));
+	}
+
+	@NonNull
+	public static Timestamp roundDownToNearestMinute(@NonNull final Timestamp initialDate)
+	{
+		final LocalDateTime initialDateAsLocalDateTime = asLocalDateTimeNonNull(initialDate);
+
+		return asTimestamp(initialDateAsLocalDateTime.truncatedTo(ChronoUnit.MINUTES));
+	}
 }    // TimeUtil
