@@ -23,6 +23,7 @@
 package de.metas.ui.web.view.descriptor;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -96,8 +97,7 @@ public class SqlViewBinding implements SqlEntityBinding
 
 	@NonNull @Getter private final ImmutableMap<DetailId, SqlDocumentEntityDataBindingDescriptor> includedEntitiesDescriptors;
 
-	@Getter
-	private final boolean queryIfNoFilters;
+	@Getter private final boolean queryIfNoFilters;
 
 	public static Builder builder()
 	{
@@ -183,13 +183,13 @@ public class SqlViewBinding implements SqlEntityBinding
 		return keyColumnNamesMap;
 	}
 
-	public Collection<SqlViewRowFieldBinding> getFields()
+	public ImmutableCollection<SqlViewRowFieldBinding> getFields()
 	{
 		return _fieldsByFieldName.values();
 	}
 
 	@Override
-	public SqlViewRowFieldBinding getFieldByFieldName(final String fieldName)
+	public SqlViewRowFieldBinding getFieldByFieldName(@NonNull final String fieldName)
 	{
 		final SqlViewRowFieldBinding field = _fieldsByFieldName.get(fieldName);
 		if (field == null)
@@ -197,6 +197,12 @@ public class SqlViewBinding implements SqlEntityBinding
 			throw new IllegalArgumentException("No field found for '" + fieldName + "' in " + this);
 		}
 		return field;
+	}
+
+	@NonNull
+	public SqlViewRowFieldBinding.SqlViewRowFieldLoader getFieldLoader(@NonNull final String fieldName)
+	{
+		return getFieldByFieldName(fieldName).getFieldLoader();
 	}
 
 	@Override
@@ -211,10 +217,7 @@ public class SqlViewBinding implements SqlEntityBinding
 		return getViewFilterDescriptors();
 	}
 
-	public DocumentFilterDescriptorsProvider getViewFilterDescriptors()
-	{
-		return filterDescriptors;
-	}
+	public DocumentFilterDescriptorsProvider getViewFilterDescriptors() {return filterDescriptors;}
 
 	@Override
 	public SqlDocumentFilterConvertersList getFilterConverters()
@@ -244,7 +247,7 @@ public class SqlViewBinding implements SqlEntityBinding
 
 	public boolean hasGroupingFields()
 	{
-		return !getGroupByFieldNames().isEmpty();
+		return groupingBinding != null && groupingBinding.hasGroupingFields();
 	}
 
 	public boolean isGroupBy(final String fieldName)

@@ -18,6 +18,7 @@ import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvide
 import de.metas.ui.web.document.filter.provider.standard.FacetFilterViewCacheMap;
 import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.view.descriptor.SqlViewRowFieldBinding;
 import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.view.event.ViewChangesCollector;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -383,47 +384,72 @@ public final class DefaultView implements IEditableView
 
 	private List<ViewResultColumn> extractViewResultColumns(@NonNull final List<IViewRow> rows)
 	{
-		if (rows.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		return viewDataRepository.getWidgetTypesByFieldName()
-				.entrySet()
+		return viewDataRepository.getFields()
 				.stream()
-				.map(e -> extractViewResultColumnOrNull(e.getKey(), e.getValue(), rows))
+				.map(field -> extractViewResultColumnOrNull(field, rows))
 				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	@Nullable
-	private ViewResultColumn extractViewResultColumnOrNull(
-			@NonNull final String fieldName,
-			@NonNull final DocumentFieldWidgetType widgetType,
-			@NonNull final List<IViewRow> rows)
+	private static ViewResultColumn extractViewResultColumnOrNull(@NonNull final SqlViewRowFieldBinding fieldBinding, @NonNull final List<IViewRow> rows)
 	{
-		if (widgetType == DocumentFieldWidgetType.Integer)
-		{
-			return null;
-		}
-		else if (widgetType.isNumeric())
-		{
-			final int maxPrecision = rows.stream()
-					.map(row -> row.getFieldValueAsBigDecimal(fieldName, BigDecimal.ZERO))
-					.mapToInt(valueBD -> NumberUtils.stripTrailingDecimalZeros(valueBD).scale())
-					.max()
-					.orElse(0);
+		boolean requiresCustomization = false;
+		Integer maxPrecision = null;
+		Boolean hidden = null;
 
+		final String fieldName = fieldBinding.getFieldName();
+		if (fieldBinding.isHideGridColumnIfEmpty() && isColumnEmpty(rows, fieldName))
+		{
+			hidden = true;
+			requiresCustomization = true;
+		}
+
+		final DocumentFieldWidgetType widgetType = fieldBinding.getWidgetType();
+		if (widgetType.isBigDecimal() && !rows.isEmpty())
+		{
+			maxPrecision = extractMaxPrecision(rows, fieldName);
+			requiresCustomization = true;
+		}
+
+		if (requiresCustomization)
+		{
 			return ViewResultColumn.builder()
 					.fieldName(fieldName)
 					.widgetType(widgetType)
 					.maxPrecision(maxPrecision)
+					.hidden(hidden)
 					.build();
 		}
 		else
 		{
 			return null;
 		}
+
+	}
+
+	private static int extractMaxPrecision(@NonNull final List<IViewRow> rows, final String fieldName)
+	{
+		if (rows.isEmpty())
+		{
+			return 0;
+		}
+
+		return rows.stream()
+				.map(row -> row.getFieldValueAsBigDecimal(fieldName, BigDecimal.ZERO))
+				.mapToInt(valueBD -> NumberUtils.stripTrailingDecimalZeros(valueBD).scale())
+				.max()
+				.orElse(0);
+	}
+
+	private static boolean isColumnEmpty(@NonNull final List<IViewRow> rows, final String fieldName)
+	{
+		if (rows.isEmpty())
+		{
+			return true;
+		}
+
+		return rows.stream().allMatch(row -> row.isFieldEmpty(fieldName));
 	}
 
 	@Override
@@ -852,8 +878,8 @@ public final class DefaultView implements IEditableView
 	public static final class Builder
 	{
 		private ViewId viewId;
-		private JSONViewDataType viewType;
-		private ViewProfileId profileId;
+		@Getter private JSONViewDataType viewType;
+		@Getter private ViewProfileId profileId;
 		private ViewHeaderPropertiesProvider headerPropertiesProvider;
 		private Set<DocumentPath> referencingDocumentPaths;
 		private WebuiDocumentReferenceId documentReferenceId;
@@ -915,20 +941,10 @@ public final class DefaultView implements IEditableView
 			return this;
 		}
 
-		public JSONViewDataType getViewType()
-		{
-			return viewType;
-		}
-
 		public Builder setProfileId(final ViewProfileId profileId)
 		{
 			this.profileId = profileId;
 			return this;
-		}
-
-		public ViewProfileId getProfileId()
-		{
-			return profileId;
 		}
 
 		public Builder setHeaderPropertiesProvider(@NonNull final ViewHeaderPropertiesProvider headerPropertiesProvider)

@@ -516,6 +516,7 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 				.setColumnName(sqlColumnName)
 				.setVirtualColumnSql(extractVirtualColumnSql(gridFieldVO, entityBindings.getTableName()))
 				.setMandatory(gridFieldVO.isMandatoryDB())
+				.setHideGridColumnIfEmpty(gridFieldVO.isHideGridColumnIfEmpty())
 				.setWidgetType(widgetType)
 				.setMinPrecision(getStandardNumberPrecision().getMinPrecision(widgetType))
 				.setValueClass(valueClass)

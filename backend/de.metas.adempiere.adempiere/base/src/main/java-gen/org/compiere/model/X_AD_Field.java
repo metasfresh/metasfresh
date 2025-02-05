@@ -65,14 +65,14 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	@Override
 	public void setAD_Field_ID (final int AD_Field_ID)
 	{
-		if (AD_Field_ID < 1) 
+		if (AD_Field_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_AD_Field_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_AD_Field_ID, AD_Field_ID);
 	}
 
 	@Override
-	public int getAD_Field_ID() 
+	public int getAD_Field_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Field_ID);
 	}
@@ -200,14 +200,14 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	@Override
 	public void setAD_Sequence_ID (final int AD_Sequence_ID)
 	{
-		if (AD_Sequence_ID < 1) 
+		if (AD_Sequence_ID < 1)
 			set_Value (COLUMNNAME_AD_Sequence_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_Sequence_ID, AD_Sequence_ID);
 	}
 
 	@Override
-	public int getAD_Sequence_ID() 
+	public int getAD_Sequence_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Sequence_ID);
 	}
@@ -370,14 +370,14 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	@Override
 	public void setFilter_Val_Rule_ID (final int Filter_Val_Rule_ID)
 	{
-		if (Filter_Val_Rule_ID < 1) 
+		if (Filter_Val_Rule_ID < 1)
 			set_Value (COLUMNNAME_Filter_Val_Rule_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_Filter_Val_Rule_ID, Filter_Val_Rule_ID);
 	}
 
 	@Override
-	public int getFilter_Val_Rule_ID() 
+	public int getFilter_Val_Rule_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_Filter_Val_Rule_ID);
 	}
@@ -389,7 +389,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public boolean isForbidNewRecordCreation() 
+	public boolean isForbidNewRecordCreation()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsForbidNewRecordCreation);
 	}
@@ -440,7 +440,7 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	}
 
 	@Override
-	public int getIncludedTabHeight() 
+	public int getIncludedTabHeight()
 	{
 		return get_ValueAsInt(COLUMNNAME_IncludedTabHeight);
 	}
@@ -455,6 +455,27 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 	public java.lang.String getInfoFactoryClass() 
 	{
 		return get_ValueAsString(COLUMNNAME_InfoFactoryClass);
+	}
+
+	/**
+	 * IsAlwaysUpdateable AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISALWAYSUPDATEABLE_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISALWAYSUPDATEABLE_Yes = "Y";
+	/** No = N */
+	public static final String ISALWAYSUPDATEABLE_No = "N";
+	@Override
+	public void setIsAlwaysUpdateable (final @Nullable java.lang.String IsAlwaysUpdateable)
+	{
+		set_Value (COLUMNNAME_IsAlwaysUpdateable, IsAlwaysUpdateable);
+	}
+
+	@Override
+	public java.lang.String getIsAlwaysUpdateable()
+	{
+		return get_ValueAsString(COLUMNNAME_IsAlwaysUpdateable);
 	}
 
 	@Override
@@ -559,7 +580,19 @@ public class X_AD_Field extends org.compiere.model.PO implements I_AD_Field, org
 		return get_ValueAsBoolean(COLUMNNAME_IsHeading);
 	}
 
-	/** 
+	@Override
+	public void setIsHideGridColumnIfEmpty (final boolean IsHideGridColumnIfEmpty)
+	{
+		set_Value (COLUMNNAME_IsHideGridColumnIfEmpty, IsHideGridColumnIfEmpty);
+	}
+
+	@Override
+	public boolean isHideGridColumnIfEmpty()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsHideGridColumnIfEmpty);
+	}
+
+	/**
 	 * IsMandatory AD_Reference_ID=319
 	 * Reference name: _YesNo
 	 */

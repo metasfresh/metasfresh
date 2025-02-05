@@ -7,6 +7,7 @@ import de.metas.ui.web.window.datatypes.DateRangeValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.Password;
+import lombok.Getter;
 import org.compiere.util.DisplayType;
 
 import java.math.BigDecimal;
@@ -14,7 +15,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
-import java.util.OptionalInt;
 import java.util.Set;
 
 /*
@@ -99,25 +99,15 @@ public enum DocumentFieldWidgetType
 	private static final Set<DocumentFieldWidgetType> TYPES_ALL_DATES = Sets.immutableEnumSet(LocalDate, LocalTime, ZonedDateTime, Timestamp);
 	private static final Set<DocumentFieldWidgetType> TYPES_ALL_NUMERIC = Sets.immutableEnumSet(Integer, Number, Amount, Quantity, CostPrice);
 
-	private final LayoutAlign gridAlign;
+	@Getter private final LayoutAlign gridAlign;
 	private final Class<?> valueClass;
-	private final int displayType;
+	@Getter private final int displayType;
 
 	DocumentFieldWidgetType(final LayoutAlign gridAlign, final Class<?> valueClass, final int displayType)
 	{
 		this.gridAlign = gridAlign;
 		this.valueClass = valueClass;
 		this.displayType = displayType;
-	}
-
-	public int getDisplayType()
-	{
-		return displayType;
-	}
-
-	public LayoutAlign getGridAlign()
-	{
-		return gridAlign;
 	}
 
 	public final boolean isDateOrTime()
@@ -134,6 +124,11 @@ public enum DocumentFieldWidgetType
 	public final boolean isNumeric()
 	{
 		return TYPES_ALL_NUMERIC.contains(this);
+	}
+
+	public final boolean isBigDecimal()
+	{
+		return isNumeric() && BigDecimal.class.equals(getValueClassOrNull());
 	}
 
 	public final boolean isStrictText()
