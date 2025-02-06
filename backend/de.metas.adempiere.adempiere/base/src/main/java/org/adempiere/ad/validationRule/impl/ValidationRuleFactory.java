@@ -40,7 +40,7 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 
 	private static final int ROWINDEX_None = -1;
 
-	private final Map<String, CopyOnWriteArrayList<IValidationRule>> tableRulesMap = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, CopyOnWriteArrayList<IValidationRule>> tableRulesMap = new ConcurrentHashMap<>();
 
 	private final Map<String, IValidationRule> classname2rulesCache = new ConcurrentHashMap<>();
 
@@ -178,7 +178,10 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 		return builder.build();
 	}
 
-	private List<IValidationRule> retrieveTableValidationRules(final String tableName, final String ctxTableName, final String ctxColumnName)
+	private List<IValidationRule> retrieveTableValidationRules(
+			@NonNull final String tableName,
+			@Nullable final String ctxTableName,
+			@Nullable final String ctxColumnName)
 	{
 		final List<IValidationRule> rules = tableRulesMap.get(tableName);
 		if (rules == null || rules.isEmpty())
@@ -190,8 +193,10 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 		{
 			return removeExceptionsFromRules(rules, ctxTableName, ctxColumnName);
 		}
-
-		return ImmutableList.copyOf(rules);
+		else
+		{
+			return ImmutableList.copyOf(rules);
+		}
 	}
 
 	private List<IValidationRule> removeExceptionsFromRules(final List<IValidationRule> rules, final String ctxTableName, final String ctxColumnName)
@@ -244,10 +249,8 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 	}
 
 	@Override
-	public IValidationContext createValidationContext(final GridField gridField)
+	public IValidationContext createValidationContext(@NonNull final GridField gridField)
 	{
-		Check.assumeNotNull(gridField, "gridField not null");
-
 		final GridTab gridTab = gridField.getGridTab();
 		// Check.assumeNotNull(gridTab, "gridTab not null");
 		if (gridTab == null)
@@ -295,15 +298,13 @@ public class ValidationRuleFactory implements IValidationRuleFactory
 		final GridFieldVO gridFieldVO = gridField.getVO();
 		if (gridFieldVO.isProcessParameter() || gridFieldVO.isFormField())
 		{
-			final IValidationContext evalCtx = createValidationContext(ctx, gridField.getWindowNo(), Env.TAB_None, tableName);
-			return evalCtx;
+			return createValidationContext(ctx, gridField.getWindowNo(), Env.TAB_None, tableName);
 		}
 
 		final GridTab gridTab = gridField.getGridTab();
 		if (gridTab != null)
 		{
-			final IValidationContext evalCtx = createValidationContext(ctx, tableName, gridTab, rowIndex);
-			return evalCtx;
+			return createValidationContext(ctx, tableName, gridTab, rowIndex);
 		}
 
 		return IValidationContext.NULL;

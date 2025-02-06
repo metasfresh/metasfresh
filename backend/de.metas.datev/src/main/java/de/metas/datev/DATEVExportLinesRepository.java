@@ -107,9 +107,12 @@ public class DATEVExportLinesRepository
 		}
 
 		return queryBuilder.create()
-			.setSqlFromParameter("p_IsOneLinePerInvoiceTax", request.isOneLinePerInvoiceTax())
-				.setSqlFromParameter("p_IsSwitchCreditMemo", datevExport.isSwitchCreditMemo() )
-		;
+				.setSqlFromParameter("p_IsOneLinePerInvoiceTax", request.isOneLinePerInvoiceTax())
+				.setSqlFromParameter("p_IsSwitchCreditMemo", datevExport.isSwitchCreditMemo())
+				.setSqlFromParameter("p_IsNegateInboundAmounts", datevExport.isNegateInboundAmounts())
+				.setSqlFromParameter("p_IsPlaceBPAccountsOnCredit", datevExport.isPlaceBPAccountsOnCredit())
+				.setSqlFromParameter("p_IsSOTrx", datevExport.getIsSOTrx())
+				;
 	}
 
 }

@@ -204,7 +204,77 @@ public interface I_DATEV_Export
 	String COLUMNNAME_IsExcludeAlreadyExported = "IsExcludeAlreadyExported";
 
 	/**
+	 * Set Negate Inbound Amounts.
+	 * When ticked, the tax and amount of 'APC' and 'ARI' invoices are negated.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsNegateInboundAmounts (boolean IsNegateInboundAmounts);
+
+	/**
+	 * Get Negate Inbound Amounts.
+	 * When ticked, the tax and amount of 'APC' and 'ARI' invoices are negated.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isNegateInboundAmounts();
+
+	ModelColumn<I_DATEV_Export, Object> COLUMN_IsNegateInboundAmounts = new ModelColumn<>(I_DATEV_Export.class, "IsNegateInboundAmounts", null);
+	String COLUMNNAME_IsNegateInboundAmounts = "IsNegateInboundAmounts";
+
+	/**
+	 * Set Place BP Accounts On Credit.
+	 * When ticked, the partner accounts are moved from debit to credit side.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPlaceBPAccountsOnCredit (boolean IsPlaceBPAccountsOnCredit);
+
+	/**
+	 * Get Place BP Accounts On Credit.
+	 * When ticked, the partner accounts are moved from debit to credit side.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPlaceBPAccountsOnCredit();
+
+	ModelColumn<I_DATEV_Export, Object> COLUMN_IsPlaceBPAccountsOnCredit = new ModelColumn<>(I_DATEV_Export.class, "IsPlaceBPAccountsOnCredit", null);
+	String COLUMNNAME_IsPlaceBPAccountsOnCredit = "IsPlaceBPAccountsOnCredit";
+
+	/**
+	 * Set Sales Transaction.
+	 * This is a Sales Transaction
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsSOTrx (@Nullable java.lang.String IsSOTrx);
+
+	/**
+	 * Get Sales Transaction.
+	 * This is a Sales Transaction
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsSOTrx();
+
+	ModelColumn<I_DATEV_Export, Object> COLUMN_IsSOTrx = new ModelColumn<>(I_DATEV_Export.class, "IsSOTrx", null);
+	String COLUMNNAME_IsSOTrx = "IsSOTrx";
+
+	/**
 	 * Set Switch Credit Memo.
+	 * If ticked, for credit memo invoices, the credit account and the debit account are swapped. The amount and tax are multiplied by -1.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -214,6 +284,7 @@ public interface I_DATEV_Export
 
 	/**
 	 * Get Switch Credit Memo.
+	 * If ticked, for credit memo invoices, the credit account and the debit account are swapped. The amount and tax are multiplied by -1.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

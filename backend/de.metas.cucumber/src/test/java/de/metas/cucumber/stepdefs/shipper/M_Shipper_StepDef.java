@@ -34,6 +34,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.util.Env;
@@ -44,6 +45,23 @@ public class M_Shipper_StepDef
 	private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
 
 	@NonNull private final M_Shipper_StepDefData shipperTable;
+
+	@And("load M_Shipper:")
+	public void load_M_Shipper(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::loadM_Shipper);
+	}
+
+	private void loadM_Shipper(@NonNull final DataTableRow row)
+	{
+
+		final String name = row.getAsString(I_M_Shipper.COLUMNNAME_Name);
+		final I_M_Shipper shipperRecord = shipperDAO.getByName(name).orElseThrow(() -> new AdempiereException("No shipper found for " + name));
+		row.getAsOptionalString(I_M_Shipper.COLUMNNAME_InternalName).ifPresent(shipperRecord::setInternalName);
+		InterfaceWrapperHelper.saveRecord(shipperRecord);
+
+		shipperTable.put(row.getAsIdentifier(), shipperRecord);
+	}
 
 	@And("contains M_Shippers")
 	public void createOrUpdateShippers(@NonNull final DataTable dataTable)

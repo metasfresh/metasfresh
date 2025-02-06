@@ -8,6 +8,7 @@ import GetQuantityDialog from './dialogs/GetQuantityDialog';
 import Button from './buttons/Button';
 import { formatQtyToHumanReadable, formatQtyToHumanReadableStr } from '../utils/qtys';
 import { useBooleanSetting } from '../reducers/settings';
+import { toastErrorFromObj } from '../utils/toast';
 
 const STATUS_NOT_INITIALIZED = 'NOT_INITIALIZED';
 const STATUS_READ_BARCODE = 'READ_BARCODE';
@@ -155,7 +156,12 @@ const ScanHUAndGetQtyComponent = ({
     if (askForQty) {
       setProgressStatus(STATUS_READ_QTY);
     } else {
-      onResult({ qty: 0, reason: null, scannedBarcode: resolvedBarcodeDataNew.scannedBarcode, resolvedBarcodeData });
+      onResult({
+        qty: 0,
+        reason: null,
+        scannedBarcode: resolvedBarcodeDataNew.scannedBarcode,
+        resolvedBarcodeData,
+      })?.catch?.((error) => toastErrorFromObj(error));
     }
   };
 
@@ -229,6 +235,7 @@ const ScanHUAndGetQtyComponent = ({
           <BarcodeScannerComponent
             resolveScannedBarcode={handleResolveScannedBarcode}
             onResolvedResult={onBarcodeScanned}
+            continuousRunning={true}
           />
           {showEligibleBarcodeDebugButton && eligibleBarcode && (
             <Button

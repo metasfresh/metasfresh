@@ -1,9 +1,9 @@
 package org.adempiere.ad.column.callout;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.ad_reference.ReferenceId;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.logging.LogManager;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;

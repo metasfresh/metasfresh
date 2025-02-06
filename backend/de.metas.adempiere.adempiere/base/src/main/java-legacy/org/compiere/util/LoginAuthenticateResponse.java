@@ -13,7 +13,6 @@ import lombok.Value;
 public class LoginAuthenticateResponse
 {
 	@NonNull UserId userId;
-
-	@Singular
-	@NonNull ImmutableList<Role> availableRoles;
+	boolean is2FARequired;
+	@NonNull @Singular ImmutableList<Role> availableRoles;
 }

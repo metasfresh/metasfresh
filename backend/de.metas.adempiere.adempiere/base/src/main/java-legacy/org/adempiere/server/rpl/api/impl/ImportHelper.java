@@ -1157,7 +1157,7 @@ public class ImportHelper implements IImportHelper
 					if (!Check.isEmpty(value.toString()))
 					{
 						// double doubleValue = Double.parseDouble(value.toString());
-						value = new Integer(value.toString());
+						value = Integer.parseInt(value.toString());
 						if (DisplayType.ID == adReferenceId)
 						{
 							replication_id = (Integer)value;
@@ -1544,7 +1544,7 @@ public class ImportHelper implements IImportHelper
 		final String valueStr = element.getAttribute(attributeName);
 		try
 		{
-			return new Integer(valueStr);
+			return Integer.parseInt(valueStr);
 		}
 		catch (final NumberFormatException e)
 		{

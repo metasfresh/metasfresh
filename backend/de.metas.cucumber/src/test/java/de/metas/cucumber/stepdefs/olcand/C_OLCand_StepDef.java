@@ -109,7 +109,7 @@ import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_PriceActual;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_Processed;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_QtyEntered;
 import static de.metas.ordercandidate.model.I_C_OLCand.Table_Name;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class C_OLCand_StepDef
 {
@@ -495,14 +495,29 @@ public class C_OLCand_StepDef
 
 		assertThat(generatedInvoiceIds).isNotEmpty();
 
-		final I_C_Invoice invoice = queryBL.createQueryBuilder(I_C_Invoice.class)
+		final List<I_C_Invoice> invoices = queryBL.createQueryBuilder(I_C_Invoice.class)
 				.addInArrayFilter(I_C_Invoice.COLUMNNAME_C_Invoice_ID, generatedInvoiceIds)
 				.create()
-				.firstOnly(I_C_Invoice.class);
+				.list();
 
-		assertThat(invoice).isNotNull();
+		assertThat(invoices).isNotEmpty();
 
-		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
+		final List<String> identifiers = StepDefUtil.splitIdentifiers(invoiceIdentifier);
+		assertThat(identifiers).hasSameSizeAs(invoices);
+
+		if (invoices.size() > 1)
+		{
+			for (int index = 0; index < invoices.size(); index++)
+			{
+				final String identifier = identifiers.get(index);
+				final I_C_Invoice record = invoices.get(index);
+				invoiceTable.putOrReplace(identifier, record);
+			}
+		}
+		else
+		{
+			invoiceTable.putOrReplace(invoiceIdentifier, invoices.get(0));
+		}
 	}
 
 	private void processResponse(@NonNull final DataTable table) throws JsonProcessingException

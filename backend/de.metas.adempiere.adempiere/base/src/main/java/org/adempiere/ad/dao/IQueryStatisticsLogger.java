@@ -22,42 +22,28 @@ package org.adempiere.ad.dao;
  * #L%
  */
 
-import java.util.Date;
-
 /**
  * Query Statistics Logger: build up a list of top used SQL queries
- *
  * NOTE: it is disabled by default
  *
  * @author tsa
  *
  */
 public interface IQueryStatisticsLogger
-// extends ISingletonService // commented out because it shall be accessed via spring @Autowired
 {
-	public static final String SYSTEM_PROPERTY_LOG_TO_SYSTEM_ERROR = "org.adempiere.ad.dao.impl.QueryStatisticsLogger.LogToSystemError";
+	String SYSTEM_PROPERTY_LOG_TO_SYSTEM_ERROR = "org.adempiere.ad.dao.impl.QueryStatisticsLogger.LogToSystemError";
 
-	/**
-	 * Enable statistics logging
-	 */
-	void enable();
 
 	/**
 	 * Enable statistics logging and also enable SQL tracing.
-	 *
 	 * The executed SQLs will be printed to {@link System#err}.
 	 */
-	void enableWithSqlTracing();
+	void enableSqlTracing();
 
 	/**
 	 * Disable statistics logging
 	 */
-	void disable();
-
-	/**
-	 * Reset statistics and sets <code>validFrom</code> to the current time. Does <b>not</b> reset <code>filterBy</code>.
-	 */
-	void reset();
+	void disableSqlTracing();
 
 	/**
 	 * IF this property is set then only such SQLs which contain the given String as substring are logged.
@@ -67,22 +53,9 @@ public interface IQueryStatisticsLogger
 	void setFilterBy(String filterBy);
 
 	/**
-	 * See {@link #setFilterBy(String)}.
-	 *
-	 * @return
-	 */
-	String getFilterBy();
-
-	/**
 	 * Clears the filtering. See {@link #setFilterBy(String)}.
 	 */
 	void clearFilterBy();
-
-	/**
-	 *
-	 * @return date+time on which we started to collect statistics
-	 */
-	Date getValidFrom();
 
 	/**
 	 *
@@ -103,4 +76,14 @@ public interface IQueryStatisticsLogger
 	 * @return
 	 */
 	String[] getTopAverageDurationQueriesAsString();
+
+	/**
+	 * Enable record of SQL execution time with micrometer
+	 */
+	void enableRecordWithMicrometer();
+
+	/**
+	 * Disable record of SQL execution time with micrometer
+	 */
+	void disableRecordWithMicrometer();
 }

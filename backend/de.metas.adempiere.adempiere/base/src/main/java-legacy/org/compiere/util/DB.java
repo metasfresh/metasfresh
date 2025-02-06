@@ -24,6 +24,7 @@ package org.compiere.util;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CacheMgt;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
@@ -41,6 +42,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -53,7 +55,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.sql.IStatementsFactory;
 import org.adempiere.sql.impl.StatementsFactory;
-import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.util.trxConstraints.api.ITrxConstraints;
 import org.adempiere.util.trxConstraints.api.ITrxConstraintsBL;
@@ -458,25 +459,6 @@ public class DB
 		return statementsFactory.newCCallableStatement(ResultSet.TYPE_FORWARD_ONLY, resultSetConcurrency, SQL, trxName);
 	}    // prepareCall
 
-	/**************************************************************************
-	 * Prepare Statement
-	 *
-	 * @param sql
-	 * @return Prepared Statement
-	 * @deprecated
-	 */
-	@Deprecated
-	public CPreparedStatement prepareStatement(final String sql)
-	{
-		int concurrency = ResultSet.CONCUR_READ_ONLY;
-		final String upper = sql.toUpperCase();
-		if (upper.startsWith("UPDATE ") || upper.startsWith("DELETE "))
-		{
-			concurrency = ResultSet.CONCUR_UPDATABLE;
-		}
-		return prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, concurrency, null);
-	}    // prepareStatement
-
 	public CPreparedStatement prepareStatement(final String sql, @Nullable final String trxName)
 	{
 		int concurrency = ResultSet.CONCUR_READ_ONLY;
@@ -499,7 +481,7 @@ public class DB
 	 */
 	@Deprecated
 	public CPreparedStatement prepareStatement(final String sql,
-											   final int resultSetType, final int resultSetConcurrency)
+			final int resultSetType, final int resultSetConcurrency)
 	{
 		return prepareStatement(sql, resultSetType, resultSetConcurrency, null);
 	}    // prepareStatement
@@ -514,9 +496,9 @@ public class DB
 	 * @return Prepared Statement r/o or r/w depending on concur
 	 */
 	public CPreparedStatement prepareStatement(final String sql,
-											   final int resultSetType,
-											   final int resultSetConcurrency,
-											   final String trxName)
+			final int resultSetType,
+			final int resultSetConcurrency,
+			final String trxName)
 	{
 		if (sql == null || sql.length() == 0)
 		{
@@ -1022,10 +1004,10 @@ public class DB
 	}
 
 	public int executeUpdateAndThrowExceptionOnFail(final String sql,
-							   final Object[] params,
-							   @Nullable final String trxName,
-							   final int timeOut,
-							   final ISqlUpdateReturnProcessor updateReturnProcessor)
+			final Object[] params,
+			@Nullable final String trxName,
+			final int timeOut,
+			final ISqlUpdateReturnProcessor updateReturnProcessor)
 	{
 		final ExecuteUpdateRequest executeUpdateRequest = ExecuteUpdateRequest.builder()
 				.sql(sql)
@@ -1909,14 +1891,10 @@ public class DB
 
 	/**
 	 * Create SQL TO Date String from Timestamp
-	 *
-	 * @param time    Date to be converted
-	 * @param dayOnly true if time set to 00:00:00
-	 * @return TO_DATE(' 2001 - 01 - 30 18 : 10 : 20 ', ' ' YYYY - MM - DD HH24 : MI : SS ') or TO_DATE('2001-01-30',''YYYY-MM-DD')
 	 */
-	public String TO_DATE(@Nullable final Timestamp time, final boolean dayOnly)
+	public String TO_DATE(@Nullable final Timestamp time, final int displayType)
 	{
-		return Database.TO_DATE(time, dayOnly);
+		return Database.TO_DATE(time, displayType);
 	}
 
 	/**
@@ -1927,7 +1905,7 @@ public class DB
 	 */
 	public String TO_DATE(final Timestamp day)
 	{
-		return TO_DATE(day, true);
+		return TO_DATE(day, DisplayType.Date);
 	}
 
 	/**
@@ -2109,7 +2087,6 @@ public class DB
 
 	/**
 	 * convenient method to close statement
-	 *
 	 */
 	public void close(@Nullable final Statement st)
 	{
@@ -2494,10 +2471,10 @@ public class DB
 
 		//
 		// Check: If Log Migration Scripts is enabled then don't use native sequences
-		if (Ini.isPropertyBool(Ini.P_LOGMIGRATIONSCRIPT)
+		if (MigrationScriptFileLoggerHolder.isEnabled()
 				&& Services.get(IMigrationLogger.class).isLogTableName(TableName, ClientId.ofRepoIdOrSystem(AD_Client_ID)))
 		{
-			log.debug("Returning 'false' for table {} because Ini-{} is active and this table is supposed to be logged", TableName, Ini.P_LOGMIGRATIONSCRIPT);
+			log.debug("Returning 'false' for table {} because log migration scripts is enabled and this table is supposed to be logged", TableName);
 			return false;
 		}
 
@@ -2529,7 +2506,7 @@ public class DB
 		final Properties ctx = Env.getCtx();
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		Check.assume(adClientId == 0, "Context AD_Client_ID shall be System if you want to change {} configuration, but it was {}",
-					 SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, adClientId);
+				SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, adClientId);
 
 		Services.get(ISysConfigBL.class).setValue(SYSCONFIG_SYSTEM_NATIVE_SEQUENCE, enabled, ClientId.SYSTEM, OrgId.ANY);
 	}
@@ -2547,11 +2524,11 @@ public class DB
 	{
 		final String sequenceName = getTableSequenceName(tableName);
 		CConnection.get().getDatabase().createSequence(sequenceName,
-													   1, // increment
-													   1, // minvalue
-													   Integer.MAX_VALUE, // maxvalue
-													   1000000, // start
-													   ITrx.TRXNAME_ThreadInherited);
+				1, // increment
+				1, // minvalue
+				Integer.MAX_VALUE, // maxvalue
+				1000000, // start
+				ITrx.TRXNAME_ThreadInherited);
 	}
 
 	/**
@@ -2594,7 +2571,7 @@ public class DB
 		else
 		{
 			throw new DBException("Failed to convert SQL: " + sql
-										  + "\nOnly one resulting SQL was expected but we got: " + sqlsConverted);
+					+ "\nOnly one resulting SQL was expected but we got: " + sqlsConverted);
 		}
 	}
 
@@ -2822,7 +2799,6 @@ public class DB
 		return retrieveRows(sql, sqlParamsList, loader);
 	}
 
-
 	@NonNull
 	public static <T> ImmutableSet<T> retrieveUniqueRows(
 			@NonNull final CharSequence sql,
@@ -2831,14 +2807,14 @@ public class DB
 	{
 		final ImmutableSet.Builder<T> rows = ImmutableSet.builder();
 		retrieveRows(sql, sqlParams, ITrx.TRXNAME_ThreadInherited, loader, rows::add);
-			return rows.build();
-		}
+		return rows.build();
+	}
 
 	public void forFirstRowIfAny(
 			@NonNull final String sql,
 			@Nullable final List<Object> sqlParams,
 			@NonNull final ResultSetConsumer consumer)
-		{
+	{
 		retrieveFirstRowOrNull(sql, sqlParams, (rs) -> {
 			consumer.accept(rs);
 			return null;

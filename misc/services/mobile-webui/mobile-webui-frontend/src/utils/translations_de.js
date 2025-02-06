@@ -1,6 +1,9 @@
 const translations = {
   appName: 'metasfresh mobile',
   error: {
+    qrcode: {
+      differentProduct: 'The scanned QR Product does not match',
+    },
     PleaseTryAgain: 'Oops, das sollte nicht passieren',
     network: {
       noResponse: 'Verbindung Fehler',
@@ -126,6 +129,9 @@ const translations = {
       scanLocator: 'Scan Ziel Lagerort',
       invalidLocatorQRCode: 'Lagerort QR ungültig',
       invalidQtyToMove: 'Bewegungsmenge ungültig',
+      qrcode: {
+        differentProduct: 'Das gescannte QR Produkt stimmt nicht mit dem im Bereitstellungsauftrag überein',
+      },
     },
     confirmButton: {
       default: {

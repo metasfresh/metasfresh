@@ -142,6 +142,8 @@ public interface IProductBL extends ISingletonService
 
 	Optional<UomId> getCatchUOMId(ProductId productId);
 
+	I_C_UOM getWeightUOM(I_M_Product product);
+
 	/**
 	 * Gets product standard Weight in <code>uomTo</code>.
 	 *

@@ -5,6 +5,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
+import de.metas.email.EMailRequest;
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.email.mailboxes.UserEMailConfig;
@@ -109,6 +110,9 @@ public class UserBL implements IUserBL
 	}
 
 	@Override
+	public void save(@NonNull final I_AD_User user) {userDAO.save(user);}
+
+	@Override
 	public String extractUserLogin(final I_AD_User user)
 	{
 		final String login = StringUtils.trimBlankToNull(user.getLogin());
@@ -170,7 +174,7 @@ public class UserBL implements IUserBL
 		{
 			throw new AdempiereException(MSG_NoEMailFoundForLoginName);
 		}
-		
+
 		final MailText mailText = createResetPasswordByEMailText(user);
 
 		final MailboxQuery mailboxQuery = MailboxQuery.builder()
@@ -178,7 +182,12 @@ public class UserBL implements IUserBL
 				.customType(MAILCONFIG_CUSTOMTYPE_UserPasswordReset)
 				.build();
 
-		mailService().sendEMail(mailboxQuery, emailTo, mailText);
+		mailService().sendEMail(EMailRequest.builder()
+				.mailboxQuery(mailboxQuery)
+				.to(emailTo)
+				.mailText(mailText)
+				.forceRealEmailRecipients(true)
+				.build());
 	}
 
 	private MailText createResetPasswordByEMailText(@NonNull final I_AD_User user)
@@ -433,4 +442,7 @@ public class UserBL implements IUserBL
 
 	}
 
+
+	@Override
+	public String getUserFullNameById(@NonNull final UserId userId) {return userDAO.retrieveUserFullName(userId);}
 }

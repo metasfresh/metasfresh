@@ -1,19 +1,24 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2006 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software; you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY; without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program; if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 package org.compiere.model;
 
 import com.google.common.base.MoreObjects;
@@ -26,6 +31,7 @@ import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
+import de.metas.quickinput.config.QuickInputConfigLayout;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.TableAccessLevel;
 import de.metas.security.permissions.Access;
@@ -64,6 +70,7 @@ import java.util.Set;
  * @author Jorg Janke
  * @version $Id: GridTabVO.java,v 1.4 2006/07/30 00:58:38 jjanke Exp $
  */
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class GridTabVO implements Evaluatee, Serializable
 {
 	private static final long serialVersionUID = -1425513230093430761L;
@@ -84,7 +91,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	{
 		logger.debug("TabNo={}", TabNo);
 
-		GridTabVO vo = new GridTabVO(wVO.getCtx(), wVO.getWindowNo(), TabNo, wVO.isLoadAllLanguages(), wVO.isApplyRolePermissions());
+		final GridTabVO vo = new GridTabVO(wVO.getCtx(), wVO.getWindowNo(), TabNo, wVO.isLoadAllLanguages(), wVO.isApplyRolePermissions());
 		vo.adWindowId = wVO.getAdWindowId();
 		//
 		if (!loadTabDetails(vo, rs))
@@ -337,7 +344,7 @@ public class GridTabVO implements Evaluatee, Serializable
 					vo.IsReadOnly = true;
 				}
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 			}
 
@@ -417,7 +424,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		this.applyRolePermissions = applyRolePermissions;
 	}
 
-	private static final transient Logger logger = LogManager.getLogger(GridTabVO.class);
+	private static final Logger logger = LogManager.getLogger(GridTabVO.class);
 
 	/**
 	 * Context - replicated
@@ -453,7 +460,9 @@ public class GridTabVO implements Evaluatee, Serializable
 			I_AD_Tab.COLUMNNAME_Help,
 			I_AD_Tab.COLUMNNAME_CommitWarning,
 			I_AD_Tab.COLUMNNAME_QuickInput_OpenButton_Caption,
-			I_AD_Tab.COLUMNNAME_QuickInput_CloseButton_Caption);
+			I_AD_Tab.COLUMNNAME_QuickInput_CloseButton_Caption,
+			I_AD_Tab.COLUMNNAME_NotFound_Message,
+			I_AD_Tab.COLUMNNAME_NotFound_MessageDetail);
 
 	private String entityType = null;
 	/**
@@ -528,6 +537,11 @@ public class GridTabVO implements Evaluatee, Serializable
 	 */
 	public String OrderByClause;
 	/**
+	 * Tab Insert
+	 */
+	private static final ILogicExpression DEFAULT_InsertLogicExpr = ConstantLogicExpression.FALSE;
+	@Getter private ILogicExpression InsertLogicExpr = DEFAULT_InsertLogicExpr;
+	/**
 	 * Tab Read Only
 	 */
 	private static final ILogicExpression DEFAULT_ReadOnlyLogicExpr = ConstantLogicExpression.FALSE;
@@ -582,11 +596,15 @@ public class GridTabVO implements Evaluatee, Serializable
 
 	@Getter
 	private boolean allowQuickInput;
+	@Getter @Nullable QuickInputConfigLayout quickInputLayout;
 
 	@Getter
 	private String includedTabNewRecordInputMode;
 	@Getter
 	private boolean refreshViewOnChangeEvents = false;
+
+	@Getter
+	private boolean queryIfNoFilters = true;
 
 	@NonNull private TabIncludeFiltersStrategy includeFiltersStrategy = TabIncludeFiltersStrategy.Auto;
 
@@ -625,27 +643,6 @@ public class GridTabVO implements Evaluatee, Serializable
 			}
 		}
 		return _fields;
-	}
-
-	/**
-	 * @return {@link GridFieldVO} or <code>null</code>
-	 */
-	public GridFieldVO getFieldByAD_Field_ID(final int adFieldId)
-	{
-		if (adFieldId <= 0)
-		{
-			return null;
-		}
-
-		for (final GridFieldVO gridFieldVO : getFields())
-		{
-			if (gridFieldVO.getAD_Field_ID() == adFieldId)
-			{
-				return gridFieldVO;
-			}
-		}
-
-		return null;
 	}
 
 	public GridFieldVO getFieldByColumnName(final String columnName)
@@ -732,13 +729,13 @@ public class GridTabVO implements Evaluatee, Serializable
 	 *
 	 * @param newCtx new context
 	 */
-	public void setCtx(Properties newCtx)
+	public void setCtx(final Properties newCtx)
 	{
 		ctx = newCtx;
 		final List<GridFieldVO> fields = this._fields;
 		if (fields != null)
 		{
-			for (GridFieldVO field : fields)
+			for (final GridFieldVO field : fields)
 			{
 				field.setCtx(newCtx);
 			}
@@ -757,7 +754,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	 * @return value
 	 */
 	@Override
-	public String get_ValueAsString(String variableName)
+	public String get_ValueAsString(final String variableName)
 	{
 		return Env.getContext(ctx, WindowNo, variableName, false);    // not just window
 	}    //	get_ValueAsString
@@ -790,6 +787,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		clone.OrderByClause = OrderByClause;
 		clone.ReadOnlyLogicExpr = ReadOnlyLogicExpr;
 		clone.DisplayLogicExpr = DisplayLogicExpr;
+		clone.InsertLogicExpr = InsertLogicExpr;
 		clone.TabLevel = TabLevel;
 		clone.AD_Image_ID = AD_Image_ID;
 		clone.Included_Tab_ID = Included_Tab_ID;
@@ -806,8 +804,10 @@ public class GridTabVO implements Evaluatee, Serializable
 		clone.onlyCurrentDays = 0;
 
 		clone.allowQuickInput = allowQuickInput;
+		clone.quickInputLayout = quickInputLayout;
 		clone.includedTabNewRecordInputMode = includedTabNewRecordInputMode;
 		clone.refreshViewOnChangeEvents = refreshViewOnChangeEvents;
+		clone.queryIfNoFilters = queryIfNoFilters;
 
 		clone_metas(ctx, windowNo, clone); // metas
 
@@ -926,7 +926,7 @@ public class GridTabVO implements Evaluatee, Serializable
 
 	private StringBuffer loadErrorMessages = null;
 
-	protected void addLoadErrorMessage(String message)
+	protected void addLoadErrorMessage(final String message)
 	{
 		if (Check.isEmpty(message, true))
 		{
@@ -949,7 +949,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		{
 			return "";
 		}
-		StringBuffer sb = new StringBuffer();
+		final StringBuffer sb = new StringBuffer();
 		sb.append("Tab ").append(this.getName()).append("(").append(this.TableName).append("): ").append(loadErrorMessages);
 		return sb.toString();
 	}
@@ -1073,7 +1073,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		return IsReadOnly;
 	}
 
-	void setReadOnly(boolean isReadOnly)
+	void setReadOnly(final boolean isReadOnly)
 	{
 		IsReadOnly = isReadOnly;
 	}
@@ -1177,6 +1177,10 @@ public class GridTabVO implements Evaluatee, Serializable
 	public ITranslatableString getQuickInputOpenButtonCaption() {return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_OpenButton_Caption);}
 
 	public ITranslatableString getQuickInputCloseButtonCaption() {return captions.getTrl(I_AD_Tab.COLUMNNAME_QuickInput_CloseButton_Caption);}
+
+	public ITranslatableString getNotFoundMessage() {return captions.getTrl(I_AD_Tab.COLUMNNAME_NotFound_Message);}
+
+	public ITranslatableString getNotFoundMessageDetail() {return captions.getTrl(I_AD_Tab.COLUMNNAME_NotFound_MessageDetail);}
 
 	//
 	//
@@ -1310,7 +1314,17 @@ public class GridTabVO implements Evaluatee, Serializable
 		public void putTranslation(@NonNull final String adLanguage, @Nullable final String captionTrl)
 		{
 			Check.assumeNotEmpty(adLanguage, "adLanguage is not empty");
-			translations.put(adLanguage, captionTrl != null ? captionTrl.trim() : "");
+
+			final String captionTrlNorm = captionTrl != null ? captionTrl.trim() : "";
+			if (!captionTrlNorm.isEmpty())
+			{
+				translations.put(adLanguage, captionTrlNorm);
+			}
+			else
+			{
+				translations.remove(adLanguage);
+			}
+
 			computedTrl = null;
 		}
 

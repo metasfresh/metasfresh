@@ -13,8 +13,9 @@ import de.metas.ui.web.document.filter.json.JSONDocumentFilter;
 import de.metas.ui.web.document.filter.json.JSONDocumentFilterParam;
 import de.metas.ui.web.window.datatypes.DebugProperties;
 import de.metas.ui.web.window.datatypes.PanelLayoutType;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
+import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -23,6 +24,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +68,7 @@ public final class DocumentFilterDescriptor
 	private final ITranslatableString displayNameTrls;
 
 	/**
-	 * To be displayed outside of the regular filters dropdown list for quicker access.
+	 * To be displayed outside the regular filters dropdown list for quicker access.
 	 */
 	@Getter
 	private final boolean frequentUsed;
@@ -155,6 +157,11 @@ public final class DocumentFilterDescriptor
 		return parameter;
 	}
 
+	public boolean hasParameter(final String parameterName)
+	{
+		return parametersByName.get(parameterName) != null;
+	}
+
 	public DocumentFilter unwrap(@NonNull final JSONDocumentFilter jsonFilter)
 	{
 		final DocumentFilter.DocumentFilterBuilder filter = DocumentFilter.builder()
@@ -241,25 +248,49 @@ public final class DocumentFilterDescriptor
 
 		private ImmutableMap<String, DocumentFilterParamDescriptor> buildParameters()
 		{
+			//
+			// Update and collect parameter names:
+			final HashSet<String> availableParameterNames = new HashSet<>();
 			final Map<String, Integer> nextParamIndexByFieldName = new HashMap<>();
-			return parameters
-					.stream()
-					.peek((paramBuilder) -> {
-						final String fieldName = paramBuilder.getFieldName();
-						final Integer nextParamIndex = nextParamIndexByFieldName.get(fieldName);
-						if (nextParamIndex == null)
-						{
-							paramBuilder.parameterName(fieldName);
-							nextParamIndexByFieldName.put(fieldName, 2);
-						}
-						else
-						{
-							paramBuilder.parameterName(fieldName + nextParamIndex);
-							nextParamIndexByFieldName.put(fieldName, nextParamIndex + 1);
-						}
-					})
-					.map(DocumentFilterParamDescriptor.Builder::build)
-					.collect(GuavaCollectors.toImmutableMapByKey(DocumentFilterParamDescriptor::getParameterName));
+			for (final DocumentFilterParamDescriptor.Builder paramBuilder : parameters)
+			{
+				final String fieldName = paramBuilder.getFieldName();
+				final Integer nextParamIndex = nextParamIndexByFieldName.get(fieldName);
+				if (nextParamIndex == null)
+				{
+					paramBuilder.parameterName(fieldName);
+					nextParamIndexByFieldName.put(fieldName, 2);
+				}
+				else
+				{
+					paramBuilder.parameterName(fieldName + nextParamIndex);
+					nextParamIndexByFieldName.put(fieldName, nextParamIndex + 1);
+				}
+
+				availableParameterNames.add(paramBuilder.getParameterName());
+			}
+
+			final ImmutableMap.Builder<String, DocumentFilterParamDescriptor> parametersByName = ImmutableMap.builder();
+			for (final DocumentFilterParamDescriptor.Builder paramBuilder : parameters)
+			{
+				paramBuilder.lookupDescriptor(lookupDescriptor -> {
+					if (lookupDescriptor instanceof SqlLookupDescriptor)
+					{
+						return SqlLookupDescriptor.cast(lookupDescriptor)
+								.withScope(LookupDescriptorProvider.LookupScope.DocumentFilter)
+								.withOnlyForAvailableParameterNames(availableParameterNames);
+					}
+					else
+					{
+						return lookupDescriptor;
+					}
+				});
+
+				final DocumentFilterParamDescriptor param = paramBuilder.build();
+				parametersByName.put(param.getParameterName(), param);
+			}
+
+			return parametersByName.build();
 		}
 
 		public Builder setFilterId(final String filterId)

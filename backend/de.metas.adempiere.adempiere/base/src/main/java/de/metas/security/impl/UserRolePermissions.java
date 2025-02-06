@@ -41,6 +41,7 @@ import de.metas.mobile.application.MobileApplicationRepoId;
 import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.OrgIdAccessList;
+import de.metas.security.RoleGroup;
 import de.metas.security.RoleId;
 import de.metas.security.TableAccessLevel;
 import de.metas.security.permissions.Access;
@@ -112,6 +113,8 @@ class UserRolePermissions implements IUserRolePermissions
 	 */
 	@Getter
 	private final String name;
+	@Getter
+	private final RoleGroup roleGroup;
 	@Getter
 	private final RoleId roleId;
 	@Getter(AccessLevel.PACKAGE)
@@ -197,6 +200,7 @@ class UserRolePermissions implements IUserRolePermissions
 	UserRolePermissions(final UserRolePermissionsBuilder builder)
 	{
 		name = builder.getName();
+		roleGroup = builder.getRoleGroup();
 		roleId = builder.getRoleId();
 		includes = builder.getUserRolePermissionsIncluded();
 		allRoleIds = ImmutableSet.copyOf(includes.getAllRoleIdsIncluding(roleId));

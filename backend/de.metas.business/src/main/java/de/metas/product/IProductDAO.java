@@ -2,6 +2,7 @@ package de.metas.product;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.gs1.GTIN;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplateId;
@@ -13,7 +14,6 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 

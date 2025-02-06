@@ -20,7 +20,6 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
-import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.util.Check;
@@ -166,7 +165,8 @@ public class ViewLayout implements ETagAware
 	/**
 	 * copy and override constructor
 	 */
-	private ViewLayout(final ViewLayout from,
+	private ViewLayout(
+			@NonNull final ViewLayout from,
 					   final WindowId windowId,
 					   final ViewProfileId profileId,
 					   final ImmutableList<DocumentFilterDescriptor> filters,
@@ -580,12 +580,10 @@ public class ViewLayout implements ETagAware
 	{
 		private WindowId windowId;
 		private DetailId detailId;
-		@Nullable
-		private ITranslatableString caption;
-		@Nullable
-		private ITranslatableString description;
-		private ITranslatableString emptyResultText = LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT;
-		private ITranslatableString emptyResultHint = LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT;
+		@Nullable private ITranslatableString caption;
+		@Nullable private ITranslatableString description;
+		private ITranslatableString emptyResultText;
+		private ITranslatableString emptyResultHint;
 		private int pageLength = 0;
 
 		private Collection<DocumentFilterDescriptor> filters = null;
@@ -754,7 +752,7 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
-		public <T extends IViewRow> Builder addElementsFromViewRowClassAndFieldNames(final Class<T> viewRowClass, final JSONViewDataType viewDataType, final ViewColumnHelper.ClassViewColumnOverrides... columns)
+		public <T extends IViewRow> Builder addElementsFromViewRowClassAndFieldNames(@NonNull final Class<T> viewRowClass, final JSONViewDataType viewDataType, final ViewColumnHelper.ClassViewColumnOverrides... columns)
 		{
 			final List<DocumentLayoutElementDescriptor.Builder> elements = ViewColumnHelper.createLayoutElementsForClassAndFieldNames(viewRowClass, viewDataType, columns);
 			Check.assumeNotEmpty(elements, "elements is not empty"); // shall never happen

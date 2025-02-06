@@ -1,20 +1,18 @@
-DROP VIEW IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice
-;
-
 DROP FUNCTION IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice(
-    p_IsOneLinePerInvoiceTax char(1)
-)
-;
-
-DROP FUNCTION IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice(
-    p_IsOneLinePerInvoiceTax char(1),
-    p_IsSwitchCreditMemo     char(1)
+    p_IsOneLinePerInvoiceTax    char(1),
+    p_IsSwitchCreditMemo        char(1),
+    p_IsNegateInboundAmounts    char(1),
+    p_IsPlaceBPAccountsOnCredit char(1),
+    p_IsSOTrx                   char(1)
 )
 ;
 
 CREATE OR REPLACE FUNCTION RV_DATEV_Export_Fact_Acct_Invoice(
-    p_IsOneLinePerInvoiceTax char(1) = 'N',
-    p_IsSwitchCreditMemo     char(1) = 'N'
+    p_IsOneLinePerInvoiceTax    char(1) = 'N',
+    p_IsSwitchCreditMemo        char(1) = 'N',
+    p_IsNegateInboundAmounts    char(1) = 'N',
+    p_IsPlaceBPAccountsOnCredit char(1) = 'N',
+    p_IsSOTrx                   char(1) = NULL
 )
     RETURNS TABLE
             (
@@ -60,6 +58,10 @@ BEGIN
 
     SELECT ev_dr.value                                                                          AS dr_account,
            ev_cr.value                                                                          AS cr_account,
+           (CASE
+                WHEN fa.docbasetype IN ('ARI', 'APC') THEN 'DR'
+                WHEN fa.docbasetype IN ('API', 'ARC') THEN 'CR'
+            END)                                                                                AS BP_Account_Place,
            COALESCE(SUM(fa.Amt), 0)                                                             AS Amt,
            (SELECT cur.iso_code FROM c_currency cur WHERE cur.c_currency_id = fa.c_currency_id) AS Currency,
            SUM(fa.AmtSource)                                                                    AS AmtSource,
@@ -144,6 +146,7 @@ BEGIN
              LEFT OUTER JOIN C_BPartner bp ON bp.C_BPartner_ID = fa.C_BPartner_ID
              LEFT OUTER JOIN C_DocType dt ON dt.C_DocType_ID = fa.C_DocType_ID
              LEFT OUTER JOIN C_Invoice i ON i.C_Invoice_ID = fa.C_Invoice_ID
+    WHERE (p_IsSOTrx IS NULL OR (p_IsSOTrx = dt.issotrx))
     GROUP BY fa.dr_account_id, ev_dr.value, ev_dr.name,
              fa.cr_account_id, ev_cr.value, ev_cr.name,
              fa.c_currency_id,
@@ -166,21 +169,40 @@ BEGIN
              bp.debtorid,
              bp.creditorid;
 
+    -- Use the partner's debtorId for sales invoices and creditorId for purchase invoices if they were provided.
+    -- Important: Perform this update after the dr_account and cr_account were switched for credit memos to make sure the accounts are already in the correct place.
+    UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t SET dr_account=t.BP_debtorId WHERE t.docbasetype = 'ARI' AND t.BP_debtorId IS NOT NULL;
+    UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t SET cr_account=t.BP_debtorId WHERE t.docbasetype = 'ARC' AND t.BP_debtorId IS NOT NULL;
+    UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t SET cr_account=t.BP_creditorId WHERE t.docbasetype = 'API' AND t.BP_creditorId IS NOT NULL;
+    UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t SET dr_account=t.BP_creditorId WHERE t.docbasetype = 'APC' AND t.BP_creditorId IS NOT NULL;
+
     IF p_IsSwitchCreditMemo = 'Y' THEN
         UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t
-        SET Amt          = t.Amt * (-1),
-            TaxAmtSource = t.TaxAmtSource * (-1),
-            dr_account   = t.cr_account,
-            cr_account   = t.dr_account
+        SET Amt              = t.Amt * (-1),
+            TaxAmtSource     = t.TaxAmtSource * (-1),
+            dr_account       = t.cr_account,
+            cr_account       = t.dr_account,
+            BP_Account_Place = (CASE
+                                    WHEN t.BP_Account_Place = 'DR' THEN 'CR'
+                                    WHEN t.BP_Account_Place = 'CR' THEN 'DR'
+                                END)
         WHERE t.docbasetype IN ('APC', 'ARC');
     END IF;
 
+    IF p_IsPlaceBPAccountsOnCredit = 'Y' THEN
+        UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t
+        SET dr_account       = t.cr_account,
+            cr_account       = t.dr_account,
+            BP_Account_Place = 'CR'
+        WHERE t.BP_Account_Place = 'DR';
+    END IF;
 
-    -- Use the partner's debtorId for sales invoices and creditorId for purchase invoices if they were provided.
-    -- Important: Perform this update after the dr_account and cr_account were switched for credit memos to make sure the accounts are already in the correct place.
-    UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t
-    SET dr_account = CASE WHEN t.issotrx = 'Y' AND t.BP_debtorId != '' THEN t.BP_debtorId ELSE t.dr_account END,
-        cr_account = CASE WHEN t.issotrx = 'N' AND t.BP_creditorId != '' THEN t.BP_creditorId ELSE t.cr_account END;
+    IF p_IsNegateInboundAmounts = 'Y' THEN
+        UPDATE tmp_DATEV_Export_Fact_Acct_Invoice t
+        SET Amt          = t.Amt * (-1),
+            TaxAmtSource = t.TaxAmtSource * (-1)
+        WHERE t.docbasetype IN ('APC', 'ARI');
+    END IF;
 
     RETURN QUERY SELECT t.dr_account,
                         t.cr_account,

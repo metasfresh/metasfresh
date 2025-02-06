@@ -21,44 +21,66 @@ CREATE FUNCTION report.Docs_Sales_Dunning_Report_details(IN p_Record_ID   numeri
             )
 AS
 $$
-SELECT COALESCE(dt_trl.printname, dt.PrintName)                                             AS PrintName,
-       COALESCE(doc.DocumentNo, 'ERROR')                                                    AS DocumentNo,
-       doc.DocumentDate,
-       c.cursymbol                                                                          AS currency,
-       doc.GrandTotal,
-       doc.PaidAmt                                                                          AS paidamt,
-       doc.GrandTotal - doc.PaidAmt                                                         AS openamt,
-       dl.amt                                                                               AS FeeAmt,
-       invoiceopen(dc.Record_ID, 0::numeric) + dl.amt                                       AS totalamt,
-       paymenttermduedate(doc.C_PaymentTerm_ID, doc.DocumentDate::timestamp WITH TIME ZONE) AS DueDate,
-       dc.DaysDue,
-       dlv.printname                                                                        AS DunningLevel
-FROM C_DunningDoc dd
-         LEFT JOIN C_DunningLevel dlv ON dd.c_dunninglevel_id = dlv.c_dunninglevel_id
-         LEFT JOIN C_DunningDoc_line dl ON dd.C_DunningDoc_ID = dl.C_DunningDoc_ID
-         LEFT JOIN C_DunningDoc_Line_Source dls ON dl.C_DunningDoc_Line_ID = dls.C_DunningDoc_Line_ID AND dls.isActive = 'Y'
-         LEFT JOIN C_Dunning_Candidate dc ON dls.C_Dunning_Candidate_ID = dc.C_Dunning_Candidate_ID AND dc.isActive = 'Y'
-         LEFT JOIN C_Currency c ON dc.C_Currency_ID = c.C_Currency_ID
-         LEFT JOIN
-     (
-         SELECT sub_dc.C_Dunning_Candidate_ID,
-                Documentpaid(sub_dc.Record_ID, sub_dc.AD_Table_ID, sub_dc.C_Currency_ID, i.MultiplierAP) AS PaidAmt,
-                COALESCE(i.DocumentNo, o.DocumentNo)                                                     AS DocumentNo,
-                COALESCE(i.DateInvoiced, o.DateOrdered)                                                  AS DocumentDate,
-                COALESCE(i.C_Doctype_ID, o.C_Doctype_ID)                                                 AS C_Doctype_ID,
-                COALESCE(i.C_PaymentTerm_ID, o.C_PaymentTerm_ID)                                         AS C_PaymentTerm_ID,
-                COALESCE(i.GrandTotal, o.GrandTotal)                                                     AS GrandTotal
-         FROM C_Dunning_Candidate sub_dc
-                  LEFT JOIN C_Invoice_v i ON sub_dc.Record_ID = i.C_Invoice_ID AND sub_dc.AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Invoice' AND isActive = 'Y') AND i.isActive = 'Y'
-                  LEFT JOIN C_Order o ON sub_dc.Record_ID = o.C_Order_ID AND sub_dc.AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Order' AND isActive = 'Y') AND o.isActive = 'Y'
-         WHERE sub_dc.isActive = 'Y'
-     ) doc ON dc.C_Dunning_Candidate_ID = doc.C_Dunning_Candidate_ID
-         LEFT JOIN c_doctype dt ON doc.c_doctype_id = dt.c_doctype_id AND dt.isActive = 'Y'
-         LEFT JOIN C_DocType_Trl dt_trl ON doc.c_doctype_id = dt_trl.c_doctype_id AND dt_trl.AD_Language = p_AD_Language AND dt_trl.isActive = 'Y'
-WHERE dd.C_DunningDoc_ID = p_Record_ID
-    ;
+WITH TableIds AS (SELECT get_table_id('C_Invoice') AS InvoiceTableId,
+                         get_table_id('C_Order')   AS OrderTableId),
+     DunningDetails AS (SELECT dd.C_DunningDoc_ID,
+                                            dl.C_DunningDoc_Line_ID,
+                                            dl.amt                                           AS FeeAmt,
+                                            dc.C_Dunning_Candidate_ID,
+                                            dc.DaysDue,
+                                            dlv.printname                                    AS DunningLevel,
+                                            c.cursymbol                                      AS currency,
+                                            dc.record_id,
+                                            invoiceopen(dc.Record_ID, 0::numeric) + dl.amt   AS totalamt,
+                                            Documentpaid(dc.Record_ID, dc.AD_Table_ID, dc.C_Currency_ID,
+                                                         (CASE
+                                                              WHEN charat(coalesce(di.docbasetype,dor.docbasetype)::character varying, 2)::text = ANY (ARRAY ['P'::text, 'E'::text]) THEN (-1)
+                                                                                                                                                                                     ELSE 1
+                                                          END))                              AS PaidAmt,
+                                            COALESCE(i.DocumentNo, o.DocumentNo)             AS DocumentNo,
+                                            COALESCE(i.DateInvoiced, o.DateOrdered)          AS DocumentDate,
+                                            COALESCE(i.C_Doctype_ID, o.C_Doctype_ID)         AS C_Doctype_ID,
+                                            COALESCE(i.C_PaymentTerm_ID, o.C_PaymentTerm_ID) AS C_PaymentTerm_ID,
+                                            COALESCE(i.GrandTotal, o.GrandTotal)             AS GrandTotal,
+                                            paymenttermduedate(
+                                                    COALESCE(i.C_PaymentTerm_ID, o.C_PaymentTerm_ID),
+                                                    COALESCE(i.DateInvoiced, o.DateOrdered)::TIMESTAMP WITH TIME ZONE
+                                            )                                                AS duedate
+                                     FROM C_DunningDoc dd
+                                              JOIN C_DunningDoc_line dl ON dd.C_DunningDoc_ID = dl.C_DunningDoc_ID
+                                              JOIN C_DunningDoc_Line_Source dls ON dl.C_DunningDoc_Line_ID = dls.C_DunningDoc_Line_ID
+                                              JOIN C_Dunning_Candidate dc ON dls.C_Dunning_Candidate_ID = dc.C_Dunning_Candidate_ID
+                                              JOIN C_Currency c ON dc.C_Currency_ID = c.C_Currency_ID
+                                              JOIN C_DunningLevel dlv ON dc.c_dunninglevel_id = dlv.c_dunninglevel_id
+                                              LEFT JOIN C_Invoice i
+                                                        ON dc.Record_ID = i.C_Invoice_ID
+                                                            AND i.isActive = 'Y'
+                                                            AND dc.AD_Table_ID = (SELECT InvoiceTableId FROM TableIds)
+                                              LEFT JOIN c_doctype di ON i.c_doctype_id = di.c_doctype_id
+                                              LEFT JOIN C_Order o
+                                                        ON dc.Record_ID = o.C_Order_ID
+                                                            AND o.isActive = 'Y'
+                                                            AND dc.AD_Table_ID = (SELECT OrderTableId FROM TableIds)
+                                              LEFT JOIN c_doctype dor ON o.c_doctype_id = dor.c_doctype_id
+                                     WHERE dd.c_dunningdoc_id = p_Record_ID)
+SELECT COALESCE(dt_trl.printname, dt.PrintName) AS printname,
+       COALESCE(dd.DocumentNo, 'ERROR')         AS documentno,
+       dd.DocumentDate,
+       dd.currency,
+       dd.GrandTotal,
+       dd.PaidAmt                               AS paidamt,
+       dd.GrandTotal - dd.PaidAmt               AS openamt,
+       dd.FeeAmt                                AS feeamt,
+       dd.totalamt,
+       dd.duedate,
+       dd.DaysDue,
+       dd.DunningLevel
+FROM DunningDetails dd
+         LEFT JOIN C_DocType dt
+                   ON dd.C_Doctype_ID = dt.C_Doctype_ID
+         LEFT JOIN C_DocType_Trl dt_trl
+                   ON dd.C_Doctype_ID = dt_trl.C_Doctype_ID
+                       AND dt_trl.AD_Language = p_AD_Language;
 $$
     LANGUAGE sql STABLE
 ;
-
-

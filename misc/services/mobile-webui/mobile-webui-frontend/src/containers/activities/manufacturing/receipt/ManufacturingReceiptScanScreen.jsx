@@ -3,7 +3,7 @@ import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
-import { updateManufacturingReceiptTarget } from '../../../../actions/ManufacturingActions';
+import { updateManufacturingLUReceiptTarget } from '../../../../actions/ManufacturingActions';
 
 import BarcodeScannerComponent from '../../../../components/BarcodeScannerComponent';
 import { parseQRCodeString } from '../../../../utils/qrCode/hu';
@@ -34,7 +34,7 @@ const ManufacturingReceiptScanScreen = () => {
   const history = useHistory();
   const onBarcodeScanned = ({ huQRCode }) => {
     dispatch(
-      updateManufacturingReceiptTarget({
+      updateManufacturingLUReceiptTarget({
         wfProcessId,
         activityId,
         lineId,

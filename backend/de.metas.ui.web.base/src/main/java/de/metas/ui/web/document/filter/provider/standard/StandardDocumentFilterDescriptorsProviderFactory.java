@@ -25,6 +25,7 @@ import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Component;
 
@@ -107,7 +108,7 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 		final ArrayList<DocumentFilterDescriptor> inlineFilters = new ArrayList<>();
 		for (final DocumentFieldDescriptor field : fieldsForDefaultFiltering)
 		{
-			final DocumentFilterParamDescriptor.Builder filterParam = createFilterParam(field);
+			final DocumentFilterParamDescriptor.Builder filterParam = prepareFilterParam(field);
 
 			if (isAutodetectDefaultDateFilter && defaultDateFilter == null && filterParam.getWidgetType().isDateOrTime())
 			{
@@ -186,7 +187,7 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 		return ImmutableDocumentFilterDescriptorsProvider.of(descriptors);
 	}
 
-	private static DocumentFilterParamDescriptor.Builder createFilterParam(final DocumentFieldDescriptor field)
+	private static DocumentFilterParamDescriptor.Builder prepareFilterParam(final DocumentFieldDescriptor field)
 	{
 		final ITranslatableString displayName = field.getCaption();
 		final String fieldName = field.getFieldName();
@@ -282,7 +283,9 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 
 	private FacetsFilterLookupDescriptor createFacetsFilterLookupDescriptor(final DocumentFieldDescriptor field)
 	{
-		final String columnName = field.getDataBinding().get().getColumnName();
+		final String columnName = field.getDataBinding()
+				.orElseThrow(() -> new AdempiereException("No data binding defined for " + field))
+				.getColumnName();
 		final String filterId = FACET_FILTER_ID_PREFIX + columnName;
 
 		final DocumentFieldDefaultFilterDescriptor fieldFilteringInfo = field.getDefaultFilterInfo();
@@ -290,7 +293,7 @@ public class StandardDocumentFilterDescriptorsProviderFactory implements Documen
 		final LookupDescriptor fieldLookupDescriptor = field.getLookupDescriptorForFiltering().orElse(null);
 
 		final boolean numericKey;
-		if (fieldWidgetType.isLookup())
+		if (fieldWidgetType.isLookup() && fieldLookupDescriptor != null)
 		{
 			numericKey = fieldLookupDescriptor.isNumericKey();
 		}

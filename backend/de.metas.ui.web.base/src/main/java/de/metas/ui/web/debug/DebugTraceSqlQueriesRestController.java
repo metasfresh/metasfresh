@@ -24,8 +24,8 @@ package de.metas.ui.web.debug;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.ui.web.session.UserSession;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -55,30 +55,30 @@ public class DebugTraceSqlQueriesRestController
 
 	@GetMapping
 	public void setTraceSqlQueries(
-			@ApiParam("If Enabled, all SQL queries are logged with loglevel=WARN, or if the system property <code>" + IQueryStatisticsLogger.SYSTEM_PROPERTY_LOG_TO_SYSTEM_ERROR + "</code> is set to <code>true</code>, they will be written to std-err.")
+			@Parameter(description = "If Enabled, all SQL queries are logged with loglevel=WARN, or if the system property <code>" + IQueryStatisticsLogger.SYSTEM_PROPERTY_LOG_TO_SYSTEM_ERROR + "</code> is set to <code>true</code>, they will be written to std-err.")
 			@RequestParam("enabled") final boolean enabled)
 	{
 		userSession.assertLoggedIn();
 
 		if (enabled)
 		{
-			statisticsLogger.enableWithSqlTracing();
+			statisticsLogger.enableSqlTracing();
 		}
 		else
 		{
-			statisticsLogger.disable();
+			statisticsLogger.disableSqlTracing();
 		}
 	}
 
 	@GetMapping("/top/byAverageDuration")
-	@ApiOperation("Gets top SQL queries ordered by their average execution time (descending)")
+	@Operation(summary = "Gets top SQL queries ordered by their average execution time (descending)")
 	public Map<String, Object> getTopAverageDurationQueriesAsString()
 	{
 		userSession.assertLoggedIn();
 		return queriesListToMap(statisticsLogger.getTopAverageDurationQueriesAsString());
 	}
 
-	@ApiOperation("Gets top SQL queries ordered by their total summed executon time (descending)")
+	@Operation(summary = "Gets top SQL queries ordered by their total summed executon time (descending)")
 	@GetMapping("/top/byTotalDuration")
 	public Map<String, Object> getTopTotalDurationQueriesAsString()
 	{
@@ -87,7 +87,7 @@ public class DebugTraceSqlQueriesRestController
 	}
 
 	@GetMapping("/top/byExecutionCount")
-	@ApiOperation("Gets top SQL queries ordered by their execution count (descending)")
+	@Operation(summary = "Gets top SQL queries ordered by their execution count (descending)")
 	public Map<String, Object> getTopCountQueriesAsString()
 	{
 		userSession.assertLoggedIn();

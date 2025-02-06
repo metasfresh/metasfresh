@@ -67,7 +67,7 @@ public class DerKurierShipperConfigRepository
 				.firstOnly(I_DerKurier_Shipper_Config.class);
 		if (shipperConfigRecord == null)
 		{
-			Optional.empty();
+			return Optional.empty();
 		}
 
 		final DerKurierShipperConfig shipperConfig = DerKurierShipperConfig.builder()

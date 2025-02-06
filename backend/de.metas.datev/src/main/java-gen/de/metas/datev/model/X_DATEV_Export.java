@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_DATEV_Export extends org.compiere.model.PO implements I_DATEV_Export, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 623345890L;
+	private static final long serialVersionUID = -281004886L;
 
     /** Standard Constructor */
     public X_DATEV_Export (final Properties ctx, final int DATEV_Export_ID, @Nullable final String trxName)
@@ -95,6 +95,51 @@ public class X_DATEV_Export extends org.compiere.model.PO implements I_DATEV_Exp
 	public boolean isExcludeAlreadyExported() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsExcludeAlreadyExported);
+	}
+
+	@Override
+	public void setIsNegateInboundAmounts (final boolean IsNegateInboundAmounts)
+	{
+		set_Value (COLUMNNAME_IsNegateInboundAmounts, IsNegateInboundAmounts);
+	}
+
+	@Override
+	public boolean isNegateInboundAmounts() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsNegateInboundAmounts);
+	}
+
+	@Override
+	public void setIsPlaceBPAccountsOnCredit (final boolean IsPlaceBPAccountsOnCredit)
+	{
+		set_Value (COLUMNNAME_IsPlaceBPAccountsOnCredit, IsPlaceBPAccountsOnCredit);
+	}
+
+	@Override
+	public boolean isPlaceBPAccountsOnCredit() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPlaceBPAccountsOnCredit);
+	}
+
+	/** 
+	 * IsSOTrx AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISSOTRX_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISSOTRX_Yes = "Y";
+	/** No = N */
+	public static final String ISSOTRX_No = "N";
+	@Override
+	public void setIsSOTrx (final @Nullable java.lang.String IsSOTrx)
+	{
+		set_Value (COLUMNNAME_IsSOTrx, IsSOTrx);
+	}
+
+	@Override
+	public java.lang.String getIsSOTrx() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsSOTrx);
 	}
 
 	@Override

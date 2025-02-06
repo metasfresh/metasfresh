@@ -70,7 +70,7 @@ public class MicrosoftGraphMailSender implements MailSender
 		{
 			message = toMessage(mail);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			errorManager.createIssue(ex); // make sure the exception is recorded
 			return EMailSentStatus.invalid(ex);
@@ -93,7 +93,7 @@ public class MicrosoftGraphMailSender implements MailSender
 
 			return EMailSentStatus.ok(message.internetMessageId);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			errorManager.createIssue(ex); // make sure the exception is recorded
 			return EMailSentStatus.error(ex);
@@ -121,8 +121,8 @@ public class MicrosoftGraphMailSender implements MailSender
 		//
 		// Recipients
 		addRecipients(message, RecipientType.TO, mail.getTos(), mail.getDebugMailToAddress());
-		addRecipients(message, RecipientType.CC, mail.getCcs());
-		addRecipients(message, RecipientType.BCC, mail.getBccs());
+		addRecipients(message, RecipientType.CC, mail.getCcs(), mail.getDebugMailToAddress());
+		addRecipients(message, RecipientType.BCC, mail.getBccs(), mail.getDebugMailToAddress());
 
 		if (mail.getReplyTo() != null)
 		{
@@ -163,14 +163,6 @@ public class MicrosoftGraphMailSender implements MailSender
 
 	private enum RecipientType
 	{TO, CC, BCC, REPLY_TO,}
-
-	private static void addRecipients(
-			@NonNull final Message message,
-			@NonNull final RecipientType type,
-			@Nullable final List<? extends Address> addresses)
-	{
-		addRecipients(message, type, addresses, null);
-	}
 
 	private static void addRecipients(
 			@NonNull final Message message,
@@ -287,6 +279,7 @@ public class MicrosoftGraphMailSender implements MailSender
 		message.internetMessageHeaders.add(header);
 	}
 
+	@Nullable
 	private static AttachmentCollectionPage toGraphAttachments(final List<EMailAttachment> emailAttachments)
 	{
 		if (emailAttachments == null || emailAttachments.isEmpty())
@@ -343,7 +336,7 @@ public class MicrosoftGraphMailSender implements MailSender
 		{
 			return JsonObjectMapperHolder.sharedJsonObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(message);
 		}
-		catch (JsonProcessingException e)
+		catch (final JsonProcessingException e)
 		{
 			return message.toString();
 		}

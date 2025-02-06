@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -21,6 +22,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
+import de.metas.ui.web.window.descriptor.decorator.IDocumentDecorator;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
@@ -162,6 +164,15 @@ public class DocumentEntityDescriptor
 	@Getter
 	private final boolean cloneEnabled;
 
+	@Getter
+	private final boolean queryIfNoFilters;
+
+	@NonNull
+	@Getter
+	private final ImmutableList<IDocumentDecorator> documentDecorators;
+
+	@Nullable @Getter private final NotFoundMessages notFoundMessages;
+
 	private DocumentEntityDescriptor(@NonNull final Builder builder)
 	{
 		documentType = builder.getDocumentType();
@@ -208,6 +219,12 @@ public class DocumentEntityDescriptor
 		soTrx = builder.getSOTrx();
 
 		cloneEnabled = builder.isCloneEnabled();
+
+		queryIfNoFilters = builder.queryIfNoFilters;
+
+		documentDecorators = CoalesceUtil.coalesceNotNull(builder.getDocumentDecorators(), ImmutableList.of());
+
+		notFoundMessages = builder.notFoundMessages;
 	}
 
 	@Override
@@ -260,11 +277,7 @@ public class DocumentEntityDescriptor
 		return Check.assumeNotNull(getDetailId(), "expected detailId to be et for {}", this);
 	}
 
-	public boolean hasIdFields()
-	{
-		return !idFields.isEmpty();
-	}
-
+	@Nullable
 	public DocumentFieldDescriptor getSingleIdFieldOrNull()
 	{
 		return idFields.size() == 1 ? idFields.get(0) : null;
@@ -361,7 +374,7 @@ public class DocumentEntityDescriptor
 				.filter(includedEntity -> tableName.equals(includedEntity.getTableNameOrNull()));
 	}
 
-	public <T extends DocumentEntityDataBindingDescriptor> T getDataBinding(@SuppressWarnings("unused") final Class<T> bindingType)
+	public <T extends DocumentEntityDataBindingDescriptor> T getDataBinding(@SuppressWarnings("unused") final Class<T> ignoredBindingType)
 	{
 		@SuppressWarnings("unchecked") final T dataBindingCasted = (T)getDataBinding();
 		return dataBindingCasted;
@@ -389,6 +402,7 @@ public class DocumentEntityDescriptor
 		return tableName.orElseThrow(() -> new IllegalStateException("No TableName defined for " + this));
 	}
 
+	@Nullable
 	public String getTableNameOrNull()
 	{
 		return tableName.orElse(null);
@@ -443,6 +457,7 @@ public class DocumentEntityDescriptor
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentEntityDescriptor.Builder.class);
 		private DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService;
+		private ImmutableList<IDocumentDecorator> documentDecorators;
 
 		private boolean _built = false;
 
@@ -454,9 +469,9 @@ public class DocumentEntityDescriptor
 		private ITranslatableString _caption = TranslatableStrings.empty();
 		private ITranslatableString _description = TranslatableStrings.empty();
 
-		private final Map<String, DocumentFieldDescriptor.Builder> _fieldBuilders = new LinkedHashMap<>();
-		private Map<String, DocumentFieldDescriptor> _fields = null; // will be built
-		private final Map<DetailId, DocumentEntityDescriptor> _includedEntitiesByDetailId = new LinkedHashMap<>();
+		private final LinkedHashMap<String, DocumentFieldDescriptor.Builder> _fieldBuilders = new LinkedHashMap<>();
+		private ImmutableMap<String, DocumentFieldDescriptor> _fields = null; // will be built
+		private final LinkedHashMap<DetailId, DocumentEntityDescriptor> _includedEntitiesByDetailId = new LinkedHashMap<>();
 		private DocumentEntityDataBindingDescriptorBuilder _dataBinding = DocumentEntityDataBindingDescriptorBuilder.NULL;
 		private boolean _highVolume;
 
@@ -492,6 +507,10 @@ public class DocumentEntityDescriptor
 		private Optional<String> _tableName = Optional.empty();
 		private Optional<SOTrx> _soTrx = Optional.empty();
 		private int viewPageLength;
+
+		private boolean queryIfNoFilters = true;
+
+		@Getter @Nullable private NotFoundMessages notFoundMessages;
 
 		private Builder()
 		{
@@ -651,6 +670,7 @@ public class DocumentEntityDescriptor
 					.collect(ImmutableList.toImmutableList());
 		}
 
+		@Nullable
 		public DocumentFieldDescriptor.Builder getSingleIdFieldBuilderOrNull()
 		{
 			final List<DocumentFieldDescriptor.Builder> idFieldBuilders = getIdFieldBuilders();
@@ -686,6 +706,7 @@ public class DocumentEntityDescriptor
 			return _fields;
 		}
 
+		@Nullable
 		private DocumentFieldDescriptor getParentLinkFieldOrNull()
 		{
 			final List<DocumentFieldDescriptor> parentLinkFields = getFields()
@@ -765,12 +786,13 @@ public class DocumentEntityDescriptor
 			return setDataBinding(() -> dataBinding);
 		}
 
-		public <T extends DocumentEntityDataBindingDescriptorBuilder> T getDataBindingBuilder(@SuppressWarnings("unused") final Class<T> builderType)
+		public <T extends DocumentEntityDataBindingDescriptorBuilder> T getDataBindingBuilder(@SuppressWarnings("unused") final Class<T> ignoredBuilderType)
 		{
 			@SuppressWarnings("unchecked") final T dataBindingBuilder = (T)_dataBinding;
 			return dataBindingBuilder;
 		}
 
+		@Nullable
 		private DocumentEntityDataBindingDescriptor getOrBuildDataBinding()
 		{
 			Preconditions.checkNotNull(_dataBinding, "dataBinding");
@@ -1123,6 +1145,19 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
+		@NonNull
+		public Builder setDocumentDecorators(final ImmutableList<IDocumentDecorator> documentDecorators)
+		{
+			this.documentDecorators = documentDecorators;
+			return this;
+		}
+
+		@Nullable
+		public ImmutableList<IDocumentDecorator> getDocumentDecorators()
+		{
+			return this.documentDecorators;
+		}
+
 		public Builder setRefreshViewOnChangeEvents(final boolean refreshViewOnChangeEvents)
 		{
 			this._refreshViewOnChangeEvents = refreshViewOnChangeEvents;
@@ -1168,6 +1203,18 @@ public class DocumentEntityDescriptor
 					.sorted(Ordering.natural().onResultOf(DocumentFieldDescriptor.Builder::getDefaultOrderByPriority))
 					.map(field -> DocumentQueryOrderBy.byFieldName(field.getFieldName(), field.isDefaultOrderByAscending()))
 					.collect(DocumentQueryOrderByList.toDocumentQueryOrderByList());
+		}
+
+		public Builder queryIfNoFilters(final boolean queryIfNoFilters)
+		{
+			this.queryIfNoFilters = queryIfNoFilters;
+			return this;
+		}
+
+		public Builder notFoundMessages(@Nullable final NotFoundMessages notFoundMessages)
+		{
+			this.notFoundMessages = notFoundMessages;
+			return this;
 		}
 	}
 }

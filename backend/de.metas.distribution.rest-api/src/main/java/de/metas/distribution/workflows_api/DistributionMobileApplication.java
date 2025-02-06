@@ -86,15 +86,15 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	@Override
 	public WFProcess continueWorkflow(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
 	{
-		final DDOrderId ddOrderId = toDDOrderId(wfProcessId);
-		final DistributionJob job = distributionRestService.assignJob(ddOrderId, callerId);
+		final DistributionJobId jobId = DistributionJobId.ofWFProcessId(wfProcessId);
+		final DistributionJob job = distributionRestService.assignJob(jobId, callerId);
 		return toWFProcess(job);
 	}
 
 	private static WFProcess toWFProcess(final DistributionJob job)
 	{
 		return WFProcess.builder()
-				.id(WFProcessId.ofIdPart(APPLICATION_ID, job.getDdOrderId()))
+				.id(job.getId().toWFProcessId())
 				.responsibleId(job.getResponsibleId())
 				.document(job)
 				.activities(ImmutableList.of(
@@ -130,15 +130,9 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	@Override
 	public WFProcess getWFProcessById(final WFProcessId wfProcessId)
 	{
-		final DDOrderId ddOrderId = toDDOrderId(wfProcessId);
-		final DistributionJob job = distributionRestService.getJobById(ddOrderId);
+		final DistributionJobId jobId = DistributionJobId.ofWFProcessId(wfProcessId);
+		final DistributionJob job = distributionRestService.getJobById(jobId);
 		return toWFProcess(job);
-	}
-
-	@NonNull
-	private static DDOrderId toDDOrderId(final WFProcessId wfProcessId)
-	{
-		return wfProcessId.getRepoId(DDOrderId::ofRepoId);
 	}
 
 	@Override
@@ -212,10 +206,10 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 		return builder.build();
 	}
 
-	public void processEvent(final JsonDistributionEvent event, final UserId callerId)
+	public WFProcess processEvent(final JsonDistributionEvent event, final UserId callerId)
 	{
 		final WFProcessId wfProcessId = WFProcessId.ofString(event.getWfProcessId());
-		changeWFProcessById(
+		return changeWFProcessById(
 				wfProcessId,
 				(wfProcess, job) -> {
 					wfProcess.assertHasAccess(callerId);

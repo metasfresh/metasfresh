@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { trl } from '../../utils/translations';
 import { countLaunchers, getFacets } from '../../api/launchers';
 import GetDocumentNoDialog from './GetDocumentNoDialog';
+import { useQuery } from '../../hooks/useQuery';
 
 const useGroupsLoadingCounter = () => {
   const [loadingCount, setLoadingCount] = useState(0);
@@ -41,20 +42,17 @@ const useGroups = ({ applicationId, filterByDocumentNo, activeFacetIdsInitial })
   return { groups, groupsLoading, toggleActiveFacet };
 };
 
-const useResultsCount = ({ applicationId, filterByDocumentNo, groups }) => {
-  const [resultsCountLoading, setResultsCountLoading] = useState(false);
-  const [resultsCount, setResultsCount] = useState(-1);
+const useResultsCount = ({ applicationId, filterByDocumentNo, groupsLoading, groups }) => {
+  const { isPending, data } = useQuery({
+    enabled: !groupsLoading,
+    queryKey: [applicationId, filterByDocumentNo, groups],
+    queryFn: () => {
+      const facetIds = computeActiveFacetIdsFromGroups(groups);
+      return countLaunchers({ applicationId, filterByDocumentNo, facetIds });
+    },
+  });
 
-  useEffect(() => {
-    const facetIds = computeActiveFacetIdsFromGroups(groups);
-
-    setResultsCountLoading(true);
-    countLaunchers({ applicationId, filterByDocumentNo, facetIds })
-      .then((count) => setResultsCount(count))
-      .finally(() => setResultsCountLoading(false));
-  }, [applicationId, filterByDocumentNo, groups]);
-
-  return { resultsCountLoading, resultsCount };
+  return { resultsCountLoading: isPending, resultsCount: data };
 };
 
 const toggleActiveFacetOfGroups = ({ groups, facetId }) => {
@@ -121,7 +119,12 @@ const WFLaunchersFilters = ({
     filterByDocumentNo,
     activeFacetIdsInitial,
   });
-  const { resultsCountLoading, resultsCount } = useResultsCount({ applicationId, filterByDocumentNo, groups });
+  const { resultsCountLoading, resultsCount } = useResultsCount({
+    applicationId,
+    filterByDocumentNo,
+    groupsLoading,
+    groups,
+  });
 
   const onFilterByDocumentNoChanged = (filterByDocumentNoNew) => {
     setFilterByDocumentNo(filterByDocumentNoNew);

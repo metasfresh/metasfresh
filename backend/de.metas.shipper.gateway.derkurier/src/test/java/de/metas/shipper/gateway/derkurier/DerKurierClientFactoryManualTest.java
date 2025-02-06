@@ -1,20 +1,18 @@
 package de.metas.shipper.gateway.derkurier;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.time.LocalTime;
-
-import org.junit.Ignore;
-import org.junit.Test;
-
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
-import de.metas.shipper.gateway.derkurier.misc.DerKurierDeliveryOrderService;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfig;
 import de.metas.shipper.gateway.derkurier.misc.DerKurierShipperConfigRepository;
 import de.metas.shipper.gateway.derkurier.misc.ParcelNumberGenerator;
 import de.metas.shipper.gateway.derkurier.restapi.models.Routing;
 import de.metas.shipper.gateway.derkurier.restapi.models.RoutingRequest;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import java.time.LocalTime;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -52,10 +50,11 @@ public class DerKurierClientFactoryManualTest
 
 		final AttachmentEntryService attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 
+		final DerKurierDeliveryOrderRepository derKurierDeliveryOrderRepository = new DerKurierDeliveryOrderRepository(converters);
 		final DerKurierClientFactory derKurierClientFactory = new DerKurierClientFactory(
 				derKurierShipperConfigRepository,
-				new DerKurierDeliveryOrderService(attachmentEntryService),
-				new DerKurierDeliveryOrderRepository(converters),
+				new DerKurierDeliveryOrderService(derKurierDeliveryOrderRepository, attachmentEntryService),
+				derKurierDeliveryOrderRepository,
 				converters);
 
 		final DerKurierShipperConfig shipperConfig = DerKurierShipperConfig.builder()

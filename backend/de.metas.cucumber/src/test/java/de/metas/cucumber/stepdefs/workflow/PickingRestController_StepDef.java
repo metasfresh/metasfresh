@@ -33,8 +33,8 @@ import de.metas.cucumber.stepdefs.hu.HUQRCode_StepDefData;
 import de.metas.cucumber.stepdefs.mobileui.picking.MobileUIPickingClient;
 import de.metas.cucumber.stepdefs.picking.PickingSlot_StepDefData;
 import de.metas.cucumber.stepdefs.workflow.dto.JsonWFPickingStep;
-import de.metas.cucumber.stepdefs.workflow.dto.WFActivityId;
-import de.metas.cucumber.stepdefs.workflow.dto.WFProcessId;
+import de.metas.workflow.rest_api.model.WFActivityId;
+import de.metas.workflow.rest_api.model.WFProcessId ;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.model.I_M_PickingSlot;
@@ -76,7 +76,7 @@ public class PickingRestController_StepDef
 		final String content = testContext.getApiResponse().getContent();
 		final JsonNode response = objectMapper.readValue(content, JsonNode.class);
 
-		final WFProcessId wfProcessId = WFProcessId.of(response.at("/id").asText());
+		final WFProcessId wfProcessId = WFProcessId.ofString(response.at("/id").asText());
 		row.getAsIdentifier("WorkflowProcess").putOrReplace(workflowProcessTable, wfProcessId);
 
 		final JsonNode wfActivities = response.at("/activities");
@@ -87,7 +87,7 @@ public class PickingRestController_StepDef
 				continue;
 			}
 
-			final WFActivityId wfActivityId = WFActivityId.of(wfActivityNode.at("/activityId").asText());
+			final WFActivityId wfActivityId = WFActivityId.ofString(wfActivityNode.at("/activityId").asText());
 			row.getAsIdentifier("WorkflowActivity").put(workflowActivityTable, wfActivityId);
 
 			final JsonNode pickingLinesNodes = wfActivityNode.at("/componentProps/lines");
@@ -124,7 +124,7 @@ public class PickingRestController_StepDef
 				continue;
 			}
 
-			final WFActivityId wfActivityId = WFActivityId.of(wfActivityNode.at("/activityId").asText());
+			final WFActivityId wfActivityId = WFActivityId.ofString(wfActivityNode.at("/activityId").asText());
 			row.getAsIdentifier("WorkflowActivity").put(workflowActivityTable, wfActivityId);
 		}
 	}
@@ -149,15 +149,15 @@ public class PickingRestController_StepDef
 		final String workflowIdentifier = workflowIdentifierGroup.replace(":", "");
 		final WFProcessId wfProcessId = workflowProcessTable.get(workflowIdentifier);
 
-		String actualEndpoint = endpointPath.replace(workflowIdentifierGroup, wfProcessId.getId());
+		String actualEndpoint = endpointPath.replace(workflowIdentifierGroup, wfProcessId.getAsString());
 
 		if (matcher.find())
 		{
 			final String activityIdentifierGroup = matcher.group(1);
 			final String activityIdentifier = activityIdentifierGroup.replace(":", "");
-			final WFActivityId activityId = workflowActivityTable.get(activityIdentifier);
+			final de.metas.workflow.rest_api.model.WFActivityId activityId = workflowActivityTable.get(activityIdentifier);
 
-			actualEndpoint = actualEndpoint.replace(activityIdentifierGroup, activityId.getActivityId());
+			actualEndpoint = actualEndpoint.replace(activityIdentifierGroup, activityId.getAsString());
 		}
 
 		testContext.setEndpointPath(actualEndpoint);
@@ -170,7 +170,7 @@ public class PickingRestController_StepDef
 		final I_M_PickingSlot slot = pickingSlotsTable.getOptional(row.getAsIdentifier(I_M_PickingSlot.COLUMNNAME_M_PickingSlot_ID))
 				.orElseThrow(() -> new AdempiereException("No M_PickingSlot found for identifier=" + row.getAsIdentifier(I_M_PickingSlot.COLUMNNAME_M_PickingSlot_ID)));
 
-		mobileUIPickingClient.scanPickingSlot(workflowProcessTable.get(row.getAsIdentifier("WorkflowProcess")).getId(),
+		mobileUIPickingClient.scanPickingSlot(workflowProcessTable.get(row.getAsIdentifier("WorkflowProcess")).getAsString(),
 											  PickingSlotIdAndCaption.of(PickingSlotId.ofRepoId(slot.getM_PickingSlot_ID()), slot.getPickingSlot()));
 	}
 
@@ -179,8 +179,8 @@ public class PickingRestController_StepDef
 		final DataTableRow row = DataTableRow.singleRow(dataTable);
 
 		return JsonPickingStepEvent.builder()
-				.wfProcessId(row.getAsIdentifier("WorkflowProcess").lookupIn(workflowProcessTable).getId())
-				.wfActivityId(row.getAsIdentifier("WorkflowActivity").lookupIn(workflowActivityTable).getActivityId())
+				.wfProcessId(row.getAsIdentifier("WorkflowProcess").lookupIn(workflowProcessTable).getAsString())
+				.wfActivityId(row.getAsIdentifier("WorkflowActivity").lookupIn(workflowActivityTable).getAsString())
 				.type(JsonPickingStepEvent.EventType.PICK)
 				.pickingLineId(row.getAsIdentifier("PickingLine").lookupIn(workflowPickingLineTable).getPickingLineId())
 				.pickingStepId(row.getAsOptionalIdentifier("PickingStep")

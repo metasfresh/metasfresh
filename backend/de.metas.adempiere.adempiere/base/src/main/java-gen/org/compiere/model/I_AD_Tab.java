@@ -1031,6 +1031,48 @@ public interface I_AD_Tab
 	String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Not Found Message.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setNotFound_Message (@Nullable java.lang.String NotFound_Message);
+
+	/**
+	 * Get Not Found Message.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getNotFound_Message();
+
+	ModelColumn<I_AD_Tab, Object> COLUMN_NotFound_Message = new ModelColumn<>(I_AD_Tab.class, "NotFound_Message", null);
+	String COLUMNNAME_NotFound_Message = "NotFound_Message";
+
+	/**
+	 * Set Not Found Message Detail.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setNotFound_MessageDetail (@Nullable java.lang.String NotFound_MessageDetail);
+
+	/**
+	 * Get Not Found Message Detail.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getNotFound_MessageDetail();
+
+	ModelColumn<I_AD_Tab, Object> COLUMN_NotFound_MessageDetail = new ModelColumn<>(I_AD_Tab.class, "NotFound_MessageDetail", null);
+	String COLUMNNAME_NotFound_MessageDetail = "NotFound_MessageDetail";
+
+	/**
 	 * Set SQL ORDER BY.
 	 * Fully qualified ORDER BY clause
 	 *

@@ -152,6 +152,7 @@ public final class ProductBL implements IProductBL
 	/**
 	 * @return UOM used for Product's Weight; never return null
 	 */
+	@Override
 	public I_C_UOM getWeightUOM(final I_M_Product product)
 	{
 		// FIXME: we hardcoded the UOM for M_Product.Weight to Kilogram

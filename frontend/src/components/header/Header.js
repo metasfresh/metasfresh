@@ -7,10 +7,11 @@ import classnames from 'classnames';
 import history from '../../services/History';
 import { getPrintingOptions } from '../../api/window';
 import { deleteRequest } from '../../api';
-import { duplicateRequest, openFile } from '../../actions/GenericActions';
+import { duplicateRequest } from '../../actions/GenericActions';
 import {
   openModal,
   openPrintingOptionsModal,
+  printDocument,
   resetPrintingOptions,
   setPrintingOptions,
 } from '../../actions/WindowActions';
@@ -36,6 +37,7 @@ import {
   getDocActionElementFromState,
   getDocSummaryDataFromState,
 } from '../../reducers/windowHandlerUtils';
+import { isShowCommentsMarker } from '../../utils/tableHelpers';
 import { getIndicatorFromState } from '../../reducers/windowHandler';
 
 /**
@@ -367,13 +369,11 @@ class Header extends PureComponent {
 
         // in case there are no options we directly print and reset the printing options in the store
         if (!options) {
-          openFile(
-            'window',
+          printDocument({
             windowId,
-            docId,
-            'print',
-            `${windowId}_${docNo ? `${docNo}` : `${docId}`}.pdf`
-          );
+            documentId: docId,
+            documentNo: docNo,
+          });
           dispatch(resetPrintingOptions());
         } else {
           // otherwise we open the modal and we will reset the printing options in the store after the doc is printed
@@ -576,6 +576,7 @@ class Header extends PureComponent {
       plugins,
       indicator,
       saveStatus,
+      isShowComments,
       hasComments,
     } = this.props;
 
@@ -634,7 +635,7 @@ class Header extends PureComponent {
                   )}
                 >
                   <i className="position-relative meta-icon-more">
-                    {hasComments && (
+                    {isShowComments && hasComments && (
                       <span
                         className="notification-number size-sm"
                         title={counterpart.translate('window.comments.caption')}
@@ -965,6 +966,7 @@ Header.propTypes = {
   windowId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   indicator: PropTypes.string,
   saveStatus: PropTypes.object,
+  isShowComments: PropTypes.bool,
   hasComments: PropTypes.bool,
 };
 
@@ -979,6 +981,7 @@ const mapStateToProps = (state) => {
     plugins: state.pluginsHandler.files,
     docStatus: getDocActionElementFromState(state),
     docSummaryData: getDocSummaryDataFromState(state),
+    isShowComments: isShowCommentsMarker(state),
     indicator: getIndicatorFromState({ state }),
     saveStatus,
   };
