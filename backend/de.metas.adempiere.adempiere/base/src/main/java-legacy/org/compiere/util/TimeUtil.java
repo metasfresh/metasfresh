@@ -1075,6 +1075,10 @@ public class TimeUtil
 	 * Truncate Year - Y
 	 */
 	public static final String TRUNC_YEAR = "Y";
+	/**
+	 * Truncate 15 Minutes - 15M
+	 */
+	public static final String TRUNC_15M = "15M";
 
 	/**
 	 * Get truncated day/time
@@ -1115,6 +1119,30 @@ public class TimeUtil
 		}
 		cal.set(Calendar.SECOND, 0);
 
+		// 15M - 15 Minutes
+		if (TRUNC_15M.equals(trunc))
+		{
+			int mm = cal.get(Calendar.MINUTE);
+			if (mm < 15)
+			{
+				mm = 0;
+			}
+			else if (mm < 30)
+			{
+				mm = 15;
+			}
+			else if (mm < 45)
+			{
+				mm = 30;
+			}
+			else
+			{
+				mm = 45;
+			}
+			cal.set(Calendar.MINUTE, mm);
+			return cal.getTimeInMillis();
+		}
+		
 		// M - Minute
 		if (TRUNC_MINUTE.equals(trunc))
 		{
@@ -2390,5 +2418,4 @@ public class TimeUtil
 	{
 		return getDaysBetween360(asZonedDateTime(from), asZonedDateTime(to));
 	}
-
 }    // TimeUtil
