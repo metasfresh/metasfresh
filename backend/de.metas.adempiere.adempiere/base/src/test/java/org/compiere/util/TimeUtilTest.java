@@ -36,7 +36,8 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.compiere.util.TimeUtil.TRUNC_15M;
 
 /**
  * @author Teo Sarca
@@ -545,6 +546,58 @@ public class TimeUtilTest
 			final Date dateTruncActual = truncAndCheckMillis(date, TimeUtil.TRUNC_SECOND);
 
 			Assertions.assertEquals(dateTruncExpected, dateTruncActual, "Date " + date + " was not correctly truncated to seconds");
+		}
+
+		@Test
+		public void to15Minutes()
+		{
+			assertThat(TimeUtil.trunc(Timestamp.valueOf("2025-01-01 10:00:00.123"), TRUNC_15M))
+					.isEqualTo(Timestamp.valueOf("2025-01-01 10:00:00.0"));
+
+			assertThat(TimeUtil.trunc(Timestamp.valueOf("2025-01-01 10:02:20.0"), TRUNC_15M))
+					.isEqualTo(Timestamp.valueOf("2025-01-01 10:00:00.0"));
+
+			assertThat(TimeUtil.trunc(Timestamp.valueOf("2025-01-01 10:13:20.0"), TRUNC_15M))
+					.isEqualTo(Timestamp.valueOf("2025-01-01 10:00:00.0"));
+
+			assertThat(TimeUtil.trunc(Timestamp.valueOf("2025-01-01 10:14:50.0"), TRUNC_15M))
+					.isEqualTo(Timestamp.valueOf("2025-01-01 10:00:00.0"));
+
+			assertThat(TimeUtil.trunc(Timestamp.valueOf("2025-01-01 10:15:00.0"), TRUNC_15M))
+					.isEqualTo(Timestamp.valueOf("2025-01-01 10:15:00.0"));
+
+			assertThat(TimeUtil.trunc(Timestamp.valueOf("2025-01-01 10:16:00.0"), TRUNC_15M))
+					.isEqualTo(Timestamp.valueOf("2025-01-01 10:15:00.0"));
+
+			assertThat(TimeUtil.trunc(Timestamp.valueOf("2025-01-01 10:28:30.0"), TRUNC_15M))
+					.isEqualTo(Timestamp.valueOf("2025-01-01 10:15:00.0"));
+
+			assertThat(TimeUtil.trunc(Timestamp.valueOf("2025-01-01 10:29:30.0"), TRUNC_15M))
+					.isEqualTo(Timestamp.valueOf("2025-01-01 10:15:00.0"));
+
+			assertThat(TimeUtil.trunc(Timestamp.valueOf("2025-01-01 10:30:00.0"), TRUNC_15M))
+					.isEqualTo(Timestamp.valueOf("2025-01-01 10:30:00.0"));
+
+			assertThat(TimeUtil.trunc(Timestamp.valueOf("2025-01-01 10:31:00.0"), TRUNC_15M))
+					.isEqualTo(Timestamp.valueOf("2025-01-01 10:30:00.0"));
+
+			assertThat(TimeUtil.trunc(Timestamp.valueOf("2025-01-01 10:43:20.0"), TRUNC_15M))
+					.isEqualTo(Timestamp.valueOf("2025-01-01 10:30:00.0"));
+
+			assertThat(TimeUtil.trunc(Timestamp.valueOf("2025-01-01 10:44:40.0"), TRUNC_15M))
+					.isEqualTo(Timestamp.valueOf("2025-01-01 10:30:00.0"));
+
+			assertThat(TimeUtil.trunc(Timestamp.valueOf("2025-01-01 10:45:00.0"), TRUNC_15M))
+					.isEqualTo(Timestamp.valueOf("2025-01-01 10:45:00.0"));
+
+			assertThat(TimeUtil.trunc(Timestamp.valueOf("2025-01-01 10:46:00.0"), TRUNC_15M))
+					.isEqualTo(Timestamp.valueOf("2025-01-01 10:45:00.0"));
+
+			assertThat(TimeUtil.trunc(Timestamp.valueOf("2025-01-01 10:58:20.0"), TRUNC_15M))
+					.isEqualTo(Timestamp.valueOf("2025-01-01 10:45:00.0"));
+
+			assertThat(TimeUtil.trunc(Timestamp.valueOf("2025-01-01 10:59:59.0"), TRUNC_15M))
+					.isEqualTo(Timestamp.valueOf("2025-01-01 10:45:00.0"));
 		}
 
 		@Test

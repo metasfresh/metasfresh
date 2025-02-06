@@ -105,7 +105,6 @@ public class DefaultModelArchiver
 	private final boolean isDirectEnqueue;
 	private final boolean isDirectProcessQueueItem;
 
-
 	//
 	// Status & cached values
 	private final AtomicBoolean _processed = new AtomicBoolean(false);
@@ -268,25 +267,25 @@ public class DefaultModelArchiver
 		final String documentNo = documentNoBL.asDocumentNoAware(getRecord()).map(IDocumentNoAware::getDocumentNo).orElse(null);
 
 		final ArchiveResult archiveResult = archiveBL.archive(ArchiveRequest.builder()
-																	  .flavor(report.getFlavor())
-																	  .data(report.getReportData().orElse(null))
-																	  .force(true)
-																	  .save(true)
-																	  .asyncBatchId(report.getAsyncBatchId())
-																	  .trxName(ITrx.TRXNAME_ThreadInherited)
-																	  .documentNo(documentNo)
-																	  .recordRef(report.getDocumentRef())
-																	  .processId(report.getReportProcessId())
-																	  .pinstanceId(report.getReportPInstanceId())
-																	  .archiveName(report.getFilename())
-																	  .bpartnerId(report.getBpartnerId())
-																	  .language(report.getLanguage())
-																	  .isMainReport(report.isMainReport())
-																	  .poReference(report.getPoReference())
-																	  .isDirectEnqueue(isDirectEnqueue)
-																	  .isDirectProcessQueueItem(isDirectProcessQueueItem)
-																	  .overrideDocTypeId(report.getOverrideDocTypeId())
-																	  .build());
+				.flavor(report.getFlavor())
+				.data(report.getReportData().orElse(null))
+				.force(true)
+				.save(true)
+				.asyncBatchId(report.getAsyncBatchId())
+				.trxName(ITrx.TRXNAME_ThreadInherited)
+				.documentNo(documentNo)
+				.recordRef(report.getDocumentRef())
+				.processId(report.getReportProcessId())
+				.pinstanceId(report.getReportPInstanceId())
+				.archiveName(report.getFilename())
+				.bpartnerId(report.getBpartnerId())
+				.language(report.getLanguage())
+				.isMainReport(report.isMainReport())
+				.poReference(report.getPoReference())
+				.isDirectEnqueue(isDirectEnqueue)
+				.isDirectProcessQueueItem(isDirectProcessQueueItem)
+				.overrideDocTypeId(report.getOverrideDocTypeId())
+				.build());
 
 		final I_AD_Archive archive = InterfaceWrapperHelper.create(
 				Objects.requireNonNull(archiveResult.getArchiveRecord()),

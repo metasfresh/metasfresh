@@ -25,10 +25,10 @@ package de.metas.edi.esb.excelimport;
 import com.google.common.io.Closeables;
 import de.metas.common.util.Check;
 import lombok.NonNull;
-import org.apache.poi.hssf.usermodel.HSSFDateUtil;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 
 import javax.annotation.Nullable;
@@ -243,7 +243,7 @@ public class ExcelToMapListConverter
 				continue;
 			}
 
-			final Cell cell = row.getCell(columnIndex, Row.RETURN_BLANK_AS_NULL);
+			final Cell cell = row.getCell(columnIndex, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
 			final Object value = getCellValue(cell);
 
 			rowAsMap.put(headerName, value);
@@ -403,11 +403,11 @@ public class ExcelToMapListConverter
 		final Object value;
 		switch (cell.getCellType())
 		{
-			case Cell.CELL_TYPE_BLANK:
+			case BLANK:
 				value = null;
 				break;
-			case Cell.CELL_TYPE_NUMERIC:
-				if (HSSFDateUtil.isCellDateFormatted(cell))
+			case NUMERIC:
+				if (DateUtil.isCellDateFormatted(cell))
 				{
 					value = cell.getDateCellValue();
 				}
@@ -416,18 +416,16 @@ public class ExcelToMapListConverter
 					value = BigDecimal.valueOf(cell.getNumericCellValue());
 				}
 				break;
-			case Cell.CELL_TYPE_STRING:
+			case STRING:
 				value = cell.getStringCellValue();
 				break;
-			case Cell.CELL_TYPE_FORMULA:
-				final String valueStr = cell.getCellFormula();
-				value = valueStr;
+			case FORMULA:
+				value = cell.getCellFormula();
 				break;
-			case Cell.CELL_TYPE_BOOLEAN:
-				final boolean valueBoolean = cell.getBooleanCellValue();
-				value = valueBoolean;
+			case BOOLEAN:
+				value = cell.getBooleanCellValue();
 				break;
-			case Cell.CELL_TYPE_ERROR:
+			case ERROR:
 				// TODO: handle the error?!
 				value = null;
 				break;
