@@ -1,8 +1,8 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details_Footer (IN C_Order_ID  numeric,
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details_Footer (IN p_Order_ID  numeric,
                                                                                             IN p_Language Character Varying(6))
 ;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details_Footer(IN C_Order_ID  numeric,
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details_Footer(IN p_Order_ID  numeric,
                                                                                               IN p_Language Character Varying(6))
     RETURNS TABLE
             (
@@ -52,19 +52,18 @@ FROM C_Order o
                                                                                                    AND isActive = 'Y') AND
                                             ref.isActive = 'Y'
          LEFT OUTER JOIN AD_Ref_List_Trl reft
-                         ON reft.AD_Ref_List_ID = ref.AD_Ref_List_ID AND reft.AD_Language = $2 AND reft.isActive = 'Y'
+                         ON reft.AD_Ref_List_ID = ref.AD_Ref_List_ID AND reft.AD_Language = p_Language AND reft.isActive = 'Y'
          INNER JOIN C_Currency c ON o.C_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
 
 -- take out document type notes
          INNER JOIN C_DocType dt ON o.C_DocTypeTarget_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
          LEFT OUTER JOIN C_DocType_Trl dtt
                          ON o.C_DocTypeTarget_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_Language AND dtt.isActive = 'Y'
-         LEFT OUTER JOIN de_metas_endcustomer_fresh_reports.getOrderTextBoilerPlate(1000020) otb ON TRUE
+         LEFT OUTER JOIN de_metas_endcustomer_fresh_reports.getOrderTextBoilerPlate(p_Order_ID) otb ON TRUE
          LEFT OUTER JOIN C_Incoterms inc ON o.c_incoterms_id = inc.c_incoterms_id
          LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = p_Language
 
-WHERE o.C_Order_ID = p_Order_ID
-  AND o.isActive = 'Y'
+WHERE o.C_Order_ID = p_Order_ID;
 
 $$
     LANGUAGE sql STABLE

@@ -62,7 +62,6 @@ FROM C_Order o
          LEFT OUTER JOIN AD_Ref_List o_dvr ON o_dvr.AD_Reference_ID = 152 AND o_dvr.value = o.deliveryviarule
          LEFT OUTER JOIN AD_Ref_List_Trl o_dvr_trl ON o_dvr.ad_ref_list_id = o_dvr_trl.ad_ref_list_id AND o_dvr_trl.ad_language = p_Language
 WHERE o.C_Order_ID = record_id
-  AND o.isActive = 'Y'
 
 $$
     LANGUAGE sql STABLE
