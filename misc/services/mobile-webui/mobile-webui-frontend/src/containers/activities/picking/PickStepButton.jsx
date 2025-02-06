@@ -6,8 +6,8 @@ import { computePickFromStatus } from '../../../reducers/wfProcesses/picking';
 import PickAlternatives from './PickAlternatives';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
-import { useHistory } from 'react-router-dom';
 import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
+import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 
 const PickStepButton = ({
   applicationId,
@@ -23,7 +23,7 @@ const PickStepButton = ({
   catchWeightUOM,
   disabled,
 }) => {
-  const history = useHistory();
+  const history = useMobileNavigation();
   const handleClick = () => {
     history.push(pickingStepScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId, altStepId }));
   };

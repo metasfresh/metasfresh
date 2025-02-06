@@ -17,13 +17,13 @@ export const initialState = {
   ],
 };
 
-const launchersUrlRegExp = /\/\w+\/launchers/gi;
+const launchersUrlRegExp = /\/\w+\/launchers\/?$/i;
 
 const isLaunchersPathname = (pathname) => launchersUrlRegExp.test(pathname);
 
 const getHeaderEntries = (state) => state.headers.entries ?? [];
 
-export const getEntryItemsFromState = (state) => {
+const getEntryItemsFromState = (state) => {
   const headersEntries = getHeaderEntries(state);
 
   let nextUniqueId = 1;
@@ -48,19 +48,21 @@ export const getEntryItemsFromState = (state) => {
   return Object.values(itemsByKey);
 };
 
-export const getCaptionFromHeaders = (state) => {
+const getCaptionFromHeaders = (state) => {
   // return last known caption
   return state.headers.entries.reduce((acc, entry) => (entry.caption ? entry.caption : acc), null);
 };
 
-export const getUserInstructionsFromHeaders = (state) => {
+const getUserInstructionsFromHeaders = (state) => {
   // return last known caption
   return state.headers.entries.reduce((acc, entry) => (entry.userInstructions ? entry.userInstructions : acc), null);
 };
 
-export const useHomeLocation = () => {
-  const { url: currentLocation } = useRouteMatch();
-  return useSelector((state) => getHomeLocation({ state, currentLocation }), shallowEqual);
+export const useHeaders = () => {
+  return useSelector((state) => ({
+    userInstructions: getUserInstructionsFromHeaders(state),
+    entryItems: getEntryItemsFromState(state),
+  }));
 };
 
 const getHomeLocation = ({ state, currentLocation }) => {
@@ -88,15 +90,46 @@ const getHomeLocation = ({ state, currentLocation }) => {
   return { location: '/', iconClassName: DEFAULT_homeIconClassName };
 };
 
+const getBackLocation = ({ state }) => {
+  const headersEntries = getHeaderEntries(state);
+
+  for (let i = headersEntries.length - 1; i >= 0; i--) {
+    const entry = headersEntries[i];
+
+    if (!entry.backLocation) {
+      continue;
+    }
+
+    return entry.backLocation;
+  }
+
+  return null;
+};
+
+export const useBackLocationFromHeaders = () => {
+  return useSelector((state) => getBackLocation({ state }), shallowEqual);
+};
+
+export const useNavigationInfoFromHeaders = () => {
+  const { url: currentLocation } = useRouteMatch();
+
+  return useSelector(
+    (state) => ({
+      caption: getCaptionFromHeaders(state),
+      homeLocation: getHomeLocation({ state, currentLocation }),
+    }),
+    shallowEqual
+  );
+};
+
 export default function reducer(state = initialState, action) {
   const { payload } = action;
 
   switch (action.type) {
     case types.HEADER_PUSH_ENTRY: {
-      const { location, caption, values, userInstructions, isHomeStop, homeIconClassName } = payload;
-
-      // if there are no header values, there's no reason to block space
-      const hidden = !values.length;
+      const { location } = payload;
+      const hidden = payload.hidden || !payload.values?.length; // if there are no header values, there's no reason to block space
+      const newEntryValues = { ...payload, hidden };
 
       //
       // Search by location and update an existing entry if possible
@@ -104,7 +137,7 @@ export default function reducer(state = initialState, action) {
       let newEntries = state.entries.map((entry) => {
         if (entry.location === location) {
           existingEntryUpdated = true;
-          return { ...entry, caption, values, userInstructions, isHomeStop, homeIconClassName, hidden };
+          return mergeEntries(entry, newEntryValues);
         } else {
           return entry;
         }
@@ -117,7 +150,7 @@ export default function reducer(state = initialState, action) {
           inclusive: false,
         });
       } else {
-        const newEntry = { location, caption, values, userInstructions, isHomeStop, homeIconClassName, hidden };
+        const newEntry = mergeEntries({ location }, newEntryValues);
         newEntries.push(newEntry);
         // console.log('added newEntry: ', newEntry);
       }
@@ -134,9 +167,13 @@ export default function reducer(state = initialState, action) {
       let newEntries = null;
 
       // clear header on main urls
-      if (pathname === '/' || isLaunchersPathname(pathname)) {
+      const isLaunchersScreen = isLaunchersPathname(pathname);
+      if (pathname === '/') {
         newEntries = [...initialState.entries];
-        //console.log('HEADERS: @@router/LOCATION_CHANGE: CLEAR!!!');
+        // console.log('cleared header entries for / url', { pathname, action });
+      } else if (isLaunchersScreen) {
+        newEntries = [...initialState.entries];
+        // console.log('cleared header entries for launchers url', { pathname, action });
       } else {
         newEntries = removeEntries({
           entriesArray: state.entries,
@@ -155,6 +192,19 @@ export default function reducer(state = initialState, action) {
     }
   }
 }
+
+const mergeEntries = (entry, newValues) => {
+  const newEntry = { ...entry };
+
+  Object.keys(newValues).forEach((key) => {
+    const newValue = newValues[key];
+    if (newValue !== undefined) {
+      newEntry[key] = newValue;
+    }
+  });
+
+  return newEntry;
+};
 
 const removeEntries = ({ entriesArray, startLocation, inclusive }) => {
   let removeEntry = false;

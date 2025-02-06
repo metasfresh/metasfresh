@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../../utils/translations';
-import { manufacturingStepScanScreenLocation } from '../../../../routes/manufacturing_issue';
+import {
+  manufacturingLineScreenLocation,
+  manufacturingStepScanScreenLocation,
+} from '../../../../routes/manufacturing_issue';
 import * as CompleteStatus from '../../../../constants/CompleteStatus';
 import { getStepById } from '../../../../reducers/wfProcesses';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
@@ -13,12 +15,12 @@ import { toQRCodeDisplayable } from '../../../../utils/qrCode/hu';
 import { formatQtyToHumanReadableStr } from '../../../../utils/qtys';
 
 import { useLineHeaderEntriesRefresh } from './RawMaterialIssueLineScreen';
+import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
 
 const RawMaterialIssueStepScreen = () => {
-  const {
-    url,
-    params: { applicationId, workflowId: wfProcessId, activityId, lineId, stepId },
-  } = useRouteMatch();
+  const { history, url, applicationId, wfProcessId, activityId, lineId, stepId } = useScreenDefinition({
+    back: manufacturingLineScreenLocation,
+  });
 
   const { locatorName, huQRCode, uom, qtyToIssue, qtyIssued, qtyRejected } = useSelector((state) =>
     getStepById(state, wfProcessId, activityId, lineId, stepId)
@@ -43,7 +45,6 @@ const RawMaterialIssueStepScreen = () => {
     );
   }, []);
 
-  const history = useHistory();
   const onScanButtonClick = () => {
     history.push(manufacturingStepScanScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId }));
   };

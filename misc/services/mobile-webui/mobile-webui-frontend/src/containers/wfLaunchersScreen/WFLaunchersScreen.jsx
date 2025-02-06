@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
+import { useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { getLaunchers, useLaunchersWebsocket } from '../../api/launchers';
@@ -18,9 +18,11 @@ import { appLaunchersFilterLocation } from '../../routes/launchers';
 import { useCurrentWorkplace } from '../../api/workplace';
 import { useApplicationInfo } from '../../reducers/applications';
 import { useCurrentWorkstation } from '../../api/workstation';
+import { useScreenDefinition } from '../../hooks/useScreenDefinition';
 
 const WFLaunchersScreen = () => {
-  const history = useHistory();
+  const { history } = useScreenDefinition({ back: '/' });
+
   const dispatch = useDispatch();
 
   const {
@@ -44,11 +46,6 @@ const WFLaunchersScreen = () => {
     facets,
     isEnabled: !isWorkplaceLoading,
   });
-
-  useEffect(() => {
-    // IMPORTANT, else it won't restore the title when we move back to this screen
-    dispatch(pushHeaderEntry({ location: url }));
-  }, []);
 
   const workplaceName = workplace?.name;
   useEffect(() => {

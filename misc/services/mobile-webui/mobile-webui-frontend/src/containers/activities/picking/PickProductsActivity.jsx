@@ -10,7 +10,6 @@ import {
   selectPickTargetScreenLocation,
   selectTUPickTargetScreenLocation,
 } from '../../../routes/picking';
-import { useHistory } from 'react-router-dom';
 import { trl } from '../../../utils/translations';
 import { getLinesArrayFromActivity } from '../../../reducers/wfProcesses';
 import { isAllowPickingAnyHUForActivity } from '../../../utils/picking';
@@ -18,6 +17,7 @@ import {
   useCurrentPickTarget,
   useCurrentTUPickTarget,
 } from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
+import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 
 export const COMPONENTTYPE_PickProducts = 'picking/pickProducts';
 
@@ -52,7 +52,7 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
 
   const allowPickingAnyHU = isAllowPickingAnyHUForActivity({ activity });
 
-  const history = useHistory();
+  const history = useMobileNavigation();
 
   const currentPickTarget = useCurrentPickTarget({ wfProcessId, activityId });
 
