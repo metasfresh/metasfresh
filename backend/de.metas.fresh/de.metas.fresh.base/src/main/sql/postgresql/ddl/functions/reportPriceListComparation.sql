@@ -121,7 +121,6 @@ FROM M_ProductPrice pp
     FROM report.Valid_PI_Item_Product_V vip
     -- WHERE isInfiniteCapacity = 'N' -- task 09045/09788: we can also export PiiPs with infinite capacity
     WHERE vip.M_Product_ID = pp.M_Product_ID
-    -- ) bpProductPackingMaterial ON TRUE
     ) bpProductPackingMaterial ON
     (bpProductPackingMaterial.M_HU_PI_Item_Product_ID = pp.m_hu_pi_item_product_id OR
         -- if product price has no PIIPs then use it for all PIIPs with no valid product prices for the current PLV
@@ -151,8 +150,6 @@ FROM M_ProductPrice pp
       AND (pp.m_hu_pi_item_product_id = pp2.m_hu_pi_item_product_id OR (pp.m_hu_pi_item_product_id IS NULL AND pp2.m_hu_pi_item_product_id IS NULL))
       AND pp2.M_Pricelist_Version_ID = plv2.M_Pricelist_Version_ID
       AND pp2.IsActive = 'Y'
-      --AND (pp2.m_hu_pi_item_product_ID = pp.m_hu_pi_item_product_ID OR
-      --(pp2.m_hu_pi_item_product_ID IS NULL AND pp.m_hu_pi_item_product_ID IS NULL))
       AND pp2.isAttributeDependant = pp.isAttributeDependant
       --avoid comparing different product prices in same pricelist
       AND (CASE WHEN pp2.M_PriceList_Version_ID = pp.M_PriceList_Version_ID THEN pp2.M_ProductPrice_ID = pp.M_ProductPrice_ID ELSE TRUE END)

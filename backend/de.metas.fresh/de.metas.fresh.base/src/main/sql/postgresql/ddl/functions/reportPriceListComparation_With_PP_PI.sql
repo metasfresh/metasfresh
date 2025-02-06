@@ -143,7 +143,6 @@ FROM M_ProductPrice pp
       AND (pp2.m_hu_pi_item_product_id = pp.m_hu_pi_item_product_id OR (pp2.m_hu_pi_item_product_id IS NULL AND pp.m_hu_pi_item_product_id IS NULL))
       AND pp2.M_Pricelist_Version_ID = plv2.M_Pricelist_Version_ID
       AND pp2.IsActive = 'Y'
-      --AND (pp2.m_hu_pi_item_product_ID = pp.m_hu_pi_item_product_ID OR (pp2.m_hu_pi_item_product_ID IS NULL AND pp.m_hu_pi_item_product_ID IS NULL))
       AND pp2.isAttributeDependant = pp.isAttributeDependant
       --avoid comparing different product prices in same pricelist
       AND (CASE WHEN pp2.M_PriceList_Version_ID = pp.M_PriceList_Version_ID THEN pp2.M_ProductPrice_ID = pp.M_ProductPrice_ID ELSE TRUE END)
