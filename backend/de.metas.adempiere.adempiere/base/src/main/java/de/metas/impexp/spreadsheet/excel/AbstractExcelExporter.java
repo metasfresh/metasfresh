@@ -37,6 +37,8 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
+import org.apache.poi.common.usermodel.HyperlinkType;
+import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.BuiltinFormats;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -275,7 +277,7 @@ public abstract class AbstractExcelExporter
 		if (fontHeader == null)
 		{
 			fontHeader = createFont();
-			fontHeader.setBoldweight(Font.BOLDWEIGHT_BOLD);
+			fontHeader.setBold(true);
 		}
 		return fontHeader;
 	}
@@ -294,7 +296,7 @@ public abstract class AbstractExcelExporter
 		if (fontFunctionRow == null)
 		{
 			fontFunctionRow = createFont();
-			fontFunctionRow.setBoldweight(Font.BOLDWEIGHT_BOLD);
+			fontFunctionRow.setBold(true);
 			fontFunctionRow.setItalic(true);
 		}
 		return fontFunctionRow;
@@ -388,10 +390,10 @@ public abstract class AbstractExcelExporter
 		// Border
 		if(isApplyFormatting())
 		{
-			style.setBorderLeft((short)1);
-			style.setBorderTop((short)1);
-			style.setBorderRight((short)1);
-			style.setBorderBottom((short)1);
+			style.setBorderLeft(BorderStyle.valueOf((short)1));
+			style.setBorderTop(BorderStyle.valueOf((short)1));
+			style.setBorderRight(BorderStyle.valueOf((short)1));
+			style.setBorderBottom(BorderStyle.valueOf((short)1));
 		}
 
 		//
@@ -432,10 +434,10 @@ public abstract class AbstractExcelExporter
 		style.setFont(font);
 		if(isApplyFormatting())
 		{
-			style.setBorderLeft((short)2);
-			style.setBorderTop((short)2);
-			style.setBorderRight((short)2);
-			style.setBorderBottom((short)2);
+			style.setBorderLeft(BorderStyle.valueOf((short)2));
+			style.setBorderTop(BorderStyle.valueOf((short)2));
+			style.setBorderRight(BorderStyle.valueOf((short)2));
+			style.setBorderBottom(BorderStyle.valueOf((short)2));
 		}
 		style.setDataFormat((short)BuiltinFormats.getBuiltinFormat("text"));
 		style.setWrapText(true);
@@ -728,7 +730,7 @@ public abstract class AbstractExcelExporter
 			try
 			{
 				new URI(urlStr);
-				final Hyperlink hyperlink = getWorkbook().getCreationHelper().createHyperlink(org.apache.poi.common.usermodel.Hyperlink.LINK_URL);
+				final Hyperlink hyperlink = getWorkbook().getCreationHelper().createHyperlink(HyperlinkType.URL);
 				hyperlink.setAddress(urlStr);
 				return hyperlink;
 			}
