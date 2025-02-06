@@ -38,7 +38,6 @@ import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
 import de.metas.location.LocationId;
-import de.metas.logging.MetasfreshLastError;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
@@ -61,7 +60,10 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.security.permissions.Access;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.TaxNotFoundException;
+import de.metas.tax.api.TaxQuery;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.LegacyUOMConversionUtils;
@@ -92,7 +94,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.Properties;
 
 /**
  * Order Callouts. metas 24.09.2008: Aenderungen durchgefuehrt um das Verhalten bei der Auswahl von Liefer- und Rechnungsadressen (sowie Geschaeftspartnern) zu beeinflussen. So werden jetzt im Feld
@@ -1053,7 +1054,6 @@ public class CalloutOrder extends CalloutEngine
 	 */
 	public String tax(final ICalloutField calloutField)
 	{
-		final Properties ctx = calloutField.getCtx();
 		final I_C_OrderLine ol = calloutField.getModel(I_C_OrderLine.class);
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
@@ -1124,9 +1124,11 @@ public class CalloutOrder extends CalloutEngine
 		}
 		log.debug("Bill BP_Location={}", billBPLocationId);
 
+		final TaxCategoryId taxCategoryId = orderLineBL.getTaxCategoryId(ol);
+
 		//
-		final TaxId taxId = taxBL.getTaxOrNoTaxId(order,
-				null,
+		final TaxId taxId = taxBL.getTaxNotNull(order,
+				taxCategoryId,
 				M_Product_ID,
 				shipDate,
 				OrgId.ofRepoId(AD_Org_ID),
@@ -1138,7 +1140,14 @@ public class CalloutOrder extends CalloutEngine
 		//
 		if (taxId.isNoTaxId())
 		{
-			calloutField.fireDataStatusEEvent(MetasfreshLastError.retrieveError());
+			throw TaxNotFoundException.ofQuery(TaxQuery.builder()
+					.taxCategoryId(taxCategoryId)
+					.dateOfInterest(shipDate)
+					.orgId(OrgId.ofRepoId(AD_Org_ID))
+					.bPartnerLocationId(shipBPLocationId)
+					.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
+					.warehouseId(WarehouseId.ofRepoIdOrNull(M_Warehouse_ID))
+					.build()).markAsUserValidationError();
 		}
 		else
 		{
