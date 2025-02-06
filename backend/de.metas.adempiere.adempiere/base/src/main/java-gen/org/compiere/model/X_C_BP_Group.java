@@ -341,6 +341,11 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	public static final String PAYMENTRULE_KreditkarteExtern = "U";
 	/** Sofortüberweisung = R */
 	public static final String PAYMENTRULE_Sofortueberweisung = "R";
+	/** Rückerstattung = E */
+	public static final String PAYMENTRULE_Reimbursement = "E";
+	/** Verrechnung = F */
+	public static final String PAYMENTRULE_Settlement = "F";
+
 	@Override
 	public void setPaymentRule (final @Nullable java.lang.String PaymentRule)
 	{
