@@ -323,6 +323,9 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	TaxCategoryId getTaxCategoryId(I_C_InvoiceLine invoiceLine);
 
+	@Nullable
+	TaxCategoryId getTaxCategoryId(@NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
+
 	/**
 	 * Basically this method delegated to {@link ICopyHandlerBL#registerCopyHandler(Class, IQueryFilter, ICopyHandler)}, but makes sure that the correct types are used.
 	 */
