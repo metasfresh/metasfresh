@@ -1,11 +1,10 @@
 import React from 'react';
-import { useRouteMatch } from 'react-router-dom';
 import RawMaterialIssueStepScanComponent from './RawMaterialIssueStepScanComponent';
+import { useScreenDefinition } from '../../../../../hooks/useScreenDefinition';
+import { manufacturingStepScreenLocation } from '../../../../../routes/manufacturing_issue';
 
 const RawMaterialIssueStepScanScreen = () => {
-  const {
-    params: { workflowId: wfProcessId, activityId, lineId, stepId },
-  } = useRouteMatch();
+  const { wfProcessId, activityId, lineId, stepId } = useScreenDefinition({ back: manufacturingStepScreenLocation });
 
   return (
     <RawMaterialIssueStepScanComponent

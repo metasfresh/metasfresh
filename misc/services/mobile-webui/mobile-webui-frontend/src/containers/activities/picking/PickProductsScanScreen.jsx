@@ -1,35 +1,27 @@
-import React, { useEffect } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
-import { shallowEqual, useDispatch, useSelector } from 'react-redux';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
-import { trl } from '../../../utils/translations';
+import React from 'react';
+import { useRouteMatch } from 'react-router-dom';
+import { shallowEqual, useSelector } from 'react-redux';
 import { getActivityById } from '../../../reducers/wfProcesses';
 import { getNextEligibleLineToPick } from '../../../utils/picking';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import { parseQRCodeString } from '../../../utils/qrCode/hu';
 import { pickingLineScanScreenLocation } from '../../../routes/picking';
 import { NEXT_PickingJob } from './PickLineScanScreen';
+import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
+import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
 
 const PickProductsScanScreen = () => {
+  const { history } = useScreenDefinition({
+    captionKey: 'activities.picking.scanQRCode',
+    back: getWFProcessScreenLocation,
+  });
+
   const {
-    url,
     params: { applicationId, workflowId: wfProcessId, activityId },
   } = useRouteMatch();
 
   const { activity } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId }), shallowEqual);
 
-  const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(
-      pushHeaderEntry({
-        location: url,
-        caption: trl('activities.picking.scanQRCode'),
-        values: [],
-      })
-    );
-  }, []);
-
-  const history = useHistory();
   const onBarcodeScanned = ({ scannedBarcode }) => {
     const qrCode = parseQRCodeString(scannedBarcode);
     const line = getNextEligibleLineToPick({ activity, productId: qrCode.productId });

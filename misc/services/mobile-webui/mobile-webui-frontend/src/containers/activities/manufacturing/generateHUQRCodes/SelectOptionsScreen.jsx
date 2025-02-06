@@ -1,17 +1,17 @@
 import React, { useEffect } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { confirmOptionLocation } from '../../../../routes/generateHUQRCodes';
 import { getOptionsFromActivity } from './utils';
 import Button from '../../../../components/buttons/Button';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 import { getActivityById } from '../../../../reducers/wfProcesses';
+import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
+import { getWFProcessScreenLocation } from '../../../../routes/workflow_locations';
 
 const SelectOptionsScreen = () => {
-  const {
-    url,
-    params: { applicationId, wfProcessId, activityId },
-  } = useRouteMatch();
+  const { history, url, applicationId, wfProcessId, activityId } = useScreenDefinition({
+    back: getWFProcessScreenLocation,
+  });
 
   const { activityCaption, userInstructions, options } = useSelector((state) => {
     const activity = getActivityById(state, wfProcessId, activityId);
@@ -27,7 +27,6 @@ const SelectOptionsScreen = () => {
     dispatch(pushHeaderEntry({ location: url, caption: activityCaption, userInstructions }));
   }, []);
 
-  const history = useHistory();
   const onOptionButtonClicked = (optionIndex) => {
     history.push(confirmOptionLocation({ applicationId, wfProcessId, activityId, optionIndex }));
   };

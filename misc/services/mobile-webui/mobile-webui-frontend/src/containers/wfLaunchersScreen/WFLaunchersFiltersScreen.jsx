@@ -1,15 +1,17 @@
 import React, { useEffect } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
+import { useRouteMatch } from 'react-router-dom';
 import { pushHeaderEntry } from '../../actions/HeaderActions';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import WFLaunchersFilters from './WFLaunchersFilters';
 import { setActiveFilters } from '../../actions/LauncherActions';
 import { getApplicationLaunchersFacetIds, getApplicationLaunchersFilterByDocumentNo } from '../../reducers/launchers';
 import { useApplicationInfo } from '../../reducers/applications';
+import { appLaunchersLocation } from '../../routes/launchers';
+import { useScreenDefinition } from '../../hooks/useScreenDefinition';
 
 const WFLaunchersFiltersScreen = () => {
+  const { history } = useScreenDefinition({ back: appLaunchersLocation });
   const dispatch = useDispatch();
-  const history = useHistory();
 
   const {
     url,
@@ -37,7 +39,7 @@ const WFLaunchersFiltersScreen = () => {
         activeFacetIds={activeFacetIds}
         onDone={({ facets, filterByDocumentNo }) => {
           dispatch(setActiveFilters({ applicationId, facets, filterByDocumentNo }));
-          history.go(-1);
+          history.goBack();
         }}
       />
     </div>

@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { trl } from '../../utils/translations';
 import { extractUserFriendlyErrorMessageFromAxiosError } from '../../utils/toast';
+import { useMobileNavigation } from '../../hooks/useMobileNavigation';
 
 const UserAndPassAuth = () => {
   const [username, setUsername] = useState('');
@@ -10,7 +11,7 @@ const UserAndPassAuth = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [loginPending, setLoginPending] = useState(false);
 
-  const history = useHistory();
+  const history = useMobileNavigation();
   const auth = useAuth();
   const location = useLocation();
   const { from } = location.state || { from: { pathname: '/' } };
