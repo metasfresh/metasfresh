@@ -1,9 +1,9 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_Footer (IN record_id  numeric,
-                                                                                               IN p_language Character Varying(6))
+﻿DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_Footer (IN p_Order_ID numeric,
+                                                                                               IN p_Language Character Varying(6))
 ;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_Footer(IN record_id  numeric,
-                                                                                                 IN p_language Character Varying(6))
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details_Footer(IN p_Order_ID numeric,
+                                                                                                 IN p_Language Character Varying(6))
     RETURNS TABLE
             (
                 paymentrule       character varying(60),
@@ -15,9 +15,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Orde
                 cursymbol         character varying(10),
                 Incoterms         character varying,
                 incotermlocation  character varying,
-                descriptionbottom character varying,
-                deliveryrule      character varying,
-                deliveryviarule   character varying
+                descriptionbottom character varying
             )
 AS
 $$
@@ -42,26 +40,23 @@ SELECT COALESCE(reft.name, ref.name)                                          AS
        c.cursymbol,
        COALESCE(inc_trl.name, inc.name)                                       AS Incoterms,
        o.incotermlocation,
-       o.descriptionbottom,
-       COALESCE(o_dr_trl.name, o_dr.name)                                     AS deliveryrule,
-       COALESCE(o_dvr_trl.name, o_dvr.name)                                   AS deliveryviarule
+       o.descriptionbottom
+
 
 FROM C_Order o
 
-         LEFT OUTER JOIN C_PaymentTerm pt ON o.C_PaymentTerm_ID = pt.C_PaymentTerm_ID
-         LEFT OUTER JOIN C_PaymentTerm_Trl ptt ON o.C_PaymentTerm_ID = ptt.C_PaymentTerm_ID AND ptt.AD_Language = p_Language
+         LEFT OUTER JOIN C_PaymentTerm pt ON o.C_PaymentTerm_ID = pt.C_PaymentTerm_ID AND pt.isActive = 'Y'
+         LEFT OUTER JOIN C_PaymentTerm_Trl ptt ON o.C_PaymentTerm_ID = ptt.C_PaymentTerm_ID AND ptt.AD_Language = p_Language AND ptt.isActive = 'Y'
          LEFT OUTER JOIN AD_Ref_List ref ON o.PaymentRule = ref.Value AND ref.AD_Reference_ID = (SELECT AD_Reference_ID
                                                                                                  FROM AD_Reference
-                                                                                                 WHERE name = '_Payment Rule')
-         LEFT OUTER JOIN AD_Ref_List_Trl reft ON reft.AD_Ref_List_ID = ref.AD_Ref_List_ID AND reft.AD_Language = p_Language
-         INNER JOIN C_Currency c ON o.C_Currency_ID = c.C_Currency_ID
+                                                                                                 WHERE name = '_Payment Rule'
+                                                                                                   AND isActive = 'Y') AND ref.isActive = 'Y'
+         LEFT OUTER JOIN AD_Ref_List_Trl reft ON reft.AD_Ref_List_ID = ref.AD_Ref_List_ID AND reft.AD_Language = p_Language AND reft.isActive = 'Y'
+         INNER JOIN C_Currency c ON o.C_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
          LEFT OUTER JOIN C_Incoterms inc ON o.c_incoterms_id = inc.c_incoterms_id
          LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = p_Language
-         LEFT OUTER JOIN AD_Ref_List o_dr ON o_dr.AD_Reference_ID = 151 AND o_dr.value = o.deliveryrule
-         LEFT OUTER JOIN AD_Ref_List_Trl o_dr_trl ON o_dr.ad_ref_list_id = o_dr_trl.ad_ref_list_id AND o_dr_trl.ad_language = p_Language
-         LEFT OUTER JOIN AD_Ref_List o_dvr ON o_dvr.AD_Reference_ID = 152 AND o_dvr.value = o.deliveryviarule
-         LEFT OUTER JOIN AD_Ref_List_Trl o_dvr_trl ON o_dvr.ad_ref_list_id = o_dvr_trl.ad_ref_list_id AND o_dvr_trl.ad_language = p_Language
-WHERE o.C_Order_ID = record_id
+
+WHERE o.C_Order_ID = p_Order_ID
   AND o.isActive = 'Y'
 
 $$

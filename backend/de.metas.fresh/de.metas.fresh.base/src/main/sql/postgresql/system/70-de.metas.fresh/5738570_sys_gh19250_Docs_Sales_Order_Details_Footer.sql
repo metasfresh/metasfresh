@@ -1,8 +1,8 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details_Footer (IN C_Order_ID  numeric,
+﻿DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details_Footer (IN p_Order_ID numeric,
                                                                                             IN p_Language Character Varying(6))
 ;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details_Footer(IN C_Order_ID  numeric,
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details_Footer(IN p_Order_ID numeric,
                                                                                               IN p_Language Character Varying(6))
     RETURNS TABLE
             (
@@ -49,13 +49,12 @@ FROM C_Order o
          LEFT OUTER JOIN AD_Ref_List ref ON o.PaymentRule = ref.Value AND ref.AD_Reference_ID = (SELECT AD_Reference_ID
                                                                                                  FROM AD_Reference
                                                                                                  WHERE name = '_Payment Rule'
-                                                                                                   AND isActive = 'Y') AND
-                                            ref.isActive = 'Y'
+                                                                                                   AND isActive = 'Y') AND ref.isActive = 'Y'
          LEFT OUTER JOIN AD_Ref_List_Trl reft
-                         ON reft.AD_Ref_List_ID = ref.AD_Ref_List_ID AND reft.AD_Language = $2 AND reft.isActive = 'Y'
+                         ON reft.AD_Ref_List_ID = ref.AD_Ref_List_ID AND reft.AD_Language = p_Language AND reft.isActive = 'Y'
          INNER JOIN C_Currency c ON o.C_Currency_ID = c.C_Currency_ID AND c.isActive = 'Y'
 
--- take out document type notes
+    -- take out document type notes
          INNER JOIN C_DocType dt ON o.C_DocTypeTarget_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
          LEFT OUTER JOIN C_DocType_Trl dtt
                          ON o.C_DocTypeTarget_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_Language AND dtt.isActive = 'Y'
