@@ -11,18 +11,20 @@ import org.compiere.model.X_M_InOut;
 @AllArgsConstructor
 public enum MovementType implements ReferenceListAwareEnum
 {
+	// outbound
 	CustomerShipment(X_M_InOut.MOVEMENTTYPE_CustomerShipment, true),
-	CustomerReturns(X_M_InOut.MOVEMENTTYPE_CustomerReturns, false),
-	VendorReceipts(X_M_InOut.MOVEMENTTYPE_VendorReceipts, false),
 	VendorReturns(X_M_InOut.MOVEMENTTYPE_VendorReturns, true),
 	InventoryOut(X_M_InOut.MOVEMENTTYPE_InventoryOut, true),
-	InventoryIn(X_M_InOut.MOVEMENTTYPE_InventoryIn, false),
 	MovementFrom(X_M_InOut.MOVEMENTTYPE_MovementFrom, true),
+	ProductionMinus(X_M_InOut.MOVEMENTTYPE_ProductionMinus, true),
+	WorkOrderMinus(X_M_InOut.MOVEMENTTYPE_WorkOrderMinus, true),
+	// inbound
+	CustomerReturns(X_M_InOut.MOVEMENTTYPE_CustomerReturns, false),
+	VendorReceipts(X_M_InOut.MOVEMENTTYPE_VendorReceipts, false),
+	InventoryIn(X_M_InOut.MOVEMENTTYPE_InventoryIn, false),
 	MovementTo(X_M_InOut.MOVEMENTTYPE_MovementTo, false),
 	ProductionPlus(X_M_InOut.MOVEMENTTYPE_ProductionPlus, false),
-	ProductionMinus(X_M_InOut.MOVEMENTTYPE_ProductionMinus, true),
 	WorkOrderPlus(X_M_InOut.MOVEMENTTYPE_WorkOrderPlus, false),
-	WorkOrderMinus(X_M_InOut.MOVEMENTTYPE_WorkOrderMinus, true),
 	;
 
 	@NonNull private final String code;
