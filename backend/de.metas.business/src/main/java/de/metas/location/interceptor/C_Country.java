@@ -5,6 +5,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.AttributeListValueChangeRequest;
@@ -45,6 +47,8 @@ import java.util.Properties;
 @Component
 public class C_Country
 {
+	private final AdTableId c_countryTableId = Services.get(IADTableDAO.class).retrieveAdTableId(I_C_Country.Table_Name);
+
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void onCreateCountry(final I_C_Country country)
 	{
@@ -61,7 +65,7 @@ public class C_Country
 
 			final I_M_Attribute countryAttribute = countryAttributeDAO.retrieveCountryAttribute(ctx);
 			final IAttributeValueGenerator generator = attributesService.getAttributeValueGenerator(countryAttribute);
-			generator.generateAttributeValue(ctx, I_C_Country.Table_ID, country.getC_Country_ID(), false, ITrx.TRXNAME_ThreadInherited);
+			generator.generateAttributeValue(ctx, c_countryTableId.getRepoId(), country.getC_Country_ID(), false, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
 

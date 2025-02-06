@@ -62,7 +62,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class RabbitMQ_StepDef
 {
@@ -331,8 +331,8 @@ public class RabbitMQ_StepDef
 		assertThat(topic).as("Missing eventBus for topic=%s; Topic.Identifier=%s", topic.getName(), topicIdentifier).isNotNull();
 
 		eventBus.enqueueEvent(Event.builder()
-				.withBody(eventBody)
-				.build());
+									  .withBody(eventBody)
+									  .build());
 	}
 
 	private void waitEmptyMaterialQueue() throws InterruptedException

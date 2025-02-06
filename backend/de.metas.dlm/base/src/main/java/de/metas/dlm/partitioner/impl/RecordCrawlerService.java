@@ -51,6 +51,8 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
+import org.compiere.model.POInfo;
 import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
@@ -124,8 +126,7 @@ public class RecordCrawlerService implements IRecordCrawlerService
 					// if that is the case, then we need to verify that the AD_Table_ID of 'record' actually points to the table named 'forwardTableName'
 					if (IColumnBL.isRecordIdColumnName(forwardColumnName))
 					{
-						final String tableColumnName = columnBL.getTableIdColumnName(currentTableName, forwardColumnName)
-								.orElseThrow(Check.supplyEx("Table={} has no table column name for recordColumnName={}", currentTableName, forwardColumnName));
+						final String tableColumnName = extractTableColumnName(currentTableName, forwardColumnName);
 
 						final Integer tableId = InterfaceWrapperHelper.getValueOrNull(currentRecord, tableColumnName);
 						if (tableId == null || tableId <= 0)
@@ -173,14 +174,14 @@ public class RecordCrawlerService implements IRecordCrawlerService
 						}
 
 						logger.debug("{}[{}] forward: loaded from table={} via {}.{}={}: referenced IDLMAware={}",
-								currentTableName, currentRecordId, forwardTableName, currentTableName, forwardColumnName, forwardKey, forwardRecord);
+									 currentTableName, currentRecordId, forwardTableName, currentTableName, forwardColumnName, forwardKey, forwardRecord);
 
 						final AddResult addResult = result.addReferencedRecord(currentReference, forwardReference, forwardRecord.getDLM_Partition_ID());
 						if (forwardRecord.getDLM_Partition_ID() > 0)
 						{
 							// log why we do not search further using the new found foreign record
 							logger.debug("{}[{}] forward: referenced IDLMAware={} already has DLM_Partition_ID={}",
-									currentTableName, currentRecordId, forwardRecord, forwardRecord.getDLM_Partition_ID());
+										 currentTableName, currentRecordId, forwardRecord, forwardRecord.getDLM_Partition_ID());
 						}
 						if (AddResult.STOP.equals(addResult))
 						{
@@ -218,9 +219,8 @@ public class RecordCrawlerService implements IRecordCrawlerService
 				if (IColumnBL.isRecordIdColumnName(backwardColumnName))
 				{
 					// note that referencedTableColumnName = AD_Table_ID, in most cases
-					final String referencedTableColumnName = columnBL.getTableIdColumnName(backwardTableName, backwardRef.getReferencingColumnName())
-							.orElseThrow(Check.supplyEx("Table={} has no table column name for recordColumnName={}", backwardTableName, backwardColumnName));
-
+					final String referencedTableColumnName = extractTableColumnName(backwardTableName, backwardRef.getReferencingColumnName());
+					
 					final int referencedTableID = adTableDAO.retrieveTableId(currentTableName);
 
 					queryBuilder.addEqualsFilter(referencedTableColumnName, referencedTableID);
@@ -264,13 +264,13 @@ public class RecordCrawlerService implements IRecordCrawlerService
 						case ADDED_CONTINUE:
 							// log that the foreign record was not yet added before. We added it now
 							logger.debug("{}[{}] backward: loaded from table={} via {}.{}={}: referencing IDLMAware={}",
-									currentTableName, currentRecordId, backwardTableName, backwardTableName, backwardColumnName, currentRecordId, backwardRecord);
+										 currentTableName, currentRecordId, backwardTableName, backwardTableName, backwardColumnName, currentRecordId, backwardRecord);
 
 							if (backwardRecord.getDLM_Partition_ID() > 0)
 							{
 								// log why we did not search further using the new found foreign record
 								logger.debug("{}[{}] backward: referenced IDLMAware={} already has DLM_Partition_ID={}",
-										currentTableName, currentRecordId, backwardRecord, backwardRecord.getDLM_Partition_ID());
+											 currentTableName, currentRecordId, backwardRecord, backwardRecord.getDLM_Partition_ID());
 							}
 							break;
 						case NOT_ADDED_CONTINUE:
@@ -292,6 +292,21 @@ public class RecordCrawlerService implements IRecordCrawlerService
 		return result;
 	}
 
+	private static String extractTableColumnName(final String tableName, final String recordIdColumnName)
+	{
+		final String tableColumnName;
+		if (Adempiere.isUnitTestMode())
+		{
+			tableColumnName = ITableRecordReference.COLUMNNAME_AD_Table_ID;
+		}
+		else
+		{
+			tableColumnName = POInfo.getPOInfoNotNull(tableName).getTableIdColumnName(recordIdColumnName)
+					.orElseThrow(Check.supplyEx("Table={} has no table column name for recordColumnName={}", tableName, recordIdColumnName));
+		}
+		return tableColumnName;
+	}
+
 	private boolean shallStoreResult(final IIterateResult result)
 	{
 		// return true;
@@ -308,8 +323,8 @@ public class RecordCrawlerService implements IRecordCrawlerService
 			return; // nothing to store
 		}
 		Services.get(ITrxManager.class).runInNewTrx((TrxRunnable)localTrxName -> storeIterateResult0(config,
-				(IStorableIterateResult)result,
-				PlainContextAware.newWithTrxName(ctxAware.getCtx(), localTrxName)));
+																									 (IStorableIterateResult)result,
+																									 PlainContextAware.newWithTrxName(ctxAware.getCtx(), localTrxName)));
 	}
 
 	/**

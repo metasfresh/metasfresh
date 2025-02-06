@@ -10,34 +10,34 @@ package org.adempiere.appdict.validation.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-
+import de.metas.process.JavaProcess;
+import de.metas.util.Check;
+import lombok.NonNull;
 import org.adempiere.appdict.validation.api.IADValidatorViolation;
 import org.adempiere.appdict.validation.spi.AbstractADValidator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Process;
-
-import de.metas.process.JavaProcess;
-import de.metas.util.Check;
+import org.compiere.util.Util;
 
 public class ADProcessADValidator extends AbstractADValidator<I_AD_Process>
 {
 	@Override
-	public void validate(I_AD_Process process)
+	public void validate(@NonNull final I_AD_Process process)
 	{
 		String classname = process.getClassname();
-		if (Check.isEmpty(classname, true))
+		if (Check.isBlank(classname))
 		{
 			return;
 		}
@@ -50,7 +50,7 @@ public class ADProcessADValidator extends AbstractADValidator<I_AD_Process>
 			return;
 		}
 
-		validateJavaClassname(process.getClassname(), JavaProcess.class);
+		Util.validateJavaClassname(process.getClassname(), JavaProcess.class);
 	}
 
 	@Override
@@ -63,7 +63,7 @@ public class ADProcessADValidator extends AbstractADValidator<I_AD_Process>
 
 			message.append("Error on ").append(process).append(" (IsActive=").append(process.isActive()).append("): ");
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			message.append("Error (InterfaceWrapperHelper exception: ").append(e.getLocalizedMessage()).append(") on ").append(violation.getItem()).append(": ");
 		}

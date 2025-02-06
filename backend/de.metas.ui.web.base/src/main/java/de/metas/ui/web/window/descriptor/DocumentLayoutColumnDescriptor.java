@@ -1,16 +1,18 @@
 package de.metas.ui.web.window.descriptor;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-import de.metas.logging.LogManager;
-import de.metas.util.GuavaCollectors;
-import lombok.Getter;
-import lombok.NonNull;
-import org.slf4j.Logger;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
+
+import lombok.Getter;
+import org.slf4j.Logger;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+
+import de.metas.logging.LogManager;
+import de.metas.util.GuavaCollectors;
+import lombok.NonNull;
 
 /*
  * #%L

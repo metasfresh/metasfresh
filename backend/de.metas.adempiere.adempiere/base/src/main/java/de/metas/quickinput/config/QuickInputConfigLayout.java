@@ -71,7 +71,7 @@ public class QuickInputConfigLayout
 				throw new AdempiereException("Empty field name not allowed");
 			}
 
-			fields.add(Field.builder()
+			fields.add(QuickInputConfigLayout.Field.builder()
 					.fieldName(fieldName)
 					.mandatory(mandatory)
 					.build());

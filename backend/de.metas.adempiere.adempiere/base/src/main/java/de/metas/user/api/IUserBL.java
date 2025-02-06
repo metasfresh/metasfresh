@@ -19,6 +19,8 @@ public interface IUserBL extends ISingletonService
 
 	I_AD_User getByPasswordResetCode(@NonNull String passwordResetCode);
 
+	void save(I_AD_User user);
+
 	String extractUserLogin(I_AD_User user);
 
 	HashableString extractUserPassword(I_AD_User user);
@@ -76,4 +78,6 @@ public interface IUserBL extends ISingletonService
 	ExplainedOptional<EMailAddress> getEMailAddressById(@NonNull UserId userId);
 
 	void deleteUserDependency(I_AD_User userRecord);
+
+	String getUserFullNameById(@NonNull UserId userId);
 }

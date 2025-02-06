@@ -1,9 +1,9 @@
-
 DROP FUNCTION IF EXISTS RV_DATEV_Export_Fact_Acct_Invoice(
     p_IsOneLinePerInvoiceTax    char(1),
     p_IsSwitchCreditMemo        char(1),
     p_IsNegateInboundAmounts    char(1),
-    p_IsPlaceBPAccountsOnCredit char(1)
+    p_IsPlaceBPAccountsOnCredit char(1),
+    p_IsSOTrx                   char(1)
 )
 ;
 
@@ -11,7 +11,8 @@ CREATE OR REPLACE FUNCTION RV_DATEV_Export_Fact_Acct_Invoice(
     p_IsOneLinePerInvoiceTax    char(1) = 'N',
     p_IsSwitchCreditMemo        char(1) = 'N',
     p_IsNegateInboundAmounts    char(1) = 'N',
-    p_IsPlaceBPAccountsOnCredit char(1) = 'N'
+    p_IsPlaceBPAccountsOnCredit char(1) = 'N',
+    p_IsSOTrx                   char(1) = NULL
 )
     RETURNS TABLE
             (
@@ -145,6 +146,7 @@ BEGIN
              LEFT OUTER JOIN C_BPartner bp ON bp.C_BPartner_ID = fa.C_BPartner_ID
              LEFT OUTER JOIN C_DocType dt ON dt.C_DocType_ID = fa.C_DocType_ID
              LEFT OUTER JOIN C_Invoice i ON i.C_Invoice_ID = fa.C_Invoice_ID
+    WHERE (p_IsSOTrx IS NULL OR (p_IsSOTrx = dt.issotrx))
     GROUP BY fa.dr_account_id, ev_dr.value, ev_dr.name,
              fa.cr_account_id, ev_cr.value, ev_cr.name,
              fa.c_currency_id,

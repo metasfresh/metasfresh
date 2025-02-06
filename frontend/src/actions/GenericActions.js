@@ -1,5 +1,11 @@
-import axios, { post } from 'axios';
+import axios from 'axios';
 import { getQueryString } from '../utils';
+import {
+  allActionsRequest,
+  getViewFieldDropdown,
+  getViewFilterParameterDropdown,
+  getViewFilterParameterTypeahead,
+} from '../api/view';
 
 // IMPORTANT GENERIC METHODS TO HANDLE LAYOUTS, DATA, COMMITS
 // @TODO: Everything should be moved to api
@@ -18,14 +24,43 @@ export function autocompleteRequest({
   tabId,
   viewId,
 }) {
-  return axios.get(`${config.API_URL}/${entity}${docType ? `/${docType}` : ''}${
-    viewId ? `/${viewId}` : ''
-  }${docId ? `/${docId}` : ''}${tabId ? `/${tabId}` : ''}${
-    rowId ? `/${rowId}` : ''
-  }${subentity ? `/${subentity}` : ''}${subentityId ? `/${subentityId}` : ''}${
-    attribute ? '/attribute/' : '/field/'
-  }${propertyName}/typeahead?query=${encodeURIComponent(query)}
+  // console.log('autocompleteRequest', {
+  //   attribute,
+  //   docId,
+  //   docType,
+  //   entity,
+  //   propertyName,
+  //   query,
+  //   rowId,
+  //   subentity,
+  //   subentityId,
+  //   tabId,
+  //   viewId,
+  // });
+
+  // NOTE: following cases are already handled elsewhere:
+  // * view attributes
+
+  if (entity === 'documentView' && subentity === 'filter') {
+    return getViewFilterParameterTypeahead({
+      windowId: docType,
+      viewId: viewId ?? docId, // NOTE in case of Labels widget, we really get the viewId. In the other cases we get the viewId as "docId".
+      filterId: subentityId,
+      parameterName: propertyName,
+      query,
+    });
+  } else {
+    return axios.get(`${config.API_URL}/${entity}${
+      docType ? `/${docType}` : ''
+    }${viewId ? `/${viewId}` : ''}${docId ? `/${docId}` : ''}${
+      tabId ? `/${tabId}` : ''
+    }${rowId ? `/${rowId}` : ''}${subentity ? `/${subentity}` : ''}${
+      subentityId ? `/${subentityId}` : ''
+    }${
+      attribute ? '/attribute/' : '/field/'
+    }${propertyName}/typeahead?query=${encodeURIComponent(query)}
   `);
+  }
 }
 
 // TODO: This should be moved to the api
@@ -60,14 +95,32 @@ export function dropdownRequest({
   tabId,
   viewId,
 }) {
-  return axios.get(`
+  if (entity === 'documentView') {
+    if (subentity === 'filter') {
+      return getViewFilterParameterDropdown({
+        windowId: docType,
+        viewId,
+        filterId: subentityId,
+        parameterName: propertyName,
+      });
+    } else {
+      return getViewFieldDropdown({
+        windowId: docType,
+        viewId,
+        rowId,
+        fieldName: propertyName,
+      });
+    }
+  } else {
+    return axios.get(`
     ${config.API_URL}/${entity}${docType ? `/${docType}` : ''}${
-    viewId ? `/${viewId}` : ''
-  }${docId ? `/${docId}` : ''}${tabId ? `/${tabId}` : ''}${
-    rowId ? `/${rowId}` : ''
-  }${subentity ? `/${subentity}` : ''}${subentityId ? `/${subentityId}` : ''}${
-    attribute ? '/attribute/' : '/field/'
-  }${propertyName}/dropdown`);
+      viewId ? `/${viewId}` : ''
+    }${docId ? `/${docId}` : ''}${tabId ? `/${tabId}` : ''}${
+      rowId ? `/${rowId}` : ''
+    }${subentity ? `/${subentity}` : ''}${
+      subentityId ? `/${subentityId}` : ''
+    }${attribute ? '/attribute/' : '/field/'}${propertyName}/dropdown`);
+  }
 }
 
 // TODO: This should be moved to the api
@@ -93,6 +146,7 @@ export function duplicateRequest(entity, docType, docId) {
   );
 }
 
+/** Fetches actions to be displayed in top "burger" menu. */
 export function actionsRequest({
   entity,
   type,
@@ -113,17 +167,14 @@ export function actionsRequest({
   //
   // View Actions:
   else if (entity === 'documentView') {
-    const windowId = type;
-    const viewId = id;
-    return post(
-      `${config.API_URL}/documentView/${windowId}/${viewId}/actions`,
-      {
-        viewOrderBy,
-        selectedIds,
-        childViewId,
-        childViewSelectedIds,
-      }
-    );
+    return allActionsRequest({
+      windowId: type,
+      viewId: id,
+      viewOrderBy,
+      selectedIds,
+      childViewId,
+      childViewSelectedIds,
+    });
   }
   //
   // Other actions fetching cases:
@@ -138,15 +189,9 @@ export function actionsRequest({
     });
 
     return axios.get(
-      config.API_URL +
-        '/' +
-        entity +
-        '/' +
-        type +
-        '/' +
-        id +
-        '/actions' +
-        (query ? '?' + query : '')
+      `${config.API_URL}/${entity}/${type}/${id}/actions${
+        query ? '?' + query : ''
+      }`
     );
   }
 }
@@ -166,22 +211,10 @@ export function rowActionsRequest({ windowId, documentId, tabId, rowId }) {
   );
 }
 
-export function attachmentsRequest(entity, docType, docId) {
-  return axios.get(
-    `${config.API_URL}/${entity}/${docType}/${docId}/attachments`
-  );
-}
-
 export function processNewRecord(entity, docType, docId) {
   return axios.get(
     `${config.API_URL}/${entity}/${docType}/${docId}/processNewRecord`
   );
-}
-
-export function openFile(entity, docType, docId, fileType, fileId) {
-  const url = `${config.API_URL}/${entity}/${docType}/${docId}/${fileType}/${fileId}`;
-
-  window.open(url, '_blank');
 }
 
 export function getRequest() {

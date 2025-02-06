@@ -38,6 +38,7 @@ import org.compiere.model.I_M_Warehouse;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 
 public interface IWarehouseBL extends ISingletonService
 {
@@ -78,6 +79,9 @@ public interface IWarehouseBL extends ISingletonService
 	String getWarehouseName(WarehouseId warehouseId);
 
 	LocatorId getLocatorIdByRepoId(int locatorRepoId);
+
+	@NonNull
+	ImmutableSet<LocatorId> getLocatorIdsByRepoIds(Set<Integer> locatorRepoIds);
 
 	I_M_Locator getLocatorByRepoId(int locatorRepoId);
 

@@ -157,6 +157,10 @@ public class JasperEngine extends AbstractReportEngine
 		{
 			jrParameters.putRecordId(reportContext.getRecord_ID());
 		}
+		if (reportContext.getAD_Table_ID() > 0)
+		{
+			jrParameters.putTableId(reportContext.getAD_Table_ID());
+		}
 		jrParameters.putPInstanceId(reportContext.getPinstanceId());
 		jrParameters.putLocale(jrParameters.getReportLanguageEffective().getLocale());
 

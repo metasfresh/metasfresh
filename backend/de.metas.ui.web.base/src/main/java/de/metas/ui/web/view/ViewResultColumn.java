@@ -1,11 +1,11 @@
 package de.metas.ui.web.view;
 
-import javax.annotation.Nullable;
-
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -29,16 +29,13 @@ import lombok.Value;
  * #L%
  */
 
-@Builder
 @Value
-public final class ViewResultColumn
+@Builder
+public class ViewResultColumn
 {
-	@NonNull
-	String fieldName;
-	
-	@NonNull
-	DocumentFieldWidgetType widgetType;
-	
-	@Nullable
-	Integer maxPrecision;
+	@NonNull String fieldName;
+	@NonNull DocumentFieldWidgetType widgetType;
+	@Nullable Integer maxPrecision;
+	@Nullable Boolean hidden;
 }
+

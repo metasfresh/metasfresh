@@ -204,7 +204,7 @@ public class VPAttributeSerNoDialog extends CDialog
 			bSelect.setText(Msg.translate(Env.getCtx(), "SerNo"));
 			bSelect.addActionListener(this);
 			centerPanel.add(bSelect, null);
-
+			
 		}
 
 		//	Window usually to wide (??)

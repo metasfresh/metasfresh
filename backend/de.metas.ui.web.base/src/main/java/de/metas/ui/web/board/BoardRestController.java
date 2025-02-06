@@ -1,8 +1,8 @@
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -40,6 +40,7 @@ import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRowOverrides;
 import de.metas.ui.web.view.IViewsRepository;
+import de.metas.ui.web.view.ViewFilterParameterLookupEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.ViewResult;
@@ -57,8 +58,9 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.GuavaCollectors;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.comparator.FixedOrderByKeyComparator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -184,9 +186,9 @@ public class BoardRestController
 	}
 
 	@GetMapping("/{boardId}/card")
-	@ApiOperation("gets cards indexed by cardId")
+	@Operation(summary = "gets cards indexed by cardId")
 	public Map<Integer, JSONBoardCard> getCards(@PathVariable("boardId") final int boardId,
-			@RequestParam("cardIds") @ApiParam("comma separated cardIds") final String cardIdsListStr)
+												@RequestParam("cardIds") @Parameter(description = "comma separated cardIds") final String cardIdsListStr)
 	{
 		userSession.assertLoggedIn();
 
@@ -259,7 +261,7 @@ public class BoardRestController
 		addActiveNewCardsView(boardId, view);
 
 		final JSONOptions jsonOpts = newJSONOptions();
-		return toJSONCardsViewResult(boardId, view, jsonOpts);
+		return toJSONCardsViewResult(view, jsonOpts);
 	}
 
 	@GetMapping("/{boardId}/newCardsView/layout")
@@ -313,8 +315,8 @@ public class BoardRestController
 	}
 
 	@PostMapping("/{boardId}/newCardsView/{viewId}/filter")
-	public JSONViewResult filterNewCardsView( //
-			@PathVariable("boardId") final int boardId,
+	public JSONViewResult filterNewCardsView(
+			@PathVariable("boardId") final int ignoredBoardId,
 			@PathVariable("viewId") final String viewIdStr,
 			@RequestBody final JSONFilterViewRequest jsonRequest)
 	{
@@ -323,12 +325,12 @@ public class BoardRestController
 		final IView newView = viewsRepo.filterView(viewId, jsonRequest);
 
 		final JSONOptions jsonOpts = newJSONOptions();
-		return toJSONCardsViewResult(boardId, newView, jsonOpts);
+		return toJSONCardsViewResult(newView, jsonOpts);
 	}
 
 	@GetMapping("/{boardId}/newCardsView/{viewId}/filter/{filterId}/field/{parameterName}/typeahead")
 	public JSONLookupValuesPage getFilterParameterTypeahead(
-			@PathVariable("boardId") final int boardId,
+			@PathVariable("boardId") final int ignoredBoardId,
 			@PathVariable("viewId") final String viewIdStr,
 			@PathVariable("filterId") final String filterId,
 			@PathVariable("parameterName") final String parameterName,
@@ -337,14 +339,17 @@ public class BoardRestController
 		userSession.assertLoggedIn();
 
 		final ViewId viewId = ViewId.ofViewIdString(viewIdStr);
+		final ViewFilterParameterLookupEvaluationCtx ctx = createFilterParameterLookupContext(viewId);
+		final String adLanguage = userSession.getAD_Language();
+
 		return viewsRepo.getView(viewId)
-				.getFilterParameterTypeahead(filterId, parameterName, query, userSession.toEvaluatee())
-				.transform(page -> JSONLookupValuesPage.of(page, userSession.getAD_Language()));
+				.getFilterParameterTypeahead(filterId, parameterName, query, ctx)
+				.transform(page -> JSONLookupValuesPage.of(page, adLanguage));
 	}
 
 	@GetMapping("/{boardId}/newCardsView/{viewId}/filter/{filterId}/field/{parameterName}/dropdown")
 	public JSONLookupValuesPage getFilterParameterDropdown(
-			@PathVariable("boardId") final int boardId,
+			@PathVariable("boardId") final int ignoredBoardId,
 			@PathVariable("viewId") final String viewIdStr,
 			@PathVariable("filterId") final String filterId,
 			@PathVariable("parameterName") final String parameterName)
@@ -352,9 +357,21 @@ public class BoardRestController
 		userSession.assertLoggedIn();
 
 		final ViewId viewId = ViewId.ofViewIdString(viewIdStr);
+		final ViewFilterParameterLookupEvaluationCtx ctx = createFilterParameterLookupContext(viewId);
+		final String adLanguage = userSession.getAD_Language();
+
 		return viewsRepo.getView(viewId)
-				.getFilterParameterDropdown(filterId, parameterName, userSession.toEvaluatee())
-				.transform(list -> JSONLookupValuesPage.of(list, userSession.getAD_Language()));
+				.getFilterParameterDropdown(filterId, parameterName, ctx)
+				.transform(list -> JSONLookupValuesPage.of(list, adLanguage));
+	}
+
+	private ViewFilterParameterLookupEvaluationCtx createFilterParameterLookupContext(@NonNull final ViewId viewId)
+	{
+		return ViewFilterParameterLookupEvaluationCtx.builder()
+				.viewId(viewId)
+				//.viewSize(-1)
+				.userSessionCtx(userSession.toEvaluatee())
+				.build();
 	}
 
 	private JSONViewResult toJSONCardsViewResult(
@@ -380,7 +397,7 @@ public class BoardRestController
 		return JSONViewResult.of(viewResult, jsonCards, jsonOpts);
 	}
 
-	private JSONViewResult toJSONCardsViewResult(final int boardId, final IView view, final JSONOptions jsonOpts)
+	private JSONViewResult toJSONCardsViewResult(final IView view, final JSONOptions jsonOpts)
 	{
 		final ViewResult viewResult = ViewResult.ofView(view);
 		final IViewRowOverrides rowOverrides = ViewRowOverridesHelper.getViewRowOverrides(view);

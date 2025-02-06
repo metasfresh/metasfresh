@@ -17,9 +17,10 @@ import org.compiere.model.I_AD_Val_Rule;
 import org.compiere.model.X_AD_Val_Rule;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,7 +57,7 @@ public class RegisteredValidationRuleTest
 
 	private final static String columnNameForRegisteredValRule = "ColumnNameForRegisteredValRule";
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -110,7 +111,7 @@ public class RegisteredValidationRuleTest
 	/**
 	 * This test is mocking the general validation rule for the table M_Warehouse, which applies to all the columns that point to the table M_Warehouse.
 	 * This validation rule has an exception for the M_ReceiptSchedule.M_Warehouse_Dest_ID.
-	 *
+	 * <p>
 	 * In this test, the validation Rule is build built for M_ReceiptSchedule.M_Warehouse_Dest_ID, which fits the exception, so the validation rule should be not applied
 	 */
 	@Test
@@ -144,10 +145,9 @@ public class RegisteredValidationRuleTest
 	}
 
 	/**
-	 *
 	 * This test is mocking the general validation rule for the table M_Warehouse, which applies to all the columns that point to the table M_Warehouse.
 	 * This validation rule has an exception for the M_ReceiptSchedule.M_Warehouse_Dest_ID.
-	 *
+	 * <p>
 	 * In this test, the validation Rule is build built for M_ReceiptSchedule.M_Warehouse_Dest_ID, which fits the exception, so the validation rule should be not applied
 	 * The column M_ReceiptSchedule.M_Warehouse_Dest_ID has an SQL validation rule. This one will be applied so the final ValidationRule will be of type SQL
 	 */
@@ -177,7 +177,11 @@ public class RegisteredValidationRuleTest
 		Services.get(IValidationRuleFactory.class).registerTableValidationRule(M_Warehouse.getTableName(), ValRuleTest.instance);
 		Services.get(IValidationRuleFactory.class).registerValidationRuleException(ValRuleTest.instance, M_ReceiptSchedule.getTableName(), rs_Warehouse_Dest_ID.getColumnName(), "test");
 
-		final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(M_Warehouse.getTableName(), AdValRuleId.ofRepoId(databaseValRule.getAD_Val_Rule_ID()), M_ReceiptSchedule.getTableName(), rs_Warehouse_Dest_ID.getColumnName());
+		final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(
+				M_Warehouse.getTableName(),
+				AdValRuleId.ofRepoId(databaseValRule.getAD_Val_Rule_ID()),
+				M_ReceiptSchedule.getTableName(),
+				rs_Warehouse_Dest_ID.getColumnName());
 
 		// If a validation rule has no registered rules it is considered NullValidationRule
 		assertThat(validationRule).isInstanceOf(SQLValidationRule.class);
@@ -187,7 +191,7 @@ public class RegisteredValidationRuleTest
 	/**
 	 * This test is mocking the general validation rule for the table M_Warehouse, which applies to all the columns that point to the table M_Warehouse.
 	 * This validation rule has an exception for the M_ReceiptSchedule.M_Warehouse_Dest_ID.
-	 *
+	 * <p>
 	 * In this test, the validation Rule is build built for M_InOut.M_Warehouse_ID, which doesn't fit the exception, so the validation rule should be applied
 	 */
 	@Test
@@ -224,15 +228,12 @@ public class RegisteredValidationRuleTest
 
 	private static final class ValRuleTest extends AbstractJavaValidationRule
 	{
-		private static final transient ValRuleTest instance = new ValRuleTest();
+		private static final ValRuleTest instance = new ValRuleTest();
 
-		private ValRuleTest()
-		{
-			super();
-		}
+		private ValRuleTest() {}
 
 		@Override
-		public Set<String> getParameters()
+		public Set<String> getParameters(@Nullable final String contextTableName)
 		{
 			return ImmutableSet.of(param1, param2);
 		}

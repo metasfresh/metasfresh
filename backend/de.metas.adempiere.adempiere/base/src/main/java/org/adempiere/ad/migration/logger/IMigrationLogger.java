@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.adempiere.ad.migration.logger;
 
@@ -13,12 +13,12 @@ package org.adempiere.ad.migration.logger;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -36,56 +36,40 @@ import java.util.Collection;
 
 /**
  * @author tsa
- * 
  */
 public interface IMigrationLogger extends ISingletonService
 {
-	boolean isLogTableName(String tableName, final ClientId clientId);
+	boolean isLogTableName(String tableName, ClientId clientId);
 
 	/**
 	 * Create migration step using the current {@link IMigrationLoggerContext} for the specified {@link PO}
-	 * 
-	 * @param migrationCtx
-	 * @param po
-	 * @param info
-	 * @param event
 	 */
 	void logMigration(IMigrationLoggerContext migrationCtx, PO po, POInfo info, String event);
 
 	/**
 	 * Create migration step using the current session for the specified {@link PO}
-	 * 
-	 * @param session
-	 * @param po
-	 * @param info
-	 * @param event
 	 */
 	void logMigration(MFSession session, PO po, POInfo info, String event);
 
 	/**
 	 * Create a raw SQL migration step for the specified {@link PO}
-	 * 
 	 */
 	void logMigrationSQL(PO contextPO, String sql);
 
 	/**
-	 * Add tables to ignore list (ignore specified tables when logging migration steps).
-	 * 
+	 * Add table to ignore list (ignore specified table when logging migration steps).
 	 */
-	void addTablesToIgnoreList(final String... tableNames);
+	void addTablesToIgnoreList(String... tableName);
 
-	void addTablesToIgnoreList(final Collection<String> tableNames);
+	void addTablesToIgnoreList(Collection<String> tableNames);
 
 	/**
 	 * Gets a list of table names that shall be ignored when creating migration scripts.
-	 * 
 	 * NOTE:
 	 * <ul>
 	 * <li>all table names are uppercase
-	 * <li>based on current login #AD_Client_ID, the list could be different
+	 * <li>based on <code>clientId</code>, the list could be different
 	 * </ul>
-	 * 
-	 * @return list of table names
 	 */
 	ImmutableSet<String> getTablesToIgnoreUC(ClientId clientId);
 }

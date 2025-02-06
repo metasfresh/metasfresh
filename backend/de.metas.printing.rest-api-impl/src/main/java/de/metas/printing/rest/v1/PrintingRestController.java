@@ -42,8 +42,8 @@ import de.metas.printing.rest.PrinterHWRepo;
 import de.metas.printing.rpl.requesthandler.CreatePrintPackageRequestHandler;
 import de.metas.security.IUserRolePermissions;
 import de.metas.util.Services;
+import io.swagger.v3.oas.annotations.Parameter;
 import de.metas.util.web.MetasfreshRestAPIConstants;
-import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.session.ISessionBL;
@@ -82,10 +82,10 @@ public class PrintingRestController
 	 */
 	@PostMapping("/login/{sessionId}")
 	public LoginResponse login(
-			@ApiParam("Ignored/deprecated; you can savely provide e.g. 0") //
+			@Parameter(deprecated = true, description = "Ignored/deprecated; you can savely provide e.g. 0") //
 			@PathVariable("sessionId") final int sessionIdIGNORED,
 
-			@ApiParam(required = true, value = "The request body's user and password are ignored.\nThey are required for another (legacy) client.") //
+			@Parameter(required = true, description = "The request body's user and password are ignored.\nThey are required for another (legacy) client.") //
 			@RequestBody final LoginRequest loginRequest)
 	{
 		final MFSession session = Services.get(ISessionBL.class).getCurrentOrCreateNewSession(Env.getCtx());

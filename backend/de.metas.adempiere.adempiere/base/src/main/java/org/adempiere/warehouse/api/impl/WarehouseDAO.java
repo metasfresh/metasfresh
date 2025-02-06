@@ -300,6 +300,21 @@ public class WarehouseDAO implements IWarehouseDAO
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@Override
+	public ImmutableSet<LocatorId> getLocatorIdsByRepoIds(final Set<Integer> locatorRepoIds)
+	{
+		if (locatorRepoIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return getLocatorsByRepoIds(locatorRepoIds)
+				.stream()
+				.map(record -> LocatorId.ofRepoId(record.getM_Warehouse_ID(), record.getM_Locator_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
 	public List<I_M_Locator> getLocatorByIds(final Collection<LocatorId> locatorIds)
 	{
 		return getLocatorByIds(locatorIds, I_M_Locator.class);

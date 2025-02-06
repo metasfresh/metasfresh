@@ -154,7 +154,6 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	{
 		this.windowId = windowId;
 
-		this.attributesProvider = attributesProvider;
 		this.rowProcessedPredicate = rowProcessedPredicate != null ? rowProcessedPredicate : HUEditorRowIsProcessedPredicates.NEVER;
 		this.adReferenceService = adReferenceService;
 		this.showBestBeforeDate = showBestBeforeDate;
@@ -165,6 +164,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		sqlViewSelect = sqlViewBinding.getSqlViewSelect();
 
 		this.huReservationService = huReservationService;
+		this.attributesProvider = attributesProvider;
 		this.customProcessApplyPredicate = customProcessApplyPredicate;
 	}
 

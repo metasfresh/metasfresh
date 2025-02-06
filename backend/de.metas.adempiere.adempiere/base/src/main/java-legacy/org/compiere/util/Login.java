@@ -6,7 +6,7 @@ import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.IPostingService;
 import de.metas.adempiere.service.IPrinterRoutingBL;
 import de.metas.common.util.time.SystemTime;
-import de.metas.i18n.Language;
+import de.metas.i18n.AdMessageKey;
 import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
@@ -18,6 +18,8 @@ import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.Role;
 import de.metas.security.RoleId;
 import de.metas.security.permissions.OrgResource;
+import de.metas.security.user_2fa.User2FAService;
+import de.metas.security.user_2fa.totp.OTP;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.user.api.IUserDAO;
@@ -26,11 +28,10 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.hash.HashableString;
 import lombok.NonNull;
-import org.adempiere.ad.service.ISystemBL;
+import lombok.Setter;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
 import org.adempiere.service.ISysConfigBL;
@@ -50,48 +51,51 @@ import java.util.Set;
  * Login Manager
  *
  * @author Jorg Janke
- * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
+ * @author victor.perez@e-evolution.com, e-Evolution <a href="http://www.e-evolution.com">...</a>
  * <li>Incorrect global Variable when you use multi Account Schema
- * http://sourceforge.net/tracker/?func=detail&atid=879335&aid=2531597&group_id=176962
  * @author teo.sarca@gmail.com
  * <li>BF [ 2867246 ] Do not show InTrazit WHs on login
- * https://sourceforge.net/tracker/?func=detail&aid=2867246&group_id=176962&atid=879332
  * @version $Id: Login.java,v 1.6 2006/10/02 05:19:06 jjanke Exp $
  */
 public class Login
 {
 	/**
-	 * Task http://dewiki908/mediawiki/index.php/05730_Use_different_Theme_colour_on_UAT_system
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/05730_Use_different_Theme_colour_on_UAT_system">task</a>
 	 */
 	private static final String SYSCONFIG_UI_WindowHeader_Notice_Text = "UI_WindowHeader_Notice_Text";
 
 	/**
-	 * Task https://metasfresh.atlassian.net/browse/FRESH-352
+	 * @implSpec <a href="https://metasfresh.atlassian.net/browse/FRESH-352">task</a>
 	 */
 	private static final String SYSCONFIG_UI_WindowHeader_Notice_BG_Color = "UI_WindowHeader_Notice_BG_Color";
 
 	/**
-	 * Task https://metasfresh.atlassian.net/browse/FRESH-352
+	 * @implSpec <a href="https://metasfresh.atlassian.net/browse/FRESH-352">task</a>
 	 */
 	private static final String SYSCONFIG_UI_WindowHeader_Notice_FG_Color = "UI_WindowHeader_Notice_FG_Color";
 
-	// services
-	private static final transient Logger log = LogManager.getLogger(Login.class);
+	private static final AdMessageKey MSG_Invalid2FACode = AdMessageKey.of("auth.Invalid2FACode");
+	private static final AdMessageKey MSG_UserOrPasswordInvalid = AdMessageKey.of("UserOrPasswordInvalid");
+	private static final AdMessageKey MSG_UserAccountLockedError = AdMessageKey.of("UserAccountLockedError");
+	private static final AdMessageKey MSG_NoRoles = AdMessageKey.of("NoRoles");
 
-	private final transient IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
-	private final transient IUserDAO userDAO = Services.get(IUserDAO.class);
-	private final transient IUserBL userBL = Services.get(IUserBL.class);
-	private final transient IRoleDAO roleDAO = Services.get(IRoleDAO.class);
-	private final transient IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
-	private final transient IClientDAO clientDAO = Services.get(IClientDAO.class);
-	private final transient IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
-	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final transient ISessionBL sessionBL = Services.get(ISessionBL.class);
-	private final transient ISystemBL systemBL = Services.get(ISystemBL.class);
-	private final transient IPrinterRoutingBL printerRoutingBL = Services.get(IPrinterRoutingBL.class);
-	private final transient ICountryDAO countriesRepo = Services.get(ICountryDAO.class);
-	private final transient IPostingService postingService = Services.get(IPostingService.class);
-	private final transient IValuePreferenceBL valuePreferenceBL = Services.get(IValuePreferenceBL.class);
+	// services
+	private static final Logger log = LogManager.getLogger(Login.class);
+
+	private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
+	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final IUserBL userBL = Services.get(IUserBL.class);
+	private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
+	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
+	private final IClientDAO clientDAO = Services.get(IClientDAO.class);
+	private final IOrgDAO orgsRepo = Services.get(IOrgDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final ISessionBL sessionBL = Services.get(ISessionBL.class);
+	private final IPrinterRoutingBL printerRoutingBL = Services.get(IPrinterRoutingBL.class);
+	private final ICountryDAO countriesRepo = Services.get(ICountryDAO.class);
+	private final IPostingService postingService = Services.get(IPostingService.class);
+	private final IValuePreferenceBL valuePreferenceBL = Services.get(IValuePreferenceBL.class);
+	@Nullable @Setter private User2FAService user2FAService;
 
 	//
 	// State
@@ -128,110 +132,142 @@ public class Login
 	 */
 	public LoginAuthenticateResponse authenticate(@Nullable final String username, @Nullable final HashableString password)
 	{
-		if (username == null || Check.isBlank(username))
-		{
-			throw new AdempiereException("@UserOrPasswordInvalid@").markAsUserValidationError();
-		}
-		if (HashableString.isEmpty(password))
-		{
-			throw new AdempiereException("@UserOrPasswordInvalid@").markAsUserValidationError();
-		}
-
-		final LoginContext ctx = getCtx();
-
 		//
-		// If not authenticated so far, use AD_User as backup
-		//
-		final int maxLoginFailure = sysConfigBL.getIntValue("ZK_LOGIN_FAILURES_MAX", 3);
-		final int accountLockExpire = sysConfigBL.getIntValue("USERACCOUNT_LOCK_EXPIRE", 30);
-		final MFSession session = startSession();
-		session.setLoginUsername(username);
+		// Validate parameters
+		if (username == null
+				|| Check.isBlank(username)
+				|| HashableString.isEmpty(password))
+		{
+			throw new AdempiereException(MSG_UserOrPasswordInvalid).markAsUserValidationError();
+		}
 
 		final I_AD_User user = userDAO.retrieveLoginUserByUserId(username);
-		int loginFailureCount = user.getLoginFailureCount();
+		final UserId userId = UserId.ofRepoId(user.getAD_User_ID());
 
-		// metas: us902: Update logged in user if not equal.
+		//
+		// Start session
+		final MFSession session = startSession();
+		session.setLoginUsername(username);
+		// metas: us902: Update logged-in user if not equal.
 		// Because we are creating the session before we know which user will be logged, initially
 		// the AD_Session.CreatedBy is zero.
-		final UserId userId = UserId.ofRepoId(user.getAD_User_ID());
 		session.setAD_User_ID(userId.getRepoId());
 
-		final boolean isAccountLocked = user.isAccountLocked();
-		if (isAccountLocked)
+		//
+		// Check account locked / unlock if expired
+		checkAndFailIfAccountLocked(user);
+
+		//
+		// Authenticate by password
+		assertPasswordMatches(user, password, session);
+		getCtx().setIsPasswordAuthenticated();
+
+		getCtx().setUser(userId, username);
+		loadUserLanguage(user);
+
+		if (is2FARequired(userId))
 		{
-			final Timestamp curentLogin = (new Timestamp(System.currentTimeMillis()));
-			final long loginFailureTime = user.getLoginFailureDate().getTime();
-			final long newloginFailureTime = loginFailureTime + (1000L * 60 * accountLockExpire);
-			final Timestamp acountUnlock = new Timestamp(newloginFailureTime);
-			if (curentLogin.compareTo(acountUnlock) > 0)
-			{
-				user.setLoginFailureCount(0);
-				user.setIsAccountLocked(false);
-				InterfaceWrapperHelper.save(user);
-			}
-			else
-			{
-				throw new AdempiereException("@UserAccountLockedError@").markAsUserValidationError(); // TODO: specific exception
-			}
-		}
-
-		if (!userBL.isPasswordMatching(user, password))
-		{
-			loginFailureCount++;
-			user.setLoginFailureCount(loginFailureCount);
-			user.setLoginFailureDate(de.metas.common.util.time.SystemTime.asTimestamp());
-			if (user.getLoginFailureCount() >= maxLoginFailure)
-			{
-				user.setIsAccountLocked(true);
-				user.setLockedFromIP(session.getRemote_Addr());
-				InterfaceWrapperHelper.save(user);
-
-				destroySessionOnLoginIncorrect(session);
-				throw new AdempiereException("@UserAccountLockedError@").markAsUserValidationError(); // TODO: specific exception
-			}
-
-			InterfaceWrapperHelper.save(user);
-
-			destroySessionOnLoginIncorrect(session);
-			throw new AdempiereException("@UserOrPasswordInvalid@").markAsUserValidationError();
+			return LoginAuthenticateResponse.builder()
+					.userId(userId)
+					.is2FARequired(true)
+					.build();
 		}
 		else
 		{
-			user.setLoginFailureCount(0);
-			user.setIsAccountLocked(false);
-			InterfaceWrapperHelper.save(user);
+			return LoginAuthenticateResponse.builder()
+					.userId(userId)
+					.availableRoles(loadUserRoles(userId))
+					.build();
 		}
+	}
 
-		ctx.setUser(userId, username);
-
-		//
-		if (Ini.isSwingClient())
+	private void assertPasswordMatches(@NonNull final I_AD_User user, final @NonNull HashableString password, final MFSession session)
+	{
+		if (!userBL.isPasswordMatching(user, password))
 		{
-			if (systemBL.isRememberUserAllowed("SWING_LOGIN_ALLOW_REMEMBER_ME"))
+			incrementFailureCounterAndLockIfNeeded(user, session);
+
+			destroySessionOnLoginIncorrect(session);
+
+			if (user.isAccountLocked())
 			{
-				Ini.setProperty(Ini.P_UID, username);
+				throw new AdempiereException(MSG_UserAccountLockedError).markAsUserValidationError();
 			}
 			else
 			{
-				Ini.setProperty(Ini.P_UID, "");
-			}
-
-			if (Ini.isPropertyBool(Ini.P_STORE_PWD)
-					&& systemBL.isRememberPasswordAllowed("SWING_LOGIN_ALLOW_REMEMBER_ME")
-					&& password.isPlain())
-			{
-				Ini.setProperty(Ini.P_PWD, password.getValue());
+				throw new AdempiereException(MSG_UserOrPasswordInvalid).markAsUserValidationError();
 			}
 		}
+		else
+		{
+			unlockAccountAndResetCounter(user);
+		}
+	}
 
-		//
-		// Use user's AD_Language, if any
+	private void incrementFailureCounterAndLockIfNeeded(final @NonNull I_AD_User user, final MFSession session)
+	{
+		user.setLoginFailureCount(user.getLoginFailureCount() + 1);
+		user.setLoginFailureDate(SystemTime.asTimestamp());
+
+		final int maxLoginFailure = sysConfigBL.getIntValue("ZK_LOGIN_FAILURES_MAX", 3);
+		if (user.getLoginFailureCount() >= maxLoginFailure && !user.isAccountLocked())
+		{
+			user.setIsAccountLocked(true);
+			user.setLockedFromIP(session.getRemote_Addr());
+		}
+
+		userBL.save(user);
+	}
+
+	/**
+	 * Check account locked / unlock if expired
+	 */
+	private void checkAndFailIfAccountLocked(final I_AD_User user)
+	{
+		unlockAccountIfLockExpired(user);
+		if (user.isAccountLocked())
+		{
+			throw new AdempiereException(MSG_UserAccountLockedError).markAsUserValidationError();
+		}
+	}
+
+	private void unlockAccountIfLockExpired(@NonNull final I_AD_User user)
+	{
+		if (!user.isAccountLocked())
+		{
+			return;
+		}
+
+		final int accountLockExpire = sysConfigBL.getIntValue("USERACCOUNT_LOCK_EXPIRE", 30);
+
+		final Timestamp curentLogin = (new Timestamp(System.currentTimeMillis()));
+		final long loginFailureTime = user.getLoginFailureDate().getTime();
+		final long newloginFailureTime = loginFailureTime + (1000L * 60 * accountLockExpire);
+		final Timestamp acountUnlock = new Timestamp(newloginFailureTime);
+		if (curentLogin.compareTo(acountUnlock) > 0)
+		{
+			unlockAccountAndResetCounter(user);
+		}
+	}
+
+	private void unlockAccountAndResetCounter(@NonNull final I_AD_User user)
+	{
+		user.setIsAccountLocked(false);
+		user.setLoginFailureCount(0);
+		userBL.save(user);
+	}
+
+	private void loadUserLanguage(final I_AD_User user)
+	{
 		StringUtils.trimBlankToOptional(user.getAD_Language())
 				.map(Env::verifyLanguageFallbackToBase)
-				.ifPresent(ctx::setAD_Language);
+				.ifPresent(getCtx()::setAD_Language);
+	}
 
-		//
-		// Get user's roles
+	@NonNull
+	private ArrayList<Role> loadUserRoles(final UserId userId)
+	{
+		final LoginContext ctx = getCtx();
 		final ArrayList<Role> roles = new ArrayList<>();
 		for (final Role role : roleDAO.getUserRoles(userId))
 		{
@@ -251,14 +287,9 @@ public class Login
 		//
 		if (roles.isEmpty())
 		{
-			throw new AdempiereException("@NoRoles@").markAsUserValidationError(); // TODO: specific exception
+			throw new AdempiereException(MSG_NoRoles).markAsUserValidationError();
 		}
-
-		log.debug("User={}, roles={}", username, roles);
-		return LoginAuthenticateResponse.builder()
-				.userId(userId)
-				.availableRoles(roles)
-				.build();
+		return roles;
 	}
 
 	private MFSession startSession()
@@ -266,11 +297,11 @@ public class Login
 		final LoginContext ctx = getCtx();
 
 		final MFSession session = sessionBL.getCurrentOrCreateNewSession(ctx.getSessionContext());
-		final String remoteAddr = getRemoteAddr();
+		final String remoteAddr = ctx.getRemoteAddr();
 		if (remoteAddr != null)
 		{
-			session.setRemote_Addr(remoteAddr, getRemoteHost());
-			session.setWebSessionId(getWebSessionId());
+			session.setRemote_Addr(remoteAddr, ctx.getRemoteHost());
+			session.setWebSessionId(ctx.getWebSessionId());
 		}
 
 		return session;
@@ -284,10 +315,34 @@ public class Login
 		getCtx().resetAD_Session_ID();
 	}
 
+	public LoginAuthenticateResponse authenticate2FA(@NonNull final OTP otp)
+	{
+		final LoginContext ctx = getCtx();
+		if (!ctx.isPasswordAuthenticated())
+		{
+			throw new AdempiereException("Password authenticate first!");
+		}
+
+		final UserId userId = ctx.getUserId();
+		if (user2FAService == null)
+		{
+			throw new AdempiereException("2FA not configured");
+		}
+		if (!user2FAService.isValidOTP(userId, otp))
+		{
+			throw new AdempiereException(MSG_Invalid2FACode).markAsUserValidationError();
+		}
+
+		ctx.setIs2FAAuthenticated(true);
+
+		return LoginAuthenticateResponse.builder()
+				.userId(userId)
+				.availableRoles(loadUserRoles(userId))
+				.build();
+	}
+
 	/**
 	 * Sets current role and retrieves clients on which given role can login
-	 *
-	 * @return list of valid client {@link KeyNamePair}s or null if in error
 	 */
 	public Set<ClientId> setRoleAndGetClients(@NonNull final RoleId roleId)
 	{
@@ -308,7 +363,7 @@ public class Login
 
 		//
 		// Update login context
-		ctx.setRole(rolePermissions.getRoleId(), rolePermissions.getName());
+		ctx.setRole(roleId, rolePermissions.getName());
 		ctx.setRoleUserLevel(rolePermissions.getUserLevel());
 		ctx.setAllowLoginDateOverride(rolePermissions.hasPermission(IUserRolePermissions.PERMISSION_AllowLoginDateOverride));
 
@@ -330,25 +385,10 @@ public class Login
 	}
 
 	/**
-	 * Sets current client in context and retrieves organizations on which we can login
-	 *
-	 * @return list of valid organizations; never returns null
+	 * Sets current client in context and retrieves organizations on which we can log in
 	 */
 	public ImmutableSet<OrgId> setClientAndGetOrgs(@NonNull final ClientId clientId)
 	{
-		final String clientName = clientDAO.getClientNameById(clientId);
-		return setClientAndGetOrgs(clientId, clientName);
-	}
-
-	public ImmutableSet<OrgId> setClientAndGetOrgs(final ClientId clientId, final String clientName)
-	{
-		if (clientId == null)
-		{
-			throw new IllegalArgumentException("Client missing");
-		}
-
-		//
-		// Get login organizations
 		final LoginContext ctx = getCtx();
 		final RoleId roleId = ctx.getRoleId();
 		final UserId userId = ctx.getUserId();
@@ -356,7 +396,7 @@ public class Login
 
 		//
 		// Update login context
-		ctx.setClient(clientId, clientName);
+		ctx.setClient(clientId, clientDAO.getClientNameById(clientId));
 
 		return orgIds;
 	}
@@ -368,7 +408,7 @@ public class Login
 	{
 		//
 		// Get user role
-		final LocalDate loginDate = de.metas.common.util.time.SystemTime.asLocalDate(); // NOTE: to avoid hysteresis of Role->Date->Role, we always use system time
+		final LocalDate loginDate = SystemTime.asLocalDate(); // NOTE: to avoid hysteresis of Role->Date->Role, we always use system time
 		final IUserRolePermissions role = userRolePermissionsDAO.getUserRolePermissions(roleId, userId, clientId, loginDate);
 
 		//
@@ -385,6 +425,37 @@ public class Login
 		}
 
 		return orgIds;
+	}
+
+	public boolean isAuthenticated()
+	{
+		final LoginContext ctx = getCtx();
+
+		if (!ctx.isPasswordAuthenticated())
+		{
+			return false;
+		}
+
+		if (!ctx.is2FAAuthenticated())
+		{
+			final UserId userId = ctx.getUserIdIfExists().orElse(null);
+			if (userId != null && is2FARequired(userId))
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	private boolean is2FARequired(@NonNull final UserId userId)
+	{
+		if (user2FAService == null)
+		{
+			return false;
+		}
+
+		return user2FAService.isEnabled(userId);
 	}
 
 	/**
@@ -427,7 +498,7 @@ public class Login
 		if (fireLoginComplete)
 		{
 			final String error = ModelValidationEngine.get().loginComplete(clientId.getRepoId(), orgId.getRepoId(), roleId.getRepoId(), userId.getRepoId());
-			if (error != null && error.length() > 0)
+			if (error != null && !error.isEmpty())
 			{
 				log.error("Refused: " + error);
 				return error;
@@ -496,8 +567,6 @@ public class Login
 				&& Ini.isPropertyBool(Ini.P_SHOW_ACCT));
 		ctx.setProperty("#ShowTrl", Ini.isPropertyBool(Ini.P_SHOW_TRL));
 		ctx.setProperty("#ShowAdvanced", Ini.isPropertyBool(Ini.P_SHOW_ADVANCED));
-
-		ctx.setProperty("#CashAsPayment", sysConfigBL.getBooleanValue("CASH_AS_PAYMENT", true, clientId.getRepoId()));
 
 		String retValue = "";
 
@@ -595,10 +664,9 @@ public class Login
 
 	/**
 	 * Set System Status Message.
-	 * <p>
-	 * See http://dewiki908/mediawiki/index.php/05730_Use_different_Theme_colour_on_UAT_system.
-	 * <p>
 	 * NOTE: we are retrieving from database and we are storing in context because this String is used in low level UI components and in some cases there is no database connection at all
+	 *
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/05730_Use_different_Theme_colour_on_UAT_system">task</a>.
 	 */
 	private void loadUIWindowHeaderNotice()
 	{
@@ -622,29 +690,18 @@ public class Login
 		getCtx().setRemoteAddr(remoteAddr);
 	}
 
-	public String getRemoteAddr()
-	{
-		return getCtx().getRemoteAddr();
-	}    // RemoteAddr
+	// RemoteAddr
 
 	public void setRemoteHost(final String remoteHost)
 	{
 		getCtx().setRemoteHost(remoteHost);
 	}
 
-	public String getRemoteHost()
-	{
-		return getCtx().getRemoteHost();
-	}    // RemoteHost
+	// RemoteHost
 
 	public void setWebSessionId(final String webSessionId)
 	{
 		getCtx().setWebSessionId(webSessionId);
-	}
-
-	public String getWebSessionId()
-	{
-		return getCtx().getWebSessionId();
 	}
 
 	public boolean isAllowLoginDateOverride()

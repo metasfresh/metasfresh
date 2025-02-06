@@ -16,10 +16,15 @@
  *****************************************************************************/
 package org.compiere.grid.ed;
 
-import de.metas.adempiere.service.IColumnBL;
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
+import java.awt.Color;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.images.Images;
 import org.adempiere.plaf.AdempierePLAF;
@@ -32,15 +37,13 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.NamePair;
 import org.slf4j.Logger;
+import org.slf4j.Logger;
 
-import java.awt.*;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
+import de.metas.adempiere.service.IColumnBL;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import de.metas.logging.LogManager;
 
 /**
  *  General Button.
@@ -376,13 +379,13 @@ public final class VButton extends CButton
 	{
 		if (mField.getColumnName().endsWith("_ID") && ! IColumnBL.isRecordIdColumnName(mField.getColumnName()))
 		{
-			m_lookup = MLookupFactory.get(Env.getCtx(), mField.getWindowNo(), 0,
+			m_lookup = MLookupFactory.newInstance().get(Env.getCtx(), mField.getWindowNo(), 0,
 				mField.getAD_Column_ID(), DisplayType.Search);
 		}
-		else if (mField.getAD_Reference_Value_ID() != 0)
+		else if (mField.getAD_Reference_Value_ID() != null)
 		{
 			//	Assuming List
-			m_lookup = MLookupFactory.get(Env.getCtx(), mField.getWindowNo(), 0,
+			m_lookup = MLookupFactory.newInstance().get(Env.getCtx(), mField.getWindowNo(), 0,
 				mField.getAD_Column_ID(), DisplayType.List);
 		}
 		m_mField = mField;

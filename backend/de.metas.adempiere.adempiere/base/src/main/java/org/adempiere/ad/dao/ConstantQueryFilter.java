@@ -74,9 +74,9 @@ public final class ConstantQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 	}
 
 	@Override
-	public List<Object> getSqlParams(Properties ctx)
+	public List<Object> getSqlParams(final Properties ctx)
 	{
-		return Collections.emptyList();
+		return getSqlParams();
 	}
 
 	public List<Object> getSqlParams()
@@ -85,7 +85,7 @@ public final class ConstantQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 	}
 
 	@Override
-	public boolean accept(T model)
+	public boolean accept(final T model)
 	{
 		return value;
 	}

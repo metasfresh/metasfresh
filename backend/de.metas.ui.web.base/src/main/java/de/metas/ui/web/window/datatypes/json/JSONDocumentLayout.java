@@ -17,7 +17,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutSingleRow;
 import de.metas.ui.web.window.descriptor.NotFoundMessages;
-import io.swagger.annotations.ApiModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
@@ -48,7 +48,7 @@ import java.util.Map;
  * #L%
  */
 
-@ApiModel("layout")
+@Schema(description = "layout")
 public final class JSONDocumentLayout
 {
 	public static JSONDocumentLayout ofHeaderLayout(final DocumentLayoutDescriptor layout, final JSONDocumentLayoutOptions options)

@@ -23,6 +23,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.Singular;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.print.MPrintFormat;
@@ -41,6 +42,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /*
@@ -127,7 +129,7 @@ public class ProcessExecutionResult
 	private ReportResultData reportData;
 
 	/**
-	 * If the process fails with a Throwable, the Throwable is caught and stored here
+	 * If the process fails with an Throwable, the Throwable is caught and stored here
 	 */
 	// 03152: motivation to add this is that now in ait we can assert that a certain exception was thrown.
 	@Nullable
@@ -180,6 +182,12 @@ public class ProcessExecutionResult
 	@Getter
 	@Nullable
 	private String stringResultContentType = null;
+
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@Getter
+	@Setter
+	@Nullable
+	private WebuiNewRecord webuiNewRecord;
 
 	private ProcessExecutionResult(final PInstanceId pinstanceId)
 	{
@@ -496,6 +504,11 @@ public class ProcessExecutionResult
 	public void setRecordToOpen(@Nullable final TableRecordReference record, final int adWindowId, @NonNull final OpenTarget target)
 	{
 		setRecordToOpen(record, String.valueOf(adWindowId), target);
+	}
+
+	public void setRecordToOpen(@Nullable final TableRecordReference record, @Nullable final AdWindowId adWindowId, @NonNull final OpenTarget target)
+	{
+		setRecordToOpen(record, adWindowId != null ? String.valueOf(adWindowId.getRepoId()) : null, target);
 	}
 
 	public void setRecordToOpen(@Nullable final TableRecordReference record, final int adWindowId, @NonNull final OpenTarget target, @Nullable final RecordsToOpen.TargetTab targetTab)
@@ -998,5 +1011,33 @@ public class ProcessExecutionResult
 		{
 			this.code = code;
 		}
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	@lombok.Value
+	@lombok.Builder
+	public static class WebuiNewRecord
+	{
+		/**
+		 * If this string is used as field value
+		 * then the frontend will try to open the new record modal window to populate that field.
+		 * <p>
+		 * Used mainly to trigger new BPartner.
+		 */
+		public static final String FIELD_VALUE_NEW = "NEW";
+
+		@NonNull String windowId;
+
+		/**
+		 * Field values to be set by frontend, after the NEW record is created
+		 */
+		@NonNull @Singular Map<String, String> fieldValues;
+
+		public enum TargetTab
+		{
+			SAME_TAB, NEW_TAB,
+		}
+
+		@NonNull @Builder.Default TargetTab targetTab = TargetTab.SAME_TAB;
 	}
 }
