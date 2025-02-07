@@ -75,16 +75,24 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		}
 		if (taxCategoryId != null)
 		{
-			final Optional<TaxId> taxId = getTaxId(taxCategoryId,
-					shipDate,
-					orgId,
-					warehouseId,
-					shipBPartnerLocationId,
-					soTrx);
+			final CountryId countryFromId = Optional.ofNullable(warehouseId)
+				.map(warehouseBL::getCountryId)
+				.orElseGet(() -> Optional.ofNullable(bPartnerOrgBL.getOrgCountryId(orgId))
+						.orElseGet(countryDAO::getDefaultCountryId));
 
-			if (taxId.isPresent())
+			final Tax tax = taxDAO.getBy(TaxQuery.builder()
+					.fromCountryId(countryFromId)
+					.orgId(orgId)
+					.bPartnerLocationId(shipBPartnerLocationId)
+					.dateOfInterest(shipDate)
+					.taxCategoryId(taxCategoryId)
+					.warehouseId(warehouseId)
+					.soTrx(soTrx)
+					.build());
+
+			if (tax != null)
 			{
-				return taxId.get();
+				return tax.getTaxId();
 			}
 		}
 
@@ -196,59 +204,5 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 				.firstOnlyOptional(I_C_TaxCategory.class)
 				.map(I_C_TaxCategory::getC_TaxCategory_ID)
 				.map(TaxCategoryId::ofRepoId);
-	}
-
-	@Override
-	@NonNull
-	public TaxId getTaxOrNoTaxId(
-			@Nullable final Object model,
-			@Nullable final TaxCategoryId taxCategoryId,
-			final int productId,
-			@NonNull final Timestamp shipDate,
-			@NonNull final OrgId orgId,
-			@Nullable final WarehouseId warehouseId,
-			@NonNull final BPartnerLocationAndCaptureId shipBPartnerLocationId,
-			@NonNull final SOTrx soTrx,
-			@Nullable final VatCodeId vatCodeId)
-	{
-		final Tax taxFromVatCode = taxDAO.getTaxFromVatCodeIfManualOrNull(vatCodeId);
-		if (taxFromVatCode != null)
-		{
-			return taxFromVatCode.getTaxId();
-		}
-		
-		return getTaxId(taxCategoryId,
-						shipDate,
-						orgId,
-						warehouseId,
-						shipBPartnerLocationId,
-						soTrx)
-				.orElseGet(() -> TaxId.ofRepoId(Tax.C_TAX_ID_NO_TAX_FOUND));
-	}
-
-	@NonNull
-	private Optional<TaxId> getTaxId(
-			@Nullable final TaxCategoryId taxCategoryId,
-			@NonNull final Timestamp shipDate,
-			@NonNull final OrgId orgId,
-			@Nullable final WarehouseId warehouseId,
-			@NonNull final BPartnerLocationAndCaptureId shipBPartnerLocationId,
-			@NonNull final SOTrx soTrx)
-	{
-		final CountryId countryFromId = Optional.ofNullable(warehouseId)
-				.map(warehouseBL::getCountryId)
-				.orElseGet(() -> Optional.ofNullable(bPartnerOrgBL.getOrgCountryId(orgId))
-						.orElseGet(countryDAO::getDefaultCountryId));
-
-		return Optional.ofNullable(taxDAO.getBy(TaxQuery.builder()
-														.fromCountryId(countryFromId)
-														.orgId(orgId)
-														.bPartnerLocationId(shipBPartnerLocationId)
-														.dateOfInterest(shipDate)
-														.taxCategoryId(taxCategoryId)
-														.warehouseId(warehouseId)
-														.soTrx(soTrx)
-														.build()))
-				.map(Tax::getTaxId);
 	}
 }

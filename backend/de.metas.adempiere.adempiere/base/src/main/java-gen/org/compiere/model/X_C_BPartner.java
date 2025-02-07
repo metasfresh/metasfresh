@@ -1807,14 +1807,14 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	@Override
 	public void setM_WarehousePO_ID (final int M_WarehousePO_ID)
 	{
-		if (M_WarehousePO_ID < 1) 
+		if (M_WarehousePO_ID < 1)
 			set_Value (COLUMNNAME_M_WarehousePO_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_WarehousePO_ID, M_WarehousePO_ID);
 	}
 
 	@Override
-	public int getM_WarehousePO_ID() 
+	public int getM_WarehousePO_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_WarehousePO_ID);
 	}
@@ -1963,6 +1963,10 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public static final String PAYMENTRULE_KreditkarteExtern = "U";
 	/** Sofortüberweisung = R */
 	public static final String PAYMENTRULE_Sofortueberweisung = "R";
+	/** Rückerstattung = E */
+	public static final String PAYMENTRULE_Reimbursement = "E";
+	/** Verrechnung = F */
+	public static final String PAYMENTRULE_Settlement = "F";
 	@Override
 	public void setPaymentRule (final java.lang.String PaymentRule)
 	{

@@ -1918,6 +1918,15 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return pricingResult.getTaxCategoryId();
 	}
 
+	@Override
+	@Nullable
+	public final TaxCategoryId getTaxCategoryId(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	{
+		final de.metas.adempiere.model.I_C_InvoiceLine adInvoiceLine = InterfaceWrapperHelper.create(invoiceLine, de.metas.adempiere.model.I_C_InvoiceLine.class);
+
+		return getTaxCategoryId(adInvoiceLine);
+	}
+
 	// Note: C_Invoice_Line_Allocations are handled in InvoiceCandBL
 	@Override
 	public final void handleReversalForInvoice(final org.compiere.model.I_C_Invoice invoice)

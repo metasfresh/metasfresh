@@ -39,7 +39,6 @@ import de.metas.document.sequence.impl.IDocumentNoInfo;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
 import de.metas.location.LocationId;
-import de.metas.logging.MetasfreshLastError;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
@@ -62,8 +61,11 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.security.permissions.Access;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.tax.api.VatCodeId;
+import de.metas.tax.api.TaxNotFoundException;
+import de.metas.tax.api.TaxQuery;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.LegacyUOMConversionUtils;
@@ -1120,10 +1122,11 @@ public class CalloutOrder extends CalloutEngine
 		log.debug("Bill BP_Location={}", billBPLocationId);
 
 		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(ol.getC_VAT_Code_ID());
+		final TaxCategoryId taxCategoryId = orderLineBL.getTaxCategoryId(ol);
 
 		//
-		final TaxId taxId = taxBL.getTaxOrNoTaxId(order,
-												null,
+		final TaxId taxId = taxBL.getTaxNotNull(order,
+												taxCategoryId,
 												M_Product_ID,
 												shipDate,
 												OrgId.ofRepoId(AD_Org_ID),
@@ -1136,7 +1139,14 @@ public class CalloutOrder extends CalloutEngine
 		//
 		if (taxId.isNoTaxId())
 		{
-			calloutField.fireDataStatusEEvent(MetasfreshLastError.retrieveError());
+			throw TaxNotFoundException.ofQuery(TaxQuery.builder()
+					.taxCategoryId(taxCategoryId)
+					.dateOfInterest(shipDate)
+					.orgId(OrgId.ofRepoId(AD_Org_ID))
+					.bPartnerLocationId(shipBPLocationId)
+					.soTrx(SOTrx.ofBoolean(order.isSOTrx()))
+					.warehouseId(WarehouseId.ofRepoIdOrNull(M_Warehouse_ID))
+					.build()).markAsUserValidationError();
 		}
 		else
 		{
