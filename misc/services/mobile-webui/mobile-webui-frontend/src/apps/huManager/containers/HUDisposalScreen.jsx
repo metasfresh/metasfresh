@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useHistory, useRouteMatch } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 import { trl } from '../../../utils/translations';
 import { toastError } from '../../../utils/toast';
@@ -10,24 +9,24 @@ import { getHandlingUnitInfoFromGlobalState } from '../reducers';
 import { HUInfoComponent } from '../components/HUInfoComponent';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import QtyReasonsRadioGroup from '../../../components/QtyReasonsRadioGroup';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
+import { huManagerLocation } from '../routes';
 
 const HUDisposalScreen = () => {
+  const { history } = useScreenDefinition({
+    captionKey: 'huManager.action.dispose.buttonCaption',
+    back: huManagerLocation,
+  });
   const [disposalReasons, setDisposalReasons] = useState([]);
   const [selectedDisposalReasonKey, setSelectedDisposalReasonKey] = useState(null);
 
-  const history = useHistory();
   const handlingUnitInfo = useSelector((state) => getHandlingUnitInfoFromGlobalState(state));
 
-  const { url } = useRouteMatch();
-  const dispatch = useDispatch();
   useEffect(() => {
     if (!handlingUnitInfo) {
       history.goBack();
       return;
     }
-
-    dispatch(pushHeaderEntry({ location: url, caption: trl('huManager.action.dispose.buttonCaption') }));
 
     api
       .getDisposalReasonsArray()
@@ -48,7 +47,7 @@ const HUDisposalScreen = () => {
         reasonCode: selectedDisposalReasonKey,
       })
       .then(() => {
-        history.push('/');
+        history.goHome();
       })
       .catch((axiosError) => toastError({ axiosError }));
   };

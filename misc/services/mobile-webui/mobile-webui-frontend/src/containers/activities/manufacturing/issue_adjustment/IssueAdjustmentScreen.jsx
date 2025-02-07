@@ -1,16 +1,16 @@
 import React, { useEffect } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getActivityById } from '../../../../reducers/wfProcesses';
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import { issueAdjustmentLineScreenLocation } from '../../../../routes/manufacturing_issue_adjustment';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
+import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
+import { getWFProcessScreenLocation } from '../../../../routes/workflow_locations';
 
 const IssueAdjustmentScreen = () => {
-  const {
-    url,
-    params: { applicationId, workflowId: wfProcessId, activityId },
-  } = useRouteMatch();
+  const { history, url, applicationId, wfProcessId, activityId } = useScreenDefinition({
+    back: getWFProcessScreenLocation,
+  });
 
   const { caption, userInstructions, lines } = useSelector((state) =>
     getPropsFromState({ state, wfProcessId, activityId })
@@ -21,7 +21,6 @@ const IssueAdjustmentScreen = () => {
     dispatch(pushHeaderEntry({ location: url, caption, userInstructions }));
   }, []);
 
-  const history = useHistory();
   const onButtonClick = (lineId) => {
     history.push(issueAdjustmentLineScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
   };

@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { useRouteMatch } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { pushHeaderEntry } from '../../actions/HeaderActions';
@@ -19,12 +18,11 @@ import { useApplicationInfo } from '../../reducers/applications';
 import ScanAndValidateActivity, {
   COMPONENTTYPE_ScanAndValidateBarcode,
 } from '../activities/scan/ScanAndValidateActivity';
+import { useScreenDefinition } from '../../hooks/useScreenDefinition';
+import { appLaunchersLocation } from '../../routes/launchers';
 
 const WFProcessScreen = () => {
-  const {
-    url,
-    params: { applicationId, workflowId: wfProcessId },
-  } = useRouteMatch();
+  const { url, applicationId, wfProcessId } = useScreenDefinition({ back: appLaunchersLocation });
 
   const { iconClassNames: appIconClassName } = useApplicationInfo({ applicationId });
 

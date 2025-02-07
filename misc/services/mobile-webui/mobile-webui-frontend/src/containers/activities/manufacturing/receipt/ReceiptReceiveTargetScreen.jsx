@@ -1,33 +1,21 @@
-import React, { useEffect } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import React from 'react';
 
 import { trl } from '../../../../utils/translations';
 import {
-  manufacturingReceiptScanScreenLocation,
   manufacturingReceiptNewHUScreen,
+  manufacturingReceiptScanScreenLocation,
+  manufacturingReceiptScreenLocation,
 } from '../../../../routes/manufacturing_receipt';
-import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 
 import Button from '../../../../components/buttons/Button';
+import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
 
 const ReceiptReceiveTargetScreen = () => {
-  const {
-    url,
-    params: { applicationId, workflowId: wfProcessId, activityId, lineId },
-  } = useRouteMatch();
+  const { history, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
+    captionKey: 'activities.mfg.receipts.btnReceiveTarget',
+    back: manufacturingReceiptScreenLocation,
+  });
 
-  const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(
-      pushHeaderEntry({
-        location: url,
-        caption: trl('activities.mfg.receipts.btnReceiveTarget'),
-      })
-    );
-  }, []);
-
-  const history = useHistory();
   const handleNewHUClick = () => {
     history.push(manufacturingReceiptNewHUScreen({ applicationId, wfProcessId, activityId, lineId }));
   };

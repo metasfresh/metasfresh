@@ -1,20 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useHistory, useRouteMatch } from 'react-router-dom';
-
-import { trl } from '../../../utils/translations';
+import { useSelector } from 'react-redux';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import * as api from '../api';
 import * as actions from '../actions';
 import { toastError } from '../../../utils/toast';
 import ReadQtyDialog from '../../../components/dialogs/ReadQtyDialog';
+import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
+import { huManagerLocation } from '../routes';
 
 const HUPrintingOptionsScreen = () => {
-  const dispatch = useDispatch();
-  const history = useHistory();
-  const { url } = useRouteMatch();
+  const { history } = useScreenDefinition({
+    captionKey: 'huManager.action.printLabels.windowName',
+    back: huManagerLocation,
+  });
 
   const handlingUnitInfo = useSelector((state) => getHandlingUnitInfoFromGlobalState(state));
 
@@ -26,9 +25,7 @@ const HUPrintingOptionsScreen = () => {
   useEffect(() => {
     if (!handlingUnitInfo) {
       history.goBack();
-      return;
     }
-    dispatch(pushHeaderEntry({ location: url, caption: trl('huManager.action.printLabels.windowName') }));
   }, []);
 
   useEffect(() => {

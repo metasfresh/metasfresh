@@ -1,9 +1,7 @@
-import React, { useCallback, useEffect } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
+import React, { useCallback } from 'react';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../utils/translations';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import {
   getActivityById,
   getLineById,
@@ -18,12 +16,14 @@ import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyCompone
 import { toQRCodeString } from '../../../utils/qrCode/hu';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { toNumberOrZero } from '../../../utils/numbers';
+import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
+import { pickingLineScreenLocation, pickingStepScreenLocation } from '../../../routes/picking';
 
 const PickStepScanScreen = () => {
-  const {
-    url,
-    params: { workflowId: wfProcessId, activityId, lineId, stepId, altStepId },
-  } = useRouteMatch();
+  const { history, wfProcessId, activityId, lineId, stepId, altStepId } = useScreenDefinition({
+    captionKey: 'activities.picking.scanQRCode',
+    back: pickingStepScreenLocation,
+  });
 
   const { eligibleQRCode, qtyToPick, uom, qtyRejectedReasons, qtyRemainingToPick, isShowPromptWhenOverPicking } =
     useSelector(
@@ -42,17 +42,7 @@ const PickStepScanScreen = () => {
   );
 
   const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(
-      pushHeaderEntry({
-        location: url,
-        caption: trl('activities.picking.scanQRCode'),
-        values: [],
-      })
-    );
-  }, []);
 
-  const history = useHistory();
   const onResult = ({ qty = 0, reason = null, scannedBarcode = null }) => {
     const qtyRejected = qtyToPick - qty;
 
@@ -68,7 +58,7 @@ const PickStepScanScreen = () => {
     })
       .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
       .then(() => {
-        history.go(-2); // go to picking line screen
+        history.goTo(pickingLineScreenLocation); // go to picking line screen
       })
       .catch((axiosError) => toastError({ axiosError }));
   };

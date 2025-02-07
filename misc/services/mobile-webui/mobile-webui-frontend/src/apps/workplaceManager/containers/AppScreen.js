@@ -20,10 +20,7 @@
  * #L%
  */
 import React, { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import WorkplaceInfoComponent from '../components/WorkplaceInfoComponent';
-import { useHistory, useRouteMatch } from 'react-router-dom';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import * as api from '../../../api/workplace';
@@ -33,18 +30,13 @@ import { appTrl } from '../utils';
 import { APPLICATION_ID as APPLICATION_ID_scanAnything } from '../../scanAnything/constants';
 import * as scanAnythingRoutes from '../../scanAnything/routes';
 import Spinner from '../../../components/Spinner';
+import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 
 const AppScreen = () => {
-  const { url } = useRouteMatch();
-  const dispatch = useDispatch();
-  const history = useHistory();
+  const { history } = useScreenDefinition({ back: '/' });
+
   const [loading, setLoading] = useState(true);
   const [workplace, setWorkplace] = useState();
-
-  useEffect(() => {
-    // IMPORTANT, else it won't restore the title when we move back to this screen
-    dispatch(pushHeaderEntry({ location: url }));
-  }, []);
 
   const queryParameters = new URLSearchParams(window.location.search);
   const qrCodeParam = queryParameters.get('qrCode');

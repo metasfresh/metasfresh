@@ -1,11 +1,11 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
 import * as CompleteStatus from '../../../../constants/CompleteStatus';
 import { manufacturingReceiptScreenLocation } from '../../../../routes/manufacturing_receipt';
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../../components/buttons/ButtonQuantityProp';
+import { useMobileNavigation } from '../../../../hooks/useMobileNavigation';
 
 const MaterialReceiptActivity = (props) => {
   const {
@@ -17,11 +17,10 @@ const MaterialReceiptActivity = (props) => {
     },
   } = props;
 
-  const history = useHistory();
+  const history = useMobileNavigation();
 
   const onButtonClick = ({ lineId }) => {
-    const location = manufacturingReceiptScreenLocation({ applicationId, wfProcessId, activityId, lineId });
-    history.push(location);
+    history.goTo(manufacturingReceiptScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
   };
 
   const linesArray = lines ? Object.values(lines) : [];
