@@ -32,6 +32,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.X_C_DocType;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -296,6 +297,9 @@ public interface IInvoiceBL extends ISingletonService
 	 * referenced from the invoice line's pricing data (i.e. <code>M_ProductPrice</code> record).
 	 */
 	TaxCategoryId getTaxCategoryId(I_C_InvoiceLine invoiceLine);
+
+	@Nullable
+	TaxCategoryId getTaxCategoryId(@NonNull org.compiere.model.I_C_InvoiceLine invoiceLine);
 
 	/**
 	 * Basically this method delegated to {@link ICopyHandlerBL#registerCopyHandler(Class, IQueryFilter, ICopyHandler)}, but makes sure that the correct types are used.
