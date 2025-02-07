@@ -55,21 +55,21 @@
 	<pageHeader>
 		<band height="12" splitType="Stretch">
 			<textField>
-				<reportElement key="textField-16" x="37" y="0" width="125" height="12" forecolor="#000000" uuid="8b1cae05-6b3b-4c2e-9942-472ce89d0517"/>
+				<reportElement key="textField-16" x="37" y="0" width="113" height="12" forecolor="#000000" uuid="8b1cae05-6b3b-4c2e-9942-472ce89d0517"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-20" x="500" y="0" width="43" height="12" forecolor="#000000" uuid="65d3b6d8-db1d-48cc-95cb-5239a295fa03"/>
+				<reportElement key="textField-20" x="469" y="0" width="45" height="12" forecolor="#000000" uuid="65d3b6d8-db1d-48cc-95cb-5239a295fa03"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-19" x="463" y="0" width="37" height="12" forecolor="#000000" uuid="c1f6b764-712b-4383-aeeb-3354ce943452">
+				<reportElement key="textField-19" x="432" y="0" width="37" height="12" forecolor="#000000" uuid="c1f6b764-712b-4383-aeeb-3354ce943452">
 					<printWhenExpression><![CDATA[new Boolean($F{isdiscountprinted}.equals("Y"))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
@@ -78,49 +78,50 @@
 				<textFieldExpression><![CDATA[$R{Discount}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-13" x="161" y="0" width="71" height="12" forecolor="#000000" uuid="61e3e8dd-9dbf-4301-8a3a-3aaca0a8ce12"/>
+				<reportElement key="textField-13" x="150" y="0" width="60" height="12" forecolor="#000000" uuid="61e3e8dd-9dbf-4301-8a3a-3aaca0a8ce12"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Attributes}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-19" x="352" y="0" width="46" height="12" forecolor="#000000" uuid="76afd8be-8c80-4c84-8572-8e27b517479f"/>
+				<reportElement key="textField-19" x="323" y="0" width="46" height="12" forecolor="#000000" uuid="76afd8be-8c80-4c84-8572-8e27b517479f"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-13" x="218" y="0" width="46" height="12" forecolor="#000000" uuid="d038a1dc-db4b-491b-9070-db9f568857d3"/>
+				<reportElement key="textField-13" x="199" y="0" width="46" height="12" forecolor="#000000" uuid="d038a1dc-db4b-491b-9070-db9f568857d3"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{HUQuantity}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-17" x="268" y="0" width="84" height="12" forecolor="#000000" uuid="69bc0f7c-8d28-400e-bcab-7f8e40d60ffa"/>
+				<reportElement key="textField-17" x="245" y="0" width="78" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" uuid="69bc0f7c-8d28-400e-bcab-7f8e40d60ffa"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-20" x="433" y="0" width="33" height="12" forecolor="#000000" uuid="5269b295-30ce-4be4-a9c4-5fa0c4cca517"/>
+				<reportElement key="textField-20" x="401" y="0" width="33" height="12" forecolor="#000000" uuid="5269b295-30ce-4be4-a9c4-5fa0c4cca517"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Price}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-20" x="400" y="0" width="39" height="12" forecolor="#000000" uuid="7848d061-514d-4fa8-8169-d58ea739c387"/>
+				<reportElement key="textField-20" x="368" y="0" width="39" height="12" forecolor="#000000" uuid="7848d061-514d-4fa8-8169-d58ea739c387"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-20" x="542" y="0" width="32" height="12" forecolor="#000000" uuid="2e12ffef-b477-4e3f-87e3-44b74485fb6c">
+				<reportElement key="textField-20" x="514" y="0" width="39" height="12" forecolor="#000000" uuid="2e12ffef-b477-4e3f-87e3-44b74485fb6c">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 					<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
@@ -134,7 +135,8 @@
 		<band height="12" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean($V{PAGE_COUNT}.intValue() > 1) && $P{PRINTER_OPTS_IsPrintTotals}.equals("Y")]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-50" mode="Transparent" x="468" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="23063069-0aae-45ed-93fe-4444f6d4f434">
+				<reportElement key="textField-50" mode="Transparent" x="439" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="23063069-0aae-45ed-93fe-4444f6d4f434">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -160,7 +162,7 @@
 	<detail>
 		<band height="12" splitType="Stretch">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="162" y="0" width="70" height="12" forecolor="#000000" uuid="59b2ab77-d40e-4f8b-9f58-a1e8ba298a01"/>
+				<reportElement key="textField-13" x="150" y="0" width="59" height="12" forecolor="#000000" uuid="59b2ab77-d40e-4f8b-9f58-a1e8ba298a01"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -174,7 +176,7 @@
 				<textFieldExpression><![CDATA[$F{attributes}]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0.00" isBlankWhenNull="false">
-				<reportElement key="textField-20" x="430" y="0" width="36" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
+				<reportElement key="textField-20" x="398" y="0" width="36" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -187,7 +189,7 @@
 				<textFieldExpression><![CDATA[$F{priceentered}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="textField-24" mode="Transparent" x="37" y="0" width="125" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
+				<reportElement key="textField-24" mode="Transparent" x="37" y="0" width="113" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -200,7 +202,7 @@
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
-				<reportElement key="textField-24" mode="Transparent" x="229" y="0" width="35" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
+				<reportElement key="textField-24" mode="Transparent" x="210" y="0" width="35" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
 				<box rightPadding="0">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -213,7 +215,7 @@
 				<textFieldExpression><![CDATA[$F{huqty}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.##" isBlankWhenNull="true">
-				<reportElement key="textField-33" mode="Transparent" x="464" y="0" width="27" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
+				<reportElement key="textField-33" mode="Transparent" x="433" y="0" width="27" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
 					<printWhenExpression><![CDATA[new Boolean($F{isdiscountprinted}.equals("Y"))]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -228,7 +230,7 @@
 				<textFieldExpression><![CDATA[$F{discount}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="textField-31" mode="Transparent" x="268" y="0" width="84" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="03b0c9ed-0fb3-482e-98ac-b16490d6d9a1"/>
+				<reportElement key="textField-31" mode="Transparent" x="245" y="0" width="78" height="12" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="03b0c9ed-0fb3-482e-98ac-b16490d6d9a1"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -241,7 +243,7 @@
 				<textFieldExpression><![CDATA[$F{huname}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-20" x="400" y="0" width="31" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
+				<reportElement key="textField-20" x="368" y="0" width="31" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -254,7 +256,7 @@
 				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-34" mode="Transparent" x="499" y="0" width="44" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="de5e58a7-6131-4080-b0ef-911c6a8b92a6"/>
+				<reportElement key="textField-34" mode="Transparent" x="468" y="0" width="46" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="de5e58a7-6131-4080-b0ef-911c6a8b92a6"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -267,7 +269,7 @@
 				<textFieldExpression><![CDATA[$F{linenetamt}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="490" y="0" width="9" height="12" uuid="c7acd6de-af63-42ec-a530-5ed4496aa666">
+				<reportElement x="459" y="0" width="9" height="12" uuid="c7acd6de-af63-42ec-a530-5ed4496aa666">
 					<printWhenExpression><![CDATA[new Boolean($F{discount} != null && $F{isdiscountprinted}.equals("Y"))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -276,7 +278,7 @@
 				<text><![CDATA[%]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="textField-33" mode="Transparent" x="542" y="0" width="24" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
+				<reportElement key="textField-33" mode="Transparent" x="514" y="0" width="25" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
 					<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -291,7 +293,7 @@
 				<textFieldExpression><![CDATA[$F{rate}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="565" y="0" width="9" height="12" uuid="c7acd6de-af63-42ec-a530-5ed4496aa666">
+				<reportElement x="539" y="0" width="9" height="12" uuid="c7acd6de-af63-42ec-a530-5ed4496aa666">
 					<printWhenExpression><![CDATA[new Boolean($F{rate} != null && $F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -300,7 +302,7 @@
 				<text><![CDATA[%]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement key="textField-33" mode="Transparent" x="352" y="0" width="46" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
+				<reportElement key="textField-33" mode="Transparent" x="323" y="0" width="46" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
 					<printWhenExpression><![CDATA[new Boolean ( $F{stdprecision}.intValue() == 0 )]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -315,7 +317,7 @@
 				<textFieldExpression><![CDATA[$F{qtyenteredinpriceuom}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-33" mode="Transparent" x="352" y="0" width="46" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
+				<reportElement key="textField-33" mode="Transparent" x="323" y="0" width="46" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
 					<printWhenExpression><![CDATA[new Boolean ( $F{stdprecision}.intValue() == 2 )]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -330,7 +332,7 @@
 				<textFieldExpression><![CDATA[$F{qtyenteredinpriceuom}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.000" isBlankWhenNull="true">
-				<reportElement key="textField-33" mode="Transparent" x="352" y="0" width="46" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
+				<reportElement key="textField-33" mode="Transparent" x="323" y="0" width="46" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
 					<printWhenExpression><![CDATA[new Boolean ( $F{stdprecision}.intValue() == 3 )]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -379,7 +381,7 @@
 				<textFieldExpression><![CDATA[$R{SubTotal}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-53" mode="Transparent" x="468" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992">
+				<reportElement key="textField-53" mode="Transparent" x="439" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992">
 					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -408,7 +410,7 @@
 				<textFieldExpression><![CDATA[$R{TotalAmount}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-53" mode="Transparent" x="468" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992">
+				<reportElement key="textField-53" mode="Transparent" x="439" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992">
 					<printWhenExpression><![CDATA[new Boolean($V{LINESUM_SUM}.intValue() > 0 )]]></printWhenExpression>
 				</reportElement>
 				<box>

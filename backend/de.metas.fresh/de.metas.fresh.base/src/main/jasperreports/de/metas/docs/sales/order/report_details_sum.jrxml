@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_sum" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/order/report" uuid="7ab5da58-2140-4be5-920f-d59a9f0730f5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -38,7 +38,9 @@
 				<textFieldExpression><![CDATA[$R{Summary}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-20" x="441" y="0" width="76" height="12" forecolor="#000000" uuid="8b2436d9-25f3-42cb-93ab-a3bf4a7f4b33"/>
+				<reportElement key="textField-20" x="441" y="0" width="73" height="12" forecolor="#000000" uuid="8b2436d9-25f3-42cb-93ab-a3bf4a7f4b33">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
@@ -57,7 +59,9 @@
 				<textFieldExpression><![CDATA[$R{NetTotal}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-20" x="441" y="0" width="76" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
+				<reportElement key="textField-20" x="441" y="0" width="73" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -78,7 +82,9 @@
 		<band height="12">
 			<printWhenExpression><![CDATA[new Boolean(!$F{ishuline} && $F{taxrate}.floatValue() != 0 && $F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-20" x="441" y="0" width="76" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
+				<reportElement key="textField-20" x="441" y="0" width="73" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -124,7 +130,9 @@
 		<band height="12">
 			<printWhenExpression><![CDATA[new Boolean($F{ishuline} && $F{isprinttax}.equals("Y"))]]></printWhenExpression>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-20" x="441" y="0" width="76" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
+				<reportElement key="textField-20" x="441" y="0" width="73" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -188,7 +196,9 @@
 )]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-20" x="441" y="0" width="76" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
+				<reportElement key="textField-20" x="441" y="0" width="73" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
