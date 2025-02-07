@@ -1361,6 +1361,7 @@ public class TimeUtil
 	 * @return date as timestamp or null if the date is null
 	 */
 	@Nullable
+	@Contract("!null -> !null")
 	public static Timestamp asTimestamp(@Nullable final Date date)
 	{
 		if (date instanceof Timestamp)
@@ -1374,6 +1375,7 @@ public class TimeUtil
 	 * @return instant as timestamp or null if the instant is null; note: use {@link Timestamp#toInstant()} for the other direction.
 	 */
 	@Nullable
+	@Contract("!null -> !null")
 	public static Timestamp asTimestamp(@Nullable final Instant instant)
 	{
 		return instant != null ? Timestamp.from(instant) : null;
@@ -1384,6 +1386,7 @@ public class TimeUtil
 	 * Will be deprecated in future but atm we cannot because there are a lot of cases when we have to use it.
 	 */
 	@Nullable
+	@Contract("!null -> !null")
 	public static Timestamp asTimestamp(@Nullable final LocalDate localDate)
 	{
 		final ZoneId timezone = null;
@@ -1391,6 +1394,7 @@ public class TimeUtil
 	}
 
 	@Nullable
+	@Contract("!null, _ -> !null")
 	public static Timestamp asTimestamp(
 			@Nullable final LocalDate localDate,
 			@Nullable final ZoneId timezone)
@@ -1435,6 +1439,7 @@ public class TimeUtil
 	}
 
 	@Nullable
+	@Contract("!null -> !null")
 	public static Timestamp asTimestamp(@Nullable final LocalDateTime localDateTime)
 	{
 		if (localDateTime == null)
@@ -1451,7 +1456,7 @@ public class TimeUtil
 	 * @param day day
 	 * @return year last day with 00:00
 	 */
-	// metas
+	@NonNull
 	static public Timestamp getYearLastDay(@Nullable Date day)
 	{
 		if (day == null)
@@ -1588,6 +1593,7 @@ public class TimeUtil
 	 * @return copy of given timestamp or null if the given timestamp was null
 	 */
 	@Nullable
+	@Contract("!null -> !null")
 	public static Timestamp copyOf(@Nullable final Timestamp timestamp)
 	{
 		return timestamp == null ? null : new Timestamp(timestamp.getTime());
@@ -1639,6 +1645,7 @@ public class TimeUtil
 
 	@Deprecated
 	@Nullable
+	@Contract("!null -> !null")
 	public static LocalDate asLocalDate(@Nullable final LocalDate localDate)
 	{
 		return localDate;
@@ -1680,6 +1687,7 @@ public class TimeUtil
 	}
 
 	@Nullable
+	@Contract("!null, _ -> !null")
 	public static LocalDate asLocalDate(@Nullable final Timestamp timestamp, @NonNull final ZoneId zoneId)
 	{
 		return timestamp != null
