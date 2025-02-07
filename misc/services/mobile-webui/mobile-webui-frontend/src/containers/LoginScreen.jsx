@@ -7,9 +7,9 @@ import ButtonWithIndicator from '../components/buttons/ButtonWithIndicator';
 import UserAndPassAuth from './authMethods/UserAndPassAuth';
 import QrCodeAuth from './authMethods/QrCodeAuth';
 import { trl } from '../utils/translations';
-import { useLocation } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useUITraceLocationChange } from '../utils/ui_trace/useUITraceLocationChange';
+import { useMobileNavigation } from '../hooks/useMobileNavigation';
 
 const KNOWN_AUTH_METHODS = {
   QR_CODE: 'qrCode',
@@ -22,13 +22,12 @@ const VIEW = {
 };
 
 const LoginScreen = () => {
+  const history = useMobileNavigation();
   const [currentAuthMethod, setCurrentAuthMethod] = useState(KNOWN_AUTH_METHODS.USER_PASS);
   const [availableAuthMethods, setAvailableAuthMethods] = useState([]);
   const [currentView, setCurrentView] = useState(VIEW.LOGIN);
 
   const auth = useAuth();
-  const location = useLocation();
-  const { from } = location.state || { from: { pathname: '/' } };
 
   const getAuthMethodScreen = useCallback(() => {
     if (currentAuthMethod === KNOWN_AUTH_METHODS.USER_PASS) {
@@ -95,8 +94,8 @@ const LoginScreen = () => {
 
   useEffect(() => {
     if (auth.isLoggedIn()) {
-      console.log(`LoginScreen: ALREADY LOGGED IN. Forwarding to `, from);
-      history.replace(from);
+      console.log(`LoginScreen: ALREADY LOGGED IN. Forwarding back to from location`);
+      history.goToFromLocation();
     }
   }, []);
 

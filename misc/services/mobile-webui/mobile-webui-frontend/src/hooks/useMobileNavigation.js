@@ -1,8 +1,9 @@
-import { useHistory, useRouteMatch } from 'react-router-dom';
+import { useHistory, useLocation, useRouteMatch } from 'react-router-dom';
 import { useBackLocationFromHeaders } from '../reducers/headers';
 
 export const useMobileNavigation = () => {
   const history = useHistory();
+  const location = useLocation();
   const backLocation = useBackLocationFromHeaders();
 
   const {
@@ -24,6 +25,18 @@ export const useMobileNavigation = () => {
     } else {
       console.warn('Going back to previous location using history.go(-1) because backLocation is not provided.');
       history.go(-1);
+    }
+  };
+
+  const goHome = () => goTo('/');
+
+  const goToFromLocation = () => {
+    const from = location?.state?.from?.pathname;
+    if (from) {
+      goTo(from);
+    } else {
+      console.warn('Going to home because from location is not available');
+      goHome();
     }
   };
 
@@ -49,7 +62,8 @@ export const useMobileNavigation = () => {
         history.go(delta);
       }
     },
-    goHome: () => goTo('/'),
+    goHome,
+    goToFromLocation,
   };
 };
 

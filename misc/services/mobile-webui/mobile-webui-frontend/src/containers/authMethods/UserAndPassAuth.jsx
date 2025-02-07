@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { trl } from '../../utils/translations';
 import { extractUserFriendlyErrorMessageFromAxiosError } from '../../utils/toast';
@@ -13,8 +12,6 @@ const UserAndPassAuth = () => {
 
   const history = useMobileNavigation();
   const auth = useAuth();
-  const location = useLocation();
-  const { from } = location.state || { from: { pathname: '/' } };
   const usernameFieldRef = useRef(null);
 
   const submitForm = (e) => {
@@ -23,7 +20,7 @@ const UserAndPassAuth = () => {
     setLoginPending(true);
     auth
       .login(username, password)
-      .then(() => history.replace(from))
+      .then(() => history.goToFromLocation())
       .catch((axiosError) => {
         setLoginPending(false);
         setErrorMessage(extractUserFriendlyErrorMessageFromAxiosError({ axiosError }));
