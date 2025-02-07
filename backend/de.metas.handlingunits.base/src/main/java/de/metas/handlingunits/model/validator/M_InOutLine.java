@@ -79,10 +79,11 @@ public class M_InOutLine
 	public void removeHUAssignments(final I_M_InOutLine inoutLine)
 	{
 		final I_M_InOut inout = inoutLine.getM_InOut();
+		final MovementType movementType = MovementType.ofCode(inout.getMovementType());
 
 		//
 		// Shipment
-		if (inout.isSOTrx())
+		if (movementType.isOutboundTransaction())
 		{
 			// NOTE: instead of deleting the assignments, it's better to fail
 			// because if we delete the assignment which is for an HU which is also assigned on other shipment,

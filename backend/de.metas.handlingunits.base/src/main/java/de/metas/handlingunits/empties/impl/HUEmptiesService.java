@@ -107,7 +107,6 @@ public class HUEmptiesService implements IHUEmptiesService
 						loadOutOfTrx(line.getM_Product_ID(), I_M_Product.class),
 						line.getMovementQty().intValueExact()))
 				.collect(GuavaCollectors.toImmutableList());
-
 		//
 		// Generate the empties movement
 		newEmptiesMovementProducer()
