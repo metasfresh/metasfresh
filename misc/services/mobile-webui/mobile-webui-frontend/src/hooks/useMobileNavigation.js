@@ -1,25 +1,33 @@
 import { useHistory, useLocation, useRouteMatch } from 'react-router-dom';
 import { useBackLocationFromHeaders } from '../reducers/headers';
 
-export const useMobileNavigation = () => {
+export const useMobileNavigation = ({ backLocation: backLocationParam } = {}) => {
   const history = useHistory();
   const location = useLocation();
-  const backLocation = useBackLocationFromHeaders();
+  const backLocationFromHeaders = useBackLocationFromHeaders();
+  const backLocation = backLocationParam ?? backLocationFromHeaders;
+  //console.log(`useMobileNavigation: back location ${backLocation}`, { backLocationParam, backLocationFromHeaders });
 
   const {
     params: { applicationId, workflowId: wfProcessId, activityId, lineId, stepId, altStepId },
   } = useRouteMatch();
 
-  // console.log('useMobileNavigation: backLocation', backLocation);
-
   const goTo = (location) => {
-    const locationEff = parseLocation({ location, applicationId, wfProcessId, activityId, lineId, stepId, altStepId });
+    const locationEff = parseLocation({
+      location,
+      applicationId,
+      wfProcessId,
+      activityId,
+      lineId,
+      stepId,
+      altStepId,
+    });
     // console.log(`useMobileNavigation: goTo ${locationEff}`);
     history.replace(locationEff);
   };
 
   const goBack = () => {
-    // console.log('useMobileNavigation: goBack', { backLocation });
+    // console.trace('useMobileNavigation: goBack', { backLocation });
     if (backLocation) {
       goTo(backLocation);
     } else {
@@ -41,14 +49,8 @@ export const useMobileNavigation = () => {
   };
 
   return {
-    push: (location) => {
-      // console.log('useMobileNavigation.history.push', location);
-      goTo(location);
-    },
-    replace: (location) => {
-      // console.log('useMobileNavigation.history.replace', location);
-      goTo(location);
-    },
+    push: goTo,
+    replace: goTo,
     goTo,
     goBack,
     go: (delta) => {
@@ -68,7 +70,7 @@ export const useMobileNavigation = () => {
 };
 
 const parseLocation = ({ location, ...params }) => {
-  if (typeof back === 'function') {
+  if (typeof location === 'function') {
     return location({ ...params });
   } else if (typeof location === 'string') {
     return location;

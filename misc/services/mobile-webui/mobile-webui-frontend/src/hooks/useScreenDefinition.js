@@ -7,11 +7,12 @@ import { useMobileNavigation } from './useMobileNavigation';
 
 export const useScreenDefinition = ({ captionKey, values, isHomeStop, back } = {}) => {
   const dispatch = useDispatch();
-  const history = useMobileNavigation();
   const {
     url,
     params: { applicationId, workflowId: wfProcessId, activityId, lineId, stepId, altStepId },
   } = useRouteMatch();
+  const backLocation = computeBackLocation({ back, applicationId, wfProcessId, activityId, lineId, stepId, altStepId });
+  const history = useMobileNavigation({ backLocation });
 
   useEffect(() => {
     dispatch(
@@ -20,7 +21,7 @@ export const useScreenDefinition = ({ captionKey, values, isHomeStop, back } = {
         caption: computeCaption({ captionKey }),
         values,
         isHomeStop,
-        backLocation: computeBackLocation({ back, applicationId, wfProcessId, activityId, lineId, stepId, altStepId }),
+        backLocation,
       })
     );
   }, [url]);

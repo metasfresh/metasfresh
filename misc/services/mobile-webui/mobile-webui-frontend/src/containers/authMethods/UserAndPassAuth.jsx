@@ -43,7 +43,7 @@ const UserAndPassAuth = () => {
               <input
                 className="input is-medium"
                 type="text"
-                id={username}
+                id="username"
                 name="username"
                 value={username}
                 autoComplete="username"

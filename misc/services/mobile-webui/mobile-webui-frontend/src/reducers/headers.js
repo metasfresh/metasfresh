@@ -100,9 +100,11 @@ const getBackLocation = ({ state }) => {
       continue;
     }
 
+    // console.log(`getBackLocation - returning ${entry.backLocation}`, { entry, i, headersEntries });
     return entry.backLocation;
   }
 
+  // console.log(`getBackLocation - no back location found, returning null`, { headersEntries });
   return null;
 };
 
