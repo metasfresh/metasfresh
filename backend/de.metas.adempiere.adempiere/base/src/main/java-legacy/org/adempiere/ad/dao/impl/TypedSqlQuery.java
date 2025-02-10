@@ -1629,6 +1629,25 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 		return DB.executeUpdateAndThrowExceptionOnFail(sql, params, trxName);
 	}
 
+	@Override
+	public int deleteDirectlyInSelect()
+	{
+		final StringBuilder sqlDelete = new StringBuilder("DELETE FROM ")
+				.append(getTableName())
+				.append(" WHERE ")
+				.append(getKeyColumnName())
+				.append(" IN ( ");
+
+		final StringBuilder selectFromClause = new StringBuilder("FROM ").append(getTableName()).append(" ");
+		final StringBuilder sqlSelectClause = new StringBuilder("SELECT ").append(getKeyColumnName()).append(" ");
+		final String selectSql = buildSQL(sqlSelectClause, selectFromClause, null, true);
+		final Object[] params = getParametersEffective().toArray();
+
+		sqlDelete.append(selectSql)
+				.append(" )");
+		return DB.executeUpdateAndThrowExceptionOnFail(sqlDelete.toString(), params, trxName);
+	}
+
 	/**
 	 * Casts given {@link IQuery} object to {@link TypedSqlQuery}.
 	 * <p>
