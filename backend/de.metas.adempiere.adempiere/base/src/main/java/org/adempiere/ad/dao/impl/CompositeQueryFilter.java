@@ -26,20 +26,13 @@ import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IInSubQueryFilterClause;
+import org.adempiere.ad.dao.ICompositeQueryFilterBase;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.ad.dao.ISqlQueryFilter;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.ModelColumn;
-import org.compiere.model.IQuery;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -52,7 +45,7 @@ import java.util.Properties;
  * @author tsa
  */
 @EqualsAndHashCode(of = { "filters", "and", "_defaultAccept" })
-public class CompositeQueryFilter<T> implements ICompositeQueryFilter<T>, ISqlQueryFilter
+public class CompositeQueryFilter<T> implements ICompositeQueryFilterBase<T>, ICompositeQueryFilter<T>, ISqlQueryFilter
 {
 	/* package */static final String DEFAULT_SQL_TRUE = "1=1";
 	/* package */static final String DEFAULT_SQL_FALSE = "1=0";
@@ -64,7 +57,7 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilter<T>, ISqlQu
 	//
 	// Status
 	// NOTE: when adding new fields here, please update #copy() method too
-	private final List<IQueryFilter<T>> filters = new ArrayList<>();
+	private final ArrayList<IQueryFilter<T>> filters = new ArrayList<>();
 	private boolean and = true;
 	private boolean _defaultAccept = true;
 
@@ -110,7 +103,7 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilter<T>, ISqlQu
 		}
 
 		@Override
-		public final boolean accept(final T model)
+		public boolean accept(final T model)
 		{
 			final List<IQueryFilter<T>> nonSqlFilters = getNonSqlFiltersToUse();
 			final boolean defaultAccept = isDefaultAccept();
@@ -156,7 +149,19 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilter<T>, ISqlQu
 	}
 
 	@Override
-	public ICompositeQueryFilter<T> copy()
+	public CompositeQueryFilter<T> self()
+	{
+		return this;
+	}
+
+	@Override
+	public ICompositeQueryFilterBase<T> compositeFiltersBase()
+	{
+		return this;
+	}
+
+	@Override
+	public CompositeQueryFilter<T> copy()
 	{
 		final CompositeQueryFilter<T> copy = new CompositeQueryFilter<>(tableName);
 		copy.filters.addAll(this.filters);
@@ -166,7 +171,7 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilter<T>, ISqlQu
 		return copy;
 	}
 
-	private final void compileIfNeeded()
+	private void compileIfNeeded()
 	{
 		//
 		// Check: if is alread compiled, there is no need to compile it again
@@ -230,7 +235,7 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilter<T>, ISqlQu
 				else
 				{
 					sqlFilters = null;
-					nonSqlFilters = Collections.<IQueryFilter<T>>singletonList(compositeFilter);
+					nonSqlFilters = Collections.singletonList(compositeFilter);
 				}
 			}
 			//
@@ -295,14 +300,10 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilter<T>, ISqlQu
 	 * <li><code>resultSqlWhereClause</code> string builder/buffer
 	 * <li>and <code>resultSqlFilters</code> list.
 	 * </ul>
-	 *
-	 * @param resultSqlWhereClause
-	 * @param resultSqlFilters
-	 * @param sqlFiltersToAppend
 	 */
-	private final void appendSqlWhereClause(final StringBuilder resultSqlWhereClause,
-											final List<ISqlQueryFilter> resultSqlFilters,
-											final List<ISqlQueryFilter> sqlFiltersToAppend)
+	private void appendSqlWhereClause(final StringBuilder resultSqlWhereClause,
+									  final List<ISqlQueryFilter> resultSqlFilters,
+									  final List<ISqlQueryFilter> sqlFiltersToAppend)
 	{
 		//
 		// If there are no SQL filters to append, return right away
@@ -406,24 +407,6 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilter<T>, ISqlQu
 	}
 
 	@Override
-	public ICompositeQueryFilter<T> addFilter(@NonNull final IQueryFilter<T> filter)
-	{
-		Check.errorIf(filter == this, "Attempt to add a filter to itself; filter={}", filter);
-
-		if (filters.contains(filter))
-		{
-			return this;
-		}
-
-		filters.add(filter);
-
-		// recompile needed
-		this._compiled = false;
-
-		return this;
-	}
-
-	@Override
 	public ICompositeQueryFilter<T> addFilters(final List<IQueryFilter<T>> filters)
 	{
 		if (filters == null || filters.isEmpty())
@@ -437,28 +420,6 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilter<T>, ISqlQu
 		}
 
 		return this;
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addFiltersUnboxed(final ICompositeQueryFilter<T> compositeFilter)
-	{
-		final List<IQueryFilter<T>> filtersToAdd = compositeFilter.getFilters();
-		if (filtersToAdd.isEmpty())
-		{
-			return this;
-		}
-		else if (filtersToAdd.size() == 1)
-		{
-			return addFilters(filtersToAdd);
-		}
-		else if (isJoinAnd() == compositeFilter.isJoinAnd())
-		{
-			return addFilters(filtersToAdd);
-		}
-		else
-		{
-			return addFilter(compositeFilter);
-		}
 	}
 
 	@Override
@@ -485,16 +446,12 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilter<T>, ISqlQu
 	}
 
 	@Override
-	public ICompositeQueryFilter<T> removeFilter(final IQueryFilter<T> filter)
+	public ICompositeQueryFilter<T> removeFilter(@NonNull final IQueryFilter<T> filter)
 	{
-		Check.assumeNotNull(filter, "filter not null");
-
-		if (filters == null || filters.isEmpty())
+		if (!filters.isEmpty())
 		{
-			return this;
+			filters.remove(filter);
 		}
-
-		filters.remove(filter);
 
 		return this;
 	}
@@ -511,7 +468,7 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilter<T>, ISqlQu
 		return setJoinAnd(false);
 	}
 
-	private final ICompositeQueryFilter<T> setJoinAnd(final boolean and)
+	private ICompositeQueryFilter<T> setJoinAnd(final boolean and)
 	{
 		if (this.and == and)
 		{
@@ -527,325 +484,13 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilter<T>, ISqlQu
 	}
 
 	@Override
-	public ICompositeQueryFilter<T> addEqualsFilter(final String columnName, @Nullable final Object value)
-	{
-		final EqualsQueryFilter<T> filter = new EqualsQueryFilter<>(columnName, value);
-		return addFilter(filter);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addEqualsFilter(final ModelColumn<T, ?> column, @Nullable final Object value)
-	{
-		final EqualsQueryFilter<T> filter = new EqualsQueryFilter<>(column.getColumnName(), value);
-		return addFilter(filter);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addEqualsFilter(final String columnName, final Object value, final IQueryFilterModifier modifier)
-	{
-		final EqualsQueryFilter<T> filter = new EqualsQueryFilter<>(columnName, value, modifier);
-		return addFilter(filter);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addEqualsFilter(final ModelColumn<T, ?> column, final Object value, final IQueryFilterModifier modifier)
-	{
-		final String columnName = column.getColumnName();
-		return addEqualsFilter(columnName, value, modifier);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addStringLikeFilter(final ModelColumn<T, ?> column, final String substring, final boolean ignoreCase)
-	{
-		final String columnName = column.getColumnName();
-		return addStringLikeFilter(columnName, substring, ignoreCase);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addStringLikeFilter(final String columnName, final String substring, final boolean ignoreCase)
-	{
-		final StringLikeFilter<T> filter = new StringLikeFilter<>(columnName, substring, ignoreCase);
-		return addFilter(filter);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addStringNotLikeFilter(final ModelColumn<T, ?> column, final String substring, final boolean ignoreCase)
-	{
-		final String columnName = column.getColumnName();
-		final StringLikeFilter<T> filter = new StringLikeFilter<>(columnName, substring, ignoreCase);
-		return addFilter(NotQueryFilter.of(filter));
-	}
-	
-	@Override
-	public ICompositeQueryFilter<T> addStringStartsWith(@NonNull final String columnName, @NonNull final String prefix)
-	{
-		return addFilter(new StringStartsWithFilter<T>(columnName, prefix));
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addCoalesceEqualsFilter(final Object value, final String... columnNames)
-	{
-		final CoalesceEqualsQueryFilter<T> filter = new CoalesceEqualsQueryFilter<>(value, columnNames);
-		return addFilter(filter);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addNotEqualsFilter(final String columnName, final Object value)
-	{
-		final NotEqualsQueryFilter<T> filter = NotEqualsQueryFilter.of(columnName, value);
-		return addFilter(filter);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addNotEqualsFilter(final ModelColumn<T, ?> column, final Object value)
-	{
-		final String columnName = column.getColumnName();
-		return addNotEqualsFilter(columnName, value);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addNotNull(final String columnName)
-	{
-		return addNotEqualsFilter(columnName, null);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addNotNull(final ModelColumn<T, ?> column)
-	{
-		final String columnName = column.getColumnName();
-		return addNotEqualsFilter(columnName, null);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addCompareFilter(final String columnName, final Operator operator, final @Nullable Object value)
-	{
-		final CompareQueryFilter<T> filter = new CompareQueryFilter<>(columnName, operator, value);
-		return addFilter(filter);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addCompareFilter(final ModelColumn<T, ?> column, final Operator operator, final @Nullable Object value)
-	{
-		final CompareQueryFilter<T> filter = new CompareQueryFilter<>(column.getColumnName(), operator, value);
-		return addFilter(filter);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addCompareFilter(final String columnName, final CompareQueryFilter.Operator operator, final Object value, final IQueryFilterModifier modifier)
-	{
-		final CompareQueryFilter<T> filter = new CompareQueryFilter<>(columnName, operator, value, modifier);
-		return addFilter(filter);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addCompareFilter(final ModelColumn<T, ?> column, final Operator operator, final Object value, final IQueryFilterModifier modifier)
-	{
-		return addCompareFilter(column.getColumnName(), operator, value, modifier);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addOnlyActiveRecordsFilter()
-	{
-		final IQueryFilter<T> filter = ActiveRecordQueryFilter.getInstance();
-		return addFilter(filter);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addOnlyContextClient(final Properties ctx)
-	{
-		final IQueryFilter<T> filter = new ContextClientQueryFilter<>(ctx);
-		return addFilter(filter);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addOnlyContextClientOrSystem(final Properties ctx)
-	{
-		final boolean includeSystemClient = true;
-		final IQueryFilter<T> filter = new ContextClientQueryFilter<>(ctx, includeSystemClient);
-		return addFilter(filter);
-	}
-
-	@Override
-	@SuppressWarnings("unchecked")
-	public <V> ICompositeQueryFilter<T> addInArrayOrAllFilter(final String columnName, final V... values)
-	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, values)
-				.setDefaultReturnWhenEmpty(true);
-		return addFilter(filter);
-	}
-
-	@Override
-	@SuppressWarnings("unchecked")
-	public <V> ICompositeQueryFilter<T> addInArrayFilter(final String columnName, final V... values)
-	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, values)
-				.setDefaultReturnWhenEmpty(false);
-		return addFilter(filter);
-	}
-
-	@Override
-	@SuppressWarnings("unchecked")
-	public <V> ICompositeQueryFilter<T> addInArrayOrAllFilter(final ModelColumn<T, ?> column, final V... values)
-	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), values)
-				.setDefaultReturnWhenEmpty(true);
-		return addFilter(filter);
-	}
-
-	@Override
-	@SuppressWarnings("unchecked")
-	public <V> ICompositeQueryFilter<T> addInArrayFilter(final ModelColumn<T, ?> column, final V... values)
-	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), values)
-				.setDefaultReturnWhenEmpty(false);
-		return addFilter(filter);
-	}
-
-	@Override
-	public <V> ICompositeQueryFilter<T> addInArrayOrAllFilter(final String columnName, final Collection<V> values)
-	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, values)
-				.setDefaultReturnWhenEmpty(true);
-		return addFilter(filter);
-	}
-
-	@Override
-	public <V> ICompositeQueryFilter<T> addInArrayFilter(final String columnName, final Collection<V> values)
-	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(columnName, values)
-				.setDefaultReturnWhenEmpty(false);
-		return addFilter(filter);
-	}
-
-	@Override
-	public <V> ICompositeQueryFilter<T> addInArrayOrAllFilter(final ModelColumn<T, ?> column, final Collection<V> values)
-	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), values)
-				.setDefaultReturnWhenEmpty(true);
-		return addFilter(filter);
-	}
-
-	@Override
-	public <V> ICompositeQueryFilter<T> addInArrayFilter(final ModelColumn<T, ?> column, final Collection<V> values)
-	{
-		final IQueryFilter<T> filter = new InArrayQueryFilter<T>(column.getColumnName(), values)
-				.setDefaultReturnWhenEmpty(false);
-		return addFilter(filter);
-	}
-
-	@Override
-	public <V> ICompositeQueryFilter<T> addNotInArrayFilter(final ModelColumn<T, ?> column, final Collection<V> values)
-	{
-		return addNotInArrayFilter(column.getColumnName(), values);
-	}
-
-	@Override
-	public <V> ICompositeQueryFilter<T> addNotInArrayFilter(final String columnName, final Collection<V> values)
-	{
-		final InArrayQueryFilter<T> filter = new InArrayQueryFilter<>(columnName, values);
-
-		// NOTE: in case the values collection is empty then
-		// InArrayQueryFilter shall return false,
-		// so negativing the expression it will "true",
-		// which actually is the intuitive result
-		// i.e. when there are no values then "not in array" shall return "true".
-		filter.setDefaultReturnWhenEmpty(false);
-		final IQueryFilter<T> notFilter = NotQueryFilter.of(filter);
-		return addFilter(notFilter);
-	}
-
-	@Override
-	public IInSubQueryFilterClause<T, ICompositeQueryFilter<T>> addInSubQueryFilter()
-	{
-		return new InSubQueryFilterClause<>(tableName, this, this::addFilter);
-	}
-
-	@Override
-	public <ST> ICompositeQueryFilter<T> addInSubQueryFilter(final String columnName,
-															 final String subQueryColumnName,
-															 final IQuery<ST> subQuery)
-	{
-		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
-				.tableName(tableName)
-				.subQuery(subQuery)
-				.matchingColumnNames(columnName, subQueryColumnName)
-				.build();
-		return addFilter(filter);
-	}
-
-	@Override
-	public <ST> ICompositeQueryFilter<T> addNotInSubQueryFilter(final String columnName,
-																final String subQueryColumnName,
-																final IQuery<ST> subQuery)
-	{
-		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
-				.tableName(tableName)
-				.subQuery(subQuery)
-				.matchingColumnNames(columnName, subQueryColumnName)
-				.build();
-		final IQueryFilter<T> notFilter = NotQueryFilter.of(filter);
-		return addFilter(notFilter);
-	}
-
-	@Override
-	public <ST> ICompositeQueryFilter<T> addNotInSubQueryFilter(final ModelColumn<T, ?> column,
-																final ModelColumn<ST, ?> subQueryColumn,
-																final IQuery<ST> subQuery)
-	{
-		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
-				.tableName(tableName)
-				.subQuery(subQuery)
-				.matchingColumnNames(column.getColumnName(), subQueryColumn.getColumnName())
-				.build();
-
-		final IQueryFilter<T> notFilter = NotQueryFilter.of(filter);
-		return addFilter(notFilter);
-	}
-
-	@Override
-	public <ST> ICompositeQueryFilter<T> addInSubQueryFilter(final ModelColumn<T, ?> column,
-															 final ModelColumn<ST, ?> subQueryColumn,
-															 final IQuery<ST> subQuery)
-	{
-		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
-				.tableName(tableName)
-				.subQuery(subQuery)
-				.matchingColumnNames(column.getColumnName(), subQueryColumn.getColumnName())
-				.build();
-
-		return addFilter(filter);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addEndsWithQueryFilter(final String columnName, final String endsWithString)
-	{
-		final EndsWithQueryFilter<T> filter = new EndsWithQueryFilter<>(columnName, endsWithString);
-		return addFilter(filter);
-	}
-
-	@Override
-	public <ST> ICompositeQueryFilter<T> addInSubQueryFilter(final String columnName,
-															 final IQueryFilterModifier modifier,
-															 final String subQueryColumnName,
-															 final IQuery<ST> subQuery)
-	{
-		final IQueryFilter<T> filter = InSubQueryFilter.<T>builder()
-				.tableName(tableName)
-				.subQuery(subQuery)
-				.matchingColumnNames(columnName, subQueryColumnName, modifier)
-				.build();
-		return addFilter(filter);
-	}
-
-	@Override
 	public boolean accept(final T model)
 	{
 		final boolean defaultAccept = isDefaultAccept();
-		final boolean accepted = accept(model, filters, defaultAccept);
-		return accepted;
+		return accept(model, filters, defaultAccept);
 	}
 
-	private final boolean accept(final T model, final List<IQueryFilter<T>> filters, final boolean defaultAccept)
+	private boolean accept(final T model, final List<IQueryFilter<T>> filters, final boolean defaultAccept)
 	{
 		if (filters == null || filters.isEmpty())
 		{
@@ -865,6 +510,7 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilter<T>, ISqlQu
 			}
 		}
 
+		//noinspection RedundantIfStatement
 		if (and)
 		{
 			return true;
@@ -918,7 +564,7 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilter<T>, ISqlQu
 	 *
 	 * @return nonSQL filters
 	 */
-	private final List<IQueryFilter<T>> getNonSqlFiltersToUse()
+	private List<IQueryFilter<T>> getNonSqlFiltersToUse()
 	{
 		final List<ISqlQueryFilter> sqlFilters = getSqlFilters();
 		final List<IQueryFilter<T>> nonSqlFilters = getNonSqlFilters();
@@ -1029,49 +675,6 @@ public class CompositeQueryFilter<T> implements ICompositeQueryFilter<T>, ISqlQu
 		}
 
 		return partialNonSqlQueryFilter;
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addBetweenFilter(final String columnName, final Object valueFrom, final Object valueTo)
-	{
-		final BetweenQueryFilter<T> filter = new BetweenQueryFilter<>(tableName, columnName, valueFrom, valueTo);
-		return addFilter(filter);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addBetweenFilter(final ModelColumn<T, ?> column, final Object valueFrom, final Object valueTo)
-	{
-		final BetweenQueryFilter<T> filter = new BetweenQueryFilter<>(column, valueFrom, valueTo);
-		return addFilter(filter);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addBetweenFilter(final String columnName, final Object valueFrom, final Object valueTo, final IQueryFilterModifier modifier)
-	{
-		final BetweenQueryFilter<T> filter = new BetweenQueryFilter<>(tableName, columnName, valueFrom, valueTo, modifier);
-		return addFilter(filter);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addBetweenFilter(final ModelColumn<T, ?> column, final Object valueFrom, final Object valueTo, final IQueryFilterModifier modifier)
-	{
-		final BetweenQueryFilter<T> filter = new BetweenQueryFilter<>(column, valueFrom, valueTo, modifier);
-		return addFilter(filter);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addValidFromToMatchesFilter(final ModelColumn<T, ?> validFromColumn, final ModelColumn<T, ?> validToColumn, final Date dateToMatch)
-	{
-		final ValidFromToMatchesQueryFilter<T> filter = new ValidFromToMatchesQueryFilter<>(validFromColumn, validToColumn, dateToMatch);
-		return addFilter(filter);
-	}
-
-	@Override
-	public ICompositeQueryFilter<T> addCompositeQueryFilter()
-	{
-		final ICompositeQueryFilter<T> filter = new CompositeQueryFilter<>(tableName);
-		addFilter(filter);
-		return filter;
 	}
 
 	@Override

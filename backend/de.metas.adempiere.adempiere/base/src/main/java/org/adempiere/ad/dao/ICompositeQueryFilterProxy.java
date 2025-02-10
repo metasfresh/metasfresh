@@ -21,6 +21,7 @@ import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
 import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.ad.dao.impl.StringLikeFilter;
+import org.adempiere.ad.dao.impl.StringStartsWithFilter;
 import org.adempiere.ad.dao.impl.ValidFromToMatchesQueryFilter;
 import org.adempiere.model.ModelColumn;
 import org.compiere.model.IQuery;
@@ -121,6 +122,11 @@ public interface ICompositeQueryFilterProxy<T, RT>
 		final String columnName = column.getColumnName();
 		final StringLikeFilter<T> filter = new StringLikeFilter<>(columnName, substring, ignoreCase);
 		return addFilter(NotQueryFilter.of(filter));
+	}
+
+	default RT addStringStartsWith(@NonNull final String columnName, @NonNull final String prefix)
+	{
+		return addFilter(new StringStartsWithFilter<>(columnName, prefix));
 	}
 
 	default RT addCoalesceEqualsFilter(final Object value, final String... columnNames)

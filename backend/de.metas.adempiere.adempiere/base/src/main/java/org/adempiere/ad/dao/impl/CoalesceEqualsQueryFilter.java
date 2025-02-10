@@ -22,16 +22,18 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
-import de.metas.util.Check;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.ISqlQueryFilter;
-import org.adempiere.model.InterfaceWrapperHelper;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
+
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import de.metas.util.Check;
 
 public class CoalesceEqualsQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {
@@ -40,8 +42,6 @@ public class CoalesceEqualsQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 
 	public CoalesceEqualsQueryFilter(final Object value, final String... columnNames)
 	{
-		super();
-
 		Check.assumeNotNull(columnNames, "columnNames not null");
 		Check.assumeNotNull(columnNames.length > 1, "columnNames.length > 1");
 		this.columnNames = Arrays.asList(columnNames);
@@ -84,8 +84,7 @@ public class CoalesceEqualsQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 			modelValue = InterfaceWrapperHelper.getValue(model, columnName).orElse(null);
 		}
 
-		final boolean accepted = Objects.equals(modelValue, value);
-		return accepted;
+		return Objects.equals(modelValue, value);
 	}
 
 	@Override
@@ -116,7 +115,7 @@ public class CoalesceEqualsQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 	private String sqlWhereClause = null;
 	private List<Object> sqlParams = null;
 
-	private final void buildSql()
+	private void buildSql()
 	{
 		if (sqlBuilt)
 		{
@@ -151,10 +150,4 @@ public class CoalesceEqualsQueryFilter<T> implements IQueryFilter<T>, ISqlQueryF
 		this.sqlParams = sqlParams;
 		this.sqlBuilt = true;
 	}
-
-	protected void resetSqlBuilt()
-	{
-		this.sqlBuilt = false;
-	}
-
 }

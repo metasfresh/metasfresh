@@ -58,8 +58,11 @@ import javax.swing.plaf.metal.MetalLabelUI;
  */
 public class AdempiereLabelUI extends MetalLabelUI
 {
-	/** the UI Class ID to bind this UI to */
-	public static final String uiClassID = AdempierePLAF.getUIClassID(JLabel.class, "LabelUI");
+	/**
+	 * The UI Class ID to bind this UI to
+	 * See {@link JLabel#getUIClassID()}.
+	 */
+	public static final String uiClassID = "LabelUI";
 	
 	public static final String KEY_Border = "Label.border";
 

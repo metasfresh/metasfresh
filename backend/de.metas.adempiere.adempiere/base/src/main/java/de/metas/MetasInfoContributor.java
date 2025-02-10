@@ -4,7 +4,6 @@ import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import org.adempiere.ad.service.ADSystemInfo;
 import org.adempiere.ad.service.ISystemBL;
-import org.compiere.Adempiere;
 import org.slf4j.Logger;
 import org.springframework.boot.actuate.info.Info;
 import org.springframework.boot.actuate.info.InfoContributor;

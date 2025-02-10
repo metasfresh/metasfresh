@@ -16,26 +16,19 @@ import {
 } from '../../actions/DashboardActions';
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
 import RawChart from '../charts/RawChart';
-import RawList from '../widget/List/RawList';
 import ChartWidget from './ChartWidget';
 import DndWidget from './DndWidget';
 import Placeholder from './Placeholder';
 import Sidenav from './Sidenav';
 import EntityType from './EntityType';
+import { ChartOptions } from './ChartOptions';
 
 export class DraggableWrapper extends Component {
   state = {
     indicatorsLoaded: false,
     idMaximized: null,
     websocketEndpoint: null,
-    chartOptions: false,
-    captionHandler: '',
-    when: '',
-    interval: '',
-    currentId: '',
-    isIndicator: '',
-    listFocused: null,
-    listToggled: null,
+    editingDashboardItemId: null,
   };
 
   componentDidMount = () => {
@@ -57,22 +50,6 @@ export class DraggableWrapper extends Component {
 
   componentWillUnmount = () => {
     disconnectWS.call(this);
-  };
-
-  handleFocus = (name) => {
-    this.setState({ listFocused: name });
-  };
-
-  handleBlur = () => {
-    this.setState({ listFocused: null });
-  };
-
-  closeDropdown = () => {
-    this.setState({ listToggled: null });
-  };
-
-  openDropdown = (name) => {
-    this.setState({ listToggled: name });
   };
 
   onWebsocketEvent = (event) => {
@@ -164,10 +141,10 @@ export class DraggableWrapper extends Component {
       // NOTE: will be updated via websockets
     } else {
       if (entity === EntityType.KPI) {
-        changeKPIItem(id, 'position', position);
+        changeKPIItem(id, { position });
         // NOTE: will be updated via websockets
       } else if (entity === EntityType.TARGET_INDICATOR) {
-        changeTargetIndicatorsItem(id, 'position', position);
+        changeTargetIndicatorsItem(id, { position });
         // NOTE: will be updated via websockets
       } else {
         console.warn(`Unknown entity: ${entity}`);
@@ -240,7 +217,7 @@ export class DraggableWrapper extends Component {
                   kpi={false}
                   data={indicator.data}
                   noData={indicator.fetchOnDrop}
-                  handleChartOptions={this.handleChartOptions}
+                  openChartOptions={this.openChartOptions}
                   editmode={editmode}
                 />
               }
@@ -338,7 +315,7 @@ export class DraggableWrapper extends Component {
                   text={item.caption}
                   data={item.data}
                   noData={item.fetchOnDrop}
-                  handleChartOptions={this.handleChartOptions}
+                  openChartOptions={this.openChartOptions}
                   editmode={editmode}
                 />
               </DndWidget>
@@ -349,170 +326,50 @@ export class DraggableWrapper extends Component {
     }
   };
 
-  renderOptionModal = () => {
-    const {
-      chartOptions,
-      captionHandler,
-      when,
-      interval,
-      listFocused,
-      listToggled,
-    } = this.state;
-
-    return (
-      chartOptions && (
-        <div className="chart-options-overlay">
-          <div className="chart-options-wrapper">
-            <div className="chart-options">
-              <div className="form-group">
-                <label>
-                  {counterpart.translate('dashboard.item.settings.caption')}
-                </label>
-                <input
-                  className="input-options input-secondary"
-                  value={captionHandler}
-                  onChange={this.handleChange}
-                />
-              </div>
-              <div className="form-group">
-                <label>
-                  {counterpart.translate(
-                    'dashboard.item.settings.interval.caption'
-                  )}
-                </label>
-                <div className="chart-options-list-wrapper">
-                  <RawList
-                    onSelect={(option) =>
-                      this.handleOptionSelect('interval', option)
-                    }
-                    tabIndex={0}
-                    list={[
-                      {
-                        caption: counterpart.translate(
-                          'dashboard.item.settings.interval.week'
-                        ),
-                        value: 'week',
-                      },
-                    ]}
-                    selected={interval}
-                    isFocused={listFocused === 'interval'}
-                    isToggled={listToggled === 'interval'}
-                    onFocus={() => this.handleFocus('interval')}
-                    onBlur={() => this.handleBlur('interval')}
-                    onOpenDropdown={() => this.openDropdown('interval')}
-                    onCloseDropdown={() => this.closeDropdown('interval')}
-                  />
-                </div>
-              </div>
-              <div className="form-group">
-                <label>
-                  {counterpart.translate(
-                    'dashboard.item.settings.when.caption'
-                  )}
-                </label>
-                <div className="chart-options-list-wrapper">
-                  <RawList
-                    onSelect={(option) =>
-                      this.handleOptionSelect('when', option)
-                    }
-                    list={[
-                      {
-                        caption: counterpart.translate(
-                          'dashboard.item.settings.when.now'
-                        ),
-                        value: 'now',
-                      },
-                      {
-                        caption: counterpart.translate(
-                          'dashboard.item.settings.when.lastWeek'
-                        ),
-                        value: 'lastWeek',
-                      },
-                    ]}
-                    tabIndex={0}
-                    selected={when}
-                    isFocused={listFocused === 'when'}
-                    isToggled={listToggled === 'when'}
-                    onFocus={() => this.handleFocus('when')}
-                    onBlur={() => this.handleBlur('when')}
-                    onOpenDropdown={() => this.openDropdown('when')}
-                    onCloseDropdown={() => this.closeDropdown('when')}
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="chart-options-button-wrapper">
-              <button
-                className="btn btn-meta-outline-secondary btn-sm"
-                onClick={() => this.changeChartData('caption', captionHandler)}
-              >
-                {counterpart.translate('dashboard.item.settings.save')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )
-    );
-  };
-
-  handleChartOptions = (opened, caption, id, isIndicator) => {
-    this.setState({
-      chartOptions: opened,
-      captionHandler: caption,
-      currentId: id,
-      when: opened ? this.state.when : '',
-      interval: opened ? this.state.interval : '',
-      isIndicator: !!isIndicator,
-    });
-  };
-
-  handleOptionSelect = (path, option) => {
-    const { currentId, isIndicator } = this.state;
-    if (isIndicator) {
-      changeTargetIndicatorsItem(currentId, path, option.value).then(() => {
-        this.setSelectedOption(path, option);
-      });
-    } else {
-      changeKPIItem(currentId, path, option.value).then(() => {
-        this.setSelectedOption(path, option);
-      });
+  getDashboardItemById = (id) => {
+    const indicatorsArray = this.state[EntityType.TARGET_INDICATOR] ?? [];
+    const indicator = indicatorsArray.find((item) => item.id === id);
+    if (indicator) {
+      return { ...indicator, isIndicator: true };
     }
-  };
 
-  setSelectedOption = (path, option) => {
-    const { when, interval } = this.state;
-    this.setState({
-      when: path === 'when' ? option : when,
-      interval: path === 'interval' ? option : interval,
-    });
-  };
-
-  handleChange = (e) => {
-    this.setState({
-      captionHandler: e.target.value,
-    });
-  };
-
-  changeChartData = (path, value) => {
-    const { currentId, isIndicator } = this.state;
-    if (isIndicator) {
-      changeTargetIndicatorsItem(currentId, path, value).then(() => {
-        this.handleChartOptions(false);
-      });
-    } else {
-      changeKPIItem(currentId, path, value).then(() => {
-        this.handleChartOptions(false);
-      });
+    const kpisArray = this.state[EntityType.KPI] ?? [];
+    const kpi = kpisArray.find((item) => item.id === id);
+    if (kpi) {
+      return { ...kpi, isIndicator: false };
     }
+
+    return null;
+  };
+
+  openChartOptions = (editingDashboardItemId) => {
+    this.setState({ editingDashboardItemId });
+  };
+
+  closeChartOptions = () => {
+    this.setState({ editingDashboardItemId: null });
   };
 
   render() {
     const { editmode } = this.props;
+    const { editingDashboardItemId } = this.state;
+
+    const dashboardItem =
+      editingDashboardItemId > 0
+        ? this.getDashboardItemById(editingDashboardItemId)
+        : null;
 
     return (
       <DndProvider backend={HTML5Backend}>
         <div className="dashboard-cards-wrapper">
-          {this.renderOptionModal()}
+          {dashboardItem && (
+            <ChartOptions
+              id={dashboardItem.id}
+              caption={dashboardItem.caption}
+              isIndicator={dashboardItem.isIndicator}
+              onClose={() => this.closeChartOptions()}
+            />
+          )}
           <div className={editmode ? 'dashboard-edit-mode' : 'dashboard-cards'}>
             {this.renderIndicators()}
             {this.renderKpis()}

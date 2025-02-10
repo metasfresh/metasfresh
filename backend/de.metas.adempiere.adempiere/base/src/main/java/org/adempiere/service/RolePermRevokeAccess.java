@@ -42,8 +42,6 @@ import org.compiere.model.X_C_Invoice;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base

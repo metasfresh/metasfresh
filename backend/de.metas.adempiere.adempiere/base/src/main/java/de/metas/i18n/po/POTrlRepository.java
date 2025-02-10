@@ -4,7 +4,6 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.cache.CacheMgt;
-import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.IModelTranslation;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.Language;
@@ -183,6 +182,11 @@ public class POTrlRepository
 	 */
 	public boolean onBaseRecordChanged(@NonNull final PO baseRecord)
 	{
+		return sync_base_to_trl(baseRecord);
+	}
+
+	private boolean sync_base_to_trl(@NonNull final PO baseRecord)
+	{
 		final POTrlInfo trlInfo = baseRecord.getPOInfo().getTrlInfo();
 		if (!trlInfo.isTranslated())
 		{
@@ -241,6 +245,11 @@ public class POTrlRepository
 
 	public void onTrlRecordChanged(@NonNull final PO trlRecord)
 	{
+		sync_trl_to_base_ifBaseLanguage(trlRecord);
+	}
+
+	private static void sync_trl_to_base_ifBaseLanguage(@NonNull final PO trlRecord)
+	{
 		final String trlTableName = trlRecord.get_TableName();
 		final String baseTableName = toBaseTableNameOrNull(trlTableName);
 		if (baseTableName == null)
@@ -248,13 +257,8 @@ public class POTrlRepository
 			return;
 		}
 
-		final POTrlInfo trlInfo = POInfo.getPOInfoNotNull(baseTableName).getTrlInfo();
-
-		final String recordAdLanguage = trlRecord.get_ValueAsString(COLUMNNAME_AD_Language);
-		if (!Language.isBaseLanguage(recordAdLanguage))
-		{
-			return;
-		}
+		final POInfo baseTablePOInfo = POInfo.getPOInfoNotNull(baseTableName);
+		final POTrlInfo trlInfo = baseTablePOInfo.getTrlInfo();
 
 		final StringBuilder sqlSet = new StringBuilder();
 		for (final String columnName : trlInfo.getTranslatedColumnNames())
@@ -264,12 +268,11 @@ public class POTrlRepository
 				continue;
 			}
 
-			final String sqlValue = convertValueToSql(trlRecord.get_Value(columnName));
 			if (sqlSet.length() > 0)
 			{
 				sqlSet.append(", ");
 			}
-			sqlSet.append(columnName).append("=").append(sqlValue);
+			sqlSet.append(columnName).append("=trl.").append(columnName);
 		}
 
 		if (sqlSet.length() == 0)
@@ -277,24 +280,29 @@ public class POTrlRepository
 			return;
 		}
 
-		final boolean isUpdatedColumnPresent = Optional.ofNullable(POInfo.getPOInfo(baseTableName))
-				.map(poInfo -> poInfo.getColumnIndex("Updated") > -1)
-				.orElse(false);
-
-		if (isUpdatedColumnPresent)
+		if (baseTablePOInfo.hasColumnName("Updated"))
 		{
-			sqlSet.append(", Updated").append("=").append(DB.TO_DATE(SystemTime.asTimestamp(), false));
+			sqlSet.append(", Updated").append("=trl.Updated");
+		}
+		if (baseTablePOInfo.hasColumnName("UpdatedBy"))
+		{
+			sqlSet.append(", UpdatedBy").append("=trl.UpdatedBy");
 		}
 
 		final String keyColumnName = trlInfo.getKeyColumnName();
-		final Object keyColumnValue = trlRecord.get_Value(keyColumnName);
+		final String adLanguage = trlRecord.get_ValueAsString(COLUMNNAME_AD_Language);
 
-		final String sql = "UPDATE " + baseTableName + " SET " + sqlSet + " WHERE " + keyColumnName + "=" + convertValueToSql(keyColumnValue);
+		final String sql = "UPDATE " + baseTableName + " base SET " + sqlSet
+				+ " FROM " + trlTableName + " trl "
+				+ " WHERE trl." + keyColumnName + "=base." + keyColumnName
+				+ " AND trl.AD_Language=" + DB.TO_STRING(adLanguage)
+				+ " AND trl.AD_Language=getBaseLanguage()"; // IMPORTANT: since this script will be logged, make sure the base language is checked on the database where this command will be executed
 		final int updatedCount = DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Updated {} base records for {}", updatedCount, trlRecord);
 
 		//
 		final CacheMgt cacheMgt = CacheMgt.get();
+		final Object keyColumnValue = trlRecord.get_Value(keyColumnName);
 		if (keyColumnValue instanceof Integer)
 		{
 			cacheMgt.reset(baseTableName, (int)keyColumnValue);

@@ -3,12 +3,12 @@ package de.metas.ui.web.menu;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import de.metas.common.util.pair.IPair;
-import de.metas.common.util.pair.ImmutablePair;
 import de.metas.ui.web.menu.MenuNode.MenuNodeFilter.MenuNodeFilterResolution;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.util.Check;
 import lombok.NonNull;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -105,7 +105,9 @@ public final class MenuNode
 		}
 	}
 
-	/** Copy constructor */
+	/**
+	 * Copy constructor
+	 */
 	private MenuNode(final MenuNode node, final List<MenuNode> children, final boolean matchedByFilter)
 	{
 		id = node.id;
@@ -216,7 +218,9 @@ public final class MenuNode
 		return elementId;
 	}
 
-	/** @return window's main table name or null */
+	/**
+	 * @return window's main table name or null
+	 */
 	public String getMainTableName()
 	{
 		return mainTableName;
@@ -306,7 +310,7 @@ public final class MenuNode
 
 	/**
 	 * Returns true if this node is effectively a leaf node.
-	 *
+	 * <p>
 	 * An effectively leaf node it's a node which it's not a grouping node, or even if it's grouping node, it does no have any children.
 	 */
 	public boolean isEffectiveLeafNode()

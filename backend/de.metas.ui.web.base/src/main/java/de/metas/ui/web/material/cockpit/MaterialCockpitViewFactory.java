@@ -37,7 +37,6 @@ import de.metas.ui.web.material.cockpit.process.MD_Cockpit_SetProcurementStatus;
 import de.metas.ui.web.material.cockpit.process.MD_Cockpit_ShowStockDetails;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 import de.metas.ui.web.view.CreateViewRequest;
-import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewFactory;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
@@ -91,7 +90,7 @@ public class MaterialCockpitViewFactory implements IViewFactory
 	}
 
 	@Override
-	public IView createView(@NonNull final CreateViewRequest request)
+	public MaterialCockpitView createView(@NonNull final CreateViewRequest request)
 	{
 		assertWindowIdOfRequestIsCorrect(request);
 
@@ -120,8 +119,8 @@ public class MaterialCockpitViewFactory implements IViewFactory
 		final WindowId windowId = viewId.getWindowId();
 
 		Check.errorUnless(MaterialCockpitUtil.WINDOWID_MaterialCockpitView.equals(windowId),
-						  "The parameter request needs to have WindowId={}, but has {} instead; request={};",
-						  MaterialCockpitUtil.WINDOWID_MaterialCockpitView, windowId, request);
+				"The parameter request needs to have WindowId={}, but has {} instead; request={};",
+				MaterialCockpitUtil.WINDOWID_MaterialCockpitView, windowId, request);
 	}
 
 	private MaterialCockpitRowsData createRowsData(
@@ -147,8 +146,8 @@ public class MaterialCockpitViewFactory implements IViewFactory
 			@Nullable final ViewProfileId profileId)
 	{
 		Check.errorUnless(MaterialCockpitUtil.WINDOWID_MaterialCockpitView.equals(windowId),
-						  "The parameter windowId needs to be {}, but is {} instead; viewDataType={}; ",
-						  MaterialCockpitUtil.WINDOWID_MaterialCockpitView, windowId, viewDataType);
+				"The parameter windowId needs to be {}, but is {} instead; viewDataType={}; ",
+				MaterialCockpitUtil.WINDOWID_MaterialCockpitView, windowId, viewDataType);
 
 		final String commaSeparatedFieldNames = sysConfigBL.getValue(SYSCFG_Layout, (String)null);
 		final boolean displayIncludedRows = sysConfigBL.getBooleanValue(SYSCFG_DisplayIncludedRows, true);

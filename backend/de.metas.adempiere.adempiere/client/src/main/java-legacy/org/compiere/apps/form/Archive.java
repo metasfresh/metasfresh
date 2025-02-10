@@ -13,23 +13,25 @@
  *****************************************************************************/
 package org.compiere.apps.form;
 
-import de.metas.adempiere.form.IClientUI;
-import de.metas.logging.LogManager;
-import de.metas.security.IUserRolePermissions;
-import de.metas.security.RoleId;
-import de.metas.util.Services;
+import java.sql.Timestamp;
+import java.util.List;
+
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import java.sql.Timestamp;
-import java.util.List;
+import de.metas.adempiere.form.IClientUI;
+import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.RoleId;
+import de.metas.util.Services;
 
 public class Archive {
 
@@ -229,11 +231,11 @@ public class Archive {
 		//	Created
 		if (createdFrom != null)
 		{
-			sql.append(" AND Created>=").append(DB.TO_DATE(createdFrom));
+			sql.append(" AND Created>=").append(DB.TO_DATE(createdFrom, DisplayType.Date));
 		}
 		if (createdTo != null)
 		{
-			sql.append(" AND Created<").append(DB.TO_DATE(TimeUtil.addDays(createdTo,1), true));
+			sql.append(" AND Created<").append(DB.TO_DATE(TimeUtil.addDays(createdTo,1), DisplayType.Date));
 		}
 
 		log.debug(sql.toString());

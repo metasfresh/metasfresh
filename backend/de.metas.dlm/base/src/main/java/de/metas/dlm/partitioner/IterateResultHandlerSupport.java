@@ -1,16 +1,18 @@
 package de.metas.dlm.partitioner;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.common.util.pair.ImmutablePair;
-import de.metas.dlm.partitioner.IIterateResultHandler.AddResult;
-import de.metas.logging.LogManager;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.slf4j.Logger;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import org.adempiere.util.lang.ITableRecordReference;
+import de.metas.common.util.pair.ImmutablePair;
+import org.slf4j.Logger;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.dlm.partitioner.IIterateResultHandler.AddResult;
+import de.metas.logging.LogManager;
 
 /*
  * #%L

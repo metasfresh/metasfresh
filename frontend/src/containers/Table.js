@@ -191,7 +191,7 @@ class TableContainer extends PureComponent {
   handleZoomInto = (fieldName) => {
     const { entity, windowId, docId, tabId, viewId, selected } = this.props;
 
-    getZoomIntoWindow(
+    return getZoomIntoWindow(
       entity,
       windowId,
       docId,

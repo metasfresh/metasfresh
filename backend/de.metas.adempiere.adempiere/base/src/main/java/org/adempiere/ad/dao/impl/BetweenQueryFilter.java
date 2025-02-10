@@ -22,14 +22,15 @@ package org.adempiere.ad.dao.impl;
  * #L%
  */
 
+
+import java.util.List;
+import java.util.Properties;
+
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryFilterModifier;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.ModelColumn;
-
-import java.util.List;
-import java.util.Properties;
 
 public class BetweenQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFilter
 {

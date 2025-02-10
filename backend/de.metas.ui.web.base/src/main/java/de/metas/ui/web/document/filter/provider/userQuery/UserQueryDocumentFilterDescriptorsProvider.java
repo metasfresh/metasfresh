@@ -2,7 +2,6 @@ package de.metas.ui.web.document.filter.provider.userQuery;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import de.metas.ad_reference.ADReferenceService;
 import de.metas.cache.CachedSuppliers;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
@@ -58,7 +57,6 @@ import java.util.function.Supplier;
 class UserQueryDocumentFilterDescriptorsProvider implements DocumentFilterDescriptorsProvider
 {
 	private static final Logger logger = LogManager.getLogger(UserQueryDocumentFilterDescriptorsProvider.class);
-	private final ADReferenceService adReferenceService = ADReferenceService.get();
 	private final UserQueryRepository repository;
 
 	private final Supplier<ImmutableMap<String, DocumentFilterDescriptor>> filtersSupplier = CachedSuppliers.renewOnCacheReset(this::retrieveAllByFilterId);

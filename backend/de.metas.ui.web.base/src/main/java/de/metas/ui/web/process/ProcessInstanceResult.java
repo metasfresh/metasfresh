@@ -7,15 +7,14 @@ import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
+import lombok.Singular;
 import lombok.Value;
 import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 
 /*
  * #%L
@@ -48,7 +47,7 @@ public class ProcessInstanceResult
 				.instanceId(instanceId);
 	}
 
-	DocumentId instanceId;
+	@NonNull DocumentId instanceId;
 	String summary;
 	boolean error;
 	@Nullable ResultAction action;
@@ -177,5 +176,15 @@ public class ProcessInstanceResult
 	public static class DisplayQRCodeAction implements ResultAction
 	{
 		@NonNull String code;
+	}
+
+
+	@lombok.Value
+	@lombok.Builder
+	public static class NewRecordAction implements ResultAction
+	{
+		@NonNull String windowId;
+		@NonNull @Singular Map<String, String> fieldValues;
+		@NonNull @Builder.Default ProcessExecutionResult.WebuiNewRecord.TargetTab targetTab = ProcessExecutionResult.WebuiNewRecord.TargetTab.SAME_TAB;
 	}
 }

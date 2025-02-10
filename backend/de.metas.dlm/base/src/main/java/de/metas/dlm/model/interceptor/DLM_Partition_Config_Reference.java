@@ -1,12 +1,14 @@
 package de.metas.dlm.model.interceptor;
 
-import de.metas.ad_reference.TableRefTable;
+import de.metas.ad_reference.ADRefTable;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.dlm.model.I_DLM_Partition_Config_Reference;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
-import org.adempiere.ad.service.ILookupDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.compiere.model.I_AD_Column;
 import org.compiere.util.DisplayType;
 
 /*
@@ -48,25 +50,27 @@ public class DLM_Partition_Config_Reference
 			return;
 		}
 
-		final int ad_Reference_ID = ref.getDLM_Referencing_Column().getAD_Reference_ID();
-		if (!DisplayType.isLookup(ad_Reference_ID))
+		final I_AD_Column adColumn = ref.getDLM_Referencing_Column();
+		final int displayType = adColumn.getAD_Reference_ID();
+		if (!DisplayType.isLookup(displayType))
 		{
 			return;
 		}
 
-		final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
-		final TableRefTable tableRefTable;
-		if (lookupDAO.isTableReference(ad_Reference_ID))
+		final ADReferenceService adReferenceService = ADReferenceService.get();
+		final ADRefTable tableRefInfo;
+		final ReferenceId adReferenceValueId = ReferenceId.ofRepoIdOrNull(adColumn.getAD_Reference_Value_ID());
+		if (adReferenceService.isTableReference(adReferenceValueId))
 		{
-			tableRefTable = lookupDAO.retrieveTableRefInfo(ad_Reference_ID);
+			tableRefInfo = adReferenceService.retrieveTableRefInfo(adReferenceValueId);
 		}
 		else
 		{
-			final String columnName = ref.getDLM_Referencing_Column().getColumnName();
-			tableRefTable = lookupDAO.retrieveTableDirectRefInfo(columnName);
+			final String columnName = adColumn.getColumnName();
+			tableRefInfo = adReferenceService.getTableDirectRefInfo(columnName);
 		}
 
-		if (tableRefTable == null)
+		if (tableRefInfo == null)
 		{
 			// what we do further up is not very sophisticated. e.g. for "CreatedBy", we currently don't find the table name.
 			// therefore, don't set the table to null since we don't know that there is no table for the given column
@@ -75,6 +79,6 @@ public class DLM_Partition_Config_Reference
 		}
 
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-		ref.setDLM_Referenced_Table_ID(adTableDAO.retrieveTableId(tableRefTable.getTableName()));
+		ref.setDLM_Referenced_Table_ID(adTableDAO.retrieveTableId(tableRefInfo.getTableName()));
 	}
 }

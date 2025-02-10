@@ -13,7 +13,7 @@ import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor.Builder;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.util.Services;
 import lombok.experimental.UtilityClass;
 import org.adempiere.warehouse.WarehouseId;
@@ -55,21 +55,23 @@ final class PackageableViewFilters
 
 	private static DocumentFilterDescriptor createDefaultFilterDescriptor()
 	{
+		final LookupDescriptorProviders lookupDescriptorProviders = LookupDescriptorProviders.sharedInstance();
+
 		final DocumentFilterParamDescriptor.Builder orderParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_C_Order_ID)
 				.widgetType(DocumentFieldWidgetType.Lookup)
-				.lookupDescriptor(SqlLookupDescriptor.searchInTable(I_C_Order.Table_Name).provideForFilter());
+				.lookupDescriptor(lookupDescriptorProviders.searchInTable(I_C_Order.Table_Name).provideForFilter());
 
 		final DocumentFilterParamDescriptor.Builder customerParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_Customer_ID)
 				.widgetType(DocumentFieldWidgetType.Lookup)
-				.lookupDescriptor(SqlLookupDescriptor.searchInTable(I_C_BPartner.Table_Name).provideForFilter());
+				.lookupDescriptor(lookupDescriptorProviders.searchInTable(I_C_BPartner.Table_Name).provideForFilter());
 
 		final DocumentFilterParamDescriptor.Builder warehouseTypeParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_M_Warehouse_Type_ID)
 				.widgetType(DocumentFieldWidgetType.Lookup)
-				.lookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Warehouse_Type.Table_Name).provideForFilter());
+				.lookupDescriptor(lookupDescriptorProviders.searchInTable(I_M_Warehouse_Type.Table_Name).provideForFilter());
 
 		final DocumentFilterParamDescriptor.Builder warehouseParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_M_Warehouse_ID)
 				.widgetType(DocumentFieldWidgetType.Lookup)
-				.lookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Warehouse.Table_Name).provideForFilter());
+				.lookupDescriptor(lookupDescriptorProviders.searchInTable(I_M_Warehouse.Table_Name).provideForFilter());
 
 		final DocumentFilterParamDescriptor.Builder deliveryDateParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_DeliveryDate)
 				.displayName(Services.get(IMsgBL.class).translatable(PackageableViewFilterVO.PARAM_DeliveryDate))
@@ -80,7 +82,7 @@ final class PackageableViewFilters
 
 		final DocumentFilterParamDescriptor.Builder shipperParameter = newParamDescriptor(PackageableViewFilterVO.PARAM_M_Shipper_ID)
 				.widgetType(DocumentFieldWidgetType.Lookup)
-				.lookupDescriptor(SqlLookupDescriptor.searchInTable(I_M_Shipper.Table_Name).provideForFilter());
+				.lookupDescriptor(lookupDescriptorProviders.searchInTable(I_M_Shipper.Table_Name).provideForFilter());
 
 		return DocumentFilterDescriptor.builder()
 				.setFrequentUsed(true)
@@ -106,7 +108,7 @@ final class PackageableViewFilters
 	public static PackageableViewFilterVO extractPackageableViewFilterVO(final DocumentFilterList filters)
 	{
 		return filters.getFilterById(PackageableViewFilterVO.FILTER_ID)
-				.map(filter -> toPackageableViewFilterVO(filter))
+				.map(PackageableViewFilters::toPackageableViewFilterVO)
 				.orElse(PackageableViewFilterVO.ANY);
 	}
 

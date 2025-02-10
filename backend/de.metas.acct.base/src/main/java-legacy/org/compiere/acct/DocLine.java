@@ -739,7 +739,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	private int getC_BPartner_Location_ID()
 	{
-		return CoalesceUtil.firstGreaterThanZeroSupplier(
+		return CoalesceUtil.firstGreaterThanZeroIntegerSupplier(
 				() -> getValue("C_BPartner_Location_ID"),
 				m_doc::getC_BPartner_Location_ID);
 	}

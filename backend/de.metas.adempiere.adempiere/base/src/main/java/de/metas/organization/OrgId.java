@@ -113,7 +113,6 @@ public class OrgId implements RepoIdAware
 		return orgId != null ? orgId.getRepoId() : ANY.repoId;
 	}
 
-
 	@Override
 	@JsonValue
 	public int getRepoId()

@@ -47,6 +47,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IProductBOMDAO;
@@ -68,6 +69,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -80,15 +82,20 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static org.eevolution.productioncandidate.service.ResourcePlanningPrecision.MINUTE;
+
 @Service
 public class PPOrderCandidateService
 {
+	private static final String SYSCONFIG_ResourcePlanningPrecision = "resource.PlanningPrecision";
+
 	private final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
 	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final IPPOrderBOMBL orderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	private final IPPOrderBL ppOrderService = Services.get(IPPOrderBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final ProductPlanningService productPlanningService;
 	private final PPOrderCandidateDAO ppOrderCandidateDAO;
@@ -465,6 +472,29 @@ public class PPOrderCandidateService
 			}
 
 			candidate.setWorkStation_ID(ResourceId.toRepoId(workstationId));
+			ppOrderCandidateDAO.save(candidate);
+		}
+	}
+	
+	@NonNull
+	public ResourcePlanningPrecision getResourcePlanningPrecision()
+	{
+		return ResourcePlanningPrecision.ofCodeOrMinute(sysConfigBL.getValue(SYSCONFIG_ResourcePlanningPrecision, MINUTE.getCode()));
+	}
+
+	public void setDateStartSchedule(
+			@NonNull final ImmutableSet<PPOrderCandidateId> ppOrderCandidateIds,
+			@NonNull final Timestamp dateStartSchedule)
+	{
+		final ImmutableList<I_PP_Order_Candidate> candidates = ppOrderCandidateDAO.getByIds(ppOrderCandidateIds);
+		for (final I_PP_Order_Candidate candidate : candidates)
+		{
+			if (candidate.isProcessed() || candidate.isClosed() || !candidate.isActive())
+			{
+				continue;
+			}
+
+			candidate.setDateStartSchedule(dateStartSchedule);
 			ppOrderCandidateDAO.save(candidate);
 		}
 	}

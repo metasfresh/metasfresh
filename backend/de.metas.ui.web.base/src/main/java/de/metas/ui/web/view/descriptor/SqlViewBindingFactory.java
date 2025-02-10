@@ -158,7 +158,9 @@ public class SqlViewBindingFactory
 				.filterDescriptors(filterDescriptors)
 				.refreshViewOnChangeEvents(entityDescriptor.isRefreshViewOnChangeEvents())
 				.viewInvalidationAdvisor(getViewInvalidationAdvisor(windowId))
-				.filterConverters(filterConverters);
+				.queryIfNoFilters(entityDescriptor.isQueryIfNoFilters());
+
+		builder.filterConverters(filterConverters);
 
 		if (filterConvertorDecorators.containsKey(windowId))
 		{
@@ -209,6 +211,7 @@ public class SqlViewBindingFactory
 				.widgetType(documentField.getWidgetType())
 				.virtualColumn(documentField.isVirtualColumn())
 				.mandatory(documentField.isMandatory())
+				.hideGridColumnIfEmpty(documentField.isHideGridColumnIfEmpty())
 				//
 				.sqlValueClass(documentField.getSqlValueClass())
 				.sqlSelectValue(documentField.getSqlSelectValue())

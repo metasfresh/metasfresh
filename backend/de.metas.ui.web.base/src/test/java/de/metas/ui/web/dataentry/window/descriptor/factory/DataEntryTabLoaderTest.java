@@ -87,7 +87,7 @@ public class DataEntryTabLoaderTest
 		final DataEntryRecordRepository dataEntryRecordRepository = new DataEntryRecordRepository(jsonDataEntryRecordMapper);
 
 		final DataEntrySubTabBindingDescriptorBuilder //
-		dataEntrySubTabBindingDescriptorBuilder = new DataEntrySubTabBindingDescriptorBuilder(
+				dataEntrySubTabBindingDescriptorBuilder = new DataEntrySubTabBindingDescriptorBuilder(
 				dataEntryRecordRepository,
 				dataEntryWebuiTools);
 

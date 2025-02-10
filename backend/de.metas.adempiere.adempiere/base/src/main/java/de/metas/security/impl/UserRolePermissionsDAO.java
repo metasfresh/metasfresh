@@ -74,6 +74,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.tree.AdTreeId;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Column_Access;
 import org.compiere.model.I_AD_Document_Action_Access;
 import org.compiere.model.I_AD_Form;
@@ -127,6 +128,7 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private static final String COLUMNNAME_AD_Role_ID = "AD_Role_ID";
+	private static final String COLUMNNAME_IsReadWrite = "IsReadWrite";
 
 	private static final ImmutableSet<String> ROLE_DEPENDENT_TABLENAMES = ImmutableSet.of(
 			// I_AD_Role.Table_Name // NEVER include the AD_Role
@@ -702,8 +704,17 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 		//
 		// EntityType filter: filter out those elements where EntityType is not displayed
 		final String accessTableName = InterfaceWrapperHelper.getTableName(accessTableClass);
-		final POInfo elementPOInfo = POInfo.getPOInfoNotNull(elementTableName);
-		if (elementPOInfo.hasColumnName("EntityType"))
+		boolean hasEntityType;
+		if(Adempiere.isUnitTestMode())
+		{
+			hasEntityType = false; // we don't care
+		}
+		else
+		{
+			final POInfo elementPOInfo = POInfo.getPOInfoNotNull(elementTableName);
+			hasEntityType = elementPOInfo.hasColumnName("EntityType");
+		}
+		if (hasEntityType)
 		{
 			queryBuilder.filter(
 					TypedSqlQueryFilter.of("exists (select 1 from " + elementTableName + " t"
@@ -715,8 +726,16 @@ public class UserRolePermissionsDAO implements IUserRolePermissionsDAO
 
 		//
 		// IsReadWrite flag
-		final POInfo accessTablePOInfo = POInfo.getPOInfoNotNull(accessTableName);
-		final String readWriteColumnName = accessTablePOInfo.hasColumnName("IsReadWrite") ? "IsReadWrite" : null;
+		final String readWriteColumnName;
+		if(Adempiere.isUnitTestMode())
+		{
+			readWriteColumnName = COLUMNNAME_IsReadWrite;
+		}
+		else
+		{
+			final POInfo accessTablePOInfo = POInfo.getPOInfoNotNull(accessTableName);
+			readWriteColumnName = accessTablePOInfo.hasColumnName(COLUMNNAME_IsReadWrite) ? COLUMNNAME_IsReadWrite : null;
+		}
 		if (readWriteColumnName != null)
 		{
 			distinctColumnNames.add(readWriteColumnName);

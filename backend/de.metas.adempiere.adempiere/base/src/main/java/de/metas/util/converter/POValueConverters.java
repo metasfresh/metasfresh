@@ -116,6 +116,14 @@ public class POValueConverters
 			{
 				return BigDecimal.valueOf((Float)value);
 			}
+			else if (String.class.equals(valueClass))
+			{
+				return new BigDecimal((String)value);
+			}
+			else if (Integer.class.equals(valueClass))
+			{
+				return BigDecimal.valueOf((Integer)value);
+			}
 		}
 
 		throw new RuntimeException("TargetClass " + targetClass + " does not match any supported classes!");

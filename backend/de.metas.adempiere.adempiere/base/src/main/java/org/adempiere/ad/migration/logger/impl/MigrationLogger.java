@@ -27,7 +27,6 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.migration.logger.IMigrationLoggerContext;
 import org.adempiere.ad.migration.logger.TableNamesSkipList;
@@ -70,7 +69,6 @@ public class MigrationLogger implements IMigrationLogger
 	private final IDataConverter converter = new DefaultDataConverter();
 
 	private final TableNamesSkipList tableNamesSkipList = new TableNamesSkipList();
-
 
 	@Override
 	public boolean isLogTableName(final String tableName, final ClientId clientId)
@@ -147,7 +145,7 @@ public class MigrationLogger implements IMigrationLogger
 	{
 		// ignore statistic updates
 		// TODO: metas: 02662: shall be deleted because it's handled by AD_Column.IsCalculated flag
-			if (pinfo.getTableName().equalsIgnoreCase("AD_Process") && !po.is_new() && po.is_ValueChanged("Statistic_Count"))
+		if (pinfo.getTableName().equalsIgnoreCase("AD_Process") && !po.is_new() && po.is_ValueChanged("Statistic_Count"))
 		{
 			return false;
 		}
@@ -176,7 +174,7 @@ public class MigrationLogger implements IMigrationLogger
 
 		final I_AD_MigrationData data = InterfaceWrapperHelper.create(po.getCtx(), I_AD_MigrationData.class, po.get_TrxName());
 		data.setColumnName(infoColumn.getColumnName());
-		data.setAD_Column_ID(AdColumnId.toRepoId(infoColumn.getAD_Column_ID()));
+		data.setAD_Column_ID(infoColumn.getAD_Column_ID().getRepoId());
 		boolean create = false;
 
 		//

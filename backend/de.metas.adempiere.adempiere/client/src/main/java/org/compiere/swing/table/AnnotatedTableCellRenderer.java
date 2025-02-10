@@ -22,26 +22,18 @@ package org.compiere.swing.table;
  * #L%
  */
 
-
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Insets;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import org.slf4j.Logger;
 import de.metas.logging.LogManager;
-
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableModel;
-
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.grid.ed.VHeaderRenderer;
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
 import org.compiere.util.DisplayType;
+import org.slf4j.Logger;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableModel;
+import java.awt.*;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 
 final class AnnotatedTableCellRenderer extends DefaultTableCellRenderer
 {
@@ -193,7 +185,7 @@ final class AnnotatedTableCellRenderer extends DefaultTableCellRenderer
 			// Checkbox
 			if (displayType == DisplayType.YesNo)
 			{
-				compCheckbox.setSelected(DisplayType.toBoolean(value, false));
+				compCheckbox.setSelected(DisplayType.toBooleanNonNull(value, false));
 				valueToSet = null;
 				forwardValue = false;
 			}

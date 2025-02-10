@@ -53,6 +53,14 @@ class ImmutableMinimalColumnInfoMap implements MinimalColumnInfoMap
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@Override
+	public ImmutableList<MinimalColumnInfo> getByColumnName(@NonNull final String columnName)
+	{
+		return byId.values()
+				.stream()
+				.filter(columnInfo -> columnInfo.isColumnNameMatching(columnName))
+				.collect(ImmutableList.toImmutableList());
+	}
 
 	@Nullable
 	@Override

@@ -1,10 +1,8 @@
-package de.metas.util.xml;
-
 /*
  * #%L
  * de.metas.util
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -13,24 +11,24 @@ package de.metas.util.xml;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program.  If not, see
+ * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
+package de.metas.util.xml;
 
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
+import de.metas.util.Check;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
-
-import de.metas.util.Check;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Used to dynamically create elements based on given generated <code>objectFactory</code>.

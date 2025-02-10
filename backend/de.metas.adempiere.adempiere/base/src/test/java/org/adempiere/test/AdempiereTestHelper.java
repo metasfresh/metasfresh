@@ -1,6 +1,9 @@
 package org.adempiere.test;
 
 import ch.qos.logback.classic.Level;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Stopwatch;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.adempiere.form.IClientUI;
@@ -54,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.function.Function;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
@@ -307,36 +311,6 @@ public class AdempiereTestHelper
 		return OrgId.ofRepoId(orgRecord.getAD_Org_ID());
 	}
 
-	private void staticInit0()
-	{
-		Adempiere.enableUnitTestMode();
-		Language.setUseJUnitFixedFormats(false);
-		POJOLookupMap.resetToDefaultNextIdSupplier();
-
-		Check.setDefaultExClass(AdempiereException.class);
-
-		Util.setClassInstanceProvider(TestingClassInstanceProvider.instance);
-
-		//
-		// Configure services; note the this is not the place to register individual services, see init() for that.
-		Services.setAutodetectServices(true);
-		Services.setServiceNameAutoDetectPolicy(new UnitTestServiceNamePolicy()); // 04113
-		Services.setExternalServiceImplProvider(new IServiceImplProvider()
-		{
-			@Override
-			public <T extends IService> T provideServiceImpl(final Class<T> serviceClazz)
-			{
-				return SpringContextHolder.instance.getBeanOr(serviceClazz, null);
-			}
-		});
-
-		//
-		// Make sure cache is empty
-		CacheMgt.get().reset();
-
-		staticInitialized = true;
-	}
-
 	public void onCleanup(@NonNull String name, @NonNull Runnable runnable)
 	{
 		final CleanupTask task = new CleanupTask(name, runnable);
@@ -365,5 +339,35 @@ public class AdempiereTestHelper
 		@NonNull private final Runnable runnable;
 
 		public void run() {runnable.run();}
+	}
+
+	private void staticInit0()
+	{
+		Adempiere.enableUnitTestMode();
+		Language.setUseJUnitFixedFormats(false);
+		POJOLookupMap.resetToDefaultNextIdSupplier();
+
+		Check.setDefaultExClass(AdempiereException.class);
+
+		Util.setClassInstanceProvider(TestingClassInstanceProvider.instance);
+
+		//
+		// Configure services; note the this is not the place to register individual services, see init() for that.
+		Services.setAutodetectServices(true);
+		Services.setServiceNameAutoDetectPolicy(new UnitTestServiceNamePolicy()); // 04113
+		Services.setExternalServiceImplProvider(new IServiceImplProvider()
+		{
+			@Override
+			public <T extends IService> T provideServiceImpl(final Class<T> serviceClazz)
+			{
+				return SpringContextHolder.instance.getBeanOr(serviceClazz, null);
+			}
+		});
+
+		//
+		// Make sure cache is empty
+		CacheMgt.get().reset();
+
+		staticInitialized = true;
 	}
 }

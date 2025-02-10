@@ -15,7 +15,6 @@ import org.jxls.builder.xls.XlsCommentAreaBuilder;
 import org.jxls.common.CellRef;
 import org.jxls.common.Context;
 import org.jxls.common.JxlsException;
-import org.jxls.expression.JexlExpressionEvaluator;
 import org.jxls.formula.FastFormulaProcessor;
 import org.jxls.transform.TransformationConfig;
 import org.jxls.transform.Transformer;
@@ -98,12 +97,6 @@ public class JXlsExporter
 				final ByteArrayOutputStream os = new ByteArrayOutputStream();
 				final Transformer transformer = createTransformer(is, os);
 
-				final JexlExpressionEvaluator evaluator = (JexlExpressionEvaluator)transformer.getTransformationConfig().getExpressionEvaluator();
-
-				//setting the evaluator to silent & lenient doesn't show warnings anymore for 0 or null values.
-				evaluator.getJexlEngine().setSilent(true);
-				evaluator.getJexlEngine().setLenient(true);
-
 				processTemplate(transformer, context);
 
 				return ReportResult.builder()
@@ -152,7 +145,7 @@ public class JXlsExporter
 
 		// make sure our custom jexl functions are registered
 		final TransformationConfig config = transformer.getTransformationConfig();
-		JexlCustomFunctions.registerIfNeeded(config.getExpressionEvaluator());
+		JexlCustomFunctions.register(config.getExpressionEvaluator());
 
 		return transformer;
 	}
