@@ -4,6 +4,16 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.Profiles;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.CurrencyRepository;
+import de.metas.frontend_testing.masterdata.CreateMasterdataCommand;
+import de.metas.frontend_testing.masterdata.JsonCreateMasterdataRequest;
+import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
+import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
+import de.metas.frontend_testing.masterdata.hu.JsonCreateHUResponse;
+import de.metas.frontend_testing.masterdata.picking_slot.JsonGetFreePickingSlotRequest;
+import de.metas.frontend_testing.masterdata.picking_slot.JsonGetFreePickingSlotResponse;
+import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
+import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.logging.LogManager;
@@ -11,9 +21,6 @@ import de.metas.picking.api.IPickingSlotBL;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.qrcode.PickingSlotQRCode;
-import de.metas.rest_api.v2.order.JsonSalesOrder;
-import de.metas.rest_api.v2.order.JsonSalesOrderCreateRequest;
-import de.metas.rest_api.v2.order.sales.SalesOrderRestController;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -41,9 +48,9 @@ public class FrontendTestingRestController
 	@NonNull private final Logger logger = LogManager.getLogger(FrontendTestingRestController.class);
 	@NonNull private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IPickingSlotBL pickingSlotBL = Services.get(IPickingSlotBL.class);
-	@NonNull private final SalesOrderRestController salesOrderRestController;
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final CurrencyRepository currencyRepository;
 
 	@PostConstruct
 	public void postConstruct()
@@ -59,16 +66,16 @@ public class FrontendTestingRestController
 	public JsonCreateMasterdataResponse createMasterdata(@RequestBody final JsonCreateMasterdataRequest request)
 	{
 		return CreateMasterdataCommand.builder()
-				.salesOrderRestController(salesOrderRestController)
 				.inventoryService(inventoryService)
 				.huQRCodesService(huQRCodesService)
+				.currencyRepository(currencyRepository)
 				.request(request)
 				.build()
 				.execute();
 	}
 
 	@PostMapping("salesOrder")
-	public JsonSalesOrder createOrder(@RequestBody final JsonSalesOrderCreateRequest request)
+	public JsonSalesOrderCreateResponse createOrder(@RequestBody final JsonSalesOrderCreateRequest request)
 	{
 		final JsonCreateMasterdataResponse response = createMasterdata(JsonCreateMasterdataRequest.builder()
 				.salesOrders(ImmutableMap.of("salesOrder", request))

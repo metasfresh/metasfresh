@@ -1,4 +1,4 @@
-package de.metas.frontend_testing;
+package de.metas.frontend_testing.masterdata.picking_slot;
 
 import lombok.Builder;
 import lombok.NonNull;
@@ -8,8 +8,7 @@ import lombok.extern.jackson.Jacksonized;
 @Value
 @Builder
 @Jacksonized
-public class JsonCreateHUResponse
+public class JsonGetFreePickingSlotResponse
 {
-	@NonNull String huId;
 	@NonNull String qrCode;
 }

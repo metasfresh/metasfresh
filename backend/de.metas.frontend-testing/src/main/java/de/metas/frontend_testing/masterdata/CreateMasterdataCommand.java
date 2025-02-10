@@ -1,0 +1,151 @@
+package de.metas.frontend_testing.masterdata;
+
+import com.google.common.collect.ImmutableMap;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.CurrencyRepository;
+import de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand;
+import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
+import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
+import de.metas.frontend_testing.masterdata.hu.CreateHUCommand;
+import de.metas.frontend_testing.masterdata.hu.CreatePackingInstructionsCommand;
+import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
+import de.metas.frontend_testing.masterdata.hu.JsonCreateHUResponse;
+import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
+import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsResponse;
+import de.metas.frontend_testing.masterdata.product.CreateProductCommand;
+import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
+import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
+import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
+import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
+import de.metas.frontend_testing.masterdata.sales_order.SalesOrderCreateCommand;
+import de.metas.handlingunits.inventory.InventoryService;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.picking.api.IPickingSlotBL;
+import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import lombok.Builder;
+import lombok.NonNull;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.function.BiFunction;
+
+@Builder
+public class CreateMasterdataCommand
+{
+	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
+	@NonNull private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IPickingSlotBL pickingSlotBL = Services.get(IPickingSlotBL.class);
+	@NonNull private final InventoryService inventoryService;
+	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final CurrencyRepository currencyRepository;
+
+	@NonNull private final JsonCreateMasterdataRequest request;
+
+	private MasterdataContext context;
+
+	public JsonCreateMasterdataResponse execute()
+	{
+		this.context = new MasterdataContext();
+
+		return JsonCreateMasterdataResponse.builder()
+				.bpartners(createBPartners())
+				.products(createProducts())
+				.packingInstructions(createPackingInstructions())
+				.handlingUnits(createHUs())
+				.salesOrders(createSalesOrders())
+				.build();
+	}
+
+	private <REQUEST, RESPONSE> ImmutableMap<String, RESPONSE> process(
+			@Nullable final Map<String, REQUEST> requests,
+			@NonNull final BiFunction<String, REQUEST, RESPONSE> mapper)
+	{
+		if (requests == null || requests.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		return CollectionUtils.mapValues(ImmutableMap.copyOf(requests), mapper);
+	}
+
+	private ImmutableMap<String, JsonCreateBPartnerResponse> createBPartners()
+	{
+		return process(request.getBpartners(), this::createBPartner);
+	}
+
+	private JsonCreateBPartnerResponse createBPartner(String identifier, JsonCreateBPartnerRequest request)
+	{
+		return CreateBPartnerCommand.builder()
+				.currencyRepository(currencyRepository)
+				.context(context)
+				.request(request)
+				.identifier(identifier)
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonCreateProductResponse> createProducts()
+	{
+		return process(request.getProducts(), this::createProduct);
+	}
+
+	private JsonCreateProductResponse createProduct(String identifier, JsonCreateProductRequest request)
+	{
+		return CreateProductCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(identifier)
+				.build()
+				.execute();
+	}
+
+	private @NonNull Map<String, JsonPackingInstructionsResponse> createPackingInstructions()
+	{
+		return process(request.getPackingInstructions(), this::createPackingInstruction);
+	}
+
+	private JsonPackingInstructionsResponse createPackingInstruction(String identifier, JsonPackingInstructionsRequest request)
+	{
+		return CreatePackingInstructionsCommand.builder()
+				.context(context)
+				.request(request)
+				.build().execute();
+	}
+
+	private ImmutableMap<String, JsonCreateHUResponse> createHUs()
+	{
+		return process(request.getHandlingUnits(), this::createHU);
+	}
+
+	private JsonCreateHUResponse createHU(final String identifier, final JsonCreateHURequest request)
+	{
+		return CreateHUCommand.builder()
+				.inventoryService(inventoryService)
+				.huQRCodesService(huQRCodesService)
+				.context(context)
+				.request(request)
+				.identifier(identifier)
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonSalesOrderCreateResponse> createSalesOrders()
+	{
+		return process(request.getSalesOrders(), this::createSalesOrder);
+	}
+
+	private JsonSalesOrderCreateResponse createSalesOrder(String identifier, JsonSalesOrderCreateRequest request)
+	{
+		return SalesOrderCreateCommand.builder()
+				.context(context)
+				.request(request)
+				.build()
+				.execute();
+	}
+}

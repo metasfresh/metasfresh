@@ -1,5 +1,6 @@
-package de.metas.frontend_testing;
+package de.metas.frontend_testing.masterdata.hu;
 
+import de.metas.frontend_testing.masterdata.Identifier;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -12,7 +13,7 @@ import java.math.BigDecimal;
 @Jacksonized
 public class JsonCreateHURequest
 {
-	@NonNull String productCode;
-	@NonNull String warehouseCode;
+	@NonNull Identifier product;
+	@NonNull String warehouse;
 	@NonNull BigDecimal qty;
 }
