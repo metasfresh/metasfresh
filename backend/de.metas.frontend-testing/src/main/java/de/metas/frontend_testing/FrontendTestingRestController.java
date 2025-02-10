@@ -1,6 +1,5 @@
 package de.metas.frontend_testing;
 
-import com.google.common.collect.ImmutableMap;
 import de.metas.Profiles;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -8,15 +7,13 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.frontend_testing.masterdata.CreateMasterdataCommand;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataRequest;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
-import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
-import de.metas.frontend_testing.masterdata.hu.JsonCreateHUResponse;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonGetFreePickingSlotRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonGetFreePickingSlotResponse;
-import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
-import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
 import de.metas.handlingunits.inventory.InventoryService;
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.logging.LogManager;
+import de.metas.mobile.MobileConfigService;
 import de.metas.picking.api.IPickingSlotBL;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.api.PickingSlotQuery;
@@ -48,6 +45,8 @@ public class FrontendTestingRestController
 	@NonNull private final Logger logger = LogManager.getLogger(FrontendTestingRestController.class);
 	@NonNull private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IPickingSlotBL pickingSlotBL = Services.get(IPickingSlotBL.class);
+	@NonNull private final MobileConfigService mobileConfigService;
+	@NonNull private final MobileUIPickingUserProfileRepository mobilePickingConfigRepository;
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final CurrencyRepository currencyRepository;
@@ -66,30 +65,14 @@ public class FrontendTestingRestController
 	public JsonCreateMasterdataResponse createMasterdata(@RequestBody final JsonCreateMasterdataRequest request)
 	{
 		return CreateMasterdataCommand.builder()
+				.mobileConfigService(mobileConfigService)
+				.mobilePickingConfigRepository(mobilePickingConfigRepository)
 				.inventoryService(inventoryService)
 				.huQRCodesService(huQRCodesService)
 				.currencyRepository(currencyRepository)
 				.request(request)
 				.build()
 				.execute();
-	}
-
-	@PostMapping("salesOrder")
-	public JsonSalesOrderCreateResponse createOrder(@RequestBody final JsonSalesOrderCreateRequest request)
-	{
-		final JsonCreateMasterdataResponse response = createMasterdata(JsonCreateMasterdataRequest.builder()
-				.salesOrders(ImmutableMap.of("salesOrder", request))
-				.build());
-		return response.getSalesOrders().get("salesOrder");
-	}
-
-	@PostMapping("hu")
-	public JsonCreateHUResponse createHU(@RequestBody final JsonCreateHURequest request)
-	{
-		final JsonCreateMasterdataResponse response = createMasterdata(JsonCreateMasterdataRequest.builder()
-				.handlingUnits(ImmutableMap.of("hu", request))
-				.build());
-		return response.getHandlingUnits().get("hu");
 	}
 
 	@PostMapping("getFreePickingSlot")

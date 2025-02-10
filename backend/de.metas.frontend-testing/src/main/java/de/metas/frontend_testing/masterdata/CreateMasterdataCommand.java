@@ -12,6 +12,7 @@ import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHUResponse;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsResponse;
+import de.metas.frontend_testing.masterdata.mobile_configuration.MobileConfigCommand;
 import de.metas.frontend_testing.masterdata.product.CreateProductCommand;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
@@ -19,7 +20,9 @@ import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequ
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.sales_order.SalesOrderCreateCommand;
 import de.metas.handlingunits.inventory.InventoryService;
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.mobile.MobileConfigService;
 import de.metas.picking.api.IPickingSlotBL;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
@@ -41,6 +44,8 @@ public class CreateMasterdataCommand
 	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IPickingSlotBL pickingSlotBL = Services.get(IPickingSlotBL.class);
+	@NonNull private final MobileConfigService mobileConfigService;
+	@NonNull private final MobileUIPickingUserProfileRepository mobilePickingConfigRepository;
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final CurrencyRepository currencyRepository;
@@ -53,12 +58,20 @@ public class CreateMasterdataCommand
 	{
 		this.context = new MasterdataContext();
 
+		// IMPORTANT: the order is very important
+		final ImmutableMap<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
+		final ImmutableMap<String, JsonCreateProductResponse> products = createProducts();
+		final Map<String, JsonPackingInstructionsResponse> packingInstructions = createPackingInstructions();
+		createMobileConfiguration();
+		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
+		final ImmutableMap<String, JsonSalesOrderCreateResponse> salesOrders = createSalesOrders();
+
 		return JsonCreateMasterdataResponse.builder()
-				.bpartners(createBPartners())
-				.products(createProducts())
-				.packingInstructions(createPackingInstructions())
-				.handlingUnits(createHUs())
-				.salesOrders(createSalesOrders())
+				.bpartners(bpartners)
+				.products(products)
+				.packingInstructions(packingInstructions)
+				.handlingUnits(hus)
+				.salesOrders(salesOrders)
 				.build();
 	}
 
@@ -116,6 +129,21 @@ public class CreateMasterdataCommand
 				.context(context)
 				.request(request)
 				.build().execute();
+	}
+
+	private void createMobileConfiguration()
+	{
+		if (request.getMobileConfig() == null)
+		{
+			return;
+		}
+
+		MobileConfigCommand.builder()
+				.mobileConfigService(mobileConfigService)
+				.mobilePickingConfigRepository(mobilePickingConfigRepository)
+				.request(request.getMobileConfig())
+				.build()
+				.execute();
 	}
 
 	private ImmutableMap<String, JsonCreateHUResponse> createHUs()
