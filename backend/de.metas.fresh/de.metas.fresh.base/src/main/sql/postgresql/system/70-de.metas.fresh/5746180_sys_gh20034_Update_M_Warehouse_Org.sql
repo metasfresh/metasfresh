@@ -3,10 +3,6 @@
 -- Table: M_Warehouse
 -- 2025-02-10T08:44:20.589Z
 
-UPDATE M_Warehouse
-SET AD_Org_ID = 1000000
-WHERE TRUE
-;
 
 ALTER TABLE M_Warehouse
     ADD CONSTRAINT M_Warehouse_AD_Org_Check
