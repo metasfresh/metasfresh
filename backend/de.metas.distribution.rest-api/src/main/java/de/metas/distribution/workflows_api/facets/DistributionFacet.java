@@ -5,17 +5,21 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacet;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroup;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetId;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 
 import javax.annotation.Nullable;
 
-@Value(staticConstructor = "of")
+@Value
+@Builder
 public class DistributionFacet
 {
 	@NonNull DistributionFacetId facetId;
 	long sortNo;
 	@NonNull ITranslatableString caption;
+	@Nullable @With Integer hitCount;
 
 	public WorkflowLaunchersFacetGroup.WorkflowLaunchersFacetGroupBuilder newWorkflowLaunchersFacetGroupBuilder()
 	{
@@ -31,6 +35,7 @@ public class DistributionFacet
 				.caption(caption)
 				.isActive(activeFacetIds != null && activeFacetIds.contains(facetId))
 				.sortNo(sortNo)
+				.hitCount(hitCount)
 				.build();
 	}
 
