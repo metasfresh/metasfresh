@@ -88,7 +88,6 @@ public class PP_Product_Planning
 		final ProductBOMVersionsId bomVersionsId = ProductBOMVersionsId.ofRepoIdOrNull(productPlanningRecord.getPP_Product_BOMVersions_ID());
 		if (bomVersionsId == null)
 		{
-			productPlanningRecord.setM_Product_ID(-1);
 			return;
 		}
 
