@@ -11,7 +11,7 @@ import { getWFProcessScreenLocation } from '../../routes/workflow_locations';
 import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
 import { useMobileNavigation } from '../../hooks/useMobileNavigation';
 
-const WFLauncherButton = ({ applicationId, startedWFProcessId, wfParameters, caption, showWarningSign }) => {
+const WFLauncherButton = ({ id, applicationId, startedWFProcessId, wfParameters, caption, showWarningSign }) => {
   const dispatch = useDispatch();
   const history = useMobileNavigation();
   const handleClick = () => {
@@ -29,6 +29,8 @@ const WFLauncherButton = ({ applicationId, startedWFProcessId, wfParameters, cap
 
   return (
     <ButtonWithIndicator
+      id={id}
+      additionalCssClass="wflauncher-button"
       caption={caption}
       showWarningSign={showWarningSign}
       completeStatus={startedWFProcessId ? CompleteStatus.IN_PROGRESS : CompleteStatus.NOT_STARTED}
@@ -39,6 +41,7 @@ const WFLauncherButton = ({ applicationId, startedWFProcessId, wfParameters, cap
 };
 
 WFLauncherButton.propTypes = {
+  id: PropTypes.string.isRequired,
   applicationId: PropTypes.string.isRequired,
   startedWFProcessId: PropTypes.string,
   wfParameters: PropTypes.object,

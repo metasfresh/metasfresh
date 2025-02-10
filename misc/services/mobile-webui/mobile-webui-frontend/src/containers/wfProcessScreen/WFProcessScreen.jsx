@@ -22,7 +22,10 @@ import { useScreenDefinition } from '../../hooks/useScreenDefinition';
 import { appLaunchersLocation } from '../../routes/launchers';
 
 const WFProcessScreen = () => {
-  const { url, applicationId, wfProcessId } = useScreenDefinition({ back: appLaunchersLocation });
+  const { url, applicationId, wfProcessId } = useScreenDefinition({
+    screenId: 'WFProcessScreen',
+    back: appLaunchersLocation,
+  });
 
   const { iconClassNames: appIconClassName } = useApplicationInfo({ applicationId });
 

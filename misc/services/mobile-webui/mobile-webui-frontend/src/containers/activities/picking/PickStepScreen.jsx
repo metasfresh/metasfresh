@@ -27,6 +27,7 @@ const PickStepScreen = () => {
   );
 
   const { history } = useScreenDefinition({
+    screenId: 'PickStepScreen',
     captionKey: 'activities.picking.PickHU',
     back: pickingLineScreenLocation,
     values: [
@@ -112,7 +113,8 @@ const PickStepScreen = () => {
           onClick={onScanButtonClick}
         />
         <ButtonWithIndicator
-          caption={trl('activities.picking.unPickBtn')}
+          id="unpick-button"
+          captionKey="activities.picking.unPickBtn"
           disabled={nothingPicked}
           onClick={() => setShowTargetHUScanner(true)}
         />

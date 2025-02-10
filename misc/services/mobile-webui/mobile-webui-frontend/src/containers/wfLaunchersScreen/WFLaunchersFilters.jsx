@@ -151,6 +151,7 @@ const WFLaunchersFilters = ({
       {showFilterByDocumentNo && (
         <>
           <ButtonWithIndicator
+            id="filterByDocumentNo-button"
             caption={filterByDocumentNo ? filterByDocumentNo : trl('general.DocumentNo')}
             onClick={() => setIsFilterByDocumentNoModalDisplayed(true)}
           />

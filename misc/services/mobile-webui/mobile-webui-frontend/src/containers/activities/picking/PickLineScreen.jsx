@@ -22,6 +22,7 @@ import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
 
 const PickLineScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
+    screenId: 'PickLineScreen',
     back: getWFProcessScreenLocation,
   });
 
@@ -70,12 +71,13 @@ const PickLineScreen = () => {
     <div className="section pt-2">
       <div className="buttons">
         {!manuallyClosed && allowPickingAnyHU && (
-          <ButtonWithIndicator caption={trl('activities.picking.scanQRCode')} onClick={onScanButtonClick} />
+          <ButtonWithIndicator captionKey="activities.picking.scanQRCode" onClick={onScanButtonClick} />
         )}
         {steps.length > 0 &&
           steps.map((stepItem, idx) => {
             return (
               <PickStepButton
+                id={`step-${idx}-button`}
                 key={idx}
                 disabled={manuallyClosed}
                 applicationId={applicationId}
@@ -93,9 +95,9 @@ const PickLineScreen = () => {
             );
           })}
         {!manuallyClosed && qtyToPickRemaining > 0 && (
-          <ButtonWithIndicator caption={trl('general.closeText')} onClick={onClose} />
+          <ButtonWithIndicator captionKey="general.closeText" onClick={onClose} />
         )}
-        {manuallyClosed && <ButtonWithIndicator caption={trl('general.reOpenText')} onClick={onReOpen} />}
+        {manuallyClosed && <ButtonWithIndicator captionKey="general.reOpenText" onClick={onReOpen} />}
       </div>
     </div>
   );

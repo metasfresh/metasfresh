@@ -5,7 +5,7 @@ import { pushHeaderEntry } from '../actions/HeaderActions';
 import { trl } from '../utils/translations';
 import { useMobileNavigation } from './useMobileNavigation';
 
-export const useScreenDefinition = ({ captionKey, values, isHomeStop, back } = {}) => {
+export const useScreenDefinition = ({ screenId, captionKey, values, isHomeStop, back } = {}) => {
   const dispatch = useDispatch();
   const {
     url,
@@ -18,6 +18,7 @@ export const useScreenDefinition = ({ captionKey, values, isHomeStop, back } = {
     dispatch(
       pushHeaderEntry({
         location: url,
+        screenId,
         caption: computeCaption({ captionKey }),
         values,
         isHomeStop,

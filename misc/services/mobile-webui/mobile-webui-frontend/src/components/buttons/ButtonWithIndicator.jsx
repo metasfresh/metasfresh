@@ -6,11 +6,15 @@ import * as CompleteStatus from '../../constants/CompleteStatus';
 import HazardIcon from '../HazardIcon';
 import AllergenIcon from '../AllergenIcon';
 import * as uiTrace from '../../utils/ui_trace';
+import { trl } from '../../utils/translations';
+import { computeId } from '../../utils/testing_support';
 
 const SYMBOLS_SIZE_PX = 25;
 
 const ButtonWithIndicator = ({
-  caption,
+  id: idParam,
+  caption: captionParam,
+  captionKey,
   showWarningSign,
   typeFASIconName,
   hazardSymbols = null,
@@ -22,14 +26,13 @@ const ButtonWithIndicator = ({
   children,
   additionalCssClass,
 }) => {
+  const id = computeId({ idParam, captionKey });
+  const caption = computeCaption({ caption: captionParam, captionKey });
   const indicatorClassName = getIndicatorClassName(completeStatus);
 
   const allergensWithColor = allergens != null && allergens.filter((allergen) => allergen.color != null);
-
   const displayAllergens = allergensWithColor && allergensWithColor.length > 0;
-
   const displayHazards = hazardSymbols != null && hazardSymbols.length > 0;
-
   const displayHazardsAndAllergens = displayHazards || displayAllergens;
 
   const fireOnClick = uiTrace.traceFunction(onClick, {
@@ -45,6 +48,7 @@ const ButtonWithIndicator = ({
 
   return (
     <button
+      id={id}
       className={cx('button is-outlined is-fullwidth complete-btn', { 'is-danger': isDanger }, additionalCssClass)}
       disabled={!!disabled}
       onClick={fireOnClick}
@@ -116,7 +120,9 @@ const getIndicatorClassName = (completeStatus) => {
 };
 
 ButtonWithIndicator.propTypes = {
-  caption: PropTypes.string.isRequired,
+  id: PropTypes.string,
+  caption: PropTypes.string,
+  captionKey: PropTypes.string,
   showWarningSign: PropTypes.bool,
   typeFASIconName: PropTypes.string,
   hazardSymbols: PropTypes.array,
@@ -130,3 +136,19 @@ ButtonWithIndicator.propTypes = {
 };
 
 export default ButtonWithIndicator;
+
+//
+//
+//
+//
+//
+
+const computeCaption = ({ captionKey, caption }) => {
+  if (caption) {
+    return caption;
+  } else if (captionKey) {
+    return trl(captionKey);
+  } else {
+    return '';
+  }
+};

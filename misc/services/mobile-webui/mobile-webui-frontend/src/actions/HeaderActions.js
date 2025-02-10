@@ -2,6 +2,7 @@ import { HEADER_PUSH_ENTRY } from '../constants/HeaderActionTypes';
 
 export function pushHeaderEntry({
   location,
+  screenId,
   caption,
   values = [],
   userInstructions,
@@ -11,6 +12,6 @@ export function pushHeaderEntry({
 }) {
   return {
     type: HEADER_PUSH_ENTRY,
-    payload: { location, caption, values, userInstructions, isHomeStop, homeIconClassName, backLocation },
+    payload: { location, screenId, caption, values, userInstructions, isHomeStop, homeIconClassName, backLocation },
   };
 }

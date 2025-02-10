@@ -10,6 +10,7 @@ import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 
 const PickStepButton = ({
+  id,
   applicationId,
   wfProcessId,
   activityId,
@@ -40,6 +41,7 @@ const PickStepButton = ({
   return (
     <>
       <ButtonWithIndicator
+        id={id}
         caption={(isAlternative ? 'ALT:' : '') + captionToUse}
         completeStatus={completeStatus}
         onClick={handleClick}
@@ -69,6 +71,7 @@ const PickStepButton = ({
 };
 
 PickStepButton.propTypes = {
+  id: PropTypes.string,
   applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,

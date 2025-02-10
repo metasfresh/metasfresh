@@ -13,8 +13,10 @@ import { trl } from '../../utils/translations';
 import { useUITraceLocationChange } from '../../utils/ui_trace/useUITraceLocationChange';
 import { useScreenDefinition } from '../../hooks/useScreenDefinition';
 
+const SCREEN_ID = 'ApplicationsListScreen';
+
 const ApplicationsListScreen = () => {
-  const { history } = useScreenDefinition({ isHomeStop: true, back: '/' });
+  const { history } = useScreenDefinition({ screenId: SCREEN_ID, isHomeStop: true, back: '/' });
 
   const applications = useSelector((state) => getAvailableApplicationsArray(state));
   const applicationsDisplayed = applications.filter((app) => !!app.showInMainMenu);
@@ -51,12 +53,13 @@ const ApplicationsListScreen = () => {
   };
 
   return (
-    <div className="applications-list">
+    <div id={SCREEN_ID} className="applications-list">
       <LogoHeader />
       <div className="section">
         {applicationsDisplayed.map((app) => (
           <ApplicationButton
             key={app.id}
+            id={app.id}
             caption={app.caption}
             iconClassNames={app.iconClassNames}
             onClick={() => handleAppClick(app.id)}
@@ -65,6 +68,7 @@ const ApplicationsListScreen = () => {
         <br />
         <ApplicationButton
           key="logout"
+          id="logout"
           caption={trl('logout')}
           iconClassNames="fas fa-power-off"
           onClick={() => handleLogout()}

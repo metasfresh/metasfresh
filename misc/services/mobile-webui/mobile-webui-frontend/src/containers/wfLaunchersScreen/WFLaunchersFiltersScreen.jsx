@@ -10,7 +10,7 @@ import { appLaunchersLocation } from '../../routes/launchers';
 import { useScreenDefinition } from '../../hooks/useScreenDefinition';
 
 const WFLaunchersFiltersScreen = () => {
-  const { history } = useScreenDefinition({ back: appLaunchersLocation });
+  const { history } = useScreenDefinition({ screenId: 'WFLaunchersFiltersScreen', back: appLaunchersLocation });
   const dispatch = useDispatch();
 
   const {

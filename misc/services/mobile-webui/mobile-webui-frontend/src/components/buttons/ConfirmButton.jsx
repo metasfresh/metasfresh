@@ -7,6 +7,7 @@ import ButtonWithIndicator from './ButtonWithIndicator';
 import YesNoDialog from '../dialogs/YesNoDialog';
 
 const ConfirmButton = ({
+  id,
   caption,
   promptQuestion,
   userInstructions,
@@ -40,6 +41,7 @@ const ConfirmButton = ({
         />
       )}
       <ButtonWithIndicator
+        id={id}
         caption={captionEffective}
         completeStatus={completeStatus}
         disabled={!isUserEditable || isDialogDisplayed}
@@ -60,6 +62,7 @@ const ConfirmButton = ({
  * @prop {func} onUserConfirmed
  */
 ConfirmButton.propTypes = {
+  id: PropTypes.string,
   caption: PropTypes.string,
   promptQuestion: PropTypes.string,
   userInstructions: PropTypes.string,
