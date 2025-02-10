@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.workflow.rest-api
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,25 +20,19 @@
  * #L%
  */
 
-package de.metas.workflow.rest_api.model.facets;
+package org.adempiere.ad.table;
 
-import de.metas.i18n.ITranslatableString;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
-
-import javax.annotation.Nullable;
+import org.adempiere.ad.table.api.AdTableId;
 
 @Value
 @Builder
-public class WorkflowLaunchersFacet
+public class ChangeLogConfig
 {
-	@NonNull WorkflowLaunchersFacetId facetId;
-	@NonNull ITranslatableString caption;
-	@Builder.Default long sortNo = 0;
-	@With boolean isActive;
-	@Nullable Integer hitCount;
-
-	public WorkflowLaunchersFacetGroupId getGroupId() {return facetId.getGroupId();}
+	@NonNull AdTableId tableId;
+	int keepChangeLogsDays;
+	@NonNull OrgId orgId;
 }
