@@ -6,7 +6,7 @@
 
 ALTER TABLE M_Warehouse
     ADD CONSTRAINT M_Warehouse_AD_Org_Check
-        CHECK (AD_Org_ID <> 0)
+        CHECK (AD_Org_ID > 0)
 ;
 
 COMMENT ON CONSTRAINT M_Warehouse_AD_Org_Check ON M_Warehouse
