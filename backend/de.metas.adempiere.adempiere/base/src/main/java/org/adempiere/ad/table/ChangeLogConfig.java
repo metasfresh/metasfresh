@@ -33,6 +33,6 @@ import org.adempiere.ad.table.api.AdTableId;
 public class ChangeLogConfig
 {
 	@NonNull AdTableId tableId;
-	@NonNull Integer keepChangeLogsDays;
+	int keepChangeLogsDays;
 	@NonNull OrgId orgId;
 }

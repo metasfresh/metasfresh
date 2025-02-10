@@ -23,6 +23,7 @@
 package org.adempiere.ad.table;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.time.SystemTime;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -38,7 +39,7 @@ import org.compiere.model.I_AD_ChangeLog;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 @Repository
 public class ChangeLogEntryRepository
@@ -110,7 +111,7 @@ public class ChangeLogEntryRepository
 	{
 		final IQueryBuilder<I_AD_ChangeLog> query = queryBL.createQueryBuilder(I_AD_ChangeLog.class)
 				.addEqualsFilter(I_AD_ChangeLog.COLUMNNAME_AD_Table_ID, changeLogConfig.getTableId())
-				.addCompareFilter(I_AD_ChangeLog.COLUMNNAME_Created, CompareQueryFilter.Operator.LESS_OR_EQUAL, LocalDate.now().minusDays(changeLogConfig.getKeepChangeLogsDays()))
+				.addCompareFilter(I_AD_ChangeLog.COLUMNNAME_Created, CompareQueryFilter.Operator.LESS_OR_EQUAL, SystemTime.asInstant().minus(changeLogConfig.getKeepChangeLogsDays(), ChronoUnit.DAYS))
 				.orderBy(I_AD_ChangeLog.COLUMNNAME_Created)
 				;
 
@@ -120,6 +121,6 @@ public class ChangeLogEntryRepository
 			query.addEqualsFilter(I_AD_ChangeLog.COLUMNNAME_AD_Org_ID, orgId);
 		}
 
-		return query.setLimit(queryLimit).create().deleteDirectlyInSelect();
+		return query.setLimit(queryLimit).create().deleteDirectly();
 	}
 }

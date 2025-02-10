@@ -761,12 +761,6 @@ public class POJOQuery<T> extends AbstractTypedQuery<T>
 	}
 
 	@Override
-	public int deleteDirectlyInSelect()
-{
-	return deleteDirectly();
-}
-
-	@Override
 	public POJOQuery<T> setLimit(@NonNull final QueryLimit limit)
 	{
 		this.limit = limit;

@@ -62,7 +62,7 @@ public class AD_ChangeLog_Delete_Old extends JavaProcess
 				deleteCount = trxManager.callInNewTrx(() -> changeLogRepository.deleteDirectly(changeLogConfig, queryLimit));
 				Loggables.withLogger(logger, Level.DEBUG).addLog("Deleted {} change log entries for {}", deleteCount, changeLogConfig);
 			}
-			while (deleteCount == limit);
+			while (deleteCount >= limit);
 		}
 		return MSG_OK;
 	}
