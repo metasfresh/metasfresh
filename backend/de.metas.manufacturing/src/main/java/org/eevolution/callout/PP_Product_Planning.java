@@ -8,6 +8,8 @@ import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.impl.ProductPlanningDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
@@ -16,6 +18,9 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.ModelValidator;
+import org.eevolution.api.ProductBOMVersionsId;
+import org.eevolution.api.impl.ProductBOMVersionsDAO;
+import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.springframework.stereotype.Component;
 
@@ -24,14 +29,13 @@ import java.util.List;
 @Callout(I_PP_Product_Planning.class)
 @Interceptor(I_PP_Product_Planning.class)
 @Component
+@RequiredArgsConstructor
 public class PP_Product_Planning
 {
-	final MaturingConfigRepository maturingConfigRepo;
-
-	public PP_Product_Planning(final MaturingConfigRepository maturingConfigRepo)
-	{
-		this.maturingConfigRepo = maturingConfigRepo;
-	}
+	@NonNull
+	private final MaturingConfigRepository maturingConfigRepo;
+	@NonNull
+	private final ProductBOMVersionsDAO bomVersionsDAO;
 
 	@Init
 	public void registerCallout()
@@ -39,7 +43,7 @@ public class PP_Product_Planning
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
-	@CalloutMethod(columnNames = {I_PP_Product_Planning.COLUMNNAME_IsMatured})
+	@CalloutMethod(columnNames = { I_PP_Product_Planning.COLUMNNAME_IsMatured })
 	public void onIsMatured(final I_PP_Product_Planning productPlanningRecord)
 	{
 		if (productPlanningRecord.isMatured())
@@ -76,5 +80,20 @@ public class PP_Product_Planning
 		{
 			throw new FillMandatoryException(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID);
 		}
+	}
+
+	@CalloutMethod(columnNames = I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID)
+	public void onBOMVersionsChanged(@NonNull final I_PP_Product_Planning productPlanningRecord)
+	{
+		final ProductBOMVersionsId bomVersionsId = ProductBOMVersionsId.ofRepoIdOrNull(productPlanningRecord.getPP_Product_BOMVersions_ID());
+		if (bomVersionsId == null)
+		{
+			return;
+		}
+
+		final I_PP_Product_BOMVersions bomVersions = bomVersionsDAO.getBOMVersions(bomVersionsId);
+		final ProductId productId = ProductId.ofRepoId(bomVersions.getM_Product_ID());
+
+		productPlanningRecord.setM_Product_ID(productId.getRepoId());
 	}
 }
