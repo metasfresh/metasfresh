@@ -1,5 +1,7 @@
 package de.metas.distribution.workflows_api.facets;
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.ImmutableSet;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.workflows_api.DistributionOrderCollector;
@@ -25,6 +27,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.function.UnaryOperator;
 
 import static de.metas.distribution.workflows_api.DDOrderReferenceCollector.extractQtyEntered;
 
@@ -40,7 +43,7 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 	private final HashSet<DistributionFacet> _result = new HashSet<>();
 	private final HashSet<DDOrderId> pendingCollectProductsFromDDOrderIds = new HashSet<>();
 	private final HashSet<DDOrderId> pendingCollectQuantitiesFromDDOrderIds = new HashSet<>();
-	private final HashSet<DistributionFacetId> seenFacetIds = new HashSet<>();
+	private final HashMultiset<DistributionFacetId> counters = HashMultiset.create();
 
 	private final HashMap<WarehouseId, ITranslatableString> warehouseNames = new HashMap<>();
 	private final HashMap<OrderId, ITranslatableString> salesOrderDocumentNos = new HashMap<>();
@@ -51,7 +54,10 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 	public Collection<DistributionFacet> getCollectedItems()
 	{
 		processPendingRequests();
-		return _result;
+
+		return _result.stream()
+				.map(facet -> facet.withHitCount(counters.count(facet.getFacetId())))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public DistributionFacetsCollection toFacetsCollection() {return DistributionFacetsCollection.ofCollection(getCollectedItems());}
@@ -76,13 +82,10 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 			return;
 		}
 
-		final DistributionFacetId facetId = DistributionFacetId.ofWarehouseFromId(warehouseId);
-		if (!seenFacetIds.add(facetId))
-		{
-			return;
-		}
-
-		collect(DistributionFacet.of(facetId, 0, getWarehouseName(warehouseId)));
+		collect(
+				DistributionFacetId.ofWarehouseFromId(warehouseId),
+				builder -> builder.caption(getWarehouseName(warehouseId))
+		);
 	}
 
 	private void collectWarehouseTo(final I_DD_Order ddOrder)
@@ -93,13 +96,10 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 			return;
 		}
 
-		final DistributionFacetId facetId = DistributionFacetId.ofWarehouseToId(warehouseId);
-		if (!seenFacetIds.add(facetId))
-		{
-			return;
-		}
-
-		collect(DistributionFacet.of(facetId, 0, getWarehouseName(warehouseId)));
+		collect(
+				DistributionFacetId.ofWarehouseToId(warehouseId),
+				builder -> builder.caption(getWarehouseName(warehouseId))
+		);
 	}
 
 	private void collectSalesOrder(final I_DD_Order ddOrder)
@@ -110,13 +110,10 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 			return;
 		}
 
-		final DistributionFacetId facetId = DistributionFacetId.ofSalesOrderId(salesOrderId);
-		if (!seenFacetIds.add(facetId))
-		{
-			return;
-		}
-
-		collect(DistributionFacet.of(facetId, 0, getSalesOrderDocumentNo(salesOrderId)));
+		collect(
+				DistributionFacetId.ofSalesOrderId(salesOrderId),
+				builder -> builder.caption(getSalesOrderDocumentNo(salesOrderId))
+		);
 	}
 
 	private void collectManufacturingOrder(final I_DD_Order ddOrder)
@@ -127,25 +124,20 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 			return;
 		}
 
-		final DistributionFacetId facetId = DistributionFacetId.ofManufacturingOrderId(manufacturingOrderId);
-		if (!seenFacetIds.add(facetId))
-		{
-			return;
-		}
-
-		collect(DistributionFacet.of(facetId, 0, getManufacturingOrderDocumentNo(manufacturingOrderId)));
+		collect(
+				DistributionFacetId.ofManufacturingOrderId(manufacturingOrderId),
+				builder -> builder.caption(getManufacturingOrderDocumentNo(manufacturingOrderId))
+		);
 	}
 
 	private void collectDatePromised(final I_DD_Order ddOrder)
 	{
 		final LocalDate datePromised = TimeUtil.asLocalDate(ddOrder.getDatePromised());
-		final DistributionFacetId facetId = DistributionFacetId.ofDatePromised(datePromised);
-		if (!seenFacetIds.add(facetId))
-		{
-			return;
-		}
 
-		collect(DistributionFacet.of(facetId, datePromised.toEpochDay(), TranslatableStrings.date(datePromised)));
+		collect(
+				DistributionFacetId.ofDatePromised(datePromised),
+				builder -> builder.sortNo(datePromised.toEpochDay()).caption(TranslatableStrings.date(datePromised))
+		);
 	}
 
 	private void collectProducts(final I_DD_Order ddOrder)
@@ -155,13 +147,10 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 
 	private void collectProduct(final ProductId productId)
 	{
-		final DistributionFacetId facetId = DistributionFacetId.ofProductId(productId);
-		if (!seenFacetIds.add(facetId))
-		{
-			return;
-		}
-
-		collect(DistributionFacet.of(facetId, 0, getProductName(productId)));
+		collect(
+				DistributionFacetId.ofProductId(productId),
+				builder -> builder.caption(getProductName(productId))
+		);
 	}
 
 	private void collectQuantities(final I_DD_Order ddOrder)
@@ -176,17 +165,29 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 
 	private void collectQuantity(final Quantity qty)
 	{
-		final DistributionFacetId facetId = DistributionFacetId.ofQuantity(qty);
-		if (!seenFacetIds.add(facetId))
-		{
-			return;
-		}
-
-		final long sortNo = qty.toBigDecimal().multiply(new BigDecimal("10000")).longValue();
-		collect(DistributionFacet.of(facetId, sortNo, TranslatableStrings.quantity(qty.toBigDecimal(), qty.getUOMSymbol())));
+		collect(
+				DistributionFacetId.ofQuantity(qty),
+				builder -> builder
+						.sortNo(qty.toBigDecimal().multiply(new BigDecimal("10000")).longValue())
+						.caption(TranslatableStrings.quantity(qty.toBigDecimal(), qty.getUOMSymbol()))
+		);
 	}
 
-	private void collect(DistributionFacet facet) {_result.add(facet);}
+	private void collect(
+			@NonNull final DistributionFacetId facetId,
+			@NonNull final UnaryOperator<DistributionFacet.DistributionFacetBuilder> facetSupplier)
+	{
+		final boolean isFirst = !counters.contains(facetId);
+		counters.add(facetId);
+
+		if (isFirst)
+		{
+			final DistributionFacet.DistributionFacetBuilder facetBuilder = DistributionFacet.builder().facetId(facetId);
+			facetSupplier.apply(facetBuilder);
+			final DistributionFacet facet = facetBuilder.build();
+			_result.add(facet);
+		}
+	}
 
 	private ITranslatableString getWarehouseName(final WarehouseId warehouseId)
 	{
