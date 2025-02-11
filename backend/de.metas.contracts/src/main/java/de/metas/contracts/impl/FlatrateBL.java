@@ -248,9 +248,6 @@ public class FlatrateBL implements IFlatrateBL
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	@NonNull private final ModularContractSettingsRepository modularContractSettingsRepository = SpringContextHolder.instance.getBean(ModularContractSettingsRepository.class);
-	@NonNull private final ModularContractLogDAO modularContractLogDAO = SpringContextHolder.instance.getBean(ModularContractLogDAO.class);
-
 	@NonNull private final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
