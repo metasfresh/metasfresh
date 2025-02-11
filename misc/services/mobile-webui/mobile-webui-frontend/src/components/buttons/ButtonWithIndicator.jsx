@@ -26,6 +26,7 @@ const ButtonWithIndicator = ({
   onClick,
   children,
   additionalCssClass,
+  ...otherProps
 }) => {
   const id = computeId({ idParam, captionKey });
   const caption = computeCaption({ caption: captionParam, captionKey });
@@ -47,12 +48,14 @@ const ButtonWithIndicator = ({
     hazardSymbols,
     allergens,
     isDanger,
+    otherProps,
   });
 
   return (
     <button
       id={id}
       data-testid={testId}
+      {...extractTestDataProps(otherProps)}
       className={cx('button is-outlined is-fullwidth complete-btn', { 'is-danger': isDanger }, additionalCssClass)}
       disabled={!!disabled}
       onClick={fireOnClick}
@@ -156,4 +159,14 @@ const computeCaption = ({ captionKey, caption }) => {
   } else {
     return '';
   }
+};
+
+const extractTestDataProps = (props) => {
+  if (!props) return {};
+  return Object.keys(props).reduce((acc, key) => {
+    if (key.startsWith('data')) {
+      acc[key] = props[key];
+    }
+    return acc;
+  }, {});
 };

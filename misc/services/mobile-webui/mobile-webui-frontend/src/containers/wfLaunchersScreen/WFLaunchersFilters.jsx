@@ -182,6 +182,7 @@ const WFLaunchersFilters = ({
             typeFASIconName={resultsCountLoading ? 'fa-spinner fa-spin' : null}
             disabled={resultsCountLoading}
             onClick={onApplyFilters}
+            data-hitcount={resultsCount}
           />
         )}
         <ButtonWithIndicator id="clearFilters" captionKey="general.filter.clearFilters" onClick={onClearFilters} />
@@ -232,6 +233,7 @@ const Facet = ({ facetId, groupId, caption, active, hitCount, onClick }) => {
   return (
     <ButtonWithIndicator
       testId={facetId}
+      data-hitcount={hitCount}
       additionalCssClass="facet-button"
       caption={captionEffective}
       typeFASIconName={active ? 'fa-check' : null}
