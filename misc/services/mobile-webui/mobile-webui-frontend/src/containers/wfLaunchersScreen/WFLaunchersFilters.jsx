@@ -221,10 +221,15 @@ FacetGroup.propTypes = {
   onClick: PropTypes.func.isRequired,
 };
 
-const Facet = ({ facetId, groupId, caption, active, onClick }) => {
+const Facet = ({ facetId, groupId, caption, active, hitCount, onClick }) => {
+  let captionEffective = caption;
+  if (hitCount != null && hitCount >= 0) {
+    captionEffective += ` (${hitCount})`;
+  }
+
   return (
     <ButtonWithIndicator
-      caption={caption}
+      caption={captionEffective}
       typeFASIconName={active ? 'fa-check' : null}
       onClick={() => onClick({ facetId, groupId })}
     />
@@ -235,6 +240,7 @@ Facet.propTypes = {
   groupId: PropTypes.string.isRequired,
   caption: PropTypes.string.isRequired,
   active: PropTypes.bool.isRequired,
+  hitCount: PropTypes.number,
   onClick: PropTypes.func.isRequired,
 };
 

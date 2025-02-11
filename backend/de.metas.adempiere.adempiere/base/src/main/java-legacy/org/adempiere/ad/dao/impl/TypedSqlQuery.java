@@ -1617,16 +1617,46 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 	@Override
 	public int deleteDirectly()
 	{
+		if(limit.isNoLimit())
+		{
+			return deleteDirectlyFrom();
+		}
+		else
+		{
+			return deleteDirectlyInSelect();
+		}
+	}
+
+	private int deleteDirectlyFrom()
+	{
 		// NOTE: avoid leading/trailing "spaces" in sqlDeleteFrom and fromClause,
 		// in order to be matched by our migration scripts "dontLog" matcher.
 		// In case of fromClause we need a trailing space.
 		final StringBuilder sqlDeleteFrom = new StringBuilder("DELETE");
 		final StringBuilder fromClause = new StringBuilder("FROM ").append(getTableName()).append(" ");
-		final String groupByClause = null;
-		final String sql = buildSQL(sqlDeleteFrom, fromClause, groupByClause, false); // useOrderByClause=false
+		final String sql = buildSQL(sqlDeleteFrom, fromClause, null, false);
 		final Object[] params = getParametersEffective().toArray();
 
 		return DB.executeUpdateAndThrowExceptionOnFail(sql, params, trxName);
+	}
+
+
+	private int deleteDirectlyInSelect()
+	{
+		final StringBuilder sqlDelete = new StringBuilder("DELETE FROM ")
+				.append(getTableName())
+				.append(" WHERE ")
+				.append(getKeyColumnName())
+				.append(" IN ( ");
+
+		final StringBuilder selectFromClause = new StringBuilder("FROM ").append(getTableName()).append(" ");
+		final StringBuilder sqlSelectClause = new StringBuilder("SELECT ").append(getKeyColumnName()).append(" ");
+		final String selectSql = buildSQL(sqlSelectClause, selectFromClause, null, true);
+		final Object[] params = getParametersEffective().toArray();
+
+		sqlDelete.append(selectSql)
+				.append(" )");
+		return DB.executeUpdateAndThrowExceptionOnFail(sqlDelete.toString(), params, trxName);
 	}
 
 	/**
