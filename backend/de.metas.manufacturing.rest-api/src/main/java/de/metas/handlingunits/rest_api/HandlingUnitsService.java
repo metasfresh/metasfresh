@@ -37,6 +37,7 @@ import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.common.handlingunits.JsonHUType;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
@@ -52,14 +53,19 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.HUIdAndQRCode;
 import de.metas.handlingunits.movement.MoveHUCommand;
+import de.metas.handlingunits.movement.MoveHURequestItem;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.handlingunits.report.labels.HULabelDirectPrintRequest;
 import de.metas.handlingunits.report.labels.HULabelService;
+import de.metas.handlingunits.rest_api.move_hu.BulkMoveHURequest;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.i18n.TranslatableStrings;
@@ -98,7 +104,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static de.metas.handlingunits.rest_api.JsonHUHelper.fromJsonClearanceStatus;
 import static de.metas.handlingunits.rest_api.JsonHUHelper.toJsonClearanceStatus;
@@ -136,7 +144,11 @@ public class HandlingUnitsService
 	}
 
 	@NonNull
-	public JsonHU getFullHU(@NonNull final HuId huId, @NonNull final String adLanguage, final boolean getAllowedClearanceStatuses)
+	public JsonHU getFullHU(
+			@NonNull final HuId huId,
+			@Nullable final HUQRCode expectedQRCode,
+			@NonNull final String adLanguage,
+			final boolean includeAllowedClearanceStatuses)
 	{
 		final I_M_HU hu = handlingUnitsBL.getById(huId);
 		if (hu == null)
@@ -149,11 +161,12 @@ public class HandlingUnitsService
 			throw new AdempiereException("Not a physical HU: " + huId);
 		}
 
-		final LoadJsonHURequest loadJsonHURequest = LoadJsonHURequest
-				.ofHUAndLanguage(hu, adLanguage)
-				.withGetAllowedClearanceStatuses(getAllowedClearanceStatuses);
-
-		return toJson(loadJsonHURequest);
+		return toJson(LoadJsonHURequest.builder()
+							  .hu(hu)
+							  .expectedQRCode(expectedQRCode)
+							  .adLanguage(adLanguage)
+							  .getAllowedClearanceStatuses(includeAllowedClearanceStatuses)
+							  .build());
 	}
 
 	@NonNull
@@ -161,6 +174,7 @@ public class HandlingUnitsService
 	{
 		final I_M_HU hu = loadJsonHURequest.getHu();
 		final String adLanguage = loadJsonHURequest.getAdLanguage();
+		final HUQRCode expectedQRCode = loadJsonHURequest.getExpectedQRCode();
 
 		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext();
 
@@ -169,22 +183,27 @@ public class HandlingUnitsService
 		final boolean isAggregatedTU = handlingUnitsBL.isAggregateHU(hu);
 
 		final JsonHUAttributes jsonHUAttributes = toJsonHUAttributes(huContext, hu, adLanguage);
-
+		final JsonHUType huType = toJsonHUType(hu);
 		final JsonHU.JsonHUBuilder jsonHUBuilder = JsonHU.builder()
 				.id(String.valueOf(huId.getRepoId()))
 				.huStatus(hu.getHUStatus())
 				.huStatusCaption(TranslatableStrings.adRefList(X_M_HU.HUSTATUS_AD_Reference_ID, hu.getHUStatus()).translate(adLanguage))
 				.displayName(handlingUnitsBL.getDisplayName(hu))
-				.qrCode(toJsonHUQRCode(huId))
+				.qrCode(toJsonHUQRCode(huId, expectedQRCode))
 				.jsonHUType(toJsonHUType(hu))
 				.products(getProductStorage(huContext, hu))
 				.attributes2(jsonHUAttributes)
 				.clearanceNote(hu.getClearanceNote())
-				.clearanceStatus(getClearanceStatusInfo(hu));
+				.clearanceStatus(getClearanceStatusInfo(hu))
+				.packingInstructionName(getEffectivePIName(hu));
 
 		if (isAggregatedTU)
 		{
 			jsonHUBuilder.numberOfAggregatedHUs(handlingUnitsBL.getTUsCount(hu).toInt());
+		}
+		if (huType != JsonHUType.LU)
+		{
+			jsonHUBuilder.topLevelParentId(extractTopLevelParentHUIdValue(hu));
 		}
 
 		final WarehouseAndLocatorValue warehouseAndLocatorValue = getWarehouseAndLocatorValue(hu);
@@ -249,34 +268,28 @@ public class HandlingUnitsService
 	}
 
 	@NonNull
-	public ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<HuId> huIdSupplier, final boolean getAllowedClearanceStatuses)
-	{
-		return getByIdSupplier(huIdSupplier, getAllowedClearanceStatuses, null);
-	}
-
-	@NonNull
-	public ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(
-			@NonNull final Supplier<HuId> huIdSupplier,
-			final boolean getAllowedClearanceStatuses,
-			@Nullable final List<AttributeCode> orderedAttributeCodes)
+	public ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<GetByIdRequest> requestSupplier)
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 
 		try
 		{
-			final HuId huId = huIdSupplier.get();
-			if (huId == null)
+			final GetByIdRequest request = requestSupplier.get();
+			if (request == null)
 			{
 				return ResponseEntity.notFound().build();
 			}
 
-			final JsonHU jsonHU = getFullHU(huId, adLanguage, getAllowedClearanceStatuses)
+			final HuId huId = request.getHuId();
+			final HUQRCode expectedQRCode = request.getExpectedQRCode();
+			final boolean includeAllowedClearanceStatuses = request.isIncludeAllowedClearanceStatuses();
+			final List<AttributeCode> orderedAttributeCodes = request.getOrderedAttributeCodes();
+
+			final JsonHU jsonHU = getFullHU(huId, expectedQRCode, adLanguage, includeAllowedClearanceStatuses)
 					.withIsDisposalPending(inventoryCandidateService.isDisposalPending(huId))
 					.withDisplayedAttributesOnly(orderedAttributeCodes != null ? AttributeCode.toStringList(orderedAttributeCodes) : null);
 
-			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
-					.result(jsonHU)
-					.build());
+			return ResponseEntity.ok(JsonGetSingleHUResponse.builder().result(jsonHU).build());
 		}
 		catch (final Exception e)
 		{
@@ -312,6 +325,47 @@ public class HandlingUnitsService
 						.caption(printProcess.getName().translate(adLanguage))
 						.build())
 				.sorted(Comparator.comparing(JsonHULabelPrintingOption::getCaption))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public List<JsonHU> getHUsForDisplayableQrCode(@NonNull final String displayableQrCode, @NonNull final String adLanguage)
+	{
+		final Set<HuId> huIdSet = huQRCodeService.streamHUIdsByDisplayableQrCode(displayableQrCode)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return handlingUnitsBL.getByIds(huIdSet)
+				.stream()
+				.map(hu -> LoadJsonHURequest.ofHUAndLanguage(hu, adLanguage))
+				.map(this::toJson)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public List<JsonHU> getHUsByQrCode(@NonNull final JsonGetByQRCodeRequest request, @NonNull final String adLanguage)
+	{
+		return getByIds(resolveHuIds(request), adLanguage, HUQRCode.fromGlobalQRCodeJsonString(request.getQrCode()));
+	}
+
+	@NonNull
+	public List<JsonHU> getByIds(
+			@NonNull final Set<HuId> huIds,
+			@NonNull final String adLanguage,
+			@Nullable final HUQRCode withExpectedQrCode)
+	{
+		if (huIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return handlingUnitsBL.getByIds(huIds)
+				.stream()
+				.map(hu -> LoadJsonHURequest.builder()
+						.hu(hu)
+						.adLanguage(adLanguage)
+						.expectedQRCode(withExpectedQrCode)
+						.build())
+				.map(this::toJson)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -441,11 +495,19 @@ public class HandlingUnitsService
 	}
 
 	@Nullable
-	private JsonHUQRCode toJsonHUQRCode(@NonNull final HuId huId)
+	private JsonHUQRCode toJsonHUQRCode(@NonNull final HuId huId, @Nullable final HUQRCode expectedQRCode)
 	{
-		return huQRCodeService.getFirstQRCodeByHuIdIfExists(huId)
-				.map(HandlingUnitsService::toJsonHUQRCode)
-				.orElse(null);
+		if (expectedQRCode != null)
+		{
+			huQRCodeService.assertQRCodeAssignedToHU(expectedQRCode, huId);
+			return toJsonHUQRCode(expectedQRCode);
+		}
+		else
+		{
+			return huQRCodeService.getSingleQRCodeByHuIdOrEmpty(huId)
+					.map(HandlingUnitsService::toJsonHUQRCode)
+					.orElse(null);
+		}
 	}
 
 	public static JsonHUQRCode toJsonHUQRCode(@NonNull final HUQRCode qrCode)
@@ -484,14 +546,41 @@ public class HandlingUnitsService
 				.build();
 	}
 
-	public void move(@NonNull final MoveHURequest request)
+	@NonNull
+	public ImmutableSet<HuId> move(@NonNull final MoveHURequest request)
 	{
+		final MoveHURequestItem moveHURequestItem = MoveHURequestItem.builder()
+				.huIdAndQRCode(HUIdAndQRCode.builder()
+									   .huId(request.getHuId())
+									   .huQRCode(request.getHuQRCode())
+									   .build())
+				.numberOfTUs(request.getNumberOfTUs())
+				.build();
+
+		return MoveHUCommand.builder()
+				.huQRCodesService(huQRCodeService)
+				.requestItems(ImmutableSet.of(moveHURequestItem))
+				.targetQRCode(request.getTargetQRCode())
+				.build()
+				.execute();
+	}
+
+	public void bulkMove(@NonNull final BulkMoveHURequest request)
+	{
+		final Map<HUQRCodeUniqueId, HuId> huQrCodeId2HuId = huQRCodeService.getHuIds(request.getHuQrCodes());
+
+		final Set<MoveHURequestItem> moveHURequestItems = request.getHuQrCodes()
+				.stream()
+				.map(huQrCode -> HUIdAndQRCode.builder()
+						.huQRCode(huQrCode)
+						.huId(huQrCodeId2HuId.get(huQrCode.getId()))
+						.build())
+				.map(MoveHURequestItem::ofHUIdAndQRCode)
+				.collect(ImmutableSet.toImmutableSet());
+
 		MoveHUCommand.builder()
 				.huQRCodesService(huQRCodeService)
-				.husToMove(ImmutableSet.of(HUIdAndQRCode.builder()
-						.huQRCode(request.getHuQRCode())
-						.huId(request.getHuId())
-						.build()))
+				.requestItems(moveHURequestItems)
 				.targetQRCode(request.getTargetQRCode())
 				.build()
 				.execute();
@@ -615,6 +704,103 @@ public class HandlingUnitsService
 		throw new AdempiereException("MetasfreshId or QRCode must be provided!")
 				.appendParametersToMessage()
 				.setParameter("huIdentifier", jsonHuIdentifier);
+	}
+
+	@NonNull
+	private Set<HuId> resolveHuIds(@NonNull final JsonGetByQRCodeRequest request)
+	{
+		final HUQRCodeAssignment huqrCodeAssignment = huQRCodeService
+				.getHUAssignmentByQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getQrCode()))
+				.orElse(null);
+
+		if (huqrCodeAssignment == null)
+		{
+			return ImmutableSet.of();
+		}
+
+		if (request.getUpperLevelLocatingQrCode() == null)
+		{
+			return huqrCodeAssignment.getHuIds();
+		}
+
+		return resolveHuIdsBy(GlobalQRCode.ofString(request.getUpperLevelLocatingQrCode()), huqrCodeAssignment);
+	}
+
+	@NonNull
+	private Set<HuId> resolveHuIdsBy(@NonNull final GlobalQRCode locatingQrCode, @NonNull final HUQRCodeAssignment huqrCodeAssignment)
+	{
+		if (HUQRCode.isTypeMatching(locatingQrCode))
+		{
+			return resolveHuIdsByParentHUQr(HUQRCode.fromGlobalQRCode(locatingQrCode), huqrCodeAssignment);
+		}
+		else if (LocatorQRCode.isTypeMatching(locatingQrCode))
+		{
+			return resolveHuIdsByLocator(LocatorQRCode.ofGlobalQRCode(locatingQrCode), huqrCodeAssignment);
+		}
+		else
+		{
+			throw new AdempiereException("Unknown type for qrCode")
+					.appendParametersToMessage()
+					.setParameter("qrCode", locatingQrCode);
+		}
+	}
+
+	@NonNull
+	private ImmutableSet<HuId> resolveHuIdsByLocator(@NonNull final LocatorQRCode locatorQRCode, @NonNull final HUQRCodeAssignment targetQrCodeAssignment)
+	{
+		return handlingUnitsDAO.createHUQueryBuilder()
+				.addOnlyHUIds(targetQrCodeAssignment.getHuIds())
+				.addOnlyInLocatorId(locatorQRCode.getLocatorId())
+				.setOnlyTopLevelHUs(false)
+				.listIds();
+	}
+
+	@NonNull
+	private ImmutableSet<HuId> resolveHuIdsByParentHUQr(@NonNull final HUQRCode parentHUQrCode, @NonNull final HUQRCodeAssignment targetQrCodeAssignment)
+	{
+		final HUQRCodeAssignment parentQrCodeAssignment = huQRCodeService
+				.getHUAssignmentByQRCode(parentHUQrCode)
+				.orElseThrow(() -> new AdempiereException("No HU found for parent QR Code!")
+						.appendParametersToMessage()
+						.setParameter("parentHUQrCode", parentHUQrCode));
+
+		if (!parentQrCodeAssignment.isSingleHUAssigned())
+		{
+			throw new AdempiereException("More than one HU assigned to parentHUQRCode!")
+					.appendParametersToMessage()
+					.setParameter("parentHUQrCode", parentHUQrCode)
+					.setParameter("assignedHUs", parentQrCodeAssignment
+							.getHuIds()
+							.stream()
+							.map(HuId::getRepoId)
+							.map(String::valueOf)
+							.collect(Collectors.joining(",", "[", "]")));
+		}
+
+		return handlingUnitsDAO.retrieveIncludedHUs(parentQrCodeAssignment.getSingleHUId())
+				.stream()
+				.map(I_M_HU::getM_HU_ID)
+				.map(HuId::ofRepoId)
+				.filter(targetQrCodeAssignment::isAssignedToHuId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Nullable
+	private String getEffectivePIName(@NonNull final I_M_HU hu)
+	{
+		return Optional.ofNullable(handlingUnitsBL.getEffectivePI(hu))
+				.map(I_M_HU_PI::getName)
+				.orElse(null);
+	}
+
+	@Nullable
+	private String extractTopLevelParentHUIdValue(@NonNull final I_M_HU hu)
+	{
+		return Optional.ofNullable(handlingUnitsBL.getTopLevelParent(hu))
+				.map(I_M_HU::getM_HU_ID)
+				.filter(parentHUId -> parentHUId != hu.getM_HU_ID())
+				.map(String::valueOf)
+				.orElse(null);
 	}
 
 	private static @NonNull ResponseEntity<JsonGetSingleHUResponse> toBadRequestResponseEntity(final Exception e)

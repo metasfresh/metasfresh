@@ -30,6 +30,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.mobileui.config.HUManagerProfileRepository;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.rest_api.GetByIdRequest;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.handlingunits.rest_api.JsonGetByQRCodeRequest;
 import de.metas.mobile.application.service.MobileApplicationService;
@@ -75,10 +76,11 @@ public class HUManagerRestController
 	{
 		assertApplicationAccess();
 
-		return handlingUnitsService.getByIdSupplier(
-				() -> getHuId(request.getQrCode()),
-				request.isIncludeAllowedClearanceStatuses(),
-				getDisplayedAttributeCodes()
+		return handlingUnitsService.getByIdSupplier(() -> GetByIdRequest.builder()
+				.huId(getHuId(request.getQrCode()))
+				.expectedQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getQrCode()))
+				.orderedAttributeCodes(getDisplayedAttributeCodes())
+				.build()
 		);
 	}
 
