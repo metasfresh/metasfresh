@@ -32,7 +32,7 @@ import lombok.With;
 import javax.annotation.Nullable;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class LoadJsonHURequest
 {
 	@With
@@ -54,5 +54,11 @@ public class LoadJsonHURequest
 				.adLanguage(adLanguage)
 				.hu(hu)
 				.build();
+	}
+
+	@NonNull
+	public LoadJsonHURequest withIncludedHU(@NonNull final I_M_HU includedHU)
+	{
+		return toBuilder().hu(includedHU).expectedQRCode(null).build();
 	}
 }

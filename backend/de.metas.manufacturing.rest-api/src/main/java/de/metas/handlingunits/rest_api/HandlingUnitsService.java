@@ -490,7 +490,7 @@ public class HandlingUnitsService
 	{
 		return handlingUnitsDAO.retrieveIncludedHUs(request.getHu())
 				.stream()
-				.map(includedHU -> toJson(request.withHu(includedHU)))
+				.map(includedHU -> toJson(request.withIncludedHU(includedHU)))
 				.collect(ImmutableList.toImmutableList());
 	}
 
