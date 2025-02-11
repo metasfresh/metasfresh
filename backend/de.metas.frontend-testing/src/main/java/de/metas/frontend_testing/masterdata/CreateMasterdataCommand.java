@@ -19,6 +19,9 @@ import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.sales_order.SalesOrderCreateCommand;
+import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
+import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseResponse;
+import de.metas.frontend_testing.masterdata.warehouse.WarehouseCommand;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -61,6 +64,7 @@ public class CreateMasterdataCommand
 		// IMPORTANT: the order is very important
 		final ImmutableMap<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
 		final ImmutableMap<String, JsonCreateProductResponse> products = createProducts();
+		final ImmutableMap<String, JsonWarehouseResponse> warehouses = createWarehouses();
 		final Map<String, JsonPackingInstructionsResponse> packingInstructions = createPackingInstructions();
 		createMobileConfiguration();
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
@@ -69,6 +73,7 @@ public class CreateMasterdataCommand
 		return JsonCreateMasterdataResponse.builder()
 				.bpartners(bpartners)
 				.products(products)
+				.warehouses(warehouses)
 				.packingInstructions(packingInstructions)
 				.handlingUnits(hus)
 				.salesOrders(salesOrders)
@@ -114,6 +119,21 @@ public class CreateMasterdataCommand
 				.context(context)
 				.request(request)
 				.identifier(identifier)
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonWarehouseResponse> createWarehouses()
+	{
+		return process(request.getWarehouses(), this::createWarehouses);
+	}
+
+	private JsonWarehouseResponse createWarehouses(String identifier, JsonWarehouseRequest request)
+	{
+		return WarehouseCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
 				.build()
 				.execute();
 	}

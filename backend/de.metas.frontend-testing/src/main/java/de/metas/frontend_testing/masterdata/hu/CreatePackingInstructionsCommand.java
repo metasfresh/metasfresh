@@ -70,7 +70,7 @@ public class CreatePackingInstructionsCommand
 			@NonNull final Identifier identifier,
 			@NonNull final HuUnitType huUnitType)
 	{
-		final String piName = identifier.toAsUniqueString();
+		final String piName = identifier.toUniqueString();
 
 		final I_M_HU_PI huPiRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_PI.class);
 		huPiRecord.setName(piName);

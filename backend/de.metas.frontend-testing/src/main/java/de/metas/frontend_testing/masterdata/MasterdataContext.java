@@ -1,6 +1,8 @@
 package de.metas.frontend_testing.masterdata;
 
 import de.metas.bpartner.BPGroupId;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
@@ -22,6 +24,8 @@ public class MasterdataContext
 	public static final LocalDate DEFAULT_ValidFrom = LocalDate.parse("2000-01-01");
 	public static final ProductCategoryId PRODUCT_CATEGORY_STANDARD_ID = ProductCategoryId.ofRepoId(1000000);
 	public static final String DEFAULT_TaxCategory_InternalName = "Normal";
+	public static final BPartnerId METASFRESH_ORG_BPARTNER_ID = BPartnerId.ofRepoId(2155894);
+	public static final BPartnerLocationId METASFRESH_ORG_BPARTNER_LOCATION_ID = BPartnerLocationId.ofRepoId(METASFRESH_ORG_BPARTNER_ID, 2202690);
 
 	private final HashMap<TypeAndIdentifier, RepoIdAware> identifiers = new HashMap<>();
 
@@ -35,7 +39,7 @@ public class MasterdataContext
 					+ "\n prevId=" + prevId
 					+ "\n newId=" + id);
 		}
-		
+
 		identifiers.put(typeAndIdentifier, id);
 	}
 

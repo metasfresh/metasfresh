@@ -61,7 +61,7 @@ public class CreateBPartnerCommand
 		else
 		{
 			this.bpIdentifier = suggestedIdentifier;
-			this.bpValue = suggestedIdentifier.toAsUniqueString();
+			this.bpValue = suggestedIdentifier.toUniqueString();
 		}
 	}
 

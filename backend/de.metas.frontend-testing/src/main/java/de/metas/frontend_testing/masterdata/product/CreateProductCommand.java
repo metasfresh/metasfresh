@@ -79,7 +79,7 @@ public class CreateProductCommand
 		else
 		{
 			identifier = suggestedIdentifier;
-			value = suggestedIdentifier.toAsUniqueString();
+			value = suggestedIdentifier.toUniqueString();
 		}
 
 		final I_M_Product productRecord = newInstanceOutOfTrx(I_M_Product.class);

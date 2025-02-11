@@ -6,6 +6,7 @@ import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
+import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -20,6 +21,7 @@ public class JsonCreateMasterdataRequest
 {
 	@Nullable JsonMobileConfigRequest mobileConfig;
 	@Nullable Map<String, JsonCreateBPartnerRequest> bpartners;
+	@Nullable Map<String, JsonWarehouseRequest> warehouses;
 	@Nullable Map<String, JsonCreateProductRequest> products;
 	@Nullable Map<String, JsonPackingInstructionsRequest> packingInstructions;
 	@Nullable Map<String, JsonCreateHURequest> handlingUnits;

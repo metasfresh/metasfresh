@@ -59,5 +59,5 @@ public class Identifier
 	@JsonValue
 	public String getAsString() {return string;}
 
-	public String toAsUniqueString() {return string + "_" + Instant.now().toString();}
+	public String toUniqueString() {return string + "_" + Instant.now().toString();}
 }
