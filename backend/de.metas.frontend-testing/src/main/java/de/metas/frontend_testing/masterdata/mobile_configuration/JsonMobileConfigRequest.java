@@ -15,6 +15,7 @@ public class JsonMobileConfigRequest
 {
 	@Nullable MobileAuthMethod defaultAuthMethod;
 	@Nullable Picking picking;
+	@Nullable Distribution distribution;
 
 	//
 	//
@@ -28,5 +29,17 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean allowPickingAnyHU;
 		@Nullable CreateShipmentPolicy createShipmentPolicy;
 		@Nullable Boolean alwaysSplitHUsEnabled;
+	}
+	
+	//
+ 	//
+ 	//
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class Distribution
+	{
+		@Nullable Boolean allowPickingAnyHU;
 	}
 }

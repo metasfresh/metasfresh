@@ -26,6 +26,7 @@ public class WarehouseCommand
 		final String value = identifier.toUniqueString();
 
 		final I_M_Warehouse warehouseRecord = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+		warehouseRecord.setAD_Org_ID(MasterdataContext.ORG_ID.getRepoId());
 		warehouseRecord.setValue(value);
 		warehouseRecord.setName(value);
 		warehouseRecord.setSeparator("*");
@@ -40,7 +41,8 @@ public class WarehouseCommand
 		warehouseBL.getOrCreateDefaultLocator(warehouseId);
 
 		return JsonWarehouseResponse.builder()
-				.warehouseCode(value)
+				.warehouseCode(warehouseRecord.getValue())
+				.warehouseName(warehouseRecord.getName())
 				.build();
 	}
 }

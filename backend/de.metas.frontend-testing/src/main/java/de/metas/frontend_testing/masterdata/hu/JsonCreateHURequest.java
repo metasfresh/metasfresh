@@ -14,6 +14,6 @@ import java.math.BigDecimal;
 public class JsonCreateHURequest
 {
 	@NonNull Identifier product;
-	@NonNull String warehouse;
+	@NonNull Identifier warehouse;
 	@NonNull BigDecimal qty;
 }

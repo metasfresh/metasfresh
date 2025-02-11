@@ -10,4 +10,5 @@ import lombok.extern.jackson.Jacksonized;
 public class JsonWarehouseResponse
 {
 	String warehouseCode;
+	String warehouseName;
 }

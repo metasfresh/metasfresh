@@ -6,9 +6,12 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
+import de.metas.product.ResourceId;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
+import org.compiere.util.Env;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
@@ -18,6 +21,7 @@ import java.util.stream.Collectors;
 
 public class MasterdataContext
 {
+	public static final ClientId CLIENT_ID = ClientId.METASFRESH;
 	public static final OrgId ORG_ID = OrgId.MAIN;
 	public static final BPGroupId BP_GROUP_ID = BPGroupId.STANDARD;
 	public static final CountryId COUNTRY_ID = CountryId.GERMANY;
@@ -26,6 +30,7 @@ public class MasterdataContext
 	public static final String DEFAULT_TaxCategory_InternalName = "Normal";
 	public static final BPartnerId METASFRESH_ORG_BPARTNER_ID = BPartnerId.ofRepoId(2155894);
 	public static final BPartnerLocationId METASFRESH_ORG_BPARTNER_LOCATION_ID = BPartnerLocationId.ofRepoId(METASFRESH_ORG_BPARTNER_ID, 2202690);
+	public static final ResourceId DEFAULT_PLANT_ID = ResourceId.ofRepoId(540006);
 
 	private final HashMap<TypeAndIdentifier, RepoIdAware> identifiers = new HashMap<>();
 
@@ -43,7 +48,7 @@ public class MasterdataContext
 		identifiers.put(typeAndIdentifier, id);
 	}
 
-	public <T extends RepoIdAware> T getIdentifier(@NonNull final Identifier identifier, final Class<T> idClass)
+	public <T extends RepoIdAware> T getId(@NonNull final Identifier identifier, final Class<T> idClass)
 	{
 		final TypeAndIdentifier typeAndIdentifier = TypeAndIdentifier.of(idClass, identifier);
 		//noinspection unchecked
@@ -76,6 +81,8 @@ public class MasterdataContext
 			return result.get(0);
 		}
 	}
+
+	public @NonNull String getAdLanguage() {return Env.getADLanguageOrBaseLanguage();}
 
 	//
 	//

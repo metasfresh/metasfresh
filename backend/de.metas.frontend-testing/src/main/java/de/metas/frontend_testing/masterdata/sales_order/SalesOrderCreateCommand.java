@@ -11,6 +11,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 
@@ -41,7 +42,8 @@ public class SalesOrderCreateCommand
 	private JsonSalesOrderCreateResponse execute0()
 	{
 		this.salesOrderFactory = OrderFactory.newSalesOrder()
-				.shipBPartner(context.getIdentifier(request.getBpartner(), BPartnerId.class))
+				.shipBPartner(context.getId(request.getBpartner(), BPartnerId.class))
+				.warehouseId(context.getId(request.getWarehouse(), WarehouseId.class))
 				.datePromised(request.getDatePromised());
 
 		request.getLines().forEach(this::createOrderLine);
@@ -55,11 +57,11 @@ public class SalesOrderCreateCommand
 
 	private void createOrderLine(final JsonSalesOrderCreateRequest.Line salesOrderLine)
 	{
-		final ProductId productId = context.getIdentifier(salesOrderLine.getProduct(), ProductId.class);
+		final ProductId productId = context.getId(salesOrderLine.getProduct(), ProductId.class);
 		final I_C_UOM uom = productBL.getStockUOM(productId);
 		final Quantity qty = Quantity.of(salesOrderLine.getQty(), uom);
 		final HUPIItemProductId piItemProductId = salesOrderLine.getPiItemProduct() != null
-				? context.getIdentifier(salesOrderLine.getPiItemProduct(), HUPIItemProductId.class)
+				? context.getId(salesOrderLine.getPiItemProduct(), HUPIItemProductId.class)
 				: null;
 
 		salesOrderFactory.newOrderLine()

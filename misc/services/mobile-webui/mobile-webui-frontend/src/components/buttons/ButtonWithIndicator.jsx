@@ -13,6 +13,7 @@ const SYMBOLS_SIZE_PX = 25;
 
 const ButtonWithIndicator = ({
   id: idParam,
+  testId,
   caption: captionParam,
   captionKey,
   showWarningSign,
@@ -37,6 +38,8 @@ const ButtonWithIndicator = ({
 
   const fireOnClick = uiTrace.traceFunction(onClick, {
     eventName: 'buttonClick',
+    id,
+    testId,
     caption,
     showWarningSign,
     completeStatus,
@@ -49,6 +52,7 @@ const ButtonWithIndicator = ({
   return (
     <button
       id={id}
+      data-testid={testId}
       className={cx('button is-outlined is-fullwidth complete-btn', { 'is-danger': isDanger }, additionalCssClass)}
       disabled={!!disabled}
       onClick={fireOnClick}
@@ -121,6 +125,7 @@ const getIndicatorClassName = (completeStatus) => {
 
 ButtonWithIndicator.propTypes = {
   id: PropTypes.string,
+  testId: PropTypes.string,
   caption: PropTypes.string,
   captionKey: PropTypes.string,
   showWarningSign: PropTypes.bool,

@@ -1,6 +1,9 @@
 package de.metas.frontend_testing.masterdata.mobile_configuration;
 
+import de.metas.distribution.config.MobileUIDistributionConfig.MobileUIDistributionConfigBuilder;
+import de.metas.distribution.config.MobileUIDistributionConfigRepository;
 import de.metas.handlingunits.picking.config.MobileUIPickingUserProfile;
+import de.metas.handlingunits.picking.config.MobileUIPickingUserProfile.MobileUIPickingUserProfileBuilder;
 import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.mobile.MobileConfig;
 import de.metas.mobile.MobileConfig.MobileConfigBuilder;
@@ -13,6 +16,7 @@ public class MobileConfigCommand
 {
 	@NonNull private final MobileConfigService mobileConfigService;
 	@NonNull private final MobileUIPickingUserProfileRepository mobilePickingConfigRepository;
+	@NonNull private final MobileUIDistributionConfigRepository mobileDistributionConfigRepository;
 
 	@NonNull private final JsonMobileConfigRequest request;
 
@@ -20,6 +24,7 @@ public class MobileConfigCommand
 	{
 		updateMobileConfig();
 		updatePickingConfig();
+		updateDistributionConfig();
 	}
 
 	private void updateMobileConfig()
@@ -46,7 +51,7 @@ public class MobileConfigCommand
 			return;
 		}
 
-		final MobileUIPickingUserProfile.MobileUIPickingUserProfileBuilder newProfileBuilder = mobilePickingConfigRepository.getProfile().toBuilder();
+		final MobileUIPickingUserProfileBuilder newProfileBuilder = mobilePickingConfigRepository.getProfile().toBuilder();
 		if (picking.getAllowPickingAnyHU() != null)
 		{
 			newProfileBuilder.isAllowPickingAnyHU(picking.getAllowPickingAnyHU());
@@ -64,4 +69,20 @@ public class MobileConfigCommand
 		mobilePickingConfigRepository.save(newProfile);
 	}
 
+	private void updateDistributionConfig()
+	{
+		final JsonMobileConfigRequest.Distribution distribution = request.getDistribution();
+		if (distribution == null)
+		{
+			return;
+		}
+
+		final MobileUIDistributionConfigBuilder configBuilder = mobileDistributionConfigRepository.getConfig().toBuilder();
+		if (distribution.getAllowPickingAnyHU() != null)
+		{
+			configBuilder.allowPickingAnyHU(distribution.getAllowPickingAnyHU());
+		}
+
+		mobileDistributionConfigRepository.save(configBuilder.build());
+	}
 }

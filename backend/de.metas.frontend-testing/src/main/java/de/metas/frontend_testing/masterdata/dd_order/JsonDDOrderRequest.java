@@ -1,4 +1,4 @@
-package de.metas.frontend_testing.masterdata.sales_order;
+package de.metas.frontend_testing.masterdata.dd_order;
 
 import de.metas.frontend_testing.masterdata.Identifier;
 import lombok.Builder;
@@ -6,24 +6,22 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.ZonedDateTime;
 import java.util.List;
 
 @Value
 @Builder
 @Jacksonized
-public class JsonSalesOrderCreateRequest
+public class JsonDDOrderRequest
 {
-	@NonNull Identifier bpartner;
-	@NonNull Identifier warehouse;
-	@NonNull ZonedDateTime datePromised;
+	@NonNull Identifier warehouseFrom;
+	@NonNull Identifier warehouseTo;
+	@NonNull Identifier warehouseInTransit;
 	@NonNull List<Line> lines;
-	
+
 	//
- 	//
- 	//
+	//
+	//
 
 	@Value
 	@Builder
@@ -31,7 +29,6 @@ public class JsonSalesOrderCreateRequest
 	public static class Line
 	{
 		@NonNull Identifier product;
-		@NonNull BigDecimal qty;
-		@Nullable Identifier piItemProduct;
+		@NonNull BigDecimal qtyEntered;
 	}
 }

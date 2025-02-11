@@ -177,13 +177,14 @@ const WFLaunchersFilters = ({
       <div className="bottom-buttons">
         {!groupsLoading && resultsCount > 0 && (
           <ButtonWithIndicator
+            id="showResults"
             caption={trl('general.filter.showResults', { count: resultsCount })}
             typeFASIconName={resultsCountLoading ? 'fa-spinner fa-spin' : null}
             disabled={resultsCountLoading}
             onClick={onApplyFilters}
           />
         )}
-        <ButtonWithIndicator caption={trl('general.filter.clearFilters')} onClick={onClearFilters} />
+        <ButtonWithIndicator id="clearFilters" captionKey="general.filter.clearFilters" onClick={onClearFilters} />
       </div>
     </div>
   );
@@ -230,6 +231,8 @@ const Facet = ({ facetId, groupId, caption, active, hitCount, onClick }) => {
 
   return (
     <ButtonWithIndicator
+      testId={facetId}
+      additionalCssClass="facet-button"
       caption={captionEffective}
       typeFASIconName={active ? 'fa-check' : null}
       onClick={() => onClick({ facetId, groupId })}

@@ -18,7 +18,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
@@ -27,7 +26,6 @@ public class CreateHUCommand
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
-	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUQRCodesService huQRCodesService;
 
@@ -58,8 +56,8 @@ public class CreateHUCommand
 
 	private JsonCreateHUResponse execute0()
 	{
-		final WarehouseId warehouseId = warehouseDAO.getWarehouseIdByValue(request.getWarehouse());
-		final ProductId productId = context.getIdentifier(request.getProduct(), ProductId.class);
+		final WarehouseId warehouseId = context.getId(request.getWarehouse(), WarehouseId.class);
+		final ProductId productId = context.getId(request.getProduct(), ProductId.class);
 		final I_C_UOM uom = productBL.getStockUOM(productId);
 
 		final HuId huId = inventoryService.createInventoryForMissingQty(

@@ -158,12 +158,12 @@ const WFLaunchersScreen = () => {
           return (
             <WFLauncherButton
               key={id}
-              id={id}
               applicationId={launcher.applicationId}
               caption={launcher.caption}
               startedWFProcessId={launcher.startedWFProcessId}
               wfParameters={launcher.wfParameters}
               showWarningSign={launcher.showWarningSign}
+              testId={launcher.testId}
             />
           );
         })}

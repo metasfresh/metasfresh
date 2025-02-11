@@ -119,7 +119,7 @@ public class CreatePackingInstructionsCommand
 
 	private void createPIItemProduct(Identifier tuIdentifier, HuPackingInstructionsItemId tuPIItemId)
 	{
-		final ProductId productId = context.getIdentifier(request.getProduct(), ProductId.class);
+		final ProductId productId = context.getId(request.getProduct(), ProductId.class);
 		final UomId uomId = productBL.getStockUOMId(productId);
 
 		final I_M_HU_PI_Item_Product record = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
