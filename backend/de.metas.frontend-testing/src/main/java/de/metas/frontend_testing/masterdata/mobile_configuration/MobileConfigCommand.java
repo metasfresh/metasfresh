@@ -66,9 +66,15 @@ public class MobileConfigCommand
 			defaultPickingJobOptionsBuilder.isAlwaysSplitHUsEnabled(picking.getAlwaysSplitHUsEnabled());
 		}
 
-		final MobileUIPickingUserProfile newProfile = profile.toBuilder()
-				.defaultPickingJobOptions(defaultPickingJobOptionsBuilder.build())
-				.build();
+		final MobileUIPickingUserProfile.MobileUIPickingUserProfileBuilder newProfileBuilder = profile.toBuilder()
+				.defaultPickingJobOptions(defaultPickingJobOptionsBuilder.build());
+
+		if (picking.getAllowPickingAnyCustomer() != null)
+		{
+			newProfileBuilder.isAllowPickingAnyCustomer(picking.getAllowPickingAnyCustomer());
+		}
+
+		final MobileUIPickingUserProfile newProfile = newProfileBuilder.build();
 		mobilePickingConfigRepository.save(newProfile);
 	}
 

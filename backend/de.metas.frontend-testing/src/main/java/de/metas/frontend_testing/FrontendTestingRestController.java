@@ -71,7 +71,7 @@ public class FrontendTestingRestController
 	{
 		userAuthTokenFilterConfiguration.doNotAuthenticatePathsContaining(ENDPOINT);
 
-		logger.info("\n"
+		logger.warn("\n"
 				+ "\n************************************************************************************************************************"
 				+ "\n Frontend testing REST endpoints are active and accessible without login!"
 				+ "\n************************************************************************************************************************"
