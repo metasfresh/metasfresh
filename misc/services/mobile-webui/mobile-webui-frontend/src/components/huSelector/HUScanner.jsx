@@ -92,7 +92,7 @@ const HUScanner = ({ onResolvedBarcode, locatorQrCode, eligibleBarcode }) => {
   if (locatingQrCodeScannerInfo && locatingQrCodeScannerInfo.targetQrCode) {
     return (
       <BarcodeScannerComponent
-        scannerPlaceholder={trl('activities.huManager.scanLuOrLocator')}
+        inputPlaceholderText={trl('activities.huManager.scanLuOrLocator')}
         resolveScannedBarcode={resolveLocatingScannedBarcode}
         onResolvedResult={onResolvedHUScannedResult}
         key={'locatingQrCodeScanner'}
