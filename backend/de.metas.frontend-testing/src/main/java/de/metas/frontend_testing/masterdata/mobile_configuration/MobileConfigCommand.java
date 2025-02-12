@@ -2,9 +2,9 @@ package de.metas.frontend_testing.masterdata.mobile_configuration;
 
 import de.metas.distribution.config.MobileUIDistributionConfig.MobileUIDistributionConfigBuilder;
 import de.metas.distribution.config.MobileUIDistributionConfigRepository;
-import de.metas.handlingunits.picking.config.MobileUIPickingUserProfile;
-import de.metas.handlingunits.picking.config.MobileUIPickingUserProfile.MobileUIPickingUserProfileBuilder;
-import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions.PickingJobOptionsBuilder;
 import de.metas.mobile.MobileConfig;
 import de.metas.mobile.MobileConfig.MobileConfigBuilder;
 import de.metas.mobile.MobileConfigService;
@@ -51,21 +51,24 @@ public class MobileConfigCommand
 			return;
 		}
 
-		final MobileUIPickingUserProfileBuilder newProfileBuilder = mobilePickingConfigRepository.getProfile().toBuilder();
+		final MobileUIPickingUserProfile profile = mobilePickingConfigRepository.getProfile();
+		final PickingJobOptionsBuilder defaultPickingJobOptionsBuilder = profile.getDefaultPickingJobOptions().toBuilder();
 		if (picking.getAllowPickingAnyHU() != null)
 		{
-			newProfileBuilder.isAllowPickingAnyHU(picking.getAllowPickingAnyHU());
+			defaultPickingJobOptionsBuilder.isAllowPickingAnyHU(picking.getAllowPickingAnyHU());
 		}
 		if (picking.getCreateShipmentPolicy() != null)
 		{
-			newProfileBuilder.createShipmentPolicy(picking.getCreateShipmentPolicy());
+			defaultPickingJobOptionsBuilder.createShipmentPolicy(picking.getCreateShipmentPolicy());
 		}
 		if (picking.getAlwaysSplitHUsEnabled() != null)
 		{
-			newProfileBuilder.isAlwaysSplitHUsEnabled(picking.getAlwaysSplitHUsEnabled());
+			defaultPickingJobOptionsBuilder.isAlwaysSplitHUsEnabled(picking.getAlwaysSplitHUsEnabled());
 		}
 
-		final MobileUIPickingUserProfile newProfile = newProfileBuilder.build();
+		final MobileUIPickingUserProfile newProfile = profile.toBuilder()
+				.defaultPickingJobOptions(defaultPickingJobOptionsBuilder.build())
+				.build();
 		mobilePickingConfigRepository.save(newProfile);
 	}
 
