@@ -206,7 +206,7 @@ jobs:
           docker buildx build \
           --file docker-builds/Dockerfile.mobile.test \
           --cache-to type=inline \
-          --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-fixed }} \
           .
@@ -892,6 +892,7 @@ jobs:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
         run: |
           docker compose up -d --exit-code-from playwright 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
+          docker commit metasfresh-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
           docker-compose down
       - name: push-results
         run: |
@@ -899,6 +900,10 @@ jobs:
           ls
           cd playwright-report
           ls
+      - name: produce-summary
+        run: |
+          echo '#### images' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest' >> $GITHUB_STEP_SUMMARY    
 
 # TODO testspace / assert success
 
