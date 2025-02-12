@@ -59,7 +59,7 @@ public class PickingWFProcessStartParams
 	{
 		return Params.builder()
 				.value("salesOrderId", salesOrderId.getRepoId())
-				.value("customerId", deliveryBPLocationId.getBpartnerId().getRepoId())
+				.value("customerId", getCustomerId().getRepoId())
 				.value("customerLocationId", deliveryBPLocationId.getRepoId())
 				.value("warehouseTypeId", warehouseTypeId != null ? warehouseTypeId.getRepoId() : null)
 				.build();
@@ -88,4 +88,5 @@ public class PickingWFProcessStartParams
 		}
 	}
 
+	public BPartnerId getCustomerId() {return this.deliveryBPLocationId.getBpartnerId();}
 }

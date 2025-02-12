@@ -20,24 +20,15 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking.config;
+package de.metas.handlingunits.picking.config.mobileui;
 
-import de.metas.i18n.ITranslatableString;
-import lombok.Builder;
+import de.metas.handlingunits.picking.job.model.PickingJobFacetGroup;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class PickingJobField
+@Value(staticConstructor = "of")
+public class PickingFilter
 {
-	@NonNull PickingJobFieldType field;
+	@NonNull PickingJobFacetGroup option;
 	int seqNo;
-	boolean isShowInSummary;
-	boolean isShowInDetailed;
-	@Nullable String pattern;
-
-	public ITranslatableString getCaption() {return field.getCaption();}
 }
