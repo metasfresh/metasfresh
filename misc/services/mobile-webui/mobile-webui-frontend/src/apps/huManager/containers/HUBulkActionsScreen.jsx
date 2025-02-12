@@ -98,7 +98,7 @@ const HUBulkActionsScreen = () => {
           {showTargetScanner && (
             <BarcodeScannerComponent
               onResolvedResult={onTargetLocationScanned}
-              inputPlaceholderText={'huManager.action.bulkActions.scanTargetPlaceholder'}
+              inputPlaceholderText={trl('huManager.action.bulkActions.scanTargetPlaceholder')}
             />
           )}
         </>

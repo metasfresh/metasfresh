@@ -114,6 +114,8 @@ import static de.metas.handlingunits.rest_api.JsonHUHelper.toJsonClearanceStatus
 @Service
 public class HandlingUnitsService
 {
+	public static final String MORE_THAN_ONE_HU_FOUND_ERROR_PARAM_NAME = "moreThanOneHUParamName";
+
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -592,6 +594,55 @@ public class HandlingUnitsService
 		return trxManager.callInThreadInheritedTrx(() -> updateQtyInTrx(request));
 	}
 
+	@Nullable
+	public GetByIdRequest toGetByIdRequest(@NonNull final JsonGetByQRCodeRequest request)
+	{
+		final GlobalQRCode globalQRCode = GlobalQRCode.parse(request.getQrCode()).orNullIfError();
+		if (globalQRCode != null)
+		{
+			final HuId huId = resolveHuId(globalQRCode);
+			if (huId == null)
+			{
+				return null;
+			}
+
+			return GetByIdRequest.builder()
+					.huId(huId)
+					.expectedQRCode(HUQRCode.fromGlobalQRCode(globalQRCode))
+					.includeAllowedClearanceStatuses(request.isIncludeAllowedClearanceStatuses())
+					.build();
+		}
+		else
+		{
+			return GetByIdRequest.builder()
+					.huId(HuId.ofHUValue(request.getQrCode()))
+					.includeAllowedClearanceStatuses(request.isIncludeAllowedClearanceStatuses())
+					.build();
+		}
+	}
+
+	@Nullable
+	public HuId resolveHuId(@NonNull final GlobalQRCode globalQRCode)
+	{
+
+		final HUQRCode huQRCode = HUQRCode.fromGlobalQRCode(globalQRCode);
+		final HUQRCodeAssignment huqrCodeAssignment = huQRCodeService.getHUAssignmentByQRCode(huQRCode).orElse(null);
+		if (huqrCodeAssignment == null)
+		{
+			return null; // NOT FOUND
+		}
+
+		if (!huqrCodeAssignment.isSingleHUAssigned())
+		{
+			throw new AdempiereException("More than one HU assigned to QR")
+					.appendParametersToMessage()
+					.setParameter("huQRCode", globalQRCode.getAsString())
+					.setParameter(MORE_THAN_ONE_HU_FOUND_ERROR_PARAM_NAME, true);
+		}
+
+		return huqrCodeAssignment.getSingleHUId();
+	}
+
 	@NonNull
 	private HuId updateQtyInTrx(@NonNull final JsonHUQtyChangeRequest request)
 	{
@@ -806,6 +857,21 @@ public class HandlingUnitsService
 	private static @NonNull ResponseEntity<JsonGetSingleHUResponse> toBadRequestResponseEntity(final Exception e)
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
-		return ResponseEntity.badRequest().body(JsonGetSingleHUResponse.ofError(JsonErrors.ofThrowable(e, adLanguage)));
+		return ResponseEntity.badRequest()
+				.body(JsonGetSingleHUResponse.builder()
+							  .error(JsonErrors.ofThrowable(e, adLanguage))
+							  .multipleHUsFound(wereMultipleHUsFound(e))
+							  .build());
+	}
+
+	private static boolean wereMultipleHUsFound(final Exception e)
+	{
+		return Optional.of(e)
+				.filter(error -> error instanceof AdempiereException)
+				.map(error -> (AdempiereException)error)
+				.map(adempiereEx -> adempiereEx.getParameter(MORE_THAN_ONE_HU_FOUND_ERROR_PARAM_NAME))
+				.filter(moreThanOneHUFoundParam -> moreThanOneHUFoundParam instanceof Boolean)
+				.map(moreThanOneHUFoundParam -> (Boolean)moreThanOneHUFoundParam)
+				.orElse(false);
 	}
 }

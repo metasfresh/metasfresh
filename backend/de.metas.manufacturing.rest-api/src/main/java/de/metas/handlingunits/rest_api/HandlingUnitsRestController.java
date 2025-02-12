@@ -45,7 +45,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAttribute;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
@@ -86,7 +85,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Supplier;
 
 import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
@@ -98,8 +96,6 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.HU_IDENTIFIER_DOC;
 public class HandlingUnitsRestController
 {
 	public static final String HU_REST_CONTROLLER_PATH = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/handlingunits";
-
-	private static final String MORE_THAN_ONE_HU_FOUND_PARAM_NAME = "moreThanOneHUParamName";
 
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
@@ -149,39 +145,8 @@ public class HandlingUnitsRestController
 	@PostMapping("/byQRCode")
 	public ResponseEntity<JsonGetSingleHUResponse> getByQRCode(@RequestBody @NonNull final JsonGetByQRCodeRequest request)
 	{
-		final ResponseEntity<JsonGetSingleHUResponse> responseEntity = handlingUnitsService.getByIdSupplier(() -> {
-			final GlobalQRCode globalQRCode = GlobalQRCode.parse(request.getQrCode()).orNullIfError();
-			if (globalQRCode != null)
-			{
-				final HUQRCode huQRCode = HUQRCode.fromGlobalQRCode(globalQRCode);
-				final HUQRCodeAssignment huqrCodeAssignment = huQRCodesService.getHUAssignmentByQRCode(huQRCode).orElse(null);
-				if (huqrCodeAssignment == null)
-				{
-					return null; // NOT FOUND
-				}
-
-				if (!huqrCodeAssignment.isSingleHUAssigned())
-				{
-					throw new AdempiereException("More than one HU assigned to QR")
-							.appendParametersToMessage()
-							.setParameter("huQRCode", request.getQrCode())
-							.setParameter(MORE_THAN_ONE_HU_FOUND_PARAM_NAME, true);
-				}
-
-				return GetByIdRequest.builder()
-						.huId(huqrCodeAssignment.getSingleHUId())
-						.expectedQRCode(huQRCode)
-						.includeAllowedClearanceStatuses(request.isIncludeAllowedClearanceStatuses())
-						.build();
-			}
-			else
-			{
-				return GetByIdRequest.builder()
-						.huId(HuId.ofHUValue(request.getQrCode()))
-						.includeAllowedClearanceStatuses(request.isIncludeAllowedClearanceStatuses())
-						.build();
-			}
-		});
+		final ResponseEntity<JsonGetSingleHUResponse> responseEntity = handlingUnitsService.getByIdSupplier(
+				() -> handlingUnitsService.toGetByIdRequest(request));
 
 		//
 		// If no HU was found for given QR Code then try to directly convert given QR code to a "new HU"
@@ -439,17 +404,6 @@ public class HandlingUnitsRestController
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 		return handlingUnitsService.getHUsByQrCode(request, adLanguage);
-	}
-
-	private static boolean wereMultipleHUsFound(final Exception e) // todo cp
-	{
-		return Optional.of(e)
-				.filter(error -> error instanceof AdempiereException)
-				.map(error -> (AdempiereException)error)
-				.map(adempiereEx -> adempiereEx.getParameter(MORE_THAN_ONE_HU_FOUND_PARAM_NAME))
-				.filter(moreThanOneHUFoundParam -> moreThanOneHUFoundParam instanceof Boolean)
-				.map(moreThanOneHUFoundParam -> (Boolean)moreThanOneHUFoundParam)
-				.orElse(false);
 	}
 
 	private static @NonNull ResponseEntity<JsonGetSingleHUResponse> toBadRequestResponseEntity(final Exception e)
