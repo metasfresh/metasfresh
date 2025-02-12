@@ -1,0 +1,153 @@
+# docker-compose.yml file
+
+services:
+
+  db:
+    image: $mfregistry/metas-db:$mfversion-$dbqualifier
+    ports:
+      - "15432:5432"
+    healthcheck:
+      test: pg_isready -h localhost -U metasfresh -d metasfresh -t 1
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
+    deploy:
+      mode: replicated
+      replicas: 1
+      
+  rabbitmq:
+    image: rabbitmq:3.9.13-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics -q status
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
+    environment:
+      - RABBITMQ_DEFAULT_USER=metasfresh
+      - RABBITMQ_DEFAULT_PASS=metasfresh
+      - RABBITMQ_DEFAULT_VHOST=/
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  search:
+    image: elasticsearch:7.17.8
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    healthcheck:
+      test: "curl --fail --silent GET http://localhost:9200/_cluster/health?pretty | grep status | grep -q '\\(green\\|yellow\\)'"
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
+    environment:
+      - discovery.type=single-node
+      - LOG4J_FORMAT_MSG_NO_LOOKUPS=true
+      - "ES_JAVA_OPTS=-Xms128M -Xmx256m"
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  webapi:
+    image: $mfregistry/metas-api:$mfversion
+    ports:
+      - "8080:8080"
+      - "8789:8789"
+    volumes:
+      - ./metasfresh.properties:/opt/metasfresh-webui-api/metasfresh.properties:ro
+    healthcheck:
+      test: "curl --fail --silent localhost:8080/health | grep UP || exit 1"
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
+    environment:
+      # missing  ${metasfresh_es_enable_params}, ${metasfresh_db_connectionpool_params}, ${metasfresh_admin_params} and ${webui_frontend_url_params}
+      - "JAVA_TOOL_OPTIONS=-Xmx512M -XX:+HeapDumpOnOutOfMemoryError -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8789"
+      - "JAVA_SECURITY_EGD=file:/dev/./urandom"
+      - "SPRING_RABBITMQ_HOST=rabbitmq"
+      - "SPRING_RABBITMQ_PORT=5672"
+      - "SPRING_RABBITMQ_USERNAME=metasfresh"
+      - "SPRING_RABBITMQ_PASSWORD=metasfresh"
+      - "SPRING_DATA_ELASTICSEARCH_CLUSTER_NODES=search:9200"
+      - "SPRING_DATA_ELASTICSEARCH_CLIENT_REACTIVE_ENDPOINTS=search:9200"
+    depends_on:
+      db:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  app:
+    image: $mfregistry/metas-app:$mfversion
+    ports:
+      - "8282:8282"
+      - "8788:8788"
+    volumes:
+      - ./metasfresh.properties:/opt/metasfresh/metasfresh.properties:ro
+    healthcheck:
+      test: "curl --fail --silent localhost:8282/health | grep UP || exit 1"
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
+    environment:
+      # missing  ${metasfresh_es_enable_params}, ${metasfresh_db_connectionpool_params} and  ${metasfresh_admin_params}
+      - "JAVA_TOOL_OPTIONS=-Xmx1024M -XX:+HeapDumpOnOutOfMemoryError -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8788"
+      - PropertyFile=/opt/metasfresh/metasfresh.properties
+      - "METASFRESH_ELASTICSEARCH_HOST=search:9300"
+      - "SPRING_RABBITMQ_HOST=rabbitmq"
+      - "SPRING_RABBITMQ_PORT=5672"
+      - "SPRING_RABBITMQ_USERNAME=metasfresh"
+      - "SPRING_RABBITMQ_PASSWORD=metasfresh"
+      - "SPRING_DATA_ELASTICSEARCH_CLIENT_REACTIVE_ENDPOINTS=search:9200"
+      - ""
+    depends_on:
+      db:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  mobile:
+    image: $mfregistry/metas-mobile:$mfversion
+    volumes:
+      - ./mobile-config.js:/usr/share/nginx/html/config.js:ro
+    healthcheck:
+      test: "curl --fail --silent http://localhost:3001 || exit 1"
+      interval: 10s
+      timeout: 10s
+      start_period: 60s
+      retries: 30
+    environment:
+      - "PORT=3001"
+    depends_on:
+      webapi:
+        condition: service_healthy
+      app:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 1
+
+  playwright:
+    image: $mfregistry/metas-mobile-test:$mfversion
+    volumes:
+      - ./playwright-report:/app/playwright-report:ro
+      - "FRONTEND_TESTING=true"
+    depends_on:
+      app:
+        condition: service_healthy
+    deploy:
+      mode: replicated
+      replicas: 1
+
+volumes: {}
+configs: {}
+secrets: {}

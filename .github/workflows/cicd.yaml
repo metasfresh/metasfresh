@@ -201,6 +201,15 @@ jobs:
           --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
           .
+      - name: build-mobile-test
+        run: |
+          docker buildx build \
+          --file docker-builds/Dockerfile.mobile.test \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-floating }} \
+          --tag metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-fixed }} \
+          .
       - name: push-images
         uses: nick-fields/retry@v3
         with:
@@ -212,11 +221,14 @@ jobs:
             docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}
             docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}
             docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
+            docker push metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-fixed }}
+            docker push metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-floating }}
       - name: produce-summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
 
   test-frontend:
     name: test (frontend)
@@ -862,6 +874,32 @@ jobs:
         if: success() || failure()
         run: | 
           docker compose down
+
+    mobile_test:
+      name: mobile test
+      timeout-minutes: 60
+      runs-on: ubuntu-latest
+      needs: [ init, backend, frontend, preloaded-db ]
+      steps:
+        - uses: actions/checkout@v4
+        - uses: docker/login-action@v3
+          with:
+            username: metasfresh
+            password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+        - name: start docker compose
+          working-directory: docker-builds/mobile/
+          env:
+            mfversion: ${{ needs.init.outputs.tag-fixed }}
+          run: |
+            docker compose up -d --exit-code-from playwright 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
+            docker-compose down
+        - name: push-results
+          run: |
+            cat playwright.exit-code
+            ls
+            cd playwright-report
+            ls
+        # TODO testspace / assert success
 
 #  redeploy:
 #    runs-on: ubuntu-latest
