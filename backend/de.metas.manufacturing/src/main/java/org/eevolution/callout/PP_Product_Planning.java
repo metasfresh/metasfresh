@@ -81,19 +81,4 @@ public class PP_Product_Planning
 			throw new FillMandatoryException(I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID);
 		}
 	}
-
-	@CalloutMethod(columnNames = I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID)
-	public void onBOMVersionsChanged(@NonNull final I_PP_Product_Planning productPlanningRecord)
-	{
-		final ProductBOMVersionsId bomVersionsId = ProductBOMVersionsId.ofRepoIdOrNull(productPlanningRecord.getPP_Product_BOMVersions_ID());
-		if (bomVersionsId == null)
-		{
-			return;
-		}
-
-		final I_PP_Product_BOMVersions bomVersions = bomVersionsDAO.getBOMVersions(bomVersionsId);
-		final ProductId productId = ProductId.ofRepoId(bomVersions.getM_Product_ID());
-
-		productPlanningRecord.setM_Product_ID(productId.getRepoId());
-	}
 }
