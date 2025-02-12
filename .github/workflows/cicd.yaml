@@ -875,31 +875,32 @@ jobs:
         run: | 
           docker compose down
 
-    mobile_test:
-      name: mobile test
-      timeout-minutes: 60
-      runs-on: ubuntu-latest
-      needs: [ init, backend, frontend, preloaded-db ]
-      steps:
-        - uses: actions/checkout@v4
-        - uses: docker/login-action@v3
-          with:
-            username: metasfresh
-            password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
-        - name: start docker compose
-          working-directory: docker-builds/mobile/
-          env:
-            mfversion: ${{ needs.init.outputs.tag-fixed }}
-          run: |
-            docker compose up -d --exit-code-from playwright 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
-            docker-compose down
-        - name: push-results
-          run: |
-            cat playwright.exit-code
-            ls
-            cd playwright-report
-            ls
-        # TODO testspace / assert success
+  mobile_test:
+    name: mobile test
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    needs: [ init, backend, frontend, preloaded-db ]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          username: metasfresh
+          password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - name: start docker compose
+        working-directory: docker-builds/mobile/
+        env:
+          mfversion: ${{ needs.init.outputs.tag-fixed }}
+        run: |
+          docker compose up -d --exit-code-from playwright 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
+          docker-compose down
+      - name: push-results
+        run: |
+          cat playwright.exit-code
+          ls
+          cd playwright-report
+          ls
+
+# TODO testspace / assert success
 
 #  redeploy:
 #    runs-on: ubuntu-latest
