@@ -886,7 +886,7 @@ jobs:
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
-      - name: start docker compose
+      - name: run test
         working-directory: docker-builds/mobile/
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}

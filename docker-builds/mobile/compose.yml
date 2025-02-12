@@ -107,7 +107,7 @@ services:
       - "SPRING_RABBITMQ_USERNAME=metasfresh"
       - "SPRING_RABBITMQ_PASSWORD=metasfresh"
       - "SPRING_DATA_ELASTICSEARCH_CLIENT_REACTIVE_ENDPOINTS=search:9200"
-      - ""
+      - "FRONTEND_TESTING=true"
     depends_on:
       db:
         condition: service_healthy
@@ -140,7 +140,6 @@ services:
     image: $mfregistry/metas-mobile-test:$mfversion
     volumes:
       - ./playwright-report:/app/playwright-report:ro
-      - "FRONTEND_TESTING=true"
     depends_on:
       app:
         condition: service_healthy
