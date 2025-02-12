@@ -44,7 +44,7 @@ public enum InvoicableQtyBasedOn implements ReferenceListAwareEnum
 	private static final ReferenceListAwareEnums.ValuesIndex<InvoicableQtyBasedOn> index = ReferenceListAwareEnums.index(values());
 
 	@JsonCreator
-	public static InvoicableQtyBasedOn ofCode(@NonNull final String code) {return index.ofCode(code);}
+	public static InvoicableQtyBasedOn ofCode(@NonNull final String code) {return index.ofCodeOrName(code);}
 
 	public static InvoicableQtyBasedOn ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
 
