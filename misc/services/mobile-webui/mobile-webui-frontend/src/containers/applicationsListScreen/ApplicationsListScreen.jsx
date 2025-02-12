@@ -12,6 +12,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { trl } from '../../utils/translations';
 import { useUITraceLocationChange } from '../../utils/ui_trace/useUITraceLocationChange';
 import { useScreenDefinition } from '../../hooks/useScreenDefinition';
+import Spinner from '../../components/Spinner';
 
 const SCREEN_ID = 'ApplicationsListScreen';
 
@@ -19,6 +20,7 @@ const ApplicationsListScreen = () => {
   const { history } = useScreenDefinition({ screenId: SCREEN_ID, isHomeStop: true, back: '/' });
 
   const applications = useSelector((state) => getAvailableApplicationsArray(state));
+  const isLoading = applications.length === 0;
   const applicationsDisplayed = applications.filter((app) => !!app.showInMainMenu);
 
   //
@@ -56,6 +58,7 @@ const ApplicationsListScreen = () => {
     <div id={SCREEN_ID} className="applications-list">
       <LogoHeader />
       <div className="section">
+        {isLoading && <Spinner />}
         {applicationsDisplayed.map((app) => (
           <ApplicationButton
             key={app.id}
