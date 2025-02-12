@@ -13,6 +13,6 @@ COPY misc/services/mobile-webui/mobile-webui-frontend-test/yarn.lock* .
 
 RUN yarn install
 
-COPY misc/services/mobile-webui/mobile-webui-frontend-test/ .
+COPY misc/services/mobile-webui/mobile-webui-frontend-testing/ .
 
 CMD ["yarn", "playwright", "test"]
