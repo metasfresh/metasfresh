@@ -22,18 +22,15 @@
 
 package org.eevolution.productioncandidate.service;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.util.StringUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
-
-import static org.compiere.util.TimeUtil.TRUNC_15M;
-import static org.compiere.util.TimeUtil.TRUNC_MINUTE;
+import java.util.stream.IntStream;
 
 @AllArgsConstructor
 public enum ResourcePlanningPrecision
@@ -63,14 +60,16 @@ public enum ResourcePlanningPrecision
 	}
 
 	@NonNull
-	public Timestamp roundDown(@NonNull final Timestamp initialDate)
+	public ImmutableSet<String> getMinutes()
 	{
 		switch (this)
 		{
 			case MINUTE_15:
-				return TimeUtil.trunc(initialDate, TRUNC_15M);
+				return ImmutableSet.of("0", "15", "30", "45");
 			case MINUTE:
-				return TimeUtil.trunc(initialDate, TRUNC_MINUTE);
+				return IntStream.rangeClosed(0, 59)
+						.mapToObj(String::valueOf)
+						.collect(ImmutableSet.toImmutableSet());
 			default:
 				throw new AdempiereException("Unknown " + ResourcePlanningPrecision.class + ": " + this);
 		}

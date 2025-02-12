@@ -22,34 +22,45 @@
 
 package de.metas.manufacturing.webui.process;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.process.IProcessParametersCallout;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
+import de.metas.ui.web.process.descriptor.ProcessParamLookupValuesProvider;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import de.metas.ui.web.window.datatypes.LookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
-import org.eevolution.model.I_PP_Order;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.service.PPOrderCandidateService;
 import org.eevolution.productioncandidate.service.ResourcePlanningPrecision;
 
 import java.sql.Timestamp;
+import java.util.stream.IntStream;
 
-public class PP_Order_Candidate_SetStartDate extends ViewBasedProcessTemplate implements IProcessParametersCallout, IProcessPrecondition
+public class PP_Order_Candidate_SetStartDate extends ViewBasedProcessTemplate implements IProcessPrecondition
 {
 	private final PPOrderCandidateService ppOrderCandidateService = SpringContextHolder.instance.getBean(PPOrderCandidateService.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-	private static final String PARAM_DateStart = I_PP_Order.COLUMNNAME_DateStart;
-	@Param(parameterName = PARAM_DateStart, mandatory = true)
-	private Timestamp p_DateStart;
+	@Param(parameterName = "Date", mandatory = true)
+	private Timestamp p_Date;
+
+	private static final String PARAM_Hour = "Hour";
+	@Param(parameterName = PARAM_Hour, mandatory = true)
+	private String p_Hour;
+
+	private static final String PARAM_Minute = "Minute";
+	@Param(parameterName = PARAM_Minute, mandatory = true)
+	private String p_Minute;
 
 	private final int rowsLimit = sysConfigBL.getPositiveIntValue("PP_Order_Candidate_SetStartDate.rowsLimit", 2000);
 
@@ -68,20 +79,31 @@ public class PP_Order_Candidate_SetStartDate extends ViewBasedProcessTemplate im
 	@Override
 	protected String doIt() throws Exception
 	{
-		ppOrderCandidateService.setDateStartSchedule(getSelectedPPOrderCandidateIds(), p_DateStart);
+		ppOrderCandidateService.setDateStartSchedule(getSelectedPPOrderCandidateIds(), convertParamsToTimestamp());
 		return MSG_OK;
 	}
-	
-	@Override
-	public void onParameterChanged(final String parameterName)
-	{
-		if (!PARAM_DateStart.equals(parameterName))
-		{
-			return;
-		}
 
+	@ProcessParamLookupValuesProvider(parameterName = PARAM_Hour, numericKey = false, lookupSource = DocumentLayoutElementFieldDescriptor.LookupSource.list)
+	private LookupValuesList hourLookupProvider()
+	{
+		return LookupValuesList.fromCollection(
+				IntStream.range(0, 24)
+						.mapToObj(String::valueOf)
+						.map(index -> LookupValue.StringLookupValue.of(index, index))
+						.collect(ImmutableList.toImmutableList())
+		);
+	}
+
+	@ProcessParamLookupValuesProvider(parameterName = PARAM_Minute, numericKey = false, lookupSource = DocumentLayoutElementFieldDescriptor.LookupSource.list)
+	private LookupValuesList minuteLookupProvider()
+	{
 		final ResourcePlanningPrecision precision = ppOrderCandidateService.getResourcePlanningPrecision();
-		p_DateStart = precision.roundDown(p_DateStart);
+		final ImmutableSet<LookupValue.StringLookupValue> minutes = precision.getMinutes()
+				.stream()
+				.map(minute -> LookupValue.StringLookupValue.of(minute, minute))
+				.collect(ImmutableSet.toImmutableSet());
+
+		return LookupValuesList.fromCollection(minutes);
 	}
 
 	private ImmutableSet<PPOrderCandidateId> getSelectedPPOrderCandidateIds()
@@ -100,6 +122,14 @@ public class PP_Order_Candidate_SetStartDate extends ViewBasedProcessTemplate im
 					.map(PP_Order_Candidate_SetStartDate::toPPOrderCandidateId)
 					.collect(ImmutableSet.toImmutableSet());
 		}
+	}
+
+	@NonNull
+	private Timestamp convertParamsToTimestamp()
+	{
+		return Timestamp.valueOf(p_Date.toLocalDateTime()
+				.withHour(Integer.parseInt(p_Hour))
+				.withMinute(Integer.parseInt(p_Minute)));
 	}
 
 	@NonNull
