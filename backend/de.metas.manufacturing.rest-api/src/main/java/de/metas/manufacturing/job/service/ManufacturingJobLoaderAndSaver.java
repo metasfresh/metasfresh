@@ -237,6 +237,7 @@ public class ManufacturingJobLoaderAndSaver
 							   .sorted(Comparator.comparing(PPOrderIssueSchedule::getSeqNo))
 							   .map(this::toRawMaterialsIssueStep)
 							   .collect(ImmutableList.toImmutableList()))
+				.seqNo(orderBOMLine.getLine())
 				.build();
 	}
 
