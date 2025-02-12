@@ -121,6 +121,7 @@ FROM M_ProductPrice pp
     FROM report.Valid_PI_Item_Product_V vip
     -- WHERE isInfiniteCapacity = 'N' -- task 09045/09788: we can also export PiiPs with infinite capacity
     WHERE vip.M_Product_ID = pp.M_Product_ID
+      AND (vip.c_bpartner_id IS NULL OR $1 IS NULL OR vip.c_bpartner_id = $1)
     ) bpProductPackingMaterial ON
     (bpProductPackingMaterial.M_HU_PI_Item_Product_ID = pp.m_hu_pi_item_product_id OR
         -- if product price has no PIIPs then use it for all PIIPs with no valid product prices for the current PLV
