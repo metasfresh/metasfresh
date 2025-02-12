@@ -128,8 +128,6 @@ services:
     environment:
       - "PORT=3001"
     depends_on:
-      webapi:
-        condition: service_healthy
       app:
         condition: service_healthy
     deploy:
@@ -141,7 +139,7 @@ services:
     volumes:
       - ./playwright-report:/app/playwright-report:ro
     depends_on:
-      app:
+      mobile:
         condition: service_healthy
     deploy:
       mode: replicated
