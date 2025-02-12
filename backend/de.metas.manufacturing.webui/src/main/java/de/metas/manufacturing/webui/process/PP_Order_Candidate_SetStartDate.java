@@ -39,6 +39,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
+import org.compiere.util.TimeUtil;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.service.PPOrderCandidateService;
 import org.eevolution.productioncandidate.service.ResourcePlanningPrecision;
@@ -88,8 +89,7 @@ public class PP_Order_Candidate_SetStartDate extends ViewBasedProcessTemplate im
 	{
 		return LookupValuesList.fromCollection(
 				IntStream.range(0, 24)
-						.mapToObj(String::valueOf)
-						.map(index -> LookupValue.StringLookupValue.of(index, index))
+						.mapToObj(this::toStringLookupValue)
 						.collect(ImmutableList.toImmutableList())
 		);
 	}
@@ -100,7 +100,7 @@ public class PP_Order_Candidate_SetStartDate extends ViewBasedProcessTemplate im
 		final ResourcePlanningPrecision precision = ppOrderCandidateService.getResourcePlanningPrecision();
 		final ImmutableSet<LookupValue.StringLookupValue> minutes = precision.getMinutes()
 				.stream()
-				.map(minute -> LookupValue.StringLookupValue.of(minute, minute))
+				.map(this::toStringLookupValue)
 				.collect(ImmutableSet.toImmutableSet());
 
 		return LookupValuesList.fromCollection(minutes);
@@ -127,11 +127,18 @@ public class PP_Order_Candidate_SetStartDate extends ViewBasedProcessTemplate im
 	@NonNull
 	private Timestamp convertParamsToTimestamp()
 	{
-		return Timestamp.valueOf(p_Date.toLocalDateTime()
-				.withHour(Integer.parseInt(p_Hour))
-				.withMinute(Integer.parseInt(p_Minute)));
+		return Timestamp.valueOf(TimeUtil.asLocalDate(p_Date)
+				.atTime(Integer.parseInt(p_Hour), Integer.parseInt(p_Minute)));
 	}
 
+	@NonNull
+	private LookupValue.StringLookupValue toStringLookupValue(final int value)
+	{
+		final String formattedValue = String.format("%02d", value);
+
+		return LookupValue.StringLookupValue.of(formattedValue, formattedValue);
+	}
+	
 	@NonNull
 	private static PPOrderCandidateId extractPPOrderCandidateId(final IViewRow row) {return toPPOrderCandidateId(row.getId());}
 

@@ -60,15 +60,15 @@ public enum ResourcePlanningPrecision
 	}
 
 	@NonNull
-	public ImmutableSet<String> getMinutes()
+	public ImmutableSet<Integer> getMinutes()
 	{
 		switch (this)
 		{
 			case MINUTE_15:
-				return ImmutableSet.of("0", "15", "30", "45");
+				return ImmutableSet.of(0, 15, 30, 45);
 			case MINUTE:
 				return IntStream.rangeClosed(0, 59)
-						.mapToObj(String::valueOf)
+						.boxed()
 						.collect(ImmutableSet.toImmutableSet());
 			default:
 				throw new AdempiereException("Unknown " + ResourcePlanningPrecision.class + ": " + this);
