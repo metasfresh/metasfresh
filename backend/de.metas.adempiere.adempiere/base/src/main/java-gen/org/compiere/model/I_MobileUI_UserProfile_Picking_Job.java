@@ -3,16 +3,16 @@ package org.compiere.model;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-/** Generated Interface for MobileUI_UserProfile_Picking
+/** Generated Interface for MobileUI_UserProfile_Picking_Job
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_MobileUI_UserProfile_Picking 
+public interface I_MobileUI_UserProfile_Picking_Job 
 {
 
-	String Table_Name = "MobileUI_UserProfile_Picking";
+	String Table_Name = "MobileUI_UserProfile_Picking_Job";
 
-//	/** AD_Table_ID=542373 */
+//	/** AD_Table_ID=542464 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
@@ -60,7 +60,7 @@ public interface I_MobileUI_UserProfile_Picking
 	 */
 	java.sql.Timestamp getCreated();
 
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_Created = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "Created", null);
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_Created = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "Created", null);
 	String COLUMNNAME_Created = "Created";
 
 	/**
@@ -95,8 +95,29 @@ public interface I_MobileUI_UserProfile_Picking
 	 */
 	java.lang.String getCreateShipmentPolicy();
 
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_CreateShipmentPolicy = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "CreateShipmentPolicy", null);
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_CreateShipmentPolicy = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "CreateShipmentPolicy", null);
 	String COLUMNNAME_CreateShipmentPolicy = "CreateShipmentPolicy";
+
+	/**
+	 * Set Description.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescription (@Nullable java.lang.String Description);
+
+	/**
+	 * Get Description.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDescription();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_Description = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Active.
@@ -118,29 +139,8 @@ public interface I_MobileUI_UserProfile_Picking
 	 */
 	boolean isActive();
 
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsActive = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsActive", null);
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_IsActive = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Allow any Customer.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsAllowAnyCustomer (boolean IsAllowAnyCustomer);
-
-	/**
-	 * Get Allow any Customer.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isAllowAnyCustomer();
-
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowAnyCustomer = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowAnyCustomer", null);
-	String COLUMNNAME_IsAllowAnyCustomer = "IsAllowAnyCustomer";
 
 	/**
 	 * Set Allow new TU.
@@ -160,7 +160,7 @@ public interface I_MobileUI_UserProfile_Picking
 	 */
 	boolean isAllowNewTU();
 
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowNewTU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowNewTU", null);
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_IsAllowNewTU = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "IsAllowNewTU", null);
 	String COLUMNNAME_IsAllowNewTU = "IsAllowNewTU";
 
 	/**
@@ -181,7 +181,7 @@ public interface I_MobileUI_UserProfile_Picking
 	 */
 	boolean isAllowPickingAnyHU();
 
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowPickingAnyHU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowPickingAnyHU", null);
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_IsAllowPickingAnyHU = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "IsAllowPickingAnyHU", null);
 	String COLUMNNAME_IsAllowPickingAnyHU = "IsAllowPickingAnyHU";
 
 	/**
@@ -204,7 +204,7 @@ public interface I_MobileUI_UserProfile_Picking
 	 */
 	boolean isAllowSkippingRejectedReason();
 
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowSkippingRejectedReason = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowSkippingRejectedReason", null);
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_IsAllowSkippingRejectedReason = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "IsAllowSkippingRejectedReason", null);
 	String COLUMNNAME_IsAllowSkippingRejectedReason = "IsAllowSkippingRejectedReason";
 
 	/**
@@ -227,7 +227,7 @@ public interface I_MobileUI_UserProfile_Picking
 	 */
 	boolean isAlwaysSplitHUsEnabled();
 
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAlwaysSplitHUsEnabled = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAlwaysSplitHUsEnabled", null);
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_IsAlwaysSplitHUsEnabled = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "IsAlwaysSplitHUsEnabled", null);
 	String COLUMNNAME_IsAlwaysSplitHUsEnabled = "IsAlwaysSplitHUsEnabled";
 
 	/**
@@ -250,7 +250,7 @@ public interface I_MobileUI_UserProfile_Picking
 	 */
 	boolean isCatchWeightTUPickingEnabled();
 
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsCatchWeightTUPickingEnabled = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsCatchWeightTUPickingEnabled", null);
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_IsCatchWeightTUPickingEnabled = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "IsCatchWeightTUPickingEnabled", null);
 	String COLUMNNAME_IsCatchWeightTUPickingEnabled = "IsCatchWeightTUPickingEnabled";
 
 	/**
@@ -273,7 +273,7 @@ public interface I_MobileUI_UserProfile_Picking
 	 */
 	boolean isConsiderSalesOrderCapacity();
 
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsConsiderSalesOrderCapacity = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsConsiderSalesOrderCapacity", null);
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_IsConsiderSalesOrderCapacity = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "IsConsiderSalesOrderCapacity", null);
 	String COLUMNNAME_IsConsiderSalesOrderCapacity = "IsConsiderSalesOrderCapacity";
 
 	/**
@@ -294,7 +294,7 @@ public interface I_MobileUI_UserProfile_Picking
 	 */
 	boolean isPickingWithNewLU();
 
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsPickingWithNewLU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsPickingWithNewLU", null);
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_IsPickingWithNewLU = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "IsPickingWithNewLU", null);
 	String COLUMNNAME_IsPickingWithNewLU = "IsPickingWithNewLU";
 
 	/**
@@ -315,29 +315,29 @@ public interface I_MobileUI_UserProfile_Picking
 	 */
 	boolean isShowConfirmationPromptWhenOverPick();
 
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsShowConfirmationPromptWhenOverPick = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsShowConfirmationPromptWhenOverPick", null);
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_IsShowConfirmationPromptWhenOverPick = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "IsShowConfirmationPromptWhenOverPick", null);
 	String COLUMNNAME_IsShowConfirmationPromptWhenOverPick = "IsShowConfirmationPromptWhenOverPick";
 
 	/**
-	 * Set Mobile UI Picking Profile.
+	 * Set Mobile UI Picking Job Options.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setMobileUI_UserProfile_Picking_ID (int MobileUI_UserProfile_Picking_ID);
+	void setMobileUI_UserProfile_Picking_Job_ID (int MobileUI_UserProfile_Picking_Job_ID);
 
 	/**
-	 * Get Mobile UI Picking Profile.
+	 * Get Mobile UI Picking Job Options.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getMobileUI_UserProfile_Picking_ID();
+	int getMobileUI_UserProfile_Picking_Job_ID();
 
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_MobileUI_UserProfile_Picking_ID = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "MobileUI_UserProfile_Picking_ID", null);
-	String COLUMNNAME_MobileUI_UserProfile_Picking_ID = "MobileUI_UserProfile_Picking_ID";
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_MobileUI_UserProfile_Picking_Job_ID = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "MobileUI_UserProfile_Picking_Job_ID", null);
+	String COLUMNNAME_MobileUI_UserProfile_Picking_Job_ID = "MobileUI_UserProfile_Picking_Job_ID";
 
 	/**
 	 * Set Name.
@@ -357,7 +357,7 @@ public interface I_MobileUI_UserProfile_Picking
 	 */
 	java.lang.String getName();
 
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_Name = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "Name", null);
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_Name = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
 
 	/**
@@ -378,7 +378,7 @@ public interface I_MobileUI_UserProfile_Picking
 	 */
 	@Nullable java.lang.String getPickingLineGroupBy();
 
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_PickingLineGroupBy = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "PickingLineGroupBy", null);
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_PickingLineGroupBy = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "PickingLineGroupBy", null);
 	String COLUMNNAME_PickingLineGroupBy = "PickingLineGroupBy";
 
 	/**
@@ -399,7 +399,7 @@ public interface I_MobileUI_UserProfile_Picking
 	 */
 	@Nullable java.lang.String getPickingLineSortBy();
 
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_PickingLineSortBy = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "PickingLineSortBy", null);
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_PickingLineSortBy = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "PickingLineSortBy", null);
 	String COLUMNNAME_PickingLineSortBy = "PickingLineSortBy";
 
 	/**
@@ -412,7 +412,7 @@ public interface I_MobileUI_UserProfile_Picking
 	 */
 	java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_Updated = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "Updated", null);
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_Updated = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "Updated", null);
 	String COLUMNNAME_Updated = "Updated";
 
 	/**

@@ -26,6 +26,7 @@ public class JsonMobileConfigRequest
 	@Jacksonized
 	public static class Picking
 	{
+		@Nullable Boolean allowPickingAnyCustomer;
 		@Nullable Boolean allowPickingAnyHU;
 		@Nullable CreateShipmentPolicy createShipmentPolicy;
 		@Nullable Boolean alwaysSplitHUsEnabled;

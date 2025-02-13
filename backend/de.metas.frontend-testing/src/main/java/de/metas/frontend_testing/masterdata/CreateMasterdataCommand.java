@@ -31,7 +31,7 @@ import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseResponse;
 import de.metas.frontend_testing.masterdata.warehouse.WarehouseCommand;
 import de.metas.handlingunits.inventory.InventoryService;
-import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.mobile.MobileConfigService;
 import de.metas.picking.api.IPickingSlotBL;

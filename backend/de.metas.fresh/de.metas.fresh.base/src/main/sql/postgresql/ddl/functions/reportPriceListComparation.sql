@@ -21,16 +21,16 @@
  */
 
 DROP FUNCTION IF EXISTS report.reportPriceListComparation(
-    C_BPartner_ID            numeric, -- 1
-    M_PriceList_Version_ID   numeric, -- 2
-    Alt_PriceList_Version_ID numeric -- 3
+    p_C_BPartner_ID            numeric, -- 1
+    p_M_PriceList_Version_ID   numeric, -- 2
+    p_Alt_PriceList_Version_ID numeric -- 3
 )
 ;
 
 CREATE OR REPLACE FUNCTION report.reportPriceListComparation(
-    C_BPartner_ID            numeric, -- 1
-    M_PriceList_Version_ID   numeric, -- 2
-    Alt_PriceList_Version_ID numeric -- 3
+    p_C_BPartner_ID            numeric, -- 1
+    p_M_PriceList_Version_ID   numeric, -- 2
+    p_Alt_PriceList_Version_ID numeric -- 3
 )
     RETURNS TABLE
             (
@@ -91,7 +91,7 @@ SELECT -- Displayed pricelist data
        pp.seqNo                                                                                                                    AS SeqNo,
 
        -- Filter Columns
-       $1                                                                                                                          AS C_BPartner_ID,
+       p_C_BPartner_ID                                                                                                                          AS C_BPartner_ID,
        plv.M_Pricelist_Version_ID                                                                                                  AS M_Pricelist_Version_ID,
        plv2.M_Pricelist_Version_ID                                                                                                 AS Alt_PriceList_Version_ID,
 
@@ -121,6 +121,7 @@ FROM M_ProductPrice pp
     FROM report.Valid_PI_Item_Product_V vip
     -- WHERE isInfiniteCapacity = 'N' -- task 09045/09788: we can also export PiiPs with infinite capacity
     WHERE vip.M_Product_ID = pp.M_Product_ID
+      AND (vip.c_bpartner_id IS NULL OR p_C_BPartner_ID IS NULL OR vip.c_bpartner_id = p_C_BPartner_ID)
     ) bpProductPackingMaterial ON
     (bpProductPackingMaterial.M_HU_PI_Item_Product_ID = pp.m_hu_pi_item_product_id OR
         -- if product price has no PIIPs then use it for all PIIPs with no valid product prices for the current PLV
@@ -174,9 +175,9 @@ FROM M_ProductPrice pp
          LEFT OUTER JOIN m_hu_pi_item pmit ON pmit.m_hu_pi_version_id = it.m_hu_pi_version_id AND pmit.itemtype::TEXT = 'PM'::TEXT AND pmit.isActive = 'Y'
          LEFT OUTER JOIN m_hu_packingmaterial pm ON pm.m_hu_packingmaterial_id = pmit.m_hu_packingmaterial_id AND pm.isActive = 'Y'
 
-WHERE plv.M_Pricelist_Version_ID = $2
-  AND plv2.M_Pricelist_Version_ID = COALESCE($3, plv.m_pricelist_version_id)
-  AND CASE WHEN $3 IS NOT NULL THEN COALESCE(ppa.PriceStd, pp.PriceStd) != 0 ELSE COALESCE(ppa.PriceStd, pp.PriceStd) != 0 OR pp2.PriceStd != 0 END
+WHERE plv.M_Pricelist_Version_ID = p_M_PriceList_Version_ID
+  AND plv2.M_Pricelist_Version_ID = COALESCE(p_Alt_PriceList_Version_ID, plv.m_pricelist_version_id)
+  AND CASE WHEN p_Alt_PriceList_Version_ID IS NOT NULL THEN COALESCE(ppa.PriceStd, pp.PriceStd) != 0 ELSE COALESCE(ppa.PriceStd, pp.PriceStd) != 0 OR pp2.PriceStd != 0 END
 
   AND pp.isActive = 'Y'
   AND (pp.M_Attributesetinstance_ID = ppa.M_Attributesetinstance_ID OR pp.M_Attributesetinstance_ID IS NULL)
@@ -187,5 +188,5 @@ $$
     STABLE
 ;
 
-COMMENT ON FUNCTION report.reportPriceListComparation(numeric,numeric,numeric) IS 'Compares prices between a new and an old pricelist version. For the '
+COMMENT ON FUNCTION report.reportPriceListComparation(numeric,numeric,numeric) IS 'Compares prices between a new and an old pricelist version. In addition to m_hu_pi_item_products for which a product price is defined, it will also show m_hu_pi_item_products for which a product price is not defined. In this case, the no PIIP price is used (if one is available).'
 ;

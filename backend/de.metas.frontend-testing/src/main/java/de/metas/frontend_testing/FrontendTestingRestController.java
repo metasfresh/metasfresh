@@ -12,7 +12,7 @@ import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonGetFreePickingSlotRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonGetFreePickingSlotResponse;
 import de.metas.handlingunits.inventory.InventoryService;
-import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.logging.LogManager;
 import de.metas.mobile.MobileConfigService;
@@ -71,7 +71,7 @@ public class FrontendTestingRestController
 	{
 		userAuthTokenFilterConfiguration.doNotAuthenticatePathsContaining(ENDPOINT);
 
-		logger.info("\n"
+		logger.warn("\n"
 				+ "\n************************************************************************************************************************"
 				+ "\n Frontend testing REST endpoints are active and accessible without login!"
 				+ "\n************************************************************************************************************************"

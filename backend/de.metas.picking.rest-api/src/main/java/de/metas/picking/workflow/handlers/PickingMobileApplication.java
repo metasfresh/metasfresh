@@ -31,8 +31,9 @@
 	import de.metas.document.location.IDocumentLocationBL;
 	import de.metas.handlingunits.HuId;
 	import de.metas.handlingunits.picking.QtyRejectedReasonCode;
-	import de.metas.handlingunits.picking.config.MobileUIPickingUserProfile;
-	import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
+	import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
+	import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+	import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 	import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 	import de.metas.handlingunits.picking.job.model.PickingJob;
 	import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -350,8 +351,10 @@
 
 		private PickingJob processStepEvents(@NonNull final PickingJob pickingJob, @NonNull final Collection<JsonPickingStepEvent> jsonEvents)
 		{
+			final PickingJobOptions pickingJobOptions = mobileUIPickingUserProfileRepository.getPickingJobOptions(pickingJob.getCustomerId());
+			
 			final ImmutableList<PickingJobStepEvent> events = jsonEvents.stream()
-					.map(json -> fromJson(json, pickingJob, mobileUIPickingUserProfileRepository.getProfile()))
+					.map(json -> fromJson(json, pickingJob, pickingJobOptions))
 					.collect(ImmutableList.toImmutableList());
 
 			return pickingJobRestService.processStepEvents(pickingJob, events);
@@ -360,7 +363,7 @@
 		private static PickingJobStepEvent fromJson(
 				@NonNull final JsonPickingStepEvent json,
 				@NonNull final PickingJob pickingJob,
-				@NonNull final MobileUIPickingUserProfile pickingUserProfile)
+				@NonNull final PickingJobOptions pickingJobOptions)
 		{
 			final IHUQRCode qrCode = HUQRCodesService.toHUQRCode(json.getHuQRCode());
 
@@ -379,7 +382,7 @@
 					.huQRCode(qrCode)
 					.qtyPicked(json.getQtyPicked())
 					.isPickWholeTU(json.isPickWholeTU())
-					.checkIfAlreadyPacked(isCheckIfAlreadyPacked(json, pickingUserProfile))
+					.checkIfAlreadyPacked(isCheckIfAlreadyPacked(json, pickingJobOptions))
 					.qtyRejected(json.getQtyRejected())
 					.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(json.getQtyRejectedReasonCode()).orElse(null))
 					.catchWeight(json.getCatchWeight())
@@ -397,9 +400,9 @@
 
 		private static boolean isCheckIfAlreadyPacked(
 				@NonNull final JsonPickingStepEvent json,
-				@NonNull final MobileUIPickingUserProfile pickingUserProfile)
+				@NonNull final PickingJobOptions pickingJobOptions)
 		{
-			if (pickingUserProfile.isAlwaysSplitHUsEnabled())
+			if (pickingJobOptions.isAlwaysSplitHUsEnabled())
 			{
 				return false;
 			}
@@ -455,13 +458,13 @@
 
 			return JsonPickingJobAvailableTargets.builder()
 					.targets(pickingJobRestService.getLUAvailableTargets(pickingJob)
-									 .stream()
-									 .map(JsonLUPickingTarget::of)
-									 .collect(ImmutableList.toImmutableList()))
+							.stream()
+							.map(JsonLUPickingTarget::of)
+							.collect(ImmutableList.toImmutableList()))
 					.tuTargets(pickingJobRestService.getTUAvailableTargets(pickingJob)
-									   .stream()
-									   .map(JsonTUPickingTarget::of)
-									   .collect(ImmutableList.toImmutableList()))
+							.stream()
+							.map(JsonTUPickingTarget::of)
+							.collect(ImmutableList.toImmutableList()))
 					.build();
 		}
 
