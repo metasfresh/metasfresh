@@ -93,12 +93,12 @@ services:
   mobile:
     image: $mfregistry/metas-mobile:$mfversion
     ports:
-      - "3001:3001"
+      - "3001:80"
     volumes:
       - ./mobile-config.js:/usr/share/nginx/html/config.js:ro
       - ./default.conf:/etc/nginx/conf.d/default.conf
     healthcheck:
-      test: "curl --fail --silent http://localhost:3001 || exit 1"
+      test: "curl --fail --silent http://localhost:80 || exit 1"
       interval: 10s
       timeout: 10s
       start_period: 60s
@@ -115,7 +115,7 @@ services:
     volumes:
       - ./playwright-report:/app/playwright-report
     environment:
-      - "FRONTEND_BASE_URL=http://mobile:3001/mobile"
+      - "FRONTEND_BASE_URL=http://mobile:80/mobile"
       - "BACKEND_BASE_URL=http://app:8282/api/v2"
     depends_on:
       mobile:
