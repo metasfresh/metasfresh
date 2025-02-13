@@ -12,6 +12,11 @@ services:
       timeout: 10s
       start_period: 60s
       retries: 30
+    environment:
+      # run the database on the initial data
+      # so we can later commit it again to create postmobiletest images
+      # /data directories can't be persisted with docker commit!
+      - PGDATA=/var/lib/postgresql/initdata
     deploy:
       mode: replicated
       replicas: 1
@@ -109,6 +114,9 @@ services:
     image: $mfregistry/metas-mobile-test:$mfversion
     volumes:
       - ./playwright-report:/app/playwright-report
+    environment:
+      - "FRONTEND_BASE_URL=http://mobile:3001"
+      - "BACKEND_BASE_URL=http://app:8282/api/v2"
     depends_on:
       mobile:
         condition: service_healthy
