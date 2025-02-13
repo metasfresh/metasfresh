@@ -1,27 +1,6 @@
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2023 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for MobileUI_UserProfile_Picking_BPartner
@@ -184,6 +163,31 @@ public interface I_MobileUI_UserProfile_Picking_BPartner
 
 	ModelColumn<I_MobileUI_UserProfile_Picking_BPartner, org.compiere.model.I_MobileUI_UserProfile_Picking> COLUMN_MobileUI_UserProfile_Picking_ID = new ModelColumn<>(I_MobileUI_UserProfile_Picking_BPartner.class, "MobileUI_UserProfile_Picking_ID", org.compiere.model.I_MobileUI_UserProfile_Picking.class);
 	String COLUMNNAME_MobileUI_UserProfile_Picking_ID = "MobileUI_UserProfile_Picking_ID";
+
+	/**
+	 * Set Mobile UI Picking Job Options.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMobileUI_UserProfile_Picking_Job_ID (int MobileUI_UserProfile_Picking_Job_ID);
+
+	/**
+	 * Get Mobile UI Picking Job Options.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMobileUI_UserProfile_Picking_Job_ID();
+
+	@Nullable org.compiere.model.I_MobileUI_UserProfile_Picking_Job getMobileUI_UserProfile_Picking_Job();
+
+	void setMobileUI_UserProfile_Picking_Job(@Nullable org.compiere.model.I_MobileUI_UserProfile_Picking_Job MobileUI_UserProfile_Picking_Job);
+
+	ModelColumn<I_MobileUI_UserProfile_Picking_BPartner, org.compiere.model.I_MobileUI_UserProfile_Picking_Job> COLUMN_MobileUI_UserProfile_Picking_Job_ID = new ModelColumn<>(I_MobileUI_UserProfile_Picking_BPartner.class, "MobileUI_UserProfile_Picking_Job_ID", org.compiere.model.I_MobileUI_UserProfile_Picking_Job.class);
+	String COLUMNNAME_MobileUI_UserProfile_Picking_Job_ID = "MobileUI_UserProfile_Picking_Job_ID";
 
 	/**
 	 * Get Updated.
