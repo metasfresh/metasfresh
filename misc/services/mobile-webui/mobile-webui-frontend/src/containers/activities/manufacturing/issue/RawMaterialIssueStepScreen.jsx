@@ -8,7 +8,7 @@ import {
 } from '../../../../routes/manufacturing_issue';
 import * as CompleteStatus from '../../../../constants/CompleteStatus';
 import { getStepById } from '../../../../reducers/wfProcesses';
-import { pushHeaderEntry } from '../../../../actions/HeaderActions';
+import { updateHeaderEntry } from '../../../../actions/HeaderActions';
 
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import { toQRCodeDisplayable } from '../../../../utils/qrCode/hu';
@@ -31,7 +31,7 @@ const RawMaterialIssueStepScreen = () => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(
-      pushHeaderEntry(
+      updateHeaderEntry(
         computeHeaderEntriesFromParams({
           url,
           locatorName,

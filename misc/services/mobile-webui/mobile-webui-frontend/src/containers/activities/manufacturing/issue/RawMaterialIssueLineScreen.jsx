@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../../utils/translations';
-import { pushHeaderEntry } from '../../../../actions/HeaderActions';
+import { updateHeaderEntry } from '../../../../actions/HeaderActions';
 import { getActivityById, getLineByIdFromActivity, getStepsArrayFromLine } from '../../../../reducers/wfProcesses';
 
 import {
@@ -38,7 +38,7 @@ const RawMaterialIssueLineScreen = () => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(
-      pushHeaderEntry(
+      updateHeaderEntry(
         computeHeaderEntriesFromParams({
           url,
           caption,
@@ -165,7 +165,7 @@ export const useLineHeaderEntriesRefresh = ({ applicationId, wfProcessId, activi
 
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(pushHeaderEntry(headerEntries));
+    dispatch(updateHeaderEntry(headerEntries));
   }, []);
 };
 

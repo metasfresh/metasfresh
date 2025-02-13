@@ -4,7 +4,7 @@ import { trl } from '../../../../utils/translations';
 
 import { toastError } from '../../../../utils/toast';
 import { updateManufacturingReceiptQty } from '../../../../actions/ManufacturingActions';
-import { pushHeaderEntry } from '../../../../actions/HeaderActions';
+import { updateHeaderEntry } from '../../../../actions/HeaderActions';
 import { manufacturingReceiptReceiveTargetScreen } from '../../../../routes/manufacturing_receipt';
 import { getActivityById, getLineByIdFromActivity } from '../../../../reducers/wfProcesses';
 
@@ -30,7 +30,7 @@ const MaterialReceiptLineScreen = () => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(
-      pushHeaderEntry({
+      updateHeaderEntry({
         location: url,
         caption: activityCaption,
         userInstructions,

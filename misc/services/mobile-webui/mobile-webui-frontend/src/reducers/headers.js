@@ -129,35 +129,11 @@ export default function reducer(state = initialState, action) {
 
   switch (action.type) {
     case types.HEADER_PUSH_ENTRY: {
-      const { location } = payload;
-      const hidden = payload.hidden || !payload.values?.length; // if there are no header values, there's no reason to block space
-      const newEntryValues = { ...payload, hidden };
-
-      //
-      // Search by location and update an existing entry if possible
-      let existingEntryUpdated = false;
-      let newEntries = state.entries.map((entry) => {
-        if (entry.location === location) {
-          existingEntryUpdated = true;
-          return mergeEntries(entry, newEntryValues);
-        } else {
-          return entry;
-        }
-      });
-
-      if (existingEntryUpdated) {
-        newEntries = removeEntries({
-          entriesArray: newEntries,
-          startLocation: location,
-          inclusive: false,
-        });
-      } else {
-        const newEntry = mergeEntries({ location }, newEntryValues);
-        newEntries.push(newEntry);
-        // console.log('added newEntry: ', newEntry);
-      }
-
-      // console.log('HEADER_PUSH_ENTRY=>newEntries:', newEntries);
+      const newEntries = createOrUpdateEntry({ entries: state.entries, payload, isUpdateOnly: false });
+      return { ...state, entries: newEntries };
+    }
+    case types.HEADER_UPDATE_ENTRY: {
+      const newEntries = createOrUpdateEntry({ entries: state.entries, payload, isUpdateOnly: true });
       return { ...state, entries: newEntries };
     }
 
@@ -195,17 +171,101 @@ export default function reducer(state = initialState, action) {
   }
 }
 
+const createOrUpdateEntry = ({ entries, payload, isUpdateOnly }) => {
+  const { location } = payload;
+  const hidden = payload.hidden || !payload.values?.length; // if there are no header values, there's no reason to block space
+  const newEntryValues = { ...payload, hidden };
+
+  //
+  // Search by location and update an existing entry if possible
+  let existingEntryUpdated = false;
+  let newEntries = entries.map((entry) => {
+    if (entry.location === location) {
+      existingEntryUpdated = true;
+      return mergeEntries(entry, newEntryValues);
+    } else {
+      return entry;
+    }
+  });
+
+  //
+  // If we are allowed to also create/remove entries then do so
+  if (!isUpdateOnly) {
+    if (existingEntryUpdated) {
+      newEntries = removeEntries({
+        entriesArray: newEntries,
+        startLocation: location,
+        inclusive: false,
+      });
+    } else {
+      const newEntry = mergeEntries({ location }, newEntryValues);
+      newEntries.push(newEntry);
+      // console.log('added newEntry: ', newEntry);
+    }
+  } else {
+    if (!existingEntryUpdated) {
+      // console.log('Ignoring HEADER_UPDATE_ENTRY because no existing entry was found', {
+      //   payload,
+      //   isUpdateOnly,
+      //   entries,
+      // });
+
+      return entries;
+    }
+  }
+
+  return newEntries;
+};
+
 const mergeEntries = (entry, newValues) => {
   const newEntry = { ...entry };
 
   Object.keys(newValues).forEach((key) => {
-    const newValue = newValues[key];
-    if (newValue !== undefined) {
-      newEntry[key] = newValue;
+    if (key === 'values') {
+      newEntry[key] = mergeEntryValues(entry[key], newValues[key]);
+    } else {
+      const newValue = newValues[key];
+      if (newValue !== undefined) {
+        newEntry[key] = newValue;
+      }
     }
   });
 
   return newEntry;
+};
+
+const mergeEntryValues = (valuesArray, newValuesArray) => {
+  if (!newValuesArray?.length) return valuesArray ? [...valuesArray] : [];
+  if (!valuesArray?.length) return [...newValuesArray];
+
+  const newValuesByCaption = newValuesArray.reduce((accum, value) => {
+    accum[value.caption] = value;
+    return accum;
+  }, {});
+
+  const result = [];
+
+  valuesArray.forEach((value) => {
+    const caption = value.caption;
+    const newValue = newValuesByCaption[caption];
+    delete newValuesByCaption[caption];
+    if (newValue) {
+      result.push(newValue);
+    } else {
+      result.push(value);
+    }
+  });
+
+  newValuesArray.forEach((value) => {
+    const caption = value.caption;
+    const newValue = newValuesByCaption[caption];
+    delete newValuesByCaption[caption];
+    if (newValue) {
+      result.push(newValue);
+    }
+  });
+
+  return result;
 };
 
 const removeEntries = ({ entriesArray, startLocation, inclusive }) => {

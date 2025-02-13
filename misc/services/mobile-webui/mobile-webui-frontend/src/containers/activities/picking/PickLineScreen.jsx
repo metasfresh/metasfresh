@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../utils/translations';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import { updateHeaderEntry } from '../../../actions/HeaderActions';
 import { getLineById } from '../../../reducers/wfProcesses';
 
 import PickStepButton from './PickStepButton';
@@ -124,7 +124,7 @@ export const useHeaderUpdate = ({ url, caption, pickingUnit, packingItemName, uo
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(
-      pushHeaderEntry({
+      updateHeaderEntry({
         location: url,
         caption: trl('activities.picking.PickingLine'),
         values: [

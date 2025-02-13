@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useRouteMatch } from 'react-router-dom';
-import { pushHeaderEntry } from '../../actions/HeaderActions';
+import { updateHeaderEntry } from '../../actions/HeaderActions';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import WFLaunchersFilters from './WFLaunchersFilters';
 import { setActiveFilters } from '../../actions/LauncherActions';
@@ -24,7 +24,7 @@ const WFLaunchersFiltersScreen = () => {
 
   useEffect(() => {
     dispatch(
-      pushHeaderEntry({
+      updateHeaderEntry({
         location: url,
       })
     );
