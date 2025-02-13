@@ -1,11 +1,9 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { getEntryItemsFromState, getUserInstructionsFromHeaders } from '../reducers/headers';
+import { useHeaders } from '../reducers/headers';
 import UserInstructions from '../components/UserInstructions';
 
 export const ViewHeader = () => {
-  const entryItems = useSelector((state) => getEntryItemsFromState(state));
-  const userInstructions = useSelector((state) => getUserInstructionsFromHeaders(state));
+  const { userInstructions, entryItems } = useHeaders();
 
   if (entryItems.length <= 0 && !userInstructions) return null;
 

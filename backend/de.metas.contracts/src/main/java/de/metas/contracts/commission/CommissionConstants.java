@@ -38,6 +38,8 @@ public class CommissionConstants
 	public static final Duration NO_COMMISSION_AGREEMENT_DEFAULT_CONTRACT_DURATION = Duration.ofDays(365);
 
 
+	public static final String SYSCONFIG_UPDATE_SALESPARTNER_IN_MASTER_DATA = "de.metas.contracts.commission.UpdateSalesPartnerInCustomerMaterdata";
+
 	@AllArgsConstructor
 	@Getter
 	public enum CommissionDocType

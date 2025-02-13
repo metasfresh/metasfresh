@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 
 let nextQueryId = 1;
 
-export const useQuery = ({ queryFn, queryKey = [], enabled = true }) => {
+export const useQuery = ({ queryFn, queryKey = [], enabled = true, onSuccess }) => {
   const [isPending, setIsPending] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [data, setData] = useState();
 
   useEffect(() => {
@@ -18,6 +19,8 @@ export const useQuery = ({ queryFn, queryKey = [], enabled = true }) => {
     const queryId = doLog ? nextQueryId++ : null;
     let interrupted = false;
 
+    //
+    // Load data
     if (doLog) console.log(`useQuery(${queryId}) - started`, { queryKey, queryFn });
     setIsPending(true);
     queryFn()
@@ -28,7 +31,8 @@ export const useQuery = ({ queryFn, queryKey = [], enabled = true }) => {
         }
 
         setData(data);
-        if (doLog) console.log(`useQuery(${queryId}) - then`, { data, queryKey, queryFn });
+        setIsSuccess(true);
+        if (doLog) console.log(`useQuery(${queryId}) - success`, { data, queryKey, queryFn });
       })
       .finally(() => {
         if (interrupted) {
@@ -47,5 +51,15 @@ export const useQuery = ({ queryFn, queryKey = [], enabled = true }) => {
     };
   }, [enabled, ...queryKey]);
 
+  //
+  // fire onSuccess
+  useEffect(() => {
+    if (onSuccess && isSuccess) {
+      onSuccess(data);
+    }
+  }, [isSuccess, data]);
+
+  //
+  //
   return { isPending, data };
 };

@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { useHistory } from 'react-router-dom';
 
 import { trl } from '../../../utils/translations';
 import { scanBarcodeLocation } from '../../../routes/scan';
 
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import YesNoDialog from '../../../components/dialogs/YesNoDialog';
+import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 
 export const COMPONENTTYPE_ScanBarcode = 'common/scanBarcode';
 
 const ScanActivity = (props) => {
-  const history = useHistory();
+  const history = useMobileNavigation();
   const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
   const { applicationId, wfProcessId, activityState } = props;
 

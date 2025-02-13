@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { useHistory } from 'react-router-dom';
 
 import * as CompleteStatus from '../../../../constants/CompleteStatus';
 import { manufacturingLineScreenLocation } from '../../../../routes/manufacturing_issue';
 
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../../components/buttons/ButtonQuantityProp';
+import { useMobileNavigation } from '../../../../hooks/useMobileNavigation';
 
 const RawMaterialIssueActivity = (props) => {
   const {
@@ -18,7 +18,7 @@ const RawMaterialIssueActivity = (props) => {
     },
   } = props;
 
-  const history = useHistory();
+  const history = useMobileNavigation();
   const onButtonClick = (lineId) => {
     history.push(manufacturingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
   };
