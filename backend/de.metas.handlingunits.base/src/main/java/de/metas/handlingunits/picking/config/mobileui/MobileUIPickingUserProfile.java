@@ -20,13 +20,12 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking.config;
+package de.metas.handlingunits.picking.config.mobileui;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.picking.job.model.PickingJobFacetGroup;
-import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -42,10 +41,13 @@ public class MobileUIPickingUserProfile
 {
 	public static final MobileUIPickingUserProfile DEFAULT = builder()
 			.name("default")
-			.isPickWithNewLU(true)
-			.isCatchWeightTUPickingEnabled(false)
-			.considerSalesOrderCapacity(false)
-			.isAllowSkippingRejectedReason(false)
+			.isAllowPickingAnyCustomer(true)
+			.defaultPickingJobOptions(PickingJobOptions.builder()
+					.isPickWithNewLU(true)
+					.isCatchWeightTUPickingEnabled(false)
+					.considerSalesOrderCapacity(false)
+					.isAllowSkippingRejectedReason(false)
+					.build())
 			.filters(PickingFiltersList.ofList(ImmutableList.of(
 					PickingFilter.of(PickingJobFacetGroup.CUSTOMER, 10),
 					PickingFilter.of(PickingJobFacetGroup.DELIVERY_DATE, 20)))
@@ -67,18 +69,9 @@ public class MobileUIPickingUserProfile
 			.build();
 
 	@NonNull String name;
-	@NonNull ImmutableSet<BPartnerId> onlyBPartnerIds;
-	boolean isAllowPickingAnyHU;
-	boolean isAlwaysSplitHUsEnabled;
-	boolean isPickWithNewLU;
-	boolean isAllowNewTU;
-	boolean isCatchWeightTUPickingEnabled;
-	boolean considerSalesOrderCapacity;
-	boolean isAllowSkippingRejectedReason;
-	boolean isShowConfirmationPromptWhenOverPick;
-	@NonNull CreateShipmentPolicy createShipmentPolicy;
-	@Nullable PickingLineGroupBy pickingLineGroupBy;
-	@Nullable PickingLineSortBy pickingLineSortBy;
+	boolean isAllowPickingAnyCustomer;
+	@Getter(AccessLevel.PACKAGE) @NonNull PickingCustomerConfigsCollection customerConfigs;
+	@NonNull PickingJobOptions defaultPickingJobOptions;
 	@Getter(AccessLevel.NONE) @NonNull PickingFiltersList filters;
 	@Getter(AccessLevel.PACKAGE) @NonNull ImmutableList<PickingJobField> fields;
 
@@ -88,29 +81,18 @@ public class MobileUIPickingUserProfile
 	@Builder(toBuilder = true)
 	private MobileUIPickingUserProfile(
 			final @NonNull String name,
-			final @Nullable ImmutableSet<BPartnerId> onlyBPartnerIds,
-			final boolean isAllowPickingAnyHU,
-			final boolean isAlwaysSplitHUsEnabled,
-			final boolean isPickWithNewLU,
-			final boolean isAllowNewTU,
-			final boolean isCatchWeightTUPickingEnabled,
-			final boolean considerSalesOrderCapacity,
-			final boolean isAllowSkippingRejectedReason,
-			final boolean isShowConfirmationPromptWhenOverPick,
-			final @Nullable CreateShipmentPolicy createShipmentPolicy,
-			final @Nullable PickingLineGroupBy pickingLineGroupBy,
-			final @Nullable PickingLineSortBy pickingLineSortBy,
+			final boolean isAllowPickingAnyCustomer,
+			final @Nullable PickingCustomerConfigsCollection customerConfigs,
+			final @NonNull PickingJobOptions defaultPickingJobOptions,
 			final @Nullable PickingFiltersList filters,
 			final @NonNull ImmutableList<PickingJobField> fields)
 	{
 		Check.assumeNotEmpty(fields, "fields shall not be empty");
 
 		this.name = name;
-		this.onlyBPartnerIds = onlyBPartnerIds != null ? onlyBPartnerIds : ImmutableSet.of();
-		this.isAllowPickingAnyHU = isAllowPickingAnyHU;
-		this.isAlwaysSplitHUsEnabled = isAlwaysSplitHUsEnabled;
-		this.isPickWithNewLU = isPickWithNewLU;
-		this.createShipmentPolicy = createShipmentPolicy != null ? createShipmentPolicy : CreateShipmentPolicy.DO_NOT_CREATE;
+		this.isAllowPickingAnyCustomer = isAllowPickingAnyCustomer;
+		this.customerConfigs = customerConfigs != null ? customerConfigs : PickingCustomerConfigsCollection.EMPTY;
+		this.defaultPickingJobOptions = defaultPickingJobOptions;
 		this.filters = filters != null ? filters : PickingFiltersList.EMPTY;
 		this.fields = fields;
 
@@ -123,14 +105,6 @@ public class MobileUIPickingUserProfile
 				.filter(PickingJobField::isShowInDetailed)
 				.sorted(Comparator.comparing(PickingJobField::getSeqNo))
 				.collect(ImmutableList.toImmutableList());
-
-		this.isCatchWeightTUPickingEnabled = isCatchWeightTUPickingEnabled;
-		this.considerSalesOrderCapacity = considerSalesOrderCapacity;
-		this.isAllowSkippingRejectedReason = isAllowSkippingRejectedReason;
-		this.isAllowNewTU = isAllowNewTU;
-		this.isShowConfirmationPromptWhenOverPick = isShowConfirmationPromptWhenOverPick;
-		this.pickingLineGroupBy = pickingLineGroupBy;
-		this.pickingLineSortBy = pickingLineSortBy;
 	}
 
 	public ImmutableList<PickingJobFacetGroup> getFilterGroupsInOrder() {return filters.getGroupsInOrder();}
@@ -138,5 +112,23 @@ public class MobileUIPickingUserProfile
 	public boolean isLauncherField(@NonNull final PickingJobFieldType fieldType)
 	{
 		return launcherFieldsInOrder.stream().anyMatch(field -> PickingJobFieldType.equals(field.getField(), fieldType));
+	}
+
+	public PickingJobOptions getPickingJobOptions(@NonNull final BPartnerId customerId, @NonNull PickingJobOptionsCollection pickingJobOptionsCollection)
+	{
+		return customerConfigs.getPickingJobOptionsId(customerId)
+				.map(pickingJobOptionsCollection::getById)
+				.orElse(defaultPickingJobOptions);
+	}
+
+	@NonNull
+	public ImmutableSet<BPartnerId> getPickOnlyCustomerIds()
+	{
+		if (isAllowPickingAnyCustomer)
+		{
+			return ImmutableSet.of();
+		}
+		
+		return customerConfigs.getCustomerIds();
 	}
 }

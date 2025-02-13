@@ -6,6 +6,8 @@ import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.ShipmentScheduleId;
@@ -30,6 +32,8 @@ import java.util.Set;
  */
 public interface PickingJobLoaderSupportingServices
 {
+	PickingJobOptions getPickingJobOptions(@NonNull final BPartnerId customerId);
+
 	void warmUpCachesFrom(@NonNull PackageableList items);
 
 	void warmUpSalesOrderDocumentNosCache(@NonNull Collection<OrderId> orderIds);
@@ -61,6 +65,4 @@ public interface PickingJobLoaderSupportingServices
 	HUQRCode getQRCodeByHUId(HuId huId);
 
 	SetMultimap<ShipmentScheduleId, ExistingLockInfo> getLocks(Collection<ShipmentScheduleId> shipmentScheduleIds);
-
-	boolean isCatchWeightTUPickingEnabled();
 }

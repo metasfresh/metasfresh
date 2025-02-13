@@ -24,7 +24,9 @@ package de.metas.picking.workflow.handlers.activity_handlers;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.handlingunits.picking.config.PickingLineSortBy;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
+import de.metas.handlingunits.picking.config.mobileui.PickingLineGroupBy;
+import de.metas.handlingunits.picking.config.mobileui.PickingLineSortBy;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobProgress;
@@ -85,7 +87,8 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 
 		final JsonRejectReasonsList qtyRejectedReasons = JsonRejectReasonsList.of(pickingJobRestService.getQtyRejectedReasons(), jsonOpts);
 
-		final JsonPickingJob jsonPickingJob = JsonPickingJob.of(pickingJob, (pj) -> mapLines(pj, jsonOpts));
+		final PickingJobOptions pickingJobOptions = pickingJobRestService.getPickingJobOptions(pickingJob.getCustomerId());
+		final JsonPickingJob jsonPickingJob = JsonPickingJob.of(pickingJob, (pj) -> mapLines(pj, pickingJobOptions, jsonOpts));
 
 		return UIComponent.builderFrom(COMPONENTTYPE_PICK_PRODUCTS, wfActivity)
 				.properties(Params.builder()
@@ -94,10 +97,10 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 						.valueObj("lines", jsonPickingJob.getLines())
 						.valueObj("pickFromAlternatives", jsonPickingJob.getPickFromAlternatives())
 						.valueObj("qtyRejectedReasons", qtyRejectedReasons)
-						.valueObj("isPickWithNewLU", pickingJobRestService.isPickWithNewLU())
-						.valueObj("isAllowSkippingRejectedReason", pickingJobRestService.isAllowSkippingRejectedReasons())
-						.valueObj("isAllowNewTU", pickingJobRestService.isAllowNewTU())
-						.valueObj("isShowPromptWhenOverPicking", pickingJobRestService.isShowPromptWhenOverPicking())
+						.valueObj("isPickWithNewLU", pickingJobOptions.isPickWithNewLU())
+						.valueObj("isAllowSkippingRejectedReason", pickingJobOptions.isAllowSkippingRejectedReason())
+						.valueObj("isAllowNewTU", pickingJobOptions.isAllowNewTU())
+						.valueObj("isShowPromptWhenOverPicking", pickingJobOptions.isShowConfirmationPromptWhenOverPick())
 						.build())
 				.build();
 	}
@@ -138,13 +141,13 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 	@NonNull
 	private List<JsonPickingJobLine> mapLines(
 			@NonNull final PickingJob pickingJob,
+			@NonNull final PickingJobOptions pickingJobOptions,
 			@NonNull final JsonOpts jsonOpts)
 	{
-		final Map<String, List<PickingJobLine>> groupedLines = pickingJobRestService
-				.getPickingLineGroupBy()
-				.groupLines(pickingJob.getLines());
-		final PickingLineSortBy sortBy = pickingJobRestService.getPickingLineSortBy();
+		final PickingLineGroupBy groupBy = pickingJobOptions.getPickingLineGroupBy().orElse(PickingLineGroupBy.NONE);
+		final PickingLineSortBy sortBy = pickingJobOptions.getPickingLineSortBy().orElse(PickingLineSortBy.ORDER_LINE_SEQ_NO);
 
+		final Map<String, List<PickingJobLine>> groupedLines = groupBy.groupLines(pickingJob.getLines());
 		final Map<String, List<PickingJobLine>> sortedGroupedLines = groupedLines.entrySet().stream()
 				.map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), sortBy.sort(entry.getValue())))
 				.collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
