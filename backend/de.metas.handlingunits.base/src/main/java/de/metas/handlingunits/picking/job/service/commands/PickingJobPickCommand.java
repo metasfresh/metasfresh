@@ -29,8 +29,9 @@ import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
 import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
-import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.LocatorInfo;
@@ -230,7 +231,9 @@ public class PickingJobPickCommand
 			}
 
 			this.qtyToPickTUs = QtyTU.ofBigDecimal(qtyToPickBD);
-			this.qtyToPickCUs = computeQtyToPickCUs(mobileUIPickingUserProfileRepository, line, qtyToPickTUs);
+
+			final PickingJobOptions pickingJobOptions = mobileUIPickingUserProfileRepository.getPickingJobOptions(pickingJob.getCustomerId());
+			this.qtyToPickCUs = computeQtyToPickCUs(pickingJobOptions, line, qtyToPickTUs);
 
 			if (qtyRejectedReasonCode != null)
 			{
@@ -955,7 +958,7 @@ public class PickingJobPickCommand
 		final String expectedProductNo = productBL.getProductValue(expectedProductId);
 		final String ean13ProductNo = pickFromHUQRCode.getProductNo();
 		{
-			if(!expectedProductNo.startsWith(ean13ProductNo))
+			if (!expectedProductNo.startsWith(ean13ProductNo))
 			{
 				throw new AdempiereException(QR_CODE_PRODUCT_ERROR_MSG)
 						.setParameter("ean13ProductNo", ean13ProductNo)
@@ -1086,13 +1089,13 @@ public class PickingJobPickCommand
 
 	@NonNull
 	private static Quantity computeQtyToPickCUs(
-			@NonNull final MobileUIPickingUserProfileRepository profileRepository,
+			@NonNull final PickingJobOptions pickingJobOptions,
 			@NonNull final PickingJobLine line,
 			@NonNull final QtyTU qtyTU)
 	{
 		final Quantity qtyToPickCUsBasedOnPackingInfo = line.getPackingInfo().computeQtyCUsOfQtyTUs(qtyTU);
 
-		if (!profileRepository.getProfile().isConsiderSalesOrderCapacity())
+		if (!pickingJobOptions.isConsiderSalesOrderCapacity())
 		{
 			return qtyToPickCUsBasedOnPackingInfo;
 		}

@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking.config;
+package de.metas.handlingunits.picking.config.mobileui;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.ad_reference.ReferenceId;

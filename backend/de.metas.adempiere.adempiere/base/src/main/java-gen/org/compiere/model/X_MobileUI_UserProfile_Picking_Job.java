@@ -5,23 +5,23 @@ import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
 
-/** Generated Model for MobileUI_UserProfile_Picking
+/** Generated Model for MobileUI_UserProfile_Picking_Job
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking, org.compiere.model.I_Persistent 
+public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking_Job, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1082695111L;
+	private static final long serialVersionUID = 202441675L;
 
     /** Standard Constructor */
-    public X_MobileUI_UserProfile_Picking (final Properties ctx, final int MobileUI_UserProfile_Picking_ID, @Nullable final String trxName)
+    public X_MobileUI_UserProfile_Picking_Job (final Properties ctx, final int MobileUI_UserProfile_Picking_Job_ID, @Nullable final String trxName)
     {
-      super (ctx, MobileUI_UserProfile_Picking_ID, trxName);
+      super (ctx, MobileUI_UserProfile_Picking_Job_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_MobileUI_UserProfile_Picking (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_MobileUI_UserProfile_Picking_Job (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -60,15 +60,15 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public void setIsAllowAnyCustomer (final boolean IsAllowAnyCustomer)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
-		set_Value (COLUMNNAME_IsAllowAnyCustomer, IsAllowAnyCustomer);
+		set_Value (COLUMNNAME_Description, Description);
 	}
 
 	@Override
-	public boolean isAllowAnyCustomer() 
+	public java.lang.String getDescription() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsAllowAnyCustomer);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
 	@Override
@@ -168,18 +168,18 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public void setMobileUI_UserProfile_Picking_ID (final int MobileUI_UserProfile_Picking_ID)
+	public void setMobileUI_UserProfile_Picking_Job_ID (final int MobileUI_UserProfile_Picking_Job_ID)
 	{
-		if (MobileUI_UserProfile_Picking_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_MobileUI_UserProfile_Picking_ID, null);
+		if (MobileUI_UserProfile_Picking_Job_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_MobileUI_UserProfile_Picking_Job_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_MobileUI_UserProfile_Picking_ID, MobileUI_UserProfile_Picking_ID);
+			set_ValueNoCheck (COLUMNNAME_MobileUI_UserProfile_Picking_Job_ID, MobileUI_UserProfile_Picking_Job_ID);
 	}
 
 	@Override
-	public int getMobileUI_UserProfile_Picking_ID() 
+	public int getMobileUI_UserProfile_Picking_Job_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_MobileUI_UserProfile_Picking_ID);
+		return get_ValueAsInt(COLUMNNAME_MobileUI_UserProfile_Picking_Job_ID);
 	}
 
 	@Override
