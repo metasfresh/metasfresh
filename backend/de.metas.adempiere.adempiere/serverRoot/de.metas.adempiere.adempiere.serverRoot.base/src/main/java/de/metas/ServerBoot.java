@@ -141,6 +141,8 @@ public class ServerBoot implements InitializingBean
 					.run(args);
 		}
 		SpringContextHolder.instance.getBean(ServerBoot.class).commandLineOptions = commandLineOptions;
+		
+		final ServerBootHealthIndicator healthIndicator = SpringContextHolder.instance.getBean(ServerBootHealthIndicator.class);
 
 		// now init the model validation engine
 		ModelValidationEngine.get();
@@ -151,6 +153,7 @@ public class ServerBoot implements InitializingBean
 
 		logger.info("Metasfresh Server started in {}", stopwatch);
 		logger.info("End of {} main-method ", ServerBoot.class);
+		healthIndicator.setStatusUp();
 	}
 
 	private static ArrayList<String> retrieveActiveProfilesFromSysConfig()
