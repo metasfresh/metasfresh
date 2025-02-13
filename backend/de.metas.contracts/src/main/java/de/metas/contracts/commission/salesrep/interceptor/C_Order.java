@@ -3,10 +3,12 @@ package de.metas.contracts.commission.salesrep.interceptor;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.contracts.commission.CommissionConstants;
 import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptor;
 import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptorFactory;
 import de.metas.contracts.commission.salesrep.DocumentSalesRepDescriptorService;
 import de.metas.order.IOrderBL;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -19,6 +21,7 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
@@ -57,7 +60,8 @@ public class C_Order
 	private final DocumentSalesRepDescriptorService documentSalesRepDescriptorService;
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	
 	public C_Order(
 			@NonNull final DocumentSalesRepDescriptorFactory documentSalesRepDescriptorFactory,
 			@NonNull final DocumentSalesRepDescriptorService documentSalesRepDescriptorService)
@@ -124,6 +128,13 @@ public class C_Order
 			ifColumnsChanged = I_C_Order.COLUMNNAME_C_BPartner_SalesRep_ID)
 	public void updateSalesPartnerInCustomerMaterdata(@NonNull final I_C_Order orderRecord)
 	{
+		final boolean performUpdate = sysConfigBL.getBooleanValue(CommissionConstants.SYSCONFIG_UPDATE_SALESPARTNER_IN_MASTER_DATA,
+				true /*preserve old behavior by default*/,
+				ClientAndOrgId.ofClientAndOrg(orderRecord.getAD_Client_ID(), orderRecord.getAD_Org_ID()));
+		if (!performUpdate)
+		{
+			return;
+		}
 		if (!orderRecord.isSOTrx())
 		{
 			return;
