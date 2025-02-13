@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/invoice/report" uuid="9cbb1211-c2e8-4a8e-966b-e564bfc4c4f5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="4.0"/>
 	<property name="ireport.x" value="99"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -21,115 +21,164 @@
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details ($P{c_invoice_id}, $P{ad_language});]]>
 	</queryString>
 	<field name="inouts" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="inouts"/>
 		<property name="com.jaspersoft.studio.field.label" value="inouts"/>
 	</field>
 	<field name="doctype" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="doctype"/>
 		<property name="com.jaspersoft.studio.field.label" value="doctype"/>
 	</field>
 	<field name="reference" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="reference"/>
 		<property name="com.jaspersoft.studio.field.label" value="reference"/>
 	</field>
 	<field name="shiplocation" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="shiplocation"/>
 		<property name="com.jaspersoft.studio.field.label" value="shiplocation"/>
 	</field>
+	<field name="tour" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="tour"/>
+		<property name="com.jaspersoft.studio.field.label" value="tour"/>
+	</field>
 	<field name="inouts_datefrom" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="inouts_datefrom"/>
 		<property name="com.jaspersoft.studio.field.label" value="inouts_datefrom"/>
 	</field>
 	<field name="inouts_dateto" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="inouts_dateto"/>
 		<property name="com.jaspersoft.studio.field.label" value="inouts_dateto"/>
 	</field>
 	<field name="inouts_issamedate" class="java.lang.Boolean">
+		<property name="com.jaspersoft.studio.field.name" value="inouts_issamedate"/>
 		<property name="com.jaspersoft.studio.field.label" value="inouts_issamedate"/>
 	</field>
 	<field name="inouts_isdatacomplete" class="java.lang.Boolean">
+		<property name="com.jaspersoft.studio.field.name" value="inouts_isdatacomplete"/>
 		<property name="com.jaspersoft.studio.field.label" value="inouts_isdatacomplete"/>
 	</field>
 	<field name="ishu" class="java.lang.Boolean">
+		<property name="com.jaspersoft.studio.field.name" value="ishu"/>
 		<property name="com.jaspersoft.studio.field.label" value="ishu"/>
 	</field>
 	<field name="line" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="line"/>
 		<property name="com.jaspersoft.studio.field.label" value="line"/>
 	</field>
 	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="name"/>
 		<property name="com.jaspersoft.studio.field.label" value="name"/>
 	</field>
 	<field name="attributes" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="attributes"/>
 		<property name="com.jaspersoft.studio.field.label" value="attributes"/>
 	</field>
 	<field name="huqty" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="huqty"/>
 		<property name="com.jaspersoft.studio.field.label" value="huqty"/>
 	</field>
 	<field name="huname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="huname"/>
 		<property name="com.jaspersoft.studio.field.label" value="huname"/>
 	</field>
 	<field name="qtyinvoicedinpriceuom" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qtyinvoicedinpriceuom"/>
 		<property name="com.jaspersoft.studio.field.label" value="qtyinvoicedinpriceuom"/>
 	</field>
 	<field name="shipped" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="shipped"/>
 		<property name="com.jaspersoft.studio.field.label" value="shipped"/>
 	</field>
 	<field name="retour" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="retour"/>
 		<property name="com.jaspersoft.studio.field.label" value="retour"/>
 	</field>
 	<field name="priceactual" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="priceactual"/>
 		<property name="com.jaspersoft.studio.field.label" value="priceactual"/>
 	</field>
 	<field name="priceentered" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="priceentered"/>
 		<property name="com.jaspersoft.studio.field.label" value="priceentered"/>
 	</field>
 	<field name="discount" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="discount"/>
 		<property name="com.jaspersoft.studio.field.label" value="discount"/>
 	</field>
 	<field name="uom" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="uom"/>
 		<property name="com.jaspersoft.studio.field.label" value="uom"/>
 	</field>
 	<field name="priceuom" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="priceuom"/>
 		<property name="com.jaspersoft.studio.field.label" value="priceuom"/>
 	</field>
 	<field name="stdprecision" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="stdprecision"/>
 		<property name="com.jaspersoft.studio.field.label" value="stdprecision"/>
 	</field>
 	<field name="linenetamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="linenetamt"/>
 		<property name="com.jaspersoft.studio.field.label" value="linenetamt"/>
 	</field>
 	<field name="rate" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="rate"/>
 		<property name="com.jaspersoft.studio.field.label" value="rate"/>
 	</field>
 	<field name="isdiscountprinted" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="isdiscountprinted"/>
 		<property name="com.jaspersoft.studio.field.label" value="isdiscountprinted"/>
 	</field>
 	<field name="isprinttax" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="isprinttax"/>
 		<property name="com.jaspersoft.studio.field.label" value="isprinttax"/>
 	</field>
 	<field name="description" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="description"/>
 		<property name="com.jaspersoft.studio.field.label" value="description"/>
 	</field>
 	<field name="productdescription" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="productdescription"/>
 		<property name="com.jaspersoft.studio.field.label" value="productdescription"/>
 	</field>
 	<field name="bp_product_no" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="bp_product_no"/>
 		<property name="com.jaspersoft.studio.field.label" value="bp_product_no"/>
 	</field>
 	<field name="bp_product_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="bp_product_name"/>
 		<property name="com.jaspersoft.studio.field.label" value="bp_product_name"/>
 	</field>
 	<field name="p_value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="p_value"/>
 		<property name="com.jaspersoft.studio.field.label" value="p_value"/>
 	</field>
 	<field name="p_description" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="p_description"/>
 		<property name="com.jaspersoft.studio.field.label" value="p_description"/>
 	</field>
 	<field name="invoice_description" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="invoice_description"/>
 		<property name="com.jaspersoft.studio.field.label" value="invoice_description"/>
 	</field>
 	<field name="cursymbol" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cursymbol"/>
 		<property name="com.jaspersoft.studio.field.label" value="cursymbol"/>
 	</field>
 	<field name="iscampaignprice" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="iscampaignprice"/>
 		<property name="com.jaspersoft.studio.field.label" value="iscampaignprice"/>
 	</field>
 	<field name="isprintwhenpackingmaterial" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="isprintwhenpackingmaterial"/>
 		<property name="com.jaspersoft.studio.field.label" value="isprintwhenpackingmaterial"/>
+	</field>
+	<field name="catchweight" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="catchweight"/>
+		<property name="com.jaspersoft.studio.field.label" value="catchweight"/>
+	</field>
+	<field name="weight_uom" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="weight_uom"/>
+		<property name="com.jaspersoft.studio.field.label" value="weight_uom"/>
 	</field>
 	<variable name="LINESUM_SUM" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{linenetamt}]]></variableExpression>
@@ -150,7 +199,7 @@
 			<band height="25" splitType="Stretch">
 				<printWhenExpression><![CDATA[$F{inouts_isdatacomplete}]]></printWhenExpression>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-62" stretchType="RelativeToBandHeight" mode="Transparent" x="37" y="0" width="421" height="12" isRemoveLineWhenBlank="true" uuid="36bab5d1-cbc2-4835-aefd-6047b754b452"/>
+					<reportElement key="textField-62" stretchType="ContainerHeight" mode="Transparent" x="37" y="0" width="421" height="12" isRemoveLineWhenBlank="true" uuid="36bab5d1-cbc2-4835-aefd-6047b754b452"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -160,12 +209,14 @@
 					<textElement>
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{inouts} +
+					<textFieldExpression><![CDATA[$F{inouts} 
++
 ( $F{inouts_issamedate} ? " "+$R{of_io}+" " : " " + $R{from_io}+" " ) +
 $F{inouts_datefrom} +
 ( $F{inouts_issamedate} ? " " : " "+ $R{to}+" " + $F{inouts_dateto}) +
 " - " +
-$F{shiplocation}]]></textFieldExpression>
+$F{shiplocation}
++($F{tour} != null ? ("\n" + $F{tour}) : "")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement key="textField-62" positionType="FixRelativeToBottom" mode="Transparent" x="37" y="12" width="421" height="12" isRemoveLineWhenBlank="true" uuid="36bab5d1-cbc2-4835-aefd-6047b754b452">
@@ -828,6 +879,30 @@ $F{shiplocation}]]></textFieldExpression>
 		</band>
 	</lastPageFooter>
 	<summary>
-		<band splitType="Stretch"/>
+		<band height="20" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$F{catchweight}!=null]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" pattern="0.00" isBlankWhenNull="true">
+				<reportElement x="37" y="8" width="56" height="12" uuid="64fb3880-4136-4349-8fe1-64d6479e70c4"/>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Weight}+" :"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="0.00" isBlankWhenNull="true">
+				<reportElement x="93" y="8" width="34" height="12" uuid="31badd89-f317-40a2-b884-2bbe03952afd"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{catchweight}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="127" y="8" width="100" height="12" uuid="ee72bb09-d554-4a02-9c3d-c5c9e4e775c6"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{weight_uom}]]></textFieldExpression>
+			</textField>
+		</band>
 	</summary>
 </jasperReport>

@@ -175,6 +175,14 @@
 		<property name="com.jaspersoft.studio.field.name" value="isprintwhenpackingmaterial"/>
 		<property name="com.jaspersoft.studio.field.label" value="isprintwhenpackingmaterial"/>
 	</field>
+	<field name="catchweight" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="catchweight"/>
+		<property name="com.jaspersoft.studio.field.label" value="catchweight"/>
+	</field>
+	<field name="weight_uom" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="weight_uom"/>
+		<property name="com.jaspersoft.studio.field.label" value="weight_uom"/>
+	</field>
 	<variable name="LINESUM_SUM" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{linenetamt}]]></variableExpression>
 		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
@@ -208,14 +216,14 @@
 					<textElement>
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{inouts} +
-($F{tour} != null ? $F{tour} : "")
+					<textFieldExpression><![CDATA[$F{inouts}
 +
 ( $F{inouts_issamedate} ? " "+$R{of_io}+" " : " " + $R{from_io}+" " ) +
 $F{inouts_datefrom} +
 ( $F{inouts_issamedate} ? " " : " "+ $R{to}+" " + $F{inouts_dateto}) +
 " - " +
-$F{shiplocation}]]></textFieldExpression>
+$F{shiplocation}
++($F{tour} != null ? ("\n" + $F{tour}) : "")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement key="textField-62" positionType="FixRelativeToBottom" mode="Transparent" x="37" y="12" width="421" height="12" isRemoveLineWhenBlank="true" uuid="36bab5d1-cbc2-4835-aefd-6047b754b452">
@@ -1008,6 +1016,30 @@ $F{shiplocation}]]></textFieldExpression>
 		</band>
 	</lastPageFooter>
 	<summary>
-		<band splitType="Stretch"/>
+		<band height="20" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$F{catchweight}!=null]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" pattern="0.00" isBlankWhenNull="true">
+				<reportElement x="37" y="8" width="56" height="12" uuid="2c4d7d85-d47b-4ce2-a84e-130c66f9d140"/>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Weight}+" :"]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="0.00" isBlankWhenNull="true">
+				<reportElement x="93" y="8" width="34" height="12" uuid="d1735192-f968-4d13-bbea-795cc3ca9fbd"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{catchweight}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="127" y="8" width="100" height="12" uuid="c8d275d1-8b81-459c-8dc6-56ba0714d3a6"/>
+				<textElement>
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{weight_uom}]]></textFieldExpression>
+			</textField>
+		</band>
 	</summary>
 </jasperReport>
