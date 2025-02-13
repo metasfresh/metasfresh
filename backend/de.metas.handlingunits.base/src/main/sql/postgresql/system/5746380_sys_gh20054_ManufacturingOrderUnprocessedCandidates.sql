@@ -2,7 +2,7 @@
 
 -- Value: ManufacturingOrderUnprocessedCandidates
 -- 2025-02-12T12:20:45.065Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545497,0,TO_TIMESTAMP('2025-02-12 12:20:44.803000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','Der Produktionsauftrag hat unbearbeitete Ausgabe- oder Empfangskandidaten. Bitte bearbeiten Sie diese, bevor Sie den Auftrag schließen!','E',TO_TIMESTAMP('2025-02-12 12:20:44.803000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'ManufacturingOrderUnprocessedCandidates')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545497,0,TO_TIMESTAMP('2025-02-12 12:20:44.803000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','Der Produktionsauftrag wurde noch nicht endgültig bearbeitet. Bitte bearbeiten Sie die offenen Posten, bevor Sie den Auftrag abschließen.','E',TO_TIMESTAMP('2025-02-12 12:20:44.803000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'ManufacturingOrderUnprocessedCandidates')
 ;
 
 -- 2025-02-12T12:20:45.069Z
@@ -11,7 +11,7 @@ INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID, MsgText,MsgTip, IsTransla
 
 -- Value: ManufacturingOrderUnprocessedCandidates
 -- 2025-02-12T12:20:58.361Z
-UPDATE AD_Message_Trl SET MsgText='The Manufacturing Order has unprocessed Issue or Receipt candidates. Please process them before closing the order !',Updated=TO_TIMESTAMP('2025-02-12 12:20:58.361000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545497
+UPDATE AD_Message_Trl SET MsgText='The manufacturing order has not yet been finally processed. Please process the open items before closing the order.',Updated=TO_TIMESTAMP('2025-02-12 12:20:58.361000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545497
 ;
 
 -- 2025-02-12T12:20:58.362Z
