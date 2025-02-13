@@ -11,6 +11,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.HUIdAndQRCode;
 import de.metas.handlingunits.movement.MoveHUCommand;
+import de.metas.handlingunits.movement.MoveHURequestItem;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.job.model.HUInfo;
@@ -189,7 +190,7 @@ public class PickingJobUnPickCommand
 
 		MoveHUCommand.builder()
 				.huQRCodesService(huQRCodesService)
-				.husToMove(huIdAndQRCodeList)
+				.requestItems(huIdAndQRCodeList.stream().map(MoveHURequestItem::ofHUIdAndQRCode).collect(ImmutableSet.toImmutableSet()))
 				.targetQRCode(unpickToHU.toGlobalQRCode())
 				.build()
 				.execute();

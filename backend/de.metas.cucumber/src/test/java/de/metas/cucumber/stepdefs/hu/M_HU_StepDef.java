@@ -73,6 +73,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_QRCode;
+import de.metas.handlingunits.model.I_M_HU_QRCode_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.model.I_M_InventoryLine;
@@ -131,7 +132,7 @@ import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Ite
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI_Version.COLUMNNAME_M_HU_PI_Version_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_M_Inventory.COLUMNNAME_MovementDate;
 import static org.compiere.model.I_M_Locator.COLUMNNAME_M_Locator_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
@@ -585,7 +586,12 @@ public class M_HU_StepDef
 			final I_M_HU_QRCode qrCode = qrCodesTable.get(qrCodeIdentifier);
 			InterfaceWrapperHelper.refresh(qrCode);
 
-			final I_M_HU hu = load(qrCode.getM_HU_ID(), I_M_HU.class);
+			final I_M_HU_QRCode_Assignment singleAssignment = queryBL.createQueryBuilder(I_M_HU_QRCode_Assignment.class)
+					.addEqualsFilter(I_M_HU_QRCode_Assignment.COLUMNNAME_M_HU_QRCode_ID, qrCode.getM_HU_QRCode_ID())
+					.create()
+					.firstOnlyNotNull(I_M_HU_QRCode_Assignment.class);
+
+			final I_M_HU hu = load(singleAssignment.getM_HU_ID(), I_M_HU.class);
 
 			assertThat(hu).isNotNull();
 

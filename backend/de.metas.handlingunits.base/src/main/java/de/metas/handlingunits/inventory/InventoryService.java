@@ -17,6 +17,8 @@ import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryProduc
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inventory.AggregationType;
@@ -92,7 +94,8 @@ public class InventoryService
 				SourceHUsService.get(),
 				new HUQRCodesService(
 						new HUQRCodesRepository(),
-						new GlobalQRCodeService(DoNothingMassPrintingService.instance)
+						new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+						new QRCodeConfigurationService(new QRCodeConfigurationRepository())
 				)
 		);
 	}

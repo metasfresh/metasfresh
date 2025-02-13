@@ -83,6 +83,10 @@ const translations = {
       defaultCaption: 'Scan',
       invalidScannedBarcode: 'Code ist ungültig',
     },
+    huManager: {
+      missingTargetQrCode: 'Der Ziel-QR-Code muss zuerst gescannt werden!',
+      scanLuOrLocator: 'Scannen LU oder Lagerort',
+    },
     picking: {
       PickingLine: 'Pick Zeile',
       PickHU: 'HU kommissionieren',

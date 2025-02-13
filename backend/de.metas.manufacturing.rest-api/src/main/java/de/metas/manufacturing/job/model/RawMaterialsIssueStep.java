@@ -37,6 +37,8 @@ public class RawMaterialsIssueStep
 	@With
 	@Nullable PPOrderIssueSchedule.Issued issued;
 
+	@Nullable ScaleTolerance scaleTolerance;
+
 	public boolean isIssued()
 	{
 		return issued != null;
@@ -50,5 +52,15 @@ public class RawMaterialsIssueStep
 					.markAsUserValidationError()
 					.setParameter("step", this);
 		}
+	}
+
+	@Value
+	@Builder
+	public static class ScaleTolerance
+	{
+		@NonNull
+		Quantity positiveTolerance;
+		@NonNull
+		Quantity negativeTolerance;
 	}
 }

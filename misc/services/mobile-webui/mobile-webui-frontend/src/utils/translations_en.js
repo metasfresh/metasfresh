@@ -80,6 +80,10 @@ const translations = {
       defaultCaption: 'Scan',
       invalidScannedBarcode: 'Scanned code is invalid',
     },
+    huManager: {
+      missingTargetQrCode: 'The target QR Code must be scanned first!',
+      scanLuOrLocator: 'Scan LU or Locator',
+    },
     picking: {
       PickingLine: 'Picking Line',
       PickHU: 'Pick HU',

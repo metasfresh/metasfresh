@@ -32,6 +32,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderBOMLineId;
@@ -106,9 +107,15 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 		return huQRCodeService.getHuIdByQRCodeIfExists(qrCode);
 	}
 
-	public void assignQRCode(@NonNull HUQRCode qrCode, @NonNull HuId huId)
+	public void assignQRCodeForReceiptHU(@NonNull final HUQRCode qrCode, @NonNull final HuId huId)
 	{
-		huQRCodeService.assign(qrCode, huId);
+		final boolean ensureSingleAssignment = true;
+		huQRCodeService.assign(qrCode, huId, ensureSingleAssignment);
+	}
+
+	public HUQRCode getFirstQRCodeByHuId(@NonNull final HuId huId)
+	{
+		return huQRCodeService.getFirstQRCodeByHuId(huId);
 	}
 
 	public Quantity getHUCapacity(
@@ -128,10 +135,18 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	{
 		final ImmutableList<LocatorInfo> sourceLocatorList = getSourceLocatorIds(ppOrderId)
 				.stream()
-				.map(locatorId -> LocatorInfo.builder()
-						.id(locatorId)
-						.caption(getLocatorName(locatorId))
-						.build())
+				.map(locatorId -> {
+					final String caption = getLocatorName(locatorId);
+
+					return LocatorInfo.builder()
+							.id(locatorId)
+							.caption(caption)
+							.qrCode(LocatorQRCode.builder()
+											.locatorId(locatorId)
+											.caption(caption)
+											.build())
+							.build();
+				})
 				.collect(ImmutableList.toImmutableList());
 
 		return ValidateLocatorInfo.ofSourceLocatorList(sourceLocatorList);
