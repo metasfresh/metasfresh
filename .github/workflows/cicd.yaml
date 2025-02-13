@@ -901,7 +901,7 @@ jobs:
       - name: push-results
         working-directory: docker-builds/mobile/
         run: |
-          testspace playwright-report/junit/results.xml
+          testspace "[mobile/playwright]playwright-report/junit/results.xml"
       - name: produce-summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
