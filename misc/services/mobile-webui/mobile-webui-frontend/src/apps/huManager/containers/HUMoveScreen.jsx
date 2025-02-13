@@ -25,7 +25,6 @@ const HUMoveScreen = () => {
   const [isMoveInProgress, setIsMoveInProgress] = useState(false);
   const [scannedTarget, setScannedTarget] = useState();
 
-  const { url } = useRouteMatch();
   useEffect(() => {
     if (!handlingUnitInfo) {
       history.replace(huManagerLocation());

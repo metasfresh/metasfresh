@@ -7,10 +7,10 @@ import * as api from '../api';
 import { changeClearanceStatus, clearLoadedData, handlingUnitLoaded } from '../actions';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
 import {
-    huManagerBulkActionsLocation,
-    huManagerDisposeLocation,
-    huManagerHuLabelsLocation,
-    huManagerMoveLocation,
+  huManagerBulkActionsLocation,
+  huManagerDisposeLocation,
+  huManagerHuLabelsLocation,
+  huManagerMoveLocation,
 } from '../routes';
 
 import { HUInfoComponent } from '../components/HUInfoComponent';
