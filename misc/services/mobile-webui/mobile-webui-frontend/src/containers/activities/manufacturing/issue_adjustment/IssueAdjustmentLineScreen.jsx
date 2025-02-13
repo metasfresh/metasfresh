@@ -1,20 +1,22 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory, useRouteMatch } from 'react-router-dom';
 
 import { trl } from '../../../../utils/translations';
-import { pushHeaderEntry } from '../../../../actions/HeaderActions';
+import { updateHeaderEntry } from '../../../../actions/HeaderActions';
 import { getActivityById, getLineByIdFromActivity } from '../../../../reducers/wfProcesses';
-import { issueAdjustmentScanScreenLocation } from '../../../../routes/manufacturing_issue_adjustment';
+import {
+  issueAdjustmentScanScreenLocation,
+  issueAdjustmentScreenLocation,
+} from '../../../../routes/manufacturing_issue_adjustment';
 
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import { formatQtyToHumanReadableStr } from '../../../../utils/qtys';
+import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
 
 const IssueAdjustmentLineScreen = () => {
-  const {
-    url,
-    params: { applicationId, workflowId: wfProcessId, activityId, lineId },
-  } = useRouteMatch();
+  const { history, url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
+    back: issueAdjustmentScreenLocation,
+  });
 
   const {
     productName,
@@ -30,7 +32,7 @@ const IssueAdjustmentLineScreen = () => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(
-      pushHeaderEntry({
+      updateHeaderEntry({
         location: url,
         values: [
           { caption: trl('general.Product'), value: productName },
@@ -60,7 +62,6 @@ const IssueAdjustmentLineScreen = () => {
     );
   }, []);
 
-  const history = useHistory();
   const onScanHUClicked = () => {
     history.push(issueAdjustmentScanScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
   };

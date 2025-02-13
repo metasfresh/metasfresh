@@ -1,21 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
+import { useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getOptionByIndex } from './utils';
 import { postGenerateHUQRCodes } from '../../../../api/generateHUQRCodes';
 import { toastError } from '../../../../utils/toast';
 import Button from '../../../../components/buttons/Button';
-import { pushHeaderEntry } from '../../../../actions/HeaderActions';
+import { updateHeaderEntry } from '../../../../actions/HeaderActions';
 import QtyInputField from '../../../../components/QtyInputField';
 import { qtyInfos } from '../../../../utils/qtyInfos';
 import { trl } from '../../../../utils/translations';
 import * as uiTrace from '../../../../utils/ui_trace';
+import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
+import { selectOptionsLocation } from '../../../../routes/generateHUQRCodes';
+import { getWFProcessScreenLocation } from '../../../../routes/workflow_locations';
 
 const ConfirmOptionScreen = () => {
   const {
     url,
     params: { wfProcessId, activityId, optionIndex },
   } = useRouteMatch();
+  const { history } = useScreenDefinition({
+    back: selectOptionsLocation,
+  });
+
   const optionInfo = useSelector((state) => getOptionByIndex({ state, wfProcessId, activityId, optionIndex }));
   const [numberOfHUs, setNumberOfHUs] = useState(optionInfo.numberOfHUs);
   const [numberOfCopies, setNumberOfCopies] = useState(1);
@@ -23,7 +30,7 @@ const ConfirmOptionScreen = () => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(
-      pushHeaderEntry({
+      updateHeaderEntry({
         location: url,
         values: [
           {
@@ -51,7 +58,6 @@ const ConfirmOptionScreen = () => {
     return null; // OK
   };
 
-  const history = useHistory();
   const onPrintClick = () => {
     uiTrace.putContext({ numberOfHUs, numberOfCopies });
 
@@ -62,7 +68,7 @@ const ConfirmOptionScreen = () => {
       numberOfHUs,
       numberOfCopies,
     })
-      .then(() => history.go(-2)) // back to wfProcess screen
+      .then(() => history.goTo(getWFProcessScreenLocation)) // back to wfProcess screen
       .catch((axiosError) => toastError({ axiosError }));
   };
 
