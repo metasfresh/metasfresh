@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking.config;
+package de.metas.handlingunits.picking.config.mobileui;
 
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.util.lang.ReferenceListAwareEnum;
