@@ -119,6 +119,7 @@ services:
     image: $mfregistry/metas-mobile:$mfversion
     volumes:
       - ./mobile-config.js:/usr/share/nginx/html/config.js:ro
+      - ./default.conf:/etc/nginx/conf.d/default.conf
     healthcheck:
       test: "curl --fail --silent http://localhost:3001 || exit 1"
       interval: 10s

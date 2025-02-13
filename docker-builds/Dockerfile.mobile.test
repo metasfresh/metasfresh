@@ -15,4 +15,6 @@ RUN yarn install
 
 COPY misc/services/mobile-webui/mobile-webui-frontend-testing/ .
 
+RUN yarn playwright install --with-deps
+
 CMD ["yarn", "playwright", "test"]

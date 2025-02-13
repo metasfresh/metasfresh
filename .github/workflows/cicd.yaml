@@ -892,7 +892,7 @@ jobs:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
         run: |
           docker compose up --abort-on-container-exit --exit-code-from playwright 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
-          docker commit metasfresh-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
+          docker commit mobile-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
           docker-compose down
       - name: push-results
         run: |
