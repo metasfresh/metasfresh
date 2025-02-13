@@ -29,35 +29,25 @@ import de.metas.edi.process.export.enqueue.DesadvEnqueuer;
 import de.metas.edi.process.export.enqueue.EnqueueDesadvRequest;
 import de.metas.edi.process.export.enqueue.EnqueueDesadvResult;
 import de.metas.esb.edi.model.I_EDI_Desadv;
-import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.X_EDI_Desadv;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.RunOutOfTrx;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
-import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 
-import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
 
 /**
  * Send EDI documents for selected desadv entries.
- *
- * @task 08646
- *
+ * This process is used if {@link EDIWorkpackageProcessor#SYS_CONFIG_OneDesadvPerShipment} is {@code N}.
  */
 public class EDI_Desadv_EnqueueForExport extends JavaProcess implements IProcessPrecondition
 {
@@ -82,13 +72,6 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess implements IProcess
 		}
 
 		return ProcessPreconditionsResolution.accept();
-	}
-
-	@Override
-	@RunOutOfTrx
-	protected void prepare()
-	{
-		checkPerformEnqueuing();
 	}
 
 	@Override
@@ -130,43 +113,17 @@ public class EDI_Desadv_EnqueueForExport extends JavaProcess implements IProcess
 		return queryBuilder;
 	}
 
-	/**
-	 * Ask the user if he really wants to enqueue the {@link I_EDI_Desadv} documents even if they contain lines with qty delivered 0
-	 *
-	 * @task 08961
-	 * @throws ProcessCanceledException if user canceled
-	 */
-	private void checkPerformEnqueuing() throws ProcessCanceledException
-	{
-		// total number of desadv entries containing lines with qtydelivered = 0
-		final int counterQty0 = countDESADVWithLinesQty0();
-		if (counterQty0 <= 0)
-		{
-			// don't ask
-			return;
-		}
-	}
-
 	private Iterator<I_EDI_Desadv> createIterator()
 	{
 		final IQueryBuilder<I_EDI_Desadv> queryBuilder = createEDIDesadvQueryBuilder();
 
-		return queryBuilder
+		final Iterator<I_EDI_Desadv> iterator = queryBuilder
 				.create()
 				.iterate(I_EDI_Desadv.class);
-	}
-
-	/**
-	 * Returns the number of desadv records that have at least one line with qty 0.
-	 */
-	private int countDESADVWithLinesQty0()
-	{
-		return createEDIDesadvQueryBuilder()
-				.andCollectChildren(I_EDI_DesadvLine.COLUMN_EDI_Desadv_ID, I_EDI_DesadvLine.class)
-				.addEqualsFilter(I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInStockingUOM, BigDecimal.ZERO)
-				.addOnlyActiveRecordsFilter()
-				.andCollect(I_EDI_Desadv.COLUMN_EDI_Desadv_ID, I_EDI_Desadv.class)
-				.create()
-				.count();
+		if(!iterator.hasNext())
+		{
+			addLog("Found no EDI_Desadvs to enqueue within the current selection");
+		}
+		return iterator;
 	}
 }
