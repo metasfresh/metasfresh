@@ -22,8 +22,8 @@ import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
@@ -160,7 +160,6 @@ public class PickingJobService
 				pickingJobSlotService,
 				bpartnerBL,
 				huQRCodeService,
-				workplaceService,
 				mobileUIPickingUserProfileRepository
 		);
 
@@ -335,10 +334,10 @@ public class PickingJobService
 						PackageableQuery.OrderBy.DeliveryBPLocationId,
 						PackageableQuery.OrderBy.WarehouseTypeId));
 
-		final Set<BPartnerId> onlyBPartnerIds = query.getOnlyBPartnerIdsEffective();
-		if (!onlyBPartnerIds.isEmpty())
+		final Set<BPartnerId> onlyCustomerIds = query.getOnlyCustomerIdsEffective();
+		if (!onlyCustomerIds.isEmpty())
 		{
-			builder.customerIds(onlyBPartnerIds);
+			builder.customerIds(onlyCustomerIds);
 		}
 
 		final ImmutableSet<LocalDate> deliveryDays = query.getDeliveryDays();

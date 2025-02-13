@@ -52,14 +52,14 @@ public class PickingJobQuery
 	@NonNull UserId userId;
 	@NonNull @Builder.Default ImmutableSet<ShipmentScheduleId> excludeShipmentScheduleIds = ImmutableSet.of();
 	@Nullable Facets facets;
-	@NonNull @Builder.Default @Getter(AccessLevel.NONE) ImmutableSet<BPartnerId> onlyBPartnerIds = ImmutableSet.of();
+	@NonNull @Builder.Default @Getter(AccessLevel.NONE) ImmutableSet<BPartnerId> onlyCustomerIds = ImmutableSet.of();
 	@Nullable WarehouseId warehouseId;
 	@Nullable DocumentNoFilter salesOrderDocumentNo;
 
 	@NonNull
-	public Set<BPartnerId> getOnlyBPartnerIdsEffective()
+	public Set<BPartnerId> getOnlyCustomerIdsEffective()
 	{
-		if (onlyBPartnerIds.isEmpty())
+		if (onlyCustomerIds.isEmpty())
 		{
 			return facets != null ? facets.getCustomerIds() : ImmutableSet.of();
 		}
@@ -67,11 +67,11 @@ public class PickingJobQuery
 		{
 			if (facets != null && !facets.getCustomerIds().isEmpty())
 			{
-				return Sets.intersection(onlyBPartnerIds, facets.getCustomerIds());
+				return Sets.intersection(onlyCustomerIds, facets.getCustomerIds());
 			}
 			else
 			{
-				return onlyBPartnerIds;
+				return onlyCustomerIds;
 			}
 		}
 	}

@@ -1,15 +1,15 @@
-DROP FUNCTION IF EXISTS report.fresh_PriceList_Details_Report_With_PP_PI(numeric,
-                                                                         numeric,
-                                                                         numeric,
-                                                                         character varying,
-                                                                         text)
+DROP FUNCTION IF EXISTS report.fresh_PriceList_Details_Report(numeric,
+                                                              numeric,
+                                                              numeric,
+                                                              character varying,
+                                                              text)
 ;
 
-CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_report_With_PP_PI(IN p_c_bpartner_id              numeric,
-                                                                            IN p_m_pricelist_version_id     numeric,
-                                                                            IN p_alt_pricelist_version_id   numeric,
-                                                                            IN p_ad_language                character varying,
-                                                                            IN p_show_product_price_pi_flag text)
+CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_report(IN p_c_bpartner_id              numeric,
+                                                                 IN p_m_pricelist_version_id     numeric,
+                                                                 IN p_alt_pricelist_version_id   numeric,
+                                                                 IN p_ad_language                character varying,
+                                                                 IN p_show_product_price_pi_flag text)
     RETURNS TABLE
             (
                 bp_value                   text,
@@ -41,7 +41,7 @@ CREATE OR REPLACE FUNCTION report.fresh_pricelist_details_report_With_PP_PI(IN p
 AS
 $BODY$
     /**
-      IMPORTANT: keep in sync with report.fresh_PriceList_Details_Report
+      IMPORTANT: keep in sync with report.fresh_PriceList_Details_Report_With_PP_PI
      */
 SELECT --
        bp.value                                                                                             AS BP_Value,
@@ -70,11 +70,11 @@ SELECT --
        plc.currency2                                                                                        AS currency2,
        p_show_product_price_pi_flag                                                                         AS show_product_price_pi_flag
 
-FROM report.reportPriceListComparation_With_PP_PI(
+FROM report.reportPriceListComparation(
              p_C_BPartner_ID := p_c_bpartner_id,
              p_M_PriceList_Version_ID := p_m_pricelist_version_id,
              p_Alt_PriceList_Version_ID := p_alt_pricelist_version_id
-         ) plc
+     ) plc
          LEFT OUTER JOIN M_Product_Trl p_trl ON p_trl.M_Product_ID = plc.M_Product_ID AND p_trl.AD_Language = p_ad_language AND p_trl.isActive = 'Y'
          LEFT OUTER JOIN C_BPartner bp ON bp.C_BPartner_ID = plc.C_BPartner_ID AND bp.isActive = 'Y'
          LEFT OUTER JOIN C_BPartner_Product bpp ON bpp.C_BPartner_ID = plc.C_BPartner_ID AND bpp.M_Product_ID = plc.M_Product_ID AND bpp.isActive = 'Y'

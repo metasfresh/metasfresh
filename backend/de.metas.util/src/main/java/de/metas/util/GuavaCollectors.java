@@ -468,6 +468,26 @@ public final class GuavaCollectors
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
+	public static <T, R, K, V> Collector<T, ?, R> collectUsingMapAccumulator(
+			@NonNull final Function<T, K> keyMapper,
+			@NonNull final Function<T, V> valueMapper,
+			@NonNull final Function<Map<K, V>, R> finisher)
+	{
+		final Supplier<Map<K, V>> supplier = LinkedHashMap::new;
+		final BiConsumer<Map<K, V>, T> accumulator = (map, item) -> map.put(keyMapper.apply(item), valueMapper.apply(item));
+		final BinaryOperator<Map<K, V>> combiner = (acc1, acc2) -> {
+			acc1.putAll(acc2);
+			return acc1;
+		};
+
+		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+
+	public static <R, K, V> Collector<Map.Entry<K, V>, ?, R> collectUsingMapAccumulator(@NonNull final Function<Map<K, V>, R> finisher)
+	{
+		return collectUsingMapAccumulator(Map.Entry::getKey, Map.Entry::getValue, finisher);
+	}
+
 	public static <T> Collector<T, ?, Optional<ImmutableSet<T>>> toOptionalImmutableSet()
 	{
 		return Collectors.collectingAndThen(

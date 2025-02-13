@@ -23,8 +23,9 @@
 package de.metas.cucumber.stepdefs.picking;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
-import de.metas.handlingunits.picking.config.MobileUIPickingUserProfile;
-import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions.PickingJobOptionsBuilder;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.logging.LogManager;
 import io.cucumber.datatable.DataTable;
@@ -44,11 +45,17 @@ public class MobileUIPickingUserProfile_StepDef
 	{
 		final DataTableRow row = DataTableRow.singleRow(dataTable);
 
-		final MobileUIPickingUserProfile.MobileUIPickingUserProfileBuilder newProfileBuilder = repo.getProfile().toBuilder();
-		row.getAsOptionalBoolean("IsAllowPickingAnyHU").ifPresent(newProfileBuilder::isAllowPickingAnyHU);
-		row.getAsOptionalString("CreateShipmentPolicy").map(CreateShipmentPolicy::ofCodeOrName).ifPresent(newProfileBuilder::createShipmentPolicy);
-		row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsAlwaysSplitHUsEnabled).ifPresent(newProfileBuilder::isAlwaysSplitHUsEnabled);
-		final MobileUIPickingUserProfile newProfile = newProfileBuilder.build();
+		final MobileUIPickingUserProfile profile = repo.getProfile();
+
+		final PickingJobOptionsBuilder defaultPickingJobOptionsBuilder = profile.getDefaultPickingJobOptions().toBuilder();
+		row.getAsOptionalBoolean("IsAllowPickingAnyHU").ifPresent(defaultPickingJobOptionsBuilder::isAllowPickingAnyHU);
+		row.getAsOptionalString("CreateShipmentPolicy").map(CreateShipmentPolicy::ofCodeOrName).ifPresent(defaultPickingJobOptionsBuilder::createShipmentPolicy);
+		row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsAlwaysSplitHUsEnabled).ifPresent(defaultPickingJobOptionsBuilder::isAlwaysSplitHUsEnabled);
+
+		final MobileUIPickingUserProfile newProfile = profile.toBuilder()
+				.defaultPickingJobOptions(defaultPickingJobOptionsBuilder.build())
+				.build();
+		
 		repo.save(newProfile);
 		logger.info("Profile updated: {}", newProfile);
 	}

@@ -21,6 +21,7 @@ import de.metas.handlingunits.model.I_M_Picking_Job_Step_PickedHU;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.LocatorInfo;
@@ -165,7 +166,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.map(alt -> PickingJobPickFromAlternativeId.ofRepoId(alt.getM_Picking_Job_HUAlternative_ID()))
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No HU alternative found for " + pickingJobId + ", " + alternativeHUId + ", " + productId
-																  + ". Available HU alternatives are: " + pickingJobHUAlternatives));
+						+ ". Available HU alternatives are: " + pickingJobHUAlternatives));
 	}
 
 	protected void loadRecordsFromDB(final Set<PickingJobId> pickingJobIds)
@@ -194,10 +195,12 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.map(loadingSupportingServices::getPickingSlotIdAndCaption);
 
 		final PickingJobId pickingJobId = PickingJobId.ofRepoId(record.getM_Picking_Job_ID());
+		final PickingJobHeader pickingJobHeader = toPickingJobHeader(record);
+		final PickingJobOptions pickingJobOptions = getPickingJobOptions(pickingJobHeader.getCustomerId());
 
 		return PickingJob.builder()
 				.id(pickingJobId)
-				.header(toPickingJobHeader(record))
+				.header(pickingJobHeader)
 				.pickingSlot(pickingSlot)
 				.luPickTarget(extractLUPickingTarget(record))
 				.tuPickTarget(extractTUPickingTarget(record))
@@ -206,7 +209,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.isApproved(record.isApproved())
 				.lines(pickingJobLines.get(pickingJobId)
 						.stream()
-						.map(this::loadLine)
+						.map(lineRecord -> loadLine(lineRecord, pickingJobOptions))
 						.collect(ImmutableList.toImmutableList()))
 				.pickFromAlternatives(pickingJobHUAlternatives.get(pickingJobId)
 						.stream()
@@ -285,7 +288,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 	}
 
 	@NonNull
-	private PickingJobLine loadLine(@NonNull final I_M_Picking_Job_Line record)
+	private PickingJobLine loadLine(@NonNull final I_M_Picking_Job_Line record, @NonNull final PickingJobOptions pickingJobOptions)
 	{
 		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
 		final PickingJobLineId pickingJobLineId = PickingJobLineId.ofRepoId(record.getM_Picking_Job_Line_ID());
@@ -311,7 +314,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 						.map(this::loadStep)
 						.collect(ImmutableList.toImmutableList()))
 				.isManuallyClosed(record.isManuallyClosed())
-				.pickingUnit(computePickingUnit(UomId.ofRepoIdOrNull(record.getCatch_UOM_ID()), packingInfo))
+				.pickingUnit(computePickingUnit(UomId.ofRepoIdOrNull(record.getCatch_UOM_ID()), packingInfo, pickingJobOptions))
 				.build();
 	}
 
@@ -623,14 +626,19 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		return OptionalBoolean.ofNullableBoolean(hasLocks.get(pickingJobId));
 	}
 
-	private PickingUnit computePickingUnit(@Nullable final UomId catchUomId, @NonNull final HUPIItemProduct packingInfo)
+	private PickingUnit computePickingUnit(@Nullable final UomId catchUomId, @NonNull final HUPIItemProduct packingInfo, @NonNull final PickingJobOptions options)
 	{
 		// If catch weight, always pick at CU level because user has to weight the products
-		if (!loadingSupportingServices.isCatchWeightTUPickingEnabled() && catchUomId != null)
+		if (!options.isCatchWeightTUPickingEnabled() && catchUomId != null)
 		{
 			return PickingUnit.CU;
 		}
 
 		return packingInfo.isFiniteTU() ? PickingUnit.TU : PickingUnit.CU;
+	}
+
+	private PickingJobOptions getPickingJobOptions(@NonNull BPartnerId customerId)
+	{
+		return loadingSupportingServices.getPickingJobOptions(customerId);
 	}
 }

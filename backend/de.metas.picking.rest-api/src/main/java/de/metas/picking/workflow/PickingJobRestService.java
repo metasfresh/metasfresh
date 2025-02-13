@@ -23,14 +23,13 @@
 package de.metas.picking.workflow;
 
 import de.metas.ad_reference.ADRefList;
+import de.metas.bpartner.BPartnerId;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.picking.config.MobileUIPickingUserProfile;
-import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
-import de.metas.handlingunits.picking.config.PickingLineGroupBy;
-import de.metas.handlingunits.picking.config.PickingLineSortBy;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
@@ -53,7 +52,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -95,13 +93,14 @@ public class PickingJobRestService
 			final @NonNull PickingWFProcessStartParams params,
 			final @NonNull UserId invokerId)
 	{
+		final PickingJobOptions pickingJobOptions = getPickingJobOptions(params.getCustomerId());
 		return pickingJobService.createPickingJob(PickingJobCreateRequest.builder()
-														  .pickerId(invokerId)
-														  .salesOrderId(params.getSalesOrderId())
-														  .deliveryBPLocationId(params.getDeliveryBPLocationId())
-														  .warehouseTypeId(params.getWarehouseTypeId())
-														  .isAllowPickingAnyHU(mobileUIPickingUserProfileRepository.getProfile().isAllowPickingAnyHU())
-														  .build());
+				.pickerId(invokerId)
+				.salesOrderId(params.getSalesOrderId())
+				.deliveryBPLocationId(params.getDeliveryBPLocationId())
+				.warehouseTypeId(params.getWarehouseTypeId())
+				.isAllowPickingAnyHU(pickingJobOptions.isAllowPickingAnyHU())
+				.build());
 	}
 
 	public PickingJob allocateAndSetPickingSlot(
@@ -150,9 +149,9 @@ public class PickingJobRestService
 
 	public PickingJob complete(@NonNull final PickingJob pickingJob)
 	{
-		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
+		final PickingJobOptions pickingJobOptions = getPickingJobOptions(pickingJob.getCustomerId());
 		return pickingJobService.prepareToComplete(pickingJob)
-				.createShipmentPolicy(profile.getCreateShipmentPolicy())
+				.createShipmentPolicy(pickingJobOptions.getCreateShipmentPolicy())
 				.execute();
 	}
 
@@ -193,39 +192,7 @@ public class PickingJobRestService
 		return pickingJobService.closeTUPickTarget(pickingJob);
 	}
 
-	public boolean isPickWithNewLU()
-	{
-		return mobileUIPickingUserProfileRepository.getProfile().isPickWithNewLU();
-	}
-
-	public boolean isAllowSkippingRejectedReasons()
-	{
-		return mobileUIPickingUserProfileRepository.getProfile().isAllowSkippingRejectedReason();
-	}
-
-	public boolean isAllowNewTU()
-	{
-		return mobileUIPickingUserProfileRepository.getProfile().isAllowNewTU();
-	}
-
-	public boolean isShowPromptWhenOverPicking()
-	{
-		return mobileUIPickingUserProfileRepository.getProfile().isShowConfirmationPromptWhenOverPick();
-	}
-
-	@NonNull
-	public PickingLineGroupBy getPickingLineGroupBy()
-	{
-		return Optional.ofNullable(mobileUIPickingUserProfileRepository.getProfile().getPickingLineGroupBy())
-				.orElse(PickingLineGroupBy.NONE);
-	}
-
-	@NonNull
-	public PickingLineSortBy getPickingLineSortBy()
-	{
-		return Optional.ofNullable(mobileUIPickingUserProfileRepository.getProfile().getPickingLineSortBy())
-				.orElse(PickingLineSortBy.ORDER_LINE_SEQ_NO);
-	}
+	public PickingJobOptions getPickingJobOptions(final BPartnerId customerId) {return mobileUIPickingUserProfileRepository.getPickingJobOptions(customerId);}
 
 	@NonNull
 	public List<HuId> getClosedLUs(@NonNull final PickingJob pickingJob)
@@ -241,8 +208,8 @@ public class PickingJobRestService
 				.orElse(null);
 
 		return handlingUnitsBL.getTopLevelHUs(IHandlingUnitsBL.TopLevelHusQuery.builder()
-													  .hus(handlingUnitsBL.getByIds(pickedHuIds))
-													  .build())
+						.hus(handlingUnitsBL.getByIds(pickedHuIds))
+						.build())
 				.stream()
 				.filter(handlingUnitsBL::isLoadingUnit)
 				.map(I_M_HU::getM_HU_ID)

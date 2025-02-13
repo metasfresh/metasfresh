@@ -102,7 +102,7 @@ public class PickingJobRepository
 			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
 	{
 		final IQueryBuilder<I_M_Picking_Job> queryBuilder = queryBuilderDraftJobsByPickerId(ValueRestriction.equalsToOrNull(query.getPickerId()));
-		final Set<BPartnerId> onlyCustomerIds = query.getOnlyBPartnerIds();
+		final Set<BPartnerId> onlyCustomerIds = query.getOnlyCustomerIds();
 		if (!onlyCustomerIds.isEmpty())
 		{
 			queryBuilder.addInArrayFilter(I_M_Picking_Job.COLUMNNAME_C_BPartner_ID, onlyCustomerIds);
