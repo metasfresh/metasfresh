@@ -49,7 +49,19 @@ export default defineConfig({
         /* Test against mobile viewports. */
         {
             name: 'Mobile Chrome',
-            use: { ...devices['Pixel 5'] },
+            use: {
+                ...devices['Pixel 5'],
+                launchOptions: {
+                    args: [
+                        '--ignore-certificate-errors', // Ignores SSL certificate errors
+                        '--allow-running-insecure-content', // Allows mixed content (HTTP on HTTPS)
+                        '--disable-web-security', // Disables web security policies (CORS, HSTS, etc.)
+                        '--disable-site-isolation-trials', // Helps disable security sandboxing
+                        '--no-sandbox', // Avoids sandboxing issues inside Docker
+                        '--disable-features=BlockInsecurePrivateNetworkRequests', // Allows insecure private network requests
+                    ],
+                },
+            },
         },
         // {
         //   name: 'Mobile Safari',
