@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.handlingunits.picking.config;
+package de.metas.handlingunits.picking.config.mobileui;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
