@@ -138,7 +138,7 @@ services:
   playwright:
     image: $mfregistry/metas-mobile-test:$mfversion
     volumes:
-      - ./playwright-report:/app/playwright-report:ro
+      - ./playwright-report:/app/playwright-report
     depends_on:
       mobile:
         condition: service_healthy
