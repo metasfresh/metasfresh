@@ -54,36 +54,6 @@ services:
       mode: replicated
       replicas: 1
 
-  webapi:
-    image: $mfregistry/metas-api:$mfversion
-    ports:
-      - "8080:8080"
-      - "8789:8789"
-    volumes:
-      - ./metasfresh.properties:/opt/metasfresh-webui-api/metasfresh.properties:ro
-    healthcheck:
-      test: "curl --fail --silent localhost:8080/health | grep UP || exit 1"
-      interval: 10s
-      timeout: 10s
-      start_period: 60s
-      retries: 30
-    environment:
-      # missing  ${metasfresh_es_enable_params}, ${metasfresh_db_connectionpool_params}, ${metasfresh_admin_params} and ${webui_frontend_url_params}
-      - "JAVA_TOOL_OPTIONS=-Xmx512M -XX:+HeapDumpOnOutOfMemoryError -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8789"
-      - "JAVA_SECURITY_EGD=file:/dev/./urandom"
-      - "SPRING_RABBITMQ_HOST=rabbitmq"
-      - "SPRING_RABBITMQ_PORT=5672"
-      - "SPRING_RABBITMQ_USERNAME=metasfresh"
-      - "SPRING_RABBITMQ_PASSWORD=metasfresh"
-      - "SPRING_DATA_ELASTICSEARCH_CLUSTER_NODES=search:9200"
-      - "SPRING_DATA_ELASTICSEARCH_CLIENT_REACTIVE_ENDPOINTS=search:9200"
-    depends_on:
-      db:
-        condition: service_healthy
-    deploy:
-      mode: replicated
-      replicas: 1
-
   app:
     image: $mfregistry/metas-app:$mfversion
     ports:
