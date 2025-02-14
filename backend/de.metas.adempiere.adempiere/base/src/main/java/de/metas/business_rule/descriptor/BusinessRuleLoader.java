@@ -13,6 +13,7 @@ import de.metas.business_rule.descriptor.model.TriggerTiming;
 import de.metas.business_rule.descriptor.model.Validation;
 import de.metas.business_rule.descriptor.model.ValidationType;
 import de.metas.business_rule.log.BusinessRuleLogLevel;
+import de.metas.i18n.AdMessageId;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.StringUtils;
 import lombok.Builder;
@@ -136,7 +137,7 @@ class BusinessRuleLoader
 				.triggers(getTriggers(id).stream()
 						.map(BusinessRuleLoader::fromRecord)
 						.collect(ImmutableList.toImmutableList()))
-				.warningMessage(record.getWarningMessage())
+				.warningMessageId(AdMessageId.ofRepoId(record.getWarning_Message_ID()))
 				.logLevel(record.isDebug() ? BusinessRuleLogLevel.DEBUG : null)
 				.build();
 	}

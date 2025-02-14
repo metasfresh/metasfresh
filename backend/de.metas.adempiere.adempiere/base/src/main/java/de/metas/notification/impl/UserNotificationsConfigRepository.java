@@ -3,6 +3,7 @@ package de.metas.notification.impl;
 import java.util.List;
 import java.util.Set;
 
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
@@ -63,11 +64,12 @@ public class UserNotificationsConfigRepository implements IUserNotificationsConf
 			.build();
 
 	@Override
-	public UserNotificationsConfig getByUserId(final UserId adUserId)
+	public @NonNull UserNotificationsConfig getByUserId(final UserId adUserId)
 	{
 		return userNotificationsConfigsByUserId.getOrLoad(adUserId, this::retrieveUserNotificationsConfig);
 	}
 
+	@NonNull
 	private UserNotificationsConfig retrieveUserNotificationsConfig(final UserId adUserId)
 	{
 		final I_AD_User user = Services.get(IUserDAO.class).getById(adUserId);

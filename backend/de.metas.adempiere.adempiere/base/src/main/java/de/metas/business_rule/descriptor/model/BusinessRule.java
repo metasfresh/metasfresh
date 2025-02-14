@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.business_rule.log.BusinessRuleLogLevel;
+import de.metas.i18n.AdMessageId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,7 +30,7 @@ public class BusinessRule
 	@NonNull ImmutableList<BusinessRuleTrigger> triggers;
 	@NonNull @Getter(AccessLevel.NONE) ImmutableMap<BusinessRuleTriggerId, BusinessRuleTrigger> triggersById;
 
-	@NonNull String warningMessage;
+	@NonNull AdMessageId warningMessageId;
 
 	@Nullable BusinessRuleLogLevel logLevel;
 
@@ -41,7 +42,7 @@ public class BusinessRule
 			@NonNull final ImmutableList<BusinessRulePrecondition> preconditions,
 			@NonNull final Validation validation,
 			@NonNull final ImmutableList<BusinessRuleTrigger> triggers,
-			@NonNull final String warningMessage,
+			@NonNull final AdMessageId warningMessageId,
 			@Nullable BusinessRuleLogLevel logLevel)
 	{
 		this.id = id;
@@ -51,7 +52,7 @@ public class BusinessRule
 		this.validation = validation;
 		this.triggers = triggers;
 		this.triggersById = Maps.uniqueIndex(triggers, BusinessRuleTrigger::getId);
-		this.warningMessage = warningMessage;
+		this.warningMessageId = warningMessageId;
 		this.logLevel = logLevel;
 	}
 

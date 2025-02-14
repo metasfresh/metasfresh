@@ -32,6 +32,7 @@ import de.metas.i18n.impl.NullModelTranslationMap;
 import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
@@ -1198,6 +1199,15 @@ public class InterfaceWrapperHelper
 		final ClientId clientId = getClientId(model).orElseThrow(() -> new AdempiereException("Cannot determine AD_Client_ID from " + model));
 		final OrgId orgId = getOrgId(model).orElseThrow(() -> new AdempiereException("Cannot determine AD_Org_ID from " + model));
 		return ClientAndOrgId.ofClientAndOrg(clientId, orgId);
+	}
+
+	@NonNull
+	public static UserId getUpdatedBy(@NonNull final Object model)
+	{
+		return getValue(model, "UpdatedBy")
+				.map(userIdObj -> NumberUtils.asInt(userIdObj, -1))
+				.map( UserId::ofRepoId)
+				.orElseThrow(() -> new AdempiereException("Cannot determine UpdatedBy from " + model));
 	}
 
 	public static <T> T getValueByColumnId(@NonNull final Object model, @NonNull final AdColumnId adColumnId)

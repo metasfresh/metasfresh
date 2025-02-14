@@ -121,7 +121,7 @@ public final class DisplayType
 		if (displayType == ID || displayType == Table || displayType == TableDir
 				|| displayType == Search || displayType == Location || displayType == Locator
 				|| displayType == Account || displayType == Assignment || displayType == PAttribute
-				|| displayType == Image || displayType == Color)
+				|| displayType == Image || displayType == Color || displayType == Button)
 			return true;
 		return false;
 	}    //	isID
