@@ -28,14 +28,14 @@
 	<field name="taxamt" class="java.math.BigDecimal"/>
 	<title>
 		<band height="12" splitType="Stretch">
-			<textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="37" y="0" width="160" height="12" forecolor="#000000" uuid="9b63a53f-b773-44c5-8c58-62ce14373ffd"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Summary}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="433" y="0" width="75" height="12" forecolor="#000000" uuid="8b2436d9-25f3-42cb-93ab-a3bf4a7f4b33"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
@@ -50,14 +50,14 @@
 	<columnHeader>
 		<band height="12" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean(!$F{ishuline} && $F{isprinttax}.equals("Y"))]]></printWhenExpression>
-			<textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="37" y="0" width="236" height="12" forecolor="#000000" uuid="69138c8f-d6b0-4e0c-b76e-c51ad7dbdc2d"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{NetTotal}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="433" y="0" width="75" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -75,7 +75,7 @@
 	<detail>
 		<band height="12">
 			<printWhenExpression><![CDATA[new Boolean(!$F{ishuline} && $F{taxrate}.floatValue() != 0 && $F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="433" y="0" width="75" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -88,14 +88,14 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{taxamt}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="197" y="0" width="24" height="12" forecolor="#000000" uuid="e4600a6b-bee4-4dc2-b43e-3ca826794585"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{taxrate}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="112" y="0" width="85" height="12" forecolor="#000000" uuid="e4600a6b-bee4-4dc2-b43e-3ca826794585"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="false"/>
@@ -104,7 +104,7 @@
     $R{TaxFree}:
     $R{TaxRate}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="37" y="0" width="75" height="12" forecolor="#000000" uuid="1a5a9dfa-d46a-4275-a91f-a8f6c1ab3870"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="false"/>
@@ -121,7 +121,7 @@
 		</band>
 		<band height="12">
 			<printWhenExpression><![CDATA[new Boolean($F{ishuline} && $F{isprinttax}.equals("Y"))]]></printWhenExpression>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-20" x="433" y="0" width="75" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -141,21 +141,21 @@
 				</textElement>
 				<text><![CDATA[%]]></text>
 			</staticText>
-			<textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="197" y="0" width="24" height="12" forecolor="#000000" uuid="e4600a6b-bee4-4dc2-b43e-3ca826794585"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{taxrate}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="37" y="0" width="75" height="12" forecolor="#000000" uuid="6a4cdc58-9705-4d07-a94d-fc1f1700e5da"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{HUTotal}]]></textFieldExpression>
 			</textField>
-			<textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="112" y="0" width="85" height="12" forecolor="#000000" uuid="e4600a6b-bee4-4dc2-b43e-3ca826794585"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="false"/>
@@ -167,9 +167,10 @@
 		</band>
 	</detail>
 	<lastPageFooter>
-		<band height="22">
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-16" x="37" y="6" width="261" height="12" forecolor="#000000" uuid="de6bfa6e-e440-4073-972a-f37b1a686ec2"/>
+		<band height="13">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-16" x="37" y="1" width="261" height="12" forecolor="#000000" uuid="de6bfa6e-e440-4073-972a-f37b1a686ec2"/>
 				<box rightPadding="5">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -185,8 +186,8 @@
     ""
 )]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00" isBlankWhenNull="false">
-				<reportElement key="textField-20" x="433" y="6" width="75" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement key="textField-20" x="433" y="1" width="75" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -198,11 +199,6 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{grandtotal}]]></textFieldExpression>
 			</textField>
-			<line>
-				<reportElement x="34" y="3" width="515" height="1" uuid="a05ca319-c6f3-4f08-8649-9ee56f6b9bb4">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-				</reportElement>
-			</line>
 		</band>
 	</lastPageFooter>
 </jasperReport>
