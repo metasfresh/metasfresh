@@ -12,9 +12,14 @@ import de.metas.business_rule.log.BusinessRuleStopwatch;
 import de.metas.business_rule.util.BusinessRuleRecordMatcher;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.Language;
 import de.metas.record.warning.RecordWarningCreateRequest;
 import de.metas.record.warning.RecordWarningQuery;
 import de.metas.record.warning.RecordWarningRepository;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -39,6 +44,8 @@ public class BusinessRuleEventProcessorCommand
 	@NonNull private static final String LOGGER_MODULE = "event-processor";
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IUserBL userBL = Services.get(IUserBL.class);
 	@NonNull private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	@NonNull private final BusinessRuleRepository ruleRepository;
 	@NonNull private final BusinessRuleEventRepository eventRepository;
@@ -51,7 +58,7 @@ public class BusinessRuleEventProcessorCommand
 
 	public void execute()
 	{
-		try (IAutoCloseable ignored = setupLoggerContext())
+		try (final IAutoCloseable ignored = setupLoggerContext())
 		{
 			eventRepository.updateAllNotProcessed(this::processEvent, limit);
 		}
@@ -138,7 +145,7 @@ public class BusinessRuleEventProcessorCommand
 
 		stopwatch.restart();
 		final BusinessRule rule = getRuleById(event.getBusinessRuleId());
-		boolean isPreconditionMatching = isPreconditionsMet(targetRecordRef, rule);
+		final boolean isPreconditionMatching = isPreconditionsMet(targetRecordRef, rule);
 		logger.debug(stopwatch, "Checked if target record preconditions are met: {}", isPreconditionMatching);
 		if (!isPreconditionMatching)
 		{
@@ -161,12 +168,22 @@ public class BusinessRuleEventProcessorCommand
 		}
 		else
 		{
-			recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
-					.recordRef(targetRecordRef)
-					.businessRuleId(rule.getId())
-					.message(rule.getWarningMessage())
-					.build());
-			logger.debug(stopwatch, "=> Created/Updated warning for target record");
+			final UserId userId = retrieveSourceUserId(event);
+			if (userId != null)
+			{
+				final Language userLanguage = userBL.getUserLanguage(userId);
+				final AdMessageKey messageKey = getAdMessageKey(rule);
+				recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
+						.recordRef(targetRecordRef)
+						.businessRuleId(rule.getId())
+						.message(msgBL.getMsg(userLanguage.getAD_Language(), messageKey))
+						.build());
+				logger.debug(stopwatch, "=> Created/Updated warning for target record");
+
+				BusinessRuleEventNotificationProducer.newInstance().createNotice(userId, targetRecordRef, messageKey);
+				logger.debug(stopwatch, "=> Created user notification for target record");
+			}
+
 		}
 	}
 
@@ -181,6 +198,13 @@ public class BusinessRuleEventProcessorCommand
 		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(sourceTableName);
 		final int sourceRecordId = event.getSourceRecordRef().getRecord_ID();
 		final String sql = "SELECT " + trigger.getTargetRecordMappingSQL() + " FROM " + sourceTableName + " WHERE " + keyColumnName + "=?";
+		final Integer targetRecordId = getRecordIdFromSql(sql, sourceRecordId, keyColumnName);
+		return targetRecordId == null ? null : TableRecordReference.of(rule.getAdTableId(), targetRecordId);
+	}
+
+	@Nullable
+	private static Integer getRecordIdFromSql(final String sql, final int sourceRecordId, final String keyColumnName)
+	{
 		final Integer targetRecordId = DB.retrieveFirstRowOrNull(sql, Collections.singletonList(sourceRecordId), rs -> {
 			final int intValue = rs.getInt(1);
 			return rs.wasNull() ? null : intValue;
@@ -196,8 +220,18 @@ public class BusinessRuleEventProcessorCommand
 		{
 			return null;
 		}
+		return targetRecordId;
+	}
 
-		return TableRecordReference.of(rule.getAdTableId(), targetRecordId);
+	@Nullable
+	private UserId retrieveSourceUserId(@NonNull final BusinessRuleEvent event)
+	{
+		final String sourceTableName = event.getSourceRecordRef().getTableName();
+		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(sourceTableName);
+		final int sourceRecordId = event.getSourceRecordRef().getRecord_ID();
+		final String sql = "SELECT updatedBy FROM " + sourceTableName + " WHERE " + keyColumnName + "=?";
+		final Integer updatedByUserId = getRecordIdFromSql(sql, sourceRecordId, keyColumnName);
+		return updatedByUserId == null ? null : UserId.ofRepoId(updatedByUserId);
 	}
 
 	private boolean isPreconditionsMet(
@@ -213,5 +247,10 @@ public class BusinessRuleEventProcessorCommand
 			@NonNull final Validation validation)
 	{
 		return recordMatcher.isRecordMatching(targetRecordRef, validation);
+	}
+
+	private AdMessageKey getAdMessageKey(final @NonNull BusinessRule rule)
+	{
+		return msgBL.getAdMessageKeyById(rule.getWarningMessage()).orElseThrow(() -> new AdempiereException("No message defined for business rule ID:" + rule.getId()));
 	}
 }

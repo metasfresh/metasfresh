@@ -50,6 +50,28 @@ public interface I_AD_BusinessRule
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+	 * Set Message.
+	 * System Message
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Message_ID (int AD_Message_ID);
+
+	/**
+	 * Get Message.
+	 * System Message
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Message_ID();
+
+	String COLUMNNAME_AD_Message_ID = "AD_Message_ID";
+
+	/**
 	 * Set Organisation.
 	 * Organisational entity within client
 	 *
@@ -232,25 +254,4 @@ public interface I_AD_BusinessRule
 
 	ModelColumn<I_AD_BusinessRule, org.compiere.model.I_AD_Val_Rule> COLUMN_Validation_Rule_ID = new ModelColumn<>(I_AD_BusinessRule.class, "Validation_Rule_ID", org.compiere.model.I_AD_Val_Rule.class);
 	String COLUMNNAME_Validation_Rule_ID = "Validation_Rule_ID";
-
-	/**
-	 * Set Warning Message.
-	 *
-	 * <br>Type: TextLong
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setWarningMessage (@Nullable java.lang.String WarningMessage);
-
-	/**
-	 * Get Warning Message.
-	 *
-	 * <br>Type: TextLong
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getWarningMessage();
-
-	ModelColumn<I_AD_BusinessRule, Object> COLUMN_WarningMessage = new ModelColumn<>(I_AD_BusinessRule.class, "WarningMessage", null);
-	String COLUMNNAME_WarningMessage = "WarningMessage";
 }
