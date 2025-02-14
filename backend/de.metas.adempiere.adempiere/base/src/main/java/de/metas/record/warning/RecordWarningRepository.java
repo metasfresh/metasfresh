@@ -14,7 +14,7 @@ public class RecordWarningRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public void createOrUpdate(@NonNull final RecordWarningCreateRequest request)
+	public RecordWarningId createOrUpdate(@NonNull final RecordWarningCreateRequest request)
 	{
 		final I_AD_Record_Warning record = toSqlQuery(RecordWarningQuery.builder()
 				.recordRef(request.getRecordRef())
@@ -30,6 +30,8 @@ public class RecordWarningRepository
 		record.setMsgText(request.getMessage());
 
 		InterfaceWrapperHelper.save(record);
+
+		return RecordWarningId.ofRepoId(record.getAD_Record_Warning_ID());
 	}
 
 	public void deleteByRecordRef(@NonNull final RecordWarningQuery query)

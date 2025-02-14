@@ -16,6 +16,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.record.warning.RecordWarningCreateRequest;
+import de.metas.record.warning.RecordWarningId;
 import de.metas.record.warning.RecordWarningQuery;
 import de.metas.record.warning.RecordWarningRepository;
 import de.metas.user.UserId;
@@ -173,14 +174,14 @@ public class BusinessRuleEventProcessorCommand
 			{
 				final Language userLanguage = userBL.getUserLanguage(userId);
 				final AdMessageKey messageKey = getAdMessageKey(rule);
-				recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
+				final RecordWarningId recordWarningId = recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
 						.recordRef(targetRecordRef)
 						.businessRuleId(rule.getId())
 						.message(msgBL.getMsg(userLanguage.getAD_Language(), messageKey))
 						.build());
 				logger.debug(stopwatch, "=> Created/Updated warning for target record");
 
-				BusinessRuleEventNotificationProducer.newInstance().createNotice(userId, targetRecordRef, messageKey);
+				BusinessRuleEventNotificationProducer.newInstance().createNotice(userId, recordWarningId, messageKey);
 				logger.debug(stopwatch, "=> Created user notification for target record");
 			}
 

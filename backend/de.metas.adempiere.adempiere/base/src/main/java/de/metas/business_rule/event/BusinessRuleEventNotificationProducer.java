@@ -28,21 +28,14 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationsConfig;
+import de.metas.record.warning.RecordWarningId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Record_Warning;
 
 public final class BusinessRuleEventNotificationProducer
 {
-	/**
-	 * Topic used to send notifications about business rules that failed
-	 */
-	public static final Topic EVENTBUS_TOPIC = Topic.builder()
-			.name("de.metas.businessRule.UserNotifications")
-			.type(Type.DISTRIBUTED)
-			.build();
-
 	public static BusinessRuleEventNotificationProducer newInstance()
 	{
 		return new BusinessRuleEventNotificationProducer();
@@ -52,8 +45,16 @@ public final class BusinessRuleEventNotificationProducer
 	{
 	}
 
+	/**
+	 * Topic used to send notifications about business rules that failed
+	 */
+	public static final Topic EVENTBUS_TOPIC = Topic.builder()
+			.name("de.metas.businessRule.UserNotifications")
+			.type(Type.DISTRIBUTED)
+			.build();
+
 	public void createNotice(@NonNull final UserId userId,
-							 @NonNull final TableRecordReference targetRecordRef,
+							 @NonNull final RecordWarningId recordWarningId,
 							 @NonNull final AdMessageKey messageKey)
 	{
 		final UserNotificationsConfig notificationsConfig = createUserNotificationsConfigOrNull(userId);
@@ -68,7 +69,7 @@ public final class BusinessRuleEventNotificationProducer
 						.topic(EVENTBUS_TOPIC)
 						.notificationsConfig(notificationsConfig)
 						.contentADMessage(messageKey)
-						.targetAction(UserNotificationRequest.TargetRecordAction.of(targetRecordRef))
+						.targetAction(UserNotificationRequest.TargetRecordAction.of(I_AD_Record_Warning.Table_Name, recordWarningId.getRepoId()))
 						.build());
 	}
 
