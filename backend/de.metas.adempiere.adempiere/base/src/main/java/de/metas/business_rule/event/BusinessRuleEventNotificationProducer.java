@@ -27,7 +27,6 @@ import de.metas.event.Type;
 import de.metas.i18n.AdMessageKey;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
-import de.metas.notification.UserNotificationsConfig;
 import de.metas.record.warning.RecordWarningId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -40,6 +39,8 @@ public final class BusinessRuleEventNotificationProducer
 	{
 		return new BusinessRuleEventNotificationProducer();
 	}
+
+	@NonNull private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 
 	private BusinessRuleEventNotificationProducer()
 	{
@@ -57,25 +58,13 @@ public final class BusinessRuleEventNotificationProducer
 							 @NonNull final RecordWarningId recordWarningId,
 							 @NonNull final AdMessageKey messageKey)
 	{
-		final UserNotificationsConfig notificationsConfig = createUserNotificationsConfigOrNull(userId);
-		if (notificationsConfig == null)
-		{
-			return;
-		}
-
-		final INotificationBL notificationBL = Services.get(INotificationBL.class);
 		notificationBL.send(
 				UserNotificationRequest.builder()
 						.topic(EVENTBUS_TOPIC)
-						.notificationsConfig(notificationsConfig)
+						.notificationsConfig(notificationBL.getUserNotificationsConfig(userId))
 						.contentADMessage(messageKey)
 						.targetAction(UserNotificationRequest.TargetRecordAction.of(I_AD_Record_Warning.Table_Name, recordWarningId.getRepoId()))
 						.build());
 	}
 
-	private static UserNotificationsConfig createUserNotificationsConfigOrNull(final UserId recipientUserId)
-	{
-		final INotificationBL notifications = Services.get(INotificationBL.class);
-		return notifications.getUserNotificationsConfig(recipientUserId);
-	}
 }

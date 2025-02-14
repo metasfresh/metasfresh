@@ -33,6 +33,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -169,21 +170,17 @@ public class BusinessRuleEventProcessorCommand
 		}
 		else
 		{
-			final UserId userId = retrieveSourceUserId(event);
-			if (userId != null)
-			{
-				final Language userLanguage = userBL.getUserLanguage(userId);
-				final AdMessageKey messageKey = getAdMessageKey(rule);
-				final RecordWarningId recordWarningId = recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
-						.recordRef(targetRecordRef)
-						.businessRuleId(rule.getId())
-						.message(msgBL.getMsg(userLanguage.getAD_Language(), messageKey))
-						.build());
-				logger.debug(stopwatch, "=> Created/Updated warning for target record");
+			final AdMessageKey messageKey = getAdMessageKey(rule);
 
-				BusinessRuleEventNotificationProducer.newInstance().createNotice(userId, recordWarningId, messageKey);
-				logger.debug(stopwatch, "=> Created user notification for target record");
-			}
+			final RecordWarningId recordWarningId = recordWarningRepository.createOrUpdate(RecordWarningCreateRequest.builder()
+					.recordRef(targetRecordRef)
+					.businessRuleId(rule.getId())
+					.message(msgBL.getMsg(Env.getADLanguageOrBaseLanguage(), messageKey))
+					.build());
+			logger.debug(stopwatch, "=> Created/Updated warning for target record");
+
+			BusinessRuleEventNotificationProducer.newInstance().createNotice(event.getTriggeringUserId(), recordWarningId, messageKey);
+			logger.debug(stopwatch, "=> Created user notification for target record");
 
 		}
 	}
@@ -224,17 +221,6 @@ public class BusinessRuleEventProcessorCommand
 		return targetRecordId;
 	}
 
-	@Nullable
-	private UserId retrieveSourceUserId(@NonNull final BusinessRuleEvent event)
-	{
-		final String sourceTableName = event.getSourceRecordRef().getTableName();
-		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(sourceTableName);
-		final int sourceRecordId = event.getSourceRecordRef().getRecord_ID();
-		final String sql = "SELECT updatedBy FROM " + sourceTableName + " WHERE " + keyColumnName + "=?";
-		final Integer updatedByUserId = getRecordIdFromSql(sql, sourceRecordId, keyColumnName);
-		return updatedByUserId == null ? null : UserId.ofRepoId(updatedByUserId);
-	}
-
 	private boolean isPreconditionsMet(
 			@NonNull final TableRecordReference targetRecordRef,
 			@NonNull final BusinessRule rule)
@@ -252,6 +238,6 @@ public class BusinessRuleEventProcessorCommand
 
 	private AdMessageKey getAdMessageKey(final @NonNull BusinessRule rule)
 	{
-		return msgBL.getAdMessageKeyById(rule.getWarningMessage()).orElseThrow(() -> new AdempiereException("No message defined for business rule ID:" + rule.getId()));
+		return msgBL.getAdMessageKeyById(rule.getWarningMessageId()).orElseThrow(() -> new AdempiereException("No message defined for business rule ID:" + rule.getId()));
 	}
 }

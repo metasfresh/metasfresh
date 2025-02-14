@@ -30,7 +30,7 @@ public class BusinessRule
 	@NonNull ImmutableList<BusinessRuleTrigger> triggers;
 	@NonNull @Getter(AccessLevel.NONE) ImmutableMap<BusinessRuleTriggerId, BusinessRuleTrigger> triggersById;
 
-	@NonNull AdMessageId warningMessage;
+	@NonNull AdMessageId warningMessageId;
 
 	@Nullable BusinessRuleLogLevel logLevel;
 
@@ -42,7 +42,7 @@ public class BusinessRule
 			@NonNull final ImmutableList<BusinessRulePrecondition> preconditions,
 			@NonNull final Validation validation,
 			@NonNull final ImmutableList<BusinessRuleTrigger> triggers,
-			@NonNull final AdMessageId warningMessage,
+			@NonNull final AdMessageId warningMessageId,
 			@Nullable BusinessRuleLogLevel logLevel)
 	{
 		this.id = id;
@@ -52,7 +52,7 @@ public class BusinessRule
 		this.validation = validation;
 		this.triggers = triggers;
 		this.triggersById = Maps.uniqueIndex(triggers, BusinessRuleTrigger::getId);
-		this.warningMessage = warningMessage;
+		this.warningMessageId = warningMessageId;
 		this.logLevel = logLevel;
 	}
 

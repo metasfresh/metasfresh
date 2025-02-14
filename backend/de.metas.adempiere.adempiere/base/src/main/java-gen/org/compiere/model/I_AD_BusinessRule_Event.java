@@ -12,7 +12,7 @@ public interface I_AD_BusinessRule_Event
 
 	String Table_Name = "AD_BusinessRule_Event";
 
-//	/** AD_Table_ID=542459 */
+	//	/** AD_Table_ID=542459 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
@@ -296,4 +296,9 @@ public interface I_AD_BusinessRule_Event
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+
+	String COLUMNNAME_Triggering_User_ID = "Triggering_User_ID";
+	default void setTriggering_User_ID(int i) {} // TODO !!!!! 
+	default int getTriggering_User_ID() { return -1;}
 }
