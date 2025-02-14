@@ -3,7 +3,6 @@ import { ID_BACK_BUTTON, page } from '../../common';
 import { expect } from '@playwright/test';
 import { DistributionStepDropToScreen } from './DistributionStepDropToScreen';
 import { DistributionLineScreen } from './DistributionLineScreen';
-import { PickingJobScreen } from '../picking/PickingJobScreen';
 
 export const DistributionStepScreen = {
     waitForScreen: async () => await test.step(`Wait for Distribution Step Screen`, async () => {
