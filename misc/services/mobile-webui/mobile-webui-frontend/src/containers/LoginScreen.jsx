@@ -173,23 +173,23 @@ SelectAuthMethodView.propTypes = {
 //
 
 const useAuthenticationMethods = () => {
-    const [currentAuthMethod, setCurrentAuthMethod] = useState(KNOWN_AUTH_METHODS.UserPass);
-    const [availableAuthMethods, setAvailableAuthMethods] = useState([]);
-    console.log('useAuthenticationMethods', { currentAuthMethod, availableAuthMethods });
+  const [currentAuthMethod, setCurrentAuthMethod] = useState(KNOWN_AUTH_METHODS.UserPass);
+  const [availableAuthMethods, setAvailableAuthMethods] = useState([]);
+  console.log('useAuthenticationMethods', { currentAuthMethod, availableAuthMethods });
 
-    const { isConfigLoading } = useMobileConfiguration({
-        onSuccess: (config) => {
-            const availableAuthMethodsNew = config.availableAuthMethods
-                .map((method) => KNOWN_AUTH_METHODS[method])
-                .filter((method) => !!method);
-            const currentAuthMethodNew = KNOWN_AUTH_METHODS[config.defaultAuthMethod] || KNOWN_AUTH_METHODS.UserPass;
-            console.log('useAuthenticationMethods: got config', { config, availableAuthMethodsNew, currentAuthMethodNew });
-            setAvailableAuthMethods(availableAuthMethodsNew);
-            setCurrentAuthMethod(currentAuthMethodNew);
-        },
-    });
+  const { isConfigLoading } = useMobileConfiguration({
+    onSuccess: (config) => {
+      const availableAuthMethodsNew = config.availableAuthMethods
+        .map((method) => KNOWN_AUTH_METHODS[method])
+        .filter((method) => !!method);
+      const currentAuthMethodNew = KNOWN_AUTH_METHODS[config.defaultAuthMethod] || KNOWN_AUTH_METHODS.UserPass;
+      console.log('useAuthenticationMethods: got config', { config, availableAuthMethodsNew, currentAuthMethodNew });
+      setAvailableAuthMethods(availableAuthMethodsNew);
+      setCurrentAuthMethod(currentAuthMethodNew);
+    },
+  });
 
-    return { isConfigLoading, currentAuthMethod, setCurrentAuthMethod, availableAuthMethods };
+  return { isConfigLoading, currentAuthMethod, setCurrentAuthMethod, availableAuthMethods };
 };
 
 //
