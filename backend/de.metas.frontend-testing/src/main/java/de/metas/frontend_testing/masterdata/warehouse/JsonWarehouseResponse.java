@@ -11,4 +11,5 @@ public class JsonWarehouseResponse
 {
 	String warehouseCode;
 	String warehouseName;
+	String locatorQRCode;
 }

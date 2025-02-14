@@ -11,3 +11,7 @@ export const computeId = ({ id, idParam, captionKey }) => {
     return null;
   }
 };
+
+export const computeTestId = ({ testIdParam, captionKey }) => {
+  return computeId({ idParam: testIdParam, captionKey });
+};

@@ -9,6 +9,8 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
+import org.compiere.model.I_M_Locator;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -38,11 +40,13 @@ public class WarehouseCommand
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID());
 		context.putIdentifier(identifier, warehouseId);
 
-		warehouseBL.getOrCreateDefaultLocator(warehouseId);
+		final I_M_Locator locator = warehouseBL.getOrCreateDefaultLocator(warehouseId);
+		final LocatorQRCode locatorQRCode = LocatorQRCode.ofLocator(locator);
 
 		return JsonWarehouseResponse.builder()
 				.warehouseCode(warehouseRecord.getValue())
 				.warehouseName(warehouseRecord.getName())
+				.locatorQRCode(locatorQRCode.toGlobalQRCodeJsonString())
 				.build();
 	}
 }

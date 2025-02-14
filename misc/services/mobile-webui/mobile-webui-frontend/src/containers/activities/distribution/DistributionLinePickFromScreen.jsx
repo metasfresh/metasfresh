@@ -10,6 +10,7 @@ import { distributionLineScreenLocation } from '../../../routes/distribution';
 
 const DistributionLinePickFromScreen = () => {
   const { history, wfProcessId, activityId, lineId } = useDistributionScreenDefinition({
+    screenId: 'DistributionLinePickFromScreen',
     captionKey: 'activities.distribution.scanHU',
     back: distributionLineScreenLocation,
   });

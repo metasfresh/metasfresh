@@ -1,5 +1,5 @@
-import {test} from "../../../playwright.config";
-import {BACKEND_BASE_URL, page} from "../common";
+import { test } from "../../../playwright.config";
+import { FRONTEND_BASE_URL, page } from "../common";
 
 export const Backend = {
     createMasterdata: async ({
@@ -13,7 +13,8 @@ export const Backend = {
         if (authToken) headers['Authorization'] = authToken;
         if (language) headers['Accept-Language'] = language;
 
-        const response = await page.request.post(`${BACKEND_BASE_URL}/frontendTesting`, {
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.post(`${backendBaseUrl}/frontendTesting`, {
             data: request,
             headers
         });
@@ -28,9 +29,10 @@ export const Backend = {
         return responseBody;
     }),
 
-    getFreePickingSlot: async ({bpartnerCode}) => await test.step(`Backend: get free picking slot`, async () => {
-        const response = await page.request.post(`${BACKEND_BASE_URL}/frontendTesting/getFreePickingSlot`, {
-            data: {bpartnerCode},
+    getFreePickingSlot: async ({ bpartnerCode }) => await test.step(`Backend: get free picking slot`, async () => {
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/getFreePickingSlot`, {
+            data: { bpartnerCode },
             headers: {
                 'Content-Type': 'application/json',
             }
@@ -42,8 +44,39 @@ export const Backend = {
             throw "Got error on last backend call";
         }
 
-        const {qrCode: pickingSlotQRCode} = responseBody;
+        const { qrCode: pickingSlotQRCode } = responseBody;
         console.log(`Found free picking slot: ${pickingSlotQRCode}`);
-        return {pickingSlotQRCode};
+        return { pickingSlotQRCode };
     }),
 }
+
+//
+//
+//
+//
+//
+
+let _backendBaseUrl = null;
+
+export const getBackendBaseUrl = async () => {
+    if (!_backendBaseUrl) {
+        _backendBaseUrl = await loadConfigFromFrontendApp();
+        console.log('Backend server base URL: ', _backendBaseUrl);
+    }
+    return _backendBaseUrl;
+}
+
+export const loadConfigFromFrontendApp = async () => await test.step(`Fetching from mobile-webui-frontend/public/config.js`, async () => {
+    const url = await page.url();
+    if (!url || url === 'about:blank') {
+        await page.goto(FRONTEND_BASE_URL);
+    }
+    const serverUrl = await page.evaluate(() => window?.config?.SERVER_URL);
+    if (!serverUrl) {
+        throw new Error('window.config.SERVER_URL is not defined in the frontend app. ' +
+            'Does mobile-webui-frontend/public/config.js exist and is correctly configured?');
+    }
+
+    return serverUrl + '/api/v2';
+});
+
