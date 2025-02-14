@@ -1,8 +1,9 @@
 package de.metas.pricing;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.model.X_M_ProductPrice;
@@ -32,7 +33,6 @@ import javax.annotation.Nullable;
  */
 
 @RequiredArgsConstructor
-@Getter
 public enum InvoicableQtyBasedOn implements ReferenceListAwareEnum
 {
 	CatchWeight(X_M_ProductPrice.INVOICABLEQTYBASEDON_CatchWeight),
@@ -43,7 +43,8 @@ public enum InvoicableQtyBasedOn implements ReferenceListAwareEnum
 
 	private static final ReferenceListAwareEnums.ValuesIndex<InvoicableQtyBasedOn> index = ReferenceListAwareEnums.index(values());
 
-	public static InvoicableQtyBasedOn ofCode(@NonNull final String code) {return index.ofCode(code);}
+	@JsonCreator
+	public static InvoicableQtyBasedOn ofCode(@NonNull final String code) {return index.ofCodeOrName(code);}
 
 	public static InvoicableQtyBasedOn ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
 
@@ -52,6 +53,9 @@ public enum InvoicableQtyBasedOn implements ReferenceListAwareEnum
 		final InvoicableQtyBasedOn type = index.ofNullableCode(code);
 		return type != null ? type : NominalWeight;
 	}
+
+	@JsonValue
+	public @NonNull String getCode() {return code;}
 
 	public boolean isCatchWeight() {return CatchWeight.equals(this);}
 }

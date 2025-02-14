@@ -7,10 +7,9 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Invoice_Detai
     RETURNS TABLE
             (
                 descriptionbottom text,
-                P_Cond            text,
+                p_term            text,
                 paymentrule       character varying(60),
                 textcenter        text,
-                p_term            character varying(60),
                 discount1         numeric,
                 discount2         numeric,
                 discount_date1    text,
@@ -36,7 +35,7 @@ SELECT i.descriptionbottom,
                ),
                '$datum_skonto_2',
                TO_CHAR(i.dateinvoiced::date + pt.discountdays2, 'DD.MM.YYYY')
-       )                                                                                              AS P_Cond,
+       )                                                                                              AS p_term,
        COALESCE(reft.name, ref.name)                                                                  AS paymentrule,
        CASE
            WHEN (i.descriptionbottom IS NOT NULL AND i.descriptionbottom != '')
@@ -44,7 +43,6 @@ SELECT i.descriptionbottom,
                ELSE ''
        END || COALESCE(dtt.documentnote, dt.documentnote)                                             AS textcenter,
 
-       COALESCE(ptt.name, pt.name)                                                                    AS p_term,
        (CASE WHEN pt.DiscountDays > 0 THEN (i.grandtotal - (i.grandtotal * pt.discount / 100)) END)   AS discount1,
        (CASE WHEN pt.DiscountDays2 > 0 THEN (i.grandtotal - (i.grandtotal * pt.discount2 / 100)) END) AS discount2,
        TO_CHAR((i.DateInvoiced + DiscountDays), 'dd.MM.YYYY')                                         AS discount_date1,

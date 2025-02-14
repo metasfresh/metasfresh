@@ -49,6 +49,10 @@ public class JsonErrorItem
 {
 	String message;
 
+	@JsonInclude(Include.NON_EMPTY)
+	@Nullable
+	String errorCode;
+
 	boolean userFriendlyError;
 
 	@JsonInclude(Include.NON_EMPTY)
@@ -85,6 +89,7 @@ public class JsonErrorItem
 	@Builder
 	private JsonErrorItem(
 			@JsonProperty("message") @Nullable final String message,
+			@JsonProperty("errorCode") @Nullable final String errorCode,
 			@JsonProperty("userFriendlyError") final boolean userFriendlyError,
 			@JsonProperty("detail") @Nullable final String detail,
 			@JsonProperty("stackTrace") @Nullable final String stackTrace,
@@ -97,6 +102,7 @@ public class JsonErrorItem
 			@Nullable final Throwable throwable)
 	{
 		this.message = message;
+		this.errorCode = errorCode;
 		this.userFriendlyError = userFriendlyError;
 		this.detail = detail;
 		this.stackTrace = stackTrace;

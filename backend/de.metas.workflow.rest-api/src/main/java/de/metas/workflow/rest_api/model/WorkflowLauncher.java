@@ -39,6 +39,7 @@ public class WorkflowLauncher
 	@NonNull WorkflowLauncherCaption caption;
 
 	@Nullable WFProcessId startedWFProcessId;
+	@Nullable String testId;
 
 	@Builder.Default
 	@NonNull Params wfParameters = Params.EMPTY;

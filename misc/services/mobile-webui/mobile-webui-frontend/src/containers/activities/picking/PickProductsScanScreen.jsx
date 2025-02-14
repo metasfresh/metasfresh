@@ -12,6 +12,7 @@ import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
 
 const PickProductsScanScreen = () => {
   const { history } = useScreenDefinition({
+    screenId: 'PickProductsScanScreen',
     captionKey: 'activities.picking.scanQRCode',
     back: getWFProcessScreenLocation,
   });

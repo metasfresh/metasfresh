@@ -14,6 +14,7 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -96,7 +97,7 @@ public class DeviceAccessorsHub
 				.findFirst();
 	}
 
-	public DeviceAccessorsList getDeviceAccessors(final AttributeCode attributeCode)
+	public @Nullable DeviceAccessorsList getDeviceAccessors(final AttributeCode attributeCode)
 	{
 		return cache.getOrLoad(attributeCode, this::createDeviceAccessorsList);
 	}

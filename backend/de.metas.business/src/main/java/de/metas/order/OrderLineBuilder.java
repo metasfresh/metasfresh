@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -77,7 +78,7 @@ public class OrderLineBuilder
 	private ProductId productId;
 
 	private AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
-
+	@Nullable private HUPIItemProductId piItemProductId;
 	private Quantity qty;
 
 	@Nullable
@@ -127,6 +128,10 @@ public class OrderLineBuilder
 
 		orderLine.setM_Product_ID(productId.getRepoId());
 		orderLine.setM_AttributeSetInstance_ID(asiId.getRepoId());
+		if (piItemProductId != null)
+		{
+			orderLine.setM_HU_PI_Item_Product_ID(piItemProductId.getRepoId());
+		}
 
 		orderLine.setQtyEntered(qty.toBigDecimal());
 		orderLine.setC_UOM_ID(qty.getUomId().getRepoId());
@@ -214,6 +219,13 @@ public class OrderLineBuilder
 	{
 		assertNotBuilt();
 		this.productId = productId;
+		return this;
+	}
+
+	public OrderLineBuilder piItemProductId(final HUPIItemProductId piItemProductId)
+	{
+		assertNotBuilt();
+		this.piItemProductId = piItemProductId;
 		return this;
 	}
 

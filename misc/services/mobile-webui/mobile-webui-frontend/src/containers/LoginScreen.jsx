@@ -11,10 +11,11 @@ import { useAuth } from '../hooks/useAuth';
 import { useUITraceLocationChange } from '../utils/ui_trace/useUITraceLocationChange';
 import { useMobileNavigation } from '../hooks/useMobileNavigation';
 import PropTypes from 'prop-types';
+import Spinner from '../components/Spinner';
 
 const KNOWN_AUTH_METHODS = {
-  QR_CODE: 'qrCode',
-  USER_PASS: 'userAndPass',
+  QR_Code: 'QR_Code',
+  UserPass: 'UserPass',
 };
 
 const VIEW = {
@@ -25,7 +26,7 @@ const VIEW = {
 const LoginScreen = () => {
   const history = useMobileNavigation();
   const [currentView, setCurrentView] = useState(VIEW.LOGIN);
-  const { currentAuthMethod, setCurrentAuthMethod, availableAuthMethods } = useAuthenticationMethods();
+  const { isConfigLoading, currentAuthMethod, setCurrentAuthMethod, availableAuthMethods } = useAuthenticationMethods();
   const auth = useAuth();
 
   useEffect(() => {
@@ -50,9 +51,10 @@ const LoginScreen = () => {
   );
 
   return (
-    <div className="login-view">
+    <div id="LoginScreen" className="login-view">
       <LogoHeader />
-      {currentView === VIEW.LOGIN && (
+      {isConfigLoading && <Spinner />}
+      {currentView === VIEW.LOGIN && !isConfigLoading && (
         <LoginView
           currentAuthMethod={currentAuthMethod}
           availableAuthMethods={availableAuthMethods}
@@ -60,7 +62,7 @@ const LoginScreen = () => {
           onAlternativeAuthMethodClicked={() => setCurrentView(VIEW.ALTERNATIVE_METHODS)}
         />
       )}
-      {currentView === VIEW.ALTERNATIVE_METHODS && (
+      {currentView === VIEW.ALTERNATIVE_METHODS && !isConfigLoading && (
         <SelectAuthMethodView
           availableAuthMethods={availableAuthMethods}
           onSetAuthMethodClicked={handleSetAuthMethod}
@@ -127,12 +129,12 @@ LoginView.propTypes = {
 //
 
 const LoginMethodPanel = ({ authMethod }) => {
-  if (authMethod === KNOWN_AUTH_METHODS.USER_PASS) {
+  if (authMethod === KNOWN_AUTH_METHODS.UserPass) {
     return <UserAndPassAuth />;
-  } else if (authMethod === KNOWN_AUTH_METHODS.QR_CODE) {
+  } else if (authMethod === KNOWN_AUTH_METHODS.QR_Code) {
     return <QrCodeAuth />;
   } else {
-    console.warn(`Unknown auth method "${authMethod}". Falling back to "${KNOWN_AUTH_METHODS.USER_PASS}"`);
+    console.warn(`Unknown auth method "${authMethod}". Falling back to "${KNOWN_AUTH_METHODS.UserPass}"`);
     return <UserAndPassAuth />;
   }
 };
@@ -171,19 +173,23 @@ SelectAuthMethodView.propTypes = {
 //
 
 const useAuthenticationMethods = () => {
-  const [currentAuthMethod, setCurrentAuthMethod] = useState(KNOWN_AUTH_METHODS.USER_PASS);
+  const [currentAuthMethod, setCurrentAuthMethod] = useState(KNOWN_AUTH_METHODS.UserPass);
   const [availableAuthMethods, setAvailableAuthMethods] = useState([]);
+  console.log('useAuthenticationMethods', { currentAuthMethod, availableAuthMethods });
 
-  useMobileConfiguration({
+  const { isConfigLoading } = useMobileConfiguration({
     onSuccess: (config) => {
-      setAvailableAuthMethods(
-        config.availableAuthMethods.map((method) => KNOWN_AUTH_METHODS[method]).filter((method) => !!method)
-      );
-      setCurrentAuthMethod(KNOWN_AUTH_METHODS[config.defaultAuthMethod] || KNOWN_AUTH_METHODS.USER_PASS);
+      const availableAuthMethodsNew = config.availableAuthMethods
+        .map((method) => KNOWN_AUTH_METHODS[method])
+        .filter((method) => !!method);
+      const currentAuthMethodNew = KNOWN_AUTH_METHODS[config.defaultAuthMethod] || KNOWN_AUTH_METHODS.UserPass;
+      console.log('useAuthenticationMethods: got config', { config, availableAuthMethodsNew, currentAuthMethodNew });
+      setAvailableAuthMethods(availableAuthMethodsNew);
+      setCurrentAuthMethod(currentAuthMethodNew);
     },
   });
 
-  return { currentAuthMethod, setCurrentAuthMethod, availableAuthMethods };
+  return { isConfigLoading, currentAuthMethod, setCurrentAuthMethod, availableAuthMethods };
 };
 
 //
