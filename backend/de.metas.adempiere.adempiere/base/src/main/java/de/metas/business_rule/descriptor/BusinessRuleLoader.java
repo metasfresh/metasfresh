@@ -137,7 +137,7 @@ class BusinessRuleLoader
 				.triggers(getTriggers(id).stream()
 						.map(BusinessRuleLoader::fromRecord)
 						.collect(ImmutableList.toImmutableList()))
-				.warningMessage(AdMessageId.ofRepoId(record.getAD_Message_ID()))
+				.warningMessageId(AdMessageId.ofRepoId(record.getWarning_Message_ID()))
 				.logLevel(record.isDebug() ? BusinessRuleLogLevel.DEBUG : null)
 				.build();
 	}

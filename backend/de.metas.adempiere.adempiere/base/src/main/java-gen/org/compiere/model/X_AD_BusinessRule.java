@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_BusinessRule extends org.compiere.model.PO implements I_AD_BusinessRule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1552046992L;
+	private static final long serialVersionUID = -295086656L;
 
     /** Standard Constructor */
     public X_AD_BusinessRule (final Properties ctx, final int AD_BusinessRule_ID, @Nullable final String trxName)
@@ -47,21 +47,6 @@ public class X_AD_BusinessRule extends org.compiere.model.PO implements I_AD_Bus
 	public int getAD_BusinessRule_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_BusinessRule_ID);
-	}
-
-	@Override
-	public void setAD_Message_ID (final int AD_Message_ID)
-	{
-		if (AD_Message_ID < 1) 
-			set_Value (COLUMNNAME_AD_Message_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_Message_ID, AD_Message_ID);
-	}
-
-	@Override
-	public int getAD_Message_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_AD_Message_ID);
 	}
 
 	@Override
@@ -128,5 +113,20 @@ public class X_AD_BusinessRule extends org.compiere.model.PO implements I_AD_Bus
 	public int getValidation_Rule_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Validation_Rule_ID);
+	}
+
+	@Override
+	public void setWarning_Message_ID (final int Warning_Message_ID)
+	{
+		if (Warning_Message_ID < 1) 
+			set_Value (COLUMNNAME_Warning_Message_ID, null);
+		else 
+			set_Value (COLUMNNAME_Warning_Message_ID, Warning_Message_ID);
+	}
+
+	@Override
+	public int getWarning_Message_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Warning_Message_ID);
 	}
 }

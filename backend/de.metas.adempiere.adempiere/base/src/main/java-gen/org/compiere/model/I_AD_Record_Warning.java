@@ -171,20 +171,20 @@ public interface I_AD_Record_Warning
 	 * Textual Informational, Menu or Error Message
 	 *
 	 * <br>Type: TextLong
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setMsgText (@Nullable java.lang.String MsgText);
+	void setMsgText (java.lang.String MsgText);
 
 	/**
 	 * Get Message Text.
 	 * Textual Informational, Menu or Error Message
 	 *
 	 * <br>Type: TextLong
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getMsgText(); // TODO make it @NonNull
+	java.lang.String getMsgText();
 
 	ModelColumn<I_AD_Record_Warning, Object> COLUMN_MsgText = new ModelColumn<>(I_AD_Record_Warning.class, "MsgText", null);
 	String COLUMNNAME_MsgText = "MsgText";
@@ -193,7 +193,7 @@ public interface I_AD_Record_Warning
 	 * Set Record ID.
 	 * Direct internal record ID
 	 *
-	 * <br>Type: ID
+	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -203,7 +203,7 @@ public interface I_AD_Record_Warning
 	 * Get Record ID.
 	 * Direct internal record ID
 	 *
-	 * <br>Type: ID
+	 * <br>Type: Button
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
