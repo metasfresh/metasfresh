@@ -33,6 +33,20 @@ public class RecordWarningRepository
 
 		return RecordWarningId.ofRepoId(record.getAD_Record_Warning_ID());
 	}
+	
+	public RecordWarning getById(@NonNull final RecordWarningId id)
+	{
+		final I_AD_Record_Warning record = InterfaceWrapperHelper.load(id, I_AD_Record_Warning.class);
+		return fromRecord(record);
+	}
+
+	private RecordWarning fromRecord(final I_AD_Record_Warning record)
+	{
+		return RecordWarning.builder()
+				.id(RecordWarningId.ofRepoId(record.getAD_Record_Warning_ID()))
+				.msgText(record.getMsgText())
+				.build();
+	}
 
 	public void deleteByRecordRef(@NonNull final RecordWarningQuery query)
 	{

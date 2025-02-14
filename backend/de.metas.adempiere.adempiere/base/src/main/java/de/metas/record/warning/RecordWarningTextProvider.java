@@ -24,26 +24,25 @@ package de.metas.record.warning;
 
 import com.google.common.base.Optional;
 import de.metas.notification.spi.IRecordTextProvider;
-import org.adempiere.model.InterfaceWrapperHelper;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.ITableRecordReference;
 import org.compiere.model.I_AD_Record_Warning;
 
+@RequiredArgsConstructor
 public class RecordWarningTextProvider implements IRecordTextProvider
 {
-	public static final RecordWarningTextProvider instance = new RecordWarningTextProvider();
-
-	private RecordWarningTextProvider()
-	{
-		super();
-	}
+	@NonNull private final RecordWarningRepository recordWarningRepository;
 
 	@Override
 	public Optional<String> getTextMessageIfApplies(final ITableRecordReference referencedRecord)
 	{
-		if (referencedRecord.getAD_Table_ID() != InterfaceWrapperHelper.getTableId(I_AD_Record_Warning.class))
+		if (I_AD_Record_Warning.Table_Name.equals(referencedRecord.getTableName()))
 		{
 			return Optional.absent();
 		}
-		return Optional.fromNullable(referencedRecord.getModel(I_AD_Record_Warning.class).getMsgText());
+		final RecordWarningId recordWarningId = RecordWarningId.ofRepoId(referencedRecord.getRecord_ID());
+		
+		return Optional.of(recordWarningRepository.getById(recordWarningId).getMsgText());
 	}
 }

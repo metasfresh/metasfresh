@@ -184,7 +184,7 @@ public interface I_AD_Record_Warning
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getMsgText();
+	@Nullable java.lang.String getMsgText(); // TODO make it @NonNull
 
 	ModelColumn<I_AD_Record_Warning, Object> COLUMN_MsgText = new ModelColumn<>(I_AD_Record_Warning.class, "MsgText", null);
 	String COLUMNNAME_MsgText = "MsgText";
