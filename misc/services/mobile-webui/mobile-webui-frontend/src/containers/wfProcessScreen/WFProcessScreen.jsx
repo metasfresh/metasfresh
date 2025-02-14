@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
-import { pushHeaderEntry } from '../../actions/HeaderActions';
+import { updateHeaderEntry } from '../../actions/HeaderActions';
 import { getActivitiesInOrder, getWfProcess } from '../../reducers/wfProcesses';
 
 import AbortButton from './AbortButton';
@@ -25,6 +25,7 @@ const WFProcessScreen = () => {
   const { url, applicationId, wfProcessId } = useScreenDefinition({
     screenId: 'WFProcessScreen',
     back: appLaunchersLocation,
+    isHomeStop: true,
   });
 
   const { iconClassNames: appIconClassName } = useApplicationInfo({ applicationId });
@@ -37,14 +38,13 @@ const WFProcessScreen = () => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(
-      pushHeaderEntry({
+      updateHeaderEntry({
         location: url,
         values: headerProperties,
-        isHomeStop: true,
         homeIconClassName: appIconClassName,
       })
     );
-  }, [url, headerProperties, applicationId, wfProcessId]);
+  }, [url, headerProperties, appIconClassName]);
 
   return (
     <div className="section pt-2">

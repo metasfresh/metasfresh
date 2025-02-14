@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../../utils/translations';
-import { pushHeaderEntry } from '../../../../actions/HeaderActions';
+import { updateHeaderEntry } from '../../../../actions/HeaderActions';
 import { getActivityById, getLineByIdFromActivity } from '../../../../reducers/wfProcesses';
 import {
   issueAdjustmentScanScreenLocation,
@@ -32,7 +32,7 @@ const IssueAdjustmentLineScreen = () => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(
-      pushHeaderEntry({
+      updateHeaderEntry({
         location: url,
         values: [
           { caption: trl('general.Product'), value: productName },

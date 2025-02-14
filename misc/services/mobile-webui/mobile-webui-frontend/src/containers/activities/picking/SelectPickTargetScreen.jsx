@@ -14,7 +14,7 @@ import {
   useCurrentPickTarget,
   useCurrentTUPickTarget,
 } from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import { updateHeaderEntry } from '../../../actions/HeaderActions';
 import { trl } from '../../../utils/translations';
 import PropTypes from 'prop-types';
 import { useLocation } from 'react-router';
@@ -123,7 +123,7 @@ const useHeaderUpdate = ({ url, currentTarget }) => {
 
   useEffect(() => {
     dispatch(
-      pushHeaderEntry({
+      updateHeaderEntry({
         location: url,
         caption: trl('activities.picking.pickingTarget.Select'),
         values: [

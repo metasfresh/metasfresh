@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/inout/report" uuid="771c1e7b-347d-4c78-a5e0-6fb78e3c3b48">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -102,31 +102,39 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 		<band splitType="Stretch"/>
 	</title>
 	<pageHeader>
-		<band height="12" splitType="Stretch">
+		<band height="22" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField>
-				<reportElement key="textField-19" x="368" y="0" width="46" height="12" forecolor="#000000" uuid="31559d9f-ad00-493b-85aa-c40248c81609"/>
+				<reportElement key="textField-19" x="368" y="7" width="46" height="12" forecolor="#000000" uuid="31559d9f-ad00-493b-85aa-c40248c81609">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-20" x="416" y="0" width="40" height="12" forecolor="#000000" uuid="35bfebbe-2a4e-4e2d-8ac5-884ccbd51718"/>
+				<reportElement key="textField-20" x="416" y="7" width="40" height="12" forecolor="#000000" uuid="35bfebbe-2a4e-4e2d-8ac5-884ccbd51718">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report">
-				<reportElement key="textField-13" x="188" y="0" width="63" height="12" forecolor="#000000" uuid="c2a20384-4f83-4956-8de0-647e2b2f9d11"/>
+				<reportElement key="textField-13" x="188" y="7" width="63" height="12" forecolor="#000000" uuid="c2a20384-4f83-4956-8de0-647e2b2f9d11">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{showAttributes} !=0 ? $R{Attributes} : ""]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-13" x="251" y="0" width="41" height="12" forecolor="#000000" uuid="f0f37ac5-8ba3-475c-87e9-382ac9b70abf">
+				<reportElement key="textField-13" x="251" y="7" width="41" height="12" forecolor="#000000" uuid="f0f37ac5-8ba3-475c-87e9-382ac9b70abf">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
@@ -135,8 +143,9 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 				<textFieldExpression><![CDATA[$R{HUQuantity}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-20" x="457" y="0" width="43" height="12" forecolor="#000000" uuid="13f10026-f4a5-4106-b562-2972eb43d034">
+				<reportElement key="textField-20" x="457" y="7" width="43" height="12" forecolor="#000000" uuid="13f10026-f4a5-4106-b562-2972eb43d034">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<printWhenExpression><![CDATA[new Boolean($R{show_price}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
@@ -145,7 +154,8 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 				<textFieldExpression><![CDATA[$R{Price}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-20" x="502" y="0" width="43" height="12" forecolor="#000000" uuid="b45ffa6b-7b14-4fcb-9324-11acf5dd951b">
+				<reportElement key="textField-20" x="502" y="7" width="43" height="12" forecolor="#000000" uuid="b45ffa6b-7b14-4fcb-9324-11acf5dd951b">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<printWhenExpression><![CDATA[new Boolean($R{show_price}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
@@ -154,7 +164,8 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 				<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-17" x="293" y="0" width="82" height="12" forecolor="#000000" uuid="a02faea5-2530-4505-a8fb-aa78021f3a67">
+				<reportElement key="textField-17" x="293" y="7" width="82" height="12" forecolor="#000000" uuid="a02faea5-2530-4505-a8fb-aa78021f3a67">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement markup="none">
@@ -163,22 +174,35 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 				<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-16" x="59" y="0" width="128" height="12" forecolor="#000000" uuid="ae7f8642-14e1-4d38-89f2-5a0ab922b9a7"/>
+				<reportElement key="textField-16" x="59" y="7" width="128" height="12" forecolor="#000000" uuid="ae7f8642-14e1-4d38-89f2-5a0ab922b9a7">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="37" y="0" width="22" height="12" uuid="8b6aee51-eef1-4a9e-abaf-fc3a79d61f1c">
+				<reportElement x="37" y="7" width="22" height="12" uuid="8b6aee51-eef1-4a9e-abaf-fc3a79d61f1c">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<textElement>
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Position}]]></textFieldExpression>
 			</textField>
+			<line>
+				<reportElement x="34" y="3" width="543" height="1" uuid="bf81aa6c-afb7-42b5-8c57-4806e31acab9">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+			</line>
+			<line>
+				<reportElement x="34" y="20" width="543" height="1" uuid="07f3dcba-715b-449f-b5e8-0eaee8be0e5f">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+			</line>
 		</band>
 	</pageHeader>
 	<columnHeader>

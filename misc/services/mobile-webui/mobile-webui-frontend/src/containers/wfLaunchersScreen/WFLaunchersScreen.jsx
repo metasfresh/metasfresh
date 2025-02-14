@@ -12,7 +12,7 @@ import BarcodeScannerComponent from '../../components/BarcodeScannerComponent';
 import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
 import { toQRCodeDisplayable, toQRCodeString } from '../../utils/qrCode/hu';
 import WFLaunchersFilterButton from './WFLaunchersFilterButton';
-import { pushHeaderEntry } from '../../actions/HeaderActions';
+import { updateHeaderEntry } from '../../actions/HeaderActions';
 import { trl } from '../../utils/translations';
 import { appLaunchersFilterLocation } from '../../routes/launchers';
 import { useCurrentWorkplace } from '../../api/workplace';
@@ -48,38 +48,26 @@ const WFLaunchersScreen = () => {
   });
 
   const workplaceName = workplace?.name;
-  useEffect(() => {
-    if (workplaceName) {
-      dispatch(
-        pushHeaderEntry({
-          location: url,
-          values: [
-            {
-              caption: trl('general.workplace'),
-              value: workplaceName,
-            },
-          ],
-        })
-      );
-    }
-  }, [url, workplaceName]);
-
   const workstationName = workstation?.name;
   useEffect(() => {
-    if (workstationName) {
-      dispatch(
-        pushHeaderEntry({
-          location: url,
-          values: [
-            {
-              caption: trl('general.workstation'),
-              value: workstationName,
-            },
-          ],
-        })
-      );
-    }
-  }, [url, workstationName]);
+    dispatch(
+      updateHeaderEntry({
+        location: url,
+        values: [
+          {
+            caption: trl('general.workplace'),
+            value: workplaceName,
+            hidden: !workplaceName,
+          },
+          {
+            caption: trl('general.workstation'),
+            value: workstationName,
+            hidden: !workstationName,
+          },
+        ],
+      })
+    );
+  }, [url, workplaceName, workstationName]);
 
   //
   // Get Workstation

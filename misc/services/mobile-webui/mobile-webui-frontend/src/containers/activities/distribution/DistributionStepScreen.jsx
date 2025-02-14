@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../utils/translations';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import { updateHeaderEntry } from '../../../actions/HeaderActions';
 import { getStepById } from '../../../reducers/wfProcesses';
 import {
   distributionLineScreenLocation,
@@ -87,7 +87,7 @@ const DistributionStepScreen = () => {
     });
     history.push(location);
     dispatch(
-      pushHeaderEntry({
+      updateHeaderEntry({
         location,
         values: [
           {

@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { getActivityById } from '../../../../reducers/wfProcesses';
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import { issueAdjustmentLineScreenLocation } from '../../../../routes/manufacturing_issue_adjustment';
-import { pushHeaderEntry } from '../../../../actions/HeaderActions';
+import { updateHeaderEntry } from '../../../../actions/HeaderActions';
 import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
 import { getWFProcessScreenLocation } from '../../../../routes/workflow_locations';
 
@@ -18,7 +18,7 @@ const IssueAdjustmentScreen = () => {
 
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(pushHeaderEntry({ location: url, caption, userInstructions }));
+    dispatch(updateHeaderEntry({ location: url, caption, userInstructions }));
   }, []);
 
   const onButtonClick = (lineId) => {

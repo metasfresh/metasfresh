@@ -5,7 +5,7 @@ import { getOptionByIndex } from './utils';
 import { postGenerateHUQRCodes } from '../../../../api/generateHUQRCodes';
 import { toastError } from '../../../../utils/toast';
 import Button from '../../../../components/buttons/Button';
-import { pushHeaderEntry } from '../../../../actions/HeaderActions';
+import { updateHeaderEntry } from '../../../../actions/HeaderActions';
 import QtyInputField from '../../../../components/QtyInputField';
 import { qtyInfos } from '../../../../utils/qtyInfos';
 import { trl } from '../../../../utils/translations';
@@ -30,7 +30,7 @@ const ConfirmOptionScreen = () => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(
-      pushHeaderEntry({
+      updateHeaderEntry({
         location: url,
         values: [
           {

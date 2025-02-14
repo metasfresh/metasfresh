@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { setScannedBarcode } from '../../../actions/ScanActions';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import { updateHeaderEntry } from '../../../actions/HeaderActions';
 import { postScannedBarcode } from '../../../api/scanner';
 import { getActivityById } from '../../../reducers/wfProcesses';
 
@@ -37,7 +37,7 @@ const ScanScreen = () => {
 
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(pushHeaderEntry({ location: url, caption: activityCaption, userInstructions }));
+    dispatch(updateHeaderEntry({ location: url, caption: activityCaption, userInstructions }));
   }, [url, activityCaption, userInstructions]);
 
   useEffect(() => {
