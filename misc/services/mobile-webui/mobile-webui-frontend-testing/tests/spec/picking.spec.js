@@ -19,6 +19,7 @@ const loginAndCreateMasterdata = async () => {
                     allowPickingAnyCustomer: true,
                     createShipmentPolicy: 'CL',
                     allowPickingAnyHU: true,
+                    pickWithNewLU: true,
                 }
             },
             bpartners: { "BP1": {} },

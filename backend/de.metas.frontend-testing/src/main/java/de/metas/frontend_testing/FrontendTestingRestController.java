@@ -47,7 +47,7 @@ import java.util.function.Supplier;
 
 @RequestMapping(FrontendTestingRestController.ENDPOINT)
 @RestController
-@ConditionalOnProperty("frontend_testing")
+@ConditionalOnProperty("frontend.testing")
 @Profile(Profiles.PROFILE_App)
 @RequiredArgsConstructor
 public class FrontendTestingRestController

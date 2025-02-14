@@ -17,6 +17,7 @@ import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHUResponse;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsResponse;
+import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.MobileConfigCommand;
 import de.metas.frontend_testing.masterdata.product.CreateProductCommand;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
@@ -77,12 +78,13 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonCreateProductResponse> products = createProducts();
 		final ImmutableMap<String, JsonWarehouseResponse> warehouses = createWarehouses();
 		final Map<String, JsonPackingInstructionsResponse> packingInstructions = createPackingInstructions();
-		createMobileConfiguration();
+		final JsonMobileConfigResponse mobileConfig = createMobileConfiguration();
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
 		final ImmutableMap<String, JsonSalesOrderCreateResponse> salesOrders = createSalesOrders();
 		final ImmutableMap<String, JsonDDOrderResponse> distributionOrders = createDistributionOrders();
 
 		return JsonCreateMasterdataResponse.builder()
+				.mobileConfig(mobileConfig)
 				.login(login)
 				.bpartners(bpartners)
 				.products(products)
@@ -179,14 +181,14 @@ public class CreateMasterdataCommand
 				.build().execute();
 	}
 
-	private void createMobileConfiguration()
+	private JsonMobileConfigResponse createMobileConfiguration()
 	{
 		if (request.getMobileConfig() == null)
 		{
-			return;
+			return null;
 		}
 
-		MobileConfigCommand.builder()
+		return MobileConfigCommand.builder()
 				.mobileConfigService(mobileConfigService)
 				.mobilePickingConfigRepository(mobilePickingConfigRepository)
 				.mobileDistributionConfigRepository(mobileDistributionConfigRepository)
