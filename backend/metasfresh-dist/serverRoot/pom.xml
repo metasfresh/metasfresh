@@ -146,6 +146,11 @@
             <artifactId>de.metas.payment.sumup.rest-api</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
+        <dependency>
+            <groupId>de.metas.frontend-testing</groupId>
+            <artifactId>de.metas.frontend-testing</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

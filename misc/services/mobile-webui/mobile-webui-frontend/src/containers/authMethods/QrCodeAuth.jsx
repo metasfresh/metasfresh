@@ -18,7 +18,7 @@ const QrCodeAuth = () => {
   };
 
   return (
-    <div className="section is-size-5 qr-code-auth">
+    <div id="qr-code-auth" className="section is-size-5 qr-code-auth">
       <div className="container px-6">
         <BarcodeScannerComponent onResolvedResult={performLogin} />
       </div>

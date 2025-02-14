@@ -27,4 +27,7 @@ public class DDOrderReference
 	@Nullable ProductId productId;
 	@Nullable Quantity qty;
 	boolean isJobStarted;
+
+	@NonNull
+	public String getTestId() {return String.valueOf(ddOrderId.getRepoId());}
 }

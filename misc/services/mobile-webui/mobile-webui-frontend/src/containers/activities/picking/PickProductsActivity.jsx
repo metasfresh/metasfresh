@@ -98,13 +98,15 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
     <div className="mt-5">
       {isPickWithNewLU && (
         <ButtonWithIndicator
-          caption={trl('activities.picking.reopenLU')}
+          id="reopenLU-button"
+          captionKey="activities.picking.reopenLU"
           disabled={!isUserEditable}
           onClick={onReopenClosedLUClicked}
         />
       )}
       {isPickWithNewLU && (
         <ButtonWithIndicator
+          id="targetLU-button"
           caption={
             currentPickTarget?.caption
               ? trl('activities.picking.pickingTarget.Current') + ': ' + currentPickTarget?.caption
@@ -116,6 +118,7 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
       )}
       {isAllowNewTU && (
         <ButtonWithIndicator
+          id="targetTU-button"
           caption={
             currentTUPickTarget?.caption
               ? trl('activities.picking.tuPickingTarget.Current') + ': ' + currentTUPickTarget?.caption
@@ -129,20 +132,22 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
 
       {allowPickingAnyHU && (
         <ButtonWithIndicator
-          caption={trl('activities.picking.scanQRCode')}
+          id="scanQRCode-button"
+          captionKey="activities.picking.scanQRCode"
           disabled={isAtLeastOneReadOnlyLine(groupedLines)}
           onClick={onScanButtonClick}
         />
       )}
       {groupedLines &&
-        groupedLines.map((group, index) => {
+        groupedLines.map((group, groupIndex) => {
           const getDisplayLines = (lines) => {
-            return lines.map((lineItem) => {
+            return lines.map((lineItem, lineIndex) => {
               const lineId = lineItem.pickingLineId;
               const { uom, qtyToPick, qtyPicked } = lineItem;
 
               return (
                 <ButtonWithIndicator
+                  id={`line-${groupIndex}-${lineIndex}-button`}
                   key={lineId}
                   caption={lineItem.caption}
                   completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
@@ -161,9 +166,9 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
           };
 
           return (
-            <React.Fragment key={index}>
+            <React.Fragment key={groupIndex}>
               {getDisplayLines(group)}
-              {index !== groupedLines.length - 1 && <br />}
+              {groupIndex !== groupedLines.length - 1 && <br />}
             </React.Fragment>
           );
         })}

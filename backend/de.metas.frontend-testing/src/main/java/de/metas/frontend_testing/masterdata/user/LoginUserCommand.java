@@ -1,0 +1,53 @@
+package de.metas.frontend_testing.masterdata.user;
+
+import de.metas.frontend_testing.masterdata.Identifier;
+import de.metas.frontend_testing.masterdata.MasterdataContext;
+import de.metas.security.IRoleDAO;
+import de.metas.security.RoleId;
+import de.metas.user.UserId;
+import de.metas.user.api.IUserBL;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_User;
+
+import java.util.UUID;
+
+@Builder
+public class LoginUserCommand
+{
+	@NonNull private final IUserBL userBL = Services.get(IUserBL.class);
+	@NonNull private final IRoleDAO roleDAO = Services.get(IRoleDAO.class);
+
+	@NonNull private final MasterdataContext context;
+	@NonNull private final JsonLoginUserRequest request;
+	@NonNull private final Identifier identifier;
+
+	public JsonLoginUserResponse execute()
+	{
+		final String login = identifier.toUniqueString();
+
+		final I_AD_User user = InterfaceWrapperHelper.newInstance(I_AD_User.class);
+		user.setFirstname(login);
+		user.setLastname(login);
+		user.setEMail(login + "@metasfresh.com");
+		user.setAD_Language(request.getLanguage());
+		user.setIsSystemUser(true);
+		user.setLogin(login);
+		InterfaceWrapperHelper.save(user);
+		userBL.save(user);
+		final UserId userId = UserId.ofRepoId(user.getAD_User_ID());
+
+		final String password = UUID.randomUUID().toString();
+		userBL.changePasswordAndSave(user, password);
+
+		roleDAO.deleteUserRolesByUserId(userId);
+		roleDAO.createUserRoleAssignmentIfMissing(userId, RoleId.WEBUI);
+
+		return JsonLoginUserResponse.builder()
+				.username(login)
+				.password(password)
+				.build();
+	}
+}

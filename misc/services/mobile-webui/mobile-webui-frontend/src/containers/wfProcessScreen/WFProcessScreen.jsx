@@ -23,6 +23,7 @@ import { appLaunchersLocation } from '../../routes/launchers';
 
 const WFProcessScreen = () => {
   const { url, applicationId, wfProcessId } = useScreenDefinition({
+    screenId: 'WFProcessScreen',
     back: appLaunchersLocation,
     isHomeStop: true,
   });
