@@ -1,8 +1,6 @@
 package de.metas.record.warning;
 
 import de.metas.business_rule.descriptor.model.BusinessRuleId;
-import de.metas.i18n.AdMessageId;
-import de.metas.i18n.Language;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
