@@ -20,7 +20,7 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      
+  
   rabbitmq:
     image: rabbitmq:3.9.13-management
     ports:
@@ -61,6 +61,10 @@ services:
 
   app:
     image: $mfregistry/metas-app:$mfversion
+    networks:
+      default:
+        aliases:
+          - app-test
     ports:
       - "8282:8282"
       - "8788:8788"
@@ -116,7 +120,8 @@ services:
       - ./playwright-report:/app/playwright-report
     environment:
       - "FRONTEND_BASE_URL=http://mobile:80/mobile"
-      - "BACKEND_BASE_URL=http://app:8282/api/v2"
+      - "BACKEND_BASE_URL=http://app-test:8282/api/v2"
+      - "CHROMIUM_FLAGS=--unsafely-treat-insecure-origin-as-secure=http://app-test:8282 --disable-web-security --ignore-certificate-errors"
     depends_on:
       mobile:
         condition: service_healthy
@@ -124,6 +129,6 @@ services:
       mode: replicated
       replicas: 1
 
-volumes: {}
-configs: {}
-secrets: {}
+volumes: { }
+configs: { }
+secrets: { }
