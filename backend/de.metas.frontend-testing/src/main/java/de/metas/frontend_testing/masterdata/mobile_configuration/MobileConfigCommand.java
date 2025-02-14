@@ -1,9 +1,11 @@
 package de.metas.frontend_testing.masterdata.mobile_configuration;
 
+import de.metas.distribution.config.MobileUIDistributionConfig;
 import de.metas.distribution.config.MobileUIDistributionConfig.MobileUIDistributionConfigBuilder;
 import de.metas.distribution.config.MobileUIDistributionConfigRepository;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions.PickingJobOptionsBuilder;
 import de.metas.mobile.MobileConfig;
 import de.metas.mobile.MobileConfig.MobileConfigBuilder;
@@ -20,14 +22,20 @@ public class MobileConfigCommand
 
 	@NonNull private final JsonMobileConfigRequest request;
 
-	public void execute()
+	public JsonMobileConfigResponse execute()
 	{
-		updateMobileConfig();
-		updatePickingConfig();
-		updateDistributionConfig();
+		final MobileConfig config = updateMobileConfig();
+		final JsonMobileConfigResponse.Picking picking = updatePickingConfig();
+		final JsonMobileConfigResponse.Distribution distribution = updateDistributionConfig();
+
+		return JsonMobileConfigResponse.builder()
+				.defaultAuthMethod(config.getDefaultAuthMethod())
+				.picking(picking)
+				.distribution(distribution)
+				.build();
 	}
 
-	private void updateMobileConfig()
+	private MobileConfig updateMobileConfig()
 	{
 		final MobileConfigBuilder configBuilder = mobileConfigService.getConfig()
 				.orElse(MobileConfig.DEFAULT)
@@ -41,33 +49,20 @@ public class MobileConfigCommand
 		final MobileConfig config = configBuilder.build();
 
 		mobileConfigService.save(config);
+		return config;
 	}
 
-	public void updatePickingConfig()
+	private JsonMobileConfigResponse.Picking updatePickingConfig()
 	{
 		final JsonMobileConfigRequest.Picking picking = request.getPicking();
 		if (picking == null)
 		{
-			return;
+			return null;
 		}
 
 		final MobileUIPickingUserProfile profile = mobilePickingConfigRepository.getProfile();
-		final PickingJobOptionsBuilder defaultPickingJobOptionsBuilder = profile.getDefaultPickingJobOptions().toBuilder();
-		if (picking.getAllowPickingAnyHU() != null)
-		{
-			defaultPickingJobOptionsBuilder.isAllowPickingAnyHU(picking.getAllowPickingAnyHU());
-		}
-		if (picking.getCreateShipmentPolicy() != null)
-		{
-			defaultPickingJobOptionsBuilder.createShipmentPolicy(picking.getCreateShipmentPolicy());
-		}
-		if (picking.getAlwaysSplitHUsEnabled() != null)
-		{
-			defaultPickingJobOptionsBuilder.isAlwaysSplitHUsEnabled(picking.getAlwaysSplitHUsEnabled());
-		}
-
 		final MobileUIPickingUserProfile.MobileUIPickingUserProfileBuilder newProfileBuilder = profile.toBuilder()
-				.defaultPickingJobOptions(defaultPickingJobOptionsBuilder.build());
+				.defaultPickingJobOptions(updatePickingJobOptions(profile.getDefaultPickingJobOptions(), picking));
 
 		if (picking.getAllowPickingAnyCustomer() != null)
 		{
@@ -76,22 +71,58 @@ public class MobileConfigCommand
 
 		final MobileUIPickingUserProfile newProfile = newProfileBuilder.build();
 		mobilePickingConfigRepository.save(newProfile);
+
+		return JsonMobileConfigResponse.Picking.builder()
+				.allowPickingAnyCustomer(newProfile.isAllowPickingAnyCustomer())
+				.allowPickingAnyHU(newProfile.getDefaultPickingJobOptions().isAllowPickingAnyHU())
+				.createShipmentPolicy(newProfile.getDefaultPickingJobOptions().getCreateShipmentPolicy())
+				.alwaysSplitHUsEnabled(newProfile.getDefaultPickingJobOptions().isAlwaysSplitHUsEnabled())
+				.pickWithNewLU(newProfile.getDefaultPickingJobOptions().isPickWithNewLU())
+				.build();
 	}
 
-	private void updateDistributionConfig()
+	private static PickingJobOptions updatePickingJobOptions(final PickingJobOptions pickingJobOptions, final JsonMobileConfigRequest.Picking from)
+	{
+		final PickingJobOptionsBuilder builder = pickingJobOptions.toBuilder();
+		if (from.getAllowPickingAnyHU() != null)
+		{
+			builder.isAllowPickingAnyHU(from.getAllowPickingAnyHU());
+		}
+		if (from.getCreateShipmentPolicy() != null)
+		{
+			builder.createShipmentPolicy(from.getCreateShipmentPolicy());
+		}
+		if (from.getAlwaysSplitHUsEnabled() != null)
+		{
+			builder.isAlwaysSplitHUsEnabled(from.getAlwaysSplitHUsEnabled());
+		}
+		if (from.getPickWithNewLU() != null)
+		{
+			builder.isPickWithNewLU(from.getPickWithNewLU());
+		}
+
+		return builder.build();
+	}
+
+	private JsonMobileConfigResponse.Distribution updateDistributionConfig()
 	{
 		final JsonMobileConfigRequest.Distribution distribution = request.getDistribution();
 		if (distribution == null)
 		{
-			return;
+			return null;
 		}
 
-		final MobileUIDistributionConfigBuilder configBuilder = mobileDistributionConfigRepository.getConfig().toBuilder();
+		final MobileUIDistributionConfigBuilder newConfigBuilder = mobileDistributionConfigRepository.getConfig().toBuilder();
 		if (distribution.getAllowPickingAnyHU() != null)
 		{
-			configBuilder.allowPickingAnyHU(distribution.getAllowPickingAnyHU());
+			newConfigBuilder.allowPickingAnyHU(distribution.getAllowPickingAnyHU());
 		}
 
-		mobileDistributionConfigRepository.save(configBuilder.build());
+		final MobileUIDistributionConfig newConfig = newConfigBuilder.build();
+		mobileDistributionConfigRepository.save(newConfig);
+
+		return JsonMobileConfigResponse.Distribution.builder()
+				.allowPickingAnyHU(newConfig.isAllowPickingAnyHU())
+				.build();
 	}
 }

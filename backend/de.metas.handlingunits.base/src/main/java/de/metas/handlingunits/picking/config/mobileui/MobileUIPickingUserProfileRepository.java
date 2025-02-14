@@ -202,14 +202,15 @@ public class MobileUIPickingUserProfileRepository
 
 	private static void updateRecord(@NonNull final I_MobileUI_UserProfile_Picking record, @NonNull final PickingJobOptions from)
 	{
-		record.setIsAlwaysSplitHUsEnabled(from.isAlwaysSplitHUsEnabled());
 		record.setIsAllowPickingAnyHU(from.isAllowPickingAnyHU());
-		record.setCreateShipmentPolicy(from.getCreateShipmentPolicy().getCode());
+		record.setIsAlwaysSplitHUsEnabled(from.isAlwaysSplitHUsEnabled());
+		record.setIsPickingWithNewLU(from.isPickWithNewLU());
 		record.setIsAllowNewTU(from.isAllowNewTU());
-		record.setIsAllowSkippingRejectedReason(from.isAllowSkippingRejectedReason());
-		record.setIsConsiderSalesOrderCapacity(from.isConsiderSalesOrderCapacity());
 		record.setIsCatchWeightTUPickingEnabled(from.isCatchWeightTUPickingEnabled());
+		record.setIsConsiderSalesOrderCapacity(from.isConsiderSalesOrderCapacity());
+		record.setIsAllowSkippingRejectedReason(from.isAllowSkippingRejectedReason());
 		record.setIsShowConfirmationPromptWhenOverPick(from.isShowConfirmationPromptWhenOverPick());
+		record.setCreateShipmentPolicy(from.getCreateShipmentPolicy().getCode());
 		record.setPickingLineGroupBy(from.getPickingLineGroupBy().map(PickingLineGroupBy::getCode).orElse(null));
 		record.setPickingLineSortBy(from.getPickingLineSortBy().map(PickingLineSortBy::getCode).orElse(null));
 	}

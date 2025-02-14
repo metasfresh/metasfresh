@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.mobile_configuration;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.mobile.MobileAuthMethod;
 import lombok.Builder;
@@ -11,11 +12,11 @@ import javax.annotation.Nullable;
 @Value
 @Builder
 @Jacksonized
-public class JsonMobileConfigRequest
+public class JsonMobileConfigResponse
 {
 	@Nullable MobileAuthMethod defaultAuthMethod;
-	@Nullable Picking picking;
-	@Nullable Distribution distribution;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Picking picking;
+	@Nullable @JsonInclude(JsonInclude.Include.NON_EMPTY) Distribution distribution;
 
 	//
 	//
@@ -32,10 +33,10 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean alwaysSplitHUsEnabled;
 		@Nullable Boolean pickWithNewLU;
 	}
-	
+
 	//
- 	//
- 	//
+	//
+	//
 
 	@Value
 	@Builder

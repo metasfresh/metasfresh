@@ -21,8 +21,8 @@ import java.util.Map;
 @Jacksonized
 public class JsonCreateMasterdataRequest
 {
-	@Nullable Map<String, JsonLoginUserRequest> login;
 	@Nullable JsonMobileConfigRequest mobileConfig;
+	@Nullable Map<String, JsonLoginUserRequest> login;
 	@Nullable Map<String, JsonCreateBPartnerRequest> bpartners;
 	@Nullable Map<String, JsonWarehouseRequest> warehouses;
 	@Nullable Map<String, JsonCreateProductRequest> products;
