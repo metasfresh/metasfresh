@@ -51,10 +51,10 @@ const LoginScreen = () => {
   );
 
   return (
-    <div className="login-view">
+    <div id="LoginScreen" className="login-view">
       <LogoHeader />
       {isConfigLoading && <Spinner />}
-      {currentView === VIEW.LOGIN && (
+      {currentView === VIEW.LOGIN && !isConfigLoading && (
         <LoginView
           currentAuthMethod={currentAuthMethod}
           availableAuthMethods={availableAuthMethods}
@@ -62,7 +62,7 @@ const LoginScreen = () => {
           onAlternativeAuthMethodClicked={() => setCurrentView(VIEW.ALTERNATIVE_METHODS)}
         />
       )}
-      {currentView === VIEW.ALTERNATIVE_METHODS && (
+      {currentView === VIEW.ALTERNATIVE_METHODS && !isConfigLoading && (
         <SelectAuthMethodView
           availableAuthMethods={availableAuthMethods}
           onSetAuthMethodClicked={handleSetAuthMethod}

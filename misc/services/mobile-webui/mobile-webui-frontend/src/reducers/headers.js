@@ -113,11 +113,17 @@ export const useBackLocationFromHeaders = () => {
   return useSelector((state) => getBackLocation({ state }), shallowEqual);
 };
 
+const getScreenIdFromHeaders = (state) => {
+  const headersEntries = getHeaderEntries(state);
+  return headersEntries.length > 0 ? headersEntries[headersEntries.length - 1]?.screenId : null;
+};
+
 export const useNavigationInfoFromHeaders = () => {
   const { url: currentLocation } = useRouteMatch();
 
   return useSelector(
     (state) => ({
+      screenId: getScreenIdFromHeaders(state),
       caption: getCaptionFromHeaders(state),
       homeLocation: getHomeLocation({ state, currentLocation }),
     }),
