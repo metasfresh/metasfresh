@@ -282,7 +282,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 					.setParameter("remittanceAdviceLine", remittanceAdviceLine);
 		}
 
-		final SOTrx soTrx = SOTrx.ofBooleanNotNull(remittanceAdvice.isSOTrx());
+		final SOTrx soTrx = SOTrx.ofBooleanNotNull(invoice.isSOTrx());
 		final boolean isCreditMemo = invoiceBL.isCreditMemo(invoice);
 		final InvoiceAmtMultiplier amtMultiplier = toInvoiceAmtMultiplier(soTrx, isCreditMemo);
 
