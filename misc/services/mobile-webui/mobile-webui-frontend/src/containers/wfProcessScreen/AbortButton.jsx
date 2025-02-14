@@ -17,6 +17,7 @@ const AbortButton = ({ applicationId, wfProcessId }) => {
   return (
     <div className="mt-5">
       <ConfirmButton
+        id="abort-button"
         caption={trl('activities.confirmButton.abort')}
         isDangerousAction={true}
         isUserEditable={true}

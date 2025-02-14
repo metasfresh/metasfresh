@@ -4,6 +4,7 @@ import cx from 'classnames';
 import { qtyInfos } from '../utils/qtyInfos';
 
 const QtyInputField = ({
+  id,
   qty: qtyInitial,
   uom,
   integerValuesOnly = false,
@@ -74,6 +75,7 @@ const QtyInputField = ({
     <div className="field">
       <div className={cx('control', { 'has-icons-right': !!uom })}>
         <input
+          id={id}
           ref={qtyInputRef}
           className="input"
           type="number"
@@ -90,6 +92,7 @@ const QtyInputField = ({
 };
 
 QtyInputField.propTypes = {
+  id: PropTypes.string,
   qty: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   uom: PropTypes.string,
   integerValuesOnly: PropTypes.bool,

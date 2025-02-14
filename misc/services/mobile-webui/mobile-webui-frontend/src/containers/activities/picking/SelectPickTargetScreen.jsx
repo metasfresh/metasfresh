@@ -29,6 +29,7 @@ const isItAboutTUs = (location) => {
 
 export const SelectPickTargetScreen = () => {
   const { history, url, wfProcessId, activityId } = useScreenDefinition({
+    screenId: 'SelectPickTargetScreen',
     back: getWFProcessScreenLocation,
   });
 
@@ -55,10 +56,7 @@ export const SelectPickTargetScreen = () => {
   return (
     <div className="section pt-2">
       {currentTarget && (
-        <ButtonWithIndicator
-          caption={trl('activities.picking.pickingTarget.CloseTarget')}
-          onClick={onCloseTargetClicked}
-        />
+        <ButtonWithIndicator captionKey="activities.picking.pickingTarget.CloseTarget" onClick={onCloseTargetClicked} />
       )}
       {!currentTarget && <NewTargets wfProcessId={wfProcessId} />}
     </div>

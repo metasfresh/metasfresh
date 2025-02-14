@@ -66,16 +66,15 @@ public class M_PriceList_Version
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW }, ifColumnsChanged = { I_M_PriceList_Version.COLUMNNAME_ValidFrom })
 	public void updatePLVName(@NonNull final I_M_PriceList_Version priceListVersion)
 	{
-		final PriceListId priceListId = PriceListId.ofRepoId(priceListVersion.getM_PriceList_ID());
-		final I_M_PriceList priceList = priceListDAO.getById(priceListId);
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(priceListVersion.getAD_Org_ID()));
 		final LocalDate date = TimeUtil.asLocalDate(priceListVersion.getValidFrom(), timeZone);
-
 		if (date == null)
 		{
 			return;
 		}
 
+		final PriceListId priceListId = PriceListId.ofRepoId(priceListVersion.getM_PriceList_ID());
+		final I_M_PriceList priceList = priceListDAO.getByIdInTrx(priceListId);
 		final String plvName = priceListBL.createPLVName(priceList.getName(), date);
 		priceListVersion.setName(plvName);
 	}

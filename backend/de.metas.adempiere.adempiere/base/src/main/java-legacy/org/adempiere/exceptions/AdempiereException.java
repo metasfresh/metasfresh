@@ -127,6 +127,26 @@ public class AdempiereException extends RuntimeException
 		return TranslatableStrings.constant(extractMessage(throwable));
 	}
 
+	public static String extractErrorCode(@NonNull final Throwable throwable)
+	{
+		if (throwable instanceof AdempiereException)
+		{
+			return ((AdempiereException)throwable).getErrorCode();
+		}
+		else
+		{
+			final Throwable cause = extractCause(throwable);
+			if (cause instanceof AdempiereException)
+			{
+				return ((AdempiereException)cause).getErrorCode();
+			}
+			else
+			{
+				return null;
+			}
+		}
+	}
+
 	public static Map<String, Object> extractParameters(final Throwable throwable)
 	{
 		if (throwable instanceof AdempiereException)
