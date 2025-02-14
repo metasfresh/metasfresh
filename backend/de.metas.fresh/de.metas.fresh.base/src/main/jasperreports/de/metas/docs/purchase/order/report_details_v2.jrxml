@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/order/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -24,99 +24,73 @@
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_Order_Details($P{c_order_id}, $P{ad_language});]]>
 	</queryString>
 	<field name="line" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.name" value="line"/>
 		<property name="com.jaspersoft.studio.field.label" value="line"/>
 	</field>
 	<field name="name" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="name"/>
 		<property name="com.jaspersoft.studio.field.label" value="name"/>
 	</field>
 	<field name="attributes" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="attributes"/>
 		<property name="com.jaspersoft.studio.field.label" value="attributes"/>
 	</field>
 	<field name="huqty" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.name" value="huqty"/>
 		<property name="com.jaspersoft.studio.field.label" value="huqty"/>
 	</field>
 	<field name="huname" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="huname"/>
 		<property name="com.jaspersoft.studio.field.label" value="huname"/>
 	</field>
 	<field name="qtyenteredinpriceuom" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.name" value="qtyenteredinpriceuom"/>
 		<property name="com.jaspersoft.studio.field.label" value="qtyenteredinpriceuom"/>
 	</field>
 	<field name="priceentered" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.name" value="priceentered"/>
 		<property name="com.jaspersoft.studio.field.label" value="priceentered"/>
 	</field>
 	<field name="uomsymbol" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="uomsymbol"/>
 		<property name="com.jaspersoft.studio.field.label" value="uomsymbol"/>
 	</field>
 	<field name="stdprecision" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.name" value="stdprecision"/>
 		<property name="com.jaspersoft.studio.field.label" value="stdprecision"/>
 	</field>
-	<field name="qtypattern" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="qtypattern"/>
-	</field>
 	<field name="linenetamt" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.name" value="linenetamt"/>
 		<property name="com.jaspersoft.studio.field.label" value="linenetamt"/>
 	</field>
 	<field name="discount" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.name" value="discount"/>
 		<property name="com.jaspersoft.studio.field.label" value="discount"/>
 	</field>
 	<field name="isdiscountprinted" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="isdiscountprinted"/>
 		<property name="com.jaspersoft.studio.field.label" value="isdiscountprinted"/>
 	</field>
 	<field name="rate" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="rate"/>
 		<property name="com.jaspersoft.studio.field.label" value="rate"/>
 	</field>
 	<field name="isprinttax" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="isprinttax"/>
 		<property name="com.jaspersoft.studio.field.label" value="isprinttax"/>
 	</field>
 	<field name="description" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="description"/>
 		<property name="com.jaspersoft.studio.field.label" value="description"/>
 	</field>
 	<field name="bp_product_no" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="bp_product_no"/>
 		<property name="com.jaspersoft.studio.field.label" value="bp_product_no"/>
 	</field>
 	<field name="bp_product_name" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="bp_product_name"/>
 		<property name="com.jaspersoft.studio.field.label" value="bp_product_name"/>
 	</field>
 	<field name="cursymbol" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="cursymbol"/>
 		<property name="com.jaspersoft.studio.field.label" value="cursymbol"/>
 	</field>
 	<field name="p_value" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="p_value"/>
 		<property name="com.jaspersoft.studio.field.label" value="p_value"/>
 	</field>
 	<field name="p_description" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="p_description"/>
 		<property name="com.jaspersoft.studio.field.label" value="p_description"/>
 	</field>
 	<field name="p_documentnote" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="p_documentnote"/>
 		<property name="com.jaspersoft.studio.field.label" value="p_documentnote"/>
 	</field>
 	<field name="order_description" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="order_description"/>
 		<property name="com.jaspersoft.studio.field.label" value="order_description"/>
 	</field>
-	<field name="pricepattern" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="pricepattern"/>
-		<property name="com.jaspersoft.studio.field.label" value="pricepattern"/>
+	<field name="price_pattern" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="price_pattern"/>
 	</field>
 	<variable name="LINESUM_SUM" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{linenetamt}]]></variableExpression>
@@ -137,9 +111,10 @@
 		<band splitType="Stretch"/>
 	</title>
 	<pageHeader>
-		<band height="12" splitType="Stretch">
+		<band height="23" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField>
-				<reportElement key="textField-13" x="239" y="0" width="30" height="12" forecolor="#000000" uuid="7bebebb5-1cfc-495c-8365-824e28ea2340">
+				<reportElement key="textField-13" x="239" y="7" width="30" height="12" forecolor="#000000" uuid="7bebebb5-1cfc-495c-8365-824e28ea2340">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
@@ -149,7 +124,7 @@
 				<textFieldExpression><![CDATA[$R{HUQuantity}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-16" x="97" y="0" width="142" height="12" forecolor="#000000" uuid="5f346c6f-9774-4c47-8dd4-cdf66fecf436">
+				<reportElement key="textField-16" x="97" y="7" width="142" height="12" forecolor="#000000" uuid="5f346c6f-9774-4c47-8dd4-cdf66fecf436">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement markup="none">
@@ -158,7 +133,7 @@
 				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-17" x="271" y="0" width="70" height="12" forecolor="#000000" uuid="47fac58e-fec0-4aa0-bdc5-e8e0dbd727f2">
+				<reportElement key="textField-17" x="271" y="7" width="70" height="12" forecolor="#000000" uuid="47fac58e-fec0-4aa0-bdc5-e8e0dbd727f2">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
@@ -168,7 +143,7 @@
 				<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-19" x="450" y="0" width="30" height="12" forecolor="#000000" uuid="f26ad2e8-9346-494d-ad3b-c678879593f6">
+				<reportElement key="textField-19" x="450" y="7" width="30" height="12" forecolor="#000000" uuid="f26ad2e8-9346-494d-ad3b-c678879593f6">
 					<printWhenExpression><![CDATA[new Boolean($F{isdiscountprinted}.equals("Y"))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
@@ -177,7 +152,7 @@
 				<textFieldExpression><![CDATA[$R{Discount}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-20" x="374" y="0" width="38" height="12" forecolor="#000000" uuid="3152c5c9-d9e5-45e9-aa4b-8427307c50c6">
+				<reportElement key="textField-20" x="374" y="7" width="38" height="12" forecolor="#000000" uuid="3152c5c9-d9e5-45e9-aa4b-8427307c50c6">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement markup="none">
@@ -186,21 +161,21 @@
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-20" x="463" y="0" width="45" height="12" forecolor="#000000" uuid="80ba15ab-1a48-405d-962e-bb2690ebc503"/>
+				<reportElement key="textField-20" x="463" y="7" width="45" height="12" forecolor="#000000" uuid="80ba15ab-1a48-405d-962e-bb2690ebc503"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-19" x="334" y="0" width="38" height="12" forecolor="#000000" uuid="d14181b0-e766-4e62-90cf-728f15b0e15a"/>
+				<reportElement key="textField-19" x="334" y="7" width="38" height="12" forecolor="#000000" uuid="d14181b0-e766-4e62-90cf-728f15b0e15a"/>
 				<textElement textAlignment="Center" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-20" x="411" y="0" width="36" height="12" forecolor="#000000" uuid="9cc1b771-5336-44cd-a8cf-406dccb79903">
+				<reportElement key="textField-20" x="411" y="7" width="36" height="12" forecolor="#000000" uuid="9cc1b771-5336-44cd-a8cf-406dccb79903">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
@@ -209,7 +184,7 @@
 				<textFieldExpression><![CDATA[$R{Price}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-20" x="509" y="0" width="34" height="12" forecolor="#000000" uuid="9e5a5e80-b8a5-4345-a31c-c24a83e7f197">
+				<reportElement key="textField-20" x="509" y="7" width="34" height="12" forecolor="#000000" uuid="9e5a5e80-b8a5-4345-a31c-c24a83e7f197">
 					<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
@@ -218,7 +193,7 @@
 				<textFieldExpression><![CDATA[$R{Tax}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="37" y="0" width="22" height="12" uuid="14c843f7-78e8-45a5-8f4d-c4490b35b8f7">
+				<reportElement x="37" y="7" width="22" height="12" uuid="14c843f7-78e8-45a5-8f4d-c4490b35b8f7">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
@@ -228,7 +203,7 @@
 				<textFieldExpression><![CDATA[$R{Position}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="59" y="0" width="41" height="12" uuid="03729641-e2b9-4af4-8069-018be5b9b767">
+				<reportElement x="59" y="7" width="41" height="12" uuid="03729641-e2b9-4af4-8069-018be5b9b767">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
@@ -237,6 +212,16 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Value}]]></textFieldExpression>
 			</textField>
+			<line>
+				<reportElement x="34" y="20" width="515" height="1" uuid="c291ef5b-23bb-4d72-91a6-f15d19b01991">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+			</line>
+			<line>
+				<reportElement x="34" y="3" width="515" height="1" uuid="33827a94-03fd-4c03-b7b0-b9da2600602c">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+			</line>
 		</band>
 	</pageHeader>
 	<columnHeader>
@@ -309,7 +294,7 @@
 +
 ($F{description} != null ? "\n" + $F{description} :  "\n")]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true"	 pattern="#,##0.00" isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-34" mode="Transparent" x="463" y="0" width="45" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="de5e58a7-6131-4080-b0ef-911c6a8b92a6"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -398,7 +383,7 @@
 					<font fontName="Arial" size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{priceentered}]]></textFieldExpression>
-				<patternExpression><![CDATA[$F{pricepattern}]]></patternExpression>
+				<patternExpression><![CDATA[$F{price_pattern}]]></patternExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-33" mode="Transparent" x="509" y="0" width="26" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
@@ -430,7 +415,6 @@
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qtyenteredinpriceuom}]]></textFieldExpression>
-				<patternExpression><![CDATA[$F{qtypattern}]]></patternExpression>
 			</textField>
 			<staticText>
 				<reportElement x="538" y="0" width="5" height="12" uuid="c7acd6de-af63-42ec-a530-5ed4496aa666">

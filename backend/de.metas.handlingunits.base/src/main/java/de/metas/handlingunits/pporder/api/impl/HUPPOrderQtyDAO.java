@@ -195,4 +195,11 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 					throw new HUException("Expected only one candidate but got: " + cand1 + ", " + cand2);
 				});
 	}
+	
+	@Override
+	public boolean hasUnprocessedOrderQty(@NonNull final PPOrderId ppOrderId)
+	{
+		return streamOrderQtys(ppOrderId)
+				.anyMatch(candidate -> !candidate.isProcessed());
+	}
 }

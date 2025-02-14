@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { trl } from '../../utils/translations';
 import { extractUserFriendlyErrorMessageFromAxiosError } from '../../utils/toast';
+import { useMobileNavigation } from '../../hooks/useMobileNavigation';
 
 const UserAndPassAuth = () => {
   const [username, setUsername] = useState('');
@@ -10,10 +10,8 @@ const UserAndPassAuth = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [loginPending, setLoginPending] = useState(false);
 
-  const history = useHistory();
+  const history = useMobileNavigation();
   const auth = useAuth();
-  const location = useLocation();
-  const { from } = location.state || { from: { pathname: '/' } };
   const usernameFieldRef = useRef(null);
 
   const submitForm = (e) => {
@@ -22,7 +20,7 @@ const UserAndPassAuth = () => {
     setLoginPending(true);
     auth
       .login(username, password)
-      .then(() => history.replace(from))
+      .then(() => history.goToFromLocation())
       .catch((axiosError) => {
         setLoginPending(false);
         setErrorMessage(extractUserFriendlyErrorMessageFromAxiosError({ axiosError }));
@@ -45,7 +43,7 @@ const UserAndPassAuth = () => {
               <input
                 className="input is-medium"
                 type="text"
-                id={username}
+                id="username"
                 name="username"
                 value={username}
                 autoComplete="username"

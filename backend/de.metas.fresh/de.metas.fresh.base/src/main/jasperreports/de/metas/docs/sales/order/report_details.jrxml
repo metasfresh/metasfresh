@@ -53,23 +53,24 @@
 		<band splitType="Stretch"/>
 	</title>
 	<pageHeader>
-		<band height="12" splitType="Stretch">
+		<band height="25" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField>
-				<reportElement key="textField-16" x="37" y="0" width="125" height="12" forecolor="#000000" uuid="8b1cae05-6b3b-4c2e-9942-472ce89d0517"/>
+				<reportElement key="textField-16" x="37" y="7" width="125" height="12" forecolor="#000000" uuid="8b1cae05-6b3b-4c2e-9942-472ce89d0517"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-20" x="500" y="0" width="43" height="12" forecolor="#000000" uuid="65d3b6d8-db1d-48cc-95cb-5239a295fa03"/>
+				<reportElement key="textField-20" x="500" y="7" width="43" height="12" forecolor="#000000" uuid="65d3b6d8-db1d-48cc-95cb-5239a295fa03"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-19" x="463" y="0" width="37" height="12" forecolor="#000000" uuid="c1f6b764-712b-4383-aeeb-3354ce943452">
+				<reportElement key="textField-19" x="463" y="7" width="37" height="12" forecolor="#000000" uuid="c1f6b764-712b-4383-aeeb-3354ce943452">
 					<printWhenExpression><![CDATA[new Boolean($F{isdiscountprinted}.equals("Y"))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
@@ -78,49 +79,49 @@
 				<textFieldExpression><![CDATA[$R{Discount}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-13" x="161" y="0" width="71" height="12" forecolor="#000000" uuid="61e3e8dd-9dbf-4301-8a3a-3aaca0a8ce12"/>
+				<reportElement key="textField-13" x="161" y="7" width="71" height="12" forecolor="#000000" uuid="61e3e8dd-9dbf-4301-8a3a-3aaca0a8ce12"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Attributes}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-19" x="352" y="0" width="46" height="12" forecolor="#000000" uuid="76afd8be-8c80-4c84-8572-8e27b517479f"/>
+				<reportElement key="textField-19" x="352" y="7" width="46" height="12" forecolor="#000000" uuid="76afd8be-8c80-4c84-8572-8e27b517479f"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-13" x="218" y="0" width="46" height="12" forecolor="#000000" uuid="d038a1dc-db4b-491b-9070-db9f568857d3"/>
+				<reportElement key="textField-13" x="218" y="7" width="46" height="12" forecolor="#000000" uuid="d038a1dc-db4b-491b-9070-db9f568857d3"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{HUQuantity}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-17" x="268" y="0" width="84" height="12" forecolor="#000000" uuid="69bc0f7c-8d28-400e-bcab-7f8e40d60ffa"/>
+				<reportElement key="textField-17" x="268" y="7" width="84" height="12" forecolor="#000000" uuid="69bc0f7c-8d28-400e-bcab-7f8e40d60ffa"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-20" x="433" y="0" width="33" height="12" forecolor="#000000" uuid="5269b295-30ce-4be4-a9c4-5fa0c4cca517"/>
+				<reportElement key="textField-20" x="433" y="7" width="33" height="12" forecolor="#000000" uuid="5269b295-30ce-4be4-a9c4-5fa0c4cca517"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Price}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-20" x="400" y="0" width="39" height="12" forecolor="#000000" uuid="7848d061-514d-4fa8-8169-d58ea739c387"/>
+				<reportElement key="textField-20" x="400" y="7" width="39" height="12" forecolor="#000000" uuid="7848d061-514d-4fa8-8169-d58ea739c387"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-20" x="542" y="0" width="32" height="12" forecolor="#000000" uuid="2e12ffef-b477-4e3f-87e3-44b74485fb6c">
+				<reportElement key="textField-20" x="542" y="7" width="32" height="12" forecolor="#000000" uuid="2e12ffef-b477-4e3f-87e3-44b74485fb6c">
 					<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
@@ -128,6 +129,16 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Tax}]]></textFieldExpression>
 			</textField>
+			<line>
+				<reportElement x="34" y="3" width="543" height="1" uuid="d4558521-c9d0-448e-85bf-3a910487cc38">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+			</line>
+			<line>
+				<reportElement x="34" y="22" width="543" height="1" uuid="0ce3d7bb-dad2-4328-a462-43f8c86451df">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+			</line>
 		</band>
 	</pageHeader>
 	<columnHeader>

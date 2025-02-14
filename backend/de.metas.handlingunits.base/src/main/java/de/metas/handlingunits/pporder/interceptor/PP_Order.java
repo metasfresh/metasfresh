@@ -26,8 +26,10 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
+import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.impl.async.HUMaturingWorkpackageProcessor;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
+import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -50,7 +52,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class PP_Order
 {
+	private static final AdMessageKey ERROR_MSG_MANUFACTURING_WITH_UNPROCESSED_CANDIDATES = AdMessageKey.of("ManufacturingOrderUnprocessedCandidates");
+
 	private final IHUPPOrderBL ppOrderBL = Services.get(IHUPPOrderBL.class);
+	private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final PPOrderIssueScheduleRepository ppOrderIssueScheduleRepository;
 	private final HUUniqueAttributesService huUniqueAttributesService;
 
@@ -69,6 +74,11 @@ public class PP_Order
 	public void onBeforeClose(@NonNull final I_PP_Order order)
 	{
 		final PPOrderId ppOrderId = PPOrderId.ofRepoId(order.getPP_Order_ID());
+		if (huPPOrderQtyDAO.hasUnprocessedOrderQty(ppOrderId))
+		{
+			throw new AdempiereException(ERROR_MSG_MANUFACTURING_WITH_UNPROCESSED_CANDIDATES);
+		}
+
 		ppOrderIssueScheduleRepository.deleteNotProcessedByOrderId(ppOrderId);
 
 		final PPOrderPlanningStatus planningStatus = PPOrderPlanningStatus.ofCode(order.getPlanningStatus());

@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../../utils/translations';
-import { pushHeaderEntry } from '../../../../actions/HeaderActions';
+import { updateHeaderEntry } from '../../../../actions/HeaderActions';
 import { getActivityById, getLineByIdFromActivity, getStepsArrayFromLine } from '../../../../reducers/wfProcesses';
 
 import {
@@ -15,12 +14,13 @@ import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndica
 import ButtonQuantityProp from '../../../../components/buttons/ButtonQuantityProp';
 import { toQRCodeDisplayable } from '../../../../utils/qrCode/hu';
 import { formatQtyToHumanReadableStr } from '../../../../utils/qtys';
+import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
+import { getWFProcessScreenLocation } from '../../../../routes/workflow_locations';
 
 const RawMaterialIssueLineScreen = () => {
-  const {
-    url,
-    params: { applicationId, workflowId: wfProcessId, activityId, lineId },
-  } = useRouteMatch();
+  const { history, url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
+    back: getWFProcessScreenLocation,
+  });
 
   const {
     caption,
@@ -38,7 +38,7 @@ const RawMaterialIssueLineScreen = () => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(
-      pushHeaderEntry(
+      updateHeaderEntry(
         computeHeaderEntriesFromParams({
           url,
           caption,
@@ -55,7 +55,6 @@ const RawMaterialIssueLineScreen = () => {
     );
   }, []);
 
-  const history = useHistory();
   const onScanHUClicked = () => {
     history.push(manufacturingLineScanScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
   };
@@ -166,7 +165,7 @@ export const useLineHeaderEntriesRefresh = ({ applicationId, wfProcessId, activi
 
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(pushHeaderEntry(headerEntries));
+    dispatch(updateHeaderEntry(headerEntries));
   }, []);
 };
 

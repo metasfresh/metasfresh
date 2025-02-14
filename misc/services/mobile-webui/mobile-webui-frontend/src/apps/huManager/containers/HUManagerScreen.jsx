@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
 
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -17,13 +16,12 @@ import {
 import { HUInfoComponent } from '../components/HUInfoComponent';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
-
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import ClearanceDialog from '../components/ClearanceDialog';
 import { toastError } from '../../../utils/toast';
 import ChangeHUQtyDialog from '../../../components/dialogs/ChangeHUQtyDialog';
 import ChangeCurrentLocatorDialog from '../components/ChangeCurrentLocatorDialog';
 import { HU_ATTRIBUTE_BestBeforeDate, HU_ATTRIBUTE_LotNo } from '../../../constants/HUAttributes';
+import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { push } from 'connected-react-router';
 import * as scanAnythingRoutes from '../../scanAnything/routes';
 
@@ -34,17 +32,12 @@ const MODALS = {
 };
 
 const HUManagerScreen = () => {
+  const { history } = useScreenDefinition({ back: '/' });
+
   const dispatch = useDispatch();
-  const history = useHistory();
   const [modalToDisplay, setModalToDisplay] = useState('');
   const [currentLocatorQRCode, setCurrentLocatorQRCode] = useState();
   const [handlingUnitInfo, setHandlingUnitInfo] = useHandlingUnitInfo();
-
-  const { url } = useRouteMatch();
-  useEffect(() => {
-    // IMPORTANT, else it won't restore the title when we move back to this screen
-    dispatch(pushHeaderEntry({ location: url }));
-  }, []);
 
   const resolveScannedBarcode = ({ scannedBarcode }) => {
     return api.getHUByQRCode(scannedBarcode).then((handlingUnitInfo) => ({ handlingUnitInfo }));
