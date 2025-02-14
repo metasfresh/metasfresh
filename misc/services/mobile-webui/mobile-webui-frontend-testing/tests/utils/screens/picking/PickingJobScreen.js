@@ -14,7 +14,7 @@ export const PickingJobScreen = {
     }),
 
     scanPickingSlot: async ({qrCode}) => await test.step(`Scan picking slot ${qrCode}`, async () => {
-        await page.locator('#scan-activity-A1-button').tap();
+        await page.locator('#scan-activity-A10-button').tap();
         await PickingJobScanPickingSlotScreen.waitForScreen();
         await PickingJobScanPickingSlotScreen.typeQRCode(qrCode);
         await PickingJobScreen.waitForScreen();
