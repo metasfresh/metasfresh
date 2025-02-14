@@ -4,7 +4,10 @@ import de.metas.business_rule.BusinessRuleService;
 import de.metas.business_rule.descriptor.model.BusinessRulesCollection;
 import de.metas.business_rule.descriptor.model.TriggerTiming;
 import de.metas.logging.LogManager;
+import de.metas.notification.INotificationBL;
+import de.metas.record.warning.RecordWarningTextProvider;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -46,6 +49,8 @@ public class BusinessRuleTriggerInterceptor extends AbstractModelInterceptor
 	{
 		this.engine = engine;
 		ruleService.addRulesChangedListener(this::updateFromBusinessRulesRepository);
+
+		Services.get(INotificationBL.class).addCtxProvider(RecordWarningTextProvider.instance);
 
 		updateFromBusinessRulesRepository();
 	}
