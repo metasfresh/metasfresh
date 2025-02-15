@@ -69,9 +69,10 @@ export const getBackendBaseUrl = async () => {
 export const loadConfigFromFrontendApp = async () => await test.step(`Fetching from mobile-webui-frontend/public/config.js`, async () => {
     const url = await page.url();
     if (!url || url === 'about:blank') {
-        await page.goto(FRONTEND_BASE_URL);
+        await page.goto(FRONTEND_BASE_URL, { waitUntil: 'load' });
     }
-    
+
+    await page.waitForFunction(() => window.config !== undefined);
     const serverUrlRef = await page.waitForFunction(() => window.config?.SERVER_URL);
     const serverUrl = await serverUrlRef.jsonValue();
     if (!serverUrl) {
