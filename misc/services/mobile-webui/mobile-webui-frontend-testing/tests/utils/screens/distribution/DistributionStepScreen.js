@@ -4,16 +4,20 @@ import { expect } from '@playwright/test';
 import { DistributionStepDropToScreen } from './DistributionStepDropToScreen';
 import { DistributionLineScreen } from './DistributionLineScreen';
 
+const NAME = 'DistributionStepScreen';
+/** @returns {import('@playwright/test').Locator} */
+const containerElement = () => page.locator('#DistributionStepScreen');
+
 export const DistributionStepScreen = {
-    waitForScreen: async () => await test.step(`Wait for Distribution Step Screen`, async () => {
-        await page.locator('#DistributionStepScreen').waitFor();
+    waitForScreen: async () => await test.step(`${NAME} - Wait for Screen`, async () => {
+        await containerElement().waitFor();
     }),
 
-    expectVisible: async () => await test.step('Expecting Distribution Step Screen displayed', async () => {
-        await expect(page.locator('#DistributionStepScreen')).toBeVisible();
+    expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
+        await expect(containerElement()).toBeVisible();
     }),
 
-    scanDropToLocator: async ({ dropToLocatorQRCode }) => await test.step(`Scan Drop To Locator`, async () => {
+    scanDropToLocator: async ({ dropToLocatorQRCode }) => await test.step(`${NAME} - Scan Drop To Locator`, async () => {
         await DistributionStepScreen.expectVisible();
         await page.getByTestId('scanDropToLocator-button').tap();
         await DistributionStepDropToScreen.waitForScreen();
@@ -21,7 +25,7 @@ export const DistributionStepScreen = {
         await DistributionStepScreen.waitForScreen();
     }),
 
-    goBack: async () => await test.step(`Go back`, async () => {
+    goBack: async () => await test.step(`${NAME} - Go back`, async () => {
         await DistributionStepScreen.expectVisible();
         await page.locator(ID_BACK_BUTTON).tap();
         await DistributionLineScreen.waitForScreen();
