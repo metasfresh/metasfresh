@@ -1,12 +1,16 @@
-import {test} from "../../../../playwright.config";
-import {page} from "../../common";
+import { test } from "../../../../playwright.config";
+import { page } from "../../common";
+
+const NAME = 'UnpickDialog';
+/** @returns {import('@playwright/test').Locator} */
+const containerElement = () => page.locator('.unpick-dialog');
 
 export const UnpickDialog = {
-    waitForDialog: async () => await test.step(`Wait for Unpick Dialog`, async () => {
-        await page.locator('.unpick-dialog').waitFor();
+    waitForDialog: async () => await test.step(`${NAME} - Wait for dialog`, async () => {
+        await containerElement().waitFor();
     }),
 
-    clickSkipButton: async () => await test.step(`Click Skip button`, async () => {
+    clickSkipScanningTargetHUButton: async () => await test.step(`${NAME} - Click Skip button`, async () => {
         await page.locator('#skip-button').tap();
     }),
 };

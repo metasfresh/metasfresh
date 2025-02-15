@@ -3,16 +3,20 @@ import { page } from '../../common';
 import { HUManagerScreen } from './HUManagerScreen';
 import { expect } from '@playwright/test';
 
+const NAME = 'HUMoveScreen';
+/** @returns {import('@playwright/test').Locator} */
+const containerElement = () => page.locator('#HUMoveScreen');
+
 export const HUMoveScreen = {
-    waitForScreen: async () => await test.step('Wait for Move screen', async () => {
-        await page.locator('#HUMoveScreen').waitFor();
+    waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
+        await containerElement().waitFor();
     }),
 
-    expectVisible: async () => await test.step('Expecting Move screen displayed', async () => {
-        expect(page.locator('#HUMoveScreen')).toBeVisible();
+    expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
+        expect(containerElement()).toBeVisible();
     }),
 
-    move: async ({ qrCode }) => await test.step(`Move HU`, async () => {
+    move: async ({ qrCode }) => await test.step(`${NAME} - Move HU`, async () => {
         await HUMoveScreen.expectVisible();
         await page.type('#input-text', qrCode);
         await HUManagerScreen.waitForScreen();

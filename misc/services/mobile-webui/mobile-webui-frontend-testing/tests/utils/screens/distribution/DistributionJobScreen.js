@@ -19,9 +19,13 @@ export const DistributionJobScreen = {
     }),
 
     complete: async () => await test.step(`${NAME} - Complete`, async () => {
-        await page.locator('#last-confirm-button').tap();
+        await clickCompleteButton();
         await YesNoDialog.waitForDialog();
         await YesNoDialog.clickYesButton();
         await DistributionJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
     }),
 };
+
+const clickCompleteButton = async () => await test.step(`${NAME} - Click Complete button`, async () => {
+    await page.locator('#last-confirm-button').tap();
+});

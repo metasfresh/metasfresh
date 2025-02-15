@@ -1,17 +1,16 @@
 import { test } from "../../../../playwright.config";
 import { page } from "../../common";
 
-const NAME = 'PickingJobScanHUScreen';
+const NAME = 'PickingSlotScanScreen';
 /** @returns {import('@playwright/test').Locator} */
-const containerElement = () => page.locator('#PickProductsScanScreen');
+const containerElement = () => page.locator('#ScanScreen');
 
-export const PickingJobScanHUScreen = {
+export const PickingSlotScanScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor();
     }),
 
     typeQRCode: async (qrCode) => await test.step(`${NAME} - Type QR Code`, async () => {
-        console.log('Scanning HU QR code:\n' + qrCode);
         await page.type('#input-text', qrCode);
     }),
 };

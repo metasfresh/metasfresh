@@ -7,7 +7,7 @@ import { PickingJobScreen } from "../utils/screens/picking/PickingJobScreen";
 import { Backend } from "../utils/screens/Backend";
 import { LoginScreen } from "../utils/screens/LoginScreen";
 
-const loginAndCreateMasterdata = async () => {
+const createMasterdata = async () => {
     const response = await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -61,7 +61,7 @@ const loginAndCreateMasterdata = async () => {
 
 // noinspection JSUnusedLocalSymbols
 test('Simple picking test', async ({ page }) => {
-    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } = await loginAndCreateMasterdata();
+    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } = await createMasterdata();
 
     await LoginScreen.login(login);
     await ApplicationsListScreen.expectVisible();
@@ -77,7 +77,7 @@ test('Simple picking test', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Pick - unpick', async ({ page }) => {
-    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } = await loginAndCreateMasterdata();
+    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } = await createMasterdata();
 
     await LoginScreen.login(login);
     await ApplicationsListScreen.expectVisible();

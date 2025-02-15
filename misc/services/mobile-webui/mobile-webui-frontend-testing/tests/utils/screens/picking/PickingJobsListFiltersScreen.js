@@ -1,13 +1,17 @@
-import {test} from "../../../../playwright.config";
-import {page} from "../../common";
-import {GetDocumentNoDialog} from "../../dialogs/GetDocumentNoDialog";
+import { test } from "../../../../playwright.config";
+import { page } from "../../common";
+import { GetDocumentNoDialog } from "../../dialogs/GetDocumentNoDialog";
+
+const NAME = 'PickingJobsListFiltersScreen';
+/** @returns {import('@playwright/test').Locator} */
+const containerElement = () => page.locator('#WFLaunchersFiltersScreen');
 
 export const PickingJobsListFiltersScreen = {
-    waitForScreen: async () => await test.step('Wait for picking jobs list filters screen', async () => {
-        await page.locator('#WFLaunchersFiltersScreen').waitFor();
+    waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
+        await containerElement().waitFor();
     }),
-    
-    filterByDocumentNo: async (documentNo) => await test.step(`Filter by documentNo ${documentNo}`, async () => {
+
+    filterByDocumentNo: async (documentNo) => await test.step(`${NAME} - Filter by documentNo ${documentNo}`, async () => {
         await page.locator('#filterByDocumentNo-button').tap();
         await GetDocumentNoDialog.waitForDialog();
         await GetDocumentNoDialog.typeDocumentNo(documentNo);
