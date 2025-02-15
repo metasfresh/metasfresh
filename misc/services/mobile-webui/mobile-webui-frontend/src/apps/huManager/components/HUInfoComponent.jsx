@@ -6,6 +6,7 @@ import { computeTestId } from '../../../utils/testing_support';
 
 export const HUInfoComponent = ({ handlingUnitInfo, currentLocatorQRCode }) => {
   const clearanceStatus = handlingUnitInfo.clearanceStatus ? handlingUnitInfo.clearanceStatus.caption : '';
+  const clearanceStatusKey = handlingUnitInfo.clearanceStatus?.key;
   const { clearanceNote } = handlingUnitInfo;
 
   return (
@@ -15,7 +16,12 @@ export const HUInfoComponent = ({ handlingUnitInfo, currentLocatorQRCode }) => {
         <Row captionKey="huManager.qrCode" value={toQRCodeDisplayable(handlingUnitInfo.qrCode)} />
         <Row captionKey="huManager.locator" value={computeLocatorCaption({ handlingUnitInfo, currentLocatorQRCode })} />
         <Row captionKey="huManager.HUStatus" value={computeHUStatusCaption(handlingUnitInfo)} />
-        <Row captionKey="huManager.clearanceStatus" value={clearanceStatus} hidden={!clearanceStatus} />
+        <Row
+          captionKey="huManager.clearanceStatus"
+          value={clearanceStatus}
+          internalValue={clearanceStatusKey}
+          hidden={!clearanceStatus}
+        />
         <Row captionKey="huManager.clearanceNote" value={clearanceNote} hidden={!clearanceNote} />
         {handlingUnitInfo.products.map((product) => (
           <ProductInfoRows key={product.productValue} product={product} />
@@ -93,7 +99,7 @@ AttributeRow.propTypes = {
   testId: PropTypes.string,
 };
 
-const Row = ({ captionKey, caption: captionParam, value, hidden, testId: testIdParam }) => {
+const Row = ({ captionKey, caption: captionParam, value, internalValue, hidden, testId: testIdParam }) => {
   if (hidden) return null;
 
   const caption = captionParam ? captionParam : trl(captionKey);
@@ -102,7 +108,9 @@ const Row = ({ captionKey, caption: captionParam, value, hidden, testId: testIdP
   return (
     <tr>
       <th>{caption}</th>
-      <td data-testid={testId}>{value}</td>
+      <td data-testid={testId} data-internalvalue={internalValue}>
+        {value}
+      </td>
     </tr>
   );
 };
@@ -110,6 +118,7 @@ Row.propTypes = {
   captionKey: PropTypes.string,
   caption: PropTypes.string,
   value: PropTypes.any,
+  internalValue: PropTypes.any,
   hidden: PropTypes.bool,
   testId: PropTypes.string,
 };

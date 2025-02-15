@@ -28,8 +28,8 @@ const ButtonWithIndicator = ({
   additionalCssClass,
   ...otherProps
 }) => {
-  const id = computeId({ idParam, captionKey });
   const testId = computeTestId({ testIdParam, captionKey });
+  const id = computeId({ idParam, testIdParam, captionKey });
   const caption = computeCaption({ caption: captionParam, captionKey });
   const indicatorClassName = getIndicatorClassName(completeStatus);
 
