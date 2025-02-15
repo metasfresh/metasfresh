@@ -71,7 +71,9 @@ export const loadConfigFromFrontendApp = async () => await test.step(`Fetching f
     if (!url || url === 'about:blank') {
         await page.goto(FRONTEND_BASE_URL);
     }
-    const serverUrl = await page.evaluate(() => window?.config?.SERVER_URL);
+    
+    const serverUrlRef = await page.waitForFunction(() => window.config?.SERVER_URL);
+    const serverUrl = await serverUrlRef.jsonValue();
     if (!serverUrl) {
         throw new Error('window.config.SERVER_URL is not defined in the frontend app. ' +
             'Does mobile-webui-frontend/public/config.js exist and is correctly configured?');
