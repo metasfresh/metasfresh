@@ -1,19 +1,23 @@
-import {test} from "../../../../playwright.config";
-import {ID_BACK_BUTTON, page} from "../../common";
-import {PickingJobScreen} from "./PickingJobScreen";
-import {PickingJobStepScreen} from "./PickingJobStepScreen";
+import { test } from "../../../../playwright.config";
+import { ID_BACK_BUTTON, page } from "../../common";
+import { PickingJobScreen } from "./PickingJobScreen";
+import { PickingJobStepScreen } from "./PickingJobStepScreen";
+
+const NAME = 'PickingJobLineScreen';
+/** @returns {import('@playwright/test').Locator} */
+const containerElement = () => page.locator('#PickLineScreen');
 
 export const PickingJobLineScreen = {
-    waitForScreen: async () => await test.step(`Wait for Picking Job Line Screen`, async () => {
-        await page.locator('#PickLineScreen').waitFor();
+    waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
+        await containerElement().waitFor();
     }),
 
-    clickStepButton: async ({index}) => await test.step(`Click step ${index} button`, async () => {
+    clickStepButton: async ({ index }) => await test.step(`${NAME} - Click step ${index} button`, async () => {
         await page.locator(`#step-${index}-button`).tap();
         await PickingJobStepScreen.waitForScreen();
     }),
 
-    goBack: async () => await test.step(`Go back`, async () => {
+    goBack: async () => await test.step(`${NAME} - Go back`, async () => {
         await page.locator(ID_BACK_BUTTON).tap();
         await PickingJobScreen.waitForScreen();
     }),

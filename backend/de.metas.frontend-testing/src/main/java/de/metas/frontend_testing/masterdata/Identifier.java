@@ -8,10 +8,15 @@ import lombok.NonNull;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @EqualsAndHashCode(doNotUseGetters = true)
 public class Identifier
 {
+	private static final String DATETIME_PATTEN = "yyyyMMdd'T'HHmmssSSS";
+	private static final DateTimeFormatter DATETIME_FORMAT = DateTimeFormatter.ofPattern(DATETIME_PATTEN);
+
 	@NonNull private final String string;
 
 	private Identifier(@NonNull final String string)
@@ -59,5 +64,5 @@ public class Identifier
 	@JsonValue
 	public String getAsString() {return string;}
 
-	public String toUniqueString() {return string + "_" + Instant.now().toString();}
+	public String toUniqueString() {return string + "_" + DATETIME_FORMAT.format(LocalDateTime.now());}
 }

@@ -7,13 +7,17 @@ export const AUTH_METHOD_QR_Code = 'QR_Code';
 export const AUTH_METHOD_UserPass = 'UserPass';
 export const AVAILABLE_AUTH_METHODS = [AUTH_METHOD_QR_Code, AUTH_METHOD_UserPass];
 
+const NAME = 'LoginScreen';
+/** @returns {import('@playwright/test').Locator} */
+const containerElement = () => page.locator('#LoginScreen');
+
 export const LoginScreen = {
-    waitForScreen: async () => await test.step(`Wait for Login screen`, async () => {
-        await page.locator('#LoginScreen').waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+    waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
         await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
-    login: async ({ username, password, expectDefaultAuthMethod }) => await test.step(`Login with user ${username}`, async () => {
+    login: async ({ username, password, expectDefaultAuthMethod }) => await test.step(`${NAME} - Login with user ${username}`, async () => {
         let authToken = null;
         let language = null;
 

@@ -100,7 +100,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       })
     )
       .catch((axiosError) => toastError({ axiosError }))
-      .finally(() => history.goBack);
+      .finally(() => history.goBack());
   };
 
   return (

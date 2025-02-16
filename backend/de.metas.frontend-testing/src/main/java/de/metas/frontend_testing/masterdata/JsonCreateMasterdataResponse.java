@@ -6,6 +6,7 @@ import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderResponse;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHUResponse;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigResponse;
+import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderResponse;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserResponse;
@@ -32,4 +33,5 @@ public class JsonCreateMasterdataResponse
 	@NonNull Map<String, JsonCreateHUResponse> handlingUnits;
 	@NonNull Map<String, JsonSalesOrderCreateResponse> salesOrders;
 	@NonNull Map<String, JsonDDOrderResponse> distributionOrders;
+	@NonNull Map<String, JsonPPOrderResponse> manufacturingOrders;
 }

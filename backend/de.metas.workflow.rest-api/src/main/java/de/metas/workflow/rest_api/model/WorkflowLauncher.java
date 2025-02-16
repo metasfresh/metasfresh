@@ -22,6 +22,7 @@
 
 package de.metas.workflow.rest_api.model;
 
+import de.metas.frontend_testing.JsonTestId;
 import de.metas.mobile.application.MobileApplicationId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -39,7 +40,7 @@ public class WorkflowLauncher
 	@NonNull WorkflowLauncherCaption caption;
 
 	@Nullable WFProcessId startedWFProcessId;
-	@Nullable String testId;
+	@Nullable JsonTestId testId;
 
 	@Builder.Default
 	@NonNull Params wfParameters = Params.EMPTY;

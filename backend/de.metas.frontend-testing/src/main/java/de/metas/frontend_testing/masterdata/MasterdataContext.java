@@ -31,8 +31,13 @@ public class MasterdataContext
 	public static final BPartnerId METASFRESH_ORG_BPARTNER_ID = BPartnerId.ofRepoId(2155894);
 	public static final BPartnerLocationId METASFRESH_ORG_BPARTNER_LOCATION_ID = BPartnerLocationId.ofRepoId(METASFRESH_ORG_BPARTNER_ID, 2202690);
 	public static final ResourceId DEFAULT_PLANT_ID = ResourceId.ofRepoId(540006);
+	public static final int STANDARD_AD_PRINTER_ID = 1000000;
+	public static final int PRINT_TO_DISK_AD_PRINTERHW_ID = 540331;
 
 	private final HashMap<TypeAndIdentifier, RepoIdAware> identifiers = new HashMap<>();
+	private final HashMap<Identifier, Object> objects = new HashMap<>();
+
+	public @NonNull String getAdLanguage() {return Env.getADLanguageOrBaseLanguage();}
 
 	public <T extends RepoIdAware> void putIdentifier(@NonNull final Identifier identifier, @NonNull final T id)
 	{
@@ -82,11 +87,36 @@ public class MasterdataContext
 		}
 	}
 
-	public @NonNull String getAdLanguage() {return Env.getADLanguageOrBaseLanguage();}
+	public void putObject(@NonNull final Identifier identifier, @NonNull final Object object)
+	{
+		final Object prevObject = objects.get(identifier);
+		if (prevObject != null)
+		{
+			throw new IllegalArgumentException("Object already exists: " + identifier
+					+ "\n prevId=" + prevObject
+					+ "\n newId=" + object);
+		}
+		objects.put(identifier, object);
+	}
+
+	public <T> T getObject(@NonNull final Identifier identifier)
+	{
+		final Object object = objects.get(identifier);
+		if (object == null)
+		{
+			throw new IllegalArgumentException("No object found for " + identifier);
+		}
+
+		//noinspection unchecked
+		return (T)object;
+	}
 
 	//
 	//
 	//
+	//
+	//
+
 	@Value(staticConstructor = "of")
 	private static class TypeAndIdentifier
 	{

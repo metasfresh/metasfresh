@@ -251,7 +251,9 @@ const GetQuantityDialog = ({
             {qtyTargetCaption && (
               <tr>
                 <th>{qtyTargetCaption}</th>
-                <td>{formatQtyToHumanReadableStr({ qty: Math.max(qtyTarget, 0), uom })}</td>
+                <td data-testid="qty-target" data-internalvalue={qtyTarget} data-internalvalue-uom={uom}>
+                  {formatQtyToHumanReadableStr({ qty: Math.max(qtyTarget, 0), uom })}
+                </td>
               </tr>
             )}
             {userInfo &&
@@ -272,8 +274,14 @@ const GetQuantityDialog = ({
           <DialogButton
             captionKey="activities.picking.switchToManualInput"
             onClick={() => setShowCatchWeightQRCodeReader(false)}
+            testId="switchToManualInput-button"
           />
-          <DialogButton captionKey="general.closeText" className="is-danger" onClick={onCloseDialog} />
+          <DialogButton
+            captionKey="general.closeText"
+            className="is-danger"
+            onClick={onCloseDialog}
+            testId="done-button"
+          />
         </div>
       </>
     );
@@ -304,7 +312,9 @@ const GetQuantityDialog = ({
                   {qtyTargetCaption && (
                     <tr>
                       <th>{qtyTargetCaption}</th>
-                      <td id="qty-target">{formatQtyToHumanReadableStr({ qty: Math.max(qtyTarget, 0), uom })}</td>
+                      <td data-testid="qty-target" data-internalvalue={qtyTarget} data-internalvalue-uom={uom}>
+                        {formatQtyToHumanReadableStr({ qty: Math.max(qtyTarget, 0), uom })}
+                      </td>
                     </tr>
                   )}
                   {userInfo &&
@@ -458,12 +468,14 @@ const GetQuantityDialog = ({
                 className="is-success"
                 disabled={!allValid}
                 onClick={() => onDialogYes({ isCloseTarget: false })}
+                testId="done-button"
               />
               <DialogButton
                 captionKey="general.cancelText"
                 className="is-danger"
                 disabled={isProcessing}
                 onClick={onCloseDialog}
+                testId="cancel-button"
               />
             </div>
           </>

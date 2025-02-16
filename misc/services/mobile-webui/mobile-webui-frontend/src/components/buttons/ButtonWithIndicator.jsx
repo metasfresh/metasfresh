@@ -7,13 +7,13 @@ import HazardIcon from '../HazardIcon';
 import AllergenIcon from '../AllergenIcon';
 import * as uiTrace from '../../utils/ui_trace';
 import { trl } from '../../utils/translations';
-import { computeId } from '../../utils/testing_support';
+import { computeId, computeTestId } from '../../utils/testing_support';
 
 const SYMBOLS_SIZE_PX = 25;
 
 const ButtonWithIndicator = ({
   id: idParam,
-  testId,
+  testId: testIdParam,
   caption: captionParam,
   captionKey,
   showWarningSign,
@@ -28,7 +28,8 @@ const ButtonWithIndicator = ({
   additionalCssClass,
   ...otherProps
 }) => {
-  const id = computeId({ idParam, captionKey });
+  const testId = computeTestId({ testIdParam, captionKey });
+  const id = computeId({ idParam, testIdParam, captionKey });
   const caption = computeCaption({ caption: captionParam, captionKey });
   const indicatorClassName = getIndicatorClassName(completeStatus);
 

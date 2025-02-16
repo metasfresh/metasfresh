@@ -3,6 +3,7 @@ package de.metas.manufacturing.workflows_api.activity_handlers.receive;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.frontend_testing.JsonTestId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
@@ -172,6 +173,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 									.tuCaption(tuPIItemProduct.getName())
 									.luPIItemId(HuPackingInstructionsItemId.ofRepoId(luPackingInstructionsItem.getM_HU_PI_Item_ID()))
 									.tuPIItemProductId(HUPIItemProductId.ofRepoId(tuPIItemProduct.getM_HU_PI_Item_Product_ID()))
+									.testId(extractNewLUTargetTestId(luPackingInstructionsItem))
 									.build());
 				}
 			}
@@ -191,6 +193,11 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 		}
 	}
 
+	public static JsonTestId extractNewLUTargetTestId(final I_M_HU_PI_Item luPackingInstructionsItem)
+	{
+		return JsonTestId.ofString("luPIItem-" + luPackingInstructionsItem.getM_HU_PI_Item_ID());
+	}
+
 	@Override
 	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity wfActivity)
 	{
@@ -200,15 +207,24 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	@NonNull
 	private JsonNewTUTargetList getNewTUTargets(@NonNull final List<I_M_HU_PI_Item_Product> tuPIItemProducts)
 	{
-		final List<JsonNewTUTarget> newTUTargets = tuPIItemProducts.stream()
-				.map(target -> JsonNewTUTarget.builder()
-						.caption(target.getName())
-						.tuPIItemProductId(HUPIItemProductId.ofRepoId(target.getM_HU_PI_Item_Product_ID()))
-						.build())
-				.collect(ImmutableList.toImmutableList());
-
 		return JsonNewTUTargetList.builder()
-				.values(newTUTargets)
+				.values(tuPIItemProducts.stream()
+						.map(MaterialReceiptActivityHandler::toJsonNewTUTarget)
+						.collect(ImmutableList.toImmutableList()))
 				.build();
+	}
+
+	private static JsonNewTUTarget toJsonNewTUTarget(final I_M_HU_PI_Item_Product target)
+	{
+		return JsonNewTUTarget.builder()
+				.caption(target.getName())
+				.tuPIItemProductId(HUPIItemProductId.ofRepoId(target.getM_HU_PI_Item_Product_ID()))
+				.testId(extractNewTUTargetTestId(target))
+				.build();
+	}
+
+	public static JsonTestId extractNewTUTargetTestId(final I_M_HU_PI_Item_Product target)
+	{
+		return JsonTestId.ofString("tuPIItemProduct-" + target.getM_HU_PI_Item_Product_ID());
 	}
 }

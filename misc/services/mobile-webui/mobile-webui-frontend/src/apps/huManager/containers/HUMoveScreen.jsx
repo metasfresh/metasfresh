@@ -12,6 +12,7 @@ import { huManagerLocation } from '../routes';
 
 const HUMoveScreen = () => {
   const { history } = useScreenDefinition({
+    screenId: 'HUMoveScreen',
     captionKey: 'huManager.action.move.scanTarget',
     back: huManagerLocation,
   });
