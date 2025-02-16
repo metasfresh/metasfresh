@@ -183,6 +183,7 @@ public class CreateMasterdataCommand
 		return CreatePackingInstructionsCommand.builder()
 				.context(context)
 				.request(request)
+				.identifier(Identifier.ofString(identifier))
 				.build().execute();
 	}
 

@@ -35,6 +35,9 @@ public class MasterdataContext
 	public static final int PRINT_TO_DISK_AD_PRINTERHW_ID = 540331;
 
 	private final HashMap<TypeAndIdentifier, RepoIdAware> identifiers = new HashMap<>();
+	private final HashMap<Identifier, Object> objects = new HashMap<>();
+
+	public @NonNull String getAdLanguage() {return Env.getADLanguageOrBaseLanguage();}
 
 	public <T extends RepoIdAware> void putIdentifier(@NonNull final Identifier identifier, @NonNull final T id)
 	{
@@ -84,11 +87,36 @@ public class MasterdataContext
 		}
 	}
 
-	public @NonNull String getAdLanguage() {return Env.getADLanguageOrBaseLanguage();}
+	public void putObject(@NonNull final Identifier identifier, @NonNull final Object object)
+	{
+		final Object prevObject = objects.get(identifier);
+		if (prevObject != null)
+		{
+			throw new IllegalArgumentException("Object already exists: " + identifier
+					+ "\n prevId=" + prevObject
+					+ "\n newId=" + object);
+		}
+		objects.put(identifier, object);
+	}
+
+	public <T> T getObject(@NonNull final Identifier identifier)
+	{
+		final Object object = objects.get(identifier);
+		if (object == null)
+		{
+			throw new IllegalArgumentException("No object found for " + identifier);
+		}
+
+		//noinspection unchecked
+		return (T)object;
+	}
 
 	//
 	//
 	//
+	//
+	//
+
 	@Value(staticConstructor = "of")
 	private static class TypeAndIdentifier
 	{

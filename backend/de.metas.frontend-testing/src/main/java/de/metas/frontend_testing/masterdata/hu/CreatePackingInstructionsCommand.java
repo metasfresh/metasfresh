@@ -10,6 +10,7 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.HuUnitType;
+import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -35,6 +36,7 @@ public class CreatePackingInstructionsCommand
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonPackingInstructionsRequest request;
+	@NonNull private final Identifier identifier;
 
 	public JsonPackingInstructionsResponse execute()
 	{
@@ -43,18 +45,27 @@ public class CreatePackingInstructionsCommand
 		final JsonTestId tuPIItemProductTestId = createPIItemProduct(request.getTu(), tuPIItemId);
 
 		final PIResult lu;
+		final I_M_HU_PI_Item luPIItem;
 		final JsonTestId luPIItemTestId;
 		if (request.getLu() != null)
 		{
 			lu = createPI(request.getLu(), HuUnitType.LU);
-			final I_M_HU_PI_Item luPIItem = createPIItem_IncludedHU(lu, tu, request.getQtyTUsPerLU());
+			luPIItem = createPIItem_IncludedHU(lu, tu, request.getQtyTUsPerLU());
 			luPIItemTestId = MaterialReceiptActivityHandler.extractNewLUTargetTestId(luPIItem);
 		}
 		else
 		{
 			lu = null;
+			luPIItem = null;
 			luPIItemTestId = null;
 		}
+
+		context.putObject(identifier, PackingInstructions.builder()
+				.tuPI(tu.getPi())
+				.qtyCUsPerTU(request.getQtyCUsPerTU())
+				.luPIItem(luPIItem)
+				.qtyTUs(luPIItem != null ? QtyTU.ofInt(request.getQtyTUsPerLU()) : null)
+				.build());
 
 		return JsonPackingInstructionsResponse.builder()
 				.tuName(tu.getPiName())
@@ -70,6 +81,7 @@ public class CreatePackingInstructionsCommand
 	@Builder
 	private static class PIResult
 	{
+		@NonNull I_M_HU_PI pi;
 		@NonNull HuPackingInstructionsId piId;
 		@NonNull String piName;
 		@NonNull HuPackingInstructionsVersionId pivId;
@@ -81,26 +93,27 @@ public class CreatePackingInstructionsCommand
 	{
 		final String piName = identifier.toUniqueString();
 
-		final I_M_HU_PI huPiRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_PI.class);
-		huPiRecord.setName(piName);
-		huPiRecord.setIsActive(true);
-		saveRecord(huPiRecord);
-		final HuPackingInstructionsId piId = HuPackingInstructionsId.ofRepoId(huPiRecord.getM_HU_PI_ID());
+		final I_M_HU_PI piRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_PI.class);
+		piRecord.setName(piName);
+		piRecord.setIsActive(true);
+		saveRecord(piRecord);
+		final HuPackingInstructionsId piId = HuPackingInstructionsId.ofRepoId(piRecord.getM_HU_PI_ID());
 		context.putIdentifier(identifier, piId);
 
 		//
 		//
 		//
-		final I_M_HU_PI_Version piVersion = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_PI_Version.class);
-		piVersion.setM_HU_PI_ID(piId.getRepoId());
-		piVersion.setName(piName);
-		piVersion.setHU_UnitType(huUnitType.getCode());
-		piVersion.setIsCurrent(true);
-		piVersion.setIsActive(true);
-		InterfaceWrapperHelper.saveRecord(piVersion);
-		final HuPackingInstructionsVersionId pivId = HuPackingInstructionsVersionId.ofRepoId(piVersion.getM_HU_PI_Version_ID());
+		final I_M_HU_PI_Version pivRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_PI_Version.class);
+		pivRecord.setM_HU_PI_ID(piId.getRepoId());
+		pivRecord.setName(piName);
+		pivRecord.setHU_UnitType(huUnitType.getCode());
+		pivRecord.setIsCurrent(true);
+		pivRecord.setIsActive(true);
+		InterfaceWrapperHelper.saveRecord(pivRecord);
+		final HuPackingInstructionsVersionId pivId = HuPackingInstructionsVersionId.ofRepoId(pivRecord.getM_HU_PI_Version_ID());
 
 		return PIResult.builder()
+				.pi(piRecord)
 				.piId(piId)
 				.piName(piName)
 				.pivId(pivId)
