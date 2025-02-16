@@ -165,10 +165,7 @@ const HUManagerScreen = () => {
               testId="set-current-locator-button"
             />
           )}
-          <ButtonWithIndicator
-            caption={trl('huManager.action.bulkActions.buttonCaption')}
-            onClick={onBulkActionsClick}
-          />
+          <ButtonWithIndicator caption="huManager.action.bulkActions.buttonCaption" onClick={onBulkActionsClick} />
           {isAllowQtyChange && (
             <ButtonWithIndicator
               captionKey="huManager.action.changeQty.buttonCaption"
