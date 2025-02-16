@@ -1,6 +1,7 @@
 import { page } from '../../../common';
 import { test } from '../../../../../playwright.config';
 import { expect } from '@playwright/test';
+import { ReceiptNewHUScreen } from './ReceiptNewHUScreen';
 
 const NAME = 'ReceiptReceiveTargetScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -17,7 +18,7 @@ export const ReceiptReceiveTargetScreen = {
 
     clickNewHUButton: async () => await test.step(`${NAME} - Click new HU button`, async () => {
         await page.getByTestId('new-hu-button').tap();
-        // TODO waitForScreen 
+        await ReceiptNewHUScreen.waitForScreen();
     }),
 
     clickExistingLUButton: async () => await test.step(`${NAME} - Click existing LU button`, async () => {

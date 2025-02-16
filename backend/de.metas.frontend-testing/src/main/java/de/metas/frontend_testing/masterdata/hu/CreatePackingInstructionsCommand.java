@@ -1,6 +1,7 @@
 package de.metas.frontend_testing.masterdata.hu;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.frontend_testing.JsonTestId;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.HUItemType;
@@ -13,6 +14,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialReceiptActivityHandler;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
@@ -38,22 +40,29 @@ public class CreatePackingInstructionsCommand
 	{
 		final PIResult tu = createPI(request.getTu(), HuUnitType.TU);
 		final HuPackingInstructionsItemId tuPIItemId = createPIItem_Material(tu);
-		createPIItemProduct(request.getTu(), tuPIItemId);
+		final JsonTestId tuPIItemProductTestId = createPIItemProduct(request.getTu(), tuPIItemId);
 
 		final PIResult lu;
+		final JsonTestId luPIItemTestId;
 		if (request.getLu() != null)
 		{
 			lu = createPI(request.getLu(), HuUnitType.LU);
-			createPIItem_IncludedHU(lu, tu, request.getQtyTUsPerLU());
+			final I_M_HU_PI_Item luPIItem = createPIItem_IncludedHU(lu, tu, request.getQtyTUsPerLU());
+			luPIItemTestId = MaterialReceiptActivityHandler.extractNewLUTargetTestId(luPIItem);
 		}
 		else
 		{
 			lu = null;
+			luPIItemTestId = null;
 		}
 
 		return JsonPackingInstructionsResponse.builder()
 				.tuName(tu.getPiName())
+				.tuPIItemProductTestId(tuPIItemProductTestId)
+				//
 				.luName(lu != null ? lu.getPiName() : null)
+				.luPIItemTestId(luPIItemTestId)
+				//
 				.build();
 	}
 
@@ -98,14 +107,15 @@ public class CreatePackingInstructionsCommand
 				.build();
 	}
 
-	private void createPIItem_IncludedHU(final PIResult lu, final PIResult tu, final int qtyTUsPerLU)
+	private I_M_HU_PI_Item createPIItem_IncludedHU(final PIResult lu, final PIResult tu, final int qtyTUsPerLU)
 	{
-		final I_M_HU_PI_Item huPiItemRecord = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class);
-		huPiItemRecord.setM_HU_PI_Version_ID(lu.getPivId().getRepoId());
-		huPiItemRecord.setItemType(HUItemType.HandlingUnit.getCode());
-		huPiItemRecord.setQty(BigDecimal.valueOf(qtyTUsPerLU));
-		huPiItemRecord.setIncluded_HU_PI_ID(tu.getPiId().getRepoId());
-		saveRecord(huPiItemRecord);
+		final I_M_HU_PI_Item luPIItemRecord = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class);
+		luPIItemRecord.setM_HU_PI_Version_ID(lu.getPivId().getRepoId());
+		luPIItemRecord.setItemType(HUItemType.HandlingUnit.getCode());
+		luPIItemRecord.setQty(BigDecimal.valueOf(qtyTUsPerLU));
+		luPIItemRecord.setIncluded_HU_PI_ID(tu.getPiId().getRepoId());
+		saveRecord(luPIItemRecord);
+		return luPIItemRecord;
 	}
 
 	private HuPackingInstructionsItemId createPIItem_Material(final PIResult tu)
@@ -117,7 +127,7 @@ public class CreatePackingInstructionsCommand
 		return HuPackingInstructionsItemId.ofRepoId(huPiItemRecord.getM_HU_PI_Item_ID());
 	}
 
-	private void createPIItemProduct(Identifier tuIdentifier, HuPackingInstructionsItemId tuPIItemId)
+	private JsonTestId createPIItemProduct(Identifier tuIdentifier, HuPackingInstructionsItemId tuPIItemId)
 	{
 		final ProductId productId = context.getId(request.getProduct(), ProductId.class);
 		final UomId uomId = productBL.getStockUOMId(productId);
@@ -132,5 +142,7 @@ public class CreatePackingInstructionsCommand
 		saveRecord(record);
 		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoId(record.getM_HU_PI_Item_Product_ID());
 		context.putIdentifier(tuIdentifier, piItemProductId);
+
+		return MaterialReceiptActivityHandler.extractNewTUTargetTestId(record);
 	}
 }

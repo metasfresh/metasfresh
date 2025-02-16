@@ -6,7 +6,6 @@ import { ManufacturingJobsListScreen } from '../utils/screens/manufacturing/Manu
 import { ManufacturingJobScreen } from '../utils/screens/manufacturing/ManufacturingJobScreen';
 import { RawMaterialIssueLineScreen } from '../utils/screens/manufacturing/issue/RawMaterialIssueLineScreen';
 import { MaterialReceiptLineScreen } from '../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
-import { ReceiptReceiveTargetScreen } from '../utils/screens/manufacturing/receipt/ReceiptReceiveTargetScreen';
 
 const createMasterdata = async () => {
     const response = await Backend.createMasterdata({
@@ -31,6 +30,9 @@ const createMasterdata = async () => {
                     }
                 },
             },
+            packingInstructions: {
+                "PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "BOM", qtyCUsPerTU: 4 },
+            },
             handlingUnits: {
                 "HU_COMP1": { product: 'COMP1', warehouse: 'wh', qty: 100 },
                 "HU_COMP2": { product: 'COMP2', warehouse: 'wh', qty: 100 },
@@ -48,6 +50,8 @@ const createMasterdata = async () => {
 
     return {
         login: response.login.user,
+        // tuPIItemProductTestId: response.packingInstructions.PI.tuPIItemProductTestId,
+        luPIItemTestId: response.packingInstructions.PI.luPIItemTestId,
         documentNo: response.manufacturingOrders.PP1.documentNo,
         comp1_huQRCode: response.handlingUnits.HU_COMP1.qrCode,
         comp2_huQRCode: response.handlingUnits.HU_COMP2.qrCode,
@@ -56,7 +60,14 @@ const createMasterdata = async () => {
 
 // noinspection JSUnusedLocalSymbols
 test('Simple manufacturing test', async ({ page }) => {
-    const { login, documentNo, comp1_huQRCode, comp2_huQRCode } = await createMasterdata();
+    const {
+        login,
+        // tuPIItemProductTestId,
+        luPIItemTestId,
+        documentNo,
+        comp1_huQRCode,
+        comp2_huQRCode
+    } = await createMasterdata();
 
     await LoginScreen.login(login);
     await ApplicationsListScreen.expectVisible();
@@ -73,6 +84,11 @@ test('Simple manufacturing test', async ({ page }) => {
     await RawMaterialIssueLineScreen.goBack();
 
     await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
-    await MaterialReceiptLineScreen.clickReceiveTargetButton();
-    await ReceiptReceiveTargetScreen.clickNewHUButton();
+    await MaterialReceiptLineScreen.selectNewLUTarget({ luPIItemTestId })
+    await MaterialReceiptLineScreen.receiveQty({
+        expectQtyEntered: '5',
+        qtyEntered: '1',
+    })
+    
+    await ManufacturingJobScreen.complete();
 });

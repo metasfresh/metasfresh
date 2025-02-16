@@ -22,9 +22,7 @@ export const RawMaterialIssueLineScreen = {
         await page.getByTestId('scanQRCode-button').tap();
         await RawMaterialIssueLineScanScreen.waitForScreen();
         await RawMaterialIssueLineScanScreen.typeQRCode(qrCode);
-        await GetQuantityDialog.waitForDialog();
-        await GetQuantityDialog.expectQtyEntered(expectQtyEntered);
-        await GetQuantityDialog.clickDone();
+        await GetQuantityDialog.fillAndPressDone({expectQtyEntered});
         await RawMaterialIssueLineScreen.waitForScreen();
     }),
 

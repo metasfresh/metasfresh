@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.dd_order;
 
+import de.metas.frontend_testing.JsonTestId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -12,7 +13,7 @@ public class JsonDDOrderResponse
 {
 	@NonNull String documentNo;
 	@NonNull String launcherCaption;
-	@NonNull String launcherTestId;
+	@NonNull JsonTestId launcherTestId;
 
 	@NonNull String warehouseFromFacetId;
 	@NonNull String warehouseToFacetId;

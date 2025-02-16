@@ -43,12 +43,7 @@ export const PickingJobScreen = {
         await page.locator('#scanQRCode-button').tap(); // click Scan QR Code button
         await PickingJobScanHUScreen.waitForScreen();
         await PickingJobScanHUScreen.typeQRCode(qrCode);
-
-        await GetQuantityDialog.waitForDialog();
-        if (expectQtyEntered != null) {
-            await GetQuantityDialog.expectQtyEntered(expectQtyEntered);
-        }
-        await GetQuantityDialog.clickDone();
+        await GetQuantityDialog.fillAndPressDone({ expectQtyEntered });
         await PickingJobScreen.waitForScreen();
     }),
 

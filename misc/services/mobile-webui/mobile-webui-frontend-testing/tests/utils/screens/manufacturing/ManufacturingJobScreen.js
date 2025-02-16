@@ -1,8 +1,10 @@
-import { page, SLOW_ACTION_TIMEOUT } from '../../common';
+import { page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
 import { test } from '../../../../playwright.config';
 import { expect } from '@playwright/test';
 import { RawMaterialIssueLineScreen } from './issue/RawMaterialIssueLineScreen';
 import { MaterialReceiptLineScreen } from './receipt/MaterialReceiptLineScreen';
+import { YesNoDialog } from '../../dialogs/YesNoDialog';
+import { ManufacturingJobsListScreen } from './ManufacturingJobsListScreen';
 
 const NAME = 'ManufacturingJobScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -27,6 +29,14 @@ export const ManufacturingJobScreen = {
         await ManufacturingJobScreen.expectVisible();
         await page.getByTestId(`receipt-${index}-button`).tap();
         await MaterialReceiptLineScreen.waitForScreen();
+    }),
+
+    complete: async () => await test.step(`${NAME} - Complete`, async () => {
+        await ManufacturingJobScreen.expectVisible();
+        await page.locator('#last-confirm-button').tap();
+        await YesNoDialog.waitForDialog();
+        await YesNoDialog.clickYesButton();
+        await ManufacturingJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
     }),
 };
 

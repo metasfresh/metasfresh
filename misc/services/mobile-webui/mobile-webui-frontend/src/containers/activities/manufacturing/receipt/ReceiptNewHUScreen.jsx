@@ -50,6 +50,7 @@ const ReceiptNewHUScreen = () => {
           key={target.luPIItemId}
           caption={target.luCaption}
           onClick={() => handleLUTargetClick(target)}
+          testId={target.testId}
         >
           <div className="row is-full is-size-7">{target.tuCaption}</div>
         </ButtonWithIndicator>
@@ -60,6 +61,7 @@ const ReceiptNewHUScreen = () => {
           key={tuTarget.tuPIItemProductId}
           caption={tuTarget.caption}
           onClick={() => handleTUTargetClick(tuTarget)}
+          testId={tuTarget.testId}
         />
       ))}
     </div>
