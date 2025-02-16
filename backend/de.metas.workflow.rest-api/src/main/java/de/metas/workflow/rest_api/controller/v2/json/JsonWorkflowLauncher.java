@@ -24,6 +24,7 @@ package de.metas.workflow.rest_api.controller.v2.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import de.metas.frontend_testing.JsonTestId;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import lombok.Builder;
@@ -44,7 +45,7 @@ public class JsonWorkflowLauncher
 	@Nullable String startedWFProcessId;
 	@NonNull Map<String, Object> wfParameters;
 	boolean showWarningSign;
-	@Nullable String testId;
+	@Nullable JsonTestId testId;
 
 	public static JsonWorkflowLauncher of(
 			@NonNull final WorkflowLauncher workflowLauncher,

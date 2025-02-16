@@ -1,16 +1,27 @@
 import { test } from "../../../playwright.config";
 import { page } from "../common";
+import { expect } from '@playwright/test';
+
+const NAME = 'YesNoDialog';
+/** @returns {import('@playwright/test').Locator} */
+const containerElement = () => page.locator('.yes-no-dialog');
 
 export const YesNoDialog = {
-    waitForDialog: async () => await test.step(`Wait for Confirm Dialog`, async () => {
-        await page.locator('.yes-no-dialog').waitFor();
+    waitForDialog: async () => await test.step(`${NAME} - Wait for dialog`, async () => {
+        await containerElement().waitFor();
     }),
 
-    clickYesButton: async () => await test.step(`Click Yes Button`, async () => {
+    expectVisible: async () => await test.step(`${NAME} - Expect dialog to be displayed`, async () => {
+        await expect(containerElement()).toBeVisible();
+    }),
+
+    clickYesButton: async () => await test.step(`${NAME} - Click Yes Button`, async () => {
+        await YesNoDialog.expectVisible();
         await page.locator('#yes-button').click();
     }),
 
-    clickNoButton: async () => await test.step(`Click No Button`, async () => {
+    clickNoButton: async () => await test.step(`${NAME} - Click No Button`, async () => {
+        await YesNoDialog.expectVisible();
         await page.locator('#no-button').click();
     }),
 

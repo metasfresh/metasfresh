@@ -45,5 +45,11 @@
             <version>10.0.0</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>de.metas.manufacturing</groupId>
+            <artifactId>de.metas.manufacturing.rest-api</artifactId>
+            <version>10.0.0</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 </project>

@@ -200,6 +200,7 @@ const BarcodeScannerComponent = ({
           onBlur={handleInputTextBlur}
           onChange={handleInputTextChangedDebounced}
           onKeyUp={handleInputTextKeyPress}
+          data-testid="qrCode-input"
         />
       )}
     </div>

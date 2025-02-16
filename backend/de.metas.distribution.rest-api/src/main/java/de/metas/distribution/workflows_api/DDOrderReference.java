@@ -1,6 +1,7 @@
 package de.metas.distribution.workflows_api;
 
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.frontend_testing.JsonTestId;
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
@@ -29,5 +30,5 @@ public class DDOrderReference
 	boolean isJobStarted;
 
 	@NonNull
-	public String getTestId() {return String.valueOf(ddOrderId.getRepoId());}
+	public JsonTestId getTestId() {return JsonTestId.ofRepoId(ddOrderId);}
 }

@@ -6,6 +6,7 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 @Value
@@ -15,5 +16,6 @@ public class JsonCreateHURequest
 {
 	@NonNull Identifier product;
 	@NonNull Identifier warehouse;
-	@NonNull BigDecimal qty;
+	@Nullable BigDecimal qty;
+	@Nullable Identifier packingInstructions;
 }

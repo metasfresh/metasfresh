@@ -37,7 +37,7 @@ const PickQuantityButton = ({ qtyTarget, uom, caption, isDisabled, onClick }) =>
           onCloseDialog={() => setDialogOpen(false)}
         />
       )}
-      <Button caption={caption} onClick={() => setDialogOpen(true)} disabled={isDisabled} />
+      <Button caption={caption} onClick={() => setDialogOpen(true)} disabled={isDisabled} testId="receive-qty-button" />
     </>
   );
 };

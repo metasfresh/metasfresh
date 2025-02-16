@@ -2,48 +2,33 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { trl } from '../../../utils/translations';
 import { toQRCodeDisplayable } from '../../../utils/qrCode/hu';
+import { computeTestId } from '../../../utils/testing_support';
 
 export const HUInfoComponent = ({ handlingUnitInfo, currentLocatorQRCode }) => {
   const clearanceStatus = handlingUnitInfo.clearanceStatus ? handlingUnitInfo.clearanceStatus.caption : '';
+  const clearanceStatusKey = handlingUnitInfo.clearanceStatus?.key;
   const { clearanceNote } = handlingUnitInfo;
 
   return (
-    <table className="table view-header is-size-6">
+    <table className="table view-header is-size-6" data-testid="huinfo-table">
       <tbody>
-        <tr>
-          <th>{trl('huManager.HU')}</th>
-          <td>{handlingUnitInfo.displayName}</td>
-        </tr>
+        <Row captionKey="huManager.HU" value={handlingUnitInfo.displayName} />
         {handlingUnitInfo.numberOfAggregatedHUs && handlingUnitInfo.numberOfAggregatedHUs > 1 ? (
-          <tr>
-            <th>{trl('huManager.numberOfAggregatedHUs')}</th>
-            <td>{handlingUnitInfo.numberOfAggregatedHUs}</td>
-          </tr>
+            <tr>
+                <th>{trl('huManager.numberOfAggregatedHUs')}</th>
+                <td>{handlingUnitInfo.numberOfAggregatedHUs}</td>
+            </tr>
         ) : undefined}
-        <tr>
-          <th>{trl('huManager.qrCode')}</th>
-          <td>{toQRCodeDisplayable(handlingUnitInfo.qrCode)}</td>
-        </tr>
-        <tr>
-          <th>{trl('huManager.locator')}</th>
-          <td>{computeLocatorCaption({ handlingUnitInfo, currentLocatorQRCode })}</td>
-        </tr>
-        <tr>
-          <th>{trl('huManager.HUStatus')}</th>
-          <td>{computeHUStatusCaption(handlingUnitInfo)}</td>
-        </tr>
-        {clearanceStatus ? (
-          <tr>
-            <th>{trl('huManager.clearanceStatus')}</th>
-            <td>{clearanceStatus}</td>
-          </tr>
-        ) : null}
-        {clearanceNote ? (
-          <tr>
-            <th>{trl('huManager.clearanceNote')}</th>
-            <td>{clearanceNote}</td>
-          </tr>
-        ) : null}
+        <Row captionKey="huManager.qrCode" value={toQRCodeDisplayable(handlingUnitInfo.qrCode)} />
+        <Row captionKey="huManager.locator" value={computeLocatorCaption({ handlingUnitInfo, currentLocatorQRCode })} />
+        <Row captionKey="huManager.HUStatus" value={computeHUStatusCaption(handlingUnitInfo)} />
+        <Row
+          captionKey="huManager.clearanceStatus"
+          value={clearanceStatus}
+          internalValue={clearanceStatusKey}
+          hidden={!clearanceStatus}
+        />
+        <Row captionKey="huManager.clearanceNote" value={clearanceNote} hidden={!clearanceNote} />
         {handlingUnitInfo.products.map((product) => (
           <ProductInfoRows key={product.productValue} product={product} />
         ))}
@@ -52,6 +37,7 @@ export const HUInfoComponent = ({ handlingUnitInfo, currentLocatorQRCode }) => {
           handlingUnitInfo.attributes2.list.map((attribute) => (
             <AttributeRow
               key={attribute.code}
+              testId={`attribute-${attribute.code}-value`}
               caption={attribute.caption}
               value={attribute.value}
               valueDisplay={attribute.valueDisplay}
@@ -88,18 +74,8 @@ const computeLocatorCaption = ({ handlingUnitInfo, currentLocatorQRCode }) => {
 const ProductInfoRows = ({ product }) => {
   return (
     <>
-      <tr>
-        <th>{trl('huManager.product')}</th>
-        <td>
-          {product.productName} ({product.productValue})
-        </td>
-      </tr>
-      <tr>
-        <th>{trl('huManager.qty')}</th>
-        <td>
-          {product.qty} {product.uom}
-        </td>
-      </tr>
+      <Row captionKey="huManager.product" value={`${product.productName} (${product.productValue})`} />
+      <Row captionKey="huManager.qty" value={`${product.qty} ${product.uom}`} />
     </>
   );
 };
@@ -113,22 +89,42 @@ ProductInfoRows.propTypes = {
   }).isRequired,
 };
 
-const AttributeRow = ({ caption, value, valueDisplay }) => {
+const AttributeRow = ({ caption, value, valueDisplay, testId }) => {
   // hide rows with empty values
   if (value == null) {
     return null;
   }
 
-  return (
-    <tr>
-      <th>{caption}</th>
-      <td>{`${valueDisplay ?? value}`}</td>
-    </tr>
-  );
+  return <Row caption={caption} value={`${valueDisplay ?? value}`} testId={testId} />;
 };
 
 AttributeRow.propTypes = {
   caption: PropTypes.string.isRequired,
   value: PropTypes.any,
   valueDisplay: PropTypes.any,
+  testId: PropTypes.string,
+};
+
+const Row = ({ captionKey, caption: captionParam, value, internalValue, hidden, testId: testIdParam }) => {
+  if (hidden) return null;
+
+  const caption = captionParam ? captionParam : trl(captionKey);
+  const testId = computeTestId({ testIdParam, captionKey, suffix: 'value' });
+
+  return (
+    <tr>
+      <th>{caption}</th>
+      <td data-testid={testId} data-internalvalue={internalValue}>
+        {value}
+      </td>
+    </tr>
+  );
+};
+Row.propTypes = {
+  captionKey: PropTypes.string,
+  caption: PropTypes.string,
+  value: PropTypes.any,
+  internalValue: PropTypes.any,
+  hidden: PropTypes.bool,
+  testId: PropTypes.string,
 };

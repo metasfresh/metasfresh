@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_description" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/invoice/report" uuid="bed26190-0a93-4012-8083-15ce9416a0bf">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -167,8 +167,8 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Reference}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-10" x="130" y="133" width="213" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-10" x="200" y="133" width="223" height="13" uuid="fe70dce0-5ca0-4031-8a21-0af1802eac75">
 					<printWhenExpression><![CDATA[new Boolean($F{bp_value}!=null)]]></printWhenExpression>
 				</reportElement>
 				<box>

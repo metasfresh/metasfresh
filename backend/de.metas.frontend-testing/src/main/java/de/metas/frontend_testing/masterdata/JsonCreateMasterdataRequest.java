@@ -5,6 +5,7 @@ import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigRequest;
+import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
@@ -30,4 +31,5 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, JsonCreateHURequest> handlingUnits;
 	@Nullable Map<String, JsonSalesOrderCreateRequest> salesOrders;
 	@Nullable Map<String, JsonDDOrderRequest> distributionOrders;
+	@Nullable Map<String, JsonPPOrderRequest> manufacturingOrders;
 }
