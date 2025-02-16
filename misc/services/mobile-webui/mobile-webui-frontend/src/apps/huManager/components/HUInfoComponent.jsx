@@ -14,10 +14,7 @@ export const HUInfoComponent = ({ handlingUnitInfo, currentLocatorQRCode }) => {
       <tbody>
         <Row captionKey="huManager.HU" value={handlingUnitInfo.displayName} />
         {handlingUnitInfo.numberOfAggregatedHUs && handlingUnitInfo.numberOfAggregatedHUs > 1 ? (
-            <tr>
-                <th>{trl('huManager.numberOfAggregatedHUs')}</th>
-                <td>{handlingUnitInfo.numberOfAggregatedHUs}</td>
-            </tr>
+          <Row captionKey="huManager.numberOfAggregatedHUs" value={handlingUnitInfo.numberOfAggregatedHUs} />
         ) : undefined}
         <Row captionKey="huManager.qrCode" value={toQRCodeDisplayable(handlingUnitInfo.qrCode)} />
         <Row captionKey="huManager.locator" value={computeLocatorCaption({ handlingUnitInfo, currentLocatorQRCode })} />
