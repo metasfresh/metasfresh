@@ -6,6 +6,7 @@ import { PickingJobStepScreen } from "../utils/screens/picking/PickingJobStepScr
 import { PickingJobScreen } from "../utils/screens/picking/PickingJobScreen";
 import { Backend } from "../utils/screens/Backend";
 import { LoginScreen } from "../utils/screens/LoginScreen";
+import { expectErrorToast } from '../utils/common';
 
 const createMasterdata = async () => {
     const response = await Backend.createMasterdata({
@@ -101,4 +102,17 @@ test('Pick - unpick', async ({ page }) => {
     await PickingJobScreen.abort();
 });
 
+// noinspection JSUnusedLocalSymbols
+test('Scan invalid picking slot QR code', async ({ page }) => {
+    const { login, documentNo } = await createMasterdata();
 
+    await LoginScreen.login(login);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(documentNo);
+    await PickingJobsListScreen.startJob({ documentNo });
+    await expectErrorToast(async () => {
+        await PickingJobScreen.scanPickingSlot({ qrCode: 'invalid QR code' });
+    });
+});
