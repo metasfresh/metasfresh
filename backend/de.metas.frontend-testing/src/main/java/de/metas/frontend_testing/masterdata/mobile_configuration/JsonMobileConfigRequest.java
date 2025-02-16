@@ -31,6 +31,7 @@ public class JsonMobileConfigRequest
 		@Nullable CreateShipmentPolicy createShipmentPolicy;
 		@Nullable Boolean alwaysSplitHUsEnabled;
 		@Nullable Boolean pickWithNewLU;
+		@Nullable Boolean allowNewTU;
 	}
 	
 	//

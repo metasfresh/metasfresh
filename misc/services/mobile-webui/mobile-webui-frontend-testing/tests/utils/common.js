@@ -11,13 +11,18 @@ export const setCurrentPage = (currentPage) => {
     page = currentPage;
 }
 
-export const watchForErrorToastsAndFail = () => {
+export const runAndWatchForErrors = async (func) => {
+    return await Promise.race([
+        watchForErrorToastsAndFail(),
+        func(),
+    ]);
+}
+
+const watchForErrorToastsAndFail = () => {
     const toastLocator = page.locator('.Toastify div[role="alert"].Toastify__toast-body');
-    toastLocator.waitFor({ state: 'attached' })
+    return toastLocator.waitFor({ state: 'attached' })
         .then(async () => {
             const textContent = await toastLocator.textContent();
             throw new Error('Error toast detected: ' + textContent);
         });
-
-    console.log('Watching for error toasts...');
 }

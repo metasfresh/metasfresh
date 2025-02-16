@@ -72,12 +72,18 @@ public class MobileConfigCommand
 		final MobileUIPickingUserProfile newProfile = newProfileBuilder.build();
 		mobilePickingConfigRepository.save(newProfile);
 
+		return toJson(newProfile);
+	}
+
+	private static JsonMobileConfigResponse.Picking toJson(final MobileUIPickingUserProfile profile)
+	{
 		return JsonMobileConfigResponse.Picking.builder()
-				.allowPickingAnyCustomer(newProfile.isAllowPickingAnyCustomer())
-				.allowPickingAnyHU(newProfile.getDefaultPickingJobOptions().isAllowPickingAnyHU())
-				.createShipmentPolicy(newProfile.getDefaultPickingJobOptions().getCreateShipmentPolicy())
-				.alwaysSplitHUsEnabled(newProfile.getDefaultPickingJobOptions().isAlwaysSplitHUsEnabled())
-				.pickWithNewLU(newProfile.getDefaultPickingJobOptions().isPickWithNewLU())
+				.allowPickingAnyCustomer(profile.isAllowPickingAnyCustomer())
+				.allowPickingAnyHU(profile.getDefaultPickingJobOptions().isAllowPickingAnyHU())
+				.createShipmentPolicy(profile.getDefaultPickingJobOptions().getCreateShipmentPolicy())
+				.alwaysSplitHUsEnabled(profile.getDefaultPickingJobOptions().isAlwaysSplitHUsEnabled())
+				.pickWithNewLU(profile.getDefaultPickingJobOptions().isPickWithNewLU())
+				.allowNewTU(profile.getDefaultPickingJobOptions().isAllowNewTU())
 				.build();
 	}
 
@@ -99,6 +105,10 @@ public class MobileConfigCommand
 		if (from.getPickWithNewLU() != null)
 		{
 			builder.isPickWithNewLU(from.getPickWithNewLU());
+		}
+		if (from.getAllowNewTU() != null)
+		{
+			builder.isAllowNewTU(from.getAllowNewTU());
 		}
 
 		return builder.build();

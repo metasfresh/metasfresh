@@ -22,6 +22,7 @@ import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -39,7 +40,6 @@ import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.X_PP_Product_BOM;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
@@ -63,17 +63,17 @@ public class CreateProductCommand
 
 	@NonNull private final OrgId orgId = MasterdataContext.ORG_ID;
 	@NonNull private final ProductCategoryId productCategoryId = MasterdataContext.PRODUCT_CATEGORY_STANDARD_ID;
-	@Nullable private final Identifier suggestedIdentifier;
+	@NonNull private final Identifier identifier;
 
 	@Builder
 	private CreateProductCommand(
 			@NonNull final MasterdataContext context,
 			@NonNull final JsonCreateProductRequest request,
-			@Nullable final String identifier)
+			@NonNull final Identifier identifier)
 	{
 		this.context = context;
 		this.request = request;
-		this.suggestedIdentifier = Identifier.ofNullableString(identifier);
+		this.identifier = identifier;
 	}
 
 	public JsonCreateProductResponse execute()
@@ -93,18 +93,8 @@ public class CreateProductCommand
 
 	public I_M_Product createProduct()
 	{
-		final Identifier identifier;
-		final String value;
-		if (suggestedIdentifier == null)
-		{
-			identifier = Identifier.unique("P");
-			value = identifier.getAsString();
-		}
-		else
-		{
-			identifier = suggestedIdentifier;
-			value = suggestedIdentifier.toUniqueString();
-		}
+		final String valuePrefix = StringUtils.trimBlankToNull(request.getValuePrefix());
+		final String value = valuePrefix != null ? Identifier.ofString(valuePrefix).toUniqueString() : identifier.toUniqueString();
 
 		final I_M_Product productRecord = newInstanceOutOfTrx(I_M_Product.class);
 		final UomId productUomId = Optional.ofNullable(request.getUom()).map(uomDAO::getUomIdByX12DE355).orElse(UomId.EACH);
@@ -112,6 +102,7 @@ public class CreateProductCommand
 		productRecord.setAD_Org_ID(orgId.getRepoId());
 		productRecord.setValue(value);
 		productRecord.setName(value);
+		productRecord.setGTIN(request.getGtin());
 		productRecord.setC_UOM_ID(productUomId.getRepoId());
 		productRecord.setProductType(ProductType.Item.getCode());
 		productRecord.setIsStocked(true);

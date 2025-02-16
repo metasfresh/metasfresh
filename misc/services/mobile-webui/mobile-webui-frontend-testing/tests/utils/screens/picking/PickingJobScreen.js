@@ -1,12 +1,13 @@
-import { page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { page, runAndWatchForErrors, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { test } from "../../../../playwright.config";
-import { SelectPickTargetScreen } from "./SelectPickTargetScreen";
+import { SelectPickTargetLUScreen } from "./SelectPickTargetLUScreen";
 import { PickingJobLineScreen } from "./PickingJobLineScreen";
 import { PickingJobScanHUScreen } from "./PickingJobScanHUScreen";
 import { PickingSlotScanScreen } from "./PickingSlotScanScreen";
 import { GetQuantityDialog } from "./GetQuantityDialog";
 import { YesNoDialog } from "../../dialogs/YesNoDialog";
 import { PickingJobsListScreen } from "./PickingJobsListScreen";
+import { SelectPickTargetTUScreen } from './SelectPickTargetTUScreen';
 
 const NAME = 'PickingJobScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -29,21 +30,36 @@ export const PickingJobScreen = {
     }),
     setTargetLU: async ({ lu }) => await test.step(`${NAME} - Set target LU to ${lu}`, async () => {
         await PickingJobScreen.clickLUTargetButton();
-        await SelectPickTargetScreen.waitForScreen();
-        await SelectPickTargetScreen.clickLUButton({ lu });
+        await SelectPickTargetLUScreen.waitForScreen();
+        await SelectPickTargetLUScreen.clickLUButton({ lu });
         await PickingJobScreen.waitForScreen();
     }),
     closeTargetLU: async () => await test.step(`${NAME} - Close target LU`, async () => {
         await PickingJobScreen.clickLUTargetButton();
-        await SelectPickTargetScreen.clickCloseTargetButton();
+        await SelectPickTargetLUScreen.clickCloseTargetButton();
         await PickingJobScreen.waitForScreen();
     }),
 
-    pickHU: async ({ qrCode, expectQtyEntered }) => await test.step(`${NAME} - Scan HU and Pick`, async () => {
+    clickTUTargetButton: async () => await test.step(`${NAME} - Click TU target button`, async () => {
+        await page.locator('#targetTU-button').tap();
+    }),
+    setTargetTU: async ({ tu }) => await test.step(`${NAME} - Set target TU to ${tu}`, async () => {
+        await PickingJobScreen.clickTUTargetButton();
+        await SelectPickTargetTUScreen.waitForScreen();
+        await SelectPickTargetTUScreen.clickTUButton({ tu });
+        await PickingJobScreen.waitForScreen();
+    }),
+    closeTargetTU: async () => await test.step(`${NAME} - Close target TU`, async () => {
+        await PickingJobScreen.clickTUTargetButton();
+        await SelectPickTargetTUScreen.clickCloseTargetButton();
+        await PickingJobScreen.waitForScreen();
+    }),
+
+    pickHU: async ({ qrCode, expectQtyEntered, catchWeightQRCode }) => await test.step(`${NAME} - Scan HU and Pick`, async () => {
         await page.locator('#scanQRCode-button').tap(); // click Scan QR Code button
         await PickingJobScanHUScreen.waitForScreen();
         await PickingJobScanHUScreen.typeQRCode(qrCode);
-        await GetQuantityDialog.fillAndPressDone({ expectQtyEntered });
+        await GetQuantityDialog.fillAndPressDone({ expectQtyEntered, catchWeightQRCode });
         await PickingJobScreen.waitForScreen();
     }),
 
@@ -60,9 +76,11 @@ export const PickingJobScreen = {
     }),
 
     complete: async () => await test.step(`${NAME} - Complete`, async () => {
-        await page.locator('#last-confirm-button').tap();
-        await YesNoDialog.waitForDialog();
-        await YesNoDialog.clickYesButton();
-        await PickingJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+        await runAndWatchForErrors(async () => {
+            await page.locator('#last-confirm-button').tap();
+            await YesNoDialog.waitForDialog();
+            await YesNoDialog.clickYesButton();
+            await PickingJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+        })
     }),
 };

@@ -17,6 +17,8 @@ import java.util.List;
 @Jacksonized
 public class JsonCreateProductRequest
 {
+	@Nullable String valuePrefix;
+	@Nullable String gtin;
 	@Nullable X12DE355 uom;
 	@Nullable List<UOMConversion> uomConversions;
 

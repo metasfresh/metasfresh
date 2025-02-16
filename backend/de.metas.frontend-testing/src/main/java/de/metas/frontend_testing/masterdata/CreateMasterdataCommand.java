@@ -153,7 +153,7 @@ public class CreateMasterdataCommand
 		return CreateProductCommand.builder()
 				.context(context)
 				.request(request)
-				.identifier(identifier)
+				.identifier(Identifier.ofString(identifier))
 				.build()
 				.execute();
 	}
