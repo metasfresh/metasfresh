@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.product;
 
+import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.uom.X12DE355;
 import lombok.Builder;
@@ -18,7 +19,10 @@ public class JsonCreateProductRequest
 {
 	@Nullable X12DE355 uom;
 	@Nullable List<UOMConversion> uomConversions;
+
 	@Nullable List<Price> prices;
+
+	@Nullable BOM bom;
 
 	//
 	//
@@ -43,5 +47,24 @@ public class JsonCreateProductRequest
 		@NonNull BigDecimal price;
 		@Nullable X12DE355 uom;
 		@Nullable InvoicableQtyBasedOn invoicableQtyBasedOn;
+	}
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class BOM
+	{
+		@NonNull List<BOMLine> lines;
+	}
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class BOMLine
+	{
+		@NonNull Identifier product;
+		@NonNull BigDecimal qty;
+		boolean percentage;
+		@Nullable X12DE355 uom;
 	}
 }

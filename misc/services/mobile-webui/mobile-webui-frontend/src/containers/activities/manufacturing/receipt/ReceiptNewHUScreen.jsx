@@ -15,6 +15,7 @@ import {
 
 const ReceiptNewHUScreen = () => {
   const { history, wfProcessId, activityId, lineId } = useScreenDefinition({
+    screenId: 'ReceiptNewHUScreen',
     captionKey: 'activities.mfg.receipts.newHU',
     back: manufacturingReceiptReceiveTargetScreen,
   });

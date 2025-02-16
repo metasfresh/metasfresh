@@ -12,6 +12,7 @@ import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
 
 const ReceiptReceiveTargetScreen = () => {
   const { history, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
+    screenId: 'ReceiptReceiveTargetScreen',
     captionKey: 'activities.mfg.receipts.btnReceiveTarget',
     back: manufacturingReceiptScreenLocation,
   });
@@ -26,8 +27,12 @@ const ReceiptReceiveTargetScreen = () => {
 
   return (
     <div className="pt-2 section">
-      <Button caption={trl('activities.mfg.receipts.newHU')} onClick={handleNewHUClick} />
-      <Button caption={trl('activities.mfg.receipts.existingLU')} onClick={handleScanClick} />
+      <Button caption={trl('activities.mfg.receipts.newHU')} onClick={handleNewHUClick} testId="new-hu-button" />
+      <Button
+        caption={trl('activities.mfg.receipts.existingLU')}
+        onClick={handleScanClick}
+        testId="existing-lu-button"
+      />
     </div>
   );
 };

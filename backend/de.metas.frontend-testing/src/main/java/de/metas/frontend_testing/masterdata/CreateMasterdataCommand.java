@@ -19,6 +19,9 @@ import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.MobileConfigCommand;
+import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderRequest;
+import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderResponse;
+import de.metas.frontend_testing.masterdata.pp_order.PPOrderCommand;
 import de.metas.frontend_testing.masterdata.product.CreateProductCommand;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
@@ -82,6 +85,7 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
 		final ImmutableMap<String, JsonSalesOrderCreateResponse> salesOrders = createSalesOrders();
 		final ImmutableMap<String, JsonDDOrderResponse> distributionOrders = createDistributionOrders();
+		final ImmutableMap<String, JsonPPOrderResponse> manufacturingOrders = createManufacturingOrders();
 
 		return JsonCreateMasterdataResponse.builder()
 				.mobileConfig(mobileConfig)
@@ -93,6 +97,7 @@ public class CreateMasterdataCommand
 				.handlingUnits(hus)
 				.salesOrders(salesOrders)
 				.distributionOrders(distributionOrders)
+				.manufacturingOrders(manufacturingOrders)
 				.build();
 	}
 
@@ -244,4 +249,20 @@ public class CreateMasterdataCommand
 				.build()
 				.execute();
 	}
+
+	private ImmutableMap<String, JsonPPOrderResponse> createManufacturingOrders()
+	{
+		return process(request.getManufacturingOrders(), this::createManufacturingOrder);
+	}
+
+	private JsonPPOrderResponse createManufacturingOrder(String identifier, JsonPPOrderRequest request)
+	{
+		return PPOrderCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
 }

@@ -41,6 +41,8 @@ public class WarehouseCommand
 		context.putIdentifier(identifier, warehouseId);
 
 		final I_M_Locator locator = warehouseBL.getOrCreateDefaultLocator(warehouseId);
+		locator.setValue(value + "_Locator");
+		saveRecord(locator);
 		final LocatorQRCode locatorQRCode = LocatorQRCode.ofLocator(locator);
 
 		return JsonWarehouseResponse.builder()
