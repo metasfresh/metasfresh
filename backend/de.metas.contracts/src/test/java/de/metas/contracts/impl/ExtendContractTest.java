@@ -44,7 +44,12 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 	@BeforeEach
 	public void before()
 	{
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_Term(new ContractOrderService(),new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()))));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(
+				new C_Flatrate_Term(
+						new ContractOrderService(),
+						new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())),
+						new GLCategoryRepository()));
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 	}
 
