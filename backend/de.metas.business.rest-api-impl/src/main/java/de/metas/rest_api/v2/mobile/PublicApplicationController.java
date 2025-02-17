@@ -53,12 +53,10 @@ public class PublicApplicationController
 	@GetMapping("/config")
 	public JsonMobileConfigResponse getConfig()
 	{
-		final MobileAuthMethod defaultAuthMethod = configService.getConfig()
-				.map(MobileConfig::getDefaultAuthMethod)
-				.orElse(MobileAuthMethod.USER_PASS);
+		final MobileConfig config = configService.getConfig().orElse(MobileConfig.DEFAULT);
 
 		return JsonMobileConfigResponse.builder()
-				.defaultAuthMethod(defaultAuthMethod)
+				.defaultAuthMethod(config.getDefaultAuthMethod())
 				.availableAuthMethods(MobileAuthMethod.all())
 				.build();
 	}

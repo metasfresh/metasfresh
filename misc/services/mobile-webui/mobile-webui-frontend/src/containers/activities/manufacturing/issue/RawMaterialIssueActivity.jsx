@@ -36,6 +36,7 @@ const RawMaterialIssueActivity = (props) => {
             return (
               <ButtonWithIndicator
                 key={lineId}
+                testId={`issue-${lineIndex + 1}-button`}
                 typeFASIconName="fa-arrow-right-to-bracket"
                 caption={lineItem.productName}
                 hazardSymbols={showHazardsAndAllergens ? lineItem.hazardSymbols : null}

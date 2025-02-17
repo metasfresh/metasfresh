@@ -17,6 +17,7 @@ import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
 
 const ScanScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId } = useScreenDefinition({
+    screenId: 'ScanScreen',
     back: getWFProcessScreenLocation,
   });
 

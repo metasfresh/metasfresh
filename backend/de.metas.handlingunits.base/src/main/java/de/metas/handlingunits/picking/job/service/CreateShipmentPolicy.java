@@ -22,17 +22,17 @@
 
 package de.metas.handlingunits.picking.job.service;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.compiere.model.X_MobileUI_UserProfile_Picking;
 
 import javax.annotation.Nullable;
 
-@Getter
-@AllArgsConstructor
+@RequiredArgsConstructor
 public enum CreateShipmentPolicy implements ReferenceListAwareEnum
 {
 	DO_NOT_CREATE(X_MobileUI_UserProfile_Picking.CREATESHIPMENTPOLICY_DO_NOT_CREATE),
@@ -43,12 +43,13 @@ public enum CreateShipmentPolicy implements ReferenceListAwareEnum
 
 	private static final ReferenceListAwareEnums.ValuesIndex<CreateShipmentPolicy> index = ReferenceListAwareEnums.index(values());
 
-	private final String code;
+	@NonNull private final String code;
 
 	@NonNull
 	public static CreateShipmentPolicy ofCode(@NonNull final String code) {return index.ofCode(code);}
 
 	@NonNull
+	@JsonCreator
 	public static CreateShipmentPolicy ofCodeOrName(@NonNull final String code) {return index.ofCodeOrName(code);}
 
 	@Nullable
@@ -59,4 +60,9 @@ public enum CreateShipmentPolicy implements ReferenceListAwareEnum
 	public boolean isCreateAndCompleteShipment() {return CREATE_AND_COMPLETE.equals(this) || CREATE_COMPLETE_CLOSE.equals(this);}
 
 	public boolean isCloseShipmentSchedules() {return CREATE_COMPLETE_CLOSE.equals(this);}
+
+	@Override
+	@NonNull
+	@JsonValue
+	public String getCode() {return code;}
 }

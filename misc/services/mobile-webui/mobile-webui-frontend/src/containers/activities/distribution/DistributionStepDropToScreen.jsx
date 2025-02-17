@@ -10,6 +10,7 @@ import { distributionStepScreenLocation } from '../../../routes/distribution';
 
 const DistributionStepDropToScreen = () => {
   const { history, wfProcessId, activityId, lineId, stepId } = useScreenDefinition({
+    screenId: 'DistributionStepDropToScreen',
     back: distributionStepScreenLocation,
   });
 

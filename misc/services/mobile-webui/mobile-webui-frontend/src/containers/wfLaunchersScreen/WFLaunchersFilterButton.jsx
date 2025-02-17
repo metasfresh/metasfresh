@@ -20,6 +20,7 @@ const WFLaunchersFilterButton = ({ filterByDocumentNo, facets, onClick }) => {
   const caption = useMemo(() => computeCaption({ filterByDocumentNo, facets }), [filterByDocumentNo, facets]);
   return (
     <ButtonWithIndicator
+      id="filter-button"
       additionalCssClass="filter-button"
       caption={caption}
       typeFASIconName="fa-filter"

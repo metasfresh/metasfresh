@@ -18,6 +18,7 @@ import { distributionLineScreenLocation, distributionStepScreenLocation } from '
 
 const DistributionStepPickFromScreen = () => {
   const { history, wfProcessId, activityId, lineId, stepId } = useScreenDefinition({
+    screenId: 'DistributionStepPickFromScreen',
     captionKey: 'activities.distribution.scanHU',
     back: distributionStepScreenLocation,
   });

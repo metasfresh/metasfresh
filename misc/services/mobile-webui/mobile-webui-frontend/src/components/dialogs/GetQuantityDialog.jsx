@@ -251,7 +251,9 @@ const GetQuantityDialog = ({
             {qtyTargetCaption && (
               <tr>
                 <th>{qtyTargetCaption}</th>
-                <td>{formatQtyToHumanReadableStr({ qty: Math.max(qtyTarget, 0), uom })}</td>
+                <td data-testid="qty-target" data-internalvalue={qtyTarget} data-internalvalue-uom={uom}>
+                  {formatQtyToHumanReadableStr({ qty: Math.max(qtyTarget, 0), uom })}
+                </td>
               </tr>
             )}
             {userInfo &&
@@ -272,8 +274,14 @@ const GetQuantityDialog = ({
           <DialogButton
             captionKey="activities.picking.switchToManualInput"
             onClick={() => setShowCatchWeightQRCodeReader(false)}
+            testId="switchToManualInput-button"
           />
-          <DialogButton captionKey="general.closeText" className="is-danger" onClick={onCloseDialog} />
+          <DialogButton
+            captionKey="general.closeText"
+            className="is-danger"
+            onClick={onCloseDialog}
+            testId="done-button"
+          />
         </div>
       </>
     );
@@ -304,7 +312,9 @@ const GetQuantityDialog = ({
                   {qtyTargetCaption && (
                     <tr>
                       <th>{qtyTargetCaption}</th>
-                      <td>{formatQtyToHumanReadableStr({ qty: Math.max(qtyTarget, 0), uom })}</td>
+                      <td data-testid="qty-target" data-internalvalue={qtyTarget} data-internalvalue-uom={uom}>
+                        {formatQtyToHumanReadableStr({ qty: Math.max(qtyTarget, 0), uom })}
+                      </td>
                     </tr>
                   )}
                   {userInfo &&
@@ -319,6 +329,7 @@ const GetQuantityDialog = ({
                       <th>{qtyCaption ?? trl('general.Qty')}</th>
                       <td>
                         <QtyInputField
+                          id="qty-input"
                           qty={qtyInfos.toNumberOrString(qtyInfo)}
                           uom={uom}
                           validateQtyEntered={validateQtyEntered}
@@ -332,7 +343,7 @@ const GetQuantityDialog = ({
                   {packingItemName && (
                     <tr>
                       <th>{trl('general.PackingItemName')}</th>
-                      <td>{packingItemName}</td>
+                      <td id="packing-name">{packingItemName}</td>
                     </tr>
                   )}
                   {scaleDevice && allowManualInput && (
@@ -368,6 +379,7 @@ const GetQuantityDialog = ({
                         <div className="field">
                           <div className="control">
                             <DateInput
+                              id="bestBeforeDate"
                               type="date"
                               value={bestBeforeDate}
                               disabled={readOnly}
@@ -385,6 +397,7 @@ const GetQuantityDialog = ({
                         <div className="field">
                           <div className="control">
                             <input
+                              id="lotNo"
                               className="input"
                               type="text"
                               value={lotNo}
@@ -402,6 +415,7 @@ const GetQuantityDialog = ({
                       <td>
                         <>
                           <QtyInputField
+                            id="catch-weight"
                             qty={qtyInfos.toNumberOrString(catchWeight)}
                             uom={catchWeightUom}
                             onQtyChange={onCatchWeightEntered}
@@ -420,7 +434,7 @@ const GetQuantityDialog = ({
                     <>
                       <tr>
                         <th>{trl('general.QtyRejected')}</th>
-                        <td>{formatQtyToHumanReadableStr({ qty: qtyRejected, uom })}</td>
+                        <td id="qty-rejected">{formatQtyToHumanReadableStr({ qty: qtyRejected, uom })}</td>
                       </tr>
                       <tr>
                         <td colSpan={2}>
@@ -454,12 +468,14 @@ const GetQuantityDialog = ({
                 className="is-success"
                 disabled={!allValid}
                 onClick={() => onDialogYes({ isCloseTarget: false })}
+                testId="done-button"
               />
               <DialogButton
                 captionKey="general.cancelText"
                 className="is-danger"
                 disabled={isProcessing}
                 onClick={onCloseDialog}
+                testId="cancel-button"
               />
             </div>
           </>

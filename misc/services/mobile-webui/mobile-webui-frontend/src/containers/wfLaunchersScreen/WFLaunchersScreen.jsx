@@ -21,7 +21,7 @@ import { useCurrentWorkstation } from '../../api/workstation';
 import { useScreenDefinition } from '../../hooks/useScreenDefinition';
 
 const WFLaunchersScreen = () => {
-  const { history } = useScreenDefinition({ back: '/' });
+  const { history } = useScreenDefinition({ screenId: 'WFLaunchersScreen', back: '/' });
 
   const dispatch = useDispatch();
 
@@ -142,15 +142,16 @@ const WFLaunchersScreen = () => {
       {currentPanel === 'default' &&
         launchers &&
         launchers.map((launcher, index) => {
-          const key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + index;
+          const id = `launcher-${index}-button`;
           return (
             <WFLauncherButton
-              key={key}
+              key={id}
               applicationId={launcher.applicationId}
               caption={launcher.caption}
               startedWFProcessId={launcher.startedWFProcessId}
               wfParameters={launcher.wfParameters}
               showWarningSign={launcher.showWarningSign}
+              testId={launcher.testId}
             />
           );
         })}
