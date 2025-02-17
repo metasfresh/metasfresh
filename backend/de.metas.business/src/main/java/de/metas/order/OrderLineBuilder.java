@@ -136,11 +136,6 @@ public class OrderLineBuilder
 			dimensionService.updateRecord(orderLine, dimension);
 		}
 
-		if (manualPriceUomId != null)
-		{
-			orderLine.setPrice_UOM_ID(manualPriceUomId.getRepoId());
-		}
-
 		orderLineBL.updatePrices(orderLine);
 
 		if (!Check.isBlank(description))
