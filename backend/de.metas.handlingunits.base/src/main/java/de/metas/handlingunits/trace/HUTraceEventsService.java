@@ -685,7 +685,7 @@ public class HUTraceEventsService
 
 		builderSetVhuProductAndQty(builder, hu)
 				.vhuStatus(hu.getHUStatus())
-				.qty(Quantitys.create(ppOrderQty.get().getQty(), UomId.ofRepoId(ppOrderQty.get().getC_UOM_ID())));
+				.qty(Quantitys.of(ppOrderQty.get().getQty(), UomId.ofRepoId(ppOrderQty.get().getC_UOM_ID())));
 
 		huTraceRepository.addEvent(builder.build());
 	}
