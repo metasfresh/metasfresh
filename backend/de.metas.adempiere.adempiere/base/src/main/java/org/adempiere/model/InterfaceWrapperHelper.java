@@ -390,7 +390,7 @@ public class InterfaceWrapperHelper
 		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
 		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited, UnaryOperator.identity());
 	}
-	
+
 	public static <RT, MT> List<MT> loadByRepoIdAwares(@NonNull final Set<? extends RepoIdAware> repoIdAwares, @NonNull final Class<RT> modelClass, @NonNull Function<RT, MT> modelMapper)
 	{
 		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
@@ -1205,8 +1205,7 @@ public class InterfaceWrapperHelper
 	public static UserId getUpdatedBy(@NonNull final Object model)
 	{
 		return getValue(model, "UpdatedBy")
-				.map(userIdObj -> NumberUtils.asInt(userIdObj, -1))
-				.map( UserId::ofRepoId)
+				.map(userIdObj -> RepoIdAwares.ofObject(userIdObj, UserId.class))
 				.orElseThrow(() -> new AdempiereException("Cannot determine UpdatedBy from " + model));
 	}
 
