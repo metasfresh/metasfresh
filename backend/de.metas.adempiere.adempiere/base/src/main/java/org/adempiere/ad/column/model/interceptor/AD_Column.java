@@ -267,7 +267,7 @@ public class AD_Column
 		}
 		else
 		{
-			if (columnName.endsWith("_ID"))
+			if (columnName.endsWith("_ID") && displayType != DisplayType.Button)
 			{
 				throw new AdempiereException("Ending a non lookup column wiht `_ID` is might be misleading");
 			}

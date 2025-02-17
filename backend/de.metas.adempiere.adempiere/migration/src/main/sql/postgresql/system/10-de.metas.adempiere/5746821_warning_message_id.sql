@@ -38,6 +38,3 @@ ALTER TABLE AD_BusinessRule ADD CONSTRAINT WarningMessage_ADBusinessRule FOREIGN
 
 UPDATE AD_BusinessRule SET Warning_Message_id=ad_message_id
 ;
-
-SELECT public.db_alter_table('AD_BusinessRule','ALTER TABLE public.AD_BusinessRule drop COLUMN AD_Message_ID')
-;
