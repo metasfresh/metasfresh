@@ -5,6 +5,7 @@ import { qtyInfos } from '../utils/qtyInfos';
 
 const QtyInputField = ({
   id,
+  testId,
   qty: qtyInitial,
   uom,
   integerValuesOnly = false,
@@ -37,7 +38,7 @@ const QtyInputField = ({
       uom,
     });
     setQtyInfo(newQtyInfo);
-  }, [qtyInitial, integerValuesOnly, qtyInfo?.qty, qtyInfo?.notValidMessage, qtyInfo?.isQtyValid, validateQtyEntered]);
+  }, [qtyInitial, integerValuesOnly, qtyInfo?.qty, qtyInfo?.notValidMessage, qtyInfo?.isQtyValid]);
   //
   // Inform parent about initial value
   useEffect(() => forwardQtyInfoToParent(qtyInfo), [qtyInfo]);
@@ -75,6 +76,7 @@ const QtyInputField = ({
       <div className={cx('control', { 'has-icons-right': !!uom })}>
         <input
           id={id}
+          data-testid={testId}
           ref={qtyInputRef}
           className="input"
           type="number"
@@ -92,6 +94,7 @@ const QtyInputField = ({
 
 QtyInputField.propTypes = {
   id: PropTypes.string,
+  testId: PropTypes.string,
   qty: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   uom: PropTypes.string,
   integerValuesOnly: PropTypes.bool,

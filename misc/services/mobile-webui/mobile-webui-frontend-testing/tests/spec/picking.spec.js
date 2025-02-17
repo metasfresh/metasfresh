@@ -6,8 +6,9 @@ import { PickingJobStepScreen } from "../utils/screens/picking/PickingJobStepScr
 import { PickingJobScreen } from "../utils/screens/picking/PickingJobScreen";
 import { Backend } from "../utils/screens/Backend";
 import { LoginScreen } from "../utils/screens/LoginScreen";
+import { expectErrorToast } from '../utils/common';
 
-const loginAndCreateMasterdata = async () => {
+const createMasterdata = async () => {
     const response = await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -20,6 +21,7 @@ const loginAndCreateMasterdata = async () => {
                     createShipmentPolicy: 'CL',
                     allowPickingAnyHU: true,
                     pickWithNewLU: true,
+                    allowNewTU: false,
                 }
             },
             bpartners: { "BP1": {} },
@@ -33,7 +35,7 @@ const loginAndCreateMasterdata = async () => {
                 "PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "P1", qtyCUsPerTU: 4 },
             },
             handlingUnits: {
-                "HU1": { product: 'P1', warehouse: 'wh', qty: 80 }
+                "HU1": { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' }
             },
             salesOrders: {
                 "SO1": {
@@ -61,7 +63,7 @@ const loginAndCreateMasterdata = async () => {
 
 // noinspection JSUnusedLocalSymbols
 test('Simple picking test', async ({ page }) => {
-    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } = await loginAndCreateMasterdata();
+    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } = await createMasterdata();
 
     await LoginScreen.login(login);
     await ApplicationsListScreen.expectVisible();
@@ -77,7 +79,7 @@ test('Simple picking test', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Pick - unpick', async ({ page }) => {
-    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } = await loginAndCreateMasterdata();
+    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } = await createMasterdata();
 
     await LoginScreen.login(login);
     await ApplicationsListScreen.expectVisible();
@@ -100,4 +102,17 @@ test('Pick - unpick', async ({ page }) => {
     await PickingJobScreen.abort();
 });
 
+// noinspection JSUnusedLocalSymbols
+test('Scan invalid picking slot QR code', async ({ page }) => {
+    const { login, documentNo } = await createMasterdata();
 
+    await LoginScreen.login(login);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(documentNo);
+    await PickingJobsListScreen.startJob({ documentNo });
+    await expectErrorToast(async () => {
+        await PickingJobScreen.scanPickingSlot({ qrCode: 'invalid QR code' });
+    });
+});

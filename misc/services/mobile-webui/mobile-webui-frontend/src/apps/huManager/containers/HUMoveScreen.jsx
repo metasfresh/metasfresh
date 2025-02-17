@@ -13,6 +13,7 @@ import ReadQtyDialog from '../../../components/dialogs/ReadQtyDialog';
 
 const HUMoveScreen = () => {
   const { history } = useScreenDefinition({
+    screenId: 'HUMoveScreen',
     captionKey: 'huManager.action.move.scanTarget',
     back: huManagerLocation,
   });

@@ -30,12 +30,13 @@ const MaterialReceiptActivity = (props) => {
 
   return (
     <div className="mt-5">
-      {linesArray.map((lineItem) => {
+      {linesArray.map((lineItem, lineIndex) => {
         const lineId = lineItem.id;
 
         return (
           <ButtonWithIndicator
             key={lineId}
+            testId={`receipt-${lineIndex + 1}-button`}
             caption={lineItem.productName}
             typeFASIconName={lineItem.coproduct ? 'fa-retweet' : 'fa-arrow-right-from-bracket'}
             hazardSymbols={showHazardsAndAllergens ? lineItem.hazardSymbols : null}

@@ -40,6 +40,7 @@ const DistributionStepScreen = () => {
 
   const dispatch = useDispatch();
   const { history } = useScreenDefinition({
+    screenId: 'DistributionStepScreen',
     back: distributionLineScreenLocation,
     values: [
       {
@@ -122,13 +123,14 @@ const DistributionStepScreen = () => {
 
       {!HIDE_UNDO_BUTTONS && (
         <ButtonWithIndicator
-          caption={trl('activities.picking.unPickBtn')}
+          captionKey="activities.picking.unPickBtn"
           disabled={!(isPickedFrom && !isDroppedToLocator)}
           onClick={() => console.warn('TODO: not implemented')} // TODO: implement
         />
       )}
 
       <ButtonWithIndicator
+        testId="scanDropToLocator-button"
         caption={dropToLocatorCaption}
         completeStatus={dropToLocatorStatus}
         disabled={!(isPickedFrom && !isDroppedToLocator)}

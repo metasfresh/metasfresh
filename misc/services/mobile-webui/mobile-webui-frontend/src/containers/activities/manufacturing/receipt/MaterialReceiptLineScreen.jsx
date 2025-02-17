@@ -17,6 +17,7 @@ import { getWFProcessScreenLocation } from '../../../../routes/workflow_location
 
 const MaterialReceiptLineScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
+    screenId: 'MaterialReceiptLineScreen',
     back: getWFProcessScreenLocation,
   });
 
@@ -105,7 +106,7 @@ const MaterialReceiptLineScreen = () => {
     <>
       {showSpinner && <Spinner />}
       <div className="section pt-2">
-        <ButtonWithIndicator caption={btnReceiveTargetCaption} onClick={handleClick}>
+        <ButtonWithIndicator caption={btnReceiveTargetCaption} onClick={handleClick} testId="receive-target-button">
           <div className="row is-full is-size-7">{btnReceiveTargetCaption2}</div>
         </ButtonWithIndicator>
         <PickQuantityButton

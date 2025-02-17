@@ -14,6 +14,7 @@ import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
 
 const DistributionLineScreen = () => {
   const { history, applicationId, wfProcessId, activityId, lineId } = useDistributionScreenDefinition({
+    screenId: 'DistributionLineScreen',
     back: getWFProcessScreenLocation,
   });
 
@@ -30,12 +31,13 @@ const DistributionLineScreen = () => {
   return (
     <div className="section pt-2">
       <div className="buttons">
-        {allowPickingAnyHU && <ButtonWithIndicator caption={trl('general.scanQRCode')} onClick={onScanButtonClick} />}
+        {allowPickingAnyHU && <ButtonWithIndicator captionKey="general.scanQRCode" onClick={onScanButtonClick} />}
         {steps.length > 0 &&
           steps.map((stepItem, idx) => {
             return (
               <DistributionStepButton
                 key={idx}
+                testId={`step-${idx + 1}-button`}
                 applicationId={applicationId}
                 wfProcessId={wfProcessId}
                 activityId={activityId}
@@ -77,7 +79,7 @@ export const useDistributionLineProps = ({ wfProcessId, activityId, lineId }) =>
 //
 //
 
-export const useDistributionScreenDefinition = ({ captionKey, back } = {}) => {
+export const useDistributionScreenDefinition = ({ screenId, captionKey, back } = {}) => {
   const {
     params: { workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
@@ -85,6 +87,7 @@ export const useDistributionScreenDefinition = ({ captionKey, back } = {}) => {
   const { productName, uom, qtyToMove } = useDistributionLineProps({ wfProcessId, activityId, lineId });
 
   return useScreenDefinition({
+    screenId,
     captionKey,
     back,
     values: [
