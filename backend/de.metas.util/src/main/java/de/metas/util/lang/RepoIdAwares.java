@@ -164,6 +164,16 @@ public class RepoIdAwares
 				repoIdStr -> ofObject(repoIdStr, repoIdClass, ofRepoIdFunction));
 	}
 
+	public static <T extends RepoIdAware> ImmutableSet<T> ofCommaSeparatedSet(
+			@Nullable final String commaSeparatedStr,
+			@NonNull final Class<T> repoIdClass)
+	{
+		final IntFunction<T> ofRepoIdFunction = getOfRepoIdFunction(repoIdClass);
+		return CollectionUtils.ofCommaSeparatedSet(
+				commaSeparatedStr,
+				repoIdStr -> ofObject(repoIdStr, repoIdClass, ofRepoIdFunction));
+	}
+
 	public static int toRepoId(@Nullable final RepoIdAware repoIdAware)
 	{
 		if (repoIdAware == null)
