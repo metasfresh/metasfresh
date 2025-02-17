@@ -20,7 +20,7 @@ export const HUMoveScreen = {
         await HUMoveScreen.expectVisible();
         await page.type('#input-text', qrCode);
         await HUManagerScreen.waitForScreen();
-        await HUManagerScreen.waitForHUInfoPanel();
+        //await HUManagerScreen.waitForHUInfoPanel(); // note: in master we are directed to scan another HU
     }),
 
 };
