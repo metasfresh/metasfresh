@@ -243,7 +243,7 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 	{
 		final OrgId orgId = OrgId.ofRepoId(icRecord.getAD_Org_ID());
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID());
-		final Quantity quantity = Quantitys.create(icRecord.getQtyOrdered(), UomId.ofRepoId(icRecord.getC_UOM_ID()));
+		final Quantity quantity = Quantitys.of(icRecord.getQtyOrdered(), UomId.ofRepoId(icRecord.getC_UOM_ID()));
 		final SOTrx soTrx = SOTrx.ofBoolean(icRecord.isSOTrx());
 
 		// both might be not mandatory in general, but if this is our IC, then it has a product.

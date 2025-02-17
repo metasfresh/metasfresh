@@ -151,7 +151,7 @@ public class DataEntryDetailsRowsData implements IEditableRowsData<DataEntryDeta
 			final DataEntryDetailsRow row = documentId2TopLevelRows.get(documentId);
 			if(row.getQty() != null)
 			{
-				final Quantity quantity = Quantitys.create(row.getQty(), entry.getUomId());
+				final Quantity quantity = Quantitys.of(row.getQty(), entry.getUomId());
 				detail.setQuantity(quantity);
 			}
 			else

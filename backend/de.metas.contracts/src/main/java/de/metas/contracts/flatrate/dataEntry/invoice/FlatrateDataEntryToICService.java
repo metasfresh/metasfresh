@@ -28,6 +28,8 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.department.BPartnerDepartment;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.contracts.FlatrateTerm;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.FlatrateTermRepo;
@@ -58,11 +60,9 @@ import lombok.Data;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
@@ -222,7 +222,7 @@ public class FlatrateDataEntryToICService
 			final IPair<AttributeSetInstanceId, List<FlatrateDataEntryDetail>> asiIdWithDetails = ppKey2AsiIdsWithDetails.get(ppKey);
 
 			final AttributeSetInstanceId resultKey = asiIdWithDetails.getLeft();
-			final ImmutablePair<Quantity, List<FlatrateDataEntryDetail>> resultValue = ImmutablePair.of(Quantitys.create(qty, entry.getUomId()), asiIdWithDetails.getRight());
+			final ImmutablePair<Quantity, List<FlatrateDataEntryDetail>> resultValue = ImmutablePair.of(Quantitys.of(qty, entry.getUomId()), asiIdWithDetails.getRight());
 			result.put(resultKey, resultValue);
 		}
 		return result.build();

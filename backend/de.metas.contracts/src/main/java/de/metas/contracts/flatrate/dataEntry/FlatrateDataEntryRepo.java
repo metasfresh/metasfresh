@@ -136,7 +136,7 @@ public class FlatrateDataEntryRepo
 					.id(FlatrateDataEntryDetailId.ofRepoId(flatrateDataEntryId, detailRecord.getC_Flatrate_DataEntry_Detail_ID()))
 					.bPartnerDepartment(bPartnerDepartment)
 					.asiId(AttributeSetInstanceId.ofRepoIdOrNone(detailRecord.getM_AttributeSetInstance_ID()))
-					.quantity(Quantitys.create(detailRecord.getQty_Reported(), UomId.ofRepoId(detailRecord.getC_UOM_ID())))
+					.quantity(Quantitys.of(detailRecord.getQty_Reported(), UomId.ofRepoId(detailRecord.getC_UOM_ID())))
 					.build();
 			result.detail(entryDetail);
 		}
@@ -162,7 +162,7 @@ public class FlatrateDataEntryRepo
 		}
 		maxSeqNo += 10;
 
-		Quantity qtySum = Quantitys.createZero(entry.getUomId());
+		Quantity qtySum = Quantitys.zero(entry.getUomId());
 
 		for (final FlatrateDataEntryDetail detail : entry.getDetails())
 		{
