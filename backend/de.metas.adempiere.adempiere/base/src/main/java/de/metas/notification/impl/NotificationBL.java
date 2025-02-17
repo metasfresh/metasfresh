@@ -110,7 +110,7 @@ public class NotificationBL implements INotificationBL
 	}
 
 	@Override
-	public UserNotificationsConfig getUserNotificationsConfig(final UserId adUserId)
+	public @NonNull UserNotificationsConfig getUserNotificationsConfig(final UserId adUserId)
 	{
 		return Services.get(IUserNotificationsConfigRepository.class).getByUserId(adUserId);
 	}
