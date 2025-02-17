@@ -271,10 +271,4 @@ public class PurchaseOrderItem implements PurchaseItem
 	{
 		return purchaseCandidate.getPOReference();
 	}
-
-	@Nullable
-	public UomId getPriceUomId()
-	{
-		return purchaseCandidate.getPriceUomId();
-	}
 }
