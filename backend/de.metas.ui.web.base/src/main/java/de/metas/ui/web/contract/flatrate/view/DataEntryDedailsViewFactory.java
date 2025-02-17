@@ -120,8 +120,8 @@ public class DataEntryDedailsViewFactory implements IViewFactory, IViewsIndexSto
 				FlatrateTermId.ofRepoId(record.getC_Flatrate_Term_ID()),
 				record.getC_Flatrate_DataEntry_ID());
 
-		final LookupDataSource departmentLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner_Department.Table_Name);
-		final LookupDataSource uomLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_UOM.Table_Name);
+		final LookupDataSource departmentLookup = LookupDataSourceFactory.sharedInstance().searchInTableLookup(I_C_BPartner_Department.Table_Name);
+		final LookupDataSource uomLookup = LookupDataSourceFactory.sharedInstance().searchInTableLookup(I_C_UOM.Table_Name);
 
 		return DataEntryDetailsRowsLoader.builder()
 				.departmentLookup(departmentLookup)
