@@ -38,6 +38,7 @@ import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -57,7 +58,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class WarehouseBL implements IWarehouseBL
 {
