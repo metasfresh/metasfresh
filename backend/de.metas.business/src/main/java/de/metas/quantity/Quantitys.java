@@ -205,9 +205,20 @@ public class Quantitys
 	@Nullable
 	public static BigDecimal toBigDecimalOrNull(@Nullable final Quantity quantity)
 	{
+		return toBigDecimalOr(quantity, null);
+	}
+
+	@NonNull
+	public static BigDecimal toBigDecimalOrZero(@Nullable final Quantity quantity)
+	{
+		return toBigDecimalOr(quantity, BigDecimal.ZERO);
+	}
+
+	private static BigDecimal toBigDecimalOr(@Nullable final Quantity quantity, @Nullable final BigDecimal defaultValue)
+	{
 		if (quantity == null)
 		{
-			return null;
+			return defaultValue;
 		}
 		return quantity.toBigDecimal();
 	}

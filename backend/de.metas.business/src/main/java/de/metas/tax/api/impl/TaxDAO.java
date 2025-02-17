@@ -136,28 +136,22 @@ public class TaxDAO implements ITaxDAO
 	}
 
 	@Override
-	public TaxId getDefaultTaxId(final I_C_TaxCategory taxCategory)
+	public Tax getDefaultTax(@NonNull final TaxCategoryId taxCategoryId)
 	{
-		final Properties ctx = InterfaceWrapperHelper.getCtx(taxCategory);
-		final String trxName = InterfaceWrapperHelper.getTrxName(taxCategory);
-		final I_C_Tax tax;
-
-		final List<I_C_Tax> list = queryBL.createQueryBuilder(I_C_Tax.class, ctx, trxName)
-				.addEqualsFilter(I_C_Tax.COLUMNNAME_C_TaxCategory_ID, taxCategory.getC_TaxCategory_ID())
+		final List<I_C_Tax> list = queryBL.createQueryBuilderOutOfTrx(I_C_Tax.class)
+				.addEqualsFilter(I_C_Tax.COLUMNNAME_C_TaxCategory_ID, taxCategoryId)
 				.addEqualsFilter(I_C_Tax.COLUMNNAME_IsDefault, true)
 				.create()
 				.list();
 		if (list.size() == 1)
 		{
-			tax = list.get(0);
+			return TaxUtils.from(list.get(0));
 		}
 		else
 		{
 			// Error - should only be one default
 			throw new AdempiereException("TooManyDefaults");
 		}
-
-		return TaxId.ofRepoId(tax.getC_Tax_ID());
 	}
 
 	@Override

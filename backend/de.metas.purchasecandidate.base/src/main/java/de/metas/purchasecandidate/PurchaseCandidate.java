@@ -115,6 +115,10 @@ public class PurchaseCandidate
 	private BigDecimal priceActual;
 	@Nullable
 	private BigDecimal priceEnteredEff;
+
+	@Nullable
+	private UomId priceUomId;
+
 	@Nullable
 	private UomId priceUomId;
 	@Nullable

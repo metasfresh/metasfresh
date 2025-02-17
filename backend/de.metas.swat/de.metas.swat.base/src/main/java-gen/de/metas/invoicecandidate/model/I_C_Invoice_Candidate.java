@@ -52,8 +52,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
 
 	/**
-	 * Set Statusmeldung.
-	 * System-Nachricht
+	 * Set Note.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -62,8 +61,7 @@ public interface I_C_Invoice_Candidate
 	void setAD_Note_ID (int AD_Note_ID);
 
 	/**
-	 * Get Statusmeldung.
-	 * System-Nachricht
+	 * Get Note.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -428,8 +426,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
 
 	/**
-	 * Set Kosten.
-	 * Zusätzliche Kosten
+	 * Set Costs.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -438,8 +435,7 @@ public interface I_C_Invoice_Candidate
 	void setC_Charge_ID (int C_Charge_ID);
 
 	/**
-	 * Get Kosten.
-	 * Zusätzliche Kosten
+	 * Get Costs.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -450,8 +446,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
 	/**
-	 * Set Kursart.
-	 * Kursart
+	 * Set Conversiontype.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -460,8 +455,7 @@ public interface I_C_Invoice_Candidate
 	void setC_ConversionType_ID (int C_ConversionType_ID);
 
 	/**
-	 * Get Kursart.
-	 * Kursart
+	 * Get Conversiontype.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -537,7 +531,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 
 	/**
-	 * Set Rechnungskandidaten-Controller.
+	 * Set Invoicecandidate Controller.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -546,7 +540,7 @@ public interface I_C_Invoice_Candidate
 	void setC_ILCandHandler_ID (int C_ILCandHandler_ID);
 
 	/**
-	 * Get Rechnungskandidaten-Controller.
+	 * Get Invoicecandidate Controller.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -639,7 +633,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_Effective_ID = "C_Invoice_Candidate_HeaderAggregation_Effective_ID";
 
 	/**
-	 * Set Abrechnungsgruppe.
+	 * Set Aggregration Group.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -648,7 +642,7 @@ public interface I_C_Invoice_Candidate
 	void setC_Invoice_Candidate_HeaderAggregation_ID (int C_Invoice_Candidate_HeaderAggregation_ID);
 
 	/**
-	 * Get Abrechnungsgruppe.
+	 * Get Aggregration Group.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -664,7 +658,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_Invoice_Candidate_HeaderAggregation_ID = "C_Invoice_Candidate_HeaderAggregation_ID";
 
 	/**
-	 * Set Abrechnungsgruppe abw..
+	 * Set Header Aggregation override.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -673,7 +667,7 @@ public interface I_C_Invoice_Candidate
 	void setC_Invoice_Candidate_HeaderAggregation_Override_ID (int C_Invoice_Candidate_HeaderAggregation_Override_ID);
 
 	/**
-	 * Get Abrechnungsgruppe abw..
+	 * Get Header Aggregation override.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -710,8 +704,8 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_Invoice_Candidate_ID = "C_Invoice_Candidate_ID";
 
 	/**
-	 * Set Terminplan Rechnung.
-	 * Plan für die Rechnungsstellung
+	 * Set Invoice Schedule.
+	 * Schedule for generating Invoices
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -720,8 +714,8 @@ public interface I_C_Invoice_Candidate
 	void setC_InvoiceSchedule_ID (int C_InvoiceSchedule_ID);
 
 	/**
-	 * Get Terminplan Rechnung.
-	 * Plan für die Rechnungsstellung
+	 * Get Invoice Schedule.
+	 * Schedule for generating Invoices
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -737,7 +731,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_InvoiceSchedule_ID = "C_InvoiceSchedule_ID";
 
 	/**
-	 * Set Auftragspartner.
+	 * Set Order Partner.
 	 * The partner from C_Order
 	 *
 	 * <br>Type: Search
@@ -749,7 +743,7 @@ public interface I_C_Invoice_Candidate
 	void setC_Order_BPartner (int C_Order_BPartner);
 
 	/**
-	 * Get Auftragspartner.
+	 * Get Order Partner.
 	 * The partner from C_Order
 	 *
 	 * <br>Type: Search
@@ -999,7 +993,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_Shipping_Location_ID = "C_Shipping_Location_ID";
 
 	/**
-	 * Set Steuer eff..
+	 * Set Tax eff..
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1010,7 +1004,7 @@ public interface I_C_Invoice_Candidate
 	void setC_Tax_Effective_ID (int C_Tax_Effective_ID);
 
 	/**
-	 * Get Steuer eff..
+	 * Get Tax eff..
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1043,8 +1037,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
 
 	/**
-	 * Set Steuer abw..
-	 * Abweichender Steuersatz
+	 * Set Tax override.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1053,8 +1046,7 @@ public interface I_C_Invoice_Candidate
 	void setC_Tax_Override_ID (int C_Tax_Override_ID);
 
 	/**
-	 * Get Steuer abw..
-	 * Abweichender Steuersatz
+	 * Get Tax override.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1183,8 +1175,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_DatePromised = "DatePromised";
 
 	/**
-	 * Set Abrechnung ab.
-	 * Termin ab dem die Rechnung erstellt werden darf
+	 * Set Date Invoice from.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1193,8 +1184,7 @@ public interface I_C_Invoice_Candidate
 	void setDateToInvoice (@Nullable java.sql.Timestamp DateToInvoice);
 
 	/**
-	 * Get Abrechnung ab.
-	 * Termin ab dem die Rechnung erstellt werden darf
+	 * Get Date Invoice from.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1206,8 +1196,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_DateToInvoice = "DateToInvoice";
 
 	/**
-	 * Set Abrechnung ab eff..
-	 * Enthält den Wert aus "Abrechnung ab" oder der Überschreibe-Wert aus "Abrechnung ab abw.
+	 * Set Date Invoice from eff..
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1218,8 +1207,7 @@ public interface I_C_Invoice_Candidate
 	void setDateToInvoice_Effective (@Nullable java.sql.Timestamp DateToInvoice_Effective);
 
 	/**
-	 * Get Abrechnung ab eff..
-	 * Enthält den Wert aus "Abrechnung ab" oder der Überschreibe-Wert aus "Abrechnung ab abw.
+	 * Get Date Invoice from eff..
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1231,8 +1219,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_DateToInvoice_Effective = "DateToInvoice_Effective";
 
 	/**
-	 * Set Abrechnung ab abw..
-	 * Überschreibt den regulären Termin ab dem die Rechnung erstellt werden darf
+	 * Set Date Invoice from override.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1241,8 +1228,7 @@ public interface I_C_Invoice_Candidate
 	void setDateToInvoice_Override (@Nullable java.sql.Timestamp DateToInvoice_Override);
 
 	/**
-	 * Get Abrechnung ab abw..
-	 * Überschreibt den regulären Termin ab dem die Rechnung erstellt werden darf
+	 * Get Date Invoice from override.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -1296,7 +1282,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Schlusstext.
+	 * Set End note.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1305,7 +1291,7 @@ public interface I_C_Invoice_Candidate
 	void setDescriptionBottom (@Nullable java.lang.String DescriptionBottom);
 
 	/**
-	 * Get Schlusstext.
+	 * Get End note.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1317,7 +1303,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_DescriptionBottom = "DescriptionBottom";
 
 	/**
-	 * Set Kopfbeschreibung.
+	 * Set Description (GL Journal).
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1326,7 +1312,7 @@ public interface I_C_Invoice_Candidate
 	void setDescriptionHeader (@Nullable java.lang.String DescriptionHeader);
 
 	/**
-	 * Get Kopfbeschreibung.
+	 * Get Description (GL Journal).
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1361,8 +1347,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_Discount = "Discount";
 
 	/**
-	 * Set Rabatt abw. %.
-	 * Abschlag in Prozent
+	 * Set Discount override %.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -1371,8 +1356,7 @@ public interface I_C_Invoice_Candidate
 	void setDiscount_Override (@Nullable BigDecimal Discount_Override);
 
 	/**
-	 * Get Rabatt abw. %.
-	 * Abschlag in Prozent
+	 * Get Discount override %.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -1576,7 +1560,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_GroupCompensationType = "GroupCompensationType";
 
 	/**
-	 * Set Kopf-Aggregationsmerkmal.
+	 * Set Header  merge characteristic.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1585,7 +1569,7 @@ public interface I_C_Invoice_Candidate
 	void setHeaderAggregationKey (@Nullable java.lang.String HeaderAggregationKey);
 
 	/**
-	 * Get Kopf-Aggregationsmerkmal.
+	 * Get Header  merge characteristic.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1618,7 +1602,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_HeaderAggregationKeyBuilder_ID = "HeaderAggregationKeyBuilder_ID";
 
 	/**
-	 * Set Kopf-Aggregationsmerkmal (vorgegeben).
+	 * Set Header Aggregation Preset.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1627,7 +1611,7 @@ public interface I_C_Invoice_Candidate
 	void setHeaderAggregationKey_Calc (@Nullable java.lang.String HeaderAggregationKey_Calc);
 
 	/**
-	 * Get Kopf-Aggregationsmerkmal (vorgegeben).
+	 * Get Header Aggregation Preset.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1639,7 +1623,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_HeaderAggregationKey_Calc = "HeaderAggregationKey_Calc";
 
 	/**
-	 * Set IncotermLocation.
+	 * Set Incoterm Location.
 	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: Text
@@ -1649,7 +1633,7 @@ public interface I_C_Invoice_Candidate
 	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
 
 	/**
-	 * Get IncotermLocation.
+	 * Get Incoterm Location.
 	 * Anzugebender Ort für Handelsklausel
 	 *
 	 * <br>Type: Text
@@ -1683,8 +1667,8 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_InvoicableQtyBasedOn = "InvoicableQtyBasedOn";
 
 	/**
-	 * Set Rechnungsstellung.
-	 * "Rechnungsstellung" definiert, wie oft und in welcher Form ein Geschäftspartner Rechnungen erhält.
+	 * Set Invoice Rule.
+	 * Frequency and method of invoicing
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -1693,8 +1677,8 @@ public interface I_C_Invoice_Candidate
 	void setInvoiceRule (java.lang.String InvoiceRule);
 
 	/**
-	 * Get Rechnungsstellung.
-	 * "Rechnungsstellung" definiert, wie oft und in welcher Form ein Geschäftspartner Rechnungen erhält.
+	 * Get Invoice Rule.
+	 * Frequency and method of invoicing
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -1706,7 +1690,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_InvoiceRule = "InvoiceRule";
 
 	/**
-	 * Set Rechnungsstellung eff..
+	 * Set Invoice Rule eff..
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1717,7 +1701,7 @@ public interface I_C_Invoice_Candidate
 	void setInvoiceRule_Effective (@Nullable java.lang.String InvoiceRule_Effective);
 
 	/**
-	 * Get Rechnungsstellung eff..
+	 * Get Invoice Rule eff..
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1729,8 +1713,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_InvoiceRule_Effective = "InvoiceRule_Effective";
 
 	/**
-	 * Set Rechnungsstellung abw..
-	 * Erlaubt es, eine abweichende Rechnungsstellungsregel vorzugeben.
+	 * Set Invoice Rule override.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1739,8 +1722,7 @@ public interface I_C_Invoice_Candidate
 	void setInvoiceRule_Override (@Nullable java.lang.String InvoiceRule_Override);
 
 	/**
-	 * Get Rechnungsstellung abw..
-	 * Erlaubt es, eine abweichende Rechnungsstellungsregel vorzugeben.
+	 * Get Invoice Rule override.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -1752,8 +1734,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_InvoiceRule_Override = "InvoiceRule_Override";
 
 	/**
-	 * Set Status Terminplan.
-	 * Bei Geschätspartnern, deren Rechnungs-Terminplan einen Grenzbetrag hat, zeigt dieses Feld an, ob der Grenzbetrag unterschritten ist.
+	 * Set Invoice Schedule Status.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1762,8 +1743,7 @@ public interface I_C_Invoice_Candidate
 	void setInvoiceScheduleAmtStatus (@Nullable java.lang.String InvoiceScheduleAmtStatus);
 
 	/**
-	 * Get Status Terminplan.
-	 * Bei Geschätspartnern, deren Rechnungs-Terminplan einen Grenzbetrag hat, zeigt dieses Feld an, ob der Grenzbetrag unterschritten ist.
+	 * Get Invoice Schedule Status.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -1842,7 +1822,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsDeliveryClosed = "IsDeliveryClosed";
 
 	/**
-	 * Set Beleg soll per EDI übermittelt werden.
+	 * Set Document to be sent via EDI.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1851,7 +1831,7 @@ public interface I_C_Invoice_Candidate
 	void setIsEdiEnabled (boolean IsEdiEnabled);
 
 	/**
-	 * Get Beleg soll per EDI übermittelt werden.
+	 * Get Document to be sent via EDI.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1970,7 +1950,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsInDispute = "IsInDispute";
 
 	/**
-	 * Set Lieferung/ Wareneingang freigeben.
+	 * Set Approve in/out shipment.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1979,7 +1959,7 @@ public interface I_C_Invoice_Candidate
 	void setIsInOutApprovedForInvoicing (boolean IsInOutApprovedForInvoicing);
 
 	/**
-	 * Get Lieferung/ Wareneingang freigeben.
+	 * Get Approve in/out shipment.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2012,7 +1992,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsInvoicingError = "IsInvoicingError";
 
 	/**
-	 * Set Manuell.
+	 * Set Invoice manually allocated.
 	 * Dies ist ein manueller Vorgang
 	 *
 	 * <br>Type: YesNo
@@ -2022,7 +2002,7 @@ public interface I_C_Invoice_Candidate
 	void setIsManual (boolean IsManual);
 
 	/**
-	 * Get Manuell.
+	 * Get Invoice manually allocated.
 	 * Dies ist ein manueller Vorgang
 	 *
 	 * <br>Type: YesNo
@@ -2035,7 +2015,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsManual = "IsManual";
 
 	/**
-	 * Set Ist Material-Vorgang.
+	 * Set Material Tracking.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -2046,7 +2026,7 @@ public interface I_C_Invoice_Candidate
 	void setIsMaterialTracking (boolean IsMaterialTracking);
 
 	/**
-	 * Get Ist Material-Vorgang.
+	 * Get Material Tracking.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -2079,7 +2059,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsPackagingMaterial = "IsPackagingMaterial";
 
 	/**
-	 * Set andrucken.
+	 * Set Printed.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -2089,7 +2069,7 @@ public interface I_C_Invoice_Candidate
 	void setIsPrinted (boolean IsPrinted);
 
 	/**
-	 * Get andrucken.
+	 * Get Printed.
 	 * Indicates if this document / line is printed
 	 *
 	 * <br>Type: YesNo
@@ -2169,7 +2149,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsTaxIncluded = "IsTaxIncluded";
 
 	/**
-	 * Set Preis inkl. Steuern abw..
+	 * Set Price incl. Tax override.
 	 * Tax is included in the price
 	 *
 	 * <br>Type: List
@@ -2179,7 +2159,7 @@ public interface I_C_Invoice_Candidate
 	void setIsTaxIncluded_Override (@Nullable java.lang.String IsTaxIncluded_Override);
 
 	/**
-	 * Get Preis inkl. Steuern abw..
+	 * Get Price incl. Tax override.
 	 * Tax is included in the price
 	 *
 	 * <br>Type: List
@@ -2192,8 +2172,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsTaxIncluded_Override = "IsTaxIncluded_Override";
 
 	/**
-	 * Set zur Verrechnung.
-	 * Leistung wird nicht unmittelbar in Rechnung gestellt, sondern mit anderen Posten (z.B. Pauschale) verrechnet
+	 * Set To Clear.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2202,8 +2181,7 @@ public interface I_C_Invoice_Candidate
 	void setIsToClear (boolean IsToClear);
 
 	/**
-	 * Get zur Verrechnung.
-	 * Leistung wird nicht unmittelbar in Rechnung gestellt, sondern mit anderen Posten (z.B. Pauschale) verrechnet
+	 * Get To Clear.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2307,8 +2285,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_LineAggregationKeyBuilder_ID = "LineAggregationKeyBuilder_ID";
 
 	/**
-	 * Set Aggregations-Zusatz.
-	 * Optionale Möglichkeit, einzelne Rechnungskandidaten aus einer gemeinsamen Aggregations-Gruppe herauszulösen.
+	 * Set Agrregation Suffix.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2317,8 +2294,7 @@ public interface I_C_Invoice_Candidate
 	void setLineAggregationKey_Suffix (@Nullable java.lang.String LineAggregationKey_Suffix);
 
 	/**
-	 * Get Aggregations-Zusatz.
-	 * Optionale Möglichkeit, einzelne Rechnungskandidaten aus einer gemeinsamen Aggregations-Gruppe herauszulösen.
+	 * Get Agrregation Suffix.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2351,6 +2327,33 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_LineNetAmt = "LineNetAmt";
 
 	/**
+	 * Set Attributes.
+	 * Attribute Instances for Products
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID);
+
+	/**
+	 * Get Attributes.
+	 * Attribute Instances for Products
+	 *
+	 * <br>Type: PAttribute
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_AttributeSetInstance_ID();
+
+	@Nullable org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance();
+
+	void setM_AttributeSetInstance(@Nullable org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_M_AttributeSetInstance> COLUMN_M_AttributeSetInstance_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "M_AttributeSetInstance_ID", org.compiere.model.I_M_AttributeSetInstance.class);
+	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
+
+	/**
 	 * Set Shipment/ Receipt.
 	 * Material Shipment Document
 	 *
@@ -2378,7 +2381,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
 
 	/**
-	 * Set Material-Vorgang-ID.
+	 * Set Material Tracking ID.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2387,7 +2390,7 @@ public interface I_C_Invoice_Candidate
 	void setM_Material_Tracking_ID (int M_Material_Tracking_ID);
 
 	/**
-	 * Get Material-Vorgang-ID.
+	 * Get Material Tracking ID.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2399,8 +2402,8 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_M_Material_Tracking_ID = "M_Material_Tracking_ID";
 
 	/**
-	 * Set Version Preisliste.
-	 * Bezeichnet eine einzelne Version der Preisliste
+	 * Set Price List Version.
+	 * Identifies a unique instance of a Price List
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2409,8 +2412,8 @@ public interface I_C_Invoice_Candidate
 	void setM_PriceList_Version_ID (int M_PriceList_Version_ID);
 
 	/**
-	 * Get Version Preisliste.
-	 * Bezeichnet eine einzelne Version der Preisliste
+	 * Get Price List Version.
+	 * Identifies a unique instance of a Price List
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2531,8 +2534,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_NetAmtInvoiced = "NetAmtInvoiced";
 
 	/**
-	 * Set zu berechn. Betrag.
-	 * Bezeichnet den netto-Geldbetrag, der für den jeweiligen Rechnungskandidaten aktuell bei einem Rechnungslauf in Rechnung gestellt würde.
+	 * Set Net Amount to Invoice.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -2541,8 +2543,7 @@ public interface I_C_Invoice_Candidate
 	void setNetAmtToInvoice (@Nullable BigDecimal NetAmtToInvoice);
 
 	/**
-	 * Get zu berechn. Betrag.
-	 * Bezeichnet den netto-Geldbetrag, der für den jeweiligen Rechnungskandidaten aktuell bei einem Rechnungslauf in Rechnung gestellt würde.
+	 * Get Net Amount to Invoice.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -2688,7 +2689,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_PriceActual = "PriceActual";
 
 	/**
-	 * Set Preis Eff. Netto.
+	 * Set Price net eff..
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -2697,7 +2698,7 @@ public interface I_C_Invoice_Candidate
 	void setPriceActual_Net_Effective (@Nullable BigDecimal PriceActual_Net_Effective);
 
 	/**
-	 * Get Preis Eff. Netto.
+	 * Get Price net eff..
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -2709,8 +2710,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_PriceActual_Net_Effective = "PriceActual_Net_Effective";
 
 	/**
-	 * Set Einzelpreis abw..
-	 * Effektiver Preis
+	 * Set Price eff. override.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -2719,8 +2719,7 @@ public interface I_C_Invoice_Candidate
 	void setPriceActual_Override (@Nullable BigDecimal PriceActual_Override);
 
 	/**
-	 * Get Einzelpreis abw..
-	 * Effektiver Preis
+	 * Get Price eff. override.
 	 *
 	 * <br>Type: CostPrice
 	 * <br>Mandatory: false
@@ -2838,7 +2837,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Verarbeitet (System).
+	 * Set Invoiced completely.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2847,7 +2846,7 @@ public interface I_C_Invoice_Candidate
 	void setProcessed_Calc (boolean Processed_Calc);
 
 	/**
-	 * Get Verarbeitet (System).
+	 * Get Invoiced completely.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -2859,7 +2858,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_Processed_Calc = "Processed_Calc";
 
 	/**
-	 * Set Verarbeitet abw..
+	 * Set Invoiced completely override.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -2868,7 +2867,7 @@ public interface I_C_Invoice_Candidate
 	void setProcessed_Override (@Nullable java.lang.String Processed_Override);
 
 	/**
-	 * Get Verarbeitet abw..
+	 * Get Invoiced completely override.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -3083,7 +3082,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QtyOrdered = "QtyOrdered";
 
 	/**
-	 * Set QtyOrderedOverUnder.
+	 * Set Over-/ Under Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -3092,7 +3091,7 @@ public interface I_C_Invoice_Candidate
 	void setQtyOrderedOverUnder (@Nullable BigDecimal QtyOrderedOverUnder);
 
 	/**
-	 * Get QtyOrderedOverUnder.
+	 * Get Over-/ Under Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -3167,7 +3166,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QtyToInvoice = "QtyToInvoice";
 
 	/**
-	 * Set Zu berechn. Menge vor Qualitätsabzug.
+	 * Set Invoice Qty before Quality Discount.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -3176,7 +3175,7 @@ public interface I_C_Invoice_Candidate
 	void setQtyToInvoiceBeforeDiscount (BigDecimal QtyToInvoiceBeforeDiscount);
 
 	/**
-	 * Get Zu berechn. Menge vor Qualitätsabzug.
+	 * Get Invoice Qty before Quality Discount.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -3272,8 +3271,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QtyToInvoiceInUOM_Override = "QtyToInvoiceInUOM_Override";
 
 	/**
-	 * Set Zu berechn. Menge abw..
-	 * Der Benutzer kann eine abweichende zu berechnede Menge angeben. Diese wird bei der nächsten Aktualisierung des Rechnungskandidaten berücksichtigt.
+	 * Set Qty to invoice override.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -3282,8 +3280,7 @@ public interface I_C_Invoice_Candidate
 	void setQtyToInvoice_Override (@Nullable BigDecimal QtyToInvoice_Override);
 
 	/**
-	 * Get Zu berechn. Menge abw..
-	 * Der Benutzer kann eine abweichende zu berechnede Menge angeben. Diese wird bei der nächsten Aktualisierung des Rechnungskandidaten berücksichtigt.
+	 * Get Qty to invoice override.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -3295,8 +3292,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QtyToInvoice_Override = "QtyToInvoice_Override";
 
 	/**
-	 * Set Zu berechn. Menge abw. erl..
-	 * Angabe über den Teil der abweichenden Menge, der bereits in Rechnung gestellt wurde
+	 * Set Qty to Invoice override fulfilled.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -3305,8 +3301,7 @@ public interface I_C_Invoice_Candidate
 	void setQtyToInvoice_OverrideFulfilled (@Nullable BigDecimal QtyToInvoice_OverrideFulfilled);
 
 	/**
-	 * Get Zu berechn. Menge abw. erl..
-	 * Angabe über den Teil der abweichenden Menge, der bereits in Rechnung gestellt wurde
+	 * Get Qty to Invoice override fulfilled.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -3318,8 +3313,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QtyToInvoice_OverrideFulfilled = "QtyToInvoice_OverrideFulfilled";
 
 	/**
-	 * Set Minderwertige Menge.
-	 * Mengen-Summe der zugeordneten Lieferzeilen, die mit "im Disput" markiert sind und nicht fakturiert werden sollen.
+	 * Set Qty with Issues.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -3328,8 +3322,7 @@ public interface I_C_Invoice_Candidate
 	void setQtyWithIssues (@Nullable BigDecimal QtyWithIssues);
 
 	/**
-	 * Get Minderwertige Menge.
-	 * Mengen-Summe der zugeordneten Lieferzeilen, die mit "im Disput" markiert sind und nicht fakturiert werden sollen.
+	 * Get Qty with Issues.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -3341,8 +3334,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QtyWithIssues = "QtyWithIssues";
 
 	/**
-	 * Set Minderwertige Menge eff..
-	 * Liefermenge, die nicht fakturiert wird soll. Der Wert weicht von "Minderwertige Menge" ab, wenn ein abweichender "Qualitätsabzug %" Wert gesetzt wurde.
+	 * Set Qty with Issues eff..
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -3351,8 +3343,7 @@ public interface I_C_Invoice_Candidate
 	void setQtyWithIssues_Effective (@Nullable BigDecimal QtyWithIssues_Effective);
 
 	/**
-	 * Get Minderwertige Menge eff..
-	 * Liefermenge, die nicht fakturiert wird soll. Der Wert weicht von "Minderwertige Menge" ab, wenn ein abweichender "Qualitätsabzug %" Wert gesetzt wurde.
+	 * Get Qty with Issues eff..
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -3364,7 +3355,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QtyWithIssues_Effective = "QtyWithIssues_Effective";
 
 	/**
-	 * Set Qualitätsabzug %.
+	 * Set Qualitydiscount %.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -3373,7 +3364,7 @@ public interface I_C_Invoice_Candidate
 	void setQualityDiscountPercent (@Nullable BigDecimal QualityDiscountPercent);
 
 	/**
-	 * Get Qualitätsabzug %.
+	 * Get Qualitydiscount %.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -3408,7 +3399,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QualityDiscountPercent_Effective = "QualityDiscountPercent_Effective";
 
 	/**
-	 * Set Qualitätsabzug % abw..
+	 * Set Quality Discount % override.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -3417,7 +3408,7 @@ public interface I_C_Invoice_Candidate
 	void setQualityDiscountPercent_Override (@Nullable BigDecimal QualityDiscountPercent_Override);
 
 	/**
-	 * Get Qualitätsabzug % abw..
+	 * Get Quality Discount % override.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -3429,7 +3420,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QualityDiscountPercent_Override = "QualityDiscountPercent_Override";
 
 	/**
-	 * Set Qualitätsabzug % (WED).
+	 * Set Quality Discount %.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -3440,7 +3431,7 @@ public interface I_C_Invoice_Candidate
 	void setQualityDiscountPercent_ReceiptSchedule (@Nullable BigDecimal QualityDiscountPercent_ReceiptSchedule);
 
 	/**
-	 * Get Qualitätsabzug % (WED).
+	 * Get Quality Discount %.
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -3475,7 +3466,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QualityInvoiceLineGroupType = "QualityInvoiceLineGroupType";
 
 	/**
-	 * Set Qualitäts-Notiz (WED).
+	 * Set Quality Note.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -3486,7 +3477,7 @@ public interface I_C_Invoice_Candidate
 	void setQualityNote_ReceiptSchedule (@Nullable java.lang.String QualityNote_ReceiptSchedule);
 
 	/**
-	 * Get Qualitäts-Notiz (WED).
+	 * Get Quality Note.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -3500,7 +3491,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QualityNote_ReceiptSchedule = "QualityNote_ReceiptSchedule";
 
 	/**
-	 * Set ReasonDiscount.
+	 * Set Quality Discount Reason.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -3509,7 +3500,7 @@ public interface I_C_Invoice_Candidate
 	void setReasonDiscount (@Nullable java.lang.String ReasonDiscount);
 
 	/**
-	 * Get ReasonDiscount.
+	 * Get Quality Discount Reason.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -3544,8 +3535,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
-	 * Set Status nach Akt..
-	 * Informationen des Aktualisierungsprozesses
+	 * Set Update Status.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -3554,8 +3544,7 @@ public interface I_C_Invoice_Candidate
 	void setSchedulerResult (@Nullable java.lang.String SchedulerResult);
 
 	/**
-	 * Get Status nach Akt..
-	 * Informationen des Aktualisierungsprozesses
+	 * Get Update Status.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -3567,7 +3556,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_SchedulerResult = "SchedulerResult";
 
 	/**
-	 * Set Restbetrag.
+	 * Set Split Amount.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
@@ -3576,7 +3565,7 @@ public interface I_C_Invoice_Candidate
 	void setSplitAmt (BigDecimal SplitAmt);
 
 	/**
-	 * Get Restbetrag.
+	 * Get Split Amount.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: true
@@ -3612,7 +3601,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_StockingUOM_ID = "StockingUOM_ID";
 
 	/**
-	 * Set Total des Auftrags.
+	 * Set Total of Order.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -3623,7 +3612,7 @@ public interface I_C_Invoice_Candidate
 	void setTotalOfOrder (@Nullable BigDecimal TotalOfOrder);
 
 	/**
-	 * Get Total des Auftrags.
+	 * Get Total of Order.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -3637,7 +3626,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_TotalOfOrder = "TotalOfOrder";
 
 	/**
-	 * Set Auftrag Total ohne Rabatt.
+	 * Set Order Total without Discount.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
@@ -3648,7 +3637,7 @@ public interface I_C_Invoice_Candidate
 	void setTotalOfOrderExcludingDiscount (@Nullable BigDecimal TotalOfOrderExcludingDiscount);
 
 	/**
-	 * Get Auftrag Total ohne Rabatt.
+	 * Get Order Total without Discount.
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false

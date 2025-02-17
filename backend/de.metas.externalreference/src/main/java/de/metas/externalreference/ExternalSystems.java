@@ -41,6 +41,7 @@ public class ExternalSystems
 		registerExternalSystem(WoocommerceExternalSystem.WOOCOMMERCE);
 		registerExternalSystem(GRSSignumExternalSystem.GRSSIGNUM);
 		registerExternalSystem(LeichUndMehlExternalSystem.LEICHUNDMEHL);
+		registerExternalSystem(PCMExternalSystem.PROCAREMANAGEMENT);
 	}
 
 	private final Map<String, IExternalSystem> systemsByCode = new HashMap<>();

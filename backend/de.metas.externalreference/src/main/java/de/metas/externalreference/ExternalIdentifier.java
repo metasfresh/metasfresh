@@ -96,11 +96,11 @@ public class ExternalIdentifier
 	}
 
 	@NonNull
-	public static ExternalIdentifier of(@NonNull final String identifier)
+	public static Optional<ExternalIdentifier> ofIdentifierCandidate(@NonNull final String identifier)
 	{
 		if (Type.METASFRESH_ID.pattern.matcher(identifier).matches())
 		{
-			return new ExternalIdentifier(Type.METASFRESH_ID, identifier, null);
+			return Optional.of(new ExternalIdentifier(Type.METASFRESH_ID, identifier, null));
 		}
 
 		final Matcher externalReferenceMatcher = Type.EXTERNAL_REFERENCE.pattern.matcher(identifier);
@@ -113,24 +113,31 @@ public class ExternalIdentifier
 					.value(externalReferenceMatcher.group(2))
 					.build();
 
-			return new ExternalIdentifier(Type.EXTERNAL_REFERENCE, identifier, valueAndSystem);
+			return Optional.of(new ExternalIdentifier(Type.EXTERNAL_REFERENCE, identifier, valueAndSystem));
 		}
 
 		final Matcher glnMatcher = Type.GLN.pattern.matcher(identifier);
 		if (glnMatcher.matches())
 		{
-			return new ExternalIdentifier(Type.GLN, identifier, null);
+			return Optional.of(new ExternalIdentifier(Type.GLN, identifier, null));
 		}
 
 		final Matcher valMatcher = Type.VALUE.pattern.matcher(identifier);
 		if (valMatcher.matches())
 		{
-			return new ExternalIdentifier(Type.VALUE, identifier, null);
+			return Optional.of(new ExternalIdentifier(Type.VALUE, identifier, null));
 		}
-
-		throw new AdempiereException("Unknown externalId type!")
-				.appendParametersToMessage()
-				.setParameter("externalId", identifier);
+		
+		return Optional.empty();
+	}
+	
+	@NonNull
+	public static ExternalIdentifier of(@NonNull final String identifier)
+	{
+		return ofIdentifierCandidate(identifier)
+				.orElseThrow(() -> new AdempiereException("Unknown externalId type!")
+						.appendParametersToMessage()
+						.setParameter("externalId", identifier));
 	}
 
 	@NonNull

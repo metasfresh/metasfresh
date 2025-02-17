@@ -20,6 +20,7 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.function.Consumer;
@@ -64,7 +65,7 @@ public class FlatrateTermRefund_Handler
 	 * @return an empty iterator; invoice candidates that need to be there are created from {@link CandidateAssignmentService}.
 	 */
 	@Override
-	public Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(final QueryLimit limit_IGNORED)
+	public Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(@Nullable final QueryLimit limit_IGNORED)
 	{
 		return ImmutableList
 				.<I_C_Flatrate_Term> of()
@@ -73,7 +74,7 @@ public class FlatrateTermRefund_Handler
 
 	@NonNull
 	@Override
-	public CandidatesAutoCreateMode isMissingInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)
+	public CandidatesAutoCreateMode isMissingInvoiceCandidate(@Nullable final I_C_Flatrate_Term flatrateTerm)
 	{
 		return CandidatesAutoCreateMode.DONT;
 	}
@@ -102,7 +103,7 @@ public class FlatrateTermRefund_Handler
 	}
 
 	/**
-	 * @return {@link PriceAndTax#NONE} because the tax remains unchanged and the price is updated in {@link de.metas.contracts.CandidateAssignmentServive}.
+	 * @return {@link PriceAndTax#NONE} because the tax remains unchanged and the price is updated in {@link CandidateAssignmentService}.
 	 */
 	@Override
 	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate invoiceCandidateRecord)
@@ -112,7 +113,7 @@ public class FlatrateTermRefund_Handler
 
 	@Override
 	public Consumer<I_C_Invoice_Candidate> getInvoiceScheduleSetterFunction(
-			final Consumer<I_C_Invoice_Candidate> IGNORED_defaultImplementation)
+			@Nullable final Consumer<I_C_Invoice_Candidate> IGNORED_defaultImplementation)
 	{
 		return ic -> {
 

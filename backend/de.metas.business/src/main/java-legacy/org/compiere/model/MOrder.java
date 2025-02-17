@@ -1523,6 +1523,7 @@ public class MOrder extends X_C_Order implements IDocument
 					newOTax.setC_Tax_ID(cTax.getC_Tax_ID());
 					newOTax.setPrecision(taxPrecision.toInt());
 					newOTax.setIsTaxIncluded(taxIncluded);
+					newOTax.setIsDocumentLevel(cTax.isDocumentLevel());
 					newOTax.setTaxBaseAmt(oTax.getTaxBaseAmt());
 					newOTax.setTaxAmt(taxAmt);
 					if (!newOTax.save(trxName))

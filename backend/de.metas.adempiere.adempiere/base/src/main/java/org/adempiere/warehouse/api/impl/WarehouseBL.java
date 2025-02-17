@@ -41,8 +41,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.CreateWarehouseRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.adempiere.warehouse.api.Warehouse;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -244,7 +246,7 @@ public class WarehouseBL implements IWarehouseBL
 	{
 		return warehouseDAO.getLocatorIdsByRepoIds(locatorRepoIds);
 	}
-	
+
 	@Override
 	public I_M_Locator getLocatorByRepoId(final int locatorRepoId)
 	{
@@ -273,10 +275,10 @@ public class WarehouseBL implements IWarehouseBL
 
 	private void updateWarehouseLocation(@NonNull final WarehouseId warehouseId, @NonNull final LocationId locationId)
 	{
-		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
+		final I_M_Warehouse warehouse = warehouseDAO.getByIdInTrx(warehouseId, I_M_Warehouse.class);
 		warehouse.setC_Location_ID(locationId.getRepoId());
 
-		save(warehouse);
+		InterfaceWrapperHelper.save(warehouse);
 	}
 
 	@NonNull
@@ -285,6 +287,32 @@ public class WarehouseBL implements IWarehouseBL
 		final I_M_Locator locator = getLocatorByRepoId(locatorId);
 
 		return WarehouseId.ofRepoId(locator.getM_Warehouse_ID());
+	}
+
+	@NonNull
+	public Optional<WarehouseId> getOptionalIdByValue(@NonNull final String value)
+	{
+		return warehouseDAO.getOptionalIdByValue(value);
+	}
+
+	@NonNull
+	public Warehouse getByIdNotNull(@NonNull final WarehouseId id)
+	{
+		return warehouseDAO.getOptionalById(id)
+				.orElseThrow(() -> new AdempiereException("No warehouse found for ID !")
+						.appendParametersToMessage()
+						.setParameter("WarehouseId", id));
+	}
+
+	public void save(@NonNull final Warehouse warehouse)
+	{
+		warehouseDAO.save(warehouse);
+	}
+
+	@NonNull
+	public Warehouse createWarehouse(@NonNull final CreateWarehouseRequest request)
+	{
+		return warehouseDAO.createWarehouse(request);
 	}
 
 	@Override

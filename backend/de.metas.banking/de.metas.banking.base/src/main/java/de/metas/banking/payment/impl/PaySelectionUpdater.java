@@ -434,7 +434,7 @@ public class PaySelectionUpdater implements IPaySelectionUpdater
 		final BigDecimal payDiscountAmt = rs.getBigDecimal("DiscountAmt");
 		candidateBuilder.setDiscountAmt(payDiscountAmt);
 
-		final boolean isSOTrx = DisplayType.toBoolean(rs.getString("IsSOTrx"), false);
+		final boolean isSOTrx = DisplayType.toBooleanNonNull(rs.getString("IsSOTrx"), false);
 		candidateBuilder.setIsSOTrx(isSOTrx);
 
 		final int bpartnerId = rs.getInt("C_BPartner_ID");

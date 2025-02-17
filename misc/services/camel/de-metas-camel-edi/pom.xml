@@ -15,8 +15,8 @@
     <version>10.0.0</version>
     <properties>
         <java.version>14</java.version>
-        <spring-boot.version>2.6.3</spring-boot.version>
-        <camel.version>3.14.1</camel.version>
+        <spring-boot.version>2.7.11</spring-boot.version>
+        <camel.version>3.14.7</camel.version>
         <guava.version>30.1.1-jre</guava.version>
         <smooks-cartridge.version>2.0.0-M3</smooks-cartridge.version>
         <jackson.version>2.13.1</jackson.version>
@@ -86,6 +86,7 @@
             <version>${metasfresh-common.version}</version>
             <!-- Avoid startup failure
              org.springframework.context.ApplicationContextException: Failed to start bean 'documentationPluginsBootstrapper'; nested exception is java.lang.NullPointerException: Cannot invoke "org.springframework.web.servlet.mvc.condition.PatternsRequestCondition.getPatterns()" because "this.condition" is null
+             Please revise this exclusion when the rest of MF also runs with java-17 or later
             -->
             <exclusions>
                 <exclusion>
