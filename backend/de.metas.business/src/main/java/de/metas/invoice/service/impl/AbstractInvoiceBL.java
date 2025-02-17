@@ -1341,11 +1341,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 			if (stdTax != null)
 			{
-				log.debug("stdTax rate is {}", stdTax.getRate());
-				log.debug("invoiceTax rate is {}", invoiceTax.getRate());
-
-				taxThisAmt = taxThisAmt.add(taxBL.calculateTaxAmt(invoiceTax, lineNetAmt, isTaxIncluded, taxPrecision.toInt()));
-				taxStdAmt = taxThisAmt.add(taxBL.calculateTaxAmt(stdTax, lineNetAmt, isTaxIncluded, taxPrecision.toInt()));
+				if (invoiceTax != null)
+				{
+					taxThisAmt = taxThisAmt.add(invoiceTax.calculateTax(lineNetAmt, isTaxIncluded, taxPrecision.toInt()).getTaxAmount());
+				}
+				taxStdAmt = taxThisAmt.add(stdTax.calculateTax(lineNetAmt, isTaxIncluded, taxPrecision.toInt()).getTaxAmount());
 
 				lineNetAmt = lineNetAmt.subtract(taxStdAmt).add(taxThisAmt);
 
