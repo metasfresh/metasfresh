@@ -64,7 +64,7 @@ DECLARE
     --
     v_result              CurrentCostPrice;
 BEGIN
-    RAISE NOTICE 'getCurrentCostInfo: p_M_Product_ID=%, p_C_UOM_ID=%, p_Date=%, p_AcctSchema_ID=%, p_M_CostElement_ID=%, p_AD_Client_ID=%, p_AD_Org_ID=%',
+    RAISE DEBUG 'getCurrentCostInfo: p_M_Product_ID=%, p_C_UOM_ID=%, p_Date=%, p_AcctSchema_ID=%, p_M_CostElement_ID=%, p_AD_Client_ID=%, p_AD_Org_ID=%',
         p_M_Product_ID, p_C_UOM_ID, p_Date, p_AcctSchema_ID, p_M_CostElement_Id, p_AD_Client_ID, p_AD_Org_ID;
 
     --
@@ -76,10 +76,10 @@ BEGIN
              INNER JOIN m_product_category_acct pca ON pca.m_product_category_id = p.m_product_category_id AND pca.c_acctschema_id = p_AcctSchema_ID
              INNER JOIN c_acctschema cas ON cas.c_acctschema_id = pca.c_acctschema_id
     WHERE p.m_product_id = p_M_Product_ID;
-    RAISE NOTICE 'Context: %', v_context;
+    RAISE DEBUG 'Context: %', v_context;
     --
     IF (v_context IS NULL) THEN
-        RAISE WARNING 'No info found for M_Product_ID=%, C_AcctSchema_ID=%', p_M_Product_ID, p_AcctSchema_ID;
+        RAISE DEBUG 'No info found for M_Product_ID=%, C_AcctSchema_ID=%', p_M_Product_ID, p_AcctSchema_ID;
         RETURN NULL;
     END IF;
 
@@ -93,7 +93,7 @@ BEGIN
     ELSE
         RAISE EXCEPTION 'Costing level not handled: %', v_context.costinglevel;
     END IF;
-    RAISE NOTICE 'v_ad_org_id_effective=%', v_ad_org_id_effective;
+    RAISE DEBUG 'v_ad_org_id_effective=%', v_ad_org_id_effective;
 
 
     --
@@ -143,7 +143,7 @@ BEGIN
                     p_priceprecision := v_costdetail.costingprecision);
         END IF;
 
-        RAISE NOTICE 'Calculated cost price from cost detail: % (CD=%, p_C_UOM_ID=%)', v_result, v_costdetail, p_C_UOM_ID;
+        RAISE DEBUG 'Calculated cost price from cost detail: % (CD=%, p_C_UOM_ID=%)', v_result, v_costdetail, p_C_UOM_ID;
         RETURN v_result;
     END IF;
 
@@ -189,13 +189,13 @@ BEGIN
                     p_priceprecision := v_cost.costingprecision);
         END IF;
 
-        RAISE NOTICE 'Calculated cost price from M_Cost: % (C=%, p_C_UOM_ID=%)', v_result, v_cost, p_C_UOM_ID;
+        RAISE DEBUG 'Calculated cost price from M_Cost: % (C=%, p_C_UOM_ID=%)', v_result, v_cost, p_C_UOM_ID;
         RETURN v_result;
     END IF;
 
     --
     -- Nothing found, shall not happen
-    RAISE WARNING 'No cost price found. Returning null';
+    RAISE DEBUG 'No cost price found. Returning null';
     RETURN NULL;
 END
 $$
