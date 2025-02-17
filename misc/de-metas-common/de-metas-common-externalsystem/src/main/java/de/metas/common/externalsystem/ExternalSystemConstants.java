@@ -183,15 +183,6 @@ public class ExternalSystemConstants
 	public static final String PARAM_TARGET_DIRECTORY = "TargetDirectory";
 	public static final String PARAM_PRINTING_QUEUE_ID = "PrintingQueueId";
 
-	public static final String PARAM_LOCAL_FILE_ROOT_LOCATION = "LocalFileRootLocation";
-	public static final String PARAM_LOCAL_FILE_PROCESSED_DIRECTORY = "LocalFileProcessedDirectory";
-	public static final String PARAM_LOCAL_FILE_ERRORED_DIRECTORY = "LocalFileErroredDirectory";
-	public static final String PARAM_LOCAL_FILE_POLLING_FREQUENCY_MS = "LocalFilePollingFrequencyInMs";
-
-	public static final String PARAM_LOCAL_FILE_PRODUCT_FILE_NAME_PATTERN = "LocalFileProductFileNamePattern";
-
-	public static final String PARAM_LOCAL_FILE_BPARTNER_FILE_NAME_PATTERN = "LocalFilePartnerFileNamePattern";
-
 	public static final String PARAM_LOCAL_FILE_WAREHOUSE_FILE_NAME_PATTERN = "LocalFileWarehouseFileNamePattern";
 
 	public static final String PARAM_LOCAL_FILE_PURCHASE_ORDER_FILE_NAME_PATTERN = "LocalFilePurchaseOrderFileNamePattern";
