@@ -46,7 +46,6 @@ import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
-import de.metas.handlingunits.model.I_M_InventoryLine_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryId;
@@ -302,16 +301,6 @@ public class M_Inventory_StepDef
 
 		saveRecord(inventoryLine);
 
-		row.getAsOptionalIdentifier(de.metas.handlingunits.model.I_M_InventoryLine.COLUMNNAME_M_HU_ID)
-				.map(huTable::getId)
-				.ifPresent(huId -> {
-							final de.metas.handlingunits.model.I_M_InventoryLine inventoryLineHuRecord = InterfaceWrapperHelper.create(inventoryLine, de.metas.handlingunits.model.I_M_InventoryLine.class);
-
-							inventoryLineHuRecord.setM_HU_ID(huId.getRepoId());
-							saveRecord(inventoryLineHuRecord);
-							createM_InventoryLine_HU(huId, uomId, inventoryLine);
-						}
-				);
 		row.getAsOptionalIdentifier().ifPresent(identifier -> inventoryLineTable.put(identifier, inventoryLine));
 
 		return inventoryLine;
@@ -320,18 +309,6 @@ public class M_Inventory_StepDef
 	private static boolean isInboundTrx(final I_M_InventoryLine inventoryLine)
 	{
 		return inventoryLine.getQtyCount().subtract(inventoryLine.getQtyBook()).signum() >= 0;
-	}
-
-	private void createM_InventoryLine_HU(@NonNull final HuId huId, @NonNull final UomId uomId, @NonNull final I_M_InventoryLine inventoryLine)
-	{
-		final I_M_InventoryLine_HU lineHU = newInstance(I_M_InventoryLine_HU.class, inventoryLine);
-
-		lineHU.setM_Inventory_ID(inventoryLine.getM_Inventory_ID());
-		lineHU.setM_InventoryLine_ID(inventoryLine.getM_InventoryLine_ID());
-		lineHU.setM_HU_ID(huId.getRepoId());
-		lineHU.setC_UOM_ID(uomId.getRepoId());
-
-		saveRecord(lineHU);
 	}
 
 	private void createM_Inventory(@NonNull final DataTableRow row)
