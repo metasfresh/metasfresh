@@ -513,7 +513,7 @@ public class ExportHelper
 			for (final PO instance : instances)
 			{
 				final Element embeddedElement = outDocument.createElement(formatLine.getValue());
-				if (formatLine.getDescription() != null && !"".equals(formatLine.getDescription()))
+				if (Check.isNotBlank(formatLine.getDescription()))
 				{
 					embeddedElement.appendChild(outDocument.createComment(formatLine.getDescription()));
 				}
@@ -599,7 +599,7 @@ public class ExportHelper
 			log.debug("Embedded: Table={}, KeyColumName={}", embeddedTableName, embeddedKeyColumnName);
 
 			final StringBuilder whereClause = new StringBuilder().append(embeddedKeyColumnName).append("=?");
-			if (!Check.isEmpty(embeddedFormat.getWhereClause()))
+			if (Check.isNotBlank(embeddedFormat.getWhereClause()))
 			{
 				whereClause.append(" AND ").append(embeddedFormat.getWhereClause());
 			}
