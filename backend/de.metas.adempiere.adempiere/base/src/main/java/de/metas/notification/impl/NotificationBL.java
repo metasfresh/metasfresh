@@ -110,7 +110,7 @@ public class NotificationBL implements INotificationBL
 	}
 
 	@Override
-	public UserNotificationsConfig getUserNotificationsConfig(final UserId adUserId)
+	public @NonNull UserNotificationsConfig getUserNotificationsConfig(final UserId adUserId)
 	{
 		//to avoid cyclic dependency
 		return SpringContextHolder.instance.getBean(UserNotificationsConfigService.class).getByUserId(adUserId);

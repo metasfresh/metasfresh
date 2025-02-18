@@ -32,6 +32,7 @@ import de.metas.i18n.impl.NullModelTranslationMap;
 import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
@@ -390,7 +391,7 @@ public class InterfaceWrapperHelper
 		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
 		return loadByIds(ids, modelClass, ITrx.TRXNAME_ThreadInherited, UnaryOperator.identity());
 	}
-	
+
 	public static <RT, MT> List<MT> loadByRepoIdAwares(@NonNull final Set<? extends RepoIdAware> repoIdAwares, @NonNull final Class<RT> modelClass, @NonNull Function<RT, MT> modelMapper)
 	{
 		final ImmutableSet<Integer> ids = RepoIdAwares.asRepoIdsSet(repoIdAwares);
@@ -1201,6 +1202,14 @@ public class InterfaceWrapperHelper
 		final ClientId clientId = getClientId(model).orElseThrow(() -> new AdempiereException("Cannot determine AD_Client_ID from " + model));
 		final OrgId orgId = getOrgId(model).orElseThrow(() -> new AdempiereException("Cannot determine AD_Org_ID from " + model));
 		return ClientAndOrgId.ofClientAndOrg(clientId, orgId);
+	}
+
+	@NonNull
+	public static UserId getUpdatedBy(@NonNull final Object model)
+	{
+		return getValue(model, "UpdatedBy")
+				.map(userIdObj -> RepoIdAwares.ofObject(userIdObj, UserId.class))
+				.orElseThrow(() -> new AdempiereException("Cannot determine UpdatedBy from " + model));
 	}
 
 	public static <T> T getValueByColumnId(@NonNull final Object model, @NonNull final AdColumnId adColumnId)
