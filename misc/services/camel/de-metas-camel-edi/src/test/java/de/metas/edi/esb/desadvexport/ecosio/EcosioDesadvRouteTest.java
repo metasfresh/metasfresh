@@ -32,7 +32,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
-import org.xmlunit.assertj.XmlAssert;
+import org.xmlunit.assertj3.XmlAssert;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -156,8 +156,8 @@ class EcosioDesadvRouteTest extends CamelTestSupport
 		// then
 		fileOutputEndpoint.expectedMessageCount(1);
 		fileOutputEndpoint.assertIsSatisfied(1000);
-		final var desadvOutput = fileOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
+		final String desadvOutput = fileOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
 
-		XmlAssert.assertThat(desadvOutput).and(new File(expectedOutputPath)).ignoreChildNodesOrder().areSimilar();
+		XmlAssert.assertThat(desadvOutput).and(new File(expectedOutputPath)).ignoreChildNodesOrder().ignoreComments().areSimilar();
 	}
 }
