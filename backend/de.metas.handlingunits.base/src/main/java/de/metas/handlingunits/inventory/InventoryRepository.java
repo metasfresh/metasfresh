@@ -121,7 +121,7 @@ public class InventoryRepository
 		return getInventoryLineRecordById(inventoryLine.getId());
 	}
 
-	private ImmutableSet getInventoryLinesByIDs(@Nullable final Set<InventoryLineId> inventoryLineIds)
+	private ImmutableSet<I_M_InventoryLine> getInventoryLinesByIDs(@Nullable final Set<InventoryLineId> inventoryLineIds)
 	{
 		return loadByRepoIdAwares(inventoryLineIds, I_M_InventoryLine.class)
 				.stream()
