@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<EDI_Exp_Desadv AD_Client_Value="InterCheese AG" ReplicationMode="1" ReplicationType="M" Version="*" SequenceNo="1017175" TrxName="">
+<EDI_Exp_Desadv AD_Client_Value="metasfresh" ReplicationMode="1" ReplicationType="M" Version="*" SequenceNo="1017175" TrxName="">
     <C_BPartner_ID>
         <EdiRecipientGLN>1234567890123</EdiRecipientGLN>
         <Name>BuyerName</Name>

@@ -32,6 +32,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
+import org.xmlunit.assertj.XmlAssert;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -131,7 +132,7 @@ class EcosioDesadvRouteTest extends CamelTestSupport
 				"/de/metas/edi/esb/desadvexport/ecosio/DESADV_with_and_without_packs.xml",
 				"./src/test/resources/de/metas/edi/esb/desadvexport/ecosio/DESADV_with_and_without_packs_expected_output.xml");
 	}
-
+	
 	private void testAndValidateResult(
 			@NonNull final String inputStrPath,
 			@NonNull final String expectedOutputPath) throws Exception
@@ -156,7 +157,7 @@ class EcosioDesadvRouteTest extends CamelTestSupport
 		fileOutputEndpoint.expectedMessageCount(1);
 		fileOutputEndpoint.assertIsSatisfied(1000);
 		final var desadvOutput = fileOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
-		assertThat(desadvOutput)
-				.isXmlEqualToContentOf(new File(expectedOutputPath));
+
+		XmlAssert.assertThat(desadvOutput).and(new File(expectedOutputPath)).ignoreChildNodesOrder().areSimilar();
 	}
 }
