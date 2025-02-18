@@ -28,6 +28,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -36,6 +38,8 @@ import de.metas.event.log.EventLogEntryCollector;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
+import de.metas.util.RawMapDeserializer;
+import de.metas.util.RawMapSerializer;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -79,6 +83,8 @@ public class Event
 	@JsonProperty("properties")
 	@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@JsonSerialize(using = RawMapSerializer.class)
+	@JsonDeserialize(using = RawMapDeserializer.class)
 	ImmutableMap<String, Object> properties;
 
 	@JsonProperty("uuid")

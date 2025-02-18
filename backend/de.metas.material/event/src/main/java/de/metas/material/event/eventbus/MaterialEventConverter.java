@@ -6,6 +6,10 @@ import de.metas.util.JSONObjectMapper;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+
+import static de.metas.util.RawMapSerializer.RAW_PROPERTY_SUFFIX;
+
 /*
  * #%L
  * metasfresh-material-event
@@ -32,12 +36,11 @@ import org.springframework.stereotype.Service;
  * Converts {@link Event}s to {@link MaterialEvent}s and vice versa.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Service
 public class MaterialEventConverter
 {
-	private static final String PROPERTY_MATERIAL_EVENT = "MaterialEvent";
+	private static final String PROPERTY_MATERIAL_EVENT = "MaterialEvent" + RAW_PROPERTY_SUFFIX;
 
 	private final JSONObjectMapper<MaterialEvent> jsonObjectMapper;
 
@@ -48,9 +51,21 @@ public class MaterialEventConverter
 
 	public MaterialEvent toMaterialEvent(@NonNull final Event metasfreshEvent)
 	{
-		final String materialEventStr = metasfreshEvent.getProperty(PROPERTY_MATERIAL_EVENT);
+		final Object materialEventObj = metasfreshEvent.getProperty(PROPERTY_MATERIAL_EVENT);
 
-		return jsonObjectMapper.readValue(materialEventStr);
+		if (materialEventObj instanceof Map)
+		{
+			@SuppressWarnings("unchecked") final Map<String, Object> valueMap = (Map<String, Object>)materialEventObj;
+
+			// Check if the valueMap contains the "type" field for a MaterialEvent
+			if (valueMap.containsKey("type"))
+			{
+				// Deserialize the map into a MaterialEvent subclass
+				return jsonObjectMapper.convertValue(valueMap);
+			}
+		}
+
+		return null;
 	}
 
 	/**
