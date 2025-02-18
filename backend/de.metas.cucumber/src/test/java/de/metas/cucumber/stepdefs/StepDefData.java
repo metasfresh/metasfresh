@@ -97,7 +97,7 @@ public abstract class StepDefData<T>
 	{
 		final RecordDataItem<T> recordDataItem = newRecordDataItem(newRecord);
 
-		assertNotAlreadyMappedToOtherIdentifier(identifier, newRecord);
+		assertNotAlreadyMappedToOtherIdentifier(identifier, newRecord, null);
 
 		final RecordDataItem<T> oldRecord = records.put(identifier, recordDataItem);
 		assertThat(oldRecord)
