@@ -46,14 +46,17 @@
 					<textFieldExpression><![CDATA[$R{Summary}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-20" x="430" y="0" width="77" height="12" forecolor="#000000" uuid="f3887bd5-7222-4cc3-9daa-878ed48f1acd"/>
+					<reportElement key="textField-20" x="468" y="0" width="75" height="12" forecolor="#000000" uuid="f3887bd5-7222-4cc3-9daa-878ed48f1acd">
+						<property name="com.jaspersoft.studio.unit.x" value="px"/>
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
 					<textElement textAlignment="Right" markup="none">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-20" x="493" y="0" width="47" height="12" forecolor="#000000" uuid="3d3693f0-cf03-4ab6-a228-55dea03649c0">
+					<reportElement key="textField-20" x="534" y="0" width="47" height="12" forecolor="#000000" uuid="3d3693f0-cf03-4ab6-a228-55dea03649c0">
 						<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals("Y"))]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
@@ -84,8 +87,10 @@
 )]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement key="textField-20" x="430" y="0" width="77" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
+					<reportElement key="textField-20" x="468" y="0" width="75" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
 						<property name="com.jaspersoft.studio.unit.y" value="px"/>
+						<property name="com.jaspersoft.studio.unit.x" value="px"/>
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					</reportElement>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -117,7 +122,10 @@
 		<band height="12" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean( $F{orderindex}.intValue() == 1 && $F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-20" x="430" y="0" width="77" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
+				<reportElement key="textField-20" x="468" y="0" width="75" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -130,7 +138,7 @@
 				<textFieldExpression><![CDATA[$F{taxbaseamt}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="0.0" isBlankWhenNull="true">
-				<reportElement key="textField-34" mode="Transparent" x="502" y="0" width="38" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="de5e58a7-6131-4080-b0ef-911c6a8b92a6">
+				<reportElement key="textField-34" mode="Transparent" x="543" y="0" width="38" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="de5e58a7-6131-4080-b0ef-911c6a8b92a6">
 					<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals("Y"))]]></printWhenExpression>
 				</reportElement>
 				<box>
@@ -155,7 +163,10 @@
 		<band height="12">
 			<printWhenExpression><![CDATA[new Boolean( $F{orderindex}.intValue() == 2 && $F{huline}.equals( "N" ) && $F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-20" x="430" y="0" width="77" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
+				<reportElement key="textField-20" x="468" y="0" width="75" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -222,7 +233,10 @@
 				<textFieldExpression><![CDATA[$F{taxrate}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-20" x="430" y="0" width="77" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
+				<reportElement key="textField-20" x="468" y="0" width="75" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
