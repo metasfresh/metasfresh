@@ -266,6 +266,7 @@ public class M_Inventory_StepDef
 		else
 		{
 			final HuId huId = row.getAsIdentifier(I_M_InventoryLine.COLUMNNAME_M_HU_ID).lookupIdIn(huTable);
+			assert huId != null;
 			inventoryLine.setM_HU_ID(huId.getRepoId());
 		}
 

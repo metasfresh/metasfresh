@@ -40,15 +40,9 @@ public class Report_InventoryValue_StepDef
 		SharedTestContext.put("response", InventoryValuationResponseToTabularStringConverter.toTabularString(response));
 		final InventoryValue inventoryValue = response.getSingleLine();
 
-		row.getAsOptionalBigDecimal("Qty").ifPresent(qty -> {
-			assertThat(inventoryValue.getQty()).as("Qty").isEqualByComparingTo(qty);
-		});
-		row.getAsOptionalBigDecimal("TotalAmt").ifPresent(totalAmt -> {
-			assertThat(inventoryValue.getTotalAmt()).as("TotalAmt").isEqualByComparingTo(totalAmt);
-		});
-		row.getAsOptionalBigDecimal("CostPrice").ifPresent(costPrice -> {
-			assertThat(inventoryValue.getCostPrice()).as("CostPrice").isEqualByComparingTo(costPrice);
-		});
+		row.getAsOptionalBigDecimal("Qty").ifPresent(qty -> assertThat(inventoryValue.getQty()).as("Qty").isEqualByComparingTo(qty));
+		row.getAsOptionalBigDecimal("TotalAmt").ifPresent(totalAmt -> assertThat(inventoryValue.getTotalAmt()).as("TotalAmt").isEqualByComparingTo(totalAmt));
+		row.getAsOptionalBigDecimal("CostPrice").ifPresent(costPrice -> assertThat(inventoryValue.getCostPrice()).as("CostPrice").isEqualByComparingTo(costPrice));
 	}
 
 	private InventoryValuationRequest extractInventoryValuationRequest(final DataTableRow row)

@@ -39,7 +39,6 @@ import io.cucumber.datatable.DataTable;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Setter;
-import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 
@@ -58,7 +57,6 @@ import java.util.OptionalInt;
 import java.util.function.Function;
 
 @EqualsAndHashCode
-@ToString
 public class DataTableRow
 {
 	private final int lineNo; // introduced to improve logging/debugging
