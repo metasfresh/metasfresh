@@ -71,9 +71,9 @@ BEGIN
                 -- get the sequence's next value
                 -- in case of AD_PInstance table, get the greatest _ID from both AD_PInstance and T_Selection
                 IF lower(v_record_to_process.Table_Name) = lower('AD_PInstance') THEN
-                    EXECUTE 'SELECT GREATEST(
+                    EXECUTE 'select GREATEST(
                     (select max(' || quote_ident(v_record_to_process.column_name) || ') from ' || quote_ident(v_record_to_process.Table_Name) || '), 
-                    (SELECT max(' || quote_ident(v_record_to_process.column_name) || ') from public.T_Selection)
+                    (select max(' || quote_ident(v_record_to_process.column_name) || ') from public.T_Selection)
                 )'
                         INTO v_nextid;
                 ELSE
