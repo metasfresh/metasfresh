@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/shippingorder/report" uuid="2fa464b6-5b59-45d9-8f05-3c4f9b99aa01">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -18,32 +18,26 @@
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT
-	st.AD_Org_ID,
-	st.DocStatus,
-	dt.PrintName,
-	(
-		SELECT	bpl.C_BPartner_Location_ID
-		FROM	C_BPartner_Location bpl
-		WHERE 	bp.C_BPartner_ID = bpl.C_BPartner_ID AND bpl.isActive = 'Y'
-		ORDER BY 	isbilltodefault DESC, isbillto DESC
-		LIMIT 1
-	) AS C_BPartner_Location_ID
-FROM
-	M_ShipperTransportation st
-	INNER JOIN M_Shipper s ON st.M_Shipper_ID = s.M_Shipper_ID AND s.isActive = 'Y'
-	INNER JOIN C_BPartner bp ON s.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
-	INNER JOIN C_DocType dt ON st.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
-	LEFT OUTER JOIN C_DocType_Trl dtt ON st.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = $P{ad_language} AND dtt.isActive = 'Y'
-WHERE
-	st.M_ShipperTransportation_ID = $P{RECORD_ID}
-	AND st.isActive = 'Y'
+		<![CDATA[SELECT *
+FROM de_metas_endcustomer_fresh_reports.Docs_Sales_ShippingOrder_Root($P{RECORD_ID}, $P{ad_language})
 ;]]>
 	</queryString>
-	<field name="ad_org_id" class="java.math.BigDecimal"/>
-	<field name="docstatus" class="java.lang.String"/>
-	<field name="printname" class="java.lang.String"/>
-	<field name="c_bpartner_location_id" class="java.math.BigDecimal"/>
+	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="ad_org_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+	</field>
+	<field name="docstatus" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="docstatus"/>
+		<property name="com.jaspersoft.studio.field.label" value="docstatus"/>
+	</field>
+	<field name="printname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="printname"/>
+		<property name="com.jaspersoft.studio.field.label" value="printname"/>
+	</field>
+	<field name="c_bpartner_location_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_bpartner_location_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="c_bpartner_location_id"/>
+	</field>
 	<background>
 		<band height="842" splitType="Stretch">
 			<textField evaluationTime="Auto" isBlankWhenNull="false">

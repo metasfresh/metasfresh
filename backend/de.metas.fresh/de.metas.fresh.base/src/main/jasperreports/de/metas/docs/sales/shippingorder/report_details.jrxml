@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.2.2.final using JasperReports Library version 6.2.2  -->
-<!-- 2016-10-07T09:55:07 -->
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/shippingorder/report" uuid="9cbb1211-c2e8-4a8e-966b-e564bfc4c4f5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -19,53 +18,35 @@
 		<defaultValueExpression><![CDATA[new String("DE_de")]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT
-	name, address, DeliveryDateTimeMax, isPallet,
-	sum(Qty) as Qty,
-	string_agg(note, E'\n') as notes
-FROM
-	(
-	SELECT
-		name, address, DeliveryDateTimeMax, isPallet,
-		count(M_HU_ID) as Qty,
-		note
-	FROM
-		(
-		SELECT
-			bp.name, bpl.address,
-			CASE WHEN hupm.name ILIKE '%pal%' THEN 'Y' ELSE 'N' END AS isPallet,
-			hu.M_HU_ID,
-			dd.DeliveryDateTimeMax,
-			note
-		FROM
-			M_ShippingPackage sp
-			INNER JOIN C_BPartner bp ON sp.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
-			INNER JOIN C_BPartner_Location bpl ON sp.C_BPartner_Location_ID = bpl.C_BPartner_Location_ID AND bpl.isActive = 'Y'
-			INNER JOIN M_Package_HU phu ON sp.M_Package_ID = phu.M_Package_ID AND phu.isActive = 'Y'
-			INNER JOIN M_HU hu ON phu.M_HU_ID = hu.M_HU_ID
-			INNER JOIN M_HU_PI_Item hupii ON hu.M_HU_PI_Version_ID = hupii.M_HU_PI_Version_ID AND itemtype = 'PM' AND hupii.isActive = 'Y'
-			INNER JOIN M_HU_PackingMaterial hupm ON hupii.M_HU_PackingMaterial_ID = hupm.M_HU_PackingMaterial_ID AND hupm.isActive = 'Y'
-			LEFT OUTER JOIN M_Tour_Instance ti ON sp.M_ShipperTransportation_ID = ti.M_ShipperTransportation_ID AND ti.isActive = 'Y'
-			LEFT OUTER JOIN M_DeliveryDay dd ON ti.M_Tour_Instance_ID = dd.M_Tour_Instance_ID 
-				AND sp.C_BPartner_ID = dd.C_BPartner_ID AND sp.C_BPartner_Location_ID = dd.C_BPartner_Location_ID
-				AND dd.isActive = 'Y'
-		WHERE
-			sp.M_ShipperTransportation_ID = $P{RECORD_ID}
-			AND sp.isActive = 'Y'
-		) foo
-	GROUP BY
-		name, address, DeliveryDateTimeMax, isPallet, note
-	) bar
-GROUP BY
-	name, address, DeliveryDateTimeMax, isPallet
-;]]>
+		<![CDATA[SELECT *
+FROM de_metas_endcustomer_fresh_reports.Docs_Sales_ShippingOrder_Details($P{RECORD_ID})
+;
+]]>
 	</queryString>
-	<field name="name" class="java.lang.String"/>
-	<field name="address" class="java.lang.String"/>
-	<field name="deliverydatetimemax" class="java.sql.Timestamp"/>
-	<field name="ispallet" class="java.lang.String"/>
-	<field name="qty" class="java.math.BigDecimal"/>
-	<field name="notes" class="java.lang.String"/>
+	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="name"/>
+		<property name="com.jaspersoft.studio.field.label" value="name"/>
+	</field>
+	<field name="address" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="address"/>
+		<property name="com.jaspersoft.studio.field.label" value="address"/>
+	</field>
+	<field name="deliverydatetimemax" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="deliverydatetimemax"/>
+		<property name="com.jaspersoft.studio.field.label" value="deliverydatetimemax"/>
+	</field>
+	<field name="ispallet" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="ispallet"/>
+		<property name="com.jaspersoft.studio.field.label" value="ispallet"/>
+	</field>
+	<field name="qty" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.name" value="qty"/>
+		<property name="com.jaspersoft.studio.field.label" value="qty"/>
+	</field>
+	<field name="notes" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="notes"/>
+		<property name="com.jaspersoft.studio.field.label" value="notes"/>
+	</field>
 	<title>
 		<band splitType="Stretch"/>
 	</title>
