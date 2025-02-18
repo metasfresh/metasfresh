@@ -103,7 +103,6 @@ public class TableNamesSkipList
 			"T_AGING",
 			// "T_ALTER_COLUMN", // this one NEEDs to be logged
 			"T_DISTRIBUTIONRUNDETAIL",
-			"T_INVENTORYVALUE",
 			"T_INVOICEGL",
 			"T_REPLENISH",
 			"T_REPORT",
