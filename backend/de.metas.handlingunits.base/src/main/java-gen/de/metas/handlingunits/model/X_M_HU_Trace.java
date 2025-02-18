@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_HU_Trace
  *  @author metasfresh (generated) 
@@ -50,7 +50,22 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
 	}
 
-	/** 
+	@Override
+	public void setC_UOM_ID (final int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1)
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
+	}
+
+	@Override
+	public int getC_UOM_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	/**
 	 * DocStatus AD_Reference_ID=131
 	 * Reference name: _Document Status
 	 */
@@ -124,6 +139,8 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	public static final String HUTRACETYPE_TRANSFORM_LOAD = "TRANSFORM_LOAD";
 	/** TRANSFORM_PARENT = TRANSFORM_PARENT */
 	public static final String HUTRACETYPE_TRANSFORM_PARENT = "TRANSFORM_PARENT";
+	/** MATERIAL_INVENTORY = MATERIAL_INVENTORY */
+	public static final String HUTRACETYPE_MATERIAL_INVENTORY = "MATERIAL_INVENTORY";
 	@Override
 	public void setHUTraceType (final java.lang.String HUTraceType)
 	{
@@ -134,6 +151,18 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	public java.lang.String getHUTraceType() 
 	{
 		return get_ValueAsString(COLUMNNAME_HUTraceType);
+	}
+
+	@Override
+	public void setLotNumber (final @Nullable java.lang.String LotNumber)
+	{
+		set_Value (COLUMNNAME_LotNumber, LotNumber);
+	}
+
+	@Override
+	public java.lang.String getLotNumber()
+	{
+		return get_ValueAsString(COLUMNNAME_LotNumber);
 	}
 
 	@Override
@@ -230,6 +259,33 @@ public class X_M_HU_Trace extends org.compiere.model.PO implements I_M_HU_Trace,
 	public int getM_InOut_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_InOut_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Inventory getM_Inventory()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Inventory_ID, org.compiere.model.I_M_Inventory.class);
+	}
+
+	@Override
+	public void setM_Inventory(final org.compiere.model.I_M_Inventory M_Inventory)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Inventory_ID, org.compiere.model.I_M_Inventory.class, M_Inventory);
+	}
+
+	@Override
+	public void setM_Inventory_ID (final int M_Inventory_ID)
+	{
+		if (M_Inventory_ID < 1)
+			set_Value (COLUMNNAME_M_Inventory_ID, null);
+		else
+			set_Value (COLUMNNAME_M_Inventory_ID, M_Inventory_ID);
+	}
+
+	@Override
+	public int getM_Inventory_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Inventory_ID);
 	}
 
 	@Override
