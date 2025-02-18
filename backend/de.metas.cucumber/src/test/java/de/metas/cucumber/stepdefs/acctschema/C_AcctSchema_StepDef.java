@@ -22,7 +22,10 @@
 
 package de.metas.cucumber.stepdefs.acctschema;
 
-import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.costing.CostingMethod;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -31,12 +34,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_AcctSchema;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 
 public class C_AcctSchema_StepDef
 {
@@ -50,40 +47,37 @@ public class C_AcctSchema_StepDef
 	}
 
 	@And("load C_AcctSchema:")
-	public void load_C_AcctSchema(@NonNull final DataTable dataTable)
+	public void load_C_AcctSchemas(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			loadAcctSchema(row);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_C_AcctSchema.COLUMNNAME_C_AcctSchema_ID)
+				.forEach(this::loadAcctSchema);
 	}
 
 	@And("update C_AcctSchema:")
-	public void update_C_AcctSchema(@NonNull final DataTable dataTable)
+	public void update_C_AcctSchemas(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			final String identifier = DataTableUtil.extractStringForColumnName(row, I_C_AcctSchema.COLUMNNAME_C_AcctSchema_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-			final String costingMethod = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_AcctSchema.COLUMNNAME_CostingMethod);
-
-			final I_C_AcctSchema acctSchema = acctSchemaTable.get(identifier);
-
-			Optional.ofNullable(costingMethod).ifPresent(acctSchema::setCostingMethod);
-
-			InterfaceWrapperHelper.saveRecord(acctSchema);
-
-			acctSchemaTable.putOrReplace(identifier, acctSchema);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_C_AcctSchema.COLUMNNAME_C_AcctSchema_ID)
+				.forEach(this::updateAcctSchema);
 	}
 
-	private void loadAcctSchema(@NonNull final Map<String, String> row)
+	private void updateAcctSchema(final DataTableRow row)
 	{
-		final String identifier = DataTableUtil.extractStringForColumnName(row, I_C_AcctSchema.COLUMNNAME_C_AcctSchema_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final @NonNull StepDefDataIdentifier identifier = row.getAsIdentifier();
+		final I_C_AcctSchema acctSchema = acctSchemaTable.get(identifier);
 
-		final String name = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_AcctSchema.COLUMNNAME_Name);
+		row.getAsOptionalEnum(I_C_AcctSchema.COLUMNNAME_CostingMethod, CostingMethod.class).ifPresent(costingMethod -> acctSchema.setCostingMethod(costingMethod.getCode()));
+		InterfaceWrapperHelper.saveRecord(acctSchema);
+
+		acctSchemaTable.putOrReplace(identifier, acctSchema);
+	}
+
+	private void loadAcctSchema(@NonNull final DataTableRow row)
+	{
+		final @NonNull StepDefDataIdentifier identifier = row.getAsIdentifier();
+
+		final String name = row.getAsOptionalName(I_C_AcctSchema.COLUMNNAME_Name).orElse(null);
 		if (Check.isNotBlank(name))
 		{
 			final I_C_AcctSchema acctSchemaRecord = queryBL.createQueryBuilder(I_C_AcctSchema.class)
