@@ -6,6 +6,7 @@ import de.metas.notification.spi.IRecordTextProvider;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 /*
  * #%L
@@ -43,6 +44,7 @@ public interface INotificationBL extends ISingletonService
 
 	void setDefaultCtxProvider(IRecordTextProvider defaultCtxProvider);
 
+	@NonNull
 	UserNotificationsConfig getUserNotificationsConfig(UserId adUserId);
 
 	RoleNotificationsConfig getRoleNotificationsConfig(RoleId adRoleId);

@@ -273,6 +273,26 @@ public interface I_AD_BusinessRule_Event
 	String COLUMNNAME_Source_Table_ID = "Source_Table_ID";
 
 	/**
+	 * Set Triggering User ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setTriggering_User_ID (int Triggering_User_ID);
+
+	/**
+	 * Get Triggering User ID.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getTriggering_User_ID();
+
+	String COLUMNNAME_Triggering_User_ID = "Triggering_User_ID";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

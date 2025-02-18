@@ -636,7 +636,6 @@ public class MSequence extends X_AD_Sequence
 				"T_AGING",
 				"T_ALTER_COLUMN",
 				"T_DISTRIBUTIONRUNDETAIL",
-				"T_INVENTORYVALUE",
 				"T_INVOICEGL",
 				"T_REPLENISH",
 				"T_REPORT",

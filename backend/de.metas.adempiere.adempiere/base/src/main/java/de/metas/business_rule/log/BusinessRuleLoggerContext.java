@@ -59,7 +59,7 @@ public class BusinessRuleLoggerContext
 
 	public static class BusinessRuleLoggerContextBuilder
 	{
-		public BusinessRuleLoggerContextBuilder businessRule(final BusinessRule businessRule)
+		public BusinessRuleLoggerContextBuilder businessRule(@Nullable final BusinessRule businessRule)
 		{
 			businessRuleId(businessRule != null ? businessRule.getId() : null);
 			logLevel(businessRule != null ? businessRule.getLogLevel() : null);
