@@ -70,11 +70,10 @@ BEGIN
 
                 -- get the sequence's next value
                 -- in case of AD_PInstance table, get the greatest _ID from both AD_PInstance and T_Selection
-                IF lower(v_record_to_process.Table_Name) = lower('AD_PInstance') 
-                THEN
-                    EXECUTE 'SELECT GREATEST(
+                IF lower(v_record_to_process.Table_Name) = lower('AD_PInstance') THEN
+                    EXECUTE 'select GREATEST(
                     (select max(' || quote_ident(v_record_to_process.column_name) || ') from ' || quote_ident(v_record_to_process.Table_Name) || '), 
-                    (SELECT max(' || quote_ident(v_record_to_process.column_name) || ') from public.T_Selection)
+                    (select max(' || quote_ident(v_record_to_process.column_name) || ') from public.T_Selection)
                 )'
                         INTO v_nextid;
                 ELSE
@@ -143,5 +142,3 @@ Also note that the function won''t do anything unless there is a physical column
 
 Otherwise, the sequence is named lower(tableName||''_seq'') and its next value is set from the maximum value of the key or parent column.
 Note: In case of ''AD_PInstance'' table the next value of the sequence is set from the maximum value of the key or parent column or ''AD_PInstance_ID'' from public.T_Selection';
-
-
