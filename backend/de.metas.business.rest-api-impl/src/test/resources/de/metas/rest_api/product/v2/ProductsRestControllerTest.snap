@@ -47,7 +47,7 @@ ProductsRestControllerTest.getProducts_standardCase=[ {
 
 de.metas.rest_api.product.v2.ProductsRestControllerTest.getProducts_standardCase=[ {
   "products" : [ {
-    "id" : 100003,
+    "id" : 100008,
     "productNo" : "value1",
     "name" : "name1",
     "description" : "description1",
@@ -79,7 +79,7 @@ de.metas.rest_api.product.v2.ProductsRestControllerTest.getProducts_standardCase
       "leadTimeInDays" : 32
     } ]
   }, {
-    "id" : 100006,
+    "id" : 100011,
     "productNo" : "value2",
     "name" : "name2",
     "description" : "description2",
