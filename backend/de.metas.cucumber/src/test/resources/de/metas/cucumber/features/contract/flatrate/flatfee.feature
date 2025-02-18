@@ -5,6 +5,7 @@ Feature: Flatfee contract with Flatfee-Type "Reported-Qty"
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And metasfresh has current date and time
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
@@ -98,7 +99,7 @@ Feature: Flatfee contract with Flatfee-Type "Reported-Qty"
     ##
     When metasfresh contains C_Flatrate_Terms:
       | Identifier                | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.DocStatus | OPT.Processed |
-      | flatFeeContract_1_S0433_1 | flatFeeConditions_1_S0433_1         | shipToPartner_1_S0433_1     | 2022-05-01 | 2023-04-31 | DR            | false         |
+      | flatFeeContract_1_S0433_1 | flatFeeConditions_1_S0433_1         | shipToPartner_1_S0433_1     | 2022-05-01 | 2023-04-30 | DR            | false         |
     And the C_Flatrate_Term identified by flatFeeContract_1_S0433_1 is completed
     Then the C_Flatrate_Term identified by flatFeeContract_1_S0433_1 has 12 C_Flatrate_DataEntries.
 
