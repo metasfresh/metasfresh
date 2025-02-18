@@ -45,8 +45,8 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_InventoryLine_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
+import de.metas.handlingunits.model.I_M_InventoryLine_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryId;
@@ -64,7 +64,6 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -323,7 +322,7 @@ public class M_Inventory_StepDef
 		return inventoryLine.getQtyCount().subtract(inventoryLine.getQtyBook()).signum() >= 0;
 	}
 
-	private void createM_InventoryLine_HU(@NonNull final HuId huId, @NonNull final UomId uomId, @NonNull final de.metas.invoicecandidate.model.I_M_InventoryLine inventoryLine)
+	private void createM_InventoryLine_HU(@NonNull final HuId huId, @NonNull final UomId uomId, @NonNull final I_M_InventoryLine inventoryLine)
 	{
 		final I_M_InventoryLine_HU lineHU = newInstance(I_M_InventoryLine_HU.class, inventoryLine);
 
