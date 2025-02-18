@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
  * Posting Status.
  * <p>
  * See AD_Reference_ID=234.
- * 
+ *
  * @author tsa
  */
 @AllArgsConstructor
@@ -44,4 +44,6 @@ public enum PostingStatus implements ReferenceListAwareEnum
 	public static PostingStatus ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
 
 	public boolean isPosted() {return Posted.equals(this);}
+
+	public boolean isNotPosted() {return NotPosted.equals(this);}
 }
