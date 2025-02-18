@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
@@ -69,13 +70,14 @@ import java.util.Map;
 
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID;
+import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_C_OrderLine_Term_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_DocStatus;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_DropShip_BPartner_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_M_Product_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Term.COLUMNNAME_Processed;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.procurement.base.model.I_C_Flatrate_Term.COLUMNNAME_PMM_Product_ID;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class C_Flatrate_Term_StepDef
 {
@@ -87,6 +89,7 @@ public class C_Flatrate_Term_StepDef
 	private final C_Order_StepDefData orderTable;
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final IFlatrateDAO flatrateDAO = Services.get(IFlatrateDAO.class);
+	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -189,7 +192,22 @@ public class C_Flatrate_Term_StepDef
 			else
 			{
 				contractRecord.setStartDate(DataTableUtil.extractDateTimestampForColumnName(tableRow, "StartDate"));
-				contractRecord.setEndDate(DataTableUtil.extractDateTimestampForColumnName(tableRow, "EndDate"));
+				final Timestamp endDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, "EndDate");
+				if (endDate != null)
+				{
+					contractRecord.setEndDate(endDate);
+				}
+				else
+				{
+					flatrateBL.updateNoticeDateAndEndDate(contractRecord);
+				}
+			}
+
+			final String orderLineIdentifier = tableRow.get("OPT." + COLUMNNAME_C_OrderLine_Term_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(orderLineIdentifier))
+			{
+				final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+				contractRecord.setC_OrderLine_Term_ID(orderLine.getC_OrderLine_ID());
 			}
 
 			InterfaceWrapperHelper.saveRecord(contractRecord);
