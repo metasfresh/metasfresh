@@ -193,6 +193,10 @@
 	<variable name="discountmax" class="java.math.BigDecimal" calculation="Highest">
 		<variableExpression><![CDATA[$F{discount}]]></variableExpression>
 	</variable>
+	<variable name="weightSum" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{catchweight}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal(0)]]></initialValueExpression>
+	</variable>
 	<group name="m_inout_id" isReprintHeaderOnEachPage="true">
 		<groupExpression><![CDATA[$F{inouts}]]></groupExpression>
 		<groupHeader>
@@ -884,21 +888,23 @@ $F{shiplocation}
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<printWhenExpression><![CDATA[$F{catchweight}!=null]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="0.00" isBlankWhenNull="true">
-				<reportElement x="37" y="8" width="56" height="12" uuid="64fb3880-4136-4349-8fe1-64d6479e70c4"/>
+				<reportElement x="37" y="8" width="46" height="12" uuid="defbed61-31db-4a60-82ae-7b9d0bf4eccb">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
 				<textElement>
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Weight}+" :"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="0.00" isBlankWhenNull="true">
-				<reportElement x="93" y="8" width="34" height="12" uuid="31badd89-f317-40a2-b884-2bbe03952afd"/>
-				<textElement>
+				<reportElement x="83" y="8" width="48" height="12" uuid="42071510-20f0-4ab4-801a-3fecd1cf2445"/>
+				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{catchweight}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{weightSum}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="127" y="8" width="100" height="12" uuid="ee72bb09-d554-4a02-9c3d-c5c9e4e775c6"/>
+				<reportElement x="134" y="8" width="100" height="12" uuid="621776e4-4520-4015-a1af-d60f0202bc6c"/>
 				<textElement>
 					<font fontName="Arial" size="9"/>
 				</textElement>
