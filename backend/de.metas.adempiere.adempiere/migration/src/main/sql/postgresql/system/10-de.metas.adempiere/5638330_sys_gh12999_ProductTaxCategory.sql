@@ -8,7 +8,7 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 ;
 
 -- 2022-05-05T09:09:55.788Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,555866,TO_TIMESTAMP('2022-05-05 12:09:55','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table M_Product_TaxCategory',1,'Y','N','Y','Y','M_Product_TaxCategory','N',1000000,TO_TIMESTAMP('2022-05-05 12:09:55','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (0,0,555866,TO_TIMESTAMP('2022-05-05 12:09:55','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table M_Product_TaxCategory',1,'Y','N','Y','Y','M_Product_TaxCategory',1000000,TO_TIMESTAMP('2022-05-05 12:09:55','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-05-05T09:09:55.812Z
