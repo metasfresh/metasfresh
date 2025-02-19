@@ -801,8 +801,6 @@ public class InventoryRepository
 		{
 			return ImmutableSet.of();
 		}
-}
-
 
 		final IQuery<I_M_InventoryLine> huFilter = queryBL.createQueryBuilder(de.metas.handlingunits.model.I_M_InventoryLine.class)
 				.addOnlyActiveRecordsFilter()
