@@ -35,11 +35,12 @@ import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
+import de.metas.util.text.tabular.Row;
+import de.metas.util.text.tabular.Table;
 import io.cucumber.datatable.DataTable;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Setter;
-import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 
@@ -57,7 +58,6 @@ import java.util.OptionalInt;
 import java.util.function.Function;
 
 @EqualsAndHashCode
-@ToString
 public class DataTableRow
 {
 	private final int lineNo; // introduced to improve logging/debugging
@@ -76,6 +76,10 @@ public class DataTableRow
 		this.lineNo = lineNo;
 		this.map = map;
 	}
+
+	@Override
+	@Deprecated
+	public String toString() {return toTabularString();}
 
 	public static DataTableRow singleRow(@NonNull final DataTable dataTable)
 	{
@@ -598,5 +602,32 @@ public class DataTableRow
 	{
 		return getAsOptionalEnum(columnName, type)
 				.orElseThrow(() -> new AdempiereException("Missing/invalid `" + type.getSimpleName() + "` of column `" + columnName + "`"));
+	}
+
+	public String toTabularString()
+	{
+		return toTabular().toTabularString();
+	}
+
+	public Table toTabular()
+	{
+		final Table table = new Table();
+		table.addRow(toTabularRow());
+		table.updateHeaderFromRows();
+		//table.removeColumnsWithBlankValues(); // to be decided by the caller
+		return table;
+
+	}
+
+	public Row toTabularRow()
+	{
+		final Row row = new Row();
+		if (lineNo > 0)
+		{
+			row.put("#", lineNo);
+		}
+		row.putAll(map);
+		return row;
+
 	}
 }
