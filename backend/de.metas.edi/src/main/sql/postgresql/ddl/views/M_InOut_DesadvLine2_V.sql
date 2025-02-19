@@ -1,32 +1,10 @@
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2024 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-DROP VIEW IF EXISTS M_InOut_DesadvLine_V
+DROP VIEW IF EXISTS M_InOut_DesadvLine2_V
 ;
 
-CREATE OR REPLACE VIEW M_InOut_DesadvLine_V AS
+CREATE OR REPLACE VIEW M_InOut_DesadvLine2_V AS
 SELECT shipment.m_inout_id                                                                                                                  AS M_InOut_Desadv_ID,
 
-       shipmentLine.m_inoutline_id                                                                                                          AS M_InOut_DesadvLine_V_ID,
+       dline.edi_desadvline_id                                                                                                              AS M_InOut_DesadvLine2_V_ID,
        shipment.m_inout_id,
        shipmentLine.m_inoutline_id,
 
@@ -80,5 +58,5 @@ FROM edi_desadv desadv
 
 WHERE (COALESCE(dline.QtyOrdered_Override, dline.QtyOrdered) > dline.qtydeliveredinstockinguom
     OR dline.edi_desadvline_id = shipmentLine.edi_desadvline_id)
-  AND desadvInOutLine.edi_desadvline_id > 1
+  AND desadvInOutLine.EDI_DesadvLine_InOutLine_id IS NULL
 ;
