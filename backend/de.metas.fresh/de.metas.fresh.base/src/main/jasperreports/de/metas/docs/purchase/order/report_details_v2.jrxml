@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/order/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -227,7 +227,7 @@
 	<columnHeader>
 		<band height="12" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean($V{PAGE_COUNT}.intValue() > 1)]]></printWhenExpression>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-50" mode="Transparent" x="433" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="23063069-0aae-45ed-93fe-4444f6d4f434">
 					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
 				</reportElement>
@@ -254,7 +254,7 @@
 	<detail>
 		<band height="12" splitType="Prevent">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" stretchType="ContainerHeight" mode="Transparent" x="97" y="0" width="142" height="12" isPrintInFirstWholeBand="true" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<printWhenExpression><![CDATA[new Boolean($F{attributes} == null)]]></printWhenExpression>
@@ -274,7 +274,7 @@
 +
 ($F{description} != null ? "\n" + $F{description} :  "\n")]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" stretchType="ContainerHeight" mode="Transparent" x="97" y="0" width="142" height="12" isPrintInFirstWholeBand="true" isPrintWhenDetailOverflows="true" forecolor="#000000" backcolor="#FFFFFF" uuid="70bfc435-7c21-4f78-afe6-8f29eec8deb0">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<printWhenExpression><![CDATA[new Boolean($F{attributes} != null)]]></printWhenExpression>
@@ -294,7 +294,7 @@
 +
 ($F{description} != null ? "\n" + $F{description} :  "\n")]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-34" mode="Transparent" x="463" y="0" width="45" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="de5e58a7-6131-4080-b0ef-911c6a8b92a6"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -322,7 +322,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{uomsymbol}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.##%" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" pattern="#,##0.##%" isBlankWhenNull="true">
 				<reportElement key="textField-33" mode="Transparent" x="450" y="0" width="30" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b">
 					<printWhenExpression><![CDATA[new Boolean($F{isdiscountprinted}.equals("Y"))]]></printWhenExpression>
 				</reportElement>
@@ -436,7 +436,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{line}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" mode="Transparent" x="59" y="0" width="41" height="12" isRemoveLineWhenBlank="true" forecolor="#000000" backcolor="#FFFFFF" uuid="aa42ce2f-b09c-4625-8c48-08130ca5d055">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
@@ -455,7 +455,7 @@
 		<band height="12">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<printWhenExpression><![CDATA[new Boolean($F{attributes} != null)]]></printWhenExpression>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement key="textField-13" mode="Transparent" x="97" y="0" width="181" height="12" forecolor="#000000" uuid="302334ce-936c-4c10-a17a-0285ed3eace8">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
@@ -486,7 +486,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{SubTotal}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-53" mode="Transparent" x="433" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992">
 					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
 				</reportElement>
@@ -514,7 +514,7 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$R{TotalAmount}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement key="textField-53" mode="Transparent" x="433" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1bbb24f6-7b5b-449e-acc4-8db7fc047992">
 					<printWhenExpression><![CDATA[( $V{LINESUM_SUM}.intValue() > 0 ? new Boolean(true) : new Boolean(false))]]></printWhenExpression>
 				</reportElement>
