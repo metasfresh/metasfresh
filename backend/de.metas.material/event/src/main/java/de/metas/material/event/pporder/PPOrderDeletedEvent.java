@@ -2,11 +2,14 @@ package de.metas.material.event.pporder;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import lombok.Builder;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.eevolution.model.I_PP_Order;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -49,4 +52,14 @@ public class PPOrderDeletedEvent implements MaterialEvent
 		this.eventDescriptor = eventDescriptor;
 		this.ppOrderId = ppOrderId;
 	}
+
+	@Nullable
+	@Override
+	public TableRecordReference getSourceTableReference()
+	{
+		return TableRecordReference.ofNullable(I_PP_Order.Table_Name, ppOrderId);
+	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

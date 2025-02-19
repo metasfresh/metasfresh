@@ -28,6 +28,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -36,12 +38,15 @@ import de.metas.event.log.EventLogEntryCollector;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
+import de.metas.util.RawMapDeserializer;
+import de.metas.util.RawMapSerializer;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.DisplayType;
 
 import javax.annotation.Nullable;
@@ -79,6 +84,8 @@ public class Event
 	@JsonProperty("properties")
 	@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@JsonSerialize(using = RawMapSerializer.class)
+	@JsonDeserialize(using = RawMapDeserializer.class)
 	ImmutableMap<String, Object> properties;
 
 	@JsonProperty("uuid")
@@ -106,6 +113,13 @@ public class Event
 	@JsonProperty("recipientUserIds")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	ImmutableSet<Integer> recipientUserIds;
+
+	@JsonProperty("eventInfo")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Nullable TableRecordReference sourceRecordReference;
+	@JsonProperty("eventInfo")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Nullable String eventName;
 
 	private enum LoggingStatus
 	{
@@ -138,6 +152,8 @@ public class Event
 		recipientUserIds = ImmutableSet.copyOf(builder.recipientUserIds);
 		properties = deepCopy(builder.getProperties());
 		loggingStatus = builder.loggingStatus;
+		sourceRecordReference = builder.sourceRecordReference;
+		eventName = builder.eventName;
 	}
 
 	@JsonCreator
@@ -150,7 +166,9 @@ public class Event
 			@JsonProperty("senderId") final String senderId,
 			@JsonProperty("recipientUserIds") final Set<Integer> recipientUserIds,
 			@JsonProperty("properties") final Map<String, Object> properties,
-			@JsonProperty("loggingStatus") final LoggingStatus loggingStatus)
+			@JsonProperty("loggingStatus") final LoggingStatus loggingStatus,
+			@Nullable @JsonProperty("sourceRecord") final TableRecordReference sourceRecordReference,
+			@Nullable @JsonProperty("eventName") final String eventName)
 	{
 		this.uuid = uuid;
 		this.when = when;
@@ -162,6 +180,8 @@ public class Event
 		this.recipientUserIds = recipientUserIds != null ? ImmutableSet.copyOf(recipientUserIds) : ImmutableSet.of();
 		this.properties = deepCopy(properties);
 		this.loggingStatus = loggingStatus;
+		this.sourceRecordReference = sourceRecordReference;
+		this.eventName = eventName;
 	}
 
 	private static ImmutableMap<String, Object> deepCopy(final Map<String, Object> properties)
@@ -219,8 +239,7 @@ public class Event
 	 */
 	public <T> T getProperty(final String name)
 	{
-		@SuppressWarnings("unchecked")
-		final T value = (T)properties.get(name);
+		@SuppressWarnings("unchecked") final T value = (T)properties.get(name);
 		return value;
 	}
 
@@ -312,6 +331,8 @@ public class Event
 		builder.uuid = uuid;
 		builder.when = when;
 		builder.loggingStatus = loggingStatus;
+		builder.sourceRecordReference = sourceRecordReference;
+		builder.eventName = eventName;
 
 		return builder;
 	}
@@ -330,6 +351,8 @@ public class Event
 		private final Set<Integer> recipientUserIds = new HashSet<>();
 		private final Map<String, Object> properties = Maps.newLinkedHashMap();
 		private LoggingStatus loggingStatus = LoggingStatus.SHALL_NOT_BE_LOGGED;
+		private @Nullable TableRecordReference sourceRecordReference;
+		private @Nullable String eventName;
 
 		private Builder()
 		{
@@ -402,6 +425,18 @@ public class Event
 			}
 
 			detailADMessage = adMessage;
+			return this;
+		}
+
+		public Builder setSourceRecordReference(@Nullable final TableRecordReference sourceRecordReference)
+		{
+			this.sourceRecordReference = sourceRecordReference;
+			return this;
+		}
+
+		public Builder setEventName(@NonNull final String eventName)
+		{
+			this.eventName = eventName;
 			return this;
 		}
 

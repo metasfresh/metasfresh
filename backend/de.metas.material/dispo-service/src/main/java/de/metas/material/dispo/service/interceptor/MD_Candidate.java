@@ -124,6 +124,7 @@ public class MD_Candidate
 			final StockCandidateChangedEvent stockCandidateChangedEvent = StockCandidateChangedEvent.builder()
 					.eventDescriptor(eventDescriptor)
 					.materialDescriptor(materialDescriptor)
+					.mdCandidateId(candidate.getMD_Candidate_ID())
 					.build();
 
 			materialEventService.enqueueEventAfterNextCommit(stockCandidateChangedEvent);

@@ -75,4 +75,7 @@ public class StockEstimateDeletedEvent extends AbstractStockEstimateEvent
 	{
 		return getMaterialDescriptor().getQuantity().negate();
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

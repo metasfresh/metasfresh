@@ -91,4 +91,9 @@ public class JSONObjectMapper<T>
 			throw new AdempiereException("Failed converting json to class= " + clazz + "; object=" + objectStream, ex);
 		}
 	}
+
+	public T convertValue(final Object object)
+	{
+		return jsonObjectMapper.convertValue(object, clazz);
+	}
 }

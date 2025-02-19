@@ -7,10 +7,13 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
+
+import static de.metas.material.event.MaterialEventConstants.FRESH_QTYONHAND_TABLE_NAME;
 
 /*
  * #%L
@@ -52,7 +55,7 @@ public abstract class AbstractStockEstimateEvent implements MaterialEvent
 	private final int freshQtyOnHandLineId;
 
 	private final Integer qtyStockEstimateSeqNo;
-	
+
 	private final Instant eventDate;
 
 	public AbstractStockEstimateEvent(
@@ -62,7 +65,7 @@ public abstract class AbstractStockEstimateEvent implements MaterialEvent
 			final int plantId,
 			final int freshQtyOnHandId,
 			final int freshQtyOnHandLineId,
-			@Nullable final Integer qtyStockEstimateSeqNo, 
+			@Nullable final Integer qtyStockEstimateSeqNo,
 			@NonNull final Instant eventDate
 	)
 	{
@@ -77,4 +80,11 @@ public abstract class AbstractStockEstimateEvent implements MaterialEvent
 	}
 
 	public abstract BigDecimal getQuantityDelta();
+
+	@Nullable
+	@Override
+	public TableRecordReference getSourceTableReference()
+	{
+		return TableRecordReference.ofNullable(FRESH_QTYONHAND_TABLE_NAME, freshQtyOnHandId);
+	}
 }

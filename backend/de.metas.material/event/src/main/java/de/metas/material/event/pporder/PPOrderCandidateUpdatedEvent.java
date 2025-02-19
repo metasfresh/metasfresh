@@ -49,4 +49,7 @@ public class PPOrderCandidateUpdatedEvent extends AbstractPPOrderCandidateEvent
 	{
 		return (PPOrderCandidateUpdatedEvent)ppOrderCandidateEvent;
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

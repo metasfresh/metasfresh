@@ -56,4 +56,7 @@ public class DDOrderDeletedEvent extends AbstractDDOrderEvent
 				.build();
 	}
 
+	@Override
+	public String getEventName() {return TYPE;}
+
 }

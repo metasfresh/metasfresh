@@ -77,4 +77,7 @@ public class ShipmentScheduleUpdatedEvent extends AbstractShipmentScheduleEvent
 	{
 		return getShipmentScheduleDetail().getOrderedQuantityDelta();
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

@@ -52,6 +52,7 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 
@@ -132,6 +133,14 @@ import javax.annotation.Nullable;
 public interface MaterialEvent
 {
 	EventDescriptor getEventDescriptor();
+
+	/**
+	 * Implement to provide accurate event data, like name & parent object
+	 */
+	@Nullable
+	default TableRecordReference getSourceTableReference() {return null;}
+
+	String getEventName();
 
 	@NonNull
 	@JsonIgnore

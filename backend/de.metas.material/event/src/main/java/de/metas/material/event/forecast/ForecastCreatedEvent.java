@@ -2,7 +2,6 @@ package de.metas.material.event.forecast;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import lombok.Builder;
@@ -54,4 +53,7 @@ public class ForecastCreatedEvent implements MaterialEvent
 		this.forecast = forecast;
 		this.eventDescriptor = eventDescriptor;
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }
