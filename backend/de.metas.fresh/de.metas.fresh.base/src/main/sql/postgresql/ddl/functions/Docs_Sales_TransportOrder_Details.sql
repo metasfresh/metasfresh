@@ -20,10 +20,10 @@
  * #L%
  */
 
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_ShippingOrder_Details(IN p_ShipperTransportation_ID numeric)
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Details(IN p_ShipperTransportation_ID numeric)
 ;
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_ShippingOrder_Details(IN p_ShipperTransportation_ID numeric)
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Details(IN p_ShipperTransportation_ID numeric)
     RETURNS TABLE
             (
                 name                varchar(100),

@@ -19,7 +19,7 @@
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT *
-FROM de_metas_endcustomer_fresh_reports.Docs_Sales_ShippingOrder_Root($P{RECORD_ID}, $P{ad_language})
+FROM de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Root($P{RECORD_ID}, $P{ad_language})
 ;]]>
 	</queryString>
 	<field name="ad_org_id" class="java.math.BigDecimal">
