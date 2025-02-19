@@ -66,7 +66,7 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 			@JsonProperty("reservedQuantity") final BigDecimal reservedQuantity,
 			@JsonProperty("receiptScheduleId") final int receiptScheduleId,
 			@JsonProperty("vendorId") final int vendorId
-			)
+	)
 	{
 		super(eventDescriptor,
 				materialDescriptor,
@@ -99,5 +99,8 @@ public class ReceiptScheduleCreatedEvent extends AbstractReceiptScheduleEvent
 		orderLineDescriptor.validate();
 		return this;
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 
 }

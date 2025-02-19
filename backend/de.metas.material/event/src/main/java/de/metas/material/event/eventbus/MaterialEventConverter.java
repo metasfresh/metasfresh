@@ -77,7 +77,8 @@ public class MaterialEventConverter
 
 		return Event.builder()
 				.putProperty(PROPERTY_MATERIAL_EVENT, eventStr)
-				.setEventInfo(materialEvent.getEventInfo())
+				.setEventName(materialEvent.getEventName())
+				.setSourceRecordReference(materialEvent.getSourceTableReference())
 				.shallBeLogged()
 				.build();
 	}

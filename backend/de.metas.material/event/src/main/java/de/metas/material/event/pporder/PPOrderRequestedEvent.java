@@ -8,6 +8,8 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.eevolution.model.I_PP_Order;
 
 import java.time.Instant;
 
@@ -67,4 +69,13 @@ public class PPOrderRequestedEvent implements MaterialEvent
 		// we need the PPOrder's MaterialDispoGroupId to map the order that was created to its respective candidates
 		Check.errorIf(ppOrder.getPpOrderData().getMaterialDispoGroupId() == null, "The ppOrder of a PPOrderRequestedEvent needs to have a group id");
 	}
+
+	@Override
+	public TableRecordReference getSourceTableReference()
+	{
+		return TableRecordReference.ofNullable(I_PP_Order.Table_Name, ppOrder.getPpOrderId());
+	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

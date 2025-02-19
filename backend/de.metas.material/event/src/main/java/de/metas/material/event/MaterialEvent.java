@@ -3,7 +3,6 @@ package de.metas.material.event;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import de.metas.event.EventInfo;
 import de.metas.material.event.attributes.AttributesChangedEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.ddorder.DDOrderCreatedEvent;
@@ -53,6 +52,7 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 
@@ -134,9 +134,13 @@ public interface MaterialEvent
 {
 	EventDescriptor getEventDescriptor();
 
-	/**Implement to provide accurate event data, like name & parent object */
+	/**
+	 * Implement to provide accurate event data, like name & parent object
+	 */
 	@Nullable
-	default EventInfo getEventInfo() {return null;}
+	default TableRecordReference getSourceTableReference() {return null;}
+
+	String getEventName();
 
 	@NonNull
 	@JsonIgnore

@@ -2,7 +2,6 @@ package de.metas.event.log;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.event.Event;
-import de.metas.event.EventInfo;
 import de.metas.event.Topic;
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
@@ -99,16 +98,12 @@ public class EventLogService
 		eventLogRecord.setEventData(eventString);
 		eventLogRecord.setEventTopicName(eventBusTopic.getName());
 		eventLogRecord.setEventTypeName(eventBusTopic.getType().toString());
-		final EventInfo eventInfo = event.getEventInfo();
-		if (eventInfo != null)
+		eventLogRecord.setEventName(event.getEventName());
+		final TableRecordReference sourceRecordReference = event.getSourceRecordReference();
+		if (sourceRecordReference != null)
 		{
-			eventLogRecord.setEventName(eventInfo.getEventName());
-			final TableRecordReference sourceRecordReference = eventInfo.getSourceRecordReference();
-			if (sourceRecordReference != null)
-			{
-				eventLogRecord.setAD_Table_ID(sourceRecordReference.getAD_Table_ID());
-				eventLogRecord.setRecord_ID(sourceRecordReference.getRecord_ID());
-			}
+			eventLogRecord.setAD_Table_ID(sourceRecordReference.getAD_Table_ID());
+			eventLogRecord.setRecord_ID(sourceRecordReference.getRecord_ID());
 		}
 
 		save(eventLogRecord);
