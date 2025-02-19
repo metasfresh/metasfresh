@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ #%L
+  ~ de.metas.xfactura.base
+  ~ %%
+  ~ Copyright (C) 2025 metas GmbH
+  ~ %%
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 2 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public
+  ~ License along with this program. If not, see
+  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
+  ~ #L%
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <parent>
+        <artifactId>de.metas.parent</artifactId>
+        <groupId>de.metas</groupId>
+        <version>10.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>de.metas.xfactura</groupId>
+    <artifactId>de.metas.xfactura.base</artifactId>
+
+    <properties>
+        <metasfresh.version>10.0.0</metasfresh.version>
+        <migration-sql-basedir/>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.adempiere.adempiere</groupId>
+            <artifactId>de.metas.adempiere.adempiere.base</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.document.archive</groupId>
+            <artifactId>de.metas.document.archive.base</artifactId>
+            <version>10.0.0</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.jvnet.jaxb2.maven2</groupId>
+                <artifactId>maven-jaxb2-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>ciid22b</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <generatePackage>de.metas.xfactura.base.ciid22b</generatePackage>
+                    <schemaDirectory>${project.basedir}/src/main/resources/de/metas/xfactura/base/ciid22b</schemaDirectory>
+                    <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
+                    <schemaIncludes>
+                        <schemaInclude>CrossIndustryInvoice_100pD22B.xsd</schemaInclude>
+                    </schemaIncludes>
+                    <bindingDirectory>${project.basedir}/src/main/resources/de/metas/xfactura/base/xjb</bindingDirectory>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jvnet.jaxb2.maven2</groupId>
+                <artifactId>maven-jaxb2-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>en16931</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <generatePackage>de.metas.xfactura.base.en16931</generatePackage>
+                    <schemaDirectory>${project.basedir}/src/main/resources/de/metas/xfactura/base/en16931</schemaDirectory>
+                    <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
+                    <schemaIncludes>
+                        <schemaInclude>Factur-X_1.07.2_EN16931.xsd</schemaInclude>
+                    </schemaIncludes>
+                    <bindingDirectory>${project.basedir}/src/main/resources/de/metas/xfactura/base/xjb</bindingDirectory>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+

@@ -205,6 +205,9 @@
         <module>metasfresh-dist</module>
 
         <module>de-metas-salesorder</module>
+
+        <module>de.metas.xfactura.base</module>
+        <module>de.metas.xfactura.webui</module>
         <!-- <module>extensionsupport</module> -->
 
     </modules>
