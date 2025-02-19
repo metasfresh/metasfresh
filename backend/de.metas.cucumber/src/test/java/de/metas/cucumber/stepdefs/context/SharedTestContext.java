@@ -68,6 +68,26 @@ public class SharedTestContext
 		return context != null ? context.toFlatMap() : ImmutableMap.of();
 	}
 
+	public String getAsString()
+	{
+		final Map<String, Object> map = getCopyOfContextMap();
+		if (map.isEmpty())
+		{
+			return "";
+		}
+
+		final StringBuilder result = new StringBuilder();
+		map.forEach((key, value) -> {
+			if (!result.isEmpty())
+			{
+				result.append("\n");
+			}
+			result.append(key).append(": ").append(value);
+		});
+
+		return result.toString();
+	}
+
 	@FunctionalInterface
 	public interface ThrowingRunnable
 	{

@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
  * @author tsa
  */
 @AllArgsConstructor
+@Getter
 public enum PostingStatus implements ReferenceListAwareEnum
 {
 	NotPosted("N"),
@@ -30,8 +31,8 @@ public enum PostingStatus implements ReferenceListAwareEnum
 
 	private static final ReferenceListAwareEnums.ValuesIndex<PostingStatus> index = ReferenceListAwareEnums.index(values());
 
-	@Getter @NonNull private final String code;
-	@Getter @NonNull private final AdMessageKey adMessage;
+	@NonNull private final String code;
+	@NonNull private final AdMessageKey adMessage;
 
 	PostingStatus(@NonNull final String code)
 	{
@@ -44,4 +45,6 @@ public enum PostingStatus implements ReferenceListAwareEnum
 	public static PostingStatus ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
 
 	public boolean isPosted() {return Posted.equals(this);}
+
+	public boolean isNotPosted() {return NotPosted.equals(this);}
 }
