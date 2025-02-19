@@ -66,7 +66,7 @@ import java.util.Map;
 import static de.metas.invoice.InvoiceDocBaseType.CustomerInvoice;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class RemittanceAdviceServiceTest
 {
@@ -88,7 +88,6 @@ public class RemittanceAdviceServiceTest
 		invoiceDocTypes = new HashMap<>();
 
 		SpringContextHolder.registerJUnitBean(RemittanceAdviceRepository.class, new RemittanceAdviceRepository());
-		final RemittanceAdviceRepository remittanceAdviceRepository = SpringContextHolder.instance.getBean(RemittanceAdviceRepository.class);
 
 		SpringContextHolder.registerJUnitBean(MoneyService.class, new MoneyService(new CurrencyRepository()));
 		final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
@@ -403,5 +402,6 @@ public class RemittanceAdviceServiceTest
 		assertThat(remittanceAdviceLine.isServiceFeeResolved()).isFalse();
 		assertThat(remittanceAdviceLine.isInvoiceDocTypeValid()).isFalse();
 	}
-
+	
+	
 }
