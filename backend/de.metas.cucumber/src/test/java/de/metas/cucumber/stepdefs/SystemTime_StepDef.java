@@ -42,6 +42,12 @@ public class SystemTime_StepDef
 		SystemTime.setFixedTimeSource(ZonedDateTime.now());
 	}
 
+	@Given("metasfresh time source is reseted")
+	public void metasfresh_time_source_is_reseted()
+	{
+		SystemTime.resetTimeSource();
+	}
+
 	@And("we wait for {int} ms")
 	public void thread_sleep(final int sleepTime) throws InterruptedException
 	{

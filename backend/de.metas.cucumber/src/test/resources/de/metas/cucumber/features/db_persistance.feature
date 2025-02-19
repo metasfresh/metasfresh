@@ -4,6 +4,7 @@ Feature: Database persistance tests
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And metasfresh time source is reseted
 
   Scenario: Saving and loading various fields of Test record is working correctly
     Then using Test record, validate save and load of following fields:
