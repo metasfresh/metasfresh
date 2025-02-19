@@ -1,5 +1,6 @@
 package de.metas.cucumber.stepdefs;
 
+import de.metas.cucumber.stepdefs.context.ContextAwareDescription;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -150,12 +151,12 @@ public class TestRecord_StepDef
 			record.setHelp(SharedTestContext.getAsString());
 			InterfaceWrapperHelper.save(record);
 
-			softly.assertThat(actualDate).as("T_Date").isEqualTo(expectedDate);
-			softly.assertThat(actualDateTime).as("T_DateTime").isEqualTo(expectedDateTime);
-			softly.assertThat(actualTime).as("T_Time").isEqualTo(expectedTime);
+			softly.assertThat(actualDate).as(ContextAwareDescription.ofString("T_Date")).isEqualTo(expectedDate);
+			softly.assertThat(actualDateTime).as(ContextAwareDescription.ofString("T_DateTime")).isEqualTo(expectedDateTime);
+			softly.assertThat(actualTime).as(ContextAwareDescription.ofString("T_Time")).isEqualTo(expectedTime);
 		}
 	}
-
+	
 	private void forEachTestTimeZone(final Runnable runnable)
 	{
 		for (final String timezoneId : TEST_TIMEZONE_IDS)
