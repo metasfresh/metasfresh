@@ -72,12 +72,13 @@ public class PaymentAndInvoiceRowsRepo
 	public PaymentAndInvoiceRowsRepo(
 			@NonNull final CurrencyRepository currenciesRepo,
 			@NonNull final PaymentAllocationRepository paymentAllocationRepo,
-			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessorServiceCompanyService)
+			@NonNull final InvoiceProcessingServiceCompanyService invoiceProcessorServiceCompanyService,
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		this.currenciesRepo = currenciesRepo;
 		this.paymentAllocationRepo = paymentAllocationRepo;
 		this.invoiceProcessorServiceCompanyService = invoiceProcessorServiceCompanyService;
-		bpartnersLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
+		bpartnersLookup = lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name);
 	}
 
 	public PaymentAndInvoiceRows getByBPartnerId(@NonNull final BPartnerId bPartnerId)

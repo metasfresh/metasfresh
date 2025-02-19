@@ -1,5 +1,6 @@
 package de.metas.material.planning;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.material.maturing.MaturingConfigLineId;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.organization.OrgId;
@@ -14,7 +15,6 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_S_Resource;
 import org.eevolution.api.ProductBOMVersionsId;
 
 import javax.annotation.Nullable;
@@ -34,15 +34,17 @@ public interface IProductPlanningDAO extends ISingletonService
 		@Nullable WarehouseId warehouseId;
 		@Nullable ResourceId plantId;
 		@Nullable ProductId productId;
+		boolean includeWithNullProductId;
 		@Nullable MaturingConfigLineId maturingConfigLineId;
 		@NonNull AttributeSetInstanceId attributeSetInstanceId;
 
 		/**
-		 * @param orgId                  may be null which means only the * org
-		 * @param warehouseId            may be null which means "no warehouse" (not any warehouse!)
-		 * @param plantId                may be null which means "no plantId"
-		 * @param productId              mandatory
-		 * @param attributeSetInstanceId mandatory, but might contain the 0-ASI-Id;
+		 * @param orgId                    may be null which means only the * org
+		 * @param warehouseId              may be null which means "no warehouse" (not any warehouse!)
+		 * @param plantId                  may be null which means "no plantId"
+		 * @param productId                mandatory
+		 * @param includeWithNullProductId may be null which means "true". If true we might find results that have M_ProducT_ID=null
+		 * @param attributeSetInstanceId   mandatory, but might contain the 0-ASI-Id;
 		 */
 		@Builder
 		private ProductPlanningQuery(
@@ -50,6 +52,7 @@ public interface IProductPlanningDAO extends ISingletonService
 				@Nullable final WarehouseId warehouseId,
 				@Nullable final ResourceId plantId,
 				@Nullable final ProductId productId,
+				@Nullable final Boolean includeWithNullProductId,
 				@Nullable final MaturingConfigLineId maturingConfigLineId,
 				@Nullable final AttributeSetInstanceId attributeSetInstanceId)
 		{
@@ -57,6 +60,7 @@ public interface IProductPlanningDAO extends ISingletonService
 			this.warehouseId = warehouseId;
 			this.plantId = plantId;
 			this.productId = productId;
+			this.includeWithNullProductId = CoalesceUtil.coalesceNotNull(includeWithNullProductId, true);
 			this.maturingConfigLineId = maturingConfigLineId;
 			this.attributeSetInstanceId = attributeSetInstanceId != null ? attributeSetInstanceId : AttributeSetInstanceId.NONE;
 		}
@@ -71,12 +75,14 @@ public interface IProductPlanningDAO extends ISingletonService
 	 */
 	Optional<ProductPlanning> find(ProductPlanningQuery productPlanningQuery);
 
+	Stream<ProductPlanning> query(@NonNull ProductPlanningQuery query);
+
 	/**
-	 * Search product plannings to find out which is the plant({@link I_S_Resource}) for given Org/Warehouse/Product.
+	 * Search product plannings to find out which is the plant for given Org/Warehouse/Product.
 	 *
 	 * @throws NoPlantForWarehouseException if there was no plant found or if there was more then one plant found.
 	 */
-	ResourceId findPlant(final int adOrgId, final I_M_Warehouse warehouse, final int productId, int attributeSetInstanceId);
+	ResourceId findPlantId(final int adOrgId, final I_M_Warehouse warehouse, final int productId, int attributeSetInstanceId);
 
 	Optional<ResourceId> findPlantIfExists(
 			OrgId orgId,

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -45,6 +45,7 @@ import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
@@ -57,6 +58,7 @@ import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
@@ -80,9 +82,11 @@ import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_User;
@@ -101,6 +105,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -113,7 +118,7 @@ import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_Sh
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit.COLUMNNAME_M_ShipmentSchedule_ExportAudit_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class M_ShipmentSchedule_StepDef
@@ -128,6 +133,8 @@ public class M_ShipmentSchedule_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	
 
 	private final AD_User_StepDefData userTable;
 	private final C_BPartner_StepDefData bpartnerTable;
@@ -334,15 +341,6 @@ public class M_ShipmentSchedule_StepDef
 		}
 	}
 
-	@And("validate M_ShipmentSchedule:")
-	public void validate_M_ShipmentSchedule(@NonNull final DataTable dataTable)
-	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			validateSchedule(row);
-		}
-	}
-
 	@And("validate JsonResponseShipmentCandidates.JsonCustomer")
 	public void validate_JsonCustomer(@NonNull final DataTable dataTable) throws JsonProcessingException
 	{
@@ -496,6 +494,26 @@ public class M_ShipmentSchedule_StepDef
 		validateNoShipmentScheduleCreatedForOrder(orderId);
 	}
 
+	@And("^the M_ShipmentSchedule identified by (.*) is (closed|reactivated)$")
+	public void M_ShipmentSchedule_action(@NonNull final String shipmentScheduleIdentifier, @NonNull final String action)
+	{
+		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+
+		switch (StepDefDocAction.valueOf(action))
+		{
+			case closed:
+				shipmentScheduleBL.closeShipmentSchedule(schedule);
+				break;
+			case reactivated:
+				shipmentScheduleBL.openShipmentSchedule(schedule);
+				break;
+			default:
+				throw new AdempiereException("Unhandled M_ShipmentSchedule action")
+						.appendParametersToMessage()
+						.setParameter("action:", action);
+		}
+	}
+
 	private void validateNoShipmentScheduleCreatedForOrder(@NonNull final OrderId orderId)
 	{
 		final I_M_ShipmentSchedule schedule = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
@@ -613,55 +631,208 @@ public class M_ShipmentSchedule_StepDef
 			shipmentScheduleRecord.setQtyToDeliverCatch_Override(qtyToDeliverCatchOverride);
 		}
 
+		final Timestamp preparationDateOverride = DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override);
+		if (preparationDateOverride != null)
+		{
+			shipmentScheduleRecord.setPreparationDate_Override(preparationDateOverride);
+		}
+
 		saveRecord(shipmentScheduleRecord);
 	}
 
 	private void validateShipmentSchedule(final int timeoutSec, @NonNull final Map<String, String> tableRow) throws InterruptedException
 	{
-		final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered);
-		final BigDecimal qtyToDeliver = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver);
-		final BigDecimal qtyToDeliverOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
+		final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered);
+		final BigDecimal qtyReserved = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyReserved);
+		final BigDecimal qtyToDeliver = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver);
+		final BigDecimal qtyToDeliverOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
 		final BigDecimal qtyPicked = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyPickList);
-		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_QtyDelivered);
-		final boolean isProcessed = DataTableUtil.extractBooleanForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_Processed);
+		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyDelivered);
+		final BigDecimal qtyOnHand = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyOnHand);
+		final Boolean isProcessed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_Processed, null);
+		final Boolean isClosed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_IsClosed, null);
 
 		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + ".Identifier");
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 
-		final Supplier<Boolean> isShipmentScheduleFound = () -> queryBL
-				.createQueryBuilder(I_M_ShipmentSchedule.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID())
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver, qtyToDeliver)
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override, qtyToDeliverOverride)
-				.create()
-				.firstOnlyOptional(I_M_ShipmentSchedule.class)
-				.isPresent();
+		final Supplier<Boolean> isShipmentScheduleFound = () -> {
+			final IQueryBuilder<I_M_ShipmentSchedule> queryBuilder = queryBL
+					.createQueryBuilder(I_M_ShipmentSchedule.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(COLUMNNAME_M_ShipmentSchedule_ID, shipmentSchedule.getM_ShipmentSchedule_ID());
+			if (qtyToDeliver != null)
+			{
+				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver, qtyToDeliver);
+			}
+			if (qtyToDeliverOverride != null)
+			{
+				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override, qtyToDeliverOverride);
+			}
+			if (qtyOnHand != null)
+			{
+				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyOnHand, qtyOnHand);
+			}
+			return queryBuilder
+					.create()
+					.firstOnlyOptional(I_M_ShipmentSchedule.class)
+					.isPresent();
+		};
 
 		StepDefUtil.tryAndWait(timeoutSec, 500, isShipmentScheduleFound);
 
 		InterfaceWrapperHelper.refresh(shipmentSchedule);
-
+		final SoftAssertions softly = new SoftAssertions();
 		if (qtyToDeliverOverride != null)
 		{
-			assertThat(shipmentSchedule.getQtyToDeliver_Override().stripTrailingZeros()).isEqualTo(qtyToDeliverOverride.stripTrailingZeros());
+			softly.assertThat(shipmentSchedule.getQtyToDeliver_Override().stripTrailingZeros()).as("QtyToDeliver_Override for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(qtyToDeliverOverride.stripTrailingZeros());
 		}
 
 		if (qtyPicked != null)
 		{
-			assertThat(shipmentSchedule.getQtyPickList().stripTrailingZeros()).isEqualTo(qtyPicked.stripTrailingZeros());
+			softly.assertThat(shipmentSchedule.getQtyPickList().stripTrailingZeros()).as("QtyPickList for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(qtyPicked.stripTrailingZeros());
 		}
 
-		assertThat(shipmentSchedule.getQtyToDeliver().stripTrailingZeros()).isEqualTo(qtyToDeliver.stripTrailingZeros());
-		assertThat(shipmentSchedule.getQtyOrdered().stripTrailingZeros()).isEqualTo(qtyOrdered.stripTrailingZeros());
-		assertThat(shipmentSchedule.getQtyDelivered().stripTrailingZeros()).isEqualTo(qtyDelivered.stripTrailingZeros());
-		assertThat(shipmentSchedule.isProcessed()).isEqualTo(isProcessed);
+		if (qtyToDeliver != null)
+		{
+			softly.assertThat(shipmentSchedule.getQtyToDeliver().stripTrailingZeros()).as("QtyToDeliver for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(qtyToDeliver.stripTrailingZeros());
+		}
+
+		if (qtyOrdered != null)
+		{
+			softly.assertThat(shipmentSchedule.getQtyOrdered().stripTrailingZeros()).as("QtyOrdered for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(qtyOrdered.stripTrailingZeros());
+		}
+
+		if (qtyDelivered != null)
+		{
+			softly.assertThat(shipmentSchedule.getQtyDelivered().stripTrailingZeros()).as("QtyDelivered for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(qtyDelivered.stripTrailingZeros());
+		}
+		if (qtyReserved != null)
+		{
+			softly.assertThat(shipmentSchedule.getQtyReserved().stripTrailingZeros()).as("QtyReserved for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(qtyReserved.stripTrailingZeros());
+		}
+
+		if (isClosed != null)
+		{
+			assertThat(shipmentSchedule.isClosed()).as("IsClosed for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(isClosed);
+		}
+		if (isProcessed != null)
+		{
+			softly.assertThat(shipmentSchedule.isProcessed()).as("Processed for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(isProcessed);
+		}
 
 		final BigDecimal qtyOrderedTU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_TU);
 		if (qtyOrderedTU != null)
 		{
-			assertThat(shipmentSchedule.getQtyOrdered_TU()).isEqualTo(qtyOrderedTU);
+			softly.assertThat(shipmentSchedule.getQtyOrdered_TU()).as("QtyOrdered_TU for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(qtyOrderedTU);
 		}
+
+		if (qtyOnHand != null)
+		{
+			softly.assertThat(shipmentSchedule.getQtyOnHand()).as("QtyOnHand for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(qtyOnHand);
+		}
+
+		final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(bpartnerIdentifier))
+		{
+			final I_C_BPartner bPartner = bpartnerTable.get(bpartnerIdentifier);
+			softly.assertThat(shipmentSchedule.getC_BPartner_ID()).as("C_BPartner_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(bPartner.getC_BPartner_ID());
+		}
+
+		final String bpLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(bpLocationIdentifier))
+		{
+			final I_C_BPartner_Location bpLocation = bpartnerLocationTable.get(bpLocationIdentifier);
+			softly.assertThat(shipmentSchedule.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(bpLocation.getC_BPartner_Location_ID());
+		}
+
+		final String billBPIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(billBPIdentifier))
+		{
+			final I_C_BPartner billBP = bpartnerTable.get(billBPIdentifier);
+			softly.assertThat(shipmentSchedule.getBill_BPartner_ID()).as("Bill_BPartner_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(billBP.getC_BPartner_ID());
+		}
+
+		final String billBPLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_Bill_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(billBPLocationIdentifier))
+		{
+			final I_C_BPartner_Location billBPLocation = bpartnerLocationTable.get(billBPLocationIdentifier);
+			softly.assertThat(shipmentSchedule.getBill_Location_ID()).as("Bill_Location_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(billBPLocation.getC_BPartner_Location_ID());
+		}
+
+		final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(productIdentifier))
+		{
+			final I_M_Product product = productTable.get(productIdentifier);
+			softly.assertThat(shipmentSchedule.getM_Product_ID()).as("M_Product_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(product.getM_Product_ID());
+		}
+
+		final String exportStatus = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_ExportStatus);
+		if (Check.isNotBlank(exportStatus))
+		{
+			softly.assertThat(shipmentSchedule.getExportStatus()).as("ExportStatus for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(exportStatus);
+		}
+		final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(orderIdentifier))
+		{
+			final I_C_Order order = orderTable.get(orderIdentifier);
+			softly.assertThat(shipmentSchedule.getC_Order_ID()).as("C_Order_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(order.getC_Order_ID());
+		}
+
+		final String orderLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(orderLineIdentifier))
+		{
+			final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+			softly.assertThat(shipmentSchedule.getC_OrderLine_ID()).as("C_OrderLine_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(orderLine.getC_OrderLine_ID());
+		}
+
+		final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(userIdentifier))
+		{
+			final I_AD_User user = userTable.get(userIdentifier);
+			softly.assertThat(shipmentSchedule.getAD_User_ID()).as("AD_User_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(user.getAD_User_ID());
+		}
+
+		final String billUserIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_Bill_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(billUserIdentifier))
+		{
+			final I_AD_User billUser = userTable.get(billUserIdentifier);
+			softly.assertThat(shipmentSchedule.getBill_User_ID()).as("Bill_User_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(billUser.getAD_User_ID());
+		}
+
+		final String shipperIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(shipperIdentifier))
+		{
+			final I_M_Shipper shipper = shipperTable.get(shipperIdentifier);
+			softly.assertThat(shipmentSchedule.getM_Shipper_ID()).as("M_Shipper_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(shipper.getM_Shipper_ID());
+		}
+
+		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(attributeSetInstanceIdentifier))
+		{
+			final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
+
+			final AttributesKey actualAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(shipmentSchedule.getM_AttributeSetInstance_ID()))
+					.orElse(AttributesKey.NONE);
+			final AttributesKey expectedAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(expectedASI.getM_AttributeSetInstance_ID()))
+					.orElse(AttributesKey.NONE);
+
+			softly.assertThat(actualAttributesKeys).as("AttributesKeys for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(expectedAttributesKeys);
+		}
+
+		final String internalName = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_InternalName);
+		if (Check.isNotBlank(internalName))
+		{
+			final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), internalName, true, Trx.TRXNAME_None);
+			softly.assertThat(shipmentSchedule.getAD_InputDataSource_ID()).as("AD_InputDataSource_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(dataSource.getAD_InputDataSource_ID());
+		}
+
+		final String deliveryRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_DeliveryRule);
+		if (Check.isNotBlank(deliveryRule))
+		{
+			softly.assertThat(shipmentSchedule.getDeliveryRule()).as("DeliveryRule for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(deliveryRule);
+		}
+
+		softly.assertAll();
 	}
 
 	@Value
@@ -731,92 +902,6 @@ public class M_ShipmentSchedule_StepDef
 				return flaggedForRecompute == isToRecompute ? shipmentScheduleRecord : null;
 			}
 			return shipmentScheduleRecord;
-		}
-	}
-
-	private void validateSchedule(@NonNull final Map<String, String> row)
-	{
-		final String scheduleIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(scheduleIdentifier);
-		InterfaceWrapperHelper.refresh(schedule);
-		assertThat(schedule).isNotNull();
-
-		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_BPartner bPartner = bpartnerTable.get(bpartnerIdentifier);
-		assertThat(schedule.getC_BPartner_ID()).isEqualTo(bPartner.getC_BPartner_ID());
-
-		final String bpLocationIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_BPartner_Location bpLocation = bpartnerLocationTable.get(bpLocationIdentifier);
-		assertThat(schedule.getC_BPartner_Location_ID()).isEqualTo(bpLocation.getC_BPartner_Location_ID());
-
-		final String billBPIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_BPartner billBP = bpartnerTable.get(billBPIdentifier);
-		assertThat(schedule.getBill_BPartner_ID()).isEqualTo(billBP.getC_BPartner_ID());
-
-		final String billBPLocationIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_Bill_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_BPartner_Location billBPLocation = bpartnerLocationTable.get(billBPLocationIdentifier);
-		assertThat(schedule.getBill_Location_ID()).isEqualTo(billBPLocation.getC_BPartner_Location_ID());
-
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_M_Product product = productTable.get(productIdentifier);
-		assertThat(schedule.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
-
-		final String exportStatus = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_ExportStatus);
-		assertThat(schedule.getExportStatus()).isEqualTo(exportStatus);
-
-		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(orderIdentifier))
-		{
-			final I_C_Order order = orderTable.get(orderIdentifier);
-			assertThat(schedule.getC_Order_ID()).isEqualTo(order.getC_Order_ID());
-		}
-
-		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(orderLineIdentifier))
-		{
-			final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
-			assertThat(schedule.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
-		}
-
-		final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(userIdentifier))
-		{
-			final I_AD_User user = userTable.get(userIdentifier);
-			assertThat(schedule.getAD_User_ID()).isEqualTo(user.getAD_User_ID());
-		}
-
-		final String billUserIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_Bill_User_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(billUserIdentifier))
-		{
-			final I_AD_User billUser = userTable.get(billUserIdentifier);
-			assertThat(schedule.getBill_User_ID()).isEqualTo(billUser.getAD_User_ID());
-		}
-
-		final String shipperIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(shipperIdentifier))
-		{
-			final I_M_Shipper shipper = shipperTable.get(shipperIdentifier);
-			assertThat(schedule.getM_Shipper_ID()).isEqualTo(shipper.getM_Shipper_ID());
-		}
-
-		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(attributeSetInstanceIdentifier))
-		{
-			final I_M_AttributeSetInstance expectedASI = attributeSetInstanceTable.get(attributeSetInstanceIdentifier);
-
-			final AttributesKey actualAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(schedule.getM_AttributeSetInstance_ID()))
-					.orElse(AttributesKey.NONE);
-			final AttributesKey expectedAttributesKeys = AttributesKeys.createAttributesKeyFromASIStorageAttributes(AttributeSetInstanceId.ofRepoId(expectedASI.getM_AttributeSetInstance_ID()))
-					.orElse(AttributesKey.NONE);
-
-			assertThat(actualAttributesKeys).isEqualTo(expectedAttributesKeys);
-		}
-
-		final String internalName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_InternalName);
-		if (Check.isNotBlank(internalName))
-		{
-			final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), internalName, true, Trx.TRXNAME_None);
-			assertThat(schedule.getAD_InputDataSource_ID()).isEqualTo(dataSource.getAD_InputDataSource_ID());
 		}
 	}
 

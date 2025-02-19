@@ -1,7 +1,7 @@
 package org.adempiere.ad.table.ddl;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.reflist.ReferenceId;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -97,7 +97,7 @@ public class TableDDLSyncService
 		}
 		else
 		{
-			DB.executeUpdateEx(sqlStatement, ITrx.TRXNAME_ThreadInherited);
+			DB.executeUpdateAndThrowExceptionOnFail(sqlStatement, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
 

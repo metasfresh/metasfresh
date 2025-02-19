@@ -22,9 +22,9 @@
 
 package de.metas.invoicecandidate.api;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.CurrencyPrecision;
@@ -40,6 +40,7 @@ import de.metas.money.Money;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -128,6 +129,10 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	IInvoiceGenerateResult generateInvoicesFromQueue(Properties ctx);
 
+	void setPaymentTermIfMissing(@NonNull I_C_Invoice_Candidate icRecord);
+
+	PaymentTermId getPaymentTermId(@NonNull I_C_Invoice_Candidate ic);
+
 	void setNetAmtToInvoice(I_C_Invoice_Candidate ic);
 
 	/**
@@ -182,6 +187,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * @return true if given candidate is a credit memo (i.e. is manual and price actual < 0)
 	 */
+	@VisibleForTesting
 	boolean isCreditMemo(I_C_Invoice_Candidate cand);
 
 	Money calculateNetAmt(I_C_Invoice_Candidate ic);
@@ -228,7 +234,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * <p>
 	 * IMPORTANT: as of now we suppose this to be the only way of creating ilas! Please don't create them yourself somewhere in the code.
 	 *
-	 * @param note may be null or empty. Use it to provide a user-friendly note that can be displayed to the customer admin/user
 	 * @return returns the invoiceLine allocation that was created or updated never returns <code>null</code>
 	 */
 	I_C_Invoice_Line_Alloc createUpdateIla(InvoiceCandidateAllocCreateRequest request);
@@ -313,7 +318,7 @@ public interface IInvoiceCandBL extends ISingletonService
 	/**
 	 * Update the POReference of a candidate based on the POReference from the order.
 	 * <p>
-	 * For both sales and purchase orders (purchases added as of https://github.com/metasfresh/metasfresh/issues/292).
+	 * For both sales and purchase orders (purchases added as of <a href="https://github.com/metasfresh/metasfresh/issues/292">https://github.com/metasfresh/metasfresh/issues/292</a>).
 	 * <p>
 	 * Candidate will not be saved.
 	 */
@@ -355,6 +360,10 @@ public interface IInvoiceCandBL extends ISingletonService
 	 * Also close the shipment schedules on which the invoice candidates are based
 	 */
 	void closeInvoiceCandidate(I_C_Invoice_Candidate candidate);
+
+	void closeDeliveryInvoiceCandidatesByOrderLineId(@NonNull OrderLineId orderLineId);
+
+	void openDeliveryInvoiceCandidatesByOrderLineId(@NonNull OrderLineId orderLineId);
 
 	/**
 	 * Iterate the candidates to close and close them one by one.
@@ -410,10 +419,14 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	Set<InvoiceCandidateId> voidAndReturnInvoiceCandIds(org.compiere.model.I_C_Invoice invoice);
 
+	/**
+	 * Wait until the given ICs were validated - usually by the async-processor. In unit-test-mode, update them directly. 
+	 *
+	 */
+	void ensureICsAreUpdated(@NonNull InvoiceCandidateIdsSelection invoiceCandidateIdsSelection);
+
 	@NonNull
 	InvoiceCandidatesAmtSelectionSummary calculateAmtSelectionSummary(@Nullable String extraWhereClause);
-
-	void setAsyncBatch(InvoiceCandidateId invoiceCandidateId, AsyncBatchId asyncBatchId);
 
 	Quantity getQtyOrderedStockUOM(I_C_Invoice_Candidate ic);
 

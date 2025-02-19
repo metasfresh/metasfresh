@@ -119,7 +119,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		// FIXME: do we still need this?
 		// Update DB:
 		final String sql = "UPDATE PP_Order SET Processed=? WHERE PP_Order_ID=?";
-		DB.executeUpdateEx(sql, new Object[] { processed, get_ID() }, get_TrxName());
+		DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { processed, get_ID() }, get_TrxName());
 	}
 
 	@Override
@@ -445,10 +445,11 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		final PPOrderId orderId = PPOrderId.ofRepoId(getPP_Order_ID());
 		orderBOMsRepo.markBOMLinesAsNotProcessed(orderId);
 
-		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
-
 		setDocAction(IDocument.ACTION_Complete);
 		setProcessed(false);
+
+		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_REACTIVATE);
+		
 		return true;
 	} // reActivateIt
 

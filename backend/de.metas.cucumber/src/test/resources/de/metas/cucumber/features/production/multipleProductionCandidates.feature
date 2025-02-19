@@ -80,6 +80,7 @@ Feature: create multiple production candidates
   @Id:S0129.1_140
   @Id:S0212.100
   @from:cucumber
+  @flaky
   Scenario:  The manufacturing candidate is created for a sales order line,
   then the sales order is re-opened and the ordered quantity is increased,
   resulting in a second manufacturing candidate to supply the additional demand.
@@ -197,7 +198,7 @@ Feature: create multiple production candidates
       | testResource  | 5 PCE                      |
 
     #
-    # Complete the sales order, update the PP_Order_Candidate qty from 12 PCE to 11 PCE 
+    # Complete the sales order, update the PP_Order_Candidate qty from 12 PCE to 11 PCE
     When the order identified by o_2 is completed
     Then after not more than 60s, PP_Order_Candidates are found
       | Identifier       | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed |
@@ -205,7 +206,7 @@ Feature: create multiple production candidates
     And update PP_Order_Candidates
       | PP_Order_Candidate_ID | QtyToProcess |
       | ppOrderCandidate      | 11           |
-    
+
     #
     # Generate 3 PP_Orders (because of capacity per cycle)
     When generate PP_Order process is invoked for selection, with completeDocument=true and autoProcessCandidateAfterProduction=false

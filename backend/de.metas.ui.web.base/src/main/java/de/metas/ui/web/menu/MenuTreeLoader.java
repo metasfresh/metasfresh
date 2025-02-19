@@ -58,7 +58,7 @@ final class MenuTreeLoader
 	}
 
 	// services
-	private static final transient Logger logger = LogManager.getLogger(MenuTreeLoader.class);
+	private static final Logger logger = LogManager.getLogger(MenuTreeLoader.class);
 	private final transient IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 
 	private static final int DEPTH_Root = 0;

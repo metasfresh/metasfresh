@@ -1,176 +1,116 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for M_Package
- *  @author Adempiere (generated)
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
-public class X_M_Package extends org.compiere.model.PO implements I_M_Package, org.compiere.model.I_Persistent
+@SuppressWarnings("unused")
+public class X_M_Package extends org.compiere.model.PO implements I_M_Package, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -623218126L;
+	private static final long serialVersionUID = 683742974L;
 
-	/** Standard Constructor */
-    public X_M_Package (Properties ctx, int M_Package_ID, String trxName)
+    /** Standard Constructor */
+    public X_M_Package (final Properties ctx, final int M_Package_ID, @Nullable final String trxName)
     {
       super (ctx, M_Package_ID, trxName);
-      /** if (M_Package_ID == 0)
-        {
-			setDocumentNo (null);
-			setIsClosed (false); // N
-			setM_Package_ID (0);
-			setM_Shipper_ID (0);
-			setProcessed (false); // N
-        } */
     }
 
     /** Load Constructor */
-    public X_M_Package (Properties ctx, ResultSet rs, String trxName)
+    public X_M_Package (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
-
-	/** Set Geschäftspartner.
-		@param C_BPartner_ID
-		Bezeichnet einen Geschäftspartner
-	  */
+	/** Load Meta Data */
 	@Override
-	public void setC_BPartner_ID (int C_BPartner_ID)
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
-		if (C_BPartner_ID < 1)
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setC_BPartner_ID (final int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_ID, null);
-		else
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
-	/** Get Geschäftspartner.
-		@return Bezeichnet einen Geschäftspartner
-	  */
 	@Override
-	public int getC_BPartner_ID ()
+	public int getC_BPartner_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
 
-	/** Set Standort.
-		@param C_BPartner_Location_ID
-		Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
 	@Override
-	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID)
+	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
 	{
-		if (C_BPartner_Location_ID < 1)
+		if (C_BPartner_Location_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
-		else
-			set_Value (COLUMNNAME_C_BPartner_Location_ID, Integer.valueOf(C_BPartner_Location_ID));
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
 	}
 
-	/** Get Standort.
-		@return Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	  */
 	@Override
-	public int getC_BPartner_Location_ID ()
+	public int getC_BPartner_Location_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
 	}
 
-	/** Set Eingangsdatum.
-		@param DateReceived
-		Date a product was received
-	  */
 	@Override
-	public void setDateReceived (java.sql.Timestamp DateReceived)
+	public void setDateReceived (final @Nullable java.sql.Timestamp DateReceived)
 	{
 		set_Value (COLUMNNAME_DateReceived, DateReceived);
 	}
 
-	/** Get Eingangsdatum.
-		@return Date a product was received
-	  */
 	@Override
-	public java.sql.Timestamp getDateReceived ()
+	public java.sql.Timestamp getDateReceived() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_DateReceived);
+		return get_ValueAsTimestamp(COLUMNNAME_DateReceived);
 	}
 
-	/** Set Beschreibung.
-		@param Description Beschreibung	  */
 	@Override
-	public void setDescription (java.lang.String Description)
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Beschreibung.
-		@return Beschreibung	  */
 	@Override
-	public java.lang.String getDescription ()
+	public java.lang.String getDescription() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
-	/** Set Nr..
-		@param DocumentNo
-		Document sequence number of the document
-	  */
 	@Override
-	public void setDocumentNo (java.lang.String DocumentNo)
+	public void setDocumentNo (final java.lang.String DocumentNo)
 	{
 		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
-	/** Get Nr..
-		@return Document sequence number of the document
-	  */
 	@Override
-	public java.lang.String getDocumentNo ()
+	public java.lang.String getDocumentNo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_DocumentNo);
+		return get_ValueAsString(COLUMNNAME_DocumentNo);
 	}
 
-	/** Set Geschlossen.
-		@param IsClosed Geschlossen	  */
 	@Override
-	public void setIsClosed (boolean IsClosed)
+	public void setIsClosed (final boolean IsClosed)
 	{
-		set_Value (COLUMNNAME_IsClosed, Boolean.valueOf(IsClosed));
+		set_Value (COLUMNNAME_IsClosed, IsClosed);
 	}
 
-	/** Get Geschlossen.
-		@return Geschlossen	  */
 	@Override
-	public boolean isClosed ()
+	public boolean isClosed() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsClosed);
-		if (oo != null)
-		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsClosed);
 	}
 
 	@Override
@@ -180,82 +120,54 @@ public class X_M_Package extends org.compiere.model.PO implements I_M_Package, o
 	}
 
 	@Override
-	public void setM_InOut(org.compiere.model.I_M_InOut M_InOut)
+	public void setM_InOut(final org.compiere.model.I_M_InOut M_InOut)
 	{
 		set_ValueFromPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class, M_InOut);
 	}
 
-	/** Set Lieferung/Wareneingang.
-		@param M_InOut_ID
-		Material Shipment Document
-	  */
 	@Override
-	public void setM_InOut_ID (int M_InOut_ID)
+	public void setM_InOut_ID (final int M_InOut_ID)
 	{
-		if (M_InOut_ID < 1)
+		if (M_InOut_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_InOut_ID, null);
-		else
-			set_ValueNoCheck (COLUMNNAME_M_InOut_ID, Integer.valueOf(M_InOut_ID));
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_InOut_ID, M_InOut_ID);
 	}
 
-	/** Get Lieferung/Wareneingang.
-		@return Material Shipment Document
-	  */
 	@Override
-	public int getM_InOut_ID ()
+	public int getM_InOut_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOut_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_InOut_ID);
 	}
 
-	/** Set Packstück.
-		@param M_Package_ID
-		Shipment Package
-	  */
 	@Override
-	public void setM_Package_ID (int M_Package_ID)
+	public void setM_Package_ID (final int M_Package_ID)
 	{
-		if (M_Package_ID < 1)
+		if (M_Package_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Package_ID, null);
-		else
-			set_ValueNoCheck (COLUMNNAME_M_Package_ID, Integer.valueOf(M_Package_ID));
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Package_ID, M_Package_ID);
 	}
 
-	/** Get Packstück.
-		@return Shipment Package
-	  */
 	@Override
-	public int getM_Package_ID ()
+	public int getM_Package_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Package_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Package_ID);
 	}
 
-
-	/** Set Verpackung.
-		@param M_PackagingContainer_ID Verpackung	  */
 	@Override
-	public void setM_PackagingContainer_ID (int M_PackagingContainer_ID)
+	public void setM_PackagingContainer_ID (final int M_PackagingContainer_ID)
 	{
-		if (M_PackagingContainer_ID < 1)
+		if (M_PackagingContainer_ID < 1) 
 			set_Value (COLUMNNAME_M_PackagingContainer_ID, null);
-		else
-			set_Value (COLUMNNAME_M_PackagingContainer_ID, Integer.valueOf(M_PackagingContainer_ID));
+		else 
+			set_Value (COLUMNNAME_M_PackagingContainer_ID, M_PackagingContainer_ID);
 	}
 
-	/** Get Verpackung.
-		@return Verpackung	  */
 	@Override
-	public int getM_PackagingContainer_ID ()
+	public int getM_PackagingContainer_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_PackagingContainer_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_PackagingContainer_ID);
 	}
 
 	@Override
@@ -265,189 +177,136 @@ public class X_M_Package extends org.compiere.model.PO implements I_M_Package, o
 	}
 
 	@Override
-	public void setM_Shipper(org.compiere.model.I_M_Shipper M_Shipper)
+	public void setM_Shipper(final org.compiere.model.I_M_Shipper M_Shipper)
 	{
 		set_ValueFromPO(COLUMNNAME_M_Shipper_ID, org.compiere.model.I_M_Shipper.class, M_Shipper);
 	}
 
-	/** Set Lieferweg.
-		@param M_Shipper_ID
-		Method or manner of product delivery
-	  */
 	@Override
-	public void setM_Shipper_ID (int M_Shipper_ID)
+	public void setM_Shipper_ID (final int M_Shipper_ID)
 	{
-		if (M_Shipper_ID < 1)
+		if (M_Shipper_ID < 1) 
 			set_Value (COLUMNNAME_M_Shipper_ID, null);
-		else
-			set_Value (COLUMNNAME_M_Shipper_ID, Integer.valueOf(M_Shipper_ID));
+		else 
+			set_Value (COLUMNNAME_M_Shipper_ID, M_Shipper_ID);
 	}
 
-	/** Get Lieferweg.
-		@return Method or manner of product delivery
-	  */
 	@Override
-	public int getM_Shipper_ID ()
+	public int getM_Shipper_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Shipper_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Shipper_ID);
 	}
 
-	/** Set Ziel-Lager.
-		@param M_Warehouse_Dest_ID Ziel-Lager	  */
 	@Override
-	public void setM_Warehouse_Dest_ID (int M_Warehouse_Dest_ID)
+	public void setM_Warehouse_Dest_ID (final int M_Warehouse_Dest_ID)
 	{
-		if (M_Warehouse_Dest_ID < 1)
+		if (M_Warehouse_Dest_ID < 1) 
 			set_Value (COLUMNNAME_M_Warehouse_Dest_ID, null);
-		else
-			set_Value (COLUMNNAME_M_Warehouse_Dest_ID, Integer.valueOf(M_Warehouse_Dest_ID));
+		else 
+			set_Value (COLUMNNAME_M_Warehouse_Dest_ID, M_Warehouse_Dest_ID);
 	}
 
-	/** Get Ziel-Lager.
-		@return Ziel-Lager	  */
 	@Override
-	public int getM_Warehouse_Dest_ID ()
+	public int getM_Warehouse_Dest_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_Dest_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Warehouse_Dest_ID);
 	}
 
-	/** Set Package Net Total.
-		@param PackageNetTotal Package Net Total	  */
 	@Override
-	public void setPackageNetTotal (java.math.BigDecimal PackageNetTotal)
+	public void setPackageNetTotal (final @Nullable BigDecimal PackageNetTotal)
 	{
 		set_Value (COLUMNNAME_PackageNetTotal, PackageNetTotal);
 	}
 
-	/** Get Package Net Total.
-		@return Package Net Total	  */
 	@Override
-	public java.math.BigDecimal getPackageNetTotal ()
+	public BigDecimal getPackageNetTotal() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PackageNetTotal);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PackageNetTotal);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Package Weight.
-		@param PackageWeight
-		Weight of a package
-	  */
 	@Override
-	public void setPackageWeight (java.math.BigDecimal PackageWeight)
+	public void setPackageWeight (final @Nullable BigDecimal PackageWeight)
 	{
 		set_Value (COLUMNNAME_PackageWeight, PackageWeight);
 	}
 
-	/** Get Package Weight.
-		@return Weight of a package
-	  */
 	@Override
-	public java.math.BigDecimal getPackageWeight ()
+	public BigDecimal getPackageWeight() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PackageWeight);
-		if (bd == null)
-			 return BigDecimal.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PackageWeight);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Verarbeitet.
-		@param Processed
-		Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
-	  */
 	@Override
-	public void setProcessed (boolean Processed)
+	public void setPOReference (final @Nullable java.lang.String POReference)
 	{
-		set_Value (COLUMNNAME_Processed, Boolean.valueOf(Processed));
+		set_Value (COLUMNNAME_POReference, POReference);
 	}
 
-	/** Get Verarbeitet.
-		@return Checkbox sagt aus, ob der Datensatz verarbeitet wurde.
-	  */
 	@Override
-	public boolean isProcessed ()
+	public java.lang.String getPOReference() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processed);
-		if (oo != null)
-		{
-			 if (oo instanceof Boolean)
-				 return ((Boolean)oo).booleanValue();
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsString(COLUMNNAME_POReference);
 	}
 
-	/** Set Info Received.
-		@param ReceivedInfo
-		Information of the receipt of the package (acknowledgement)
-	  */
 	@Override
-	public void setReceivedInfo (java.lang.String ReceivedInfo)
+	public void setProcessed (final boolean Processed)
+	{
+		set_Value (COLUMNNAME_Processed, Processed);
+	}
+
+	@Override
+	public boolean isProcessed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
+	}
+
+	@Override
+	public void setReceivedInfo (final @Nullable java.lang.String ReceivedInfo)
 	{
 		set_Value (COLUMNNAME_ReceivedInfo, ReceivedInfo);
 	}
 
-	/** Get Info Received.
-		@return Information of the receipt of the package (acknowledgement)
-	  */
 	@Override
-	public java.lang.String getReceivedInfo ()
+	public java.lang.String getReceivedInfo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_ReceivedInfo);
+		return get_ValueAsString(COLUMNNAME_ReceivedInfo);
 	}
 
-	/** Set Lieferdatum.
-		@param ShipDate
-		Shipment Date/Time
-	  */
 	@Override
-	public void setShipDate (java.sql.Timestamp ShipDate)
+	public void setShipDate (final @Nullable java.sql.Timestamp ShipDate)
 	{
 		set_Value (COLUMNNAME_ShipDate, ShipDate);
 	}
 
-	/** Get Lieferdatum.
-		@return Shipment Date/Time
-	  */
 	@Override
-	public java.sql.Timestamp getShipDate ()
+	public java.sql.Timestamp getShipDate() 
 	{
-		return (java.sql.Timestamp)get_Value(COLUMNNAME_ShipDate);
+		return get_ValueAsTimestamp(COLUMNNAME_ShipDate);
 	}
 
-	/** Set Tracking Info.
-		@param TrackingInfo Tracking Info	  */
 	@Override
-	public void setTrackingInfo (java.lang.String TrackingInfo)
+	public void setTrackingInfo (final @Nullable java.lang.String TrackingInfo)
 	{
 		set_Value (COLUMNNAME_TrackingInfo, TrackingInfo);
 	}
 
-	/** Get Tracking Info.
-		@return Tracking Info	  */
 	@Override
-	public java.lang.String getTrackingInfo ()
+	public java.lang.String getTrackingInfo() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_TrackingInfo);
+		return get_ValueAsString(COLUMNNAME_TrackingInfo);
 	}
 
 	@Override
-	public void setTrackingURL (java.lang.String TrackingURL)
+	public void setTrackingURL (final @Nullable java.lang.String TrackingURL)
 	{
 		set_Value (COLUMNNAME_TrackingURL, TrackingURL);
 	}
 
 	@Override
-	public java.lang.String getTrackingURL()
+	public java.lang.String getTrackingURL() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_TrackingURL);
+		return get_ValueAsString(COLUMNNAME_TrackingURL);
 	}
-
 }

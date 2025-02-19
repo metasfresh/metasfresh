@@ -24,6 +24,8 @@ package de.metas.handlingunits.inout.impl;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
 import de.metas.document.IDocTypeDAO;
@@ -55,6 +57,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.logging.LogManager;
+import de.metas.material.MovementType;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.product.ProductId;
@@ -110,7 +113,7 @@ public class HUInOutBL implements IHUInOutBL
 	@Override
 	public I_M_InOutLine getLineById(@NonNull final InOutLineId inoutLineId)
 	{
-		return inOutDAO.getLineById(inoutLineId, I_M_InOutLine.class);
+		return inOutDAO.getLineByIdInTrx(inoutLineId, I_M_InOutLine.class);
 	}
 
 	@Override
@@ -231,7 +234,7 @@ public class HUInOutBL implements IHUInOutBL
 		final IContextAware context = InterfaceWrapperHelper.getContextAware(inout);
 		final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing(context);
 		// If we deal with a receipt, we shall collect (and move back to Gebinde lager), only those packing materials that we own.
-		if (!inout.isSOTrx())
+		if (!MovementType.ofCode(inout.getMovementType()).isOutboundTransaction())
 		{
 			huContext.getHUPackingMaterialsCollector().setCollectIfOwnPackingMaterialsOnly(true);
 		}
@@ -242,7 +245,7 @@ public class HUInOutBL implements IHUInOutBL
 	}
 
 	@Override
-	public void updateEffectiveValues(final I_M_InOutLine shipmentLine)
+	public void updateEffectiveValues(@NonNull final I_M_InOutLine shipmentLine)
 	{
 		// avoid a huge development mistake
 		Check.assume(shipmentLine.getM_InOut().isSOTrx(), "{} is a shipment line and not a receipt line", shipmentLine);
@@ -320,8 +323,8 @@ public class HUInOutBL implements IHUInOutBL
 	public boolean isEmptiesReturn(final I_M_InOut inOut)
 	{
 		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
-				.docSubType(X_C_DocType.DOCSUBTYPE_Leergutanlieferung)
+				.docBaseType(DocBaseType.MaterialReceipt)
+				.docSubType(DocSubType.EmptiesReceipt)
 				.build();
 
 		return docTypeDAO.queryMatchesDocTypeId(docTypeQuery, inOut.getC_DocType_ID());

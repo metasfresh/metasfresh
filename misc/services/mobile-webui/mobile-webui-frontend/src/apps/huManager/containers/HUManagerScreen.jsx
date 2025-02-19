@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
 
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -7,18 +6,17 @@ import { trl } from '../../../utils/translations';
 import * as api from '../api';
 import { changeClearanceStatus, clearLoadedData, handlingUnitLoaded } from '../actions';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
-import { huManagerDisposeLocation, huManagerMoveLocation } from '../routes';
+import { huManagerDisposeLocation, huManagerHuLabelsLocation, huManagerMoveLocation } from '../routes';
 
 import { HUInfoComponent } from '../components/HUInfoComponent';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
-
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import ClearanceDialog from '../components/ClearanceDialog';
 import { toastError } from '../../../utils/toast';
 import ChangeHUQtyDialog from '../../../components/dialogs/ChangeHUQtyDialog';
 import ChangeCurrentLocatorDialog from '../components/ChangeCurrentLocatorDialog';
 import { HU_ATTRIBUTE_BestBeforeDate, HU_ATTRIBUTE_LotNo } from '../../../constants/HUAttributes';
+import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 
 const MODALS = {
   CHANGE_QTY: 'CHANGE_QTY',
@@ -27,17 +25,12 @@ const MODALS = {
 };
 
 const HUManagerScreen = () => {
+  const { history } = useScreenDefinition({ back: '/' });
+
   const dispatch = useDispatch();
-  const history = useHistory();
   const [modalToDisplay, setModalToDisplay] = useState('');
   const [currentLocatorQRCode, setCurrentLocatorQRCode] = useState();
   const [handlingUnitInfo, setHandlingUnitInfo] = useHandlingUnitInfo();
-
-  const { url } = useRouteMatch();
-  useEffect(() => {
-    // IMPORTANT, else it won't restore the title when we move back to this screen
-    dispatch(pushHeaderEntry({ location: url }));
-  }, []);
 
   const resolveScannedBarcode = ({ scannedBarcode }) => {
     return api.getHUByQRCode(scannedBarcode).then((handlingUnitInfo) => ({ handlingUnitInfo }));
@@ -57,6 +50,9 @@ const HUManagerScreen = () => {
   };
   const onScanAgainClick = () => {
     dispatch(clearLoadedData());
+  };
+  const onPrintLabelsClicked = () => {
+    history.push(huManagerHuLabelsLocation());
   };
   const onClearanceChange = ({ clearanceNote, clearanceStatus }) => {
     dispatch(changeClearanceStatus({ huId: handlingUnitInfo.id, clearanceNote, clearanceStatus })) //
@@ -153,6 +149,10 @@ const HUManagerScreen = () => {
               onClick={() => setModalToDisplay(MODALS.CHANGE_QTY)}
             />
           )}
+          <ButtonWithIndicator
+            caption={trl('huManager.action.printLabels.buttonCaption')}
+            onClick={onPrintLabelsClicked}
+          />
           <ButtonWithIndicator caption={trl('huManager.action.scanAgain.buttonCaption')} onClick={onScanAgainClick} />
         </div>
       </>

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -205,6 +205,14 @@ public class M_PriceList_StepDef
 		return currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
 	}
 
+	private I_M_PriceList getExistingPriceList(final boolean soTrx, final int pricingSystemId, final CountryId countryId)
+	{
+		final I_M_PriceList m_priceList;
+		final List<I_M_PriceList> existingPriceLists = priceListDAO.retrievePriceLists(PricingSystemId.ofRepoId(pricingSystemId), countryId, SOTrx.ofBoolean(soTrx));
+		m_priceList = existingPriceLists.isEmpty() ? InterfaceWrapperHelper.newInstance(I_M_PriceList.class) : existingPriceLists.get(0);
+		return m_priceList;
+	}
+
 	@NonNull
 	private static CurrencyCode extractCurrencyCode(final DataTableRow row)
 	{
@@ -251,6 +259,30 @@ public class M_PriceList_StepDef
 	public void add_M_ProductPrice(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(this::createM_ProductPrice);
+	}
+
+	@And("update metasfresh masterdata M_ProductPrice")
+	public void update_masterdata_M_ProductPrice(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps();
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			updateMasterDataM_ProductPrice(tableRow);
+		}
+	}
+
+	private void updateMasterDataM_ProductPrice(@NonNull final Map<String, String> tableRow)
+	{
+		final int productPriceId = DataTableUtil.extractIntForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_ProductPrice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		final I_M_ProductPrice productPriceRecord = InterfaceWrapperHelper.load(productPriceId, I_M_ProductPrice.class);
+
+		final String x12de355Code = DataTableUtil.extractStringForColumnName(tableRow, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+		final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+
+		productPriceRecord.setC_UOM_ID(productPriceUomId.getRepoId());
+
+		saveRecord(productPriceRecord);
 	}
 
 	@And("update M_ProductPrice:")
@@ -318,6 +350,7 @@ public class M_PriceList_StepDef
 				? InterfaceWrapperHelper.newInstance(de.metas.handlingunits.model.I_M_ProductPrice.class)
 				: InterfaceWrapperHelper.load(existingProductPrice.getM_ProductPrice_ID(), de.metas.handlingunits.model.I_M_ProductPrice.class);
 
+		productPrice.setIsActive(true);
 		productPrice.setM_PriceList_Version_ID(priceListVersion.getM_PriceList_Version_ID());
 
 		productPrice.setM_Product_ID(productId);

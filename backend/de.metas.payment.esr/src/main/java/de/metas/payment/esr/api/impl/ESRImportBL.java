@@ -18,6 +18,7 @@ import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.calendar.IPeriodBL;
+import de.metas.document.DocBaseType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.AdMessageKey;
@@ -43,6 +44,7 @@ import de.metas.payment.esr.dataimporter.ESRImportEnqueuer;
 import de.metas.payment.esr.dataimporter.ESRImportEnqueuerDataSource;
 import de.metas.payment.esr.dataimporter.ESRStatement;
 import de.metas.payment.esr.dataimporter.ESRTransaction;
+import de.metas.payment.esr.dataimporter.ESRType;
 import de.metas.payment.esr.dataimporter.IESRDataImporter;
 import de.metas.payment.esr.dataimporter.impl.v11.ESRTransactionLineMatcherUtil;
 import de.metas.payment.esr.exception.ESRImportLockedException;
@@ -65,7 +67,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MAllocationHdr;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.TrxRunnable;
@@ -370,7 +371,7 @@ public class ESRImportBL implements IESRImportBL
 		// task 05917: check if the the payment date from the ESR file is OK for us
 		try
 		{
-			periodBL.testPeriodOpen(Env.getCtx(), importLine.getPaymentDate(), X_C_DocType.DOCBASETYPE_APPayment, importLine.getAD_Org_ID());
+			periodBL.testPeriodOpen(Env.getCtx(), importLine.getPaymentDate(), DocBaseType.PurchasePayment, importLine.getAD_Org_ID());
 		}
 		catch (PeriodClosedException p)
 		{
@@ -604,6 +605,16 @@ public class ESRImportBL implements IESRImportBL
 			return true;
 		}
 
+		// Check for SCOR ESR Type
+		if (ESRTransactionLineMatcherUtil.isSCORLine(line))
+		{
+			line.setESR_Payment_Action(X_ESR_ImportLine.ESR_PAYMENT_ACTION_Unknown_Invoice);
+			line.setIsValid(true);
+			line.setProcessed(true);
+			esrImportDAO.save(line);
+			return true;
+		}
+
 		// skip reverse booking lines from regular processing
 		// the admin should deal with them manually
 		if (isReverseBookingLine(line))
@@ -664,6 +675,7 @@ public class ESRImportBL implements IESRImportBL
 
 		return existentPaymentId.orElse(null);
 	}
+
 
 	/**
 	 * @task https://github.com/metasfresh/metasfresh/issues/2118

@@ -26,6 +26,9 @@ import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -33,6 +36,7 @@ import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Properties;
@@ -44,17 +48,49 @@ import java.util.Properties;
  */
 public interface ICurrencyBL extends ISingletonService
 {
+	/**
+	 * @param conversionTypeId optional; if {@code null}, the default conversion-type for the given client, org and date is assumed.
+	 */
 	@NonNull CurrencyConversionContext createCurrencyConversionContext(
-			@Nullable LocalDate convDate,
+			@NonNull Instant conversionDate,
 			@Nullable CurrencyConversionTypeId conversionTypeId,
 			@NonNull ClientId clientId,
 			@NonNull OrgId orgId);
 
+	/**
+	 * @return a context with the default conversion for the given client, org and date.
+	 */
 	@NonNull CurrencyConversionContext createCurrencyConversionContext(
-			@NonNull LocalDate convDate,
+			@NonNull Instant conversionDate,
+			@NonNull ClientId clientId,
+			@NonNull OrgId orgId);
+
+	@NonNull
+	CurrencyConversionContext createCurrencyConversionContext(
+			@NonNull InstantAndOrgId conversionDate,
+			@Nullable CurrencyConversionTypeId conversionTypeId,
+			@NonNull ClientId clientId);
+
+	@NonNull
+	CurrencyConversionContext createCurrencyConversionContext(
+			@NonNull LocalDateAndOrgId conversionDate,
+			@Nullable CurrencyConversionTypeId conversionTypeId,
+			@NonNull ClientId clientId);
+
+	/**
+	 * @param conversionType optional; if {@code null}, then {@link ConversionTypeMethod#Spot} is assumed.
+	 */
+	@NonNull CurrencyConversionContext createCurrencyConversionContext(
+			@NonNull Instant conversionDate,
 			@Nullable ConversionTypeMethod conversionType,
 			@NonNull ClientId clientId,
 			@NonNull OrgId orgId);
+
+	@NonNull
+	CurrencyConversionContext createCurrencyConversionContext(
+			@NonNull LocalDateAndOrgId conversionDate,
+			@Nullable ConversionTypeMethod conversionType,
+			@NonNull ClientId clientId);
 
 	/**
 	 * @return base currency of AD_Client and AD_Org which are set in context.
@@ -80,8 +116,8 @@ public interface ICurrencyBL extends ISingletonService
 	BigDecimal convertBase(
 			BigDecimal amt,
 			CurrencyId currencyFromId,
-			LocalDate convDate,
-			CurrencyConversionTypeId conversionTypeId,
+			@NonNull Instant convDate,
+			@Nullable CurrencyConversionTypeId conversionTypeId,
 			@NonNull ClientId clientId,
 			@NonNull OrgId orgId);
 
@@ -91,8 +127,8 @@ public interface ICurrencyBL extends ISingletonService
 			BigDecimal amt,
 			CurrencyId currencyFromId,
 			CurrencyId currencyToId,
-			LocalDate convDate,
-			CurrencyConversionTypeId conversionTypeId,
+			@NonNull Instant convDate,
+			@Nullable CurrencyConversionTypeId conversionTypeId,
 			@NonNull ClientId clientId,
 			@NonNull OrgId orgId);
 
@@ -132,19 +168,19 @@ public interface ICurrencyBL extends ISingletonService
 	}
 
 	Optional<CurrencyRate> getCurrencyRateIfExists(
-			CurrencyId currencyFromId,
-			CurrencyId currencyToId,
-			LocalDate convDate,
-			CurrencyConversionTypeId conversionTypeId,
-			ClientId clientId,
-			OrgId orgId);
+			@NonNull CurrencyId currencyFromId,
+			@NonNull CurrencyId currencyToId,
+			@NonNull Instant convDate,
+			@Nullable CurrencyConversionTypeId conversionTypeId,
+			@NonNull ClientId clientId,
+			@NonNull OrgId orgId);
 
 	CurrencyConversionTypeId getCurrencyConversionTypeId(@NonNull ConversionTypeMethod type);
 
 	CurrencyRate getCurrencyRate(
 			@NonNull CurrencyId currencyFromId,
 			@NonNull CurrencyId currencyToId,
-			@Nullable LocalDate convDate,
+			@NonNull Instant convDate,
 			@Nullable CurrencyConversionTypeId conversionTypeId,
 			@NonNull ClientId clientId,
 			@NonNull OrgId orgId);
@@ -158,5 +194,24 @@ public interface ICurrencyBL extends ISingletonService
 
 	@NonNull
 	CurrencyCode getCurrencyCodeById(@NonNull CurrencyId currencyId);
+
+	@NonNull
+	Currency getByCurrencyCode(@NonNull CurrencyCode currencyCode);
+
+	@NonNull
+	Money convertToBase(@NonNull CurrencyConversionContext conversionCtx, @NonNull Money amt);
+
+	CurrencyPrecision getStdPrecision(CurrencyId currencyId);
+
+	CurrencyPrecision getCostingPrecision(CurrencyId currencyId);
+
+	@NonNull
+	CurrencyConversionTypeId getCurrencyConversionTypeIdOrDefault(@NonNull OrgId orgId, @Nullable String conversionTypeName);
+
+	Money convert(
+			@NonNull Money amount,
+			@NonNull CurrencyId toCurrencyId,
+			@NonNull LocalDate conversionDate,
+			@NonNull ClientAndOrgId clientAndOrgId);
 
 }

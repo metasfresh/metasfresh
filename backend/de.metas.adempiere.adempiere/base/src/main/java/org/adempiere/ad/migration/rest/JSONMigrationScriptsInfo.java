@@ -23,7 +23,7 @@
 package org.adempiere.ad.migration.rest;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -40,14 +40,10 @@ public class JSONMigrationScriptsInfo
 	String migrationScriptDirectory;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@ApiModelProperty( //
-			allowEmptyValue = true, //
-			value = "The file name of the SQL script to which the system currently records.")
+	@Schema(nullable = true, description = "The file name of the SQL script to which the system currently records.")
 	String currentScript;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@ApiModelProperty( //
-			allowEmptyValue = true, //
-			value = "The file names of recorded SQL scripts.")
+	@Schema(nullable = true, description = "The file names of recorded SQL scripts.")
 	List<String> scripts;
 }

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -11,7 +11,7 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNEcleanupSS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
@@ -53,6 +53,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Product;
@@ -60,6 +61,7 @@ import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_Product;
+import org.compiere.util.DB;
 
 import java.util.List;
 import java.util.Map;
@@ -67,13 +69,11 @@ import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.PRODUCT_CATEGORY_STANDARD_ID;
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
-import static org.compiere.model.I_M_Product.COLUMNNAME_IsStocked;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_Category_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_Value;
 
@@ -111,6 +111,12 @@ public class M_Product_StepDef
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(I_M_Product.COLUMNNAME_M_Product_ID)
 				.forEach(this::createM_Product);
+	}
+
+	@Given("ensure product accounts exist")
+	public void metasfresh_ensure_product_accounts()
+	{
+		DB.executeFunctionCallEx(ITrx.TRXNAME_None, "select createm_product_acct();", null);
 	}
 
 	@And("no product with value {string} exists")
@@ -155,13 +161,15 @@ public class M_Product_StepDef
 			bPartnerProduct.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			bPartnerProduct.setM_Product_ID(productTable.get(productIdentifier).getM_Product_ID());
 			bPartnerProduct.setC_BPartner_ID(bpartnerTable.get(bpartnerIdentifier).getC_BPartner_ID());
-			bPartnerProduct.setIsCurrentVendor(true);
 			bPartnerProduct.setUsedForVendor(true);
 			bPartnerProduct.setUsedForCustomer(true);
 			bPartnerProduct.setShelfLifeMinPct(0);
 			bPartnerProduct.setShelfLifeMinDays(0);
 			bPartnerProduct.setIsExcludedFromSale(isExcludedFromSale);
 			bPartnerProduct.setIsExcludedFromPurchase(isExcludedFromPurchase);
+
+			final Boolean isCurrentVendor = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor, true);
+			bPartnerProduct.setIsCurrentVendor(isCurrentVendor);
 
 			if (Check.isNotBlank(exclusionFromSaleReason))
 			{
@@ -241,11 +249,9 @@ public class M_Product_StepDef
 	@Given("update M_Product:")
 	public void update_M_Product(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> productTableList = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : productTableList)
-		{
-			updateMProduct(dataTableRow);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_M_Product.COLUMNNAME_M_Product_ID)
+				.forEach(this::updateMProduct);
 	}
 
 	private void createM_Product(@NonNull DataTableRow tableRow)
@@ -356,24 +362,15 @@ public class M_Product_StepDef
 		return productType;
 	}
 
-	private void updateMProduct(@NonNull final Map<String, String> tableRow)
+	private void updateMProduct(@NonNull final DataTableRow row)
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_M_Product productRecord = productTable.get(productIdentifier);
+		;
+		final I_M_Product productRecord = row.getAsIdentifier().lookupIn(productTable);
 		assertThat(productRecord).isNotNull();
 
-		final String gtin = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_Product.COLUMNNAME_GTIN);
-
-		if (Check.isNotBlank(gtin))
-		{
-			productRecord.setGTIN(gtin);
-		}
-
-		final Boolean isStocked = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, COLUMNNAME_IsStocked);
-		if (isStocked != null)
-		{
-			productRecord.setIsStocked(isStocked);
-		}
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_Value).ifPresent(productRecord::setValue);
+		row.getAsOptionalString(I_M_Product.COLUMNNAME_GTIN).ifPresent(productRecord::setGTIN);
+		row.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsStocked).ifPresent(productRecord::setIsStocked);
 
 		saveRecord(productRecord);
 	}

@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DisplayType;
 
 import javax.annotation.Nullable;
@@ -14,6 +15,8 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -24,6 +27,9 @@ import java.time.format.DateTimeFormatter;
  */
 public class Database
 {
+	private final static DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSSSSS");
+	private final static DateTimeFormatter DATE_TIME_UTC_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS").withZone(ZoneOffset.UTC);
+
 	/**
 	 * PostgreSQL ID
 	 */
@@ -50,9 +56,11 @@ public class Database
 
 	public static String TO_DATE(@NonNull final ZonedDateTime zdt)
 	{
+		final long microseconds = zdt.getNano() / 1000;
+
 		return "'"
 				+ zdt.getYear() + "-" + zdt.getMonthValue() + "-" + zdt.getDayOfMonth()
-				+ " " + zdt.getHour() + ":" + zdt.getMinute() + ":" + zdt.getSecond()
+				+ " " + zdt.getHour() + ":" + zdt.getMinute() + ":" + zdt.getSecond() + "." + microseconds
 				+ " " + zdt.getZone().getId()
 				+ "'::timestamptz";
 	}
@@ -61,7 +69,6 @@ public class Database
 	{
 		return TO_DATE(instant.atZone(SystemTime.zoneId()));
 	}
-
 
 	/**
 	 * Create SQL TO Date String from LocalDate (without time zone)
@@ -72,47 +79,47 @@ public class Database
 	@NonNull
 	public static String TO_DATE(@NonNull final LocalDate localDate)
 	{
-		return " "
-				+ "'"
-				+ localDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
-				+ "'"
-				+ "::timestamp without time zone"
-				+ " ";
+		return "'" + localDate.format(DateTimeFormatter.ISO_LOCAL_DATE) + "'::timestamp without time zone";
+	}
+
+	@NonNull
+	public static String TO_DATE(@NonNull final LocalTime localTime)
+	{
+		return "'1970-01-01 " + localTime.format(TIME_FORMATTER) + "'::timestamp without time zone";
 	}
 
 	/**
 	 * Create SQL TO Date String from Timestamp
 	 *
-	 * @param time    Date to be converted; if {@code null}, then the current time is returned.
-	 * @param dayOnly true if time set to 00:00:00
-	 * @return TO_DATE(' 2001 - 01 - 30 18 : 10 : 20 ', ' ' YYYY - MM - DD HH24 : MI : SS ')
-	 * or TO_DATE('2001-01-30',''YYYY-MM-DD')
+	 * @param timestamp Date to be converted; if {@code null}, then the current time is returned.
 	 */
-	public static String TO_DATE(@Nullable final Timestamp time, final boolean dayOnly)
+	public static String TO_DATE(@Nullable final Timestamp timestamp, final int displayType)
 	{
-		if (time == null)
+		if (timestamp == null)
 		{
-			if (dayOnly)
-			{
-				return "current_date()";
-			}
 			return "current_date()";
 		}
 
-		final StringBuilder dateString = new StringBuilder("TO_TIMESTAMP('");
-		// YYYY-MM-DD HH24:MI:SS.mmmm JDBC Timestamp format
-		final String myDate = time.toString();
-		if (dayOnly)
+		if (displayType == DisplayType.Date)
 		{
-			dateString.append(myDate.substring(0, 10));
-			dateString.append("','YYYY-MM-DD')");
+			final LocalDate localDate = timestamp.toLocalDateTime().toLocalDate();
+			return TO_DATE(localDate);
+		}
+		else if (displayType == DisplayType.Time)
+		{
+			final LocalTime localTime = timestamp.toLocalDateTime().toLocalTime();
+			return TO_DATE(localTime);
+		}
+		else if (displayType == DisplayType.DateTime)
+		{
+			return "TO_TIMESTAMP('" + DATE_TIME_UTC_FORMATTER.format(timestamp.toInstant())
+					// YYYY-MM-DD HH24:MI:SS.US JDBC Timestamp format; note that "US" means "Microsecond (000000-999999)"  (UTC time zone)
+					+ "','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC'";
 		}
 		else
 		{
-			dateString.append(myDate.substring(0, myDate.indexOf('.')));    // cut off miliseconds
-			dateString.append("','YYYY-MM-DD HH24:MI:SS')");
+			throw new AdempiereException("Invalid displayType=" + displayType);
 		}
-		return dateString.toString();
 	}   // TO_DATE
 
 	/**
@@ -168,7 +175,7 @@ public class Database
 
 	/**
 	 * Convert {@link DecimalFormat} pattern to PostgreSQL's number formatting pattern
-	 *
+	 * <p>
 	 * See http://www.postgresql.org/docs/9.1/static/functions-formatting.html#FUNCTIONS-FORMATTING-NUMERIC-TABLE.
 	 *
 	 * @param formatPattern

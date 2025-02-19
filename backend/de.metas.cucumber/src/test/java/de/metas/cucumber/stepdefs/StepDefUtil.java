@@ -99,6 +99,13 @@ public class StepDefUtil
 		Thread.sleep(waitingTimeMillis);
 	}
 
+	/**
+	 * Waits for the given {@code worker} to supply an optional that is present.
+	 * Fails if this doesn't happen within the given {@code maxWaitSeconds} timeout.
+	 *
+	 * @param maxWaitSeconds set to a value <=0 to wait forever (use only when developing locally)
+	 */
+	@Deprecated
 	public <T> T tryAndWaitForItem(
 			final long maxWaitSeconds,
 			final long checkingIntervalMs,
@@ -178,10 +185,10 @@ public class StepDefUtil
 			throw e;
 		}
 
-		if (logContext != null)
-		{
-			logContext.run();
-		}
+			if (logContext != null)
+			{
+				logContext.run();
+			}
 		Assertions.fail("the given worker didn't succeed within the " + maxWaitSeconds + "second timeout");
 		return null;
 	}
@@ -335,7 +342,7 @@ public class StepDefUtil
 			throw e;
 		}
 	}
-	
+
 	public List<String> splitByColon(@NonNull final String s)
 	{
 		return Arrays.asList(s.split(":"));

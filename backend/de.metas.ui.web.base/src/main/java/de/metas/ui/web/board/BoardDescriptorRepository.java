@@ -15,6 +15,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
 
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
@@ -23,6 +24,7 @@ import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.validationRule.IValidationRule;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
@@ -117,11 +119,12 @@ import lombok.ToString;
 @Repository
 public class BoardDescriptorRepository
 {
-	private static final transient Logger logger = LogManager.getLogger(BoardDescriptorRepository.class);
+	private static final Logger logger = LogManager.getLogger(BoardDescriptorRepository.class);
 
 	private final DocumentDescriptorFactory documentDescriptors;
 	private final WebsocketSender websocketSender;
 	private final CurrencyRepository currenciesRepo;
+	private final LookupDescriptorProviders lookupDescriptorProviders;
 
 	private final CCache<Integer, BoardDescriptor> boardDescriptors = CCache.<Integer, BoardDescriptor> builder()
 			.cacheName(I_WEBUI_Board.Table_Name + "#BoardDescriptor")
@@ -132,13 +135,15 @@ public class BoardDescriptorRepository
 			.build();
 	
 	public BoardDescriptorRepository(
-			@NonNull final DocumentDescriptorFactory documentDescriptors, 
-			@NonNull final WebsocketSender websocketSender, 
-			@NonNull final CurrencyRepository currenciesRepo)
+			@NonNull final DocumentDescriptorFactory documentDescriptors,
+			@NonNull final WebsocketSender websocketSender,
+			@NonNull final CurrencyRepository currenciesRepo,
+			@NonNull final LookupDescriptorProviders lookupDescriptorProviders)
 	{
 		this.documentDescriptors = documentDescriptors;
 		this.websocketSender = websocketSender;
 		this.currenciesRepo = currenciesRepo;
+		this.lookupDescriptorProviders = lookupDescriptorProviders;
 	}
 
 	private void sendEvents(final BoardDescriptor board, final JSONBoardChangedEventsList events)
@@ -194,14 +199,14 @@ public class BoardDescriptorRepository
 
 		//
 		// Board document lookup provider
-		final int adValRuleId = boardPO.getAD_Val_Rule_ID();
-		final LookupDescriptorProvider documentLookupDescriptorProvider = SqlLookupDescriptor.builder()
+		final AdValRuleId adValRuleId = AdValRuleId.ofRepoIdOrNull(boardPO.getAD_Val_Rule_ID());
+		final LookupDescriptorProvider documentLookupDescriptorProvider = lookupDescriptorProviders.sql()
 				.setCtxTableName(null)
 				.setCtxColumnName(keyColumnName)
 				.setDisplayType(DisplayType.Search)
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setAD_Val_Rule_ID(adValRuleId)
-				.buildProvider();
+				.build();
 
 		//
 		// Board descriptor
@@ -222,7 +227,7 @@ public class BoardDescriptorRepository
 
 		//
 		// Source document filters: AD_Val_Rule_ID
-		if (adValRuleId > 0)
+		if (adValRuleId != null)
 		{
 			final IValidationRule validationRule = Services.get(IValidationRuleFactory.class).create(
 					tableName, adValRuleId, null // ctx table name

@@ -7,11 +7,11 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.printing.IMassPrintingService;
-import de.metas.process.ClientOnlyProcess;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
+import de.metas.process.ProcessInfoParameter;
 import de.metas.process.RunOutOfTrx;
 import de.metas.report.ExecuteReportStrategy.ExecuteReportResult;
 import de.metas.report.server.OutputType;
@@ -24,12 +24,14 @@ import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.service.ITaskExecutorService;
+import org.adempiere.archive.api.ArchiveInfo;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 /*
  * #%L
@@ -53,13 +55,13 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-@ClientOnlyProcess
 public abstract class ReportStarter extends JavaProcess
 {
 	// services
 	private static final Logger logger = LogManager.getLogger(ReportStarter.class);
 
-	private final transient ITaskExecutorService taskExecutorService = Services.get(ITaskExecutorService.class);
+	private final ITaskExecutorService taskExecutorService = Services.get(ITaskExecutorService.class);
+	private final IMassPrintingService printService = SpringContextHolder.instance.getBean(IMassPrintingService.class);
 
 	protected abstract ExecuteReportStrategy getExecuteReportStrategy();
 
@@ -109,8 +111,65 @@ public abstract class ReportStarter extends JavaProcess
 
 		final ExecuteReportResult result = getExecuteReportStrategy().executeReport(pi, OutputType.PDF);
 
-		final IMassPrintingService printService = SpringContextHolder.instance.getBean(IMassPrintingService.class);
-		printService.print(result, pi);
+		printService.print(result.getReportData(), extractArchiveInfo(pi));
+	}
+
+	private static ArchiveInfo extractArchiveInfo(@NonNull final ProcessInfo pi)
+	{
+		// make sure that we never have zero copies. Apparently metasfresh
+		// thinks of "copies" as the number of printouts _additional_ to the
+		// original document while the java printing API thinks of copies as
+		// the absolute number of printouts and thus doesn't accept any
+		// number <=0.
+		PrintCopies numberOfPrintouts = PrintCopies.ONE;
+		ArchiveInfo archiveInfo = null;
+
+		if (pi.getParameter() != null)
+		{
+			for (final ProcessInfoParameter param : pi.getParameter())
+			{
+				final String parameterName = param.getParameterName();
+				final Object objParam = param.getParameter();
+
+				if (objParam == null)
+				{
+					continue;
+				}
+
+				if (objParam instanceof ArchiveInfo)
+				{
+					archiveInfo = (ArchiveInfo)objParam;
+					numberOfPrintouts = archiveInfo.getCopies();
+
+					if (numberOfPrintouts.isZero())
+					{
+						logger.debug("Setting numberOfPrintouts from 0 (specified by archiveInfo) to 1");
+						numberOfPrintouts = PrintCopies.ONE;
+					}
+					break;
+				}
+				else if (IMassPrintingService.PARAM_PrintCopies.equals(parameterName))
+				{
+					numberOfPrintouts = PrintCopies.ofIntOrOne(param.getParameterAsInt());
+				}
+			}
+		}
+
+		//
+		// Do a copy of found print info, or create a new one
+		if (archiveInfo == null)
+		{
+			archiveInfo = new ArchiveInfo(pi);
+		}
+		else
+		{
+			archiveInfo = archiveInfo.copy();
+		}
+
+		// Update archiveInfo
+		archiveInfo.setCopies(numberOfPrintouts.minimumOne());
+
+		return archiveInfo;
 	}
 
 	private void startProcessInvokeReportOnly(@NonNull final ReportPrintingInfo reportPrintingInfo)
@@ -137,7 +196,7 @@ public abstract class ReportStarter extends JavaProcess
 			// Jasper reporting
 			case Jasper:
 			case Other:
-				outputType = CoalesceUtil.coalesce(
+				outputType = CoalesceUtil.coalesceNotNull(
 						// needs to take precedence because we might be invoked for an outer "preview" process, but with isPrintPreview()=false
 						processInfo.getJRDesiredOutputType(),
 						desiredOutputType,
@@ -166,7 +225,7 @@ public abstract class ReportStarter extends JavaProcess
 		final String reportContentType = outputType.getContentType();
 
 		final String reportFilename;
-		if (Check.isNotBlank(result.getFilename()))
+		if (Check.isNotBlank(result.getFilename()) && !isDocument(processInfo)) // in case of documents we use DocumentInfo as filename
 		{
 			reportFilename = result.getFilename();
 			logger.debug("executeReport's result has a non-blank filename={}; -> use it for the exported file", reportFilename);
@@ -174,18 +233,18 @@ public abstract class ReportStarter extends JavaProcess
 		else
 		{
 			reportFilename = extractReportFilename(processInfo, outputType);
-			logger.debug("executeReport's result has a blank filename; -> use generic filename={} for the exported file", result.getFilename());
+			logger.debug("executeReport's result has a blank filename or the record is a document; -> use extracted filename={} for the exported file", reportFilename);
 		}
 
 		processExecutionResult.setReportData(result.getReportData(), reportFilename, reportContentType);
 	}
 
-	private static String extractReportFilename(final ProcessInfo pi, final OutputType outputType)
+	private String extractReportFilename(final ProcessInfo pi, final OutputType outputType)
 	{
 		final String fileBasename = CoalesceUtil.firstValidValue(
 				basename -> !Check.isEmpty(basename, true),
 				() -> extractReportBasename_IfDocument(pi),
-				() -> pi.getTitle(),
+				pi::getTitle,
 				() -> "report_" + PInstanceId.toRepoIdOr(pi.getPinstanceId(), 0));
 
 		final String fileExtension = outputType.getFileExtension();
@@ -195,7 +254,21 @@ public abstract class ReportStarter extends JavaProcess
 	}
 
 	@Nullable
-	private static String extractReportBasename_IfDocument(final ProcessInfo pi)
+	private String extractReportBasename_IfDocument(@NonNull final ProcessInfo pi)
+	{
+		return Optional.ofNullable(getDocument(pi))
+				.map(IDocument::getDocumentInfo)
+				.orElse(null);
+	}
+	
+	private static boolean isDocument(@NonNull final ProcessInfo pi)
+	{
+		return Optional.ofNullable(getDocument(pi))
+				.isPresent();
+	}
+	
+	@Nullable
+	private static IDocument getDocument(@NonNull final ProcessInfo pi)
 	{
 		final TableRecordReference recordRef = pi.getRecordRefOrNull();
 		if (recordRef == null)
@@ -206,13 +279,7 @@ public abstract class ReportStarter extends JavaProcess
 		final Object record = recordRef.getModel();
 
 		final IDocumentBL documentBL = Services.get(IDocumentBL.class);
-		final IDocument document = documentBL.getDocumentOrNull(record);
-		if (document == null)
-		{
-			return null;
-		}
-
-		return document.getDocumentInfo();
+		return documentBL.getDocumentOrNull(record);
 	}
 
 	private ReportPrintingInfo extractReportPrintingInfo(@NonNull final ProcessInfo pi)

@@ -10,11 +10,13 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Field;
@@ -79,6 +81,7 @@ class TablePrimaryKeyGenerator
 	private static final Logger logger = LogManager.getLogger(TablePrimaryKeyGenerator.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
 
 	private boolean migrateDataUsingIDServer = true;
 	private final Set<String> resultTableNames = new LinkedHashSet<>();
@@ -317,6 +320,11 @@ class TablePrimaryKeyGenerator
 			return ImmutableList.of();
 		}
 
+		if (!migrationLogger.isLogTableName(tableName, ClientId.SYSTEM))
+		{
+			return ImmutableList.of();
+		}
+
 		final List<String> parentColumnNames = getParentColumnNames(adTableId);
 		if (parentColumnNames.isEmpty())
 		{
@@ -392,12 +400,12 @@ class TablePrimaryKeyGenerator
 			sql.append(" AND ").append(columnName).append("=").append(DB.TO_SQL(value));
 		}
 
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void updatePKFromDBSequence(final String tableName, final String pkColumnName)
 	{
-		final int count = DB.executeUpdateEx(
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(
 				"UPDATE " + tableName + " SET " + pkColumnName + "=" + DB.TO_TABLESEQUENCE_NEXTVAL(tableName) + " WHERE " + pkColumnName + " IS NULL",
 				new Object[] {},
 				ITrx.TRXNAME_ThreadInherited);
@@ -406,7 +414,7 @@ class TablePrimaryKeyGenerator
 
 	private void executeDDL(final String sql)
 	{
-		DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 		addLog("DDL: " + sql);
 	}
 

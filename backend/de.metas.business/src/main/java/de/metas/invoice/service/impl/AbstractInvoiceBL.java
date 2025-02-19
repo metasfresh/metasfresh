@@ -1,6 +1,8 @@
 package de.metas.invoice.service.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
@@ -19,12 +21,15 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.bpartner.service.OrgHasNoBPartnerLinkException;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.common.util.time.SystemTime;
 import de.metas.costing.ChargeId;
 import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.Amount;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
+import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -43,9 +48,13 @@ import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.BPartnerInvoicingInfo;
+import de.metas.invoice.InvoiceAmtMultiplier;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoicePaymentStatus;
+import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -55,7 +64,9 @@ import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.IOrderBL;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
@@ -87,14 +98,15 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.comparator.ComparatorChain;
-import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
@@ -125,7 +137,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -164,7 +176,12 @@ import static de.metas.util.Check.assumeNotNull;
  */
 public abstract class AbstractInvoiceBL implements IInvoiceBL
 {
-	protected final transient Logger log = LogManager.getLogger(getClass());
+	protected final Logger log = LogManager.getLogger(getClass());
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	/**
 	 * See {@link #setHasFixedLineNumber(I_C_InvoiceLine, boolean)}.
@@ -190,6 +207,24 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+	public List<? extends org.compiere.model.I_C_Invoice> getByIds(@NonNull final Collection<InvoiceId> invoiceIds)
+	{
+		return invoiceDAO.getByIdsInTrx(invoiceIds);
+	}
+
+	@Override
+	public List<I_C_InvoiceLine> getLines(@NonNull final InvoiceId invoiceId)
+	{
+		return invoiceDAO.retrieveLines(invoiceId);
+	}
+
+	@Override
+	public List<InvoiceTax> getTaxes(@NonNull final InvoiceId invoiceId)
+	{
+		return invoiceDAO.retrieveTaxes(invoiceId);
+	}
+
+	@Override
 	public final I_C_Invoice creditInvoice(@NonNull final I_C_Invoice invoice, final InvoiceCreditContext creditCtx)
 	{
 		Check.errorIf(isCreditMemo(invoice), "Param 'invoice'={} may not be a credit memo");
@@ -201,47 +236,43 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			{
 				throw new AdempiereException(
 						MSG_InvoiceMayNotBePaid,
-						new Object[] {
-								invoice.getDocumentNo()
-						});
+						invoice.getDocumentNo());
 			}
 
 			//
 			// 'openAmt is the amount that shall end up in the credit memo's GrandTotal
 			final BigDecimal openAmt = Services.get(IAllocationDAO.class).retrieveOpenAmt(invoice,
-																						  false); // creditMemoAdjusted = false
+					false); // creditMemoAdjusted = false
 
 			// 'invoice' is not paid, so the open amount won't be zero
 			if (openAmt.signum() == 0)
 			{
 				throw new AdempiereException(
 						MSG_InvoiceMayNotHaveOpenAmtZero,
-						new Object[] {
-								invoice.getDocumentNo()
-						});
+						invoice.getDocumentNo());
 			}
 
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 
-		final DocTypeId targetDocTypeId = getTarget_DocType_ID(ctx, invoice, creditCtx.getDocTypeId());
+		final DocTypeId targetDocTypeId = getTarget_DocType_ID(invoice, creditCtx.getDocTypeId());
 		//
 		// create the credit memo as a copy of the original invoice
 		final I_C_Invoice creditMemo = InterfaceWrapperHelper.create(
 				copyFrom(invoice, de.metas.common.util.time.SystemTime.asTimestamp(),
-						 targetDocTypeId.getRepoId(),
-						 invoice.isSOTrx(),
-						 false, // counter == false
-						 creditCtx.isReferenceOriginalOrder(), // setOrderRef == creditCtx.isReferenceOriginalOrder()
-						 creditCtx.isReferenceInvoice(), // setInvoiceRef == creditCtx.isReferenceInvoice()
-						 true, // copyLines == true
-						 new CreditMemoInvoiceCopyHandler(creditCtx)),
+						targetDocTypeId.getRepoId(),
+						invoice.isSOTrx(),
+						false, // counter == false
+						creditCtx.isReferenceOriginalOrder(), // setOrderRef == creditCtx.isReferenceOriginalOrder()
+						creditCtx.isReferenceInvoice(), // setInvoiceRef == creditCtx.isReferenceInvoice()
+						true, // copyLines == true
+						new CreditMemoInvoiceCopyHandler(creditCtx)),
 				I_C_Invoice.class);
 		return creditMemo;
 	}
 
-	private DocTypeId getTarget_DocType_ID(final Properties ctx, final I_C_Invoice invoice, final DocTypeId docTypeId)
+	private DocTypeId getTarget_DocType_ID(final I_C_Invoice invoice, final DocTypeId docTypeId)
 	{
 		if (docTypeId != null)
 		{
@@ -285,7 +316,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		return copyFrom(from, dateDoc, C_DocTypeTarget_ID, isSOTrx, isCounterpart, setOrderRef, isSetLineInvoiceRef, isCopyLines, AbstractInvoiceBL.defaultDocCopyHandler);
 	}
 
-	private final org.compiere.model.I_C_Invoice copyFrom(
+	private org.compiere.model.I_C_Invoice copyFrom(
 			final org.compiere.model.I_C_Invoice from,
 			final Timestamp dateDoc,
 			final int C_DocTypeTarget_ID,
@@ -328,11 +359,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		to.setIsApproved(false);
 		to.setC_Payment_ID(0);
 		to.setC_CashLine_ID(0);
-		to.setIsPaid(false);
 		to.setIsInDispute(false);
 		//
 		// Amounts are updated by trigger when adding lines
 		to.setGrandTotal(BigDecimal.ZERO);
+		Services.get(IInvoiceBL.class).setPaymentStatus(to, BigDecimal.ZERO, InvoicePaymentStatus.NOT_PAID);
 		to.setTotalLines(BigDecimal.ZERO);
 		//
 		to.setIsTransferred(false);
@@ -456,78 +487,117 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+	public void scheduleUpdateIsPaid(@NonNull final InvoiceId invoiceId)
+	{
+		trxManager.accumulateAndProcessAfterCommit(
+				"invoiceBL.scheduleUpdateIsPaid",
+				ImmutableSet.of(invoiceId),
+				this::testAllocated);
+	}
+
+	private void testAllocated(final List<InvoiceId> invoiceIds)
+	{
+		invoiceDAO.getByIdsInTrx(invoiceIds)
+				.forEach(invoice -> {
+					testAllocation(invoice, false);
+					invoiceDAO.save(invoice);
+				});
+	}
+
+	@Override
+	public void testAllocated(@NonNull final InvoiceId invoiceId)
+	{
+		testAllocated(ImmutableList.of(invoiceId));
+	}
+
+	@Override
 	public final boolean testAllocation(final org.compiere.model.I_C_Invoice invoice, final boolean ignoreProcessed)
 	{
-		boolean change = false;
-
-		if (invoice.isProcessed() || ignoreProcessed)
+		// Skip if not processed
+		if (!invoice.isProcessed() && !ignoreProcessed)
 		{
-			BigDecimal alloc = Services.get(IAllocationDAO.class).retrieveAllocatedAmt(invoice); // absolute
-			final boolean hasAllocations = alloc != null; // metas: tsa: 01955
-			if (alloc == null)
-			{
-				alloc = BigDecimal.ZERO;
-			}
-			BigDecimal total = invoice.getGrandTotal();
-			// metas: tsa: begin: 01955:
-			// If is an zero invoice, it has no allocations and the AutoPayZeroAmt is not set
-			// then don't touch the invoice
-			if (total.signum() == 0 && !hasAllocations
-					&& !Services.get(ISysConfigBL.class).getBooleanValue(AbstractInvoiceBL.SYSCONFIG_AutoPayZeroAmt, true, invoice.getAD_Client_ID()))
-			{
-				// don't touch the IsPaid flag, return not changed
-				return false;
-			}
-			// metas: tsa: end: 01955
-			if (!invoice.isSOTrx())
-			{
-				total = total.negate();
-			}
-			if (isCreditMemo(invoice))
-			{
-				total = total.negate();
-			}
-
-			final boolean test = total.compareTo(alloc) == 0;
-			change = test != invoice.isPaid();
-			if (change)
-			{
-				invoice.setIsPaid(test);
-			}
-
-			log.debug("IsPaid={} (allocated={}, invoiceGrandTotal={})", test, alloc, total);
+			return false; // not changed
 		}
 
-		return change;
+		final InvoiceTotal invoiceGrandTotal = extractGrandTotal(invoice);
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+		final Money allocatedAmt = allocationDAO.retrieveAllocatedAmtAsMoney(invoiceId).orElse(null);
+		final boolean hasAllocations = allocatedAmt != null;
+
+		// If is a zero invoice, it has no allocations and the AutoPayZeroAmt is not set
+		// then don't touch the invoice
+		if (invoiceGrandTotal.isZero()
+				&& !hasAllocations
+				&& !sysConfigBL.getBooleanValue(AbstractInvoiceBL.SYSCONFIG_AutoPayZeroAmt, true, invoice.getAD_Client_ID()))
+		{
+			// don't touch the IsPaid flag, return not changed
+			return false;
+		}
+
+		final InvoiceTotal openAmt = invoiceGrandTotal.subtractRealValue(allocatedAmt);
+		final InvoicePaymentStatus paymentStatus = computePaymentStatus(openAmt.toMoney(), hasAllocations);
+		return setPaymentStatus(invoice, openAmt.toBigDecimal(), paymentStatus);
 	}    // testAllocation
 
-	/**
-	 * Gets Invoice Grand Total (absolute value).
-	 *
-	 * @param invoice
-	 * @return
-	 */
-	public final BigDecimal getGrandTotalAbs(final org.compiere.model.I_C_Invoice invoice)
+	@NonNull
+	private static InvoicePaymentStatus computePaymentStatus(@NonNull final Money openAmt, final boolean hasAllocations)
 	{
-		BigDecimal grandTotal = invoice.getGrandTotal();
-		if (grandTotal.signum() == 0)
+		if (!hasAllocations)
 		{
-			return grandTotal;
+			return InvoicePaymentStatus.NOT_PAID;
+		}
+		else if (openAmt.signum() == 0)
+		{
+			return InvoicePaymentStatus.FULLY_PAID;
+		}
+		else
+		{
+			return InvoicePaymentStatus.PARTIALLY_PAID;
+		}
+	}
+
+	@Override
+	public boolean setPaymentStatus(
+			@NonNull final org.compiere.model.I_C_Invoice invoice,
+			@NonNull final BigDecimal openAmt,
+			@NonNull final InvoicePaymentStatus paymentStatus)
+	{
+		final boolean isOpenAmtChanged = openAmt.compareTo(invoice.getOpenAmt()) != 0;
+		if (isOpenAmtChanged)
+		{
+			invoice.setOpenAmt(openAmt);
 		}
 
-		// AP/AR adjustment
-		if (!invoice.isSOTrx())
+		final boolean isFullyPaidChanged = paymentStatus.isFullyPaid() != invoice.isPaid();
+		if (isFullyPaidChanged)
 		{
-			grandTotal = grandTotal.negate();
+			invoice.setIsPaid(paymentStatus.isFullyPaid());
 		}
 
-		// CM adjustment
-		if (isCreditMemo(invoice))
+		final boolean isPartiallyPaidChanged = paymentStatus.isPartiallyPaid() != invoice.isPartiallyPaid();
+		if (isPartiallyPaidChanged)
 		{
-			grandTotal = grandTotal.negate();
+			invoice.setIsPartiallyPaid(paymentStatus.isPartiallyPaid());
 		}
 
-		return grandTotal;
+		return isOpenAmtChanged || isFullyPaidChanged || isPartiallyPaidChanged;
+	}
+
+	protected final InvoiceTotal extractGrandTotal(final org.compiere.model.I_C_Invoice invoice)
+	{
+		final Money grandTotal = Money.of(invoice.getGrandTotal(), CurrencyId.ofRepoId(invoice.getC_Currency_ID()));
+		final InvoiceAmtMultiplier multiplier = getInvoiceAmtMultiplier(invoice);
+		return InvoiceTotal.ofRelativeValue(grandTotal, multiplier);
+	}
+
+	private InvoiceAmtMultiplier getInvoiceAmtMultiplier(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		return InvoiceAmtMultiplier.builder()
+				.soTrx(SOTrx.ofBoolean(invoice.isSOTrx()))
+				.isCreditMemo(isCreditMemo(invoice))
+				.isSOTrxAdjusted(false)
+				.isCreditMemoAdjusted(false)
+				.build();
 	}
 
 	@Override
@@ -693,12 +763,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 		final BPartnerLocationId billBPartnerLocationId = getBillBPartnerLocationId(bpartnerId, soTrx);
 		final User billContact = bpartnerBL.retrieveContactOrNull(RetrieveContactRequest.builder()
-																		  .onlyActive(true)
-																		  .contactType(ContactType.BILL_TO_DEFAULT)
-																		  .bpartnerId(billBPartnerLocationId.getBpartnerId())
-																		  .bPartnerLocationId(billBPartnerLocationId)
-																		  .ifNotFound(IfNotFound.RETURN_NULL)
-																		  .build());
+				.onlyActive(true)
+				.contactType(ContactType.BILL_TO_DEFAULT)
+				.bpartnerId(billBPartnerLocationId.getBpartnerId())
+				.bPartnerLocationId(billBPartnerLocationId)
+				.ifNotFound(IfNotFound.RETURN_NULL)
+				.build());
 		final Optional<BPartnerContactId> billContactId = billContact != null
 				? Optional.of(BPartnerContactId.of(billContact.getBpartnerId(), billContact.getId()))
 				: Optional.empty();
@@ -798,7 +868,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		else
 		{
 			setDocTypeTargetIdAndUpdateDescription(invoice, docTypeId.getRepoId());
-			final boolean isSOTrx = docTypeBL.isSOTrx(docBaseType.getDocBaseType());
+			final boolean isSOTrx = docBaseType.getDocBaseType().isSOTrx();
 			invoice.setIsSOTrx(isSOTrx);
 			return true;
 		}
@@ -817,7 +887,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public void setDocTypeTargetIdAndUpdateDescription(org.compiere.model.I_C_Invoice invoice, int docTypeId)
+	public void setDocTypeTargetIdAndUpdateDescription(@NonNull final org.compiere.model.I_C_Invoice invoice, final int docTypeId)
 	{
 		invoice.setC_DocTypeTarget_ID(docTypeId);
 		updateDescriptionFromDocTypeTargetId(invoice, null, null);
@@ -835,10 +905,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		final org.compiere.model.I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
-		if (docType == null)
-		{
-			return;
-		}
 
 		if (!docType.isCopyDescriptionToDocument())
 		{
@@ -1005,10 +1071,10 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	{
 		final Comparator<I_C_InvoiceLine> cmp = getInvoiceLineComparator(lines);
 
-		Collections.sort(lines, cmp);
+		lines.sort(cmp);
 	}
 
-	private final Comparator<I_C_InvoiceLine> getInvoiceLineComparator(final List<I_C_InvoiceLine> lines)
+	private Comparator<I_C_InvoiceLine> getInvoiceLineComparator(final List<I_C_InvoiceLine> lines)
 	{
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
@@ -1019,7 +1085,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final boolean sortILsByShipmentLineOrders = sysConfigBL.getBooleanValue(SYSCONFIG_SortILsByShipmentLineOrders, false); // fallback false (if not configured)
 		if (sortILsByShipmentLineOrders)
 		{
-			final Comparator<I_C_InvoiceLine> orderLineComparator = getShipmentLineOrderComparator(lines);
+			final Comparator<I_C_InvoiceLine> orderLineComparator = getShipmentLineOrderComparator();
 			ilComparator.addComparator(orderLineComparator);
 		}
 
@@ -1039,9 +1105,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	 * Set M_InOut_ID for comment lines: The Invoice Lines are initially ordered by their M_InOut_ID, so that there is a "Block" of invoice lines for each InOut. There are 2 comment lines in front of
 	 * every block, which are supposed to increase the clear arrangement in the Invoice window. None of these lines are attached to a M_InOutLine which means that the Virtual Column M_InOut_ID is
 	 * NULL. This causes Problems when trying to order the lines, so first we need to allocate an InOut_ID to each InvoiceLine. To do this a hash map is used.
-	 *
-	 * @param lines
-	 * @return comparator
 	 */
 	private final Comparator<I_C_InvoiceLine> getDefaultInvoiceLineComparator(final List<I_C_InvoiceLine> lines)
 	{
@@ -1119,21 +1182,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 			final int line1No = line1.getLine();
 			final int line2No = line2.getLine();
 
-			if (line1No > line2No)
-			{
-				return 1;
-			}
-			if (line1No < line2No)
-			{
-				return -1;
-			}
+			return Integer.compare(line1No, line2No);
 
-			return 0;
 		};
 		return cmp;
 	}
 
-	private final Comparator<I_C_InvoiceLine> getShipmentLineOrderComparator(final List<I_C_InvoiceLine> lines)
+	private Comparator<I_C_InvoiceLine> getShipmentLineOrderComparator()
 	{
 		final Comparator<I_C_InvoiceLine> comparator = (line1, line2) -> {
 
@@ -1299,13 +1354,13 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				log.debug("stdTax rate is " + stdTax.getRate());
 				log.debug("invoiceTax rate is " + invoiceTax.getRate());
 
-				taxThisAmt = taxThisAmt.add(taxBL.calculateTax(invoiceTax, lineNetAmt, isTaxIncluded, taxPrecision.toInt()));
-				taxStdAmt = taxThisAmt.add(taxBL.calculateTax(stdTax, lineNetAmt, isTaxIncluded, taxPrecision.toInt()));
+				taxThisAmt = taxThisAmt.add(taxBL.calculateTaxAmt(invoiceTax, lineNetAmt, isTaxIncluded, taxPrecision.toInt()));
+				taxStdAmt = taxThisAmt.add(taxBL.calculateTaxAmt(stdTax, lineNetAmt, isTaxIncluded, taxPrecision.toInt()));
 
 				lineNetAmt = lineNetAmt.subtract(taxStdAmt).add(taxThisAmt);
 
 				log.debug("Price List includes Tax and Tax Changed on Invoice Line: New Tax Amt: "
-								  + taxThisAmt + " Standard Tax Amt: " + taxStdAmt + " Line Net Amt: " + lineNetAmt);
+						+ taxThisAmt + " Standard Tax Amt: " + taxStdAmt + " Line Net Amt: " + lineNetAmt);
 			}
 		}
 
@@ -1337,7 +1392,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final boolean isTaxIncluded = isTaxIncluded(invoiceLine);
 		final BigDecimal lineNetAmt = invoiceLine.getLineNetAmt();
 		final CurrencyPrecision taxPrecision = getTaxPrecision(invoiceLine);
-		final BigDecimal TaxAmt = tax.calculateTax(lineNetAmt, isTaxIncluded, taxPrecision.toInt());
+		final BigDecimal TaxAmt = tax.calculateTax(lineNetAmt, isTaxIncluded, taxPrecision.toInt()).getTaxAmount();
 		if (isTaxIncluded)
 		{
 			invoiceLine.setLineTotalAmt(lineNetAmt);
@@ -1408,7 +1463,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		{
 			final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(il.getM_InOutLine_ID());
 
-			final I_M_InOutLine inoutLineRecord = inoutLineId == null ? null : inoutDAO.getLineById(inoutLineId);
+			final I_M_InOutLine inoutLineRecord = inoutLineId == null ? null : inoutDAO.getLineByIdInTrx(inoutLineId);
 			final I_M_InOut io = inoutLineRecord == null ? null : inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
 
 			final OrgId orgId = io != null ? OrgId.ofRepoId(io.getAD_Org_ID()) : OrgId.ofRepoId(invoice.getAD_Org_ID());
@@ -1430,7 +1485,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public CountryId getFromCountryId(org.compiere.model.I_C_Invoice invoice, org.compiere.model.I_C_InvoiceLine invoiceLine)
+	public CountryId getFromCountryId(@NonNull final org.compiere.model.I_C_Invoice invoice, final org.compiere.model.I_C_InvoiceLine invoiceLine)
 	{
 		final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
@@ -1455,7 +1510,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		{
 			final InOutLineId inoutLineId = InOutLineId.ofRepoId(invoiceLine.getM_InOutLine_ID());
 
-			final I_M_InOutLine inoutLineRecord = inoutDAO.getLineById(inoutLineId);
+			final I_M_InOutLine inoutLineRecord = inoutDAO.getLineByIdInTrx(inoutLineId);
 
 			final I_M_InOut inout = inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
 
@@ -1565,6 +1620,12 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+	public boolean isReversal(@NonNull final InvoiceId invoiceId)
+	{
+		return isReversal(getById(invoiceId));
+	}
+
+	@Override
 	public boolean isReversal(final org.compiere.model.I_C_Invoice invoice)
 	{
 		if (invoice == null)
@@ -1642,11 +1703,11 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final Boolean isSOTrx = adjustmentChargeCreateRequest.getIsSOTrx();
 
 		final DocTypeId targetDocTypeID = Services.get(IDocTypeDAO.class).getDocTypeId(DocTypeQuery.builder()
-																							   .docBaseType(docBaseAndSubType.getDocBaseType())
-																							   .docSubType(docBaseAndSubType.getDocSubType())
-																							   .adClientId(invoice.getAD_Client_ID())
-																							   .adOrgId(invoice.getAD_Org_ID())
-																							   .build());
+				.docBaseType(docBaseAndSubType.getDocBaseType())
+				.docSubType(docBaseAndSubType.getDocSubType())
+				.adClientId(invoice.getAD_Client_ID())
+				.adOrgId(invoice.getAD_Org_ID())
+				.build());
 		final I_C_Invoice adjustmentCharge = InterfaceWrapperHelper.create(
 				copyFrom(
 						invoice,
@@ -1660,7 +1721,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 				I_C_Invoice.class);
 
 		adjustmentCharge.setDescription("Nachbelastung zu Rechnung " + invoice.getDocumentNo() + ", Order-Referenz " + invoice.getPOReference() + "\n\nUrsprünglicher Rechnungstext:\n"
-												+ invoice.getDescription());
+				+ invoice.getDescription());
 
 		adjustmentCharge.setRef_Invoice_ID(invoice.getC_Invoice_ID());
 		InterfaceWrapperHelper.save(adjustmentCharge);
@@ -1780,6 +1841,16 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
+	@Nullable
+	public final TaxCategoryId getTaxCategoryId(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	{
+		final de.metas.adempiere.model.I_C_InvoiceLine adInvoiceLine = InterfaceWrapperHelper.create(invoiceLine, de.metas.adempiere.model.I_C_InvoiceLine.class);
+
+		return getTaxCategoryId(adInvoiceLine);
+	}
+
+	// Note: C_Invoice_Line_Allocations are handled in InvoiceCandBL
+	@Override
 	public final void handleReversalForInvoice(final org.compiere.model.I_C_Invoice invoice)
 	{
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
@@ -1833,8 +1904,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 	@Override
 	public final void allocateCreditMemo(final I_C_Invoice invoice,
-			final I_C_Invoice creditMemo,
-			final BigDecimal openAmt)
+										 final I_C_Invoice creditMemo,
+										 final BigDecimal openAmt)
 	{
 		final Timestamp dateTrx = TimeUtil.max(invoice.getDateInvoiced(), creditMemo.getDateInvoiced());
 		final Timestamp dateAcct = TimeUtil.max(invoice.getDateAcct(), creditMemo.getDateAcct());
@@ -1912,7 +1983,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final org.compiere.model.I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
-		final I_C_BPartner_Location bpartnerLocation = partnersRepo.getBPartnerLocationByIdInTrx(BPartnerLocationId.ofRepoId(bpartnerId, invoice.getC_BPartner_Location_ID()));
+		final I_C_BPartner_Location bpartnerLocation = partnersRepo.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(bpartnerId, invoice.getC_BPartner_Location_ID()));
 
 		final String locationEmail = bpartnerLocation.getEMail();
 		if (!Check.isEmpty(locationEmail))
@@ -1932,7 +2003,7 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final BPartnerLocationId contactLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, invoiceContactRecord.getC_BPartner_Location_ID());
 		if (contactLocationId != null)
 		{
-			final I_C_BPartner_Location contactLocationRecord = partnersRepo.getBPartnerLocationByIdInTrx(contactLocationId);
+			final I_C_BPartner_Location contactLocationRecord = partnersRepo.getBPartnerLocationByIdEvenInactive(contactLocationId);
 			if (contactLocationRecord == null)
 			{
 				return null;
@@ -1946,5 +2017,36 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		}
 
 		return null;
+	}
+
+	@Override
+	public CurrencyConversionContext getCurrencyConversionCtx(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	{
+		CurrencyConversionContext conversionCtx = currencyBL.createCurrencyConversionContext(
+				invoice.getDateAcct().toInstant(),
+				CurrencyConversionTypeId.ofRepoIdOrNull(invoice.getC_ConversionType_ID()),
+				ClientId.ofRepoId(invoice.getAD_Client_ID()),
+				OrgId.ofRepoId(invoice.getAD_Org_ID()));
+
+		return conversionCtx;
+	}
+
+	@Override
+	public Quantity getQtyInvoicedStockUOM(@NonNull final org.compiere.model.I_C_InvoiceLine invoiceLine)
+	{
+		return Services.get(IInvoiceLineBL.class).getQtyInvoicedStockUOM(invoiceLine);
+	}
+
+	@Override
+	@Nullable
+	public String getPOReference(@NonNull final InvoiceId invoiceId)
+	{
+		return getById(invoiceId).getPOReference();
+	}
+
+	@Override
+	public I_C_InvoiceLine getLineById(@NonNull final InvoiceAndLineId invoiceAndLineId)
+	{
+		return invoiceDAO.retrieveLineById(invoiceAndLineId);
 	}
 }

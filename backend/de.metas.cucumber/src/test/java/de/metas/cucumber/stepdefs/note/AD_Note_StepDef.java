@@ -66,7 +66,7 @@ public class AD_Note_StepDef
 	@And("AD_Note table is reset")
 	public void reset_ad_note()
 	{
-		DB.executeUpdateEx("DELETE FROM AD_Note", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM AD_Note", ITrx.TRXNAME_None);
 	}
 
 	@And("after not more than (.*)s, validate AD_Note:$")

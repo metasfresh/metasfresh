@@ -1,36 +1,8 @@
-package de.metas.ui.web.process.descriptor;
-
-import java.util.Optional;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.slf4j.Logger;
-
-import com.google.common.base.MoreObjects;
-
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
-import de.metas.logging.LogManager;
-import de.metas.process.IProcessDefaultParametersProvider;
-import de.metas.process.IProcessPreconditionsContext;
-import de.metas.process.ProcessPreconditionChecker;
-import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.security.IUserRolePermissions;
-import de.metas.ui.web.cache.ETag;
-import de.metas.ui.web.cache.ETagAware;
-import de.metas.ui.web.process.ProcessId;
-import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.util.Check;
-import lombok.Getter;
-import lombok.NonNull;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2016 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -47,6 +19,32 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.ui.web.process.descriptor;
+
+import com.google.common.base.MoreObjects;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.logging.LogManager;
+import de.metas.process.IProcessDefaultParametersProvider;
+import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.ProcessPreconditionChecker;
+import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.security.IUserRolePermissions;
+import de.metas.ui.web.cache.ETag;
+import de.metas.ui.web.cache.ETagAware;
+import de.metas.ui.web.process.ProcessId;
+import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
+import lombok.Getter;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 public final class ProcessDescriptor implements ETagAware
 {
@@ -242,8 +240,8 @@ public final class ProcessDescriptor implements ETagAware
 
 		public Builder setProcessClassname(final String processClassname)
 		{
-			this.processClassname = processClassname;
-			processClass = loadProcessClass(processClassname);
+			this.processClassname = StringUtils.trimBlankToNull(processClassname);
+			processClass = loadProcessClass(this.processClassname);
 			return this;
 		}
 
@@ -257,9 +255,9 @@ public final class ProcessDescriptor implements ETagAware
 			return processClass.orElse(null);
 		}
 
-		private static Optional<Class<?>> loadProcessClass(final String classname)
+		private static Optional<Class<?>> loadProcessClass(@Nullable final String classname)
 		{
-			if (Check.isEmpty(classname, true))
+			if (classname == null || Check.isBlank(classname))
 			{
 				return Optional.empty();
 			}
@@ -272,7 +270,7 @@ public final class ProcessDescriptor implements ETagAware
 			}
 			catch (final ClassNotFoundException e)
 			{
-				logger.error("Cannot process class: {}", classname, e);
+				logger.warn("Cannot load process class: {}", classname, e);
 				return Optional.empty();
 			}
 		}
@@ -291,7 +289,7 @@ public final class ProcessDescriptor implements ETagAware
 			}
 			catch (final Exception e)
 			{
-				logger.error(e.getLocalizedMessage(), e);
+				logger.warn(e.getLocalizedMessage(), e);
 				return null;
 			}
 		}

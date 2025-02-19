@@ -460,6 +460,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery
 				.builder()
 				.storageAttributesKey(transactionEvent.getMaterialDescriptor().getStorageAttributesKey())
+				.warehouseId(transactionEvent.getMaterialDescriptor().getWarehouseId())
 				.build();
 
 		final CandidatesQuery queryWithAttributesKey = queryWithoutAttributesKey

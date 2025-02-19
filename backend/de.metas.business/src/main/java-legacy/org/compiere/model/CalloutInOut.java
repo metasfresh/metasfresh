@@ -467,6 +467,7 @@ public class CalloutInOut extends CalloutEngine
 			//
 			// Dimensions
 			inoutLine.setC_Activity_ID(originalInOutLine == null ? -1 : originalInOutLine.getC_Activity_ID());
+			inoutLine.setC_Order_ID(originalInOutLine == null ? -1 : originalInOutLine.getC_Order_ID());
 			inoutLine.setC_Campaign_ID(originalInOutLine == null ? -1 : originalInOutLine.getC_Campaign_ID());
 			inoutLine.setC_Project_ID(originalInOutLine == null ? -1 : originalInOutLine.getC_Project_ID());
 			inoutLine.setC_ProjectPhase_ID(originalInOutLine == null ? -1 : originalInOutLine.getC_ProjectPhase_ID());

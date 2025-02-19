@@ -1,6 +1,7 @@
 package de.metas.ui.web.upload;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.io.BaseEncoding;
 import de.metas.common.util.time.SystemTime;
 import de.metas.image.AdImage;
 import de.metas.image.AdImageRepository;
@@ -12,6 +13,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.MImage;
 import org.compiere.util.Env;
 import org.compiere.util.MimeType;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -44,6 +49,7 @@ import java.time.format.DateTimeFormatter;
 public class WebuiImageService
 {
 	private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmss");
+	private static final String EMPTY_PNG_BASE64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
 
 	private final AdImageRepository adImageRepository;
 
@@ -89,5 +95,13 @@ public class WebuiImageService
 	{
 		final AdImage adImage = adImageRepository.getById(imageId.toAdImageId());
 		return WebuiImage.of(adImage, maxWidth, maxHeight);
+	}
+
+	public ResponseEntity<byte[]> getEmptyImage()
+	{
+		return ResponseEntity.status(HttpStatus.OK)
+				.contentType(MediaType.IMAGE_PNG)
+				.header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"\"")
+				.body(BaseEncoding.base64().decode(EMPTY_PNG_BASE64));
 	}
 }

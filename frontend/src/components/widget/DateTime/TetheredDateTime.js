@@ -3,6 +3,7 @@ import DateTime from 'react-datetime';
 import CalendarContainer from 'react-datetime/src/CalendarContainer';
 import TetherComponent from 'react-tether';
 import classnames from 'classnames';
+import { setMomentToEndOfDay } from '../../../utils/dateHelpers';
 
 // TODO: This monkeypatching that's happening here has to go at some point.
 class TetheredDateTime extends DateTime {
@@ -18,6 +19,34 @@ class TetheredDateTime extends DateTime {
 
   setSelectedDateAndInputValue = ({ selectedDate, inputValue }) => {
     this.setState({ selectedDate, inputValue });
+  };
+
+  openCalendar = (e) => {
+    //
+    // In case we are about to open the calendar,
+    // and we deal with a date with time
+    // and there is no selected date yet
+    // then make sure the view time is set to 23:59.
+    const { timeFormat } = this.props;
+    const { open, selectedDate } = this.state;
+    if (!open && timeFormat && !selectedDate) {
+      this.setState(({ viewDate }) => ({
+        viewDate: this.convertMomentToEndOfDay(viewDate),
+      }));
+    }
+
+    super.openCalendar(e);
+  };
+
+  convertMomentToEndOfDay = (date) => {
+    let dateAtEndOfDay = date;
+    if (!dateAtEndOfDay) {
+      dateAtEndOfDay = this.localMoment();
+    }
+
+    setMomentToEndOfDay(dateAtEndOfDay);
+
+    return dateAtEndOfDay;
   };
 
   render() {

@@ -1,9 +1,7 @@
 package de.metas.order.impl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
@@ -20,10 +18,10 @@ import de.metas.money.grossprofit.ProfitPriceActualFactory;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderLine;
+import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.OrderLineRepository;
-import de.metas.order.OrderLinePriceAndDiscount;
 import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -121,7 +119,7 @@ final class OrderLinePriceCalculator
 		{
 			return;
 		}
-
+		
 		//
 		// Calculate Pricing Result
 		final IEditablePricingContext pricingCtx = createPricingContext();
@@ -129,6 +127,7 @@ final class OrderLinePriceCalculator
 		if (!pricingResult.isCalculated())
 		{
 			throw new ProductNotOnPriceListException(pricingCtx, orderLine.getLine())
+					.appendParametersToMessage()
 					.setParameter("log", pricingResult.getLoggableMessages())
 					.setParameter("pricingResult", pricingResult);
 		}
@@ -163,7 +162,7 @@ final class OrderLinePriceCalculator
 		orderLine.setInvoicableQtyBasedOn(pricingResult.getInvoicableQtyBasedOn().getCode());
 		orderLine.setPriceList(pricingResult.getPriceList());
 		orderLine.setPriceStd(pricingResult.getPriceStd());
-		orderLine.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId())); // 07090: when setting a priceActual, we also need to specify a PriceUOM
+		orderLine.setPrice_UOM_ID(UomId.toRepoId(extractPriceUomId(pricingResult))); // 07090: when setting a priceActual, we also need to specify a PriceUOM
 
 		//
 		// C_Currency_ID, M_PriceList_Version_ID
@@ -188,7 +187,7 @@ final class OrderLinePriceCalculator
 			}
 			else
 			{
-				orderLineBL.updateLineNetAmtFromQty(orderLineBL.getQtyEntered(orderLine), orderLine);
+				orderLineBL.updateLineNetAmtFromQtyEntered(orderLine);
 			}
 		}
 
@@ -540,6 +539,16 @@ final class OrderLinePriceCalculator
 		orderLineRecord.setProfitPriceActual(profitBasePrice.toBigDecimal());
 	}
 
+
+	@Nullable
+	private UomId extractPriceUomId(@NonNull final IPricingResult pricingResult)
+	{
+		final I_C_OrderLine orderLine = request.getOrderLine();
+
+		return UomId.optionalOfRepoId(orderLine.getPrice_UOM_ID())
+				.orElse(pricingResult.getPriceUomId());
+	}
+	
 	public TaxCategoryId computeTaxCategoryId()
 	{
 		final IPricingContext pricingCtx = createPricingContext()

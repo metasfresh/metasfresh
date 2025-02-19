@@ -6,17 +6,26 @@ import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.NonNull;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.Optional;
 
 public interface ISysConfigBL extends ISingletonService
 {
+	@Contract("_, !null -> !null")
 	@Nullable
-	String getValue(String name, String defaultValue);
+	String getValue(@NonNull String name, @Nullable String defaultValue);
 
 	@Nullable
-	String getValue(String name);
+	String getValue(@NonNull String name);
+
+	@NonNull
+	default Optional<String> getValueOptional(final String name)
+	{
+		return Optional.ofNullable(getValue(name));
+	}
 
 	int getIntValue(String name, int defaultValue);
 
@@ -58,7 +67,11 @@ public interface ISysConfigBL extends ISingletonService
 
 	int getIntValue(String name, int defaultValue, int AD_Client_ID, int AD_Org_ID);
 
+	int getIntValue(String name, int defaultValue, @NonNull ClientAndOrgId clientAndOrgId);
+
 	boolean getBooleanValue(String name, boolean defaultValue, int AD_Client_ID, int AD_Org_ID);
+
+	boolean getBooleanValue(String name, boolean defaultValue, ClientAndOrgId clientAndOrgId);
 
 	void setValue(String name, int value, ClientId clientId, OrgId orgId);
 

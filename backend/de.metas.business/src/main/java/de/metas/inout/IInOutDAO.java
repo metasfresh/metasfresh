@@ -7,6 +7,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -18,6 +19,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
@@ -56,7 +58,7 @@ public interface IInOutDAO extends ISingletonService
 	@Nullable
 	<T extends I_M_InOut> T getById(@NonNull InOutId inoutId, @NonNull Class<T> modelClass);
 
-	I_M_InOutLine getLineById(InOutLineId inoutLineId);
+	I_M_InOutLine getLineByIdInTrx(InOutLineId inoutLineId);
 
 	<T extends I_M_InOutLine> List<T> getLinesByIds(Set<InOutLineId> inoutLineIds, Class<T> returnType);
 
@@ -74,6 +76,8 @@ public interface IInOutDAO extends ISingletonService
 	ImmutableSet<InOutLineId> retrieveActiveLineIdsByInOutIds(Set<InOutId> inoutIds);
 
 	List<I_M_InOutLine> retrieveLinesForInOuts(Collection<? extends I_M_InOut> inouts);
+
+	Set<InOutAndLineId> retrieveLineIdsByOrderLineIds(Set<OrderLineId> orderLineIds);
 
 	/**
 	 * For the given <code>inOut</code> the method returns those inout lines that don't reference an order line.
@@ -113,7 +117,9 @@ public interface IInOutDAO extends ISingletonService
 
 	Set<InOutAndLineId> retrieveLinesForInOutId(InOutId inOutId);
 
-	<T extends I_M_InOutLine> T getLineById(InOutLineId inoutLineId, Class<T> modelClass);
+	<T extends I_M_InOutLine> T getLineByIdOutOfTrx(@NonNull InOutLineId inoutLineId, Class<T> modelClass);
+
+	<T extends I_M_InOutLine> T getLineByIdInTrx(@NonNull InOutLineId inoutLineId, Class<T> modelClass);
 
 	@NonNull
 	ImmutableList<InOutId> retrieveByShipperTransportation(@NonNull ShipperTransportationId shipperTransportationId);
@@ -135,4 +141,8 @@ public interface IInOutDAO extends ISingletonService
 	<T extends I_M_InOut> Map<InOutId, T> getShipmentsByIds(Set<InOutId> inOutIds, Class<T> modelClass);
 
 	Optional<I_M_InOutLine> getReversalLineForLineId(@NonNull final InOutLineId inoutLineId);
+
+	ImmutableList<InOutId> retrieveShipmentsWithoutShipperTransportation(@NonNull Timestamp date);
+
+	Stream<I_M_InOut> retrieveByQuery(@NonNull de.metas.inout.InOutQuery query);
 }

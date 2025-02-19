@@ -18,7 +18,6 @@ import de.metas.cache.model.ITableCacheConfig;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.document.ICounterDocBL;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.model.validator.M_InOut;
@@ -83,7 +82,6 @@ import java.util.Properties;
  * Model Validator for SWAT general features
  *
  * @author tsa
- *
  */
 public class SwatValidator implements ModelValidator
 {
@@ -100,7 +98,7 @@ public class SwatValidator implements ModelValidator
 
 	/**
 	 * Default SalesRep_ID
-	 *
+	 * <p>
 	 * See http://dewiki908/mediawiki/index.php/US315:_Im_Mahntext_die_neuen_Textbausteine_verwenden_k%C3%B6nnen_%282010070510000495%29#SalesRep_issue_.28Teo_09:24.2C_26._Okt._2011_.28CEST.29.29
 	 */
 	private static final String SYSCONFIG_DEFAULT_SalesRep_ID = "DEFAULT_SalesRep_ID";
@@ -201,8 +199,8 @@ public class SwatValidator implements ModelValidator
 		// Configure tables which are skipped when we record migration scripts
 		{
 			final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
-			migrationLogger.addTableToIgnoreList(I_EXP_ReplicationTrx.Table_Name);
-			migrationLogger.addTableToIgnoreList(I_EXP_ReplicationTrxLine.Table_Name);
+			migrationLogger.addTablesToIgnoreList(I_EXP_ReplicationTrx.Table_Name,
+					I_EXP_ReplicationTrxLine.Table_Name);
 		}
 
 		//
@@ -229,7 +227,6 @@ public class SwatValidator implements ModelValidator
 		{
 			final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 			final IMsgBL msgBL = Services.get(IMsgBL.class);
-			final IADMessageDAO msgDAO = Services.get(IADMessageDAO.class);
 
 			final boolean throwException = sysConfigBL.getBooleanValue(SYSCONFIG_ORG_ADEMPIERE_UTIL_CHECK_THROW_EXCEPTION, true);
 			Check.setThrowException(throwException);
@@ -237,7 +234,7 @@ public class SwatValidator implements ModelValidator
 			{
 				Check.setLogger(LogManager.getLogger(Check.class));
 			}
-			else if (msgDAO.isMessageExists(MSG_ORG_ADEMPIERE_UTIL_CHECK_EXCEPTION_HEADER_MESSAGE))
+			else if (msgBL.isMessageExists(MSG_ORG_ADEMPIERE_UTIL_CHECK_EXCEPTION_HEADER_MESSAGE))
 			{
 				Check.setExceptionHeaderMessage(msgBL.getMsg(Env.getCtx(), MSG_ORG_ADEMPIERE_UTIL_CHECK_EXCEPTION_HEADER_MESSAGE));
 			}
@@ -270,7 +267,7 @@ public class SwatValidator implements ModelValidator
 				.setInitialCapacity(50)
 				.setMaxCapacity(50)
 				.register();
-		
+
 		cachingService.addTableCacheConfigIfAbsent(I_C_BP_Group.class);
 	}
 

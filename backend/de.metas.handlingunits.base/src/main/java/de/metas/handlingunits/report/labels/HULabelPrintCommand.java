@@ -62,9 +62,12 @@ class HULabelPrintCommand
 			return;
 		}
 
-		huQRCodesService.generateForExistingHUs(batchToPrintCollector.getHuIds());
-
-		trxManager.runAfterCommit(() -> batchToPrintCollector.forEach(this::printBatchNow));
+		trxManager.runAfterCommit(() ->
+		{
+			//M_HU_Storage persistence may be delayed by de.metas.handlingunits.storage.impl.SaveOnCommitHUStorageDAO
+			huQRCodesService.generateForExistingHUs(batchToPrintCollector.getHuIds());
+			batchToPrintCollector.forEach(this::printBatchNow);
+		});
 	}
 
 	private BatchToPrintCollector newBatchesToPrintCollector()

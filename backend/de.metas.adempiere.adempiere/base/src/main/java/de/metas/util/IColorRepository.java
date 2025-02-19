@@ -22,9 +22,14 @@ package de.metas.util;
  * #L%
  */
 
+import javax.annotation.Nullable;
+
 public interface IColorRepository extends ISingletonService
 {
 	MFColor getColorById(int adColorId);
+
+	@Nullable
+	MFColor getColorById(@Nullable ColorId colorId);
 
 	ColorId saveFlatColorAndReturnId(String flatColorHexString);
 

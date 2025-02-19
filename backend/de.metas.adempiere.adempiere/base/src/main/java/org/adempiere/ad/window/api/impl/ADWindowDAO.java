@@ -3,6 +3,7 @@ package org.adempiere.ad.window.api.impl;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
@@ -25,7 +26,6 @@ import org.adempiere.ad.window.api.WindowCopyRequest;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_AD_Tab_Callout;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_Field;
@@ -399,7 +399,7 @@ public class ADWindowDAO implements IADWindowDAO
 	private void copyWindowTrl(@NonNull final AdWindowId targetWindowId, @NonNull final AdWindowId sourceWindowId)
 	{
 		final String sqlDelete = "DELETE FROM AD_Window_Trl WHERE AD_Window_ID = " + targetWindowId.getRepoId();
-		final int countDelete = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+		final int countDelete = DB.executeUpdateAndThrowExceptionOnFail(sqlDelete, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_Window_Trl deleted: {}", countDelete);
 
 		final String sqlInsert = "INSERT INTO AD_Window_Trl (AD_Window_ID, AD_Language, " +
@@ -409,7 +409,7 @@ public class ADWindowDAO implements IADWindowDAO
 				" Updated, UpdatedBy, Name, Description, Help, IsTranslated " +
 				" FROM AD_Window_Trl WHERE AD_Window_ID = " + sourceWindowId.getRepoId();
 
-		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+		final int countInsert = DB.executeUpdateAndThrowExceptionOnFail(sqlInsert, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_Window_Trl inserted: {}", countInsert);
 	}
 
@@ -487,7 +487,7 @@ public class ADWindowDAO implements IADWindowDAO
 		Check.assumeGreaterThanZero(sourceUISectionId, "sourceUISectionId");
 
 		final String sqlDelete = "DELETE FROM AD_UI_Section_Trl WHERE AD_UI_Section_ID = " + targetUISectionId;
-		final int countDelete = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+		final int countDelete = DB.executeUpdateAndThrowExceptionOnFail(sqlDelete, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_UI_Section_Trl deleted: {}", countDelete);
 
 		final String sqlInsert = "INSERT INTO AD_UI_Section_Trl (AD_UI_Section_ID, AD_Language, " +
@@ -496,7 +496,7 @@ public class ADWindowDAO implements IADWindowDAO
 				" SELECT " + targetUISectionId + ", AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
 				" Updated, UpdatedBy, Name, IsTranslated " +
 				" FROM AD_UI_Section_Trl WHERE AD_UI_Section_ID = " + sourceUISectionId;
-		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+		final int countInsert = DB.executeUpdateAndThrowExceptionOnFail(sqlInsert, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_UI_Section_Trl inserted: {}", countInsert);
 	}
 
@@ -981,7 +981,7 @@ public class ADWindowDAO implements IADWindowDAO
 		Check.assumeGreaterThanZero(sourceTabId, "sourceTabId");
 
 		final String sqlDelete = "DELETE FROM AD_Tab_Trl WHERE AD_Tab_ID = " + targetTabId;
-		final int countDelete = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+		final int countDelete = DB.executeUpdateAndThrowExceptionOnFail(sqlDelete, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_Tab_Trl deleted: {}", countDelete);
 
 		final String sqlInsert = "INSERT INTO AD_Tab_Trl (AD_Tab_ID, AD_Language, " +
@@ -990,7 +990,7 @@ public class ADWindowDAO implements IADWindowDAO
 				" SELECT " + targetTabId + ", AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
 				" Updated, UpdatedBy, Name, Description,  Help, CommitWarning, IsTranslated " +
 				" FROM AD_Tab_Trl WHERE AD_Tab_ID = " + sourceTabId;
-		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+		final int countInsert = DB.executeUpdateAndThrowExceptionOnFail(sqlInsert, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_Tab_Trl inserted: {}", countInsert);
 	}
 
@@ -1091,7 +1091,7 @@ public class ADWindowDAO implements IADWindowDAO
 		Check.assumeGreaterThanZero(sourceFieldId, "sourceFieldId");
 
 		final String sqlDelete = "DELETE FROM AD_Field_Trl WHERE AD_Field_ID = " + targetFieldId;
-		final int countDelete = DB.executeUpdateEx(sqlDelete, ITrx.TRXNAME_ThreadInherited);
+		final int countDelete = DB.executeUpdateAndThrowExceptionOnFail(sqlDelete, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_Field_Trl deleted: {}", countDelete);
 
 		final String sqlInsert = "INSERT INTO AD_Field_Trl (AD_Field_ID, AD_Language, " +
@@ -1100,7 +1100,7 @@ public class ADWindowDAO implements IADWindowDAO
 				" SELECT " + targetFieldId + ", AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, " +
 				" Updated, UpdatedBy, Name, Description, Help, IsTranslated " +
 				" FROM AD_Field_Trl WHERE AD_Field_ID = " + sourceFieldId;
-		final int countInsert = DB.executeUpdateEx(sqlInsert, ITrx.TRXNAME_ThreadInherited);
+		final int countInsert = DB.executeUpdateAndThrowExceptionOnFail(sqlInsert, ITrx.TRXNAME_ThreadInherited);
 		logger.debug("AD_Field_Trl inserted: {}", countInsert);
 	}
 
@@ -1247,5 +1247,14 @@ public class ADWindowDAO implements IADWindowDAO
 				.create()
 				.listDistinct(I_AD_Tab.COLUMNNAME_AD_Window_ID, AdWindowId.class);
 		return ImmutableSet.copyOf(adWindowIds);
+	}
+
+	@Override
+	public ImmutableSet<AdWindowId> retrieveAllActiveAdWindowIds()
+	{
+		return queryBL.createQueryBuilder(I_AD_Window.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listIds(AdWindowId::ofRepoId);
 	}
 }

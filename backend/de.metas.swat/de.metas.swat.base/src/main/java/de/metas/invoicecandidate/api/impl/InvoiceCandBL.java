@@ -26,11 +26,14 @@ import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.aggregation.api.Aggregation;
+import de.metas.aggregation.api.AggregationId;
+import de.metas.aggregation.api.IAggregationDAO;
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -46,6 +49,10 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.TryAndWaitUtil;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyPrecision;
@@ -105,6 +112,9 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
@@ -143,7 +153,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
@@ -153,13 +162,13 @@ import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.concurrent.AutoClosableThreadLocalBoolean;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
@@ -236,7 +245,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			.invalidationKeysMapper(recordRef -> {
 
 				// figure out the header aggregations keys (=> cache keys) of the cache records that need to be invalidated
-				final I_C_Invoice_Candidate icRecord = recordRef.getModel(I_C_Invoice_Candidate.class);
+				final I_C_Invoice_Candidate icRecord = recordRef.getModelNonNull(I_C_Invoice_Candidate.class);
 
 				final boolean headerAggregationKeyWasChanged = InterfaceWrapperHelper.isValueChanged(icRecord, I_C_Invoice_Candidate.COLUMNNAME_HeaderAggregationKey);
 				final boolean needToInvalidateAnything =
@@ -275,6 +284,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+	private final IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
+	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
 	private final Map<String, Collection<ModelWithoutInvoiceCandidateVetoer>> tableName2Listeners = new HashMap<>();
 
@@ -405,7 +416,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final ProductId productId = ProductId.ofRepoId(icRecord.getM_Product_ID());
 		final IProductBL productBL = Services.get(IProductBL.class);
-		if (!productBL.isStocked(productId))
+		if (!productBL.isItemType(productId))
 		{
 			final Timestamp dateOrdered = icRecord.getDateOrdered();
 			logger.debug("computedateToInvoiceBasedOnDeliveryDate - deliveryDate is null and M_Product_ID={} is not stocked; -> return dateOrdered= {} as dateToInvoice", productId.getRepoId(), dateOrdered);
@@ -510,7 +521,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	public void set_QtyInvoiced_NetAmtInvoiced_Aggregation(final Properties ctx, final I_C_Invoice_Candidate ic)
 	{
 		Check.assume(ic.isManual(), ic + " has IsManual='Y'");
-		set_QtyInvoiced_NetAmtInvoiced_Aggregation0(ctx, ic);
+		set_QtyInvoiced_NetAmtInvoiced_Aggregation0(ic);
 	}
 
 	/**
@@ -518,7 +529,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	 * <p>
 	 * <b>Also invokes {@link #updateProcessedFlag(I_C_Invoice_Candidate)}</b>
 	 */
-	void set_QtyInvoiced_NetAmtInvoiced_Aggregation0(final Properties ctx, @NonNull final I_C_Invoice_Candidate ic)
+	void set_QtyInvoiced_NetAmtInvoiced_Aggregation0(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		if (ic.isToClear())
 		{
@@ -649,6 +660,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 	}
 
+	@Nullable
 	private Quantity extractQtyInvoiced(@NonNull final I_C_Invoice_Line_Alloc ila)
 	{
 		final UomId uomId = UomId.ofRepoIdOrNull(ila.getC_UOM_ID());
@@ -675,14 +687,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			}
 			else
 			{
-				final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+				final ADReferenceService adReferenceService = ADReferenceService.get();
 				final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 				amendSchedulerResult(ic,
 									 msgBL.getMsg(ctx,
 												  MSG_INVOICE_CAND_BL_STATUS_ORDER_NOT_CO_1P,
 												  new Object[] {
-														  adReferenceDAO.retrieveListNameTrl(
+														  adReferenceService.retrieveListNameTrl(
 																  DocStatus.AD_REFERENCE_ID,
 																  ol.getC_Order_ID() > 0 ? ol.getC_Order().getDocStatus() : "<null>") // "<null>" shouldn't happen
 												  }));
@@ -742,6 +754,34 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				.generateInvoices(candidates);
 	}
 
+	@Override
+	public void setPaymentTermIfMissing(@NonNull final I_C_Invoice_Candidate icRecord)
+	{
+		if (icRecord.getC_PaymentTerm_ID() > 0)
+		{
+			return;
+		}
+
+		final PaymentTermQuery paymentTermQuery = PaymentTermQuery.forPartner(BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID()), SOTrx.ofBoolean(icRecord.isSOTrx()));
+
+		final PaymentTermId paymentTermIdToUse = paymentTermRepository
+				.retrievePaymentTermId(paymentTermQuery)
+				.orElseThrow(() -> new AdempiereException("Found neither a payment-term for bpartner nor a default payment term.")
+						.appendParametersToMessage()
+						.setParameter("C_BPartner_ID", paymentTermQuery.getBPartnerId().getRepoId())
+						.setParameter("SOTrx", paymentTermQuery.getSoTrx()));
+
+		icRecord.setC_PaymentTerm_ID(PaymentTermId.toRepoId(paymentTermIdToUse));
+	}
+
+	public PaymentTermId getPaymentTermId(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return CoalesceUtil.coalesceSuppliers(
+				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_Override_ID()),
+				() -> PaymentTermId.ofRepoIdOrNull(ic.getC_PaymentTerm_ID()),
+				() -> paymentTermRepository.retrievePaymentTermIdNotNull(PaymentTermQuery.forPartner(BPartnerId.ofRepoId(ic.getBill_BPartner_ID()), SOTrx.ofBoolean(ic.isSOTrx()))));
+	}
+	
 	@Override
 	public void setNetAmtToInvoice(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
@@ -855,10 +895,10 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final BigDecimal qtyToInvoiceOverride = getQtyToInvoice_OverrideOrNull(ic);
 		if (qtyToInvoiceOverride != null)
 		{
-			return Quantitys.create(qtyToInvoiceOverride, stockUomId);
+			return Quantitys.of(qtyToInvoiceOverride, stockUomId);
 		}
 
-		return Quantitys.create(ic.getQtyToInvoice(), stockUomId);
+		return Quantitys.of(ic.getQtyToInvoice(), stockUomId);
 	}
 
 	/**
@@ -953,11 +993,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		// ignore "error" candidates
 		if (ic.isError())
 		{
-			final String msg = new StringBuilder()
-					.append(msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_ERROR, new Object[] { ic.getC_Invoice_Candidate_ID() }))
-					.append(": ")
-					.append(ic.getErrorMsg())
-					.toString();
+			final String msg = msgBL.getMsg(ctx, MSG_INVOICE_CAND_BL_INVOICING_SKIPPED_ERROR, new Object[] { ic.getC_Invoice_Candidate_ID() })
+					+ ": "
+					+ ic.getErrorMsg();
 			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
 			return true;
 		}
@@ -1027,8 +1065,9 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return result;
 	}
 
+	@VisibleForTesting
 	@Override
-	public boolean isCreditMemo(final I_C_Invoice_Candidate cand)
+	public boolean isCreditMemo(@NonNull final I_C_Invoice_Candidate cand)
 	{
 		return cand.isManual() && cand.getPriceActual_Override().signum() < 0;
 	}
@@ -1040,7 +1079,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 
-		final Money candNetAmtToInvoiceCalc = moneyService.multiply(Quantitys.create(ic.getQtyToInvoiceInUOM(), UomId.ofRepoId(ic.getC_UOM_ID())), candPriceActual);
+		final Money candNetAmtToInvoiceCalc = moneyService.multiply(Quantitys.of(ic.getQtyToInvoiceInUOM(), UomId.ofRepoId(ic.getC_UOM_ID())), candPriceActual);
 
 		return candNetAmtToInvoiceCalc;
 	}
@@ -1061,6 +1100,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		return result;
 	}
 
+	@Nullable
 	private I_M_PriceList extractPriceListOrNull(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -1077,7 +1117,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		{
 			// take the precision from the bpartner price list
 			final I_C_BPartner_Location partnerLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(
-					BPartnerLocationId.ofRepoIdOrNull(
+					BPartnerLocationId.ofRepoId(
 							icRecord.getBill_BPartner_ID(),
 							firstGreaterThanZero(icRecord.getBill_Location_Override_ID(), icRecord.getBill_Location_ID())));
 
@@ -1147,7 +1187,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				.setFrom(ic);
 
 		splitCand.setC_Invoice_Candidate_Agg_ID(ic.getC_Invoice_Candidate_Agg_ID());
-		aggregationBL.setHeaderAggregationKey(splitCand);
+		// this shall be done later by IInvoiceCandInvalidUpdater. // Otherwise we might have concurrent access to I_C_Invoice_Candidate_HeaderAggregation and DBUniqueConstraintExceptions
+		//aggregationBL.setHeaderAggregationKey(splitCand);
 		splitCand.setLineAggregationKey(null);
 		splitCand.setLineAggregationKey_Suffix(ic.getLineAggregationKey_Suffix());
 		splitCand.setDescription(ic.getDescription());
@@ -1256,7 +1297,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public I_C_Invoice_Line_Alloc createUpdateIla(InvoiceCandidateAllocCreateRequest request)
+	public I_C_Invoice_Line_Alloc createUpdateIla(final InvoiceCandidateAllocCreateRequest request)
 	{
 		final I_C_Invoice_Candidate invoiceCand = request.getInvoiceCand();
 		final I_C_InvoiceLine invoiceLine = request.getInvoiceLine();
@@ -1430,7 +1471,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return ic.isTaxIncluded();
 		}
 
-		return taxIncludedOverride.booleanValue();
+		return taxIncludedOverride;
 	}
 
 	@Override
@@ -1549,7 +1590,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 					//
 					// Task 12884 (Reversing an adjustment invoice): Set reversalQtyInvoiced in ila  to have  correct  quantities( ila adj  +  reversal Ila adj = 0)
-					if(isAdjustmentChargeInvoice){
+					if (isAdjustmentChargeInvoice)
+					{
 						qtyInvoicedForIla = reversalQtyInvoiced;
 					}
 					else
@@ -1600,7 +1642,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		InterfaceWrapperHelper.save(invoiceCandidate);
 	}
 
-	private void setApprovalForInvoicing(@NonNull final Collection<I_C_Invoice_Candidate> invoiceCandidates, final boolean approved)
+	private void setApprovalForInvoicingFalse(@NonNull final Collection<I_C_Invoice_Candidate> invoiceCandidates)
 	{
 		if (invoiceCandidates.isEmpty())
 		{
@@ -1609,7 +1651,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
 		{
-			invoiceCandidate.setApprovalForInvoicing(approved);
+			invoiceCandidate.setApprovalForInvoicing(false);
 			invoiceCandDAO.save(invoiceCandidate);
 		}
 	}
@@ -1750,13 +1792,13 @@ public class InvoiceCandBL implements IInvoiceCandBL
 					// note: if an ILA is created, the icToLink is automatically invalidated via C_Invoice_Line_Alloc model validator
 				}
 
-				setApprovalForInvoicing(toLinkAgainstIl, false);
+				setApprovalForInvoicingFalse(toLinkAgainstIl);
 			}
 		}
 		else
 		{
 			final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidates(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
-			setApprovalForInvoicing(invoiceCandidates, false);
+			setApprovalForInvoicingFalse(invoiceCandidates);
 		}
 	}
 
@@ -2145,6 +2187,42 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
+	public void closeDeliveryInvoiceCandidatesByOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
+		udpateIsDeliveryClosedForInvoiceCandidates(invoiceCandidates.iterator(), true);
+	}
+
+	@Override
+	public void openDeliveryInvoiceCandidatesByOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidatesForOrderLineId(orderLineId);
+		udpateIsDeliveryClosedForInvoiceCandidates(invoiceCandidates.iterator(), false);
+	}
+
+	private void udpateIsDeliveryClosedForInvoiceCandidates(
+			@NonNull final Iterator<I_C_Invoice_Candidate> candidatesToClose, final boolean isDeliveryClosed)
+	{
+		while (candidatesToClose.hasNext())
+		{
+			udpateIsDeliveryClosedForInvoiceCandidate(candidatesToClose.next(), isDeliveryClosed);
+		}
+	}
+
+	private void udpateIsDeliveryClosedForInvoiceCandidate(final I_C_Invoice_Candidate candidate, final boolean isDeliveryClosed)
+	{
+		candidate.setIsDeliveryClosed(isDeliveryClosed);
+
+		if (!InterfaceWrapperHelper.hasChanges(candidate))
+		{
+			return; // https://github.com/metasfresh/metasfresh/issues/3216
+		}
+
+		invoiceCandDAO.invalidateCand(candidate);
+		InterfaceWrapperHelper.save(candidate);
+	}
+
+	@Override
 	public void closeInvoiceCandidates(
 			@NonNull final Iterator<I_C_Invoice_Candidate> candidatesToClose)
 	{
@@ -2200,11 +2278,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		for (final I_C_InvoiceLine ilRecord : invoiceDAO.retrieveLines(invoice))
 		{
-			try (final MDCCloseable ilRecordMDC = TableRecordMDC.putTableRecordReference(ilRecord))
+			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(ilRecord))
 			{
 				for (final I_C_Invoice_Candidate candidate : invoiceCandDAO.retrieveIcForIl(ilRecord))
 				{
-					try (final MDCCloseable candidateMDC = TableRecordMDC.putTableRecordReference(candidate))
+					try (final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(candidate))
 					{
 
 						final InvoiceRule candidateInvoiceRule = InvoiceRule.ofCode(candidate.getInvoiceRule());
@@ -2213,6 +2291,17 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						{
 							logger.debug("candidate.invoiceRule={} ; => not closing invoice candidate with id={}", candidateInvoiceRule, candidate.getC_Invoice_Candidate_ID());
 							continue;
+						}
+
+						final AggregationId aggregationId = AggregationId.ofRepoIdOrNull(candidate.getHeaderAggregationKeyBuilder_ID());
+						if (aggregationId != null)
+						{
+							final Aggregation aggregation = aggregationDAO.retrieveAggregation(Env.getCtx(), aggregationId.getRepoId());
+							if (aggregation.hasInvoicePerShipmentAttribute())
+							{
+								logger.debug("Has aggregation attribute: InvoicePerShipment ; => not closing invoice candidate with id={}", candidate.getC_Invoice_Candidate_ID());
+								continue;
+							}
 						}
 
 						if (ilRecord.getQtyInvoiced().compareTo(candidate.getQtyOrdered()) < 0)
@@ -2308,7 +2397,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		final List<I_C_Invoice_Candidate> icRecords = invoiceCandDAO.retrieveInvoiceCandidatesForInOutLine(receiptLine);
 		for (final I_C_Invoice_Candidate icRecord : icRecords)
 		{
-			try (final MDCCloseable icRecordMDC = TableRecordMDC.putTableRecordReference(icRecord))
+			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(icRecord))
 			{
 				logger.debug("Set IsInDispute=true because ic belongs to M_InOutLine_ID={}", receiptLine.getM_InOutLine_ID());
 				icRecord.setIsInDispute(true);
@@ -2447,8 +2536,6 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 
 		// first fetch invoice candidates
-		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-
 		final List<I_C_Invoice_Candidate> invoiceCands = new ArrayList<>();
 
 		final MInvoice invoicePO = InterfaceWrapperHelper.getPO(invoice);
@@ -2463,17 +2550,14 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return ImmutableSet.of();
 		}
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(invoice);
 		final String trxName = InterfaceWrapperHelper.getTrxName(invoice);
 
 		// void invoice
 		Services.get(IDocumentBL.class).processEx(invoice, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 
 		// update invalids
-		invoiceCandBL.updateInvalid()
-				.setContext(ctx, trxName)
-				.setOnlyInvoiceCandidateIds(InvoiceCandidateIdsSelection.extractFixedIdsSet(invoiceCands))
-				.update();
+		final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection = InvoiceCandidateIdsSelection.extractFixedIdsSet(invoiceCands);
+		ensureICsAreUpdated(invoiceCandidateIdsSelection);
 
 		for (final I_C_Invoice_Candidate ic : invoiceCands)
 		{
@@ -2497,6 +2581,50 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
 				.map(InvoiceCandidateId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public void ensureICsAreUpdated(@NonNull final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection)
+	{
+		if (Adempiere.isUnitTestMode())
+		{
+			// In unit-test-mode we don't have the app-server running to do this for us, so we need to do it here.
+			// Updating invalid candidates to make sure that they e.g. have the correct header aggregation key and thus the correct ordering
+			// also, we need to make sure that each ICs was updated at least once, so that it has a QtyToInvoice > 0 (task 08343)
+			updateInvalid()
+					.setContext(PlainContextAware.newWithThreadInheritedTrx())
+					.setTaggedWithAnyTag()
+					.setOnlyInvoiceCandidateIds(invoiceCandidateIdsSelection)
+					.update();
+		}
+		else
+		{
+			// in later code-versions this might also be achieved by using AsyncBatchService.executeBatch(..), but here we just wait...
+			waitForInvoiceCandidatesUpdated(invoiceCandidateIdsSelection);
+		}
+	}
+
+	private void waitForInvoiceCandidatesUpdated(@NonNull final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection)
+	{
+		Loggables.withLogger(logger, Level.DEBUG).addLog("InvoiceCandidateEnqueuer - Start waiting for ICs to be updated async-queue; Selection={}", invoiceCandidateIdsSelection);
+		try
+		{
+			TryAndWaitUtil.tryAndWait(
+					3600 /*let's wait a full hour*/,
+					1000 /*check once a second*/,
+					() -> !invoiceCandDAO.hasInvalidInvoiceCandidatesForSelection(invoiceCandidateIdsSelection),
+					null);
+		}
+		catch (final InterruptedException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("InvoiceCandidateIdsSelection (ICs-selection)", invoiceCandidateIdsSelection);
+		}
+		finally
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("InvoiceCandidateEnqueuer - Stop waiting for ICs to be updated async-queue; Selection={}", invoiceCandidateIdsSelection);
+		}
 	}
 
 	// TODO: would be nice to use de.metas.ui.web.view.descriptor.SqlAndParams but that is in module webui-api, and here we don't have access to it
@@ -2525,28 +2653,8 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		return StreamSupport.stream(Spliterators.spliteratorUnknownSize(candidates, Spliterator.ORDERED), false)
 				.filter(c -> !processedRecords.contains(c.getC_Invoice_Candidate_ID()))
-				.map(ic -> {
-					set_DateToInvoice_DefaultImpl(ic);
-					return ic;
-				})
+				.peek(this::set_DateToInvoice_DefaultImpl)
 				.collect(Collectors.toSet());
-	}
-
-	@Override
-	public void setAsyncBatch(@NonNull final InvoiceCandidateId invoiceCandidateId, @NonNull final AsyncBatchId asyncBatchId)
-	{
-		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandDAO.getById(invoiceCandidateId);
-
-		if (invoiceCandidate.isProcessed())
-		{
-			Loggables.withLogger(logger, Level.WARN).addLog("InvoiceCandBL.setAsyncBatch(): C_Invoice_Candidate already processed,"
-																	+ " nothing to do! InvoiceCandidateId: {}", invoiceCandidate.getC_Invoice_Candidate_ID());
-			return;
-		}
-
-		invoiceCandidate.setC_Async_Batch_ID(asyncBatchId.getRepoId());
-
-		invoiceCandDAO.save(invoiceCandidate);
 	}
 
 	@Override
@@ -2554,7 +2662,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
 
-		return Quantitys.create(ic.getQtyOrdered(), productId);
+		return Quantitys.of(ic.getQtyOrdered(), productId);
 	}
 
 	@Override
@@ -2562,7 +2670,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	{
 		final ProductId productId = ProductId.ofRepoId(ic.getM_Product_ID());
 
-		return Quantitys.create(ic.getQtyInvoiced(), productId);
+		return Quantitys.of(ic.getQtyInvoiced(), productId);
 	}
 
 	@Override

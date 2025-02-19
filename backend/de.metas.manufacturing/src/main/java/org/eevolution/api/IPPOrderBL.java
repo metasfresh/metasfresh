@@ -1,5 +1,6 @@
 package org.eevolution.api;
 
+import de.metas.document.DocSubType;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.material.planning.pporder.OrderQtyChangeRequest;
 import de.metas.material.planning.pporder.PPOrderQuantities;
@@ -20,6 +21,8 @@ import java.util.stream.Stream;
 public interface IPPOrderBL extends ISingletonService
 {
 	I_PP_Order getById(@NonNull PPOrderId id);
+
+	String getDocumentNoById(@NonNull PPOrderId ppOrderId);
 
 	void save(I_PP_Order ppOrder);
 
@@ -76,9 +79,11 @@ public interface IPPOrderBL extends ISingletonService
 	void setDocType(
 			I_PP_Order ppOrder,
 			PPOrderDocBaseType docBaseType,
-			@Nullable String docSubType);
+			@Nullable DocSubType docSubType);
 
 	void closeOrder(PPOrderId ppOrderId);
+
+	void closeOrder(I_PP_Order ppOrder);
 
 	/**
 	 * Set QtyOrdered=QtyDelivered, QtyClosed=QtyOrdered(old) - QtyDelivered

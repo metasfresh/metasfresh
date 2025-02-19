@@ -1,5 +1,6 @@
 package de.metas.handlingunits.generichumodel;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
@@ -9,6 +10,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UOMConversionContext;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -16,6 +18,7 @@ import lombok.Value;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.util.lang.Mutable;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -135,12 +138,12 @@ public class HU
 		Quantity newWeightNet;
 		if (getChildHUs().isEmpty())
 		{
-			newWeightNet = weightNet.isPresent() ? weightNet.get() : null;
+			newWeightNet = weightNet.orElse(null);
 		}
 		else
 		{
 			// we will sum it up from our childrens' weights
-			newWeightNet = weightNet.isPresent() ? weightNet.get().toZero() : null;
+			newWeightNet = weightNet.map(Quantity::toZero).orElse(null);
 		}
 
 		for (final HU child : getChildHUs())
@@ -165,9 +168,16 @@ public class HU
 	/**
 	 * Iterates all child-HUs' storage quantities for the given productId and returns the median (or something close).
 	 * Goal: return a reasonably common quantity, and ignore possible outliers.
+	 * <p>
+	 * If this HU has no children, then return this HU's quantity!
 	 */
 	public Quantity extractMedianCUQtyPerChildHU(@NonNull final ProductId productId)
 	{
+		if (getChildHUs().isEmpty())
+		{
+			return getProductQtysInStockUOM().get(productId);
+		}
+
 		final ImmutableList<BigDecimal> allQuantities = this.getChildHUs()
 				.stream()
 				.map(hu -> hu.getProductQtysInStockUOM().get(productId).toBigDecimal())
@@ -175,6 +185,23 @@ public class HU
 				.collect(ImmutableList.toImmutableList());
 
 		final BigDecimal qtyCU = allQuantities.get(allQuantities.size() / 2);
-		return Quantitys.create(qtyCU, productId);
+		return Quantitys.of(qtyCU, productId);
+	}
+
+	@Nullable
+	public String getPackagingGTIN(@NonNull final BPartnerId bpartnerId)
+	{
+		final String gtin = packagingGTINs.get(bpartnerId);
+		if(Check.isNotBlank(gtin))
+		{
+			return gtin;
+		}
+		return packagingGTINs.get(BPartnerId.NONE);
+	}
+
+	@VisibleForTesting
+	public ImmutableMap<BPartnerId, String> getAllPackaginGTINs()
+	{
+		return ImmutableMap.copyOf(packagingGTINs);
 	}
 }

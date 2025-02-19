@@ -34,6 +34,7 @@ import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
 import de.metas.mforecast.impl.ForecastLineId;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
@@ -48,19 +49,16 @@ import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.PurchaseCandidateSource;
 import de.metas.purchasecandidate.VendorProductInfo;
 import de.metas.purchasecandidate.VendorProductInfoService;
-import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 @Service
 @Profile(Profiles.PROFILE_App) // we want only one component to bother itself with PurchaseCandidateRequestedEvent
@@ -97,7 +95,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 	{
 		final MaterialDescriptor materialDescriptor = event.getPurchaseMaterialDescriptor();
 
-		final OrderAndLineId orderandLineIdOrNull = OrderAndLineId.ofRepoIdsOrNull(
+		final OrderAndLineId orderAndLineIdOrNull = OrderAndLineId.ofRepoIdsOrNull(
 				event.getSalesOrderRepoId(),
 				event.getSalesOrderLineRepoId());
 
@@ -108,10 +106,9 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.getDefaultVendorProductInfo(product.getId(), orgId)
 				.orElseThrow(() -> new AdempiereException("Missing vendorProductInfos for productId=" + product.getId() + " and orgId=" + orgId + ";"));
 
-		final I_C_UOM uomRecord = loadOutOfTrx(product.getUomId().getRepoId(), I_C_UOM.class);
-
 		final Dimension dimension = Dimension.builder()
 				.activityId(ActivityId.ofRepoIdOrNull(event.getActivityId()))
+				.salesOrderId(OrderId.ofRepoIdOrNull(event.getSalesOrderRepoId()))
 				.campaignId(event.getCampaignId())
 				.projectId(ProjectId.ofRepoIdOrNull(event.getProjectId()))
 				.userElement1Id(event.getUserElementId1())
@@ -139,8 +136,8 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoId(materialDescriptor.getAttributeSetInstanceId()))
 				// .profitInfo(profitInfo)
 				// .purchaseItem(purchaseItem) purchase items are only returned by the vendor gateway
-				.qtyToPurchase(Quantity.of(materialDescriptor.getQuantity(), uomRecord))
-				.salesOrderAndLineIdOrNull(orderandLineIdOrNull)
+				.qtyToPurchase(Quantitys.of(materialDescriptor.getQuantity(), product.getUomId()))
+				.salesOrderAndLineIdOrNull(orderAndLineIdOrNull)
 				.source(PurchaseCandidateSource.MaterialDisposition)
 				.warehouseId(materialDescriptor.getWarehouseId())
 				.forecastLineId(ForecastLineId.ofRepoIdOrNull(event.getForecastId(), event.getForecastLineId()))
@@ -162,8 +159,8 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 			final PurchaseCandidateId newPurchaseCandidateId = purchaseCandidateRepository.save(newPurchaseCandidate);
 
 			final PurchaseCandidateCreatedEvent purchaseCandidateCreatedEvent = createCandidateCreatedEvent(requestedEvent,
-					newPurchaseCandidate.getVendorId(),
-					newPurchaseCandidateId);
+																											newPurchaseCandidate.getVendorId(),
+																											newPurchaseCandidateId);
 			postMaterialEventService.enqueueEventAfterNextCommit(purchaseCandidateCreatedEvent);
 		}
 		finally

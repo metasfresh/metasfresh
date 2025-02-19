@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,23 +28,29 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
+import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_M_Locator;
 
+import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_IsActive;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.compiere.model.I_M_Warehouse.COLUMNNAME_IsIssueWarehouse;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_Value;
 
@@ -55,6 +61,7 @@ public class M_Warehouse_StepDef
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final M_Locator_StepDefData locatorTable;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 	@NonNull private final S_Resource_StepDefData resourceTable;
@@ -93,8 +100,12 @@ public class M_Warehouse_StepDef
 
 					assertThat(warehouseRecord).isNotNull();
 
-					final boolean isIssueWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsIssueWarehouse).orElse(false);
-					final boolean isInTransit = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsInTransit).orElse(false);
+					final boolean isIssueWarehouse = row.getAsOptionalBoolean(COLUMNNAME_IsIssueWarehouse).orElse(false);
+					if (isIssueWarehouse)
+					{ // we can have just one issue-warehouse, so make sure that all other WHs are not issue-warehouses
+						final ICompositeQueryUpdater<I_M_Warehouse> updater = queryBL.createCompositeQueryUpdater(I_M_Warehouse.class).addSetColumnValue(COLUMNNAME_IsIssueWarehouse, false);
+						queryBL.createQueryBuilder(I_M_Warehouse.class).addEqualsFilter(COLUMNNAME_IsIssueWarehouse, true).addEqualsFilter(COLUMNNAME_IsActive, true).create().updateDirectly(updater);
+					}
 
 					final BPartnerId bpartnerId = row.getAsOptionalIdentifier(I_M_Warehouse.COLUMNNAME_C_BPartner_ID)
 							.map(bpartnerTable::getId)
@@ -109,6 +120,10 @@ public class M_Warehouse_StepDef
 							? BPartnerLocationId.ofRepoIdOrNull(bpartnerId, bpartnerLocationRepoId)
 							: StepDefConstants.METASFRESH_AG_BPARTNER_LOCATION_ID;
 
+					final boolean isInTransit = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsInTransit).orElse(false);
+					final boolean isQuarantineWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsQuarantineWarehouse).orElse(false);
+					final boolean isQualityReturnWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsQualityReturnWarehouse).orElse(false);
+
 					warehouseRecord.setValue(valueAndName.getValue());
 					warehouseRecord.setName(valueAndName.getName());
 					warehouseRecord.setSeparator("*");
@@ -116,14 +131,18 @@ public class M_Warehouse_StepDef
 					warehouseRecord.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
 					warehouseRecord.setIsIssueWarehouse(isIssueWarehouse);
 					warehouseRecord.setIsInTransit(isInTransit);
+					warehouseRecord.setIsQuarantineWarehouse(isQuarantineWarehouse);
+					warehouseRecord.setIsQualityReturnWarehouse(isQualityReturnWarehouse);
 
 					row.getAsOptionalIdentifier(I_M_Warehouse.COLUMNNAME_PP_Plant_ID)
 							.map(identifier -> resourceTable.getIdOptional(identifier).orElseGet(() -> identifier.getAsId(ResourceId.class)))
 							.ifPresent(resourceId -> warehouseRecord.setPP_Plant_ID(resourceId.getRepoId()));
 
-					InterfaceWrapperHelper.saveRecord(warehouseRecord);
+					saveRecord(warehouseRecord);
 
-					warehouseBL.getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID()));
+					final I_M_Locator locator = warehouseBL.getOrCreateDefaultLocator(WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID()));
+					row.getAsOptionalIdentifier(I_M_Locator.COLUMNNAME_M_Locator_ID)
+							.ifPresent(locatorIdentifier -> locatorTable.put(locatorIdentifier, locator));
 
 					row.getAsIdentifier().put(warehouseTable, warehouseRecord);
 				});

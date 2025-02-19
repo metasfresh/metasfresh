@@ -1,16 +1,16 @@
 package de.metas.process;
 
-import java.util.function.Supplier;
-
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Form;
 import org.compiere.model.I_AD_Process;
 import org.compiere.util.Ini;
+import org.compiere.util.Util;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -42,7 +42,7 @@ import de.metas.util.Services;
  */
 public class ProcessPreconditionChecker
 {
-	public static final ProcessPreconditionChecker newInstance()
+	public static ProcessPreconditionChecker newInstance()
 	{
 		return new ProcessPreconditionChecker();
 	}
@@ -111,11 +111,11 @@ public class ProcessPreconditionChecker
 		return resolution != null ? resolution : ProcessPreconditionsResolution.accept();
 	}
 
-	private static final IProcessPrecondition createProcessPreconditions(
+	private static IProcessPrecondition createProcessPreconditions(
 			final Class<? extends IProcessPrecondition> preconditionsClass,
-			final IProcessPreconditionsContext context) throws Exception
+			final IProcessPreconditionsContext context)
 	{
-		final IProcessPrecondition processPreconditions = preconditionsClass.asSubclass(IProcessPrecondition.class).newInstance();
+		final IProcessPrecondition processPreconditions = Util.newInstance(IProcessPrecondition.class, preconditionsClass);
 		if (processPreconditions instanceof JavaProcess)
 		{
 			((JavaProcess)processPreconditions).init(context);
@@ -211,7 +211,7 @@ public class ProcessPreconditionChecker
 		return this;
 	}
 
-	private final Class<?> loadClass(final String classname, final boolean isServerProcess)
+	private Class<?> loadClass(final String classname, final boolean isServerProcess)
 	{
 		if (classname == null)
 		{
@@ -244,7 +244,7 @@ public class ProcessPreconditionChecker
 		}
 	}
 
-	private final Class<? extends IProcessPrecondition> toProcessPreconditionsClassOrNull(final Class<?> clazz)
+	private Class<? extends IProcessPrecondition> toProcessPreconditionsClassOrNull(final Class<?> clazz)
 	{
 		if (clazz != null && IProcessPrecondition.class.isAssignableFrom(clazz))
 		{
@@ -257,18 +257,18 @@ public class ProcessPreconditionChecker
 
 	}
 
-	private final void presetRejectWithInternalReason(final String errorMessage, final Throwable ex)
+	private void presetRejectWithInternalReason(final String errorMessage, final Throwable ex)
 	{
 		logger.warn("Marked checker as not applicable: {} because {}", this, errorMessage, ex);
 		_presetResolution = ProcessPreconditionsResolution.rejectWithInternalReason(errorMessage);
 	}
 
-	private final ProcessPreconditionsResolution getPresetResolution()
+	private ProcessPreconditionsResolution getPresetResolution()
 	{
 		return _presetResolution;
 	}
 
-	private final boolean hasPresetResolution()
+	private boolean hasPresetResolution()
 	{
 		return _presetResolution != null;
 	}

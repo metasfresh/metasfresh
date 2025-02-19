@@ -26,6 +26,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -60,6 +61,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
@@ -91,6 +93,7 @@ public class M_Inventory_StepDef
 	@NonNull private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	@NonNull private final M_HU_StepDefData huTable;
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final M_Locator_StepDefData locatorTable;
 	@NonNull private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 
 	@Given("metasfresh contains M_Inventories:")
@@ -213,7 +216,12 @@ public class M_Inventory_StepDef
 		final ProductId productId = productTable.getIdOptional(productIdentifier)
 				.orElseGet(() -> productIdentifier.getAsId(ProductId.class));
 
-		inventoryLine.setM_Locator_ID(warehouseBL.getOrCreateDefaultLocatorId(warehouseId).getRepoId());
+		final LocatorId locatorId = row.getAsOptionalIdentifier(I_M_InventoryLine.COLUMNNAME_M_Locator_ID)
+				.map(locatorTable::getId)
+				.orElseGet(() -> warehouseBL.getOrCreateDefaultLocatorId(warehouseId));
+		assertThat(locatorId.getWarehouseId()).as("line locator is matching header warehouse").isEqualTo(warehouseId);
+
+		inventoryLine.setM_Locator_ID(locatorId.getRepoId());
 		inventoryLine.setM_Product_ID(productId.getRepoId());
 
 		inventoryLine.setQtyCount(row.getAsBigDecimal("QtyCount"));
@@ -281,12 +289,12 @@ public class M_Inventory_StepDef
 		{
 			productId = productIdentifier.getAsId(ProductId.class);
 			final I_M_Product productById = productDAO.getById(productId);
-			productTable.put(productIdentifier, productById);
+			productTable.putOrReplace(productIdentifier, productById);
 
 		}
 		inventoryLineRecord.setM_Product_ID(productId.getRepoId());
 
-		InterfaceWrapperHelper.save(inventoryLineRecord);
+		saveRecord(inventoryLineRecord);
 
 		row.getAsOptionalIdentifier("M_InventoryLine_ID")
 				.ifPresent(inventoryLineIdentifier -> inventoryLineTable.put(inventoryLineIdentifier, inventoryLineRecord));

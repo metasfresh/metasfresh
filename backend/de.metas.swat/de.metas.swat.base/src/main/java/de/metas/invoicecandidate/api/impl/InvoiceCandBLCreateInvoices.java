@@ -11,9 +11,9 @@ import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
 import de.metas.i18n.AdMessageId;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.impex.InputDataSourceId;
@@ -58,12 +58,13 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.IdentityHashSet;
 import de.metas.workflow.api.IWFExecutionFactory;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -129,7 +130,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 	//
 	// Services
-	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBLCreateInvoices.class);
+	private static final Logger logger = InvoiceCandidate_Constants.getLogger(InvoiceCandBLCreateInvoices.class);
 
 	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -142,12 +143,12 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IWFExecutionFactory wfExecutionFactory = Services.get(IWFExecutionFactory.class);
-	private final transient IADMessageDAO msgDAO = Services.get(IADMessageDAO.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IMatchInvBL matchInvBL = Services.get(IMatchInvBL.class);
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final transient IInOutDAO inoutDAO = Services.get(IInOutDAO.class);
 	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+	private final transient DocTypeInvoicingPoolService docTypeInvoicingPoolService = SpringContextHolder.instance.getBean(DocTypeInvoicingPoolService.class);
 	private final transient IUserBL userBL = Services.get(IUserBL.class);
 
 	//
@@ -339,8 +340,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			{
 				final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(invoiceHeader.getC_Order_ID()));
 
-				final DocTypeId invoiceDocTypeId = invoiceHeader.getC_DocTypeInvoice() != null
-						? DocTypeId.ofRepoId(invoiceHeader.getC_DocTypeInvoice().getC_DocType_ID())
+				final DocTypeId invoiceDocTypeId = invoiceHeader.getDocTypeInvoiceId().isPresent()
+						? invoiceHeader.getDocTypeInvoiceId().get()
 						: null;
 				invoice = create(
 						invoiceBL.createInvoiceFromOrder(
@@ -370,7 +371,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoice.setDateAcct(TimeUtil.asTimestamp(invoiceHeader.getDateAcct(), timeZone)); // 03905: also updating DateAcct
 
 				invoice.setM_PriceList_ID(invoiceHeader.getM_PriceList_ID()); // #367: get M_PriceList_ID directly from invoiceHeader.
-				Set<String> externalIds = invoiceHeader.getAllInvoiceCandidates().stream().map(I_C_Invoice_Candidate::getExternalHeaderId).filter(Objects::nonNull).collect(Collectors.toSet());
+				final Set<String> externalIds = invoiceHeader.getAllInvoiceCandidates().stream().map(I_C_Invoice_Candidate::getExternalHeaderId).filter(Objects::nonNull).collect(Collectors.toSet());
 				Check.assume(externalIds.size() <= 1, "Unexpectedly found multiple externalId candidates for the same invoice: {}", externalIds);
 				invoice.setExternalId(externalIds.stream().findFirst().orElse(null));
 			}
@@ -489,7 +490,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 		if (invoice.getC_DocTypeTarget_ID() <= 0)
 		{
-			final I_C_DocType invoiceHeaderDocType = invoiceHeader.getC_DocTypeInvoice();
+
+			final I_C_DocType invoiceHeaderDocType = invoiceHeader.getDocTypeInvoiceId().map(docTypeDAO::getById).orElse(null);
 			if (invoiceHeaderDocType != null)
 			{
 				invoiceBL.setDocTypeTargetIdAndUpdateDescription(invoice, invoiceHeaderDocType.getC_DocType_ID());
@@ -524,6 +526,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	// NOTE: not static because we share the services
 	private class DefaultInvoiceLineGeneratorRunnable implements TrxRunnable2
 	{
+		@Getter
 		private final List<I_C_InvoiceLine> createdLines;
 		private final I_C_Invoice invoice;
 		private final List<I_C_Invoice_Candidate> errorCandidates;
@@ -799,7 +802,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			// Create ASI
 			final I_M_AttributeSetInstance asi = create(getCtx(), I_M_AttributeSetInstance.class, getTrxName());
-			asi.setM_AttributeSet_ID(AttributeConstants.M_AttributeSet_ID_None);
+			asi.setM_AttributeSet_ID(AttributeSetId.NONE.getRepoId());
 			attributesRepo.save(asi);
 
 			// Create one Attribute Instance for each invoice line attribute
@@ -822,7 +825,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		}
 
 		@Override
-		public boolean doCatch(final Throwable e) throws Throwable
+		public boolean doCatch(final Throwable e)
 		{
 			if (errorException[0] == null)
 			{
@@ -844,11 +847,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				errorCandidates.clear();
 				errorException[0] = null;
 			}
-		}
-
-		public List<I_C_InvoiceLine> getCreatedLines()
-		{
-			return createdLines;
 		}
 	}
 
@@ -928,6 +926,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				.dateInvoicedParam(invoicingParams != null ? invoicingParams.getDateInvoiced() : null)
 				.dateAcctParam(invoicingParams != null ? invoicingParams.getDateAcct() : null)
 				.useDefaultBillLocationAndContactIfNotOverride(invoicingParams != null && invoicingParams.isUpdateLocationAndContactForInvoice())
+				.docTypeInvoicingPoolService(docTypeInvoicingPoolService)
 				.build();
 	}
 
@@ -1025,7 +1024,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 					userInChargeId = USERINCHARGE_NA;
 				}
 
-				List<I_C_Invoice_Candidate> candsOfUserId = userId2cands.computeIfAbsent(userInChargeId, k -> new ArrayList<>());
+				final List<I_C_Invoice_Candidate> candsOfUserId = userId2cands.computeIfAbsent(userInChargeId, k -> new ArrayList<>());
 				candsOfUserId.add(ic);
 			}
 
@@ -1040,7 +1039,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				if (userId != USERINCHARGE_NA)
 				{
 					note = create(ctx, I_AD_Note.class, ITrx.TRXNAME_None);
-					note.setAD_Message_ID(msgDAO.retrieveIdByValue(ctx, MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P)
+					note.setAD_Message_ID(msgBL.getIdByAdMessage(MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P)
 												  .map(AdMessageId::getRepoId)
 												  .orElse(-1));
 
@@ -1194,7 +1193,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	}
 
 	@Override
-	public IInvoiceGenerator setInvoicingParams(IInvoicingParams invoicingParams)
+	public IInvoiceGenerator setInvoicingParams(final IInvoicingParams invoicingParams)
 	{
 		this._invoicingParams = invoicingParams;
 		return this;

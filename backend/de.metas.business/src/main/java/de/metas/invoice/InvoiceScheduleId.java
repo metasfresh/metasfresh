@@ -1,7 +1,12 @@
 package de.metas.invoice;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -26,17 +31,31 @@ import lombok.Value;
  */
 
 @Value
-public class InvoiceScheduleId
+public class InvoiceScheduleId implements RepoIdAware
 {
 	int repoId;
 
+	@NonNull
 	public static InvoiceScheduleId ofRepoId(final int repoId)
 	{
 		return new InvoiceScheduleId(repoId);
 	}
 
+	@Nullable
+	public static InvoiceScheduleId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new InvoiceScheduleId(repoId) : null;
+	}
+
 	private InvoiceScheduleId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "repoId");
+	}
+
+	@JsonValue
+	@Override
+	public int getRepoId()
+	{
+		return repoId;
 	}
 }

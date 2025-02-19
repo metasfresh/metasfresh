@@ -1,6 +1,7 @@
 package de.metas.handlingunits.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.interceptor.DD_Order;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
@@ -8,6 +9,8 @@ import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateService;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
@@ -34,11 +37,13 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_Test;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -47,15 +52,15 @@ import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HUAssignmentBLTest
 {
-	private String trxName;
+	@Nullable private String trxName;
 	private IContextAware contextProvider;
 
-	private IHUAssignmentBL huAssignmentBL;
-	private IHUAssignmentDAO huAssignmentDAO;
+	private HUAssignmentBL huAssignmentBL;
+	private HUAssignmentDAO huAssignmentDAO;
 
 	private I_Test record;
 	private I_M_HU hu;
@@ -68,6 +73,7 @@ public class HUAssignmentBLTest
 
 		final ReceiptScheduleProducerFactory receiptScheduleProducerFactory = new ReceiptScheduleProducerFactory(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
 		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
+		SpringContextHolder.registerJUnitBean(IEventBusFactory.class, PlainEventBusFactory.newInstance());
 
 		//
 		// Make sure Main handling units interceptor is registered
@@ -76,6 +82,7 @@ public class HUAssignmentBLTest
 		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
+				ADReferenceService.newMocked(),
 				huReservationService,
 				new PPOrderSourceHUService(new PPOrderSourceHURepository(),
 										   new PPOrderIssueScheduleService(
@@ -93,8 +100,10 @@ public class HUAssignmentBLTest
 
 		//
 		// BL under test
-		huAssignmentBL = Services.get(IHUAssignmentBL.class);
-		huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+		huAssignmentBL = new HUAssignmentBL();
+		Services.registerService(IHUAssignmentBL.class, huAssignmentBL);
+		huAssignmentDAO = new HUAssignmentDAO();
+		Services.registerService(IHUAssignmentDAO.class, huAssignmentDAO);
 
 		//
 		// Setup ctx and trxName

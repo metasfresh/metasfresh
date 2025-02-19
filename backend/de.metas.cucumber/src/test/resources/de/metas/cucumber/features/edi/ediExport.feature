@@ -4,6 +4,7 @@ Feature: EDI_cctop_invoic_v export format
   Background:
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
 
   #   Convenience Salat 250g
@@ -37,8 +38,8 @@ Feature: EDI_cctop_invoic_v export format
       | bp_1                             | 2156425                  | convenienceSalate       | bPartnerProductGTIN | bPartnerProductEANCU |
 
     And update C_BPartner_Location:
-      | C_BPartner_Location_ID.Identifier | OPT.GLN             |
-      | 2205175                           | bPartnerLocationGLN |
+      | C_BPartner_Location_ID.Identifier | OPT.GLN       |
+      | 2205175                           | 1234567890123 |
 
     And update C_Location of the following C_BPartner_Location
       | C_BPartner_Location_ID.Identifier | OPT.Address1 | OPT.Address2 | OPT.Address3 |
@@ -88,16 +89,24 @@ Feature: EDI_cctop_invoic_v export format
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_1                            | s_1                   |
 
-    Then enqueue candidate for invoicing and after not more than 60s, the invoice is found
-      | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
-      | o_1                   | invoice_1               |
+    And after not more than 60s locate up2date invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoice_candidate_1               | ol_1                      |
+
+    # if we enqueue all ICs for the order, we get two invoices, because there is the IC of the packaging material, which has IsEdiEnabled=N
+    And process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier |
+      | invoice_candidate_1               |
+    And after not more than 60s, C_Invoice are found:
+      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
+      | invoice_1               | invoice_candidate_1               |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference     | paymentTerm | processed | docStatus |
       | invoice_1               | 2156425                  | 2205175                           | po_ref_23062023 | 10 Tage 1 % | true      | CO        |
 
     And validate created invoice lines
-      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | il1                         | invoice_1               | convenienceSalate       | 10          | true      |
 
     And EDI_Desadv is found:

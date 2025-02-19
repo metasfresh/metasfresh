@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
 import de.metas.handlingunits.model.X_M_Picking_Candidate;
-import de.metas.reflist.ReferenceId;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.EqualsAndHashCode;

@@ -47,7 +47,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 {
 	private static final Logger log = LogManager.getLogger(IMPProcessorBL.class);
 
-	private Class<? extends IImportHelper> importHelperClass = ImportHelper.class;
+	private final Class<? extends IImportHelper> importHelperClass = ImportHelper.class;
 
 	private static final String XMLATTACHMENT_NAME = "message.xml";
 
@@ -277,15 +277,6 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		return para;
 	}
 
-	@Override
-	public I_IMP_ProcessorParameter createParameter(final org.compiere.model.I_IMP_Processor impProcessor, final String key, final String value)
-	{
-		final String name = null;
-		final String desc = null;
-		final String help = null;
-		return createParameter(impProcessor, key, name, desc, help, value);
-	}
-
 	@Nullable
 	@Override
 	public AdempiereProcessor asAdempiereProcessor(final org.compiere.model.I_IMP_Processor impProcessor)
@@ -298,6 +289,7 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		return new IMPProcessorAdempiereProcessorAdapter(impProcessor);
 	}
 
+	@Nullable
 	@Override
 	public org.compiere.model.I_IMP_Processor getIMP_Processor(final AdempiereProcessor adempiereProcessor)
 	{
@@ -325,13 +317,6 @@ public class IMPProcessorBL implements IIMPProcessorBL
 		{
 			throw new AdempiereException("Cannot instantiate " + importHelperClass, e);
 		}
-	}
-
-	@Override
-	public void setImportHelperClass(final Class<? extends IImportHelper> importHelperClass)
-	{
-		Check.assumeNotNull(importHelperClass, "importHelperClass not null");
-		this.importHelperClass = importHelperClass;
 	}
 
 	@Override

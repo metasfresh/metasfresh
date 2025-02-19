@@ -16,21 +16,22 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.Properties;
-
+import de.metas.acct.api.IFactAcctDAO;
 import de.metas.common.util.time.SystemTime;
+import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.ICostingService;
+import de.metas.document.DocBaseType;
+import de.metas.invoice.InvoiceAndLineId;
+import de.metas.order.IMatchPODAO;
+import de.metas.order.OrderLineId;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.util.DB;
 
-import de.metas.acct.api.IFactAcctDAO;
-import de.metas.costing.CostingDocumentRef;
-import de.metas.costing.ICostingService;
-import de.metas.order.IMatchPODAO;
-import de.metas.order.OrderLineId;
-import de.metas.util.Services;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.Properties;
 
 /**
  * Match Invoice (Receipt<>Invoice) Model.
@@ -151,7 +152,7 @@ public class MMatchInv extends X_M_MatchInv
 	{
 		if (isPosted())
 		{
-			MPeriod.testPeriodOpen(getCtx(), getDateAcct(), X_C_DocType.DOCBASETYPE_MatchInvoice, getAD_Org_ID());
+			MPeriod.testPeriodOpen(getCtx(), getDateAcct(), DocBaseType.MatchInvoice, getAD_Org_ID());
 
 			setPosted(false);
 			Services.get(IFactAcctDAO.class).deleteForDocumentModel(this);
@@ -184,7 +185,7 @@ public class MMatchInv extends X_M_MatchInv
 
 		// Find MatchPO
 		final IMatchPODAO matchPOsRepo = Services.get(IMatchPODAO.class);
-		for (final I_M_MatchPO matchPO : matchPOsRepo.getByOrderLineAndInvoiceLine(orderLineId, getC_InvoiceLine_ID()))
+		for (final I_M_MatchPO matchPO : matchPOsRepo.getByOrderLineAndInvoiceLine(orderLineId, InvoiceAndLineId.ofRepoId(getC_Invoice_ID(), getC_InvoiceLine_ID())))
 		{
 			if (matchPO.getM_InOutLine_ID() <= 0)
 			{

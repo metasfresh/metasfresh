@@ -11,6 +11,9 @@
             "name": "firstName lastName",
             "companyName": "company",
             "customer": true,
+            "priceListId": 121,
+            "group":"test_group",
+            "groupSet":true,
             "syncAdvise": {
               "ifNotExists": "CREATE",
               "ifExists": "DONT_UPDATE"
@@ -71,7 +74,7 @@
               }
             ],
             "syncAdvise": {
-              "ifNotExists": "FAIL",
+              "ifNotExists": "CREATE",
               "ifExists": "DONT_UPDATE"
             }
           }

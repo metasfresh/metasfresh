@@ -16,20 +16,20 @@ public enum DocBaseType implements ReferenceListAwareEnum
 {
 	GLJournal(X_C_DocType.DOCBASETYPE_GLJournal),
 	GLDocument(X_C_DocType.DOCBASETYPE_GLDocument),
-	APInvoice(X_C_DocType.DOCBASETYPE_APInvoice),
-	APPayment(X_C_DocType.DOCBASETYPE_APPayment),
-	ARInvoice(X_C_DocType.DOCBASETYPE_ARInvoice),
+	PurchaseInvoice(X_C_DocType.DOCBASETYPE_APInvoice),
+	PurchasePayment(X_C_DocType.DOCBASETYPE_APPayment),
+	SalesInvoice(X_C_DocType.DOCBASETYPE_ARInvoice),
 	ARReceipt(X_C_DocType.DOCBASETYPE_ARReceipt),
 	SalesOrder(X_C_DocType.DOCBASETYPE_SalesOrder),
-	ARProFormaInvoice(X_C_DocType.DOCBASETYPE_ARProFormaInvoice),
-	MaterialDelivery(X_C_DocType.DOCBASETYPE_MaterialDelivery),
+	SalesProformaInvoice(X_C_DocType.DOCBASETYPE_ARProFormaInvoice),
+	Shipment(X_C_DocType.DOCBASETYPE_MaterialDelivery),
 	MaterialReceipt(X_C_DocType.DOCBASETYPE_MaterialReceipt),
 	MaterialMovement(X_C_DocType.DOCBASETYPE_MaterialMovement),
 	PurchaseOrder(X_C_DocType.DOCBASETYPE_PurchaseOrder),
 	PurchaseRequisition(X_C_DocType.DOCBASETYPE_PurchaseRequisition),
 	MaterialPhysicalInventory(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory),
-	APCreditMemo(X_C_DocType.DOCBASETYPE_APCreditMemo),
-	ARCreditMemo(X_C_DocType.DOCBASETYPE_ARCreditMemo),
+	PurchaseCreditMemo(X_C_DocType.DOCBASETYPE_APCreditMemo),
+	SalesCreditMemo(X_C_DocType.DOCBASETYPE_ARCreditMemo),
 	BankStatement(X_C_DocType.DOCBASETYPE_BankStatement),
 	CashJournal(X_C_DocType.DOCBASETYPE_CashJournal),
 	PaymentAllocation(X_C_DocType.DOCBASETYPE_PaymentAllocation),
@@ -53,6 +53,7 @@ public enum DocBaseType implements ReferenceListAwareEnum
 	ServiceRepairOrder(X_C_DocType.DOCBASETYPE_ServiceRepairOrder),
 	RemittanceAdvice(X_C_DocType.DOCBASETYPE_RemittanceAdvice),
 	BillOfMaterialVersion(X_C_DocType.DOCBASETYPE_BOMFormula),
+	CostRevaluation(X_C_DocType.DOCBASETYPE_CostRevaluation),
 	;
 
 	public static final int AD_REFERENCE_ID = X_C_DocType.DOCBASETYPE_AD_Reference_ID;
@@ -67,6 +68,7 @@ public enum DocBaseType implements ReferenceListAwareEnum
 		return index.ofCode(code);
 	}
 
+	@Nullable
 	public static DocBaseType ofNullableCode(@Nullable final String code)
 	{
 		return index.ofNullableCode(code);
@@ -83,9 +85,9 @@ public enum DocBaseType implements ReferenceListAwareEnum
 	public boolean isSOTrx()
 	{
 		return SalesOrder.equals(this)
-				|| MaterialDelivery.equals(this)
-				|| ARInvoice.equals(this)
-				|| ARCreditMemo.equals(this)
+				|| Shipment.equals(this)
+				|| SalesInvoice.equals(this)
+				|| SalesCreditMemo.equals(this)
 				|| ARReceipt.equals(this);
 	}
 
@@ -93,9 +95,19 @@ public enum DocBaseType implements ReferenceListAwareEnum
 
 	public boolean isPurchaseOrder() {return PurchaseOrder.equals(this);}
 
-	public boolean isSalesInvoice() {return ARInvoice.equals(this);}
+	public boolean isSalesInvoice() { return SalesInvoice.equals(this); }
 
-	public boolean isARCreditMemo() {return ARCreditMemo.equals(this);}
+	public boolean isPurchaseInvoice() { return PurchaseInvoice.equals(this); }
+
+	public boolean isSalesCreditMemo() { return SalesCreditMemo.equals(this); }
+
+	public boolean isPurchaseCreditMemo() { return PurchaseCreditMemo.equals(this); }
 
 	public boolean isDunningDoc(){return DunningDoc.equals((this));}
+
+	public boolean isShipment(){ return Shipment.equals(this); }
+
+	public boolean isReceipt(){ return MaterialReceipt.equals(this); }
+
+	public boolean isShipperTransportation(){ return ShipperTransportation.equals(this); }
 }

@@ -27,7 +27,6 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.Check;
@@ -171,7 +170,7 @@ public final class TableRecordReference implements ITableRecordReference
 	}
 
 	@Nullable
-	public static ITableRecordReference ofReferencedOrNull(@Nullable final Object model)
+	public static TableRecordReference ofReferencedOrNull(@Nullable final Object model)
 	{
 		if (model == null)
 		{
@@ -192,6 +191,11 @@ public final class TableRecordReference implements ITableRecordReference
 		return new TableRecordReference(adTableId, recordId);
 	}
 
+	public static TableRecordReference of(@NonNull final AdTableId adTableId, final int recordId)
+	{
+		return new TableRecordReference(adTableId.getRepoId(), recordId);
+	}
+
 	@Nullable
 	public static TableRecordReference ofOrNull(final int adTableId, final int recordId)
 	{
@@ -204,6 +208,14 @@ public final class TableRecordReference implements ITableRecordReference
 	public static TableRecordReference of(@JsonProperty("tableName") final String tableName, @JsonProperty("recordId") final int recordId)
 	{
 		return new TableRecordReference(tableName, recordId);
+	}
+
+	@Nullable
+	public static TableRecordReference ofNullable(@Nullable String tableName, final int recordId)
+	{
+		return tableName != null && !Check.isBlank(tableName) && recordId >= 0
+				? of(tableName, recordId)
+				: null;
 	}
 
 	public static TableRecordReference of(@NonNull final String tableName, @NonNull final RepoIdAware recordId)
@@ -339,12 +351,7 @@ public final class TableRecordReference implements ITableRecordReference
 	@Override
 	public String toString()
 	{
-		return MoreObjects.toStringHelper(this)
-				.omitNullValues()
-				.add("tableName", tableName)
-				.add("recordId", recordId)
-				// .add(" (SoftReference-)model", modelRef.get())
-				.toString();
+		return "ref{" + tableName + "/" + recordId + "}";
 	}
 
 	/**
@@ -405,9 +412,14 @@ public final class TableRecordReference implements ITableRecordReference
 		return tableName;
 	}
 
+	public boolean tableNameEqualsTo(@NonNull final String expectedTableName)
+	{
+		return Objects.equals(getTableName(), expectedTableName);
+	}
+
 	public void assertTableName(@NonNull final String expectedTableName)
 	{
-		if (!Objects.equals(getTableName(), expectedTableName))
+		if (!tableNameEqualsTo(expectedTableName))
 		{
 			throw new AdempiereException("Reference is expected to have '" + expectedTableName + "' table: " + this);
 		}
@@ -452,6 +464,20 @@ public final class TableRecordReference implements ITableRecordReference
 		return mapper.apply(repoId);
 	}
 
+	public <T extends RepoIdAware> Optional<T> getIdIfTableName(
+			@NonNull final String expectedTableName,
+			@NonNull final IntFunction<T> mapper)
+	{
+		if (tableName.equals(expectedTableName))
+		{
+			return Optional.of(mapper.apply(getRecord_ID()));
+		}
+		else
+		{
+			return Optional.empty();
+		}
+	}
+
 	@Deprecated
 	@Override
 	public Object getModel(@NonNull final IContextAware context)
@@ -479,6 +505,13 @@ public final class TableRecordReference implements ITableRecordReference
 	public <T> T getModel(@NonNull final IContextAware context, @NonNull final Class<T> modelClass)
 	{
 		return InterfaceWrapperHelper.create(getModel(context), modelClass);
+	}
+
+	@NonNull
+	public <T> T getModelNonNull(@NonNull final IContextAware context, @NonNull final Class<T> modelClass)
+	{
+		final T model = InterfaceWrapperHelper.create(getModel(context), modelClass);
+		return Check.assumeNotNull(model, "Model for this TableRecordReference={} may not be null", this);
 	}
 
 	@Override
@@ -518,6 +551,12 @@ public final class TableRecordReference implements ITableRecordReference
 	public <T> T getModel(final Class<T> modelClass)
 	{
 		return getModel(PlainContextAware.newWithThreadInheritedTrx(), modelClass);
+	}
+
+	@NonNull
+	public <T> T getModelNonNull(@NonNull final Class<T> modelClass)
+	{
+		return getModelNonNull(PlainContextAware.newWithThreadInheritedTrx(), modelClass);
 	}
 
 	public static <T> List<T> getModels(

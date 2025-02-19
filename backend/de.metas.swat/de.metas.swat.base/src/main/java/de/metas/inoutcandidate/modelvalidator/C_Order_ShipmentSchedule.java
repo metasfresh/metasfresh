@@ -1,6 +1,9 @@
 package de.metas.inoutcandidate.modelvalidator;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.i18n.AdMessageKey;
+import de.metas.inout.IInOutBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -14,12 +17,15 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Interceptor(I_C_Order.class)
 @Component
@@ -29,6 +35,10 @@ public class C_Order_ShipmentSchedule
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleInvalidateRepository scheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
+	private final @NonNull AdMessageKey ERR_NoReactivationIfNotVoidedNotReversedShipments= AdMessageKey.of("ERR_NoReactivationIfNotVoidedNotReversedShipments");
+
+
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
 	public void closeExistingScheds(@NonNull final I_C_Order orderRecord)
@@ -64,5 +74,18 @@ public class C_Order_ShipmentSchedule
 
 		//invalidate all related shipment schedules
 		scheduleInvalidateRepository.invalidateShipmentSchedules(shipmentScheduleIds);
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE })
+	public void reactivateIfNoActiveShipment(final I_C_Order order)
+	{
+		final ImmutableSet<I_M_InOut> activeShipments = inOutBL.getNotVoidedNotReversedForOrderId(OrderId.ofRepoId(order.getC_Order_ID()));
+
+		if (!activeShipments.isEmpty())
+		{
+			throw new AdempiereException(
+					ERR_NoReactivationIfNotVoidedNotReversedShipments,
+					activeShipments.stream().map(I_M_InOut::getDocumentNo).collect(Collectors.joining(", ")));
+		}
 	}
 }

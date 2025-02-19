@@ -22,6 +22,7 @@
 
 package de.metas.invoice.invoiceProcessingServiceCompany;
 
+import de.metas.acct.GLCategoryId;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
@@ -97,7 +98,7 @@ import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.X_C_DocType.DOCBASETYPE_APInvoice;
 import static org.compiere.model.X_C_DocType.DOCSUBTYPE_PaymentServiceProviderInvoice;
 
@@ -118,7 +119,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 
 		final CurrencyRepository currencyRepo = new CurrencyRepository();
 		SpringContextHolder.registerJUnitBean(currencyRepo);
-		
+
 		configRepository = new InvoiceProcessingServiceCompanyConfigRepository();
 		final MoneyService moneyService = new MoneyService(currencyRepo);
 		invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(configRepository, moneyService);
@@ -247,7 +248,6 @@ public class InvoiceProcessingServiceCompanyServiceTest
 
 			assertThat(result).isEmpty();
 		}
-
 
 		@Test
 		public void customerIsNotAssignedToInvoiceProcessingServiceCompany()
@@ -507,10 +507,11 @@ public class InvoiceProcessingServiceCompanyServiceTest
 
 			serviceInvoiceDocTypeId = Services.get(IDocTypeDAO.class)
 					.createDocType(DocTypeCreateRequest.builder()
-										   .ctx(Env.getCtx())
-										   .name("invoice processing fee vendor invoice")
-										   .docBaseType(InvoiceDocBaseType.VendorInvoice.getDocBaseType())
-										   .build());
+							.ctx(Env.getCtx())
+							.name("invoice processing fee vendor invoice")
+							.docBaseType(InvoiceDocBaseType.VendorInvoice.getDocBaseType())
+							.glCategoryId(GLCategoryId.ofRepoId(123))
+							.build());
 
 			final I_C_UOM uomEach = BusinessTestHelper.createUomEach();
 			serviceFeeProductId = createServiceProduct("Service Fee", uomEach);
@@ -719,7 +720,7 @@ public class InvoiceProcessingServiceCompanyServiceTest
 			assignmentRecord.setInvoiceProcessingServiceCompany_ID(configRecord.getInvoiceProcessingServiceCompany_ID());
 			assignmentRecord.setC_BPartner_ID(customerId.getRepoId());
 
-			if(docTypeId != null)
+			if (docTypeId != null)
 			{
 				assignmentRecord.setC_DocType_ID(docTypeId.getRepoId());
 			}

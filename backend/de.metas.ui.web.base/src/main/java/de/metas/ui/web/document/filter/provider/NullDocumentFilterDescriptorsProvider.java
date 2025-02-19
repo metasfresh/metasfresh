@@ -1,16 +1,14 @@
 package de.metas.ui.web.document.filter.provider;
 
-import java.util.Collection;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
-
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
+import java.util.Collection;
+import java.util.Map;
 
 /*
  * #%L
@@ -37,7 +35,7 @@ import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 @Immutable
 public final class NullDocumentFilterDescriptorsProvider implements DocumentFilterDescriptorsProvider
 {
-	public static final transient NullDocumentFilterDescriptorsProvider instance = new NullDocumentFilterDescriptorsProvider();
+	public static final NullDocumentFilterDescriptorsProvider instance = new NullDocumentFilterDescriptorsProvider();
 
 	public static boolean isNull(@Nullable final DocumentFilterDescriptorsProvider provider)
 	{
@@ -60,7 +58,7 @@ public final class NullDocumentFilterDescriptorsProvider implements DocumentFilt
 	}
 
 	@Override
-	public DocumentFilterDescriptor getByFilterIdOrNull(String filterId)
+	public DocumentFilterDescriptor getByFilterIdOrNull(final String filterId)
 	{
 		return null;
 	}

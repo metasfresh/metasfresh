@@ -41,7 +41,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class EDIDesadvPack
 {
 	@NonNull
@@ -49,6 +49,8 @@ public class EDIDesadvPack
 
 	@NonNull
 	EDIDesadvId ediDesadvId;
+
+	int seqNo;
 
 	@NonNull
 	String sscc18;
@@ -60,10 +62,10 @@ public class EDIDesadvPack
 	HuId huId;
 
 	@Nullable
-	PackagingCodeId huPackagingCodeLuId;
+	PackagingCodeId huPackagingCodeId;
 
 	@Nullable
-	String gtinLuPackingMaterial;
+	String gtinPackingMaterial;
 
 	@NonNull
 	@Singular
@@ -108,6 +110,8 @@ public class EDIDesadvPack
 
 		@NonNull
 		EDIDesadvLineId ediDesadvLineId;
+
+		int line;
 
 		@NonNull
 		BigDecimal movementQty;

@@ -55,7 +55,7 @@ public class ProductBLTest
 			save(product1);
 
 			assertThat(productBL.getAttributeSetId(product1)).isEqualTo(AttributeSetId.NONE);
-		}
+	}
 
 		@Test
 		public void ProductCategory()

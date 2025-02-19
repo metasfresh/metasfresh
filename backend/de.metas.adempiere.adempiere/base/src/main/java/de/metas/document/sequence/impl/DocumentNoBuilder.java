@@ -73,7 +73,7 @@ import java.util.function.Supplier;
 class DocumentNoBuilder implements IDocumentNoBuilder
 {
 	// services
-	private static final transient Logger logger = LogManager.getLogger(DocumentNoBuilder.class);
+	private static final Logger logger = LogManager.getLogger(DocumentNoBuilder.class);
 	/**
 	 * To be used as filter criteria for AD_Sequence_NO when the sequence is only using StartNewYear
 	 */
@@ -91,7 +91,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	/**
 	 * Please keep this format in sync with the way that {@link org.adempiere.process.UpdateSequenceNo} sets {@code AD_Sequence_No.CALENDARYEAR}.
 	 */
-	private static final transient SimpleDateFormatThreadLocal DATEFORMAT_CalendarYear = new SimpleDateFormatThreadLocal("yyyy");
+	private static final SimpleDateFormatThreadLocal DATEFORMAT_CalendarYear = new SimpleDateFormatThreadLocal("yyyy");
 	/**
 	 * Please keep this format in sync with the way that {@link org.adempiere.process.UpdateSequenceNo} sets {@code AD_Sequence_No.CALENDARMONTH}.
 	 */
@@ -338,13 +338,13 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 			else
 			{
 				final String customSequenceNumber = customSequenceNoProvider.provideSequenceNo(evalContext, docSeqInfo, null);
-				logger.debug("getSequenceNoToUse - The customSequenceNoProvider returned customSequenceNumber={}" + customSequenceNumber);
+				logger.debug("getSequenceNoToUse - The customSequenceNoProvider returned customSequenceNumber={}", customSequenceNumber);
 				result = customSequenceNumber;
 			}
 		}
 		else
 		{
-			logger.debug("getSequenceNoToUse - going to get incremental seuqnce number" + customSequenceNoProvider);
+			logger.debug("getSequenceNoToUse - going to get incremental sequence number" + customSequenceNoProvider);
 
 			//
 			// Don't increment sequence number if it's not Auto
@@ -414,11 +414,11 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		}
 
 		final IMutable<Integer> currentSeq = new Mutable<>(-1);
-		DB.executeUpdateEx(sql,
-						   sqlParams.toArray(),
-						   trxName,
-						   QUERY_TIME_OUT,
-						   rs -> currentSeq.setValue(rs.getInt(1)));
+		DB.executeUpdateAndThrowExceptionOnFail(sql,
+												sqlParams.toArray(),
+												trxName,
+												QUERY_TIME_OUT,
+												rs -> currentSeq.setValue(rs.getInt(1)));
 
 		return currentSeq.getValue();
 	}

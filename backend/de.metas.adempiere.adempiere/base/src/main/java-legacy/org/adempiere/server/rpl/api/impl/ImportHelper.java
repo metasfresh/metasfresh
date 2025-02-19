@@ -124,13 +124,13 @@ import static org.adempiere.server.rpl.api.impl.ReplicationHelper.setReplication
  * @author Trifon N. Trifonov
  * @author Antonio Cañaveral, e-Evolution
  *         <li>[ 2195016 ] Implementation delete records messages
- *         <li>http://sourceforge.net/tracker/index.php?func=detail&aid=2195016&group_id=176962&atid=879332
+ *         <li><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2195016&group_id=176962&atid=879332">http://sourceforge.net/tracker/index.php?func=detail&aid=2195016&group_id=176962&atid=879332</a>
  * @author victor.perez@e-evolution.com, e-Evolution
  *         <li>[ 2195090 ] Stabilization of replication
- *         <li>https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2936561&group_id=176962
+ *         <li><a href="https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2936561&group_id=176962">https://sourceforge.net/tracker/?func=detail&atid=879332&aid=2936561&group_id=176962</a>
  *         <li>BF
  *         [2947622] The replication ID (Primary Key) is not working
- *         <li>https://sourceforge.net/tracker/?func=detail&aid=2947622&group_id=176962&atid=879332
+ *         <li><a href="https://sourceforge.net/tracker/?func=detail&aid=2947622&group_id=176962&atid=879332">https://sourceforge.net/tracker/?func=detail&aid=2947622&group_id=176962&atid=879332</a>
  *
  */
 public class ImportHelper implements IImportHelper
@@ -267,7 +267,7 @@ public class ImportHelper implements IImportHelper
 						.setParameter(I_AD_Client.COLUMNNAME_AD_Client_ID, adClientId)
 						.setParameter(org.compiere.model.I_EXP_Format.COLUMNNAME_Version, version);
 			}
-			log.debug("expFormat = " + expFormatPO.toString());
+			log.debug("expFormat = " + expFormatPO);
 
 			final IMeter meter = Services.get(IMonitoringBL.class).createOrGet("org.adempiere.replication", ImportHelper.class.getSimpleName() + "_" + expFormatPO.getName());
 
@@ -315,7 +315,7 @@ public class ImportHelper implements IImportHelper
 			Check.assumeNotNull(po, "po not null");
 			if (!po.is_Changed() && !isChanged)
 			{
-				log.debug("Object not changed = " + po.toString());
+				log.debug("Object not changed = " + po);
 				return null;
 			}
 
@@ -516,7 +516,7 @@ public class ImportHelper implements IImportHelper
 			}
 
 			//
-			// Those POs might belong to a lookup table, i.e. might not not necessarily be POs of the table that our current po references
+			// Those POs might belong to a lookup table, i.e. might not necessarily be POs of the table that our current po references
 			final List<PO> lookedUpPOs = dloe.getLookedUpPOs();
 			po = getSingleDefaultPO(lookedUpPOs, masterExpFormatLine);
 			replicationTrxLine = dloe.getTrxLineDraftOrNull();
@@ -541,7 +541,7 @@ public class ImportHelper implements IImportHelper
 			}
 		}
 
-		log.debug("PO.toString() = " + po.toString());
+		log.debug("PO.toString() = " + po);
 
 		if (po.get_KeyColumns().length < 1)
 		{
@@ -558,7 +558,7 @@ public class ImportHelper implements IImportHelper
 				I_EXP_FormatLine.COLUMNNAME_Position;
 
 		final Collection<I_EXP_FormatLine> formatLines = expFormat.getFormatLinesOrderedBy(orderBy);
-		if (formatLines == null || formatLines.size() < 1)
+		if (formatLines == null || formatLines.isEmpty())
 		{
 			throw new ReplicationException(MSG_EXPFormatNoLines);
 		}
@@ -736,7 +736,7 @@ public class ImportHelper implements IImportHelper
 			final MEXPFormat referencedExpFormat = MEXPFormat.get(ctx, line.getEXP_EmbeddedFormat_ID(), ITrx.TRXNAME_None);
 			log.debug("embeddedExpFormat = " + referencedExpFormat);
 
-			NodeList nodeList;
+			final NodeList nodeList;
 			try
 			{
 				nodeList = XMLHelper.getNodeList(line.getValue(), rootElement);
@@ -830,7 +830,7 @@ public class ImportHelper implements IImportHelper
 			{
 				clazz = Boolean.class;
 			}
-			else if (Services.get(IColumnBL.class).isRecordIdColumnName(columnName))
+			else if (IColumnBL.isRecordIdColumnName(columnName))
 			{
 				clazz = Integer.class;
 			}
@@ -898,7 +898,7 @@ public class ImportHelper implements IImportHelper
 					{
 						// Note: Prior to 02775 we had a NumberFormatException to 'AD_Language' columns at this place
 						final int intValue = Integer.parseInt(value.toString());
-						value = new Integer(intValue);
+						value = intValue;
 					}
 					else
 					{
@@ -1133,7 +1133,7 @@ public class ImportHelper implements IImportHelper
 			// metas start: rc: task 03749
 			// Initialized variable
 			// metas end : rc
-			Object paramSQL;
+			final Object paramSQL;
 			if (cols[col] == null || !nodeExists)
 			{
 				paramSQL = cols[col]; // 04124: don't try to parse an empty or null column value
@@ -1157,7 +1157,7 @@ public class ImportHelper implements IImportHelper
 					if (!Check.isEmpty(value.toString()))
 					{
 						// double doubleValue = Double.parseDouble(value.toString());
-						value = new Integer(value.toString());
+						value = Integer.parseInt(value.toString());
 						if (DisplayType.ID == adReferenceId)
 						{
 							replication_id = (Integer)value;
@@ -1205,14 +1205,28 @@ public class ImportHelper implements IImportHelper
 			{
 				whereClause.append(" AND ");
 			}
+
 			if (paramSQL == null || !nodeExists)
 			{
 				whereClause.append(columnSQL).append(" IS NULL ");
 			}
 			else
 			{
-				whereClause.append(columnSQL).append(" = ? ");
-				params.add(paramSQL);
+				final String filterOperator = uniqueFormatLine.getFilterOperator();
+				if(X_EXP_FormatLine.FILTEROPERATOR_Equals.equals(filterOperator))
+				{
+						whereClause.append(columnSQL).append(" = ? ");
+						params.add(paramSQL);
+				}
+				else if (X_EXP_FormatLine.FILTEROPERATOR_Like.equals(filterOperator))
+				{
+					whereClause.append(columnSQL).append(" ILIKE '%").append(paramSQL).append("%' ");
+				}
+				else
+				{
+					throw Check.fail("Unexpected FilterOperator={} in EXP_FormatLine_ID={} (Name={}, EXP_Format_ID={}) ",
+									 filterOperator, uniqueFormatLine.getEXP_FormatLine_ID(), uniqueFormatLine.getName(), uniqueFormatLine.getEXP_Format_ID());
+				}
 			}
 			col++;
 		}
@@ -1429,7 +1443,7 @@ public class ImportHelper implements IImportHelper
 	 * <p>
 	 * If the given <code>formatLine</code> has a <code>DateFormat</code>, then we use that format to parse the given <code>value</code> using {@link SimpleDateFormat}. Otherwise, we use
 	 * {@link DatatypeConverter#parseDateTime(String)} to do the parsing.
-	 *
+	 * <p>
 	 * Note that this method assumes that
 	 * <ul>
 	 * <li>none of the given parameters is <code>null</code></li>
@@ -1458,7 +1472,7 @@ public class ImportHelper implements IImportHelper
 		Timestamp result;
 		final String dateFormat = formatLine.getDateFormat();
 		final SimpleDateFormat df;
-		if (!Check.isEmpty(dateFormat))
+		if (Check.isNotBlank(dateFormat))
 		{
 			df = new SimpleDateFormat(dateFormat);
 			try
@@ -1472,7 +1486,7 @@ public class ImportHelper implements IImportHelper
 						.setParameter(I_AD_Attribute_Value.COLUMNNAME_V_String, value)
 						.setParameter(I_EXP_FormatLine.COLUMNNAME_DateFormat, dateFormat);
 			}
-			log.debug("Parsed value = " + result.toString() + " (Format:" + df.toPattern() + ")");
+			log.debug("Parsed value = " + result + " (Format:" + df.toPattern() + ")");
 		}
 		else
 		{
@@ -1530,7 +1544,7 @@ public class ImportHelper implements IImportHelper
 		final String valueStr = element.getAttribute(attributeName);
 		try
 		{
-			return new Integer(valueStr);
+			return Integer.parseInt(valueStr);
 		}
 		catch (final NumberFormatException e)
 		{

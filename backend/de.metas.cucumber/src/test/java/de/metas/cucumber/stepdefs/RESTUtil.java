@@ -23,25 +23,28 @@
 package de.metas.cucumber.stepdefs;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.audit.apirequest.request.ApiRequestAuditId;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonApiResponse;
+import de.metas.common.rest_api.v2.JsonError;
+import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.error.AdIssueId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.security.IRoleDAO;
 import de.metas.security.Role;
-import de.metas.serviceprovider.issue.IssueId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.util.web.security.UserAuthTokenFilter;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -74,17 +77,21 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import static de.metas.util.web.MetasfreshRestAPIConstants.ENDPOINT_API_V2;
 import static de.metas.util.web.audit.ApiAuditService.API_RESPONSE_HEADER_REQUEST_AUDIT_ID;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @UtilityClass
 public class RESTUtil
 {
 	private static final Logger logger = LogManager.getLogger(RESTUtil.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public String getAuthToken(@NonNull final String userLogin, @NonNull final String roleName)
 	{
@@ -117,90 +124,177 @@ public class RESTUtil
 
 	public APIResponse performHTTPRequest(@NonNull final APIRequest apiRequest) throws IOException
 	{
-		final CloseableHttpClient httpClient = HttpClients.createDefault();
+		final HttpRequestBase httpRequest = createHttpRequest(apiRequest);
 
+		try (final CloseableHttpClient httpClient = HttpClients.createDefault())
+		{
+			final HttpResponse httpResponse = httpClient.execute(httpRequest);
+			final APIResponse apiResponse = extractAPIResponse(httpResponse, apiRequest);
+			validateAPIResponse(apiResponse, apiRequest);
+			return apiResponse;
+		}
+	}
+
+	private static HttpRequestBase createHttpRequest(@NonNull final APIRequest apiRequest)
+	{
 		final String appServerPort = System.getProperty("server.port");
 		final String url = "http://localhost:" + appServerPort + "/" + apiRequest.getEndpointPath();
-		final String verb = apiRequest.getVerb();
+		final String method = apiRequest.getMethod();
 		final String authToken = apiRequest.getAuthToken();
-		final Integer statusCode = apiRequest.getStatusCode();
 
-		final HttpRequestBase request;
-		switch (verb)
+		try
 		{
-			case "POST":
-			case "PUT":
-				request = handleRequestWithEntity(url, verb, apiRequest.getPayload());
-				break;
-			case "GET":
-			case "DELETE":
-				request = handleRequestWithoutEntity(url, verb);
-				break;
-			default:
-				throw new RuntimeException("Unsupported REST verb " + verb + " Supported are 'POST', 'PUT', 'GET', 'DELETE'");
-		}
-
-		setHeaders(request, authToken, apiRequest.getAdditionalHeaders());
-		final HttpResponse response = httpClient.execute(request);
-
-		final Header contentType = response.getEntity().getContentType();
-		final APIResponse.APIResponseBuilder apiResponseBuilder = APIResponse.builder();
-		if (contentType != null)
-		{
-			apiResponseBuilder.contentType(contentType.getValue());
-		}
-
-		final ByteArrayOutputStream stream = new ByteArrayOutputStream();
-		response.getEntity().writeTo(stream);
-
-		final String endpointPath = apiRequest.getEndpointPath();
-
-		if (endpointPath.contains(ENDPOINT_API_V2.substring(1)))
-		{
-			final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
-
-			try
+			final HttpRequestBase httpRequest;
+			switch (method)
 			{
-				final JsonApiResponse jsonApiResponse = objectMapper.readValue(stream.toString(StandardCharsets.UTF_8.name()), JsonApiResponse.class);
-
-				final String content = objectMapper.writeValueAsString(jsonApiResponse.getEndpointResponse());
-
-				apiResponseBuilder
-						.requestId(jsonApiResponse.getRequestId())
-						.content(content);
-
-				logDetails(jsonApiResponse.getRequestId());
+				case "POST":
+				case "PUT":
+					httpRequest = handleRequestWithEntity(url, method, apiRequest.getPayload());
+					break;
+				case "GET":
+				case "DELETE":
+					httpRequest = handleRequestWithoutEntity(url, method);
+					break;
+				default:
+					throw new RuntimeException("Unsupported REST method " + method + " Supported are 'POST', 'PUT', 'GET', 'DELETE'");
 			}
-			catch (final MismatchedInputException mismatchedInputException)
+
+			setHeaders(httpRequest, authToken, apiRequest.getAdditionalHeaders());
+
+			return httpRequest;
+		}
+		catch (Exception e)
+		{
+			throw new AdempiereException("Failed creating HTTP request from " + apiRequest, e)
+					.setParameter("url", url);
+		}
+	}
+
+	private static APIResponse extractAPIResponse(final HttpResponse httpResponse, final APIRequest apiRequest)
+	{
+		try
+		{
+			final APIResponse.APIResponseBuilder apiResponseBuilder = APIResponse.builder();
+
+			final int actualStatusCode = httpResponse.getStatusLine().getStatusCode();
+			apiResponseBuilder.statusCode(actualStatusCode);
+
+			final Header contentType = httpResponse.getEntity().getContentType();
+			if (contentType != null)
 			{
-				extractRequestAuditIdFromHeader(response, stream, apiResponseBuilder);
+				apiResponseBuilder.contentType(contentType.getValue());
 			}
-			catch (final JsonParseException jsonParseException)
+
+			final ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			httpResponse.getEntity().writeTo(stream);
+
+			final String endpointPath = apiRequest.getEndpointPath();
+
+			if (endpointPath.contains(ENDPOINT_API_V2.substring(1)))
+			{
+				final ObjectMapper objectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
+
+				try
+				{
+					final JsonApiResponse jsonApiResponse = objectMapper.readValue(stream.toString(StandardCharsets.UTF_8.name()), JsonApiResponse.class);
+
+					final String content = objectMapper.writeValueAsString(jsonApiResponse.getEndpointResponse());
+					apiResponseBuilder.content(content);
+
+					final ApiRequestAuditId requestId = jsonApiResponse.getRequestId() != null ? ApiRequestAuditId.ofRepoId(jsonApiResponse.getRequestId().getValue()) : null;
+					apiResponseBuilder.requestId(requestId);
+
+					if (requestId != null)
+					{
+						logDetails(requestId);
+					}
+				}
+				catch (final MismatchedInputException mismatchedInputException)
+				{
+					apiResponseBuilder.content(stream.toString(StandardCharsets.UTF_8.name()));
+
+					final ApiRequestAuditId requestId = extractRequestAuditIdFromHeader(httpResponse);
+					if (requestId != null)
+					{
+						apiResponseBuilder.requestId(requestId);
+						logDetails(requestId);
+					}
+
+				}
+				catch (final JsonParseException jsonParseException)
+				{
+					apiResponseBuilder.content(stream.toString(StandardCharsets.UTF_8.name()));
+				}
+			}
+			else
 			{
 				apiResponseBuilder.content(stream.toString(StandardCharsets.UTF_8.name()));
 			}
+
+			return apiResponseBuilder.build();
 		}
-		else
+		catch (Exception ex)
 		{
-			apiResponseBuilder.content(stream.toString(StandardCharsets.UTF_8.name()));
+			throw new AdempiereException("Failed extracting API response from " + httpResponse, ex);
 		}
-
-		assertThat(response.getStatusLine().getStatusCode()).isEqualTo(CoalesceUtil.coalesce(statusCode, 200));
-
-		return apiResponseBuilder.build();
 	}
 
-	private void setHeaders(
+	private static void validateAPIResponse(final APIResponse apiResponse, final APIRequest apiRequest) throws JsonProcessingException
+	{
+		final Integer expectedStatusCode = apiRequest.getExpectedStatusCode();
+		if (expectedStatusCode != null)
+		{
+			final Integer actualStatusCode = apiResponse.getStatusCode();
+			assertThat(actualStatusCode)
+					.withFailMessage(() -> MessageFormat.format("HTTP Response status code did not match! expected: {0}, actual: {1} ! See full httpResponse:\n{2}",
+							expectedStatusCode,
+							actualStatusCode,
+							apiResponse.getContent()))
+					.isEqualTo(expectedStatusCode);
+		}
+
+		final String expectErrorContaining = apiRequest.getExpectedErrorMessageContaining();
+		final Boolean expectErrorUserFriendly = apiRequest.getExpectErrorUserFriendly();
+		final boolean isExpectError = expectErrorContaining != null || expectErrorUserFriendly != null;
+		if (isExpectError)
+		{
+			final JsonError jsonError = apiResponse.getContentAs(JsonError.class);
+			final JsonErrorItem jsonErrorItem = CollectionUtils.singleElement(jsonError.getErrors());
+
+			if (expectErrorContaining != null)
+			{
+				assertThat(jsonErrorItem.getMessage())
+						.as(() -> "Error Message of " + jsonError)
+						.contains(expectErrorContaining);
+			}
+			if (expectErrorUserFriendly != null)
+			{
+				assertThat(jsonErrorItem.isUserFriendlyError())
+						.as(() -> "UserFriendlyError of " + jsonError)
+						.isEqualTo(expectErrorUserFriendly);
+			}
+		}
+	}
+
+	private static void setHeaders(
 			@NonNull final HttpRequestBase request,
 			@NonNull final String userAuthToken,
 			@Nullable final Map<String, String> additionalHeaders)
 	{
-		request.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
-		request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
 		request.addHeader(UserAuthTokenFilter.HEADER_Authorization, userAuthToken);
 
-		if (additionalHeaders != null)
+		if (additionalHeaders == null)
 		{
+			request.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE);
+			request.addHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE);
+		}
+		else
+		{
+			request.addHeader(HttpHeaders.CONTENT_TYPE,
+					CoalesceUtil.coalesceNotNull(additionalHeaders.get(HttpHeaders.CONTENT_TYPE), MediaType.APPLICATION_JSON_VALUE));
+			request.addHeader(HttpHeaders.ACCEPT,
+					CoalesceUtil.coalesceNotNull(additionalHeaders.get(HttpHeaders.ACCEPT), MediaType.APPLICATION_JSON_VALUE));
+
 			additionalHeaders.forEach(request::addHeader);
 		}
 	}
@@ -294,72 +388,79 @@ public class RESTUtil
 		return request;
 	}
 
-	private void logDetails(@NonNull final JsonMetasfreshId id)
+	private void logDetails(@NonNull final ApiRequestAuditId apiRequestAuditId)
 	{
-		final ApiRequestAuditId apiRequestAuditId = ApiRequestAuditId.ofRepoId(id.getValue());
-
 		final I_API_Request_Audit apiRequestAuditRecord = InterfaceWrapperHelper.load(apiRequestAuditId, I_API_Request_Audit.class);
 
 		logger.info("*** API_Request_Audit_ID : {}\n Path ->  {}\n RequestHttpHeaders -> {}\n RequestBody -> {}",
-					apiRequestAuditId.getRepoId(), apiRequestAuditRecord.getPath(), apiRequestAuditRecord.getHttpHeaders(), apiRequestAuditRecord.getBody());
+				apiRequestAuditId.getRepoId(), apiRequestAuditRecord.getPath(), apiRequestAuditRecord.getHttpHeaders(), apiRequestAuditRecord.getBody());
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-		queryBL.createQueryBuilder(I_API_Response_Audit.class)
-				.addEqualsFilter(I_API_Response_Audit.COLUMNNAME_API_Request_Audit_ID, apiRequestAuditId)
-				.create()
-				.stream()
+		getAPIResponseAudit(apiRequestAuditId)
 				.forEach(auditResponse -> logger.info("*** API_Request_Audit_ID : {} - API_Response_Audit_ID -> {}\n ResponseHttpCode -> {}\n ResponseHttpHeaders ->  {}\n ResponseBody ->  {}",
-													  apiRequestAuditId.getRepoId(), auditResponse.getAPI_Response_Audit_ID(), auditResponse.getHttpCode(), auditResponse.getHttpHeaders(), auditResponse.getBody()));
+						apiRequestAuditId.getRepoId(), auditResponse.getAPI_Response_Audit_ID(), auditResponse.getHttpCode(), auditResponse.getHttpHeaders(), auditResponse.getBody()));
 
-		final ImmutableList<I_API_Request_Audit_Log> apiReqLogs = queryBL.createQueryBuilder(I_API_Request_Audit_Log.class)
-				.addEqualsFilter(I_API_Request_Audit_Log.COLUMNNAME_API_Request_Audit_ID, apiRequestAuditId)
-				.create()
-				.listImmutable(I_API_Request_Audit_Log.class);
-
+		final ImmutableList<I_API_Request_Audit_Log> apiReqLogs = getApiRequestAuditLogs(apiRequestAuditId);
 		apiReqLogs.forEach(log -> {
 			if (EmptyUtil.isNotBlank(log.getLogmessage()))
 			{
 				logger.info("*** API_Request_Audit_ID : {} - API_Request_Audit_Log_ID -> {}\n Log message -> {}",
-							apiRequestAuditId.getRepoId(), log.getAPI_Request_Audit_Log_ID(), log.getLogmessage());
+						apiRequestAuditId.getRepoId(), log.getAPI_Request_Audit_Log_ID(), log.getLogmessage());
 			}
 		});
 
-		final ImmutableSet<IssueId> issueIds = apiReqLogs.stream()
-				.map(o -> IssueId.ofRepoIdOrNull(o.getAD_Issue_ID()))
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
-		if (issueIds.isEmpty())
-		{
-			return;
-		}
-
-		queryBL.createQueryBuilder(I_AD_Issue.class)
-				.addInArrayFilter(I_AD_Issue.COLUMNNAME_AD_Issue_ID, issueIds)
-				.create()
-				.stream()
+		getAdIssues(apiReqLogs)
 				.forEach(issue -> logger.info("*** API_Request_Audit_ID : {} - AD_Issue_ID -> {} \n IssueSummary -> {}\n StackTrace -> {}",
-											  apiRequestAuditId.getRepoId(), issue.getAD_Issue_ID(), issue.getIssueSummary(), issue.getStackTrace()));
+						apiRequestAuditId.getRepoId(), issue.getAD_Issue_ID(), issue.getIssueSummary(), issue.getStackTrace()));
 	}
 
-	private void extractRequestAuditIdFromHeader(
-			@NonNull final HttpResponse response,
-			@NonNull final ByteArrayOutputStream bodyContent,
-			@NonNull final APIResponse.APIResponseBuilder apiResponseBuilder) throws UnsupportedEncodingException
+	private static Stream<I_AD_Issue> getAdIssues(final Collection<I_API_Request_Audit_Log> apiReqLogs)
 	{
-		apiResponseBuilder.content(bodyContent.toString(StandardCharsets.UTF_8.name()));
-
-		final Header requestIdParam = response.getFirstHeader(API_RESPONSE_HEADER_REQUEST_AUDIT_ID);
-
-		if (requestIdParam == null)
+		final ImmutableSet<AdIssueId> issueIds = extractAdIssueIds(apiReqLogs);
+		if (issueIds.isEmpty())
 		{
-			return;
+			return Stream.empty();
 		}
 
-		final JsonMetasfreshId requestId = JsonMetasfreshId.of(Integer.parseInt(requestIdParam.getValue()));
+		return queryBL.createQueryBuilder(I_AD_Issue.class)
+				.addInArrayFilter(I_AD_Issue.COLUMNNAME_AD_Issue_ID, issueIds)
+				.orderBy(I_AD_Issue.COLUMNNAME_AD_Issue_ID)
+				.create()
+				.stream();
+	}
 
-		apiResponseBuilder.requestId(requestId);
+	private static ImmutableSet<AdIssueId> extractAdIssueIds(final Collection<I_API_Request_Audit_Log> apiReqLogs)
+	{
+		return apiReqLogs.stream()
+				.map(o -> AdIssueId.ofRepoIdOrNull(o.getAD_Issue_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 
-		logDetails(requestId);
+	private static ImmutableList<I_API_Request_Audit_Log> getApiRequestAuditLogs(final ApiRequestAuditId apiRequestAuditId)
+	{
+		return queryBL.createQueryBuilder(I_API_Request_Audit_Log.class)
+				.addEqualsFilter(I_API_Request_Audit_Log.COLUMNNAME_API_Request_Audit_ID, apiRequestAuditId)
+				.create()
+				.listImmutable(I_API_Request_Audit_Log.class);
+	}
+
+	private static Stream<I_API_Response_Audit> getAPIResponseAudit(final ApiRequestAuditId apiRequestAuditId)
+	{
+		return queryBL.createQueryBuilder(I_API_Response_Audit.class)
+				.addEqualsFilter(I_API_Response_Audit.COLUMNNAME_API_Request_Audit_ID, apiRequestAuditId)
+				.create()
+				.stream();
+	}
+
+	@Nullable
+	private ApiRequestAuditId extractRequestAuditIdFromHeader(@NonNull final HttpResponse response)
+	{
+		final Header requestIdParam = response.getFirstHeader(API_RESPONSE_HEADER_REQUEST_AUDIT_ID);
+		if (requestIdParam == null)
+		{
+			return null;
+		}
+
+		return ApiRequestAuditId.ofRepoId(Integer.parseInt(requestIdParam.getValue()));
 	}
 }

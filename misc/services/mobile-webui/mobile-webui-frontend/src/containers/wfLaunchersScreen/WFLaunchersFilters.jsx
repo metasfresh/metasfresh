@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { trl } from '../../utils/translations';
 import { countLaunchers, getFacets } from '../../api/launchers';
 import GetDocumentNoDialog from './GetDocumentNoDialog';
+import { useQuery } from '../../hooks/useQuery';
 
 const useGroupsLoadingCounter = () => {
   const [loadingCount, setLoadingCount] = useState(0);
@@ -41,20 +42,17 @@ const useGroups = ({ applicationId, filterByDocumentNo, activeFacetIdsInitial })
   return { groups, groupsLoading, toggleActiveFacet };
 };
 
-const useResultsCount = ({ applicationId, filterByDocumentNo, groups }) => {
-  const [resultsCountLoading, setResultsCountLoading] = useState(false);
-  const [resultsCount, setResultsCount] = useState(-1);
+const useResultsCount = ({ applicationId, filterByDocumentNo, groupsLoading, groups }) => {
+  const { isPending, data } = useQuery({
+    enabled: !groupsLoading,
+    queryKey: [applicationId, filterByDocumentNo, groups],
+    queryFn: () => {
+      const facetIds = computeActiveFacetIdsFromGroups(groups);
+      return countLaunchers({ applicationId, filterByDocumentNo, facetIds });
+    },
+  });
 
-  useEffect(() => {
-    const facetIds = computeActiveFacetIdsFromGroups(groups);
-
-    setResultsCountLoading(true);
-    countLaunchers({ applicationId, filterByDocumentNo, facetIds })
-      .then((count) => setResultsCount(count))
-      .finally(() => setResultsCountLoading(false));
-  }, [applicationId, filterByDocumentNo, groups]);
-
-  return { resultsCountLoading, resultsCount };
+  return { resultsCountLoading: isPending, resultsCount: data };
 };
 
 const toggleActiveFacetOfGroups = ({ groups, facetId }) => {
@@ -121,7 +119,12 @@ const WFLaunchersFilters = ({
     filterByDocumentNo,
     activeFacetIdsInitial,
   });
-  const { resultsCountLoading, resultsCount } = useResultsCount({ applicationId, filterByDocumentNo, groups });
+  const { resultsCountLoading, resultsCount } = useResultsCount({
+    applicationId,
+    filterByDocumentNo,
+    groupsLoading,
+    groups,
+  });
 
   const onFilterByDocumentNoChanged = (filterByDocumentNoNew) => {
     setFilterByDocumentNo(filterByDocumentNoNew);
@@ -218,10 +221,15 @@ FacetGroup.propTypes = {
   onClick: PropTypes.func.isRequired,
 };
 
-const Facet = ({ facetId, groupId, caption, active, onClick }) => {
+const Facet = ({ facetId, groupId, caption, active, hitCount, onClick }) => {
+  let captionEffective = caption;
+  if (hitCount != null && hitCount >= 0) {
+    captionEffective += ` (${hitCount})`;
+  }
+
   return (
     <ButtonWithIndicator
-      caption={caption}
+      caption={captionEffective}
       typeFASIconName={active ? 'fa-check' : null}
       onClick={() => onClick({ facetId, groupId })}
     />
@@ -232,6 +240,7 @@ Facet.propTypes = {
   groupId: PropTypes.string.isRequired,
   caption: PropTypes.string.isRequired,
   active: PropTypes.bool.isRequired,
+  hitCount: PropTypes.number,
   onClick: PropTypes.func.isRequired,
 };
 

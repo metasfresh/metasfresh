@@ -1,40 +1,6 @@
 package de.metas.invoicecandidate.spi.impl.aggregator.standard;
 
-import static de.metas.util.Check.fail;
-import static de.metas.common.util.CoalesceUtil.coalesce;
-import static org.adempiere.model.InterfaceWrapperHelper.isNull;
-
-import java.math.BigDecimal;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Set;
-
-import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_M_InOutLine;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.inout.IInOutBL;
 import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
@@ -45,12 +11,25 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.util.lang.ObjectUtils;
+import org.compiere.model.I_M_InOutLine;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Set;
+
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
+import static de.metas.util.Check.fail;
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 
 public final class InvoiceCandidateWithInOutLine
 {
@@ -60,7 +39,21 @@ public final class InvoiceCandidateWithInOutLine
 
 	private final I_C_Invoice_Candidate ic;
 	private final I_C_InvoiceCandidate_InOutLine iciol;
+
+	@Getter
 	private final Set<IInvoiceLineAttribute> invoiceLineAttributes;
+
+	/**
+	 * -- GETTER --
+	 *  Specify if, when the aggregation is done and if
+	 *  is not <code>null</code> the full remaining <code>QtyToInvoice</code> of the invoice candidate shall
+	 *  be allocated to the <code>icIol</code>'s invoice line, or not. If <code>false</code>, then the maximum qty to be allocated is the delivered qty.
+	 *  <p>
+	 *  Note that in each aggregation, we assume that there is exactly one request with
+	 *  = <code>true</code>, in order to make sure that the invoice candidate's
+	 *  qtyToInvoice is actually invoiced.
+	 */
+	@Getter
 	private final boolean allocateRemainingQty;
 
 	@Getter
@@ -74,6 +67,7 @@ public final class InvoiceCandidateWithInOutLine
 
 	@Getter
 	private final InvoiceCandidateId invoicecandidateId;
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	public InvoiceCandidateWithInOutLine(@NonNull final IInvoiceLineAggregationRequest request)
 	{
@@ -101,18 +95,14 @@ public final class InvoiceCandidateWithInOutLine
 	}
 
 	/** @return shipment/receipt line; could be <code>null</code> */
+	@Nullable
 	public I_M_InOutLine getM_InOutLine()
 	{
 		if (iciol == null)
 		{
 			return null;
 		}
-		final I_M_InOutLine inOutLine = iciol.getM_InOutLine();
-		if (inOutLine == null)
-		{
-			return null;
-		}
-		return inOutLine;
+		return iciol.getM_InOutLine();
 	}
 
 	public StockQtyAndUOMQty getQtysAlreadyInvoiced()
@@ -146,23 +136,27 @@ public final class InvoiceCandidateWithInOutLine
 			switch (invoicableQtyBasedOn)
 			{
 				case CatchWeight:
-					uomQty = coalesce(iciol.getQtyDeliveredInUOM_Catch(), iciol.getQtyDeliveredInUOM_Nominal());
+					uomQty = coalesceNotNull(iciol.getQtyDeliveredInUOM_Catch(), iciol.getQtyDeliveredInUOM_Nominal());
 					break;
 				case NominalWeight:
 					uomQty = iciol.getQtyDeliveredInUOM_Nominal();
 					break;
 				default:
-					fail("Unexpected invoicableQtyBasedOn={}", invoicableQtyBasedOn);
-					uomQty = null;
-					break;
+					throw fail("Unexpected invoicableQtyBasedOn={}", invoicableQtyBasedOn);
 			}
 		}
+
+		final Quantity shippedUomQuantityInIcUOM = uomConversionBL.convertQuantityTo(Quantitys.of(uomQty, UomId.ofRepoId(iciol.getC_UOM_ID())),
+																					 productId,
+																					 icUomId);
 
 		final BigDecimal stockQty = inOutLine.getMovementQty();
 		final StockQtyAndUOMQty deliveredQty = StockQtyAndUOMQtys
 				.create(
-						stockQty, productId,
-						uomQty, UomId.ofRepoId(iciol.getC_UOM_ID()));
+						stockQty,
+						productId,
+						shippedUomQuantityInIcUOM.toBigDecimal(),
+						shippedUomQuantityInIcUOM.getUomId());
 
 		if (inOutBL.isReturnMovementType(inOutLine.getM_InOut().getMovementType()))
 		{
@@ -181,20 +175,4 @@ public final class InvoiceCandidateWithInOutLine
 		return iciol;
 	}
 
-	public Set<IInvoiceLineAttribute> getInvoiceLineAttributes()
-	{
-		return invoiceLineAttributes;
-	}
-
-	/**
-	 * Specify if, when the aggregation is done and if {@link #getC_InvoiceCandidate_InOutLine()} is not <code>null</code> the full remaining <code>QtyToInvoice</code> of the invoice candidate shall
-	 * be allocated to the <code>icIol</code>'s invoice line, or not. If <code>false</code>, then the maximum qty to be allocated is the delivered qty.
-	 * <p>
-	 * Note that in each aggregation, we assume that there is exactly one request with {@link #isAllocateRemainingQty()} = <code>true</code>, in order to make sure that the invoice candidate's
-	 * qtyToInvoice is actually invoiced.
-	 */
-	public boolean isAllocateRemainingQty()
-	{
-		return allocateRemainingQty;
-	}
 }

@@ -1,22 +1,5 @@
 package de.metas.handlingunits.trace;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestWatcher;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
@@ -24,6 +7,22 @@ import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestWatcher;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 /*
  * #%L

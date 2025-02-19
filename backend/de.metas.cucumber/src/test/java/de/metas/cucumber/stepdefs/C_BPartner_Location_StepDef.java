@@ -23,6 +23,8 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.location.ILocationBL;
 import de.metas.util.Check;
@@ -40,9 +42,11 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Location_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID;
 
 public class C_BPartner_Location_StepDef
 {
@@ -52,6 +56,7 @@ public class C_BPartner_Location_StepDef
 
 	private final ILocationBL locationBL = Services.get(ILocationBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public C_BPartner_Location_StepDef(
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
@@ -87,6 +92,12 @@ public class C_BPartner_Location_StepDef
 		{
 			updateLocationOfTheBPartnerLocation(tableRow);
 		}
+	}
+
+	@Given("load C_BPartner_Location:")
+	public void load_bpartner_location(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::load_bpartner_location);
 	}
 
 	private void createC_BPartner_Location(@NonNull final DataTableRow tableRow)
@@ -132,7 +143,7 @@ public class C_BPartner_Location_StepDef
 		{
 			final I_C_Location locationRecord = InterfaceWrapperHelper.newInstance(I_C_Location.class);
 			locationRecord.setC_Country_ID(StepDefConstants.COUNTRY_ID.getRepoId());
-			InterfaceWrapperHelper.saveRecord(locationRecord);
+			saveRecord(locationRecord);
 
 			bPartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
 		}
@@ -161,10 +172,41 @@ public class C_BPartner_Location_StepDef
 			bPartnerLocationRecord.setPhone(phone);
 		}
 
-		InterfaceWrapperHelper.saveRecord(bPartnerLocationRecord);
+		final Integer bpartnerLocationId = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
+		if (bpartnerLocationId != null && bpartnerLocationId > 0)
+		{
+			bPartnerLocationRecord.setC_BPartner_Location_ID(bpartnerLocationId);
+		}
+
+		saveRecord(bPartnerLocationRecord);
 
 		final String bpLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, TABLECOLUMN_IDENTIFIER);
 		bPartnerLocationTable.put(bpLocationIdentifier, bPartnerLocationRecord);
+	}
+
+	private void load_bpartner_location(@NonNull final DataTableRow tableRow)
+	{
+		final String bpartnerLocationIdentifier = tableRow.getAsIdentifier(COLUMNNAME_C_BPartner_Location_ID+"." + StepDefDataIdentifier.SUFFIX).getAsString();
+
+		final int id = tableRow.getAsOptionalInt(COLUMNNAME_C_BPartner_Location_ID).orElse(-1);
+		if (id > 0)
+		{
+			bPartnerLocationTable.putOrReplace(bpartnerLocationIdentifier, InterfaceWrapperHelper.load(id, I_C_BPartner_Location.class));
+			return;
+		}
+
+		final String bpartnerIdentifier = tableRow.getAsIdentifier(COLUMNNAME_C_BPartner_ID).getAsString();
+		final Integer bpartnerId = bPartnerTable.getOptional(bpartnerIdentifier)
+				.map(I_C_BPartner::getC_BPartner_ID)
+				.orElseGet(() -> Integer.parseInt(bpartnerIdentifier));
+
+		final int bpartnerLocationRepoId = tableRow.getAsInt(COLUMNNAME_C_BPartner_Location_ID);
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bpartnerId, bpartnerLocationRepoId);
+
+		final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationByIdInTrx(bPartnerLocationId);
+		assertThat(bpartnerLocation).isNotNull();
+
+		bPartnerLocationTable.put(bpartnerLocationIdentifier, bpartnerLocation);
 	}
 
 	private void updateCBPartnerLocation(@NonNull final Map<String, String> tableRow)

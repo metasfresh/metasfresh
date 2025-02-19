@@ -88,11 +88,6 @@ class BankStatementDocumentHandlerRequiredServicesFacade
 		return bankStatementDAO.getLineReferences(bankStatementLineIds);
 	}
 
-	public I_C_BankStatementLine getBankStatementLineById(@NonNull final BankStatementLineId bankStatementLineId)
-	{
-		return bankStatementBL.getLineById(bankStatementLineId);
-	}
-
 	public void save(final I_C_BankStatementLine line)
 	{
 		bankStatementDAO.save(line);
@@ -122,9 +117,9 @@ class BankStatementDocumentHandlerRequiredServicesFacade
 		factAcctDAO.deleteForDocumentModel(bankStatement);
 	}
 
-	public void unlinkPaymentsAndDeleteReferences(final List<I_C_BankStatementLine> lines)
+	public void unreconcile(@NonNull final List<I_C_BankStatementLine> lines)
 	{
-		bankStatementBL.unlinkPaymentsAndDeleteReferences(lines);
+		bankStatementBL.unreconcile(lines);
 	}
 
 	public String getMsg(final AdMessageKey adMessage)

@@ -3,6 +3,8 @@ package de.metas.invoicecandidate.api.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.document.DocTypeId;
+import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
 import de.metas.impex.InputDataSourceId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -16,12 +18,14 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import org.compiere.model.I_C_DocType;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 /* package */class InvoiceHeaderImpl implements IInvoiceHeader
 {
@@ -80,10 +84,16 @@ import java.util.List;
 
 	private boolean isSOTrx;
 
+	private boolean isTakeDocTypeFromPool;
+
 	// 06630
 	private int M_InOut_ID = -1;
 
-	private I_C_DocType docTypeInvoice;
+	@Nullable
+	private DocTypeId docTypeInvoiceId;
+
+	@Nullable
+	private DocTypeInvoicingPoolId docTypeInvoicingPoolId;
 
 	private boolean taxIncluded;
 	private String externalId;
@@ -114,7 +124,8 @@ import java.util.List;
 				+ ", billTo=" + billTo
 				+ ", currencyId=" + currencyId
 				+ ", C_Order_ID=" + C_Order_ID
-				+ ", docTypeInvoiceId=" + docTypeInvoice
+				+ ", docTypeInvoiceId=" + docTypeInvoiceId
+				+ ", docTypeInvoicingPoolId=" + docTypeInvoicingPoolId
 				+ ", externalID=" + externalId
 				+ ", lines=" + lines
 				+ "]";
@@ -250,6 +261,7 @@ import java.util.List;
 		this.isSOTrx = isSOTrx;
 	}
 
+
 	@Override
 	public int getM_InOut_ID()
 	{
@@ -262,14 +274,44 @@ import java.util.List;
 	}
 
 	@Override
-	public I_C_DocType getC_DocTypeInvoice()
+	@Nullable
+	public Optional<DocTypeId> getDocTypeInvoiceId()
 	{
-		return docTypeInvoice;
+		return Optional.ofNullable(docTypeInvoiceId);
 	}
 
-	public void setC_DocTypeInvoice(final I_C_DocType docType)
+	@Override
+	@NonNull
+	public Optional<DocTypeInvoicingPoolId> getDocTypeInvoicingPoolId()
 	{
-		this.docTypeInvoice = docType;
+		return Optional.ofNullable(docTypeInvoicingPoolId);
+	}
+
+
+
+
+	@Override
+	public boolean isTakeDocTypeFromPool()
+	{
+		return isTakeDocTypeFromPool;
+	}
+
+	public void setIsTakeDocTypeFromPool(final boolean isTakeDocTypeFromPool)
+	{
+		this.isTakeDocTypeFromPool = isTakeDocTypeFromPool;
+	}
+
+
+	@Override
+	public void setDocTypeInvoicingPoolId(@Nullable final DocTypeInvoicingPoolId docTypeInvoicingPoolId)
+	{
+		this.docTypeInvoicingPoolId = docTypeInvoicingPoolId;
+	}
+
+	@Override
+	public void setDocTypeInvoiceId(@Nullable final DocTypeId docTypeId)
+	{
+		this.docTypeInvoiceId = docTypeId;
 	}
 
 	@Override

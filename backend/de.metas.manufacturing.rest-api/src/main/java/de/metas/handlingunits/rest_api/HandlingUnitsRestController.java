@@ -24,6 +24,7 @@ package de.metas.handlingunits.rest_api;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.ad_reference.ADRefList;
 import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
 import de.metas.common.handlingunits.JsonDisposalReason;
 import de.metas.common.handlingunits.JsonDisposalReasonsList;
@@ -50,6 +51,8 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.inventory.InventoryCandidateService;
+import de.metas.printing.frontend.FrontendPrinter;
+import de.metas.printing.frontend.FrontendPrinterData;
 import de.metas.product.IProductBL;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.util.Services;
@@ -57,7 +60,6 @@ import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -258,7 +260,7 @@ public class HandlingUnitsRestController
 		}
 	}
 
-	private static JsonDisposalReasonsList toJsonDisposalReasonsList(final IADReferenceDAO.ADRefList adRefList, final String adLanguage)
+	private static JsonDisposalReasonsList toJsonDisposalReasonsList(final ADRefList adRefList, final String adLanguage)
 	{
 		return JsonDisposalReasonsList.builder()
 				.reasons(adRefList.getItems()
@@ -332,6 +334,27 @@ public class HandlingUnitsRestController
 		// (e.g. we extracted one TU from an aggregated TU),
 		// but the QR Code is always the same.
 		return getByIdSupplier(() -> huQRCodesService.getHuIdByQRCode(huQRCode));
+	}
+
+	@PostMapping("/huLabels/print")
+	public JsonPrintHULabelResponse printHULabels(@RequestBody @NonNull final JsonPrintHULabelRequest request)
+	{
+		try (final FrontendPrinter frontendPrinter = FrontendPrinter.start())
+		{
+			handlingUnitsService.printHULabels(request);
+
+			final FrontendPrinterData printData = frontendPrinter.getDataAndClear();
+			return JsonPrintHULabelResponse.builder()
+					.printData(JsonPrintHULabelResponse.JsonPrintDataItem.of(printData))
+					.build();
+		}
+	}
+
+	@GetMapping("/huLabels/printingOptions")
+	public List<JsonHULabelPrintingOption> getPrintingOptions()
+	{
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+		return handlingUnitsService.getLabelPrintingOptions(adLanguage);
 	}
 
 	@Deprecated

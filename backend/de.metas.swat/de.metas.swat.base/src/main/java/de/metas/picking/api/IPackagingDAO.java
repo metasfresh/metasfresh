@@ -26,6 +26,10 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.quantity.Quantity;
+import de.metas.util.ISingletonService;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;

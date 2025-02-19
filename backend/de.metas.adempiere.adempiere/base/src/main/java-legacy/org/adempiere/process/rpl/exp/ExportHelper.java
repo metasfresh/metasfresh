@@ -31,6 +31,7 @@ package org.adempiere.process.rpl.exp;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.service.IAppDictionaryBL;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
@@ -53,6 +54,7 @@ import org.adempiere.server.rpl.exceptions.ExportProcessorException;
 import org.adempiere.server.rpl.exceptions.ReplicationException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Column;
@@ -80,9 +82,20 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 
+import javax.annotation.Nullable;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Result;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -98,7 +111,7 @@ import java.util.TimeZone;
  * @author Antonio Cañaveral, e-Evolution
  * <ul>
  * <li>[ 2195016 ] Implementation delete records messages
- * <li>http://sourceforge.net/tracker/index.php?func=detail&aid=2195016&group_id=176962&atid=879332
+ * <li><a href="http://sourceforge.net/tracker/index.php?func=detail&aid=2195016&group_id=176962&atid=879332">http://sourceforge.net/tracker/index.php?func=detail&aid=2195016&group_id=176962&atid=879332</a>
  * </ul>
  * @author victor.perez@e-evolution.com, e-Evolution
  * <ul>
@@ -115,20 +128,23 @@ public class ExportHelper
 	public static final String MSG_EXPFormatNotFound = "EXPFormatNotFound";
 	public static final String MSG_EXPFormatLineError = "EXPFormatLineError";
 
-	/** Logger */
-	private static Logger log = LogManager.getLogger(ExportHelper.class);
+	/**
+	 * Logger
+	 */
+	private static final Logger log = LogManager.getLogger(ExportHelper.class);
 
-	/** XML Document */
+	/**
+	 * XML Document
+	 */
 	private Document outDocument = null;
 
-	/** Custom Date Format */
-	// private SimpleDateFormat m_customDateFormat = null;
-
 	/** Client */
-	private int m_AD_Client_ID = -1;
+	private final int m_AD_Client_ID;
 
-	/** Replication Strategy */
-	private I_AD_ReplicationStrategy m_rplStrategy = null;
+	/**
+	 * Replication Strategy
+	 */
+	private final I_AD_ReplicationStrategy m_rplStrategy;
 
 	public ExportHelper(final MClient client, final MReplicationStrategy rplStrategy)
 	{
@@ -152,6 +168,22 @@ public class ExportHelper
 		// metas: tsa: refactored
 		final MEXPFormat exportFormat = null;
 		return exportRecord(po, exportFormat, ReplicationMode, ReplicationType, ReplicationEvent);
+	}
+
+	public void exportRecord(
+			final PO po,
+			final MEXPFormat exportFormat,
+			final Integer replicationMode,
+			final String replicationType,
+			final Integer replicationEvent,
+			@Nullable final CreateAttachmentRequest attachResultRequest)
+	{
+		exportRecord(po, exportFormat, replicationMode, replicationType, replicationEvent);
+
+		if (attachResultRequest != null)
+		{
+			createAttachment(attachResultRequest);
+		}
 	}
 
 	public String exportRecord(final PO po, final MEXPFormat exportFormat, final Integer ReplicationMode, final String ReplicationType, final Integer ReplicationEvent) throws ReplicationException
@@ -203,7 +235,7 @@ public class ExportHelper
 		log.debug("po.getAD_Org_ID() = " + po.getAD_Org_ID());
 
 		log.debug("po.get_TrxName() = " + po.get_TrxName());
-		if (po.get_TrxName() == null || po.get_TrxName().equals(""))
+		if (Check.isBlank(po.get_TrxName()))
 		{
 			po.set_TrxName("exportRecord");
 		}
@@ -271,7 +303,7 @@ public class ExportHelper
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(exportFormat.getAD_Table_ID());
 
 		// metas: begin: build where clause
-		final StringBuffer whereClause = new StringBuffer("1=1");
+		final StringBuilder whereClause = new StringBuilder("1=1");
 		if (!Check.isEmpty(exportFormat.getWhereClause(), true))
 		{
 			whereClause.append(" AND (").append(exportFormat.getWhereClause()).append(")");
@@ -293,7 +325,7 @@ public class ExportHelper
 			log.debug("Client = " + client.toString());
 			log.trace("po.getAD_Org_ID() = " + po.getAD_Org_ID());
 			log.trace("po.get_TrxName() = " + po.get_TrxName());
-			if (po.get_TrxName() == null || po.get_TrxName().equals(""))
+			if (Check.isBlank(po.get_TrxName()))
 			{
 				po.set_TrxName("exportRecord");
 			}
@@ -455,9 +487,9 @@ public class ExportHelper
 
 			final String linkColumnName = getLinkColumnName(masterPO, tableEmbedded); // metas
 			final Object linkId = masterPO.get_Value(linkColumnName); // metas
-			final StringBuffer whereClause = new StringBuffer(linkColumnName + "=?"); // metas: use linkColumnName
+			final StringBuilder whereClause = new StringBuilder(linkColumnName + "=?"); // metas: use linkColumnName
 
-			if (embeddedFormat.getWhereClause() != null && !"".equals(embeddedFormat.getWhereClause()))
+			if (Check.isNotBlank(embeddedFormat.getWhereClause()))
 			{
 				whereClause.append(" AND ").append(embeddedFormat.getWhereClause());
 			}
@@ -564,7 +596,7 @@ public class ExportHelper
 				throw new IllegalStateException("Column's reference type not supported: " + column + " , DisplayType=" + displayType);
 			}
 
-			log.debug("Embedded: Table={}, KeyColumName={}", new Object[] { embeddedTableName, embeddedKeyColumnName });
+			log.debug("Embedded: Table={}, KeyColumName={}", embeddedTableName, embeddedKeyColumnName);
 
 			final StringBuilder whereClause = new StringBuilder().append(embeddedKeyColumnName).append("=?");
 			if (!Check.isEmpty(embeddedFormat.getWhereClause()))
@@ -615,15 +647,12 @@ public class ExportHelper
 
 	/**
 	 * Utility method which is responsible to create new XML Document
-	 *
-	 * @return Document
-	 * @throws ParserConfigurationException
 	 */
 	Document createNewDocument()
 	{
-		Document result = null;
+		final Document result;
 		final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder documentBuilder;
+		final DocumentBuilder documentBuilder;
 		try
 		{
 			documentBuilder = documentBuilderFactory.newDocumentBuilder();
@@ -682,14 +711,14 @@ public class ExportHelper
 		if (replTable != null && replTable.getEXP_Format_ID() > 0)
 		{
 			exportFormat = MEXPFormat.get(po.getCtx(), replTable.getEXP_Format_ID(), po.get_TrxName());
-			log.debug("ExportFormat(replication table): ", exportFormat);
+			log.debug("ExportFormat(replication table): {}", exportFormat);
 			return exportFormat;
 		}
 
 		if (exportFormat == null)
 		{
 			exportFormat = MEXPFormat.getFormatByAD_Client_IDAD_Table_IDAndVersion(po.getCtx(), m_AD_Client_ID, po.get_Table_ID(), version, po.get_TrxName());
-			log.debug("ExportFormat(client): ", exportFormat);
+			log.debug("ExportFormat(client): {}", exportFormat);
 		}
 
 		// Fall back to System Client
@@ -697,7 +726,7 @@ public class ExportHelper
 		{
 			final int adClientId = 0; // System
 			exportFormat = MEXPFormat.getFormatByAD_Client_IDAD_Table_IDAndVersion(po.getCtx(), adClientId, po.get_Table_ID(), version, po.get_TrxName());
-			log.debug("ExportFormat(system): ", exportFormat);
+			log.debug("ExportFormat(system): {}", exportFormat);
 		}
 
 		if (exportFormat == null || exportFormat.getEXP_Format_ID() <= 0)
@@ -744,11 +773,11 @@ public class ExportHelper
 		}
 		else if (DisplayType.isDate(displayType))
 		{
-			valueString = encodeDate((Timestamp)value, formatLine, displayType);
+			valueString = encodeDate((Timestamp)value, displayType);
 		}
 		else if (DisplayType.isYesNo(displayType))
 		{
-			valueString = StringUtils.ofBoolean((Boolean)value,"N");
+			valueString = StringUtils.ofBoolean((Boolean)value, "N");
 		}
 		else
 		{
@@ -756,7 +785,7 @@ public class ExportHelper
 			valueString = str.isEmpty() ? null : str;
 		}
 
-		log.debug("Encoded column '{}' from '{}' to '{}'", new Object[] { column.getColumnName(), value, valueString });
+		log.debug("Encoded column '{}' from '{}' to '{}'", column.getColumnName(), value, valueString);
 		return valueString;
 	}
 
@@ -764,7 +793,6 @@ public class ExportHelper
 	@VisibleForTesting
 	static String encodeDate(
 			final Timestamp date,
-			@NonNull final I_EXP_FormatLine formatLine,
 			final int displayType)
 	{
 		final ZoneId timeZoneId = Services.get(IOrgDAO.class).getTimeZone(Env.getOrgId());
@@ -839,5 +867,34 @@ public class ExportHelper
 		}
 
 		return column.getAD_Reference_ID();
+	}
+
+	private void createAttachment(@NonNull final CreateAttachmentRequest request)
+	{
+		try
+		{
+			final String documentAsString = writeDocumentToString(outDocument);
+
+			final byte[] data = documentAsString.getBytes();
+			final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
+			attachmentEntryService.createNewAttachment(request.getTarget(), request.getAttachmentName(), data);
+		}
+		catch (final Exception exception)
+		{
+			throw AdempiereException.wrapIfNeeded(exception);
+		}
+	}
+
+	private static String writeDocumentToString(@NonNull final Document document) throws TransformerException
+	{
+		final TransformerFactory tranFactory = TransformerFactory.newInstance();
+		final Transformer aTransformer = tranFactory.newTransformer();
+		aTransformer.setOutputProperty(OutputKeys.INDENT, "yes");
+		final Source src = new DOMSource(document);
+		final Writer writer = new StringWriter();
+		final Result dest2 = new StreamResult(writer);
+		aTransformer.transform(src, dest2);
+
+		return writer.toString();
 	}
 }

@@ -175,7 +175,7 @@ final class PPOrderBOMCreateCommand
 		if (docBaseType.isRepairOrder())
 		{
 			final UomId uomId = UomId.ofRepoId(orderBOMLine.getC_UOM_ID());
-			return Quantitys.createZero(uomId);
+			return Quantitys.zero(uomId);
 		}
 		else
 		{

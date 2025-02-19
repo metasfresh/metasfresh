@@ -22,6 +22,7 @@ package de.metas.tourplanning.integrationtest;
  * #L%
  */
 
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
@@ -56,6 +57,7 @@ public class HU_TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extend
 		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
+				ADReferenceService.newMocked(),
 				huReservationService,
 				new PPOrderSourceHUService(new PPOrderSourceHURepository(),
 										   new PPOrderIssueScheduleService(

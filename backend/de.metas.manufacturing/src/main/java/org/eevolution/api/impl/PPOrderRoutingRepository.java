@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.ResourceType;
@@ -34,7 +35,6 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderRoutingRepository;
@@ -299,14 +299,14 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				// Planned values
 				.setupTimeRequired(Duration.of(record.getSetupTimeRequiered(), durationUnit.getTemporalUnit()))
 				.durationRequired(Duration.of(record.getDurationRequiered(), durationUnit.getTemporalUnit()))
-				.qtyRequired(Quantitys.create(record.getQtyRequiered(), uomId))
+				.qtyRequired(Quantitys.of(record.getQtyRequiered(), uomId))
 				//
 				// Reported values
 				.setupTimeReal(Duration.of(record.getSetupTimeReal(), durationUnit.getTemporalUnit()))
 				.durationReal(Duration.of(record.getDurationReal(), durationUnit.getTemporalUnit()))
-				.qtyDelivered(Quantitys.create(record.getQtyDelivered(), uomId))
-				.qtyScrapped(Quantitys.create(record.getQtyScrap(), uomId))
-				.qtyRejected(Quantitys.create(record.getQtyReject(), uomId))
+				.qtyDelivered(Quantitys.of(record.getQtyDelivered(), uomId))
+				.qtyScrapped(Quantitys.of(record.getQtyScrap(), uomId))
+				.qtyRejected(Quantitys.of(record.getQtyReject(), uomId))
 				.dateStart(TimeUtil.asInstant(record.getDateStart()))
 				.dateFinish(TimeUtil.asInstant(record.getDateFinish()))
 				//

@@ -10,13 +10,15 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -72,17 +74,20 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_MatchInv;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -94,9 +99,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -451,6 +456,30 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		final I_M_InOut inOut = iciol.getM_InOutLine().getM_InOut();
 
 		return inOut.isActive() && DocStatus.ofCode(inOut.getDocStatus()).isCompletedOrClosed();
+	}
+
+	@Override
+	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsFor(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		return queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
+				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateId)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_C_InvoiceCandidate_InOutLine.COLUMN_M_InOutLine_ID)
+				.orderBy(I_C_InvoiceCandidate_InOutLine.COLUMN_C_Invoice_Candidate_ID)
+				.create()
+				.list(I_C_InvoiceCandidate_InOutLine.class);
+	}
+
+	public boolean isCompletedOrClosedInvoice(@NonNull final InOutId inOutId)
+	{
+		return queryBL.createQueryBuilder(I_M_MatchInv.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_MatchInv.COLUMNNAME_M_InOut_ID, inOutId)
+				.andCollect(I_C_Invoice.COLUMNNAME_C_Invoice_ID, I_C_Invoice.class)
+				.addInArrayOrAllFilter(I_C_Invoice.COLUMNNAME_DocStatus, IDocument.STATUS_Closed, IDocument.STATUS_Completed) // DocStatus in ('CO', 'CL')
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch();
 	}
 
 	@Override
@@ -817,7 +846,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				invoiceCandScheduler.scheduleForUpdate(request);
 			}
 		}
-		
+
 		return count;
 	}
 
@@ -1065,13 +1094,13 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				}
 
 				@Override
-				public void fixedSet(final ImmutableSet<InvoiceCandidateId> ids)
+				public void fixedSet(final @NonNull ImmutableSet<InvoiceCandidateId> ids)
 				{
 					queryBuilder.addInArrayOrAllFilter(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID, ids);
 				}
 
 				@Override
-				public void selectionId(final PInstanceId selectionId)
+				public void selectionId(final @NonNull PInstanceId selectionId)
 				{
 					queryBuilder.addInSubQueryFilter(
 							I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Invoice_Candidate_ID,
@@ -1174,8 +1203,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			multiRequest = CacheInvalidateMultiRequest.fromTableNameAndRecordIds(I_C_Invoice_Candidate.Table_Name, onlyInvoiceCandidateIds);
 		}
 
-		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.CHANGE);
+		final ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
+		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	protected final int untag(@NonNull final InvoiceCandRecomputeTagger tagger)
@@ -1201,25 +1230,49 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final boolean hasInvalidInvoiceCandidatesForTag(final InvoiceCandRecomputeTag tag)
+	public final boolean hasInvalidInvoiceCandidates(@NonNull final Collection<InvoiceCandidateId> invoiceCandidateIds)
 	{
-		final Properties ctx = Env.getCtx();
-		final String trxName = ITrx.TRXNAME_ThreadInherited;
-
-		final PInstanceId pinstanceId = InvoiceCandRecomputeTag.getPinstanceIdOrNull(tag);
-
-		return queryBL
-				.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class, ctx, trxName)
-				.addEqualsFilter(I_C_Invoice_Candidate_Recompute.COLUMN_AD_PInstance_ID, pinstanceId)
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class)
+				.addInArrayFilter(I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateIds)
 				.create()
 				.anyMatch();
 	}
 
 	@Override
-	public final boolean hasInvalidInvoiceCandidatesForSelection(@NonNull final PInstanceId selectionId)
+	public final boolean hasInvalidInvoiceCandidatesForSelection(@NonNull final InvoiceCandidateIdsSelection invoiceCandidateIdsSelection)
 	{
-		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.setOnlySelection(selectionId)
+		if(invoiceCandidateIdsSelection.isEmpty())
+		{
+			return false;
+		}
+		
+		// Without the newOutOfTrx-context, we had InvoiceCandBL.waitForInvoiceCandidatesUpdated consistently hit the 1hr-timeout on one instance,
+		// although multiple UpdateInvalidInvoiceCandidatesWorkpackageProcessors executed successfully during that hour.
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class, PlainContextAware.newOutOfTrx());
+
+		// apply the invoiceCandidateIdsSelection to our queryBuilder
+		invoiceCandidateIdsSelection.apply(new InvoiceCandidateIdsSelection.CaseMapper()
+		{
+			@Override
+			public void empty()
+			{
+				queryBuilder.filter(ConstantQueryFilter.of(false));
+			}
+
+			@Override
+			public void fixedSet(@NonNull final ImmutableSet<InvoiceCandidateId> ids)
+			{
+				queryBuilder.addInArrayFilter(I_C_Invoice_Candidate.COLUMN_C_Invoice_Candidate_ID, ids);
+			}
+
+			@Override
+			public void selectionId(@NonNull final PInstanceId selectionId)
+			{
+				queryBuilder.setOnlySelection(selectionId);
+			}
+		});
+
+		return queryBuilder
 				.andCollectChildren(I_C_Invoice_Candidate_Recompute.COLUMN_C_Invoice_Candidate_ID)
 				.create()
 				.anyMatch();
@@ -1578,7 +1631,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		}
 
 		// Conversion date to be used on currency conversion
-		final LocalDate dateConv = SystemTime.asLocalDate();
+		final Instant dateConv = SystemTime.asInstant();
 
 		BigDecimal result = BigDecimal.ZERO;
 		for (final CurrencyId currencyId : currencyId2conversion2Amt.keySet())
@@ -1626,7 +1679,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		};
 
 		final String trxName = InterfaceWrapperHelper.getTrxName(ic);
-		DB.executeUpdateEx(sql, sqlParams, trxName);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, sqlParams, trxName);
 	}
 
 	@Override
@@ -1709,7 +1762,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		// Only filter invoice candidates of the organizations this role has access to
 		final IUserRolePermissions userRolePermissions = Env.getUserRolePermissions(ctx);
 
-		final StringBuilder defaultFilter = new StringBuilder("");
+		final StringBuilder defaultFilter = new StringBuilder();
 
 		final String orgIDsAsString = userRolePermissions.getAD_Org_IDs_AsString();
 
@@ -1741,7 +1794,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public Set<String> retrieveOrderDocumentNosForIncompleteGroupsFromSelection(final PInstanceId adPInstanceId)
 	{
 		final String sql = "SELECT * FROM C_Invoice_Candidate_SelectionIncompleteGroups WHERE AD_PInstance_ID=?";
-		final List<Object> sqlParams = Arrays.asList(adPInstanceId);
+		final List<Object> sqlParams = ImmutableList.of(adPInstanceId);
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try

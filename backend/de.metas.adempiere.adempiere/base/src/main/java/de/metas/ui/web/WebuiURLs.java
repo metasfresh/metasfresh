@@ -1,20 +1,18 @@
 package de.metas.ui.web;
 
-import java.util.Map;
-
+import com.google.common.collect.ImmutableMap;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.text.MapFormat;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
+import java.util.Map;
 
 /*
  * #%L
@@ -59,33 +57,33 @@ public class WebuiURLs
 	private static final String PARAM_ResetPasswordToken = "token";
 
 	public static final String SYSCONFIG_IsCrossSiteUsageAllowed = "webui.frontend.allow-cross-site-usage";
-	
+
+	private static final String SYSCONFIG_APP_API_URL = "app.api.url";
 	public static final String SYSCONFIG_FRONTEND_URL = "webui.frontend.url";
 	private static final String SYSCONFIG_DOCUMENT_PATH = "webui.frontend.path.document";
 	private static final String SYSCONFIG_VIEW_PATH = "webui.frontend.path.view";
 	private static final String SYSCONFIG_RESET_PASSWORD_PATH = "webui.frontend.path.resetPassword";
 
-	private static final Map<String, String> defaultsBySysConfigName = ImmutableMap.<String, String> builder()
+	private static final Map<String, String> defaultsBySysConfigName = ImmutableMap.<String, String>builder()
 			.put(SYSCONFIG_DOCUMENT_PATH, "/window/{" + PARAM_windowId + "}/{" + PARAM_documentId + "}")
 			.put(SYSCONFIG_VIEW_PATH, "/window/{" + PARAM_windowId + "}?viewId={" + PARAM_viewId + "}")
 			.put(SYSCONFIG_RESET_PASSWORD_PATH, "/resetPassword?token={" + PARAM_ResetPasswordToken + "}")
 			.build();
 
 	/**
-	 *
 	 * @return e.g. https://webui
 	 */
 	@Nullable
 	public String getFrontendURL()
 	{
-		final String url = sysConfigBL.getValue(SYSCONFIG_FRONTEND_URL, "");
-		if (Check.isEmpty(url, true) || "-".equals(url))
+		final String url = StringUtils.trimBlankToNull(sysConfigBL.getValue(SYSCONFIG_FRONTEND_URL));
+		if (url == null || "-".equals(url))
 		{
 			logger.warn("{} is not configured. Features like CORS, document links in emails etc will not work", SYSCONFIG_FRONTEND_URL);
 			return null;
 		}
 
-		return url.trim();
+		return url;
 	}
 
 	@Nullable
@@ -97,8 +95,8 @@ public class WebuiURLs
 			return null;
 		}
 
-		final String path = sysConfigBL.getValue(pathSysConfigName, defaultsBySysConfigName.get(pathSysConfigName));
-		if (Check.isEmpty(path, true) || "-".equals(path))
+		final String path = StringUtils.trimBlankToNull(sysConfigBL.getValue(pathSysConfigName, defaultsBySysConfigName.get(pathSysConfigName)));
+		if (path == null || "-".equals(path))
 		{
 			return null;
 		}
@@ -113,37 +111,42 @@ public class WebuiURLs
 		return url;
 	}
 
+	@Nullable
 	public String getDocumentUrl(@NonNull final AdWindowId windowId, final int documentId)
 	{
 		return getDocumentUrl(String.valueOf(windowId.getRepoId()), String.valueOf(documentId));
 	}
 
+	@Nullable
 	public String getDocumentUrl(@NonNull final String windowId, @NonNull final String documentId)
 	{
-		return getFrontendURL(SYSCONFIG_DOCUMENT_PATH, ImmutableMap.<String, Object> builder()
+		return getFrontendURL(SYSCONFIG_DOCUMENT_PATH, ImmutableMap.<String, Object>builder()
 				.put(WebuiURLs.PARAM_windowId, windowId)
 				.put(WebuiURLs.PARAM_documentId, documentId)
 				.build());
 	}
 
+	@Nullable
 	public String getViewUrl(@NonNull final AdWindowId adWindowId, @NonNull final String viewId)
 	{
 		return getViewUrl(String.valueOf(adWindowId.getRepoId()), viewId);
 	}
 
+	@Nullable
 	public String getViewUrl(@NonNull final String windowId, @NonNull final String viewId)
 	{
-		return getFrontendURL(SYSCONFIG_VIEW_PATH, ImmutableMap.<String, Object> builder()
+		return getFrontendURL(SYSCONFIG_VIEW_PATH, ImmutableMap.<String, Object>builder()
 				.put(PARAM_windowId, windowId)
 				.put(PARAM_viewId, viewId)
 				.build());
 	}
 
+	@Nullable
 	public String getResetPasswordUrl(final String token)
 	{
 		Check.assumeNotEmpty(token, "token is not empty");
 
-		return getFrontendURL(SYSCONFIG_RESET_PASSWORD_PATH, ImmutableMap.<String, Object> builder()
+		return getFrontendURL(SYSCONFIG_RESET_PASSWORD_PATH, ImmutableMap.<String, Object>builder()
 				.put(PARAM_ResetPasswordToken, token)
 				.build());
 	}
@@ -152,4 +155,22 @@ public class WebuiURLs
 	{
 		return sysConfigBL.getBooleanValue(SYSCONFIG_IsCrossSiteUsageAllowed, false);
 	}
+
+	public String getAppApiUrl()
+	{
+		final String url = StringUtils.trimBlankToNull(sysConfigBL.getValue(SYSCONFIG_APP_API_URL));
+		if (url != null && !url.equals("-"))
+		{
+			return url;
+		}
+
+		final String frontendUrl = getFrontendURL();
+		if (frontendUrl != null)
+		{
+			return frontendUrl + "/app";
+		}
+
+		return null;
+	}
+
 }

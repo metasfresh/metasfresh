@@ -522,8 +522,6 @@ class DocumentListContainer extends Component {
       filters: { filtersActive },
     } = this.props;
 
-    indicatorState('pending');
-
     if (updateUri) {
       const updateQuery = {
         viewId: id,
@@ -534,6 +532,7 @@ class DocumentListContainer extends Component {
       updateUri(updateQuery);
     }
 
+    indicatorState({ state: 'pending', isModal });
     return fetchDocument({
       windowId,
       viewId: id,
@@ -584,13 +583,14 @@ class DocumentListContainer extends Component {
             });
           }
         }
-
-        indicatorState('saved');
       })
       .catch((e) => {
         // TODO: Should we somehow handle errors here ?
         // eslint-disable-next-line no-console
         console.error(e);
+      })
+      .finally(() => {
+        indicatorState({ state: 'saved', isModal });
       });
   };
 
@@ -600,6 +600,7 @@ class DocumentListContainer extends Component {
       viewId,
       viewData: { mapConfig },
       isModal,
+      addViewLocationData,
     } = this.props;
 
     locationSearchRequest({ windowId, viewId }).then(({ data }) => {
@@ -824,6 +825,7 @@ export default connect(
     setBreadcrumb,
     fetchQuickActions,
     deleteQuickActions,
+    addViewLocationData,
   },
   null,
   { forwardRef: true }

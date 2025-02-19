@@ -25,8 +25,10 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.order.OrderId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
+import de.metas.sales_region.SalesRegionId;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -122,17 +124,17 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		}
 
 		return "@OK@";
-	}	// doIt
+	}    // doIt
 
 	private I_C_AcctSchema_GL retrieveAcctSchemaGLOrNull(final AcctSchemaId acctSchemaId)
 	{
 		return acctSchemasRepo.retrieveAcctSchemaGLRecordOrNull(acctSchemaId);
-	}	// get
+	}    // get
 
 	private I_C_AcctSchema_Default retrieveAcctSchemaDefaultOrNull(final AcctSchemaId acctSchemaId)
 	{
 		return acctSchemasRepo.retrieveAcctSchemaDefaultsRecordOrNull(acctSchemaId);
-	}	// get
+	}    // get
 
 	private void copyGL(final I_C_AcctSchema targetAS, final AcctSchemaElementsMap targetElements)
 	{
@@ -148,7 +150,7 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		}
 
 		InterfaceWrapperHelper.save(target);
-	}	// copyGL
+	}    // copyGL
 
 	private void copyDefault(final I_C_AcctSchema targetAS, final AcctSchemaElementsMap targetElements)
 	{
@@ -164,7 +166,7 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		}
 
 		InterfaceWrapperHelper.save(target);
-	}	// copyDefault
+	}    // copyDefault
 
 	/**
 	 * @return target account
@@ -185,7 +187,7 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		int AD_OrgTrx_ID = 0;
 		int C_LocFrom_ID = 0;
 		int C_LocTo_ID = 0;
-		int C_SalesRegion_ID = 0;
+		SalesRegionId C_SalesRegion_ID = null;
 		int C_Project_ID = 0;
 		int C_Campaign_ID = 0;
 		int C_Activity_ID = 0;
@@ -193,6 +195,10 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		int User2_ID = 0;
 		int UserElement1_ID = 0;
 		int UserElement2_ID = 0;
+		OrderId C_OrderSO_ID = null;
+		int M_SectionCode_ID = 0;
+		int C_Harvesting_Calendar_ID=0;
+		int Harvesting_Year_ID=0;
 		//
 		// Active Elements
 		for (final AcctSchemaElement ase : targetElements)
@@ -223,6 +229,12 @@ public class AcctSchemaCopyAcct extends JavaProcess
 			{
 				C_Activity_ID = sourceAccount.getC_Activity_ID();
 			}
+
+			else if (elementType.equals(AcctSchemaElementType.SalesOrder))
+			{
+				C_OrderSO_ID = OrderId.ofRepoIdOrNull(sourceAccount.getC_OrderSO_ID());
+			}
+
 			else if (elementType.equals(AcctSchemaElementType.LocationFrom))
 			{
 				C_LocFrom_ID = sourceAccount.getC_LocFrom_ID();
@@ -245,7 +257,7 @@ public class AcctSchemaCopyAcct extends JavaProcess
 			}
 			else if (elementType.equals(AcctSchemaElementType.SalesRegion))
 			{
-				C_SalesRegion_ID = sourceAccount.getC_SalesRegion_ID();
+				C_SalesRegion_ID = SalesRegionId.ofRepoIdOrNull(sourceAccount.getC_SalesRegion_ID());
 			}
 			else if (elementType.equals(AcctSchemaElementType.UserList1))
 			{
@@ -271,15 +283,16 @@ public class AcctSchemaCopyAcct extends JavaProcess
 				M_Product_ID, C_BPartner_ID, AD_OrgTrx_ID,
 				C_LocFrom_ID, C_LocTo_ID, C_SalesRegion_ID,
 				C_Project_ID, C_Campaign_ID, C_Activity_ID,
-				User1_ID, User2_ID, UserElement1_ID, UserElement2_ID);
+				User1_ID, User2_ID, UserElement1_ID, UserElement2_ID,
+				OrderId.toRepoId(C_OrderSO_ID));
 
 		return AccountId.ofRepoId(account.getC_ValidCombination_ID());
-	}	// createAccount
+	}    // createAccount
 
 	public List<AccountInfo> getAccountInfos(final Object acctAwareModel)
 	{
 		final String tableName = InterfaceWrapperHelper.getModelTableName(acctAwareModel);
-		final POInfo poInfo = POInfo.getPOInfo(tableName);
+		final POInfo poInfo = POInfo.getPOInfoNotNull(tableName);
 
 		final List<AccountInfo> list = new ArrayList<>();
 		for (int columnIndex = 0; columnIndex < poInfo.getColumnCount(); columnIndex++)
@@ -316,4 +329,4 @@ public class AcctSchemaCopyAcct extends JavaProcess
 		@With
 		AccountId accountId;
 	}
-}	// AcctSchemaCopyAcct
+}    // AcctSchemaCopyAcct

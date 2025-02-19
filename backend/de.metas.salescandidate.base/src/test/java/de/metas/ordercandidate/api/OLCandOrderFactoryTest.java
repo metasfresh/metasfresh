@@ -57,10 +57,12 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_BPartner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -85,7 +87,7 @@ class OLCandOrderFactoryTest
 				Optional.empty()
 		));
 
-		SpringContextHolder.registerJUnitBean(new OLCandValidatorService(new OLCandRegistry(Optional.empty(), Optional.empty(), Optional.empty())));
+		SpringContextHolder.registerJUnitBean(new OLCandValidatorService(new OLCandSPIRegistry(Optional.empty(), Optional.empty(), Optional.empty())));
 
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		SpringContextHolder.registerJUnitBean(
@@ -137,7 +139,7 @@ class OLCandOrderFactoryTest
 		return CountryId.ofRepoId(record.getC_Country_ID());
 	}
 
-	private LocationId createLocation(final CountryId countryId, final String address1)
+	private LocationId createLocation(@NonNull final CountryId countryId, @Nullable final String address1)
 	{
 		final I_C_Location record = newInstance(I_C_Location.class);
 		record.setC_Country_ID(countryId.getRepoId());
@@ -147,9 +149,11 @@ class OLCandOrderFactoryTest
 	}
 
 	@Builder(builderMethodName = "documentLocation", builderClassName = "$DocumentLocationBuilder")
-	private DocumentLocation createDocumentLocation(CountryId countryId, String address1)
+	private DocumentLocation createDocumentLocation(@NonNull final CountryId countryId, final String address1)
 	{
 		final I_C_BPartner bpartner = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		bpartner.setInvoiceRule(X_C_BPartner.INVOICERULE_AfterDelivery);
+		bpartner.setPaymentRule(X_C_BPartner.PAYMENTRULE_Cash);
 		InterfaceWrapperHelper.saveRecord(bpartner);
 
 		final I_C_BPartner_Location bpLocation = newInstance(I_C_BPartner_Location.class);

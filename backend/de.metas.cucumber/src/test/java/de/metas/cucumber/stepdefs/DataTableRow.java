@@ -60,8 +60,11 @@ import java.util.function.Function;
 public class DataTableRow
 {
 	private final int lineNo; // introduced to improve logging/debugging
-	@NonNull private final Map<String, String> map;
-	@Nullable @Setter private String additionalRowIdentifierColumnName;
+	@NonNull
+	private final Map<String, String> map;
+	@Nullable
+	@Setter
+	private String additionalRowIdentifierColumnName;
 
 	DataTableRow(
 			final int lineNo,
@@ -81,7 +84,10 @@ public class DataTableRow
 		return new DataTableRow(-1, map);
 	}
 
-	public Map<String, String> asMap() {return map;}
+	public Map<String, String> asMap()
+	{
+		return map;
+	}
 
 	@NonNull
 	public String getAsString(@NonNull final String columnName)
@@ -246,7 +252,15 @@ public class DataTableRow
 	@NonNull
 	public Optional<StepDefDataIdentifier> getAsOptionalIdentifier(@NonNull final String columnName)
 	{
-		String string = map.get(columnName);
+		String string = null;
+		if (!columnName.startsWith("OPT.") && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
+		{
+			string = map.get("OPT." + columnName + "." + StepDefDataIdentifier.SUFFIX);
+		}
+		if (string == null && !columnName.startsWith("OPT."))
+		{
+			string = map.get("OPT." + columnName);
+		}
 		if (string == null && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
 		{
 			string = map.get(columnName + "." + StepDefDataIdentifier.SUFFIX);
@@ -254,6 +268,11 @@ public class DataTableRow
 		if (string == null && !columnName.startsWith("OPT.") && !columnName.endsWith(StepDefDataIdentifier.SUFFIX))
 		{
 			string = map.get("OPT." + columnName + "." + StepDefDataIdentifier.SUFFIX);
+		}
+
+		if (string == null)
+		{
+			string = map.get(columnName);
 		}
 
 		if (string == null || Check.isBlank(string))

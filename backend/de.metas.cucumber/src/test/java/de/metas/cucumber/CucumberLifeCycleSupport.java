@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,6 +24,7 @@ package de.metas.cucumber;
 
 import de.metas.CommandLineParser;
 import de.metas.ServerBoot;
+import de.metas.server.housekeep.SequenceCheckHouseKeepingTask;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.service.ClientId;
@@ -32,8 +33,6 @@ import org.compiere.model.I_EXP_Processor;
 import org.compiere.model.I_IMP_Processor;
 import org.compiere.util.Env;
 import org.springframework.util.SocketUtils;
-
-import java.io.File;
 
 import static de.metas.async.model.validator.Main.SYSCONFIG_ASYNC_INIT_DELAY_MILLIS;
 import static de.metas.async.processor.impl.planner.QueueProcessorPlanner.SYSCONFIG_POLLINTERVAL_MILLIS;
@@ -94,6 +93,8 @@ public class CucumberLifeCycleSupport
 			Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 
 			update_ReplicationProcessors();
+
+			SpringContextHolder.instance.getBean(SequenceCheckHouseKeepingTask.class).executeTask();
 
 			beforeAllMethodDone = true;
 		}

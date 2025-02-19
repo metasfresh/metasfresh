@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.TextStyle;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -220,6 +221,13 @@ public final class TranslatableStringBuilder
 			@Nullable final String defaultValueIfNull)
 	{
 		return value != null ? appendDate(value) : append(defaultValueIfNull);
+	}
+
+	public TranslatableStringBuilder appendTemporal(
+			@Nullable final Temporal value,
+			@Nullable final String defaultValueIfNull)
+	{
+		return value != null ? append(TranslatableStrings.temporal(value)) : append(defaultValueIfNull);
 	}
 
 	public TranslatableStringBuilder appendDateTime(@NonNull final Date value)

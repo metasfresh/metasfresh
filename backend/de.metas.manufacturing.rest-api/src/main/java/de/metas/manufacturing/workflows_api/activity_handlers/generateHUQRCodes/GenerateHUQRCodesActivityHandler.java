@@ -142,7 +142,7 @@ public class GenerateHUQRCodesActivityHandler implements WFActivityHandler
 	private QtyTU computeQtyTUsRequired(final @NonNull FinishedGoodsReceiveLine finishedGoodsReceiveLine, final I_M_HU_PI_Item_Product tuPIItemProduct)
 	{
 		final UomId uomId = UomId.ofRepoId(tuPIItemProduct.getC_UOM_ID());
-		final Quantity qtyCusPerTU = Quantitys.create(tuPIItemProduct.getQty(), uomId);
+		final Quantity qtyCusPerTU = Quantitys.of(tuPIItemProduct.getQty(), uomId);
 		final Quantity qtyCUs = uomConversionBL.convertQuantityTo(finishedGoodsReceiveLine.getQtyToReceive(), finishedGoodsReceiveLine.getProductId(), uomId);
 		return QtyTU.ofBigDecimal(qtyCUs.toBigDecimal().divide(qtyCusPerTU.toBigDecimal(), 0, RoundingMode.UP));
 	}

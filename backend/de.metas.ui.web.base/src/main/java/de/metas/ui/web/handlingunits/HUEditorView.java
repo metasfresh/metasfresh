@@ -14,6 +14,7 @@ import de.metas.ui.web.handlingunits.report.HUReportAwareView;
 import de.metas.ui.web.process.ProcessHandlerType;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.IView;
+import de.metas.ui.web.view.ViewFilterParameterLookupEvaluationCtx;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
 import de.metas.ui.web.view.ViewRowsOrderBy;
@@ -23,7 +24,6 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentPath;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.sql.SqlOptions;
@@ -36,7 +36,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.util.Evaluatee;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -246,24 +245,23 @@ public class HUEditorView implements IView, HUReportAwareView
 	}
 
 	@Override
-	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
+	public LookupValuesPage getFilterParameterDropdown(final String filterId, final String filterParameterName, final ViewFilterParameterLookupEvaluationCtx ctx)
 	{
 		return filterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
 				.orElseThrow(() -> new AdempiereException("No lookup source for filterId=" + filterId + ", parameterName=" + filterParameterName))
-				.findEntities(ctx)
-				.getValues();
+				.findEntities(ctx.toEvaluatee());
 	}
 
 	@Override
-	public LookupValuesPage getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
+	public LookupValuesPage getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final ViewFilterParameterLookupEvaluationCtx ctx)
 	{
 		return filterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
 				.orElseThrow(() -> new AdempiereException("No lookup source for filterId=" + filterId + ", parameterName=" + filterParameterName))
-				.findEntities(ctx, query);
+				.findEntities(ctx.toEvaluatee(), query);
 	}
 
 	@Override

@@ -1,6 +1,5 @@
 package de.metas.ui.web.process.adprocess;
 
-import de.metas.process.ClientOnlyProcess;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -17,6 +16,7 @@ import de.metas.ui.web.view.ViewRowIdsSelection;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
@@ -48,11 +48,10 @@ import java.util.stream.Stream;
 
 /**
  * An {@link JavaProcess} implementation template to be used by processes which are called from views.
- * !! Does not work when a record is displayed in the detail view !! 
+ * !! Does not work when a record is displayed in the detail view !!
  * <p>
  * Important: to check for preconditions, please implement {@link IProcessPrecondition} <b>and</b> override {@link #checkPreconditionsApplicable()}.
  */
-@ClientOnlyProcess
 public abstract class ViewBasedProcessTemplate extends JavaProcess
 {
 	private final IViewsRepository viewsRepo = SpringContextHolder.instance.getBean(IViewsRepository.class);
@@ -66,6 +65,10 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 	static final String PARAM_ViewSelectedIds = "$WEBUI_ViewSelectedIds";
 	@Param(parameterName = PARAM_ViewSelectedIds, mandatory = true)
 	private String p_WebuiViewSelectedIdsStr;
+	//
+	static final String PARAM_ViewOrderBys = "$WEBUI_ViewOrderBys";
+	@Param(parameterName = PARAM_ViewOrderBys)
+	private String p_WebuiViewOrderBysStr;
 	//
 	static final String PARAM_ParentViewId = "$WEBUI_ParentViewId";
 	@Param(parameterName = PARAM_ParentViewId)
@@ -85,15 +88,16 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 
 	private IView _view;
 	private ViewProfileId _viewProfileId;
+	private DocumentQueryOrderByList _viewOrderBys;
 	private ViewRowIdsSelection _viewRowIdsSelection;
 	private ViewRowIdsSelection _parentViewRowIdsSelection;
 	private ViewRowIdsSelection _childViewRowIdsSelection;
-	
+
 	protected ViewBasedProcessTemplate()
 	{
 		SpringContextHolder.instance.autowire(this);
 	}
-	
+
 	protected final IViewsRepository getViewsRepo()
 	{
 		return viewsRepo;
@@ -101,7 +105,7 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 
 	/**
 	 * Please implement {@link #checkPreconditionsApplicable()} instead of this.
-	 *
+	 * <p>
 	 * WARNING: The preconditions will be checked only if the extending class implements the {@link de.metas.process.IProcessPrecondition} interface.
 	 */
 	public final ProcessPreconditionsResolution checkPreconditionsApplicable(@SuppressWarnings("unused") @NonNull final IProcessPreconditionsContext context)
@@ -134,12 +138,14 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		Check.assumeNotEmpty(p_WebuiViewId, "Process parameter {} is set", PARAM_ViewId); // shall not happen
 		final IView view = viewsRepo.getView(p_WebuiViewId);
 
+		final DocumentQueryOrderByList viewOrderBys = DocumentQueryOrderByList.parse(p_WebuiViewOrderBysStr);
 		final ViewRowIdsSelection viewRowIdsSelection = ViewRowIdsSelection.of(view.getViewId(), DocumentIdsSelection.ofCommaSeparatedString(p_WebuiViewSelectedIdsStr));
 		final ViewRowIdsSelection parentViewRowIdsSelection = ViewRowIdsSelection.ofNullableStrings(p_WebuiParentViewId, p_WebuiParentViewSelectedIdsStr);
 		final ViewRowIdsSelection childViewRowIdsSelection = ViewRowIdsSelection.ofNullableStrings(p_WebuiChildViewId, p_WebuiChildViewSelectedIdsStr);
 
 		setViewInfos(ViewAsPreconditionsContext.builder()
 				.view(view)
+				.viewOrderBys(viewOrderBys)
 				.viewRowIdsSelection(viewRowIdsSelection)
 				.parentViewRowIdsSelection(parentViewRowIdsSelection)
 				.childViewRowIdsSelection(childViewRowIdsSelection)
@@ -156,10 +162,16 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 		return _viewProfileId;
 	}
 
+	protected final DocumentQueryOrderByList getViewOrderBys()
+	{
+		return _viewOrderBys != null ? _viewOrderBys : DocumentQueryOrderByList.EMPTY;
+	}
+
 	private void setViewInfos(@NonNull final ViewAsPreconditionsContext viewContext)
 	{
 		_view = viewContext.getView();
 		_viewProfileId = viewContext.getViewProfileId();
+		_viewOrderBys = viewContext.getViewOrderBys();
 		_viewRowIdsSelection = viewContext.getViewRowIdsSelection();
 		_parentViewRowIdsSelection = viewContext.getParentViewRowIdsSelection();
 		_childViewRowIdsSelection = viewContext.getChildViewRowIdsSelection();
@@ -233,8 +245,8 @@ public abstract class ViewBasedProcessTemplate extends JavaProcess
 
 	protected final DocumentIdsSelection getSelectedRowIds()
 	{
-		Check.assumeNotNull(_viewRowIdsSelection, "View loaded");
-		return _viewRowIdsSelection.getRowIds();
+		final ViewRowIdsSelection viewRowIdsSelection = Check.assumeNotNull(_viewRowIdsSelection, "View loaded");
+		return viewRowIdsSelection.getRowIds();
 	}
 
 	@OverridingMethodsMustInvokeSuper

@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.bpartner.BPartnerId;
+import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -105,9 +106,9 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	IInvoiceCandRecomputeTagger tagToRecompute();
 
-	boolean hasInvalidInvoiceCandidatesForTag(InvoiceCandRecomputeTag tag);
+	boolean hasInvalidInvoiceCandidates(@NonNull Collection<InvoiceCandidateId> invoiceCandidateIds);
 
-	boolean hasInvalidInvoiceCandidatesForSelection(@NonNull PInstanceId selectionId);
+	boolean hasInvalidInvoiceCandidatesForSelection(@NonNull InvoiceCandidateIdsSelection selectionId);
 
 	List<I_C_InvoiceLine> retrieveIlForIc(I_C_Invoice_Candidate invoiceCand);
 
@@ -176,7 +177,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * @return the number of invalidated candidates
 	 */
 	int invalidateCands(List<I_C_Invoice_Candidate> ics);
-	
+
 	void invalidateAllCands(Properties ctx, String trxName);
 
 	/**
@@ -242,8 +243,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 	/**
 	 * Updates the {@link I_C_Invoice_Candidate#COLUMNNAME_C_PaymentTerm_ID} of those candidates that don't have a payment term ID.
 	 * The ID those ICs are updated with is taken from the selected IC with the smallest {@code C_Invoice_Candidate_ID} that has a {@code C_PaymentTerm_ID}.
-	 *
-	 * task https://github.com/metasfresh/metasfresh/issues/3809
+	 * <p>
+	 * task <a href="https://github.com/metasfresh/metasfresh/issues/3809">https://github.com/metasfresh/metasfresh/issues/3809</a>
 	 */
 	void updateMissingPaymentTermIds(PInstanceId selectionId);
 
@@ -281,14 +282,16 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * <li>belong to an {@code M_InOut} record that is active and completed or closed (i.e. <b>not</b> reversed)</li>
 	 * </ul>
 	 *
-	 * task https://github.com/metasfresh/metasfresh/issues/1566
+	 * task <a href="https://github.com/metasfresh/metasfresh/issues/1566">https://github.com/metasfresh/metasfresh/issues/1566</a>
 	 */
 	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(InvoiceCandidateId invoiceCandidateId);
 
+	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsFor(@NonNull InvoiceCandidateId invoiceCandidateId);
+
 	/**
 	 * Returns the number of {@link I_C_InvoiceCandidate_InOutLine}s for a given invoiceCandidateId regardless of {@link I_M_InOut} status
-	 *
-	 * task https://github.com/metasfresh/metasfresh/issues/13376
+	 * <p>
+	 * task <a href="https://github.com/metasfresh/metasfresh/issues/13376">https://github.com/metasfresh/metasfresh/issues/13376</a>
 	 */
 	int countICIOLAssociations(final InvoiceCandidateId invoiceCandidateId);
 
@@ -416,4 +419,6 @@ public interface IInvoiceCandDAO extends ISingletonService
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
 
 	ImmutableList<I_C_InvoiceCandidate_InOutLine> retrieveICIOLForInvoiceCandidate(@NonNull I_C_Invoice_Candidate ic);
+
+	boolean isCompletedOrClosedInvoice(@NonNull InOutId inOutId);
 }

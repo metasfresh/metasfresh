@@ -25,11 +25,6 @@ package de.metas.callcenter.model;
  * #L%
  */
 
-
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.Properties;
-
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_R_Group;
@@ -38,6 +33,10 @@ import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.Properties;
 
 /**
  * @author Teo Sarca, teo.sarca@gmail.com
@@ -61,7 +60,7 @@ public class MRGroupProspect extends X_R_Group_Prospect
 				contact.getR_Group_ID(),
 				contact.getC_BPartner_ID(),
 				contact.getAD_User_ID()})
-				.firstOnly();
+				.firstOnly(MRGroupProspect.class);
 		return gp;
 	}
 	
@@ -75,7 +74,7 @@ public class MRGroupProspect extends X_R_Group_Prospect
 				request.getR_Group_ID(),
 				request.getC_BPartner_ID(),
 				request.getAD_User_ID()})
-				.firstOnly();
+				.firstOnly(MRGroupProspect.class);
 		return gp;
 	}
 	

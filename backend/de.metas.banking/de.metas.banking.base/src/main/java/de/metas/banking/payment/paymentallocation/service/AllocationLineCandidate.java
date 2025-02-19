@@ -19,7 +19,6 @@ import java.util.Objects;
  * Immutable allocation candidate.
  *
  * @author tsa
- *
  */
 @Value
 public class AllocationLineCandidate

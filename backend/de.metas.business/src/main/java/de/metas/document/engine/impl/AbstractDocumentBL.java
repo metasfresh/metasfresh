@@ -3,6 +3,8 @@ package de.metas.document.engine.impl;
 import com.google.common.base.Objects;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
+import de.metas.ad_reference.ADRefListItem;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
@@ -20,8 +22,6 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.TrxCallable;
@@ -54,9 +54,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 
 public abstract class AbstractDocumentBL implements IDocumentBL
 {
-	private static final transient Logger logger = LogManager.getLogger(AbstractDocumentBL.class);
+	private static final Logger logger = LogManager.getLogger(AbstractDocumentBL.class);
 
-	private final Supplier<Map<String, DocumentHandlerProvider>> docActionHandlerProvidersByTableName = Suppliers.memoize(() -> retrieveDocActionHandlerProvidersIndexedByTableName());
+	private final Supplier<Map<String, DocumentHandlerProvider>> docActionHandlerProvidersByTableName = Suppliers.memoize(AbstractDocumentBL::retrieveDocActionHandlerProvidersIndexedByTableName);
 
 	protected abstract String retrieveString(int adTableId, int recordId, final String columnName);
 
@@ -106,7 +106,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	{
 		final PerformanceMonitoringService perfMonServicew = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
 
-		return perfMonServicew.monitorSpan(
+		return perfMonServicew.monitor(
 				() -> processIt0(document, action, throwExIfNotSuccess),
 				DocactionAPMHelper.createMetadataFor(document, action));
 	}
@@ -150,7 +150,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			}
 		});
 
-		return processed != null && processed.booleanValue();
+		return processed != null && processed;
 	}
 
 	protected boolean processIt0(@NonNull final IDocument doc, final String action) throws Exception
@@ -363,7 +363,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	}
 
 	@Override
-	public String getDocumentNo(final Object model)
+	public String getDocumentNo(@NonNull final Object model)
 	{
 		//
 		// First try: document's DocumentNo if available
@@ -475,23 +475,22 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	@Override
 	public final Map<String, IDocActionItem> retrieveDocActionItemsIndexedByValue()
 	{
-		final IADReferenceDAO referenceDAO = Services.get(IADReferenceDAO.class);
+		final ADReferenceService adReferenceService = ADReferenceService.get();
 		final Properties ctx = Env.getCtx();
 		final String adLanguage = Env.getAD_Language(ctx);
 
-		final Map<String, IDocActionItem> docActionItemsByValue = referenceDAO.retrieveListItems(X_C_Order.DOCACTION_AD_Reference_ID) // 135
+		return adReferenceService.retrieveListItems(X_C_Order.DOCACTION_AD_Reference_ID) // 135
 				.stream()
 				.map(adRefListItem -> new DocActionItem(adRefListItem, adLanguage))
 				.sorted(Comparator.comparing(DocActionItem::toString))
 				.collect(GuavaCollectors.toImmutableMapByKey(IDocActionItem::getValue));
-		return docActionItemsByValue;
 	}
 
 	private static final class DocActionItem implements IDocActionItem
 	{
 		private final String value;
 		private final String caption;
-		private String description;
+		private final String description;
 
 		private DocActionItem(final ADRefListItem adRefListItem, final String adLanguage)
 		{

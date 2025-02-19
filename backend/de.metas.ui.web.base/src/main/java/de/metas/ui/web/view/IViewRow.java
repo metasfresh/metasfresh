@@ -71,7 +71,6 @@ public interface IViewRow
 
 	/**
 	 * @return a map with an entry for each of this row's fields.<br>
-	 *         Where the row has <code>null</code> values, the respective entry's value is {@link #NULL_JSON_VALUE}.
 	 */
 	ViewRowFieldNameAndJsonValues getFieldNameAndJsonValues();
 
@@ -85,6 +84,7 @@ public interface IViewRow
 		return getFieldNameAndJsonValues().getAsInt(fieldName, defaultValueIfNotFoundOrError);
 	}
 
+	@SuppressWarnings("unused")
 	default boolean getFieldValueAsBoolean(@NonNull final String fieldName, final boolean defaultValueIfNotFoundOrError)
 	{
 		return getFieldNameAndJsonValues().getAsBoolean(fieldName, defaultValueIfNotFoundOrError);
@@ -94,6 +94,13 @@ public interface IViewRow
 	{
 		return getFieldNameAndJsonValues().getAsJsonObject(fieldName, jsonOpts);
 	}
+
+	default Comparable<?> getFieldValueAsComparable(@NonNull final String fieldName, final JSONOptions jsonOpts)
+	{
+		return getFieldNameAndJsonValues().getAsComparable(fieldName, jsonOpts);
+	}
+
+	default boolean isFieldEmpty(@NonNull final String fieldName) {return getFieldNameAndJsonValues().isEmpty(fieldName);}
 
 	default Map<String, DocumentFieldWidgetType> getWidgetTypesByFieldName()
 	{
@@ -133,12 +140,14 @@ public interface IViewRow
 	default ITranslatableString getSingleColumnCaption() { return TranslatableStrings.empty(); }
 	// @formatter:on
 
-	/** @return a stream of given row and all it's included rows recursively */
+	/**
+	 * @return a stream of given row and all it's included rows recursively
+	 */
 	default Stream<IViewRow> streamRecursive()
 	{
 		return this.getIncludedRows()
 				.stream()
-				.map(includedRow -> includedRow.streamRecursive())
+				.map(IViewRow::streamRecursive)
 				.reduce(Stream.of(this), Stream::concat);
 	}
 }

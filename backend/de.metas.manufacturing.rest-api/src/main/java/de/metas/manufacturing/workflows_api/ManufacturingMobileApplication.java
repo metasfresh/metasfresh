@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.manufacturing.config.MobileUIManufacturingConfig;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
@@ -20,8 +19,8 @@ import de.metas.product.ResourceId;
 import de.metas.report.PrintCopies;
 import de.metas.resource.UserWorkstationService;
 import de.metas.user.UserId;
-import de.metas.workflow.rest_api.model.MobileApplicationId;
-import de.metas.workflow.rest_api.model.MobileApplicationInfo;
+import de.metas.mobile.application.MobileApplicationId;
+import de.metas.mobile.application.MobileApplicationInfo;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
@@ -54,8 +53,6 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	@VisibleForTesting
 	public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("mfg");
 
-	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.manufacturing.appName");
-
 	private final MobileUIManufacturingConfigRepository userProfileRepository;
 	private final ManufacturingRestService manufacturingRestService;
 	private final ManufacturingWorkflowLaunchersProvider wfLaunchersProvider;
@@ -79,12 +76,10 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
 
 	@Override
-	public @NonNull MobileApplicationInfo getApplicationInfo(@NonNull final UserId loggedUserId)
+	public @NonNull MobileApplicationInfo customizeApplicationInfo(@NonNull final MobileApplicationInfo applicationInfo, @NonNull final UserId loggedUserId)
 	{
 		final MobileUIManufacturingConfig config = userProfileRepository.getConfig(loggedUserId, ClientId.METASFRESH);
-		return MobileApplicationInfo.builder()
-				.id(APPLICATION_ID)
-				.caption(TranslatableStrings.adMessage(MSG_Caption))
+		return applicationInfo.toBuilder()
 				.requiresWorkstation(config.getIsScanResourceRequired().isTrue())
 				//.showFilters(true)
 				.build();
@@ -100,8 +95,8 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	@Nullable
 	private ResourceId getFilterByWorkstationId(final UserId userId)
 	{
-		final MobileApplicationInfo applicationInfo = getApplicationInfo(userId);
-		return applicationInfo.isRequiresWorkstation()
+		final MobileUIManufacturingConfig config = userProfileRepository.getConfig(userId, ClientId.METASFRESH);
+		return config.getIsScanResourceRequired().isTrue()
 				? userWorkstationService.getUserWorkstationId(userId).orElse(null)
 				: null;
 	}

@@ -191,6 +191,33 @@ public interface I_M_InOutLine
 	String COLUMNNAME_ConfirmedQty = "ConfirmedQty";
 
 	/**
+	 * Set Sales order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Order_ID (int C_Order_ID);
+
+	/**
+	 * Get Sales order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Order_ID();
+
+	@Nullable org.compiere.model.I_C_Order getC_Order();
+
+	void setC_Order(@Nullable org.compiere.model.I_C_Order C_Order);
+
+	ModelColumn<I_M_InOutLine, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_M_InOutLine.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_Order_ID = "C_Order_ID";
+
+	/**
 	 * Set Orderline.
 	 *
 	 * <br>Type: TableDir
@@ -214,6 +241,31 @@ public interface I_M_InOutLine
 
 	ModelColumn<I_M_InOutLine, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new ModelColumn<>(I_M_InOutLine.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
+
+	/**
+	 * Set Sales Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_OrderSO_ID (int C_OrderSO_ID);
+
+	/**
+	 * Get Sales Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_OrderSO_ID();
+
+	@Nullable org.compiere.model.I_C_Order getC_OrderSO();
+
+	void setC_OrderSO(@Nullable org.compiere.model.I_C_Order C_OrderSO);
+
+	ModelColumn<I_M_InOutLine, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new ModelColumn<>(I_M_InOutLine.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
 
 	/**
 	 * Set Project.

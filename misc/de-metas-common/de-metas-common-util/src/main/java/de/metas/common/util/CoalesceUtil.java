@@ -24,6 +24,7 @@ package de.metas.common.util;
 
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -39,12 +40,14 @@ public class CoalesceUtil
 	 * @return first not null value from list
 	 * @see #coalesce(Object...)
 	 */
+	@Contract("null, _ -> param2")
 	@Nullable
 	public <T> T coalesce(@Nullable final T value1, @Nullable final T value2)
 	{
 		return value1 == null ? value2 : value1;
 	}
 
+	@Contract("null, _ -> param2")
 	@NonNull
 	public <T> T coalesceNotNull(@Nullable final T value1, @Nullable final T value2)
 	{
@@ -65,7 +68,7 @@ public class CoalesceUtil
 	@NonNull
 	public <T> T coalesceNotNull(@Nullable final T value1, @NonNull final Supplier<T> value2Supplier)
 	{
-		if(value1 != null)
+		if (value1 != null)
 		{
 			return value1;
 		}
@@ -86,12 +89,14 @@ public class CoalesceUtil
 	 * @see #coalesce(Object...)
 	 */
 	// NOTE: this method is optimized for common usage
+	@Contract("null, null, _ -> param3")
 	@Nullable
 	public <T> T coalesce(@Nullable final T value1, @Nullable final T value2, @Nullable final T value3)
 	{
 		return value1 != null ? value1 : (value2 != null ? value2 : value3);
 	}
 
+	@Contract("null, null, _ -> param3")
 	@NonNull
 	public <T> T coalesceNotNull(@Nullable final T value1, @Nullable final T value2, @Nullable final T value3)
 	{
@@ -106,11 +111,12 @@ public class CoalesceUtil
 	/**
 	 * @return first not null value from list
 	 */
+	@Contract("null -> null")
 	@SafeVarargs
 	@Nullable
 	public <T> T coalesce(@Nullable final T... values)
 	{
-		if (values == null || values.length == 0)
+		if (values == null)
 		{
 			return null;
 		}
@@ -126,7 +132,7 @@ public class CoalesceUtil
 
 	@SafeVarargs
 	@NonNull
-	public <T> T coalesceNotNull(@Nullable final T... values)
+	public <T> T coalesceNotNull(@NonNull final T... values)
 	{
 		final T result = coalesce(values);
 		if (result == null)
@@ -156,6 +162,7 @@ public class CoalesceUtil
 				"At least one of the given suppliers={} has to return not-null", (Object[])values);
 	}
 
+	@SuppressWarnings("unused")
 	@SafeVarargs
 	@NonNull
 	public static <T> Optional<T> optionalOfFirstNonNullSupplied(@Nullable final Supplier<T>... values)
@@ -163,12 +170,31 @@ public class CoalesceUtil
 		return Optional.ofNullable(coalesceSuppliers(values));
 	}
 
-	
+	@NonNull
+	public static <T> Optional<T> optionalOfFirstNonNull(@Nullable final T value1, @Nullable final T value2)
+	{
+		return Optional.ofNullable(coalesce(value1, value2));
+	}
+
+	@NonNull
+	public static <T> Optional<T> optionalOfFirstNonNull(@Nullable final T value1, @Nullable final T value2, @Nullable final T value3)
+	{
+		return Optional.ofNullable(coalesce(value1, value2, value3));
+	}
+
+	@SuppressWarnings("unused")
+	@SafeVarargs
+	@NonNull
+	public static <T> Optional<T> optionalOfFirstNonNull(@Nullable final T... values)
+	{
+		return Optional.ofNullable(coalesce(values));
+	}
+
 	@SafeVarargs
 	@Nullable
 	public <T> T firstValidValue(@NonNull final Predicate<T> isValidPredicate, @Nullable final Supplier<T>... values)
 	{
-		if (values == null || values.length == 0)
+		if (values == null)
 		{
 			return null;
 		}
@@ -193,7 +219,7 @@ public class CoalesceUtil
 	 */
 	public int firstGreaterThanZero(final int... values)
 	{
-		if (values == null || values.length == 0)
+		if (values == null)
 		{
 			return 0;
 		}
@@ -207,17 +233,58 @@ public class CoalesceUtil
 		return 0;
 	}
 
-	@SafeVarargs
-	public int firstGreaterThanZeroSupplier(@NonNull final Supplier<Integer>... suppliers)
+	/**
+	 * Analog to {@link #coalesce(Object...)}, returns the first <code>int</code> value that is greater than 0.
+	 *
+	 * @return first greater than zero value or zero
+	 */
+	@NonNull
+	public BigDecimal firstGreaterThanZero(@Nullable final BigDecimal... values)
 	{
-		if (suppliers == null || suppliers.length == 0)
+		if (values == null || values.length == 0)
+		{
+			return BigDecimal.ZERO;
+		}
+		for (final BigDecimal value : values)
+		{
+			if (value != null && value.signum() > 0)
+			{
+				return value;
+			}
+		}
+		return BigDecimal.ZERO;
+	}
+
+	@SafeVarargs
+	@NonNull
+	public BigDecimal firstGreaterThanZeroBigDecimalSupplier(@NonNull final Supplier<BigDecimal>... suppliers)
+	{
+		if (suppliers == null)
+		{
+			return BigDecimal.ZERO;
+		}
+		for (final Supplier<BigDecimal> supplier : suppliers)
+		{
+			final BigDecimal value = supplier.get();
+			if (value != null && value.signum() > 0)
+			{
+				return value;
+			}
+		}
+		return BigDecimal.ZERO;
+	}
+
+	@SafeVarargs
+	public int firstGreaterThanZeroIntegerSupplier(@NonNull final Supplier<Integer>... suppliers)
+	{
+		if (suppliers == null)
 		{
 			return 0;
 		}
 		for (final Supplier<Integer> supplier : suppliers)
 		{
 			final Integer value = supplier.get();
-			if (value > 0)
+			if (value != null && value > 0)
 			{
 				return value;
 			}
@@ -237,16 +304,17 @@ public class CoalesceUtil
 	@Nullable
 	public String firstNotBlank(@Nullable final String... values)
 	{
-		if(values == null || values.length == 0)
+		if(values == null)
 		{
 			return null;
 		}
 
 		for (final String value : values)
 		{
-			if (value != null && EmptyUtil.isNotBlank(value))
+			final String valueNorm = StringUtils.trimBlankToNull(value);
+			if (valueNorm != null)
 			{
-				return value.trim();
+				return valueNorm;
 			}
 		}
 
@@ -257,33 +325,45 @@ public class CoalesceUtil
 	@SafeVarargs
 	public String firstNotBlank(@Nullable final Supplier<String>... valueSuppliers)
 	{
-		if(valueSuppliers == null || valueSuppliers.length == 0)
+		if(valueSuppliers == null)
 		{
 			return null;
 		}
 
 		for (final Supplier<String> valueSupplier : valueSuppliers)
 		{
-			if(valueSupplier == null)
+			if (valueSupplier == null)
 			{
 				continue;
 			}
 
 			final String value = valueSupplier.get();
-			if (value != null && EmptyUtil.isNotBlank(value))
+			final String valueNorm = StringUtils.trimBlankToNull(value);
+			if (valueNorm != null)
 			{
-				return value.trim();
+				return valueNorm;
 			}
 		}
 
 		return null;
 	}
 
+	public boolean isAllNotNulls(final Object... values)
+	{
+		for (final Object value : values)
+		{
+			if (value == null)
+			{
+				return false;
+			}
+		}
 
+		return true;
+	}
 
 	public int countNotNulls(@Nullable final Object... values)
 	{
-		if (values == null || values.length <= 0)
+		if (values == null || values.length == 0)
 		{
 			return 0;
 		}
@@ -303,7 +383,7 @@ public class CoalesceUtil
 	@NonNull
 	public BigDecimal firstPositiveOrZero(final BigDecimal... values)
 	{
-		if (values == null || values.length == 0)
+		if (values == null)
 		{
 			return BigDecimal.ZERO;
 		}

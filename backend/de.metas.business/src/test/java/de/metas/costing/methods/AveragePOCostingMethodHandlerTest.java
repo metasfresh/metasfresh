@@ -5,6 +5,7 @@ import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.TaxCorrectionType;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.business.BusinessTestHelper;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailCreateRequest;
@@ -28,13 +29,16 @@ import de.metas.costing.impl.CurrentCostsRepository;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.money.CurrencyId;
+import de.metas.order.costs.OrderCostService;
 import de.metas.order.model.I_M_Product_Category;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -55,13 +59,16 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -102,18 +109,19 @@ public class AveragePOCostingMethodHandlerTest
 	private AcctSchema acctSchema;
 	private ProductId productId;
 
+	private static final ZoneId ZONE_ID = ZoneId.of("Europe/Berlin");
+
 	@BeforeEach
 	public void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
 
-		orgId1 = BusinessTestHelper.createOrgWithTimeZone();
-		// orgId2 = BusinessTestHelper.createOrgWithTimeZone();
+		orgId1 = AdempiereTestHelper.createOrgWithTimeZone(ZONE_ID);
 
 		final Properties ctx = Env.getCtx();
 		Env.setClientId(ctx, ClientId.METASFRESH);
 
-		costElementRepo = new CostElementRepository();
+		costElementRepo = new CostElementRepository(ADReferenceService.newMocked());
 		currentCostsRepo = new CurrentCostsRepository(costElementRepo);
 		final CostDetailRepository costDetailsRepo = new CostDetailRepository();
 		final CostDetailService costDetailsService = new CostDetailService(costDetailsRepo, costElementRepo);
@@ -122,7 +130,10 @@ public class AveragePOCostingMethodHandlerTest
 				currentCostsRepo,
 				costDetailsService);
 
-		handler = new AveragePOCostingMethodHandler(handlerUtils);
+		handler = new AveragePOCostingMethodHandler(
+				handlerUtils,
+				MatchInvoiceService.newInstanceForUnitTesting(),
+				OrderCostService.newInstanceForUnitTesting());
 
 		euroCurrencyId = PlainCurrencyDAO.createCurrency(CurrencyCode.EUR).getId();
 		eachUOM = BusinessTestHelper.createUomEach();
@@ -132,6 +143,11 @@ public class AveragePOCostingMethodHandlerTest
 		acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
 
 		productId = createProduct();
+	}
+
+	CostAmountAndQtyDetailed mainAmtAndQty(String amt, String qty)
+	{
+		return CostAmountAndQtyDetailed.of(CostAmount.of(new BigDecimal(amt), euroCurrencyId), Quantity.of(qty, eachUOM), CostAmountType.MAIN);
 	}
 
 	private CostElement createAveragePOCostElement()
@@ -167,6 +183,7 @@ public class AveragePOCostingMethodHandlerTest
 		acctSchemaGL.setIncomeSummary_Acct(1);
 		acctSchemaGL.setRetainedEarning_Acct(1);
 		acctSchemaGL.setPPVOffset_Acct(1);
+		acctSchemaGL.setCashRounding_Acct(1);
 		saveRecord(acctSchemaGL);
 
 		final I_C_AcctSchema_Default acctSchemaDefault = newInstance(I_C_AcctSchema_Default.class);
@@ -177,8 +194,7 @@ public class AveragePOCostingMethodHandlerTest
 		acctSchemaDefault.setUnrealizedLoss_Acct(1);
 		saveRecord(acctSchemaDefault);
 
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(acctSchemaRecord.getC_AcctSchema_ID());
-		return acctSchemaId;
+		return AcctSchemaId.ofRepoId(acctSchemaRecord.getC_AcctSchema_ID());
 	}
 
 	private ProductId createProduct()
@@ -203,16 +219,32 @@ public class AveragePOCostingMethodHandlerTest
 		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 
+	private static Instant instant(final String localDate)
+	{
+		return LocalDate.parse(localDate).atStartOfDay(ZONE_ID).toInstant();
+	}
+
 	private CostDetailCreateRequestBuilder costDetailCreateRequest()
 	{
 		return CostDetailCreateRequest.builder()
 				.acctSchemaId(acctSchemaId)
 				.clientId(ClientId.METASFRESH)
-				.orgId(OrgId.ofRepoId(1))
+				.orgId(orgId1)
 				.productId(productId)
 				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
 				.costElement(costElement)
-				.date(LocalDate.parse("2020-08-13"));
+				.date(instant("2020-08-13"));
+	}
+
+	@NonNull
+	private CurrentCost getCurrentCost(final OrgId orgId)
+	{
+		final CurrentCost currentCost = getCurrentCostOrNull(orgId);
+		if (currentCost == null)
+		{
+			throw new AssertionError("No current costs found for " + orgId);
+		}
+		return currentCost;
 	}
 
 	private CurrentCost getCurrentCostOrNull(final OrgId orgId)
@@ -260,12 +292,11 @@ public class AveragePOCostingMethodHandlerTest
 								.explicitCostPrice(null)
 								.qty(Quantity.of(10, eachUOM))
 								.build())
-				.get();
+				.getSingleResult();
 
-		assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
-		assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+		assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "10"));
 
-		final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+		final CurrentCost currentCost = getCurrentCost(orgId1);
 		assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
 		assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("0");
 	}
@@ -282,12 +313,11 @@ public class AveragePOCostingMethodHandlerTest
 								.amt(CostAmount.of(100, euroCurrencyId))
 								.qty(Quantity.of(0, eachUOM))
 								.build())
-				.get();
+				.getSingleResult();
 
-		assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
-		assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+		assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "0"));
 
-		final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+		final CurrentCost currentCost = getCurrentCost(orgId1);
 		assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
 		assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("0");
 	}
@@ -305,12 +335,11 @@ public class AveragePOCostingMethodHandlerTest
 								.explicitCostPrice(CostAmount.of(100, euroCurrencyId))
 								.qty(Quantity.of(0, eachUOM))
 								.build())
-				.get();
+				.getSingleResult();
 
-		assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
-		assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+		assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "0"));
 
-		final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+		final CurrentCost currentCost = getCurrentCost(orgId1);
 		assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
 		assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("100");
 	}
@@ -329,12 +358,11 @@ public class AveragePOCostingMethodHandlerTest
 									.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
 									.qty(Quantity.of(0, eachUOM))
 									.build())
-					.get();
+					.getSingleResult();
 
-			assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "0"));
 
-			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+			final CurrentCost currentCost = getCurrentCost(orgId1);
 			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
 			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
 		}
@@ -348,12 +376,11 @@ public class AveragePOCostingMethodHandlerTest
 									.explicitCostPrice(CostAmount.of(15, euroCurrencyId))
 									.qty(Quantity.of(0, eachUOM))
 									.build())
-					.get();
+					.getSingleResult();
 
-			assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "0"));
 
-			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+			final CurrentCost currentCost = getCurrentCost(orgId1);
 			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
 			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("15");
 		}
@@ -373,12 +400,11 @@ public class AveragePOCostingMethodHandlerTest
 									.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
 									.qty(Quantity.of(10, eachUOM))
 									.build())
-					.get();
+					.getSingleResult();
 
-			assertThat(costDetailResult.getAmt().getValue()).isEqualTo("100");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("100", "10"));
 
-			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+			final CurrentCost currentCost = getCurrentCost(orgId1);
 			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
 			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
 		}
@@ -392,12 +418,11 @@ public class AveragePOCostingMethodHandlerTest
 									.explicitCostPrice(CostAmount.of(15, euroCurrencyId))
 									.qty(Quantity.of(0, eachUOM))
 									.build())
-					.get();
+					.getSingleResult();
 
-			assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "0"));
 
-			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+			final CurrentCost currentCost = getCurrentCost(orgId1);
 			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
 
 			// The cost price is changed even if existing qty
@@ -420,12 +445,11 @@ public class AveragePOCostingMethodHandlerTest
 									.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
 									.qty(Quantity.of(10, eachUOM))
 									.build())
-					.get();
+					.getSingleResult();
 
-			assertThat(costDetailResult.getAmt().getValue()).isEqualTo("100");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("100", "10"));
 
-			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+			final CurrentCost currentCost = getCurrentCost(orgId1);
 			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
 			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
 		}
@@ -439,12 +463,11 @@ public class AveragePOCostingMethodHandlerTest
 									.explicitCostPrice(CostAmount.of(15, euroCurrencyId))
 									.qty(Quantity.of(10, eachUOM))
 									.build())
-					.get();
+					.getSingleResult();
 
-			assertThat(costDetailResult.getAmt().getValue()).isEqualTo("150");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("150", "10"));
 
-			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+			final CurrentCost currentCost = getCurrentCost(orgId1);
 			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("20");
 
 			// The cost price is changed even if existing qty
@@ -452,7 +475,6 @@ public class AveragePOCostingMethodHandlerTest
 			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("15");
 		}
 	}
-
 
 	@Test
 	public void initCost_Then_Init_Qty()
@@ -468,12 +490,11 @@ public class AveragePOCostingMethodHandlerTest
 									.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
 									.qty(Quantity.of(0, eachUOM))
 									.build())
-					.get();
+					.getSingleResult();
 
-			assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "0"));
 
-			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+			final CurrentCost currentCost = getCurrentCost(orgId1);
 			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
 			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
 		}
@@ -486,13 +507,12 @@ public class AveragePOCostingMethodHandlerTest
 									.amt(CostAmount.of(0, euroCurrencyId))
 									.qty(Quantity.of(10, eachUOM))
 									.build())
-					.get();
+					.getSingleResult();
 
 			// The amount is the current explicit cost multiplied by the existing qty
-			assertThat(costDetailResult.getAmt().getValue()).isEqualTo("100");
-			assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+			assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("100", "10"));
 
-			final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+			final CurrentCost currentCost = getCurrentCost(orgId1);
 			assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
 			// The cost price was not changed because it was not explicit
 			assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
@@ -517,12 +537,11 @@ public class AveragePOCostingMethodHandlerTest
 										.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
 										.qty(Quantity.of(0, eachUOM))
 										.build())
-						.get();
+						.getSingleResult();
 
-				assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "0"));
 
-				final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
 				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
 			}
@@ -535,12 +554,11 @@ public class AveragePOCostingMethodHandlerTest
 										.amt(CostAmount.of(0, euroCurrencyId)) // to be calculated
 										.qty(Quantity.of(-10, eachUOM))
 										.build())
-						.get();
+						.getSingleResult();
 
-				assertThat(costDetailResult.getAmt().getValue()).isEqualTo("-100");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("-10");
+				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("-100", "-10"));
 
-				final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
 				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
 			}
@@ -553,12 +571,11 @@ public class AveragePOCostingMethodHandlerTest
 										.amt(CostAmount.of(10 * 15, euroCurrencyId))
 										.qty(Quantity.of(10, eachUOM))
 										.build())
-						.get();
+						.getSingleResult();
 
-				assertThat(costDetailResult.getAmt().getValue()).isEqualTo("150");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("150", "10"));
 
-				final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
 				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("15");
 			}
@@ -572,12 +589,11 @@ public class AveragePOCostingMethodHandlerTest
 										.amt(CostAmount.of(+100, euroCurrencyId))
 										.qty(Quantity.of(+10, eachUOM))
 										.build())
-						.get();
+						.getSingleResult();
 
-				assertThat(costDetailResult.getAmt().getValue()).isEqualTo("100");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("100", "10"));
 
-				final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("20");
 				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("12.5"); // (10x15 + 10x10) / (10 + 10)
 			}
@@ -598,12 +614,11 @@ public class AveragePOCostingMethodHandlerTest
 										.explicitCostPrice(CostAmount.of(10, euroCurrencyId))
 										.qty(Quantity.of(0, eachUOM))
 										.build())
-						.get();
+						.getSingleResult();
 
-				assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("0");
+				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "0"));
 
-				final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
 				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
 			}
@@ -616,12 +631,11 @@ public class AveragePOCostingMethodHandlerTest
 										.amt(CostAmount.of(0, euroCurrencyId)) // to be calculated
 										.qty(Quantity.of(-10, eachUOM))
 										.build())
-						.get();
+						.getSingleResult();
 
-				assertThat(costDetailResult.getAmt().getValue()).isEqualTo("-100");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("-10");
+				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("-100", "-10"));
 
-				final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
 				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
 			}
@@ -635,12 +649,11 @@ public class AveragePOCostingMethodHandlerTest
 										.amt(CostAmount.of(+100, euroCurrencyId))
 										.qty(Quantity.of(+10, eachUOM))
 										.build())
-						.get();
+						.getSingleResult();
 
-				assertThat(costDetailResult.getAmt().getValue()).isEqualTo("100");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("100", "10"));
 
-				final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
 				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("10");
 			}
@@ -653,12 +666,11 @@ public class AveragePOCostingMethodHandlerTest
 										.amt(CostAmount.of(10 * 15, euroCurrencyId))
 										.qty(Quantity.of(10, eachUOM))
 										.build())
-						.get();
+						.getSingleResult();
 
-				assertThat(costDetailResult.getAmt().getValue()).isEqualTo("150");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("150", "10"));
 
-				final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("20");
 				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("12.5"); // (10x15 + 10x10) / (10 + 10)
 			}
@@ -678,12 +690,11 @@ public class AveragePOCostingMethodHandlerTest
 										.amt(CostAmount.of(0, euroCurrencyId)) // to be calculated
 										.qty(Quantity.of(-100, eachUOM))
 										.build())
-						.get();
+						.getSingleResult();
 
-				assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("-100");
+				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "-100"));
 
-				final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("0");
 				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("0");
 			}
@@ -696,12 +707,11 @@ public class AveragePOCostingMethodHandlerTest
 										.amt(CostAmount.of(10 * 15, euroCurrencyId))
 										.qty(Quantity.of(10, eachUOM))
 										.build())
-						.get();
+						.getSingleResult();
 
-				assertThat(costDetailResult.getAmt().getValue()).isEqualTo("150");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("10");
+				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("150", "10"));
 
-				final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("10");
 				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("15");
 			}
@@ -715,12 +725,11 @@ public class AveragePOCostingMethodHandlerTest
 										.amt(CostAmount.of(0, euroCurrencyId))
 										.qty(Quantity.of(+100, eachUOM))
 										.build())
-						.get();
+						.getSingleResult();
 
-				assertThat(costDetailResult.getAmt().getValue()).isEqualTo("0");
-				assertThat(costDetailResult.getQty().toBigDecimal()).isEqualTo("100");
+				assertThat(costDetailResult.getAmtAndQty()).isEqualTo(mainAmtAndQty("0", "100"));
 
-				final CurrentCost currentCost = getCurrentCostOrNull(orgId1);
+				final CurrentCost currentCost = getCurrentCost(orgId1);
 				assertThat(currentCost.getCurrentQty().toBigDecimal()).isEqualTo("110");
 				assertThat(currentCost.getCostPrice().toBigDecimal()).isEqualTo("1.3636"); // (10x15 + 100x0) / (10 + 100) = 150 / 110 = 1.3636
 			}
@@ -739,24 +748,24 @@ public class AveragePOCostingMethodHandlerTest
 				assertThat(getCurrentCostOrNull(orgId1)).isNull();
 
 				final MoveCostsResult result = handler.createMovementCosts(MoveCostsRequest.builder()
-																				   .acctSchemaId(acctSchemaId)
-																				   .clientId(ClientId.METASFRESH)
-																				   .costElement(costElement)
-																				   .date(LocalDate.parse("2020-08-14"))
-																				   .productId(productId)
-																				   .attributeSetInstanceId(AttributeSetInstanceId.NONE)
-																				   .qtyToMove(Quantity.of(100, eachUOM))
-																				   //
-																				   .outboundOrgId(orgId1)
-																				   .outboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
-																				   //
-																				   .inboundOrgId(orgId1)
-																				   .inboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
-																				   //
-																				   .build());
+						.acctSchemaId(acctSchemaId)
+						.clientId(ClientId.METASFRESH)
+						.costElement(costElement)
+						.date(instant("2020-08-14"))
+						.productId(productId)
+						.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+						.qtyToMove(Quantity.of(100, eachUOM))
+						//
+						.outboundOrgId(orgId1)
+						.outboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
+						//
+						.inboundOrgId(orgId1)
+						.inboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
+						//
+						.build());
 
-				assertThat(result.getOutboundAmountToPost(acctSchema).getValue()).isEqualTo("0");
-				assertThat(result.getInboundAmountToPost(acctSchema).getValue()).isEqualTo("0");
+				assertThat(result.getOutboundAmountToPost(acctSchema).toBigDecimal()).isEqualTo("0");
+				assertThat(result.getInboundAmountToPost(acctSchema).toBigDecimal()).isEqualTo("0");
 			}
 
 			@Test
@@ -773,24 +782,24 @@ public class AveragePOCostingMethodHandlerTest
 								.build());
 
 				final MoveCostsResult result = handler.createMovementCosts(MoveCostsRequest.builder()
-																				   .acctSchemaId(acctSchemaId)
-																				   .clientId(ClientId.METASFRESH)
-																				   .costElement(costElement)
-																				   .date(LocalDate.parse("2020-08-14"))
-																				   .productId(productId)
-																				   .attributeSetInstanceId(AttributeSetInstanceId.NONE)
-																				   .qtyToMove(Quantity.of(100, eachUOM))
-																				   //
-																				   .outboundOrgId(orgId1)
-																				   .outboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
-																				   //
-																				   .inboundOrgId(orgId1)
-																				   .inboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
-																				   //
-																				   .build());
+						.acctSchemaId(acctSchemaId)
+						.clientId(ClientId.METASFRESH)
+						.costElement(costElement)
+						.date(instant("2020-08-14"))
+						.productId(productId)
+						.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+						.qtyToMove(Quantity.of(100, eachUOM))
+						//
+						.outboundOrgId(orgId1)
+						.outboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
+						//
+						.inboundOrgId(orgId1)
+						.inboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
+						//
+						.build());
 
-				assertThat(result.getOutboundAmountToPost(acctSchema).getValue()).isEqualTo("0");
-				assertThat(result.getInboundAmountToPost(acctSchema).getValue()).isEqualTo("0");
+				assertThat(result.getOutboundAmountToPost(acctSchema).toBigDecimal()).isEqualTo("0");
+				assertThat(result.getInboundAmountToPost(acctSchema).toBigDecimal()).isEqualTo("0");
 			}
 
 			@Test
@@ -808,24 +817,24 @@ public class AveragePOCostingMethodHandlerTest
 								.build());
 
 				final MoveCostsResult result = handler.createMovementCosts(MoveCostsRequest.builder()
-																				   .acctSchemaId(acctSchemaId)
-																				   .clientId(ClientId.METASFRESH)
-																				   .costElement(costElement)
-																				   .date(LocalDate.parse("2020-08-14"))
-																				   .productId(productId)
-																				   .attributeSetInstanceId(AttributeSetInstanceId.NONE)
-																				   .qtyToMove(Quantity.of(100, eachUOM))
-																				   //
-																				   .outboundOrgId(orgId1)
-																				   .outboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
-																				   //
-																				   .inboundOrgId(orgId1)
-																				   .inboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
-																				   //
-																				   .build());
+						.acctSchemaId(acctSchemaId)
+						.clientId(ClientId.METASFRESH)
+						.costElement(costElement)
+						.date(instant("2020-08-14"))
+						.productId(productId)
+						.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+						.qtyToMove(Quantity.of(100, eachUOM))
+						//
+						.outboundOrgId(orgId1)
+						.outboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
+						//
+						.inboundOrgId(orgId1)
+						.inboundDocumentRef(CostingDocumentRef.ofOutboundMovementLineId(1))
+						//
+						.build());
 
-				assertThat(result.getOutboundAmountToPost(acctSchema).getValue()).isEqualTo("-1300");
-				assertThat(result.getInboundAmountToPost(acctSchema).getValue()).isEqualTo("+1300");
+				assertThat(result.getOutboundAmountToPost(acctSchema).toBigDecimal()).isEqualTo("-1300");
+				assertThat(result.getInboundAmountToPost(acctSchema).toBigDecimal()).isEqualTo("+1300");
 			}
 
 		}

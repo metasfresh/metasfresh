@@ -1,5 +1,6 @@
 package de.metas.manufacturing.workflows_api.activity_handlers.issue;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -18,6 +19,7 @@ import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.i18n.AdMessageKey;
+import de.metas.logging.LogManager;
 import de.metas.manufacturing.job.model.IssueOnlyWhatWasReceivedConfig;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
@@ -28,13 +30,13 @@ import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
 import de.metas.manufacturing.workflows_api.ManufacturingRestService;
 import de.metas.material.planning.pporder.DraftPPOrderQuantities;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.material.planning.pporder.PPRoutingActivityType;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
@@ -54,10 +56,12 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order_BOMLine;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -69,8 +73,9 @@ import java.util.function.Function;
 @RequiredArgsConstructor
 public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFActivityHandler, UserConfirmationSupport
 {
+	private static final Logger logger = LogManager.getLogger(RawMaterialsIssueOnlyWhatWasReceivedActivityHandler.class);
+
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("manufacturing.rawMaterialsIssueOnlyWhatWasReceived");
-	private static final AdMessageKey NO_QTY_TO_ISSUE = AdMessageKey.of("de.metas.manufacturing.NO_QTY_TO_ISSUE");
 	private static final AdMessageKey NOTHING_WAS_RECEIVED_YET = AdMessageKey.of("de.metas.manufacturing.NOTHING_WAS_RECEIVED_YET");
 
 	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
@@ -111,7 +116,7 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 	@Override
 	public WFProcess userConfirmed(final UserConfirmationRequest request)
 	{
-		final ManufacturingJob job = issueWhatWasReceived(request);
+		final ManufacturingJob job = issueForWhatWasReceived(request);
 
 		final ManufacturingJobActivityId jobActivityId = request.getWfActivity().getId().getAsId(ManufacturingJobActivityId.class);
 		final ManufacturingJob updatedJob = jobService.withActivityCompleted(job, jobActivityId);
@@ -120,7 +125,7 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 	}
 
 	@NonNull
-	private ManufacturingJob issueWhatWasReceived(@NonNull final UserConfirmationRequest request)
+	private ManufacturingJob issueForWhatWasReceived(@NonNull final UserConfirmationRequest request)
 	{
 		final ManufacturingJob job = ManufacturingMobileApplication.getManufacturingJob(request.getWfProcess());
 		final IssueWhatWasReceivedRequest.IssueWhatWasReceivedRequestBuilder requestBuilder = initIssueRequest(job, request);
@@ -133,26 +138,52 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 				.flatMap(rawMaterialsIssue -> rawMaterialsIssue.getLines().stream())
 				.map(requestBuilder::line)
 				.map(IssueWhatWasReceivedRequest.IssueWhatWasReceivedRequestBuilder::build)
-				.forEach(this::issueWhatWasReceived);
+				.forEach(this::issueForWhatWasReceived);
 
 		return jobService.recomputeQtyToIssueForSteps(job.getPpOrderId());
 	}
 
-	private void issueWhatWasReceived(@NonNull final IssueWhatWasReceivedRequest request)
+	private void issueForWhatWasReceived(@NonNull final IssueWhatWasReceivedRequest request)
 	{
+		final I_PP_Order_BOMLine ppOrderBomLine = getBomLine(request.getLine());
+		if (!BOMComponentIssueMethod.IssueOnlyForReceived.getCode().equals(ppOrderBomLine.getIssueMethod()))
+		{
+			Loggables.withLogger(logger, Level.WARN)
+					.addLog("Skipping PP_Order_BOMLine with ID {} due issueMethod = {}!",
+							ppOrderBomLine.getPP_Order_BOMLine_ID(),
+							ppOrderBomLine.getIssueMethod());
+			return;
+		}
+
 		final Quantity quantityToIssueForWhatWasReceived = ppOrderBOMBL
-				.computeQtyToIssueBasedOnFinishedGoodReceipt(getBomLine(request.getLine()),
+				.computeQtyToIssueBasedOnFinishedGoodReceipt(ppOrderBomLine,
 															 uomDao.getById(request.getLineQtyToIssue().getUomId()),
 															 request.getDraftQtys());
 
 		final Quantity qtyToIssue = request.getLineQtyToIssue().min(quantityToIssueForWhatWasReceived);
 		if (qtyToIssue.signum() <= 0)
 		{
-			throw new AdempiereException(NO_QTY_TO_ISSUE);
+			Loggables.withLogger(logger, Level.WARN)
+					.addLog("Skipping PP_Order_BOMLine with ID {} due to qtyToIssue = 0!"
+									+ " LineQtyToIssue = {},"
+									+ " quantityToIssueForWhatWasReceived = {}",
+							ppOrderBomLine.getPP_Order_BOMLine_ID(),
+							request.getLineQtyToIssue().toBigDecimal(),
+							quantityToIssueForWhatWasReceived.toBigDecimal());
+			return;
 		}
 
 		final ProductId productId = request.getLine().getProductId();
-		issue(request.getPpOrderId(), productId, qtyToIssue, request.getLoadSourceHUsForProductId().apply(productId));
+		final SourceHUsCollection sourceHUsCollection = request.getLoadSourceHUsForProductId().apply(productId);
+		if (sourceHUsCollection.getHusThatAreFlaggedAsSource().isEmpty())
+		{
+			Loggables.withLogger(logger, Level.WARN)
+					.addLog("Skipping PP_Order_BOMLine with ID {} as there are no source HUs matching the product!",
+							ppOrderBomLine.getPP_Order_BOMLine_ID());
+			return;
+		}
+
+		issue(request.getPpOrderId(), productId, qtyToIssue, sourceHUsCollection);
 	}
 
 	@NonNull
@@ -245,7 +276,7 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 				.createIssues(extractedCUs)
 				.stream()
 				.map(ppOrderQty -> {
-					final Quantity qtyIssued = Quantitys.create(ppOrderQty.getQty(), UomId.ofRepoId(ppOrderQty.getC_UOM_ID()));
+					final Quantity qtyIssued = Quantitys.of(ppOrderQty.getQty(), UomId.ofRepoId(ppOrderQty.getC_UOM_ID()));
 					return PPOrderIssueScheduleCreateRequest.builder()
 							.ppOrderId(ppOrderId)
 							.ppOrderBOMLineId(PPOrderBOMLineId.ofRepoId(ppOrderQty.getPP_Order_BOMLine_ID()))
@@ -289,7 +320,8 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 			@NonNull final ManufacturingJob job,
 			@NonNull final UserConfirmationRequest request)
 	{
-		final PPOrderQuantities ppOrderQuantities = ppOrderBOMBL.getQuantities(ppOrderBL.getById(job.getPpOrderId()));
+		final boolean includeProcessedQty = true;
+		final DraftPPOrderQuantities ppOrderQuantities = huPPOrderQtyBL.getPPOrderQuantities(job.getPpOrderId(), includeProcessedQty);
 
 		if (!ppOrderQuantities.isSomethingReceived())
 		{
@@ -299,7 +331,7 @@ public class RawMaterialsIssueOnlyWhatWasReceivedActivityHandler implements WFAc
 		final IssueOnlyWhatWasReceivedConfig issueConfig = getIssueWhatWasReceivedConfig(job, request);
 		return IssueWhatWasReceivedRequest.builder()
 				.ppOrderId(job.getPpOrderId())
-				.draftQtys(huPPOrderQtyBL.getDraftPPOrderQuantities(job.getPpOrderId()))
+				.draftQtys(ppOrderQuantities)
 				.loadSourceHUsForProductId(getLoadSourceHUsForProductFunction(issueConfig, job.getPpOrderId()));
 	}
 

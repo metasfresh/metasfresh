@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.ui.web.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.ui.web.view;
 
 import com.google.common.base.Stopwatch;
@@ -6,6 +28,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Streams;
 import de.metas.elasticsearch.model.I_T_ES_FTS_Search_Result;
 import de.metas.logging.LogManager;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.UserRolePermissionsKey;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelectionLine;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
@@ -36,6 +61,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import java.time.Duration;
 import java.util.Collection;
@@ -47,32 +73,11 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
-/*
- * #%L
- * metasfresh-webui-api
- * %%
- * Copyright (C) 2016 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @Service
 public class ViewsRepository implements IViewsRepository
 {
 	private static final Logger logger = LogManager.getLogger(ViewsRepository.class);
+	private final IUserRolePermissionsDAO userRolePermissionsDAO = Services.get(IUserRolePermissionsDAO.class);
 
 	private static final String SYSCONFIG_ViewExpirationTimeoutInMinutes = "de.metas.ui.web.view.ViewExpirationTimeoutInMinutes";
 
@@ -141,7 +146,7 @@ public class ViewsRepository implements IViewsRepository
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		try
 		{
-			final int no = DB.executeUpdateEx("TRUNCATE TABLE " + tableName, ITrx.TRXNAME_NoneNotNull);
+			final int no = DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE " + tableName, ITrx.TRXNAME_NoneNotNull);
 			logger.info("Deleted {} records(all) from table {} (Took: {})", no, tableName, stopwatch);
 		}
 		catch (final Exception ex)
@@ -256,17 +261,30 @@ public class ViewsRepository implements IViewsRepository
 	}
 
 	@Override
-	public ViewLayout getViewLayout(final WindowId windowId, final JSONViewDataType viewDataType, final ViewProfileId profileId)
+	public ViewLayout getViewLayout(
+			@NonNull final WindowId windowId,
+			@NonNull final JSONViewDataType viewDataType,
+			@Nullable final ViewProfileId profileId,
+			@Nullable final UserRolePermissionsKey permissionsKey)
 	{
-		final String viewId = null; // N/A
-		DocumentPermissionsHelper.assertViewAccess(windowId, viewId, UserSession.getCurrentPermissions());
+		if (permissionsKey != null)
+		{
+			final IUserRolePermissions permissions = userRolePermissionsDAO.getUserRolePermissions(permissionsKey);
+			DocumentPermissionsHelper.assertViewAccess(windowId, null, permissions);
+		}
 
 		final IViewFactory factory = getFactory(windowId, viewDataType);
-		return factory.getViewLayout(windowId, viewDataType, profileId)
-				// Enable AllowNew if we have a menu node to create new records
-				.withAllowNewRecordIfPresent(menuTreeRepo.getUserSessionMenuTree()
-						.getNewRecordNodeForWindowId(windowId)
-						.map(MenuNode::getCaption));
+		ViewLayout viewLayout = factory.getViewLayout(windowId, viewDataType, profileId);
+
+		// Enable AllowNew if we have a menu node to create new records.
+		if (permissionsKey != null)
+		{
+			viewLayout = viewLayout.withAllowNewRecordIfPresent(menuTreeRepo.getMenuTree(permissionsKey)
+					.getNewRecordNodeForWindowId(windowId)
+					.map(MenuNode::getCaption));
+		}
+
+		return viewLayout;
 	}
 
 	@Override

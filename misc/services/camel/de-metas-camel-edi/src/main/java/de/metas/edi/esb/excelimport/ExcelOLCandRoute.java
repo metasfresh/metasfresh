@@ -42,6 +42,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Camel Route for importing customer's Excel files to order candidates.
@@ -65,10 +66,14 @@ public class ExcelOLCandRoute extends AbstractEDIRoute
 	public static final String LOCAL_ROUTE_ID = "Excel-Orders-To-MF-OLCand";
 	private static final transient Logger logger = LoggerFactory.getLogger(LOCAL_ROUTE_ID);
 
-	/** This place holder is evaluated via {@link Util#resolveProperty(CamelContext, String)}, that's why we don't put it in {@code {{...}}} */
+	/**
+	 * This place holder is evaluated via {@link Util#resolveProperty(CamelContext, String)}, that's why we don't put it in {@code {{...}}}
+	 */
 	public static final String INPUT_EXCEL_REMOTE = "excel.file.orders.remote";
 
 	public static final String INPUT_EXCEL_LOCAL = "{{excel.file.orders}}";
+
+	public static final String MAP_TO_METASFRESH_TYPE_PROCESSOR_ID = "MapToXLSImpCOLCandTypeProcessor";
 
 	@Override
 	protected void configureEDIRoute(@NonNull final DataFormat jaxb, final DecimalFormat decimalFormat)
@@ -115,6 +120,8 @@ public class ExcelOLCandRoute extends AbstractEDIRoute
 					logger.info("Excel: Parsed {} rows", rows.size());
 
 					final List<Object> output = new ArrayList<>(rows.size());
+
+					final AtomicInteger lineNoCounter = new AtomicInteger(0);
 					for (final Map<String, Object> row : rows)
 					{
 						final Excel_OLCand_Row xlsRow = Excel_OLCand_Row.ofMap(row);
@@ -127,6 +134,7 @@ public class ExcelOLCandRoute extends AbstractEDIRoute
 						}
 
 						final XLSImpCOLCandType xmlOLCand = ExcelImpCOLCandTypeBuilder.newBuilder()
+								.setLineNo(lineNoCounter.addAndGet(10))
 								.setFromContext(ctx)
 								.setFromRow(xlsRow)
 								.build();
@@ -141,7 +149,7 @@ public class ExcelOLCandRoute extends AbstractEDIRoute
 					logger.info("Excel: We have {} of {} valid rows to be sent forward", output.size(), rows.size());
 
 					exchange.getIn().setBody(output);
-				})
+				}).id(MAP_TO_METASFRESH_TYPE_PROCESSOR_ID)
 				.split(body())
 				.marshal(jaxb)
 				//

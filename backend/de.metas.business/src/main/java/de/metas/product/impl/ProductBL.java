@@ -31,6 +31,7 @@ import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetId;
@@ -151,6 +152,7 @@ public final class ProductBL implements IProductBL
 	/**
 	 * @return UOM used for Product's Weight; never return null
 	 */
+	@Override
 	public I_C_UOM getWeightUOM(final I_M_Product product)
 	{
 		// FIXME: we hardcoded the UOM for M_Product.Weight to Kilogram
@@ -221,6 +223,32 @@ public final class ProductBL implements IProductBL
 		// NOTE: we rely on table cache config
 		final I_M_Product product = getById(productId);
 		return isStocked(product);
+	}
+
+	@Override
+	public boolean isItemType(@Nullable final ProductId productId)
+	{
+		if (productId == null)
+		{
+			logger.debug("isItemType - productId=null; -> return false");
+			return false;
+		}
+
+		// NOTE: we rely on table cache config
+		final I_M_Product product = getById(productId);
+		return isItemType(product);
+	}
+
+	private boolean isItemType(@NonNull final I_M_Product product)
+	{
+		final ProductType productType = ProductType.ofCode(product.getProductType());
+		final boolean isItemProduct = productType.isItem();
+
+		logger.debug("isItemProduct - M_Product_ID={} has type={}; -> return {}",
+					 product.getM_Product_ID(),
+					 productType,
+					 isItemProduct);
+		return isItemProduct;
 	}
 
 	@Override
@@ -556,6 +584,12 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public Optional<ProductId> getProductIdByBarcode(@NonNull String barcode, @NonNull ClientId clientId)
+	{
+		return productsRepo.getProductIdByBarcode(barcode, clientId);
+	}
+
+	@Override
 	public Optional<ProductId> getProductIdByGTIN(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
 	{
 		return productsRepo.getProductIdByGTIN(gtin, clientId);
@@ -566,6 +600,21 @@ public final class ProductBL implements IProductBL
 	{
 		return getProductIdByGTIN(gtin, clientId)
 				.orElseThrow(()->new AdempiereException("@NotFound@ @M_Product_ID@: @GTIN@ "+gtin));
+	}
+
+	@Override
+	public Optional<ProductId> getProductIdByValueStartsWith(@NonNull final String valuePrefix, @NonNull final ClientId clientId)
+	{
+		return productsRepo.getProductIdByValueStartsWith(valuePrefix, clientId);
+	}
+
+	@Override
+	public Set<ProductId> getProductIdsMatchingQueryString(
+			@NonNull final String queryString,
+			@NonNull final ClientId clientId,
+			@NonNull QueryLimit limit)
+	{
+		return productsRepo.getProductIdsMatchingQueryString(queryString, clientId, limit);
 	}
 
 }

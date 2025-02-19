@@ -137,7 +137,7 @@ public class PostgresqlNativeExecutor implements IScriptExecutor
 		return value;
 	}
 
-	private static final void addParameter(final List<String> args, final String paramName, final String value)
+	private static void addParameter(final List<String> args, final String paramName, final String value)
 	{
 		if (value == null || value.trim().length() == 0)
 		{

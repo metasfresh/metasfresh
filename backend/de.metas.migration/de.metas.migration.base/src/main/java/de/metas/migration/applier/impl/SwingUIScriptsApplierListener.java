@@ -107,7 +107,7 @@ public class SwingUIScriptsApplierListener implements IScriptsApplierListener
 			tp.addHyperlinkListener(DEFAULT_HyperlinkListener);
 
 			final JScrollPane jsp = new JScrollPane(tp);
-			jsp.setPreferredSize(new Dimension(800, 500));
+			jsp.setPreferredSize(new Dimension(1200, 500));
 			messageObj = jsp;
 		}
 		else

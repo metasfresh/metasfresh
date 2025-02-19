@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
+import de.metas.common.util.pair.IPair;
 import de.metas.location.CountryCode;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
@@ -17,7 +18,6 @@ import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine_Package;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
-import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.Address.AddressBuilder;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
@@ -37,9 +37,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Country;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -93,7 +90,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
  */
 
 @Repository
-public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
+public class DerKurierDeliveryOrderRepository
 {
 	private final Converters converters;
 
@@ -102,24 +99,6 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 		this.converters = converters;
 	}
 
-	@Override
-	public String getShipperGatewayId()
-	{
-		return SHIPPER_GATEWAY_ID;
-	}
-
-	@Override
-	public ITableRecordReference toTableRecordReference(@NonNull final DeliveryOrder deliveryOrder)
-	{
-		return TableRecordReference.of(I_DerKurier_DeliveryOrder.Table_Name, deliveryOrder.getId());
-	}
-
-	public ITableRecordReference toTableRecordReference(@NonNull final DeliveryPosition deliveryPosition)
-	{
-		return TableRecordReference.of(I_DerKurier_DeliveryOrderLine.Table_Name, deliveryPosition.getRepoId());
-	}
-
-	@Override
 	public DeliveryOrder getByRepoId(@NonNull final DeliveryOrderId deliveryOrderId)
 	{
 		final I_DerKurier_DeliveryOrder //
@@ -250,7 +229,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 					.build();
 			deliveryPositionBuilder.packageDimensions(packageDimensions);
 		}
-		deliveryPositionBuilder.grossWeightKg(lineRecord.getDK_ParcelWeight().intValue());
+		deliveryPositionBuilder.grossWeightKg(lineRecord.getDK_ParcelWeight());
 
 		final DerKurierDeliveryData derKurierDeliveryData = DerKurierDeliveryData.builder()
 				.station(assertSameAsPreviousValue(COLUMNNAME_DK_Consignee_DesiredStation, lineRecord, previousLineRecord))
@@ -344,7 +323,6 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 		return currentValue;
 	}
 
-	@Override
 	public DeliveryOrder save(@NonNull final DeliveryOrder deliveryOrder)
 	{
 		final I_DerKurier_DeliveryOrder headerRecord;
@@ -411,7 +389,7 @@ public class DerKurierDeliveryOrderRepository implements DeliveryOrderRepository
 				lineRecord.setDK_ParcelLength(BigDecimal.valueOf(packageDimensions.getLengthInCM()));
 				lineRecord.setDK_ParcelWidth(BigDecimal.valueOf(packageDimensions.getWidthInCM()));
 			}
-			lineRecord.setDK_ParcelWeight(BigDecimal.valueOf(deliveryPosition.getGrossWeightKg()));
+			lineRecord.setDK_ParcelWeight(deliveryPosition.getGrossWeightKg());
 
 			lineRecord.setDK_ParcelNumber(derKurierDeliveryData.getParcelNumber());
 

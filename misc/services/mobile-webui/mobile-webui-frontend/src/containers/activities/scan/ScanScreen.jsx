@@ -1,10 +1,9 @@
 import React, { useEffect } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { setScannedBarcode } from '../../../actions/ScanActions';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import { updateHeaderEntry } from '../../../actions/HeaderActions';
 import { postScannedBarcode } from '../../../api/scanner';
 import { getActivityById } from '../../../reducers/wfProcesses';
 
@@ -12,12 +11,14 @@ import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent
 import { fireWFActivityCompleted } from '../../../apps';
 import { toastError } from '../../../utils/toast';
 import Spinner from '../../../components/Spinner';
+import * as uiTrace from '../../../utils/ui_trace';
+import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
+import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
 
 const ScanScreen = () => {
-  const {
-    url,
-    params: { applicationId, workflowId: wfProcessId, activityId },
-  } = useRouteMatch();
+  const { history, url, applicationId, wfProcessId, activityId } = useScreenDefinition({
+    back: getWFProcessScreenLocation,
+  });
 
   const queryParameters = new URLSearchParams(window.location.search);
   const useTheAlreadyScannedQrCode = queryParameters.get('resendQr');
@@ -35,7 +36,7 @@ const ScanScreen = () => {
 
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(pushHeaderEntry({ location: url, caption: activityCaption, userInstructions }));
+    dispatch(updateHeaderEntry({ location: url, caption: activityCaption, userInstructions }));
   }, [url, activityCaption, userInstructions]);
 
   useEffect(() => {
@@ -44,9 +45,10 @@ const ScanScreen = () => {
     }
   }, [useTheAlreadyScannedQrCode, currentValue?.qrCode]);
 
-  const history = useHistory();
   const onBarcodeScanned = ({ scannedBarcode }) => {
     //console.log('onBarcodeScanned', { scannedBarcode });
+    uiTrace.trace({ eventName: 'barcodeScanned', scannedBarcode, wfProcessId, activityId });
+
     if (validOptionIndex != null && !validOptions?.length) {
       toastError({ messageKey: 'activities.mfg.validateSourceLocator.noValidOption' });
       history.goBack();

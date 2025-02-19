@@ -1,12 +1,11 @@
 package de.metas.inventory;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import de.metas.document.DocBaseAndSubType;
+import org.junit.jupiter.api.Test;
 
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.Test;
-
-import de.metas.document.DocBaseAndSubType;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -44,6 +43,6 @@ public class AggregationTypeTest
 		final DocBaseAndSubType docBaseAndSubType = type.getDocBaseAndSubType();
 		assertThat(AggregationType.getByDocTypeOrNull(docBaseAndSubType)).isSameAs(type);
 
-		InventoryDocSubType.ofCode(docBaseAndSubType.getDocSubType());
+		InventoryDocSubType.ofCode(docBaseAndSubType.getDocSubType().getCode());
 	}
 }

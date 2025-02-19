@@ -87,7 +87,7 @@ public class ExternalSystemCamelConstants
 
 	public static final String MF_GET_BPARTNER_PRODUCTS_ROUTE_ID = "To-MF_GetBPartnerProducts-Route";
 
-	public static final String MF_CLEAR_OL_CANDIDATES_ROUTE_ID = "To-MF_ClearOLCandidates-Route";
+	public static final String MF_PROCESS_OL_CANDIDATES_ROUTE_ID = "To-MF_ProcessOLCandidates-Route";
 
 	public static final String MF_CREATE_ORDER_PAYMENT_ROUTE_ID = "To-MF_CreateOrderPayment-Route";
 
@@ -97,6 +97,8 @@ public class ExternalSystemCamelConstants
 	public static final String MF_SEQ_NO_V2_URI = "metasfresh.seqno.v2.api.uri";
 
 	public static final String MF_ATTACHMENT_ROUTE_ID = "To-MF_PushAttachment-Route";
+
+	public static final String MF_AD_Process_ROUTE_ID = "To-MF_InvokeAdProcess-Route";
 
 	public static final String MF_ENQUEUE_PURCHASE_CANDIDATES_V2_CAMEL_URI = "To-MF_Enqueue_Purchases_Candidate-Route";
 

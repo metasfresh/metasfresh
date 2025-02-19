@@ -7,6 +7,7 @@ import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.exceptions.IExceptionWrapper;
 import org.compiere.util.DB;
+import org.jetbrains.annotations.Contract;
 
 import javax.annotation.Nullable;
 import java.sql.SQLException;
@@ -30,6 +31,8 @@ public class DBException extends AdempiereException
 	 *
 	 * @return {@link DBException} or null if throwable is null
 	 */
+	@Nullable
+	@Contract("!null -> !null")
 	public static DBException wrapIfNeeded(final Throwable throwable)
 	{
 		if (throwable == null)
@@ -109,7 +112,7 @@ public class DBException extends AdempiereException
 		}
 	}
 
-	public DBException(final Exception e, final CharSequence sql)
+	public DBException(final Exception e,  @Nullable final CharSequence sql)
 	{
 		this(e, sql, (Object[])null);
 	}
@@ -189,7 +192,7 @@ public class DBException extends AdempiereException
 	/**
 	 * @see java.sql.SQLException#getErrorCode()
 	 */
-	public int getErrorCode()
+	public int getSQLErrorCode()
 	{
 		final SQLException e = getSQLException();
 		return e != null ? e.getErrorCode() : -1;

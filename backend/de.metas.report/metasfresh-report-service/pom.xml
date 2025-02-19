@@ -21,189 +21,189 @@
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
-	<parent>
-		<artifactId>metasfresh-report</artifactId>
-		<groupId>de.metas.report</groupId>
-		<version>10.0.0</version>
-		<relativePath>../pom.xml</relativePath>
-	</parent>
-	<modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>metasfresh-report</artifactId>
+        <groupId>de.metas.report</groupId>
+        <version>10.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
 
-	<version>10.0.0</version>
-	<artifactId>metasfresh-report-service</artifactId>
+    <version>10.0.0</version>
+    <artifactId>metasfresh-report-service</artifactId>
 
-	<properties>
-		<migration-sql-basedir>42-de.metas.report.jasper.server</migration-sql-basedir>
-		<metasfresh.version>[1,10.0.0]</metasfresh.version>
-	</properties>
+    <properties>
+        <migration-sql-basedir>42-de.metas.report.jasper.server</migration-sql-basedir>
+        <metasfresh.version>[1,10.0.0]</metasfresh.version>
+    </properties>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-		</dependency>
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>net.sf.jasperreports</groupId>
-			<artifactId>jasperreports</artifactId>
-			<exclusions>
-				<!-- 
-					Exclude lucene stuff from jasperreports because it's old.
-					Explicitly add them because they might be needed...but with versions implied by spring-boot.
-				-->
-				<exclusion>
-					<groupId>org.apache.lucene</groupId>
-					<artifactId>lucene-queryparser</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.apache.lucene</groupId>
-					<artifactId>lucene-analyzers-common</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.apache.lucene</groupId>
-					<artifactId>lucene-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.apache.lucene</groupId>
-					<artifactId>lucene-queries</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-queryparser</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-analyzers-common</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-core</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.lucene</groupId>
-			<artifactId>lucene-queries</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>net.sf.jasperreports</groupId>
+            <artifactId>jasperreports</artifactId>
+            <exclusions>
+                <!--
+                    Exclude lucene stuff from jasperreports because it's old.
+                    Explicitly add them because they might be needed...but with versions implied by spring-boot.
+                -->
+                <exclusion>
+                    <groupId>org.apache.lucene</groupId>
+                    <artifactId>lucene-queryparser</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.lucene</groupId>
+                    <artifactId>lucene-analyzers-common</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.lucene</groupId>
+                    <artifactId>lucene-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.lucene</groupId>
+                    <artifactId>lucene-queries</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queryparser</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-analyzers-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.lucene</groupId>
+            <artifactId>lucene-queries</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
 
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-vfs2</artifactId>
-			<version>2.0</version>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-vfs2</artifactId>
+            <version>2.0</version>
+        </dependency>
 
-		<dependency>
-			<groupId>de.metas.adempiere.adempiere</groupId>
-			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
+        <dependency>
+            <groupId>de.metas.adempiere.adempiere</groupId>
+            <artifactId>de.metas.adempiere.adempiere.base</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>de.metas.report</groupId>
-			<artifactId>de.metas.report.jasper.commons</artifactId>
-			<version>${metasfresh.version}</version>
-		</dependency>
-				
-		<!-- Q/R code-->
-		<dependency>
-			<groupId>com.google.zxing</groupId>
-			<artifactId>javase</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.google.zxing</groupId>
-			<artifactId>core</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>de.metas.report</groupId>
+            <artifactId>de.metas.report.jasper.commons</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
 
-		<dependency>
-			<groupId>ar.com.fdvs</groupId>
-			<artifactId>DynamicJasper-core-fonts</artifactId>
-			<version>1.0</version>
-		</dependency>
+        <!-- Q/R code-->
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>javase</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+        </dependency>
 
-		<!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
-		<!-- 
-			..but don't include them here, because the endcustomer project might require different fonts 
-			that might none the less have the same names, in order to be pluggable. 
-		<dependency>
-			<groupId>jp.osdn.ocra</groupId>
-			<artifactId>jp.osdn.ocra</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>jp.osdn.ocrb</groupId>
-			<artifactId>jp.osdn.ocrb</artifactId>
-		</dependency>
- 		-->
+        <dependency>
+            <groupId>ar.com.fdvs</groupId>
+            <artifactId>DynamicJasper-core-fonts</artifactId>
+            <version>1.0</version>
+        </dependency>
 
-		<dependency>
-			<groupId>de.metas.report.jasper</groupId>
-			<artifactId>cantarell-fonts</artifactId>
-			<version>001.001</version>
-		</dependency>
-		<dependency>
-			<groupId>de.metas.report.jasper</groupId>
-			<artifactId>montserrat-fonts</artifactId>
-			<version>8.000</version>
-		</dependency>
-		<dependency>
-			<groupId>de.metas.report.jasper</groupId>
-			<artifactId>roboto-fonts</artifactId>
-			<version>2012023.1-2</version>
-		</dependency>
-		
-		<dependency>
-			<groupId>de.metas.report.jasper</groupId>
-			<artifactId>source-code-pro-fonts</artifactId>
-			<version>1.0.0</version>
-		</dependency>
+        <!-- Thx for the two fonts to http://ansuz.sooke.bc.ca/page/fonts ^^ -->
+        <!-- 
+            ..but don't include them here, because the endcustomer project might require different fonts 
+            that might none the less have the same names, in order to be pluggable. 
+        <dependency>
+            <groupId>jp.osdn.ocra</groupId>
+            <artifactId>jp.osdn.ocra</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jp.osdn.ocrb</groupId>
+            <artifactId>jp.osdn.ocrb</artifactId>
+        </dependency>
+         -->
 
- 		<!-- JXls integration -->
-		<dependency>
-			<groupId>org.jxls</groupId>
-			<artifactId>jxls</artifactId>
-			<version>2.3.0</version>
+        <dependency>
+            <groupId>de.metas.report.jasper</groupId>
+            <artifactId>cantarell-fonts</artifactId>
+            <version>001.001</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.report.jasper</groupId>
+            <artifactId>montserrat-fonts</artifactId>
+            <version>8.000</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.report.jasper</groupId>
+            <artifactId>roboto-fonts</artifactId>
+            <version>2012023.1-2</version>
+        </dependency>
 
-			<exclusions>
-				<exclusion>
-					<groupId>ch.qos.logback</groupId>
-					<artifactId>logback-core</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+        <dependency>
+            <groupId>de.metas.report.jasper</groupId>
+            <artifactId>source-code-pro-fonts</artifactId>
+            <version>1.0.0</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.jxls</groupId>
-			<artifactId>jxls-poi</artifactId>
-			<version>1.0.10</version>
-		</dependency>
+        <!-- JXls integration -->
+        <dependency>
+            <groupId>org.jxls</groupId>
+            <artifactId>jxls</artifactId>
+            <version>2.12.0</version>
 
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<scope>provided</scope>
-		</dependency>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
-		<dependency>
-			<groupId>de.metas.adempiere.adempiere</groupId>
-			<artifactId>de.metas.adempiere.adempiere.base</artifactId>
-			<version>${metasfresh.version}</version>
-			<classifier>tests</classifier>
-			<scope>test</scope>
-		</dependency>
+        <dependency>
+            <groupId>org.jxls</groupId>
+            <artifactId>jxls-poi</artifactId>
+            <version>2.12.0</version>
+        </dependency>
 
-		<dependency>
-			<groupId>org.assertj</groupId>
-			<artifactId>assertj-core</artifactId>
-			<version>${assertj.version}</version>
-			<scope>test</scope>
-		</dependency>
-		
-	</dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.adempiere.adempiere</groupId>
+            <artifactId>de.metas.adempiere.adempiere.base</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>${assertj.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
 
 </project>

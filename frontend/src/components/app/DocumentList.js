@@ -9,10 +9,9 @@ import {
   GEO_PANEL_STATES,
   NO_VIEW,
   PANEL_WIDTHS,
-  renderHeaderProperties,
 } from '../../utils/documentListHelper';
 import Spinner from './SpinnerOverlay';
-import BlankPage from '../BlankPage';
+import { BlankPage } from '../BlankPage';
 import SelectionAttributes from './SelectionAttributes';
 import Filters from '../filters/Filters';
 import FiltersStatic from '../filters/FiltersStatic';
@@ -20,11 +19,31 @@ import Table from '../../containers/Table';
 import QuickActions from './QuickActions';
 import GeoMap from '../maps/GeoMap';
 import {
+  INVOICE_TO_ALLOCATE_WINDOW_ID,
+  InvoiceToAllocateViewHeader,
+} from '../paymentAllocation/InvoiceToAllocateViewHeader';
+import {
   PP_ORDER_CANDIDATE_WINDOW_ID,
   PPOrderCandidateViewHeader,
 } from '../ppOrderCandidate/PPOrderCandidateViewHeader';
 import { connect } from 'react-redux';
-import { getSettingFromStateAsBoolean } from '../../utils/settings';
+import {
+  getSettingFromStateAsBoolean,
+  getSettingFromStateAsPositiveInt,
+} from '../../utils/settings';
+import {
+  DeliveryPlanningViewHeader,
+  getDeliveryPlanningViewHeaderWindowId,
+} from '../deliveryPlanning/DeliveryPlanningViewHeader';
+import {
+  OIViewHeader,
+  OIViewHeader_WINDOW_ID,
+} from '../acctOpenItems/OIViewHeader';
+import { DocumentListHeaderProperties } from './DocumentListHeaderProperties';
+import {
+  AcctSimulationViewHeader,
+  AcctSimulationViewHeader_WINDOW_ID,
+} from '../acctSimulation/AcctSimulationViewHeader';
 
 /**
  * @file Class based component.
@@ -128,6 +147,8 @@ class DocumentList extends Component {
       filterId,
       featureType,
       isPPOrderCandidateViewHeaderEnabled,
+      deliveryPlanningViewHeaderWindowId,
+      defaultQtyPrecision,
     } = this.props;
     const {
       staticFilters,
@@ -166,7 +187,7 @@ class DocumentList extends Component {
       layout && isModal && hasIncluded && hasShowIncluded;
     const showGeoResizeBtn =
       layout && layout.supportGeoLocations && locationData;
-    const viewGroups = !isModal && headerProperties && headerProperties.groups;
+    const isRenderHeaderProperties = !isModal;
 
     return (
       <div
@@ -177,14 +198,8 @@ class DocumentList extends Component {
         })}
         style={styleObject}
       >
-        {!!(viewGroups && viewGroups.length) && (
-          <div className="panel panel-primary">
-            <div className="panel-groups-header">
-              <div className="optional">
-                {renderHeaderProperties(viewGroups)}
-              </div>
-            </div>
-          </div>
+        {isRenderHeaderProperties && (
+          <DocumentListHeaderProperties headerProperties={headerProperties} />
         )}
 
         {isPPOrderCandidateViewHeaderEnabled &&
@@ -197,6 +212,25 @@ class DocumentList extends Component {
               pageLength={pageLength}
             />
           )}
+
+        {deliveryPlanningViewHeaderWindowId &&
+          String(windowId) === deliveryPlanningViewHeaderWindowId &&
+          viewId && (
+            <DeliveryPlanningViewHeader
+              windowId={windowId}
+              viewId={viewId}
+              selectedRowIds={selected}
+              pageLength={pageLength}
+              precision={defaultQtyPrecision}
+            />
+          )}
+
+        {String(windowId) === OIViewHeader_WINDOW_ID && viewId && (
+          <OIViewHeader headerProperties={headerProperties} />
+        )}
+        {String(windowId) === AcctSimulationViewHeader_WINDOW_ID && viewId && (
+          <AcctSimulationViewHeader headerProperties={headerProperties} />
+        )}
 
         {showModalResizeBtn && (
           <div className="column-size-button col-xxs-3 col-md-0 ignore-react-onclickoutside">
@@ -235,6 +269,15 @@ class DocumentList extends Component {
                 </button>
               )}
 
+              {windowId === INVOICE_TO_ALLOCATE_WINDOW_ID && (
+                <InvoiceToAllocateViewHeader
+                  windowId={windowId}
+                  viewId={viewId}
+                  selectedRowIds={selected}
+                  pageLength={pageLength}
+                />
+              )}
+
               {layout.filters && (
                 <Filters
                   {...{
@@ -245,7 +288,6 @@ class DocumentList extends Component {
                   updateDocList={onFilterChange}
                 />
               )}
-
               {staticFilters && (
                 <FiltersStatic
                   {...{
@@ -418,6 +460,13 @@ const mapStateToProps = (state) => {
       'PPOrderCandidateViewHeader.enabled',
       true
     ),
+    defaultQtyPrecision: getSettingFromStateAsPositiveInt(
+      state,
+      'widget.Quantity.defaultPrecision',
+      2
+    ),
+    deliveryPlanningViewHeaderWindowId:
+      getDeliveryPlanningViewHeaderWindowId(state),
   };
 };
 

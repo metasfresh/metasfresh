@@ -1093,7 +1093,30 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		return get_ValueAsBoolean(COLUMNNAME_Processing);
 	}
 
-	/** 
+	/**
+	 * ProcurementStatus AD_Reference_ID=541842
+	 * Reference name: Beschaffungsstatus
+	 */
+	public static final int PROCUREMENTSTATUS_AD_Reference_ID=541842;
+	/** low = low */
+	public static final String PROCUREMENTSTATUS_Low = "low";
+	/** medium = medium */
+	public static final String PROCUREMENTSTATUS_Medium = "medium";
+	/** high = high */
+	public static final String PROCUREMENTSTATUS_High = "high";
+	@Override
+	public void setProcurementStatus (final @Nullable java.lang.String ProcurementStatus)
+	{
+		set_Value (COLUMNNAME_ProcurementStatus, ProcurementStatus);
+	}
+
+	@Override
+	public java.lang.String getProcurementStatus()
+	{
+		return get_ValueAsString(COLUMNNAME_ProcurementStatus);
+	}
+
+	/**
 	 * ProductType AD_Reference_ID=270
 	 * Reference name: M_Product_ProductType
 	 */
@@ -1284,15 +1307,16 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setShelfDepth (final int ShelfDepth)
+	public void setShelfDepth (final BigDecimal ShelfDepth)
 	{
 		set_Value (COLUMNNAME_ShelfDepth, ShelfDepth);
 	}
 
 	@Override
-	public int getShelfDepth() 
+	public BigDecimal getShelfDepth()
 	{
-		return get_ValueAsInt(COLUMNNAME_ShelfDepth);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ShelfDepth);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -1309,15 +1333,16 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public void setShelfWidth (final int ShelfWidth)
+	public void setShelfWidth (final BigDecimal ShelfWidth)
 	{
 		set_Value (COLUMNNAME_ShelfWidth, ShelfWidth);
 	}
 
 	@Override
-	public int getShelfWidth() 
+	public BigDecimal getShelfWidth()
 	{
-		return get_ValueAsInt(COLUMNNAME_ShelfWidth);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ShelfWidth);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

@@ -1,71 +1,111 @@
-import React, { useEffect } from 'react';
-import { shallowEqual, useDispatch, useSelector } from 'react-redux';
+import React from 'react';
+import { shallowEqual, useSelector } from 'react-redux';
 import { useRouteMatch } from 'react-router-dom';
 
 import { trl } from '../../../utils/translations';
 import { getLineById, getStepsArrayFromLine } from '../../../reducers/wfProcesses';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 import DistributionStepButton from './DistributionStepButton';
+import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
+import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+import { distributionLinePickFromScreenLocation } from '../../../routes/distribution';
+import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
+import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
 
 const DistributionLineScreen = () => {
-  const {
-    url,
-    params: { applicationId, workflowId: wfProcessId, activityId, lineId },
-  } = useRouteMatch();
+  const { history, applicationId, wfProcessId, activityId, lineId } = useDistributionScreenDefinition({
+    back: getWFProcessScreenLocation,
+  });
 
-  const { lineCaption, steps } = useSelector(
-    (state) => getPropsFromState({ state, wfProcessId, activityId, lineId }),
-    shallowEqual
-  );
+  const { steps, allowPickingAnyHU } = useDistributionLineProps({
+    wfProcessId,
+    activityId,
+    lineId,
+  });
 
-  const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(
-      pushHeaderEntry({
-        location: url,
-        values: [
-          {
-            caption: trl('activities.distribution.DistributionLine'),
-            value: lineCaption,
-            bold: true,
-          },
-        ],
-      })
-    );
-  }, []);
+  const onScanButtonClick = () => {
+    history.push(distributionLinePickFromScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
+  };
 
   return (
     <div className="section pt-2">
-      {steps.length > 0 &&
-        steps.map((stepItem, idx) => {
-          return (
-            <DistributionStepButton
-              key={idx}
-              applicationId={applicationId}
-              wfProcessId={wfProcessId}
-              activityId={activityId}
-              lineId={lineId}
-              stepId={stepItem.id}
-              productName={stepItem.productName}
-              pickFromHU={stepItem.pickFromHU}
-              uom={stepItem.uom}
-              qtyPicked={stepItem.qtyPicked}
-              qtyToMove={stepItem.qtyToMove}
-              completeStatus={stepItem.completeStatus}
-            />
-          );
-        })}
+      <div className="buttons">
+        {allowPickingAnyHU && <ButtonWithIndicator caption={trl('general.scanQRCode')} onClick={onScanButtonClick} />}
+        {steps.length > 0 &&
+          steps.map((stepItem, idx) => {
+            return (
+              <DistributionStepButton
+                key={idx}
+                applicationId={applicationId}
+                wfProcessId={wfProcessId}
+                activityId={activityId}
+                lineId={lineId}
+                stepId={stepItem.id}
+                productName={stepItem.productName}
+                pickFromHU={stepItem.pickFromHU}
+                uom={stepItem.uom}
+                qtyPicked={stepItem.qtyPicked}
+                qtyToMove={stepItem.qtyToMove}
+                completeStatus={stepItem.completeStatus}
+              />
+            );
+          })}
+      </div>
     </div>
   );
 };
 
-const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
-  const line = getLineById(state, wfProcessId, activityId, lineId);
-  return {
-    lineCaption: line?.caption,
-    steps: getStepsArrayFromLine(line),
-  };
+//
+//
+//
+//
+//
+
+export const useDistributionLineProps = ({ wfProcessId, activityId, lineId }) => {
+  return useSelector((state) => {
+    const line = getLineById(state, wfProcessId, activityId, lineId);
+    return {
+      ...line,
+      steps: getStepsArrayFromLine(line),
+    };
+  }, shallowEqual);
 };
+
+//
+//
+//
+//
+//
+
+export const useDistributionScreenDefinition = ({ captionKey, back } = {}) => {
+  const {
+    params: { workflowId: wfProcessId, activityId, lineId },
+  } = useRouteMatch();
+
+  const { productName, uom, qtyToMove } = useDistributionLineProps({ wfProcessId, activityId, lineId });
+
+  return useScreenDefinition({
+    captionKey,
+    back,
+    values: [
+      {
+        caption: trl('general.Product'),
+        value: productName,
+        bold: true,
+      },
+      {
+        caption: trl('general.QtyToMove'),
+        value: formatQtyToHumanReadableStr({ qty: qtyToMove, uom }),
+        bold: true,
+      },
+    ],
+  });
+};
+
+//
+//
+//
+//
+//
 
 export default DistributionLineScreen;

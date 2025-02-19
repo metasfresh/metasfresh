@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.esb.edi.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for EDI_Desadv_Pack_Item
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_EDI_Desadv_Pack_Item extends org.compiere.model.PO implements I_EDI_Desadv_Pack_Item, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -354804449L;
+	private static final long serialVersionUID = 1014721542L;
 
     /** Standard Constructor */
     public X_EDI_Desadv_Pack_Item (final Properties ctx, final int EDI_Desadv_Pack_Item_ID, @Nullable final String trxName)
@@ -126,6 +126,18 @@ public class X_EDI_Desadv_Pack_Item extends org.compiere.model.PO implements I_E
 	public java.lang.String getGTIN_TU_PackingMaterial() 
 	{
 		return get_ValueAsString(COLUMNNAME_GTIN_TU_PackingMaterial);
+	}
+
+	@Override
+	public void setLine (final int Line)
+	{
+		set_Value (COLUMNNAME_Line, Line);
+	}
+
+	@Override
+	public int getLine() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Line);
 	}
 
 	@Override

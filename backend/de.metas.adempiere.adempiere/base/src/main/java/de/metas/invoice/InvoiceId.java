@@ -51,11 +51,10 @@ public class InvoiceId implements RepoIdAware
 	}
 
 	@NonNull
-	public static Optional<InvoiceId> ofRepoIdOptional(final int repoId)
+	public static Optional<InvoiceId> optionalOfRepoId(final int repoId)
 	{
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
-
 
 	int repoId;
 
@@ -100,4 +99,6 @@ public class InvoiceId implements RepoIdAware
 
 		return ids.stream().map(InvoiceId::getRepoId).collect(ImmutableSet.toImmutableSet());
 	}
+
+	public static boolean equals(@Nullable final InvoiceId id1, @Nullable final InvoiceId id2) {return Objects.equals(id1, id2);}
 }

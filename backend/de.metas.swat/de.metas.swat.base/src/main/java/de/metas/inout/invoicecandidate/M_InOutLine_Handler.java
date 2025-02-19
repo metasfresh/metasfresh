@@ -418,6 +418,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Save the Invoice Candidate, so that we can use its ID further down
+		invoiceCandBL.setPaymentTermIfMissing(icRecord);
 		saveRecord(icRecord);
 
 		// set Quality Issue Percentage Override
@@ -471,7 +472,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		if (inOutRecord.getC_DocType_ID() > 0)
 		{
-			final DocTypeId inoutDocTypeId = DocTypeId.ofRepoIdOrNull(inOutRecord.getC_DocType_ID());
+			final DocTypeId inoutDocTypeId = DocTypeId.ofRepoId(inOutRecord.getC_DocType_ID());
 			final I_C_DocType inOutDocType = docTypeBL.getById(inoutDocTypeId);
 			if (inOutDocType.getC_DocTypeInvoice_ID() > 0)
 			{
@@ -508,6 +509,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		return null;
 	}
 
+	@NonNull
 	private I_C_DocType extractOrderDocTypeRecord(final I_C_Order order)
 	{
 		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliers(
@@ -540,8 +542,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 					.stream()
 					.map(InvoiceCandidateId::ofRepoId)
 					.collect(ImmutableSet.toImmutableSet());
-
-			invoiceCandidateIds.forEach(invoiceCandidateId -> invoiceCandBL.setAsyncBatch(invoiceCandidateId, asyncBatchId));
 
 			invoiceCandDAO.invalidateCandsFor(invoiceCandidateIds);
 			return;
@@ -945,7 +945,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		// Set C_Tax from Product (07442)
 		final OrgId orgId = OrgId.ofRepoId(inoutLineRecord.getAD_Org_ID());
 		final org.compiere.model.I_M_InOut inOutRecord = inoutLineRecord.getM_InOut();
-		final Properties ctx = getCtx(inoutLineRecord);
 		final Timestamp shipDate = inOutRecord.getMovementDate();
 
 		final BPartnerLocationAndCaptureId deliveryLocation = InOutDocumentLocationAdapterFactory

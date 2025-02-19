@@ -1,15 +1,14 @@
 package de.metas.inoutcandidate.api;
 
 import de.metas.inout.ShipmentScheduleId;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.slf4j.MDC;
-import org.slf4j.MDC.MDCCloseable;
-
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.TableRecordMDC;
 import de.metas.process.PInstanceId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
 
 /*
  * #%L

@@ -25,7 +25,7 @@ Feature: Product items invoice candidates: shipments
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_1        | 0123456789011 | endcustomer_1            | Y                   | Y                   |
     When metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                    | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
       | pl_1       | ps_1                          | DE                        | EUR                 | price_list_03082022-SIC | null            | true  | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name           | ValidFrom  |
@@ -51,8 +51,8 @@ Feature: Product items invoice candidates: shipments
       | s_ol_1     | ol_1                      | N             |
 
     When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
-      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID_ |
-      | s_ol_1                           | D            | false               | false       | 100                                              |
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | s_ol_1                           | D            | false               | false       | 100                                             |
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
@@ -102,8 +102,8 @@ Feature: Product items invoice candidates: shipments
       | s_ol_1     | ol_1                      | N             |
 
     When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
-      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID_ |
-      | s_ol_1                           | D            | false               | false       | 100                                              |
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | s_ol_1                           | D            | false               | false       | 100                                             |
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
@@ -160,8 +160,8 @@ Feature: Product items invoice candidates: shipments
       | s_ol_1     | ol_1                      | N             |
 
     When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
-      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID_ |
-      | s_ol_1                           | D            | false               | false       | 100                                              |
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | s_ol_1                           | D            | false               | false       | 100                                             |
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
@@ -219,8 +219,8 @@ Feature: Product items invoice candidates: shipments
       | s_ol_1     | ol_1                      | N             |
 
     When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
-      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID_ |
-      | s_ol_1                           | D            | false               | false       | 100                                              |
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | s_ol_1                           | D            | false               | false       | 100                                             |
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
@@ -282,8 +282,8 @@ Feature: Product items invoice candidates: shipments
       | s_ol_1     | ol_1                      | N             |
 
     When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
-      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID_ |
-      | s_ol_1                           | D            | false               | false       | 100                                              |
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | s_ol_1                           | D            | false               | false       | 100                                             |
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
@@ -345,8 +345,8 @@ Feature: Product items invoice candidates: shipments
       | s_ol_1     | ol_1                      | N             |
 
     When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
-      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID_ |
-      | s_ol_1                           | D            | false               | false       | 100                                              |
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | s_ol_1                           | D            | false               | false       | 100                                             |
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
@@ -404,8 +404,8 @@ Feature: Product items invoice candidates: shipments
       | s_ol_1     | ol_1                      | N             |
 
     When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
-      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID_ |
-      | s_ol_1                           | D            | false               | false       | 100                                              |
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | s_ol_1                           | D            | false               | false       | 100                                             |
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
@@ -459,8 +459,8 @@ Feature: Product items invoice candidates: shipments
       | s_ol_1     | ol_1                      | N             |
 
     When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
-      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID_ |
-      | s_ol_1                           | D            | false               | false       | 100                                              |
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday | QtyToDeliver_Override_For_M_ShipmentSchedule_ID |
+      | s_ol_1                           | D            | false               | false       | 100                                             |
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_ol_1                           | shipment_1            |

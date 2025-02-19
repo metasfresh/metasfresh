@@ -1,10 +1,7 @@
 package de.metas.document.engine;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Properties;
-
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -12,11 +9,11 @@ import org.adempiere.model.IModelWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
-import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.io.File;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Properties;
 
 /*
  * #%L
@@ -48,8 +45,6 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 		final DocumentTableFields docActionModel = InterfaceWrapperHelper.create(model, DocumentTableFields.class);
 		return new DocumentWrapper(docActionModel, handler);
 	}
-
-	private static final Logger logger = LogManager.getLogger(DocumentWrapper.class);
 
 	private final DocumentTableFields model;
 	private final DocumentHandler handler;
@@ -302,12 +297,6 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 	public int get_Table_ID()
 	{
 		return InterfaceWrapperHelper.getModelTableId(model);
-	}
-
-	@Override
-	public Logger get_Logger()
-	{
-		return logger;
 	}
 
 	@Override

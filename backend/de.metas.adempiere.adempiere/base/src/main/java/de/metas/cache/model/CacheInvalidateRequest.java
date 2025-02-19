@@ -88,39 +88,18 @@ public class CacheInvalidateRequest
 		return new CacheInvalidateRequest(rootTableName, rootRecordId, childTableName, childRecordId, debugFrom);
 	}
 
-	public static CacheInvalidateRequest fromTableNameAndRecordId(final String tableName, final int recordId)
-	{
-		if (tableName == null)
-		{
-			return all();
-		}
-		else if (recordId < 0)
-		{
-			return allRecordsForTable(tableName);
-		}
-		else
-		{
-			return rootRecord(tableName, recordId);
-		}
-	}
-
 	private static final boolean DEBUG = false;
 
 	private static final int RECORD_ID_ALL = -1;
 	private static final CacheInvalidateRequest ALL = new CacheInvalidateRequest(null, RECORD_ID_ALL, null, RECORD_ID_ALL, "ALL");
 
-	@JsonProperty("rootTableName")
-	private final String rootTableName;
-	@JsonProperty("rootRecordId")
-	private final int rootRecordId;
+	@JsonProperty("rootTableName") String rootTableName;
+	@JsonProperty("rootRecordId") int rootRecordId;
 
-	@JsonProperty("childTableName")
-	private final String childTableName;
-	@JsonProperty("childRecordId")
-	private final int childRecordId;
+	@JsonProperty("childTableName") String childTableName;
+	@JsonProperty("childRecordId") int childRecordId;
 
-	@JsonProperty("debugFrom")
-	final String debugFrom;
+	@JsonProperty("debugFrom") String debugFrom;
 
 	@JsonCreator
 	private CacheInvalidateRequest(
@@ -203,11 +182,6 @@ public class CacheInvalidateRequest
 	public String getTableNameEffective()
 	{
 		return childTableName != null ? childTableName : rootTableName;
-	}
-
-	public int getRecordIdEffective()
-	{
-		return childTableName != null ? childRecordId : rootRecordId;
 	}
 
 	public static final class Builder

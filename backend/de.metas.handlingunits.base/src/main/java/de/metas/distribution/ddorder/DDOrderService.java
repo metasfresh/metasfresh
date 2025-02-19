@@ -24,12 +24,14 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
+import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -206,10 +208,17 @@ public class DDOrderService
 		final ImmutableList.Builder<I_DD_Order> result = ImmutableList.builder();
 		for (final Entry<BPartnerLocationId, Collection<HUToDistribute>> entry : entries)
 		{
+			final WarehouseId warehouseFromId = entry.getValue()
+					.stream()
+					.map(huToDistribute -> IHandlingUnitsBL.extractWarehouseId(huToDistribute.getHu()))
+					.distinct()
+					.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("All HUs shall be from same warehouseFromId")));
+
 			final Optional<I_DD_Order> ddOrder = HUs2DDOrderProducer.newProducer(ddOrderMoveScheduleService)
 					.setLocatorToId(quarantineLocatorId)
 					.setBpartnerLocationId(entry.getKey())
 					.setHUs(entry.getValue().iterator())
+					.setWarehouseFromId(warehouseFromId)
 					.process();
 
 			ddOrder.ifPresent(result::add);
@@ -276,7 +285,10 @@ public class DDOrderService
 				.generateDirectMovements();
 	}
 
-	public boolean isCreateMovementOnComplete() {return sysConfigBL.getBooleanValue(SYSCONFIG_IsCreateMovementOnComplete, false);}
+	public boolean isCreateMovementOnComplete()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_IsCreateMovementOnComplete, false);
+	}
 
 	public Quantity getQtyToShip(final I_DD_OrderLine_Or_Alternative ddOrderLineOrAlt)
 	{
@@ -325,4 +337,15 @@ public class DDOrderService
 		ddOrder.setAD_User_Responsible_ID(-1);
 		save(ddOrder);
 	}
+
+	public Set<ProductId> getProductIdsByDDOrderIds(final Collection<DDOrderId> ddOrderIds)
+	{
+		return ddOrderLowLevelDAO.getProductIdsByDDOrderIds(ddOrderIds);
+	}
+
+	public Stream<I_DD_OrderLine> streamLinesByDDOrderIds(@NonNull final Collection<DDOrderId> ddOrderIds)
+	{
+		return ddOrderLowLevelDAO.streamLinesByDDOrderIds(ddOrderIds);
+	}
+
 }

@@ -23,6 +23,10 @@ CREATE OR REPLACE FUNCTION AccountSheetReport(p_dateFrom        date,
                 endingBalance    numeric,
                 taxRate          text,
                 taxCategory      text,
+				amtsourcecr      numeric, 
+				amtsourcedr      numeric,
+				currency         text, 
+				currencyrate     numeric,
                 docTypeName      text,
                 documentno       text,
                 description      text,
@@ -51,6 +55,10 @@ BEGIN
         dateacct         timestamp,
         amtacctdr        numeric,
         amtacctcr        numeric,
+		amtsourcecr      numeric, 
+		amtsourcedr      numeric,
+		currency        text, 
+		currencyrate     numeric,
         description      text,
         c_doctype_id     numeric(10),
         c_tax_id         numeric(10),
@@ -123,6 +131,10 @@ BEGIN
                         coalesce(taxTrl.name, t.name)                 taxName,
                         fa.amtacctdr,
                         fa.amtacctcr,
+						fa.amtsourcecr, 
+		                fa.amtsourcedr,
+		                c.iso_code as currency, 
+		                fa.currencyrate,
                         fa.description,
                         fa.c_doctype_id,
                         coalesce(dtTrl.name, dt.name)                 docTypeName,
@@ -140,6 +152,8 @@ BEGIN
                           LEFT JOIN c_taxcategory_trl tcTrl ON tc.c_taxcategory_id = tcTrl.c_taxcategory_id AND tcTrl.ad_language = p_ad_language
                           LEFT JOIN c_doctype dt ON fa.c_doctype_id = dt.c_doctype_id AND dt.c_doctype_id != 0
                           LEFT JOIN c_doctype_trl dtTrl ON dt.c_doctype_id = dtTrl.c_doctype_id AND dtTrl.ad_language = p_ad_language
+						  LEFT JOIN c_currency c on c.c_currency_id = fa.c_currency_id
+						  
                  WHERE TRUE
                    AND (fa.amtacctdr != 0 OR fa.amtacctcr != 0)
                    AND fa.postingtype = 'A' -- posting type = 'Actual'
@@ -148,6 +162,7 @@ BEGIN
                    AND (p_account_id IS NULL OR fa.account_id = p_account_id)
                    AND (p_c_activity_id IS NULL OR fa.c_activity_id = p_c_activity_id)
                    AND (p_c_project_id IS NULL OR fa.c_project_id = p_c_project_id)
+                   AND (p_ad_org_id IS NULL or fa.ad_org_id = p_ad_org_id)
              )
     INSERT
     INTO TMP_AccountSheetReport(fact_acct_id,
@@ -158,6 +173,10 @@ BEGIN
                                 dateacct,
                                 amtacctdr,
                                 amtacctcr,
+								amtsourcecr, 
+								amtsourcedr,
+								currency, 
+								currencyrate,
                                 description,
                                 c_doctype_id,
                                 c_tax_id,
@@ -176,6 +195,10 @@ BEGIN
            ffa.dateacct,
            ffa.amtacctdr,
            ffa.amtacctcr,
+		   ffa.amtsourcecr, 
+		   ffa.amtsourcedr,
+		   ffa.currency, 
+		   ffa.currencyrate,
            ffa.description,
            ffa.c_doctype_id,
            ffa.c_tax_id,
@@ -235,6 +258,10 @@ BEGIN
                t.endingBalance,
                t.taxName         taxRate,
                t.taxCategoryName taxCategory,
+			   t.amtsourcecr, 
+		       t.amtsourcedr,
+		       t.currency, 
+		       t.currencyrate,
                t.docTypeName,
                t.documentno::text,
                t.description::text,

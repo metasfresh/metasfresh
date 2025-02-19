@@ -188,7 +188,7 @@ public class ESRDataImporterCamt54v06
 	{
 		final List<ESRTransaction> transactions = new ArrayList<>();
 
-		int countQRR = 0;
+		int countQRR_SCOR = 0;
 
 		for (final EntryTransaction8 txDtl : ntryDtl.getTxDtls())
 		{
@@ -210,13 +210,14 @@ public class ESRDataImporterCamt54v06
 					.build();
 			transactions.add(esrTransaction);
 
-			if (ESRType.TYPE_QRR.equals(esrTransaction.getType()))
+			// we need to put  qrr and scor in the same basket
+			if (ESRType.TYPE_QRR.equals(esrTransaction.getType()) || ESRType.TYPE_SCOR.equals(esrTransaction.getType()))
 			{
-				countQRR++;
+				countQRR_SCOR++;
 			}
 		}
 
-		if (countQRR != 0 && countQRR != transactions.size())
+		if (countQRR_SCOR != 0 && countQRR_SCOR != transactions.size())
 		{
 			throw new AdempiereException(ESRDataImporterCamt54.MSG_MULTIPLE_TRANSACTIONS_TYPES);
 		}

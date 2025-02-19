@@ -156,6 +156,12 @@ public class OrderLineBL implements IOrderLineBL
 		return orderDAO.retrieveOrderLinesByOrderIds(orderIds);
 	}
 
+	@Override
+	public I_C_OrderLine getOrderLineById(@NonNull final OrderLineId orderLineId)
+	{
+		return orderDAO.getOrderLineById(orderLineId);
+	}
+
 	private I_C_UOM getUOM(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		final UomId uomId = UomId.ofRepoIdOrNull(orderLine.getC_UOM_ID());
@@ -240,7 +246,7 @@ public class OrderLineBL implements IOrderLineBL
 
 		final I_C_Tax tax = MTax.get(Env.getCtx(), taxId);
 
-		final BigDecimal taxAmtInfo = taxBL.calculateTax(tax, lineAmout, taxIncluded, taxPrecision.toInt());
+		final BigDecimal taxAmtInfo = taxBL.calculateTaxAmt(tax, lineAmout, taxIncluded, taxPrecision.toInt());
 		ol.setTaxAmtInfo(taxAmtInfo);
 	}
 
@@ -360,8 +366,17 @@ public class OrderLineBL implements IOrderLineBL
 	@Override
 	public void updateLineNetAmtFromQtyEntered(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
 	{
-		final Quantity qtyInPriceUOM = convertQtyEnteredToPriceUOM(orderLine);
+		final Quantity qtyInPriceUOM = orderLine.isManualQtyInPriceUOM()
+				? getQtyEnteredInPriceUOM(orderLine)
+				: convertQtyEnteredToPriceUOM(orderLine);
+		
 		updateLineNetAmtFromQtyInPriceUOM(orderLine, qtyInPriceUOM);
+	}
+
+	private Quantity getQtyEnteredInPriceUOM(@NonNull final org.compiere.model.I_C_OrderLine orderLine)
+	{
+		final I_C_UOM priceUOM = uomDAO.getById(UomId.ofRepoId(orderLine.getPrice_UOM_ID()));
+		return Quantity.of(orderLine.getQtyEnteredInPriceUOM(), priceUOM);
 	}
 
 	@Override
@@ -427,9 +442,9 @@ public class OrderLineBL implements IOrderLineBL
 			orderLine.setQtyReserved(BigDecimal.ZERO);
 			return;
 		}
-		if (orderLine.getQtyOrdered().signum() <= 0)
+		if (orderLine.getQtyOrdered().signum() <= 0 || orderLine.isDeliveryClosed())
 		{
-			logger.debug("Given orderLine {} has QtyOrdered<=0; setting QtyReserved=0.", orderLine);
+			logger.debug("Given orderLine {} has QtyOrdered<=0 or delivery was closed; setting QtyReserved=0.", orderLine);
 			orderLine.setQtyReserved(BigDecimal.ZERO);
 			return;
 		}
@@ -563,24 +578,24 @@ public class OrderLineBL implements IOrderLineBL
 				"For calling this method to make any sense, the given orderLine, needs to have at least a product *or* uom; C_OrderLine={}", orderLine);
 		if (productId == null)
 		{
-			return Quantitys.create(qtyEntered, uomId);
+			return Quantitys.of(qtyEntered, uomId);
 		}
 		if (uomId == null)
 		{
 			final UomId stockUOMId = productBL.getStockUOMId(productId);
-			return Quantitys.create(qtyEntered, stockUOMId);
+			return Quantitys.of(qtyEntered, stockUOMId);
 		}
 
 		if (uomDAO.isUOMForTUs(uomId))
 		{
 			// we can't use any conversion rate, but need to rely on qtyItemCapacity which is coming from order line's CU-TU (M_HU_PI_Item_Product)
-			return Quantitys.create(computeQtyOrderedUsingQtyItemCapacity(orderLine), productId);
+			return Quantitys.of(computeQtyOrderedUsingQtyItemCapacity(orderLine), productId);
 		}
 		else
 		{
 			final BigDecimal qtyOrdered = uomConversionBL.convertToProductUOM(productId, qtyEntered, uomId);
 			// TODO check if null; but should have been checked by DefaultOLCandValidator
-			return Quantitys.create(qtyOrdered, productId);
+			return Quantitys.of(qtyOrdered, productId);
 		}
 	}
 
@@ -589,7 +604,11 @@ public class OrderLineBL implements IOrderLineBL
 		final BigDecimal qtyItemCapacity = orderLine.getQtyItemCapacity();
 		if (qtyItemCapacity.signum() <= 0 && orderLine.getQtyEntered().signum() != 0)
 		{
-			throw new AdempiereException(TranslatableStrings.constant("for TU-UOMs, we must have qtyItemCapacity"));// TODO: nice user message
+			throw new AdempiereException(TranslatableStrings.constant("Missing QtyItemCapacity for C_ORderLine_ID="+orderLine.getC_OrderLine_ID()))
+					.appendParametersToMessage()
+					.setParameter("C_Order_ID", orderLine.getC_Order_ID())
+					.setParameter("Line", orderLine.getLine())
+					.setParameter("M_Product_ID", orderLine.getM_Product_ID());
 		}
 		return qtyItemCapacity;
 	}
@@ -652,7 +671,7 @@ public class OrderLineBL implements IOrderLineBL
 			// therefore we take the detour via qtyOrdered
 			// IMPORTANT: we don't use the current orderLine's getQtyOrdered from DB, because e.g. it might be 0 if the shipment-schedule was closed, but still we might have a QtyEntered>0,
 			// and we don't want this to be our concern here
-			final Quantity targetQtyInQtockUOM = Quantitys.create(sourceQuantity.toBigDecimal().multiply(itemCapacityInStockUOM), productId);
+			final Quantity targetQtyInQtockUOM = Quantitys.of(sourceQuantity.toBigDecimal().multiply(itemCapacityInStockUOM), productId);
 			assume(!uomDAO.isUOMForTUs(targetQtyInQtockUOM.getUomId()), "Our stock-Keeping is never done in a TUs-UOM; qtyInQtockUOM={}; C_OrderLine={}", targetQtyInQtockUOM, orderLine);
 
 			return uomConversionBL.convertQuantityTo(targetQtyInQtockUOM, conversionCtx, targetUomId);
@@ -796,7 +815,7 @@ public class OrderLineBL implements IOrderLineBL
 		}
 
 		final CurrencyPrecision taxPrecision = getTaxPrecision(orderLine);
-		final BigDecimal taxAmt = taxBL.calculateTax(tax, priceActual, true/* taxIncluded */, taxPrecision.toInt());
+		final BigDecimal taxAmt = taxBL.calculateTaxAmt(tax, priceActual, true/* taxIncluded */, taxPrecision.toInt());
 		final BigDecimal priceActualWithoutTax = priceActual.subtract(taxAmt);
 		return ProductPrice.builder()
 				.productId(productId)

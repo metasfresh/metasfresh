@@ -45,6 +45,9 @@ public enum CandidateType implements ReferenceListAwareEnum
 	DEMAND(X_MD_Candidate.MD_CANDIDATE_TYPE_DEMAND),
 	SUPPLY(X_MD_Candidate.MD_CANDIDATE_TYPE_SUPPLY),
 
+	/**
+	 * Somewhat similar to {@link #DEMAND}, but afterward the ATP shall not be back at zero (as the demand was fulfilled), but shall be at the level "requested" by the forecast.
+	 */
 	STOCK_UP(X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK_UP),
 
 	/**
@@ -92,6 +95,10 @@ public enum CandidateType implements ReferenceListAwareEnum
 	{
 		return DECREASING_STOCK_TYPES.contains(this);
 	}
+
+	public boolean isSupply() {return SUPPLY.equals(this);}
+
+	public boolean isStock() {return STOCK.equals(this);}
 
 	public static boolean equals(@Nullable final CandidateType type1, @Nullable final CandidateType type2) {return Objects.equals(type1, type2);}
 }

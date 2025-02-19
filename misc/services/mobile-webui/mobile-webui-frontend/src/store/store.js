@@ -16,7 +16,7 @@ export const history = createBrowserHistory({
 });
 const composeEnhancer =
   typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
-    ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({ serialize: true, latency: 0, features: { persist: false } })
+    ? window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({ trace: true, traceLimit: 25 })
     : compose;
 
 export const store = function configureStore(preloadedState) {

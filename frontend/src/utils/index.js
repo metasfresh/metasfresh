@@ -55,6 +55,11 @@ export const getQueryString = (query) => {
   return queryString.stringify(query, { arrayFormat: 'comma', skipNull: true });
 };
 
+export const buildURL = (baseUrl, query) => {
+  const queryString = query ? getQueryString(query) : null;
+  return !queryString ? baseUrl : `${baseUrl}?${queryString}`;
+};
+
 // TODO: Move to api ?
 export const createPatchRequestPayload = (property, value) => {
   if (Array.isArray(property) && Array.isArray(value)) {
@@ -279,20 +284,6 @@ export function deepUnfreeze(obj) {
  */
 export function leftTrim(str) {
   return str.replace(/^\s+/, '');
-}
-
-/**
- * @method formatSortingQuery
- * @summary format's the ordering parameters prefixing them with asc/desc sign
- */
-export function formatSortingQuery(orderBy) {
-  if (orderBy && orderBy.map) {
-    return orderBy.map((sortParam) => {
-      return `${sortParam.ascending ? '+' : '-'}${sortParam.fieldName}`;
-    });
-  }
-
-  return orderBy;
 }
 
 export const isBlank = (str) => {

@@ -8,6 +8,8 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -36,6 +38,9 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 {
 	public static final ZoneId ZONE_ID = ZoneId.of("Europe/London");
 	private final HashMap<HuId, HUQRCode> qrCodes = new HashMap<>();
+
+	@Override
+	public PickingJobOptions getPickingJobOptions(final @NonNull BPartnerId customerId) {return MobileUIPickingUserProfile.DEFAULT.getDefaultPickingJobOptions();}
 
 	@Override
 	public void warmUpCachesFrom(@NonNull final PackageableList items)
@@ -137,12 +142,9 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	}
 
 	@Override
-	public SetMultimap<ShipmentScheduleId, ExistingLockInfo> getLocks(final Collection<ShipmentScheduleId> shipmentScheduleIds) {return ImmutableSetMultimap.of();}
-
-	@Override
-	public boolean isCatchWeightTUPickingEnabled()
+	public SetMultimap<ShipmentScheduleId, ExistingLockInfo> getLocks(final Collection<ShipmentScheduleId> shipmentScheduleIds)
 	{
-		return false;
+		return ImmutableSetMultimap.of();
 	}
 
 	public void mockQRCode(@NonNull final HuId huId, @NonNull final HUQRCode qrCode)

@@ -108,7 +108,6 @@ public class CandidateRepositoryWriteServiceTests
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
-
 		candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 		candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
 		repositoryTestHelper = new RepositoryTestHelper(candidateRepositoryWriteService);

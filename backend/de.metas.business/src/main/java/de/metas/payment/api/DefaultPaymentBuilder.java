@@ -24,6 +24,7 @@ package de.metas.payment.api;
 
 import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -47,13 +48,15 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 
+@SuppressWarnings("UnusedReturnValue")
 public class DefaultPaymentBuilder
 {
 	public static DefaultPaymentBuilder newInboundReceiptBuilder()
@@ -143,7 +146,7 @@ public class DefaultPaymentBuilder
 
 	private DocTypeId getDocTypeIdOrNull()
 	{
-		final String docBaseType = payment.isReceipt() ? X_C_DocType.DOCBASETYPE_ARReceipt : X_C_DocType.DOCBASETYPE_APPayment;
+		final DocBaseType docBaseType = payment.isReceipt() ? DocBaseType.ARReceipt : DocBaseType.PurchasePayment;
 
 		return docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
 				.docBaseType(docBaseType)
@@ -219,6 +222,13 @@ public class DefaultPaymentBuilder
 		return this;
 	}
 
+	public final DefaultPaymentBuilder dateTrx(@Nullable final Instant dateTrx)
+	{
+		assertNotBuilt();
+		payment.setDateTrx(dateTrx != null ? Timestamp.from(dateTrx) : null);
+		return this;
+	}
+
 	public final DefaultPaymentBuilder bpartnerId(@NonNull final BPartnerId bpartnerId)
 	{
 		assertNotBuilt();
@@ -258,7 +268,7 @@ public class DefaultPaymentBuilder
 	{
 		assertNotBuilt();
 		payment.setC_ConversionType_ID(CurrencyConversionTypeId.toRepoId(paymentCurrencyContext.getCurrencyConversionTypeId()));
-		if(paymentCurrencyContext.isFixedConversionRate())
+		if (paymentCurrencyContext.isFixedConversionRate())
 		{
 			Check.assumeEquals(payment.getC_Currency_ID(), paymentCurrencyContext.getPaymentCurrencyId().getRepoId(), "{} shall match payment currency", paymentCurrencyContext);
 			payment.setCurrencyRate(paymentCurrencyContext.getCurrencyRate());

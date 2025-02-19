@@ -22,11 +22,15 @@
 
 package de.metas.cucumber.stepdefs.edi;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.StringUtils;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.edi.api.EDIDesadvQuery;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.process.export.enqueue.DesadvEnqueuer;
 import de.metas.edi.process.export.enqueue.EnqueueDesadvRequest;
@@ -50,11 +54,12 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class EDI_Desadv_StepDef
 {
@@ -84,6 +89,16 @@ public class EDI_Desadv_StepDef
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
 		this.ediExpDesadvTable = ediExpDesadvTable;
+	}
+
+	@Then("validate created edi desadv")
+	public void validate_edi_desadv(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			validateEdiDesadv(tableRow);
+		}
 	}
 
 	@Then("EDI_Desadv is found:")
@@ -124,6 +139,27 @@ public class EDI_Desadv_StepDef
 		{
 			validateExportStatus(timeoutSec, row);
 		}
+	}
+
+	private void validateEdiDesadv(@NonNull final Map<String, String> tableRow)
+	{
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Order.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		final de.metas.edi.model.I_C_Order orderRecord = InterfaceWrapperHelper.create(
+				CoalesceUtil.coalesceSuppliers(
+						() -> orderTable.get(orderIdentifier),
+						() -> InterfaceWrapperHelper.load(StringUtils.toIntegerOrZero(orderIdentifier), I_C_Order.class)), de.metas.edi.model.I_C_Order.class);
+
+		final I_EDI_Desadv ediDesadvRecord = InterfaceWrapperHelper.load(orderRecord.getEDI_Desadv_ID(), I_EDI_Desadv.class);
+
+		final BigDecimal sumDeliveredInStockingUOM = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_EDI_Desadv.COLUMNNAME_SumDeliveredInStockingUOM);
+		final BigDecimal sumOrderedInStockingUOM = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_EDI_Desadv.COLUMNNAME_SumOrderedInStockingUOM);
+
+		assertThat(ediDesadvRecord.getSumDeliveredInStockingUOM()).isEqualByComparingTo(sumDeliveredInStockingUOM);
+		assertThat(ediDesadvRecord.getSumOrderedInStockingUOM()).isEqualByComparingTo(sumOrderedInStockingUOM);
+
+		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "EDI_Desadv");
+		desadvTable.put(recordIdentifier, ediDesadvRecord);
 	}
 
 	private void validateEDIExpDesadvPack(@NonNull final Map<String, String> tableRow)
@@ -190,7 +226,7 @@ public class EDI_Desadv_StepDef
 		assertThat(childNode.getNodeType()).isEqualTo(Node.ELEMENT_NODE);
 
 		return (Element)childNode;
-	}
+		}
 
 	private void validateExportStatus(
 			final int timeoutSec,
@@ -199,6 +235,7 @@ public class EDI_Desadv_StepDef
 		final String desadvIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_EDI_Desadv.COLUMNNAME_EDI_Desadv_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		final I_EDI_Desadv desadvRecord = desadvTable.get(desadvIdentifier);
+		assertThat(desadvRecord).as("Missing EDI_Desadv for identifier=%s", desadvIdentifier).isNotNull();
 
 		final String exportStatus = DataTableUtil.extractStringForColumnName(tableRow, I_EDI_Desadv.COLUMNNAME_EDI_ExportStatus);
 
@@ -235,7 +272,11 @@ public class EDI_Desadv_StepDef
 		final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_C_Order_ID + ".Identifier");
 		final I_C_Order order = orderTable.get(orderIdentifier);
 
-		final I_EDI_Desadv desadvRecord = desadvDAO.retrieveMatchingDesadvOrNull(order.getPOReference(), InterfaceWrapperHelper.getContextAware(order));
+		final I_EDI_Desadv desadvRecord = desadvDAO.retrieveMatchingDesadvOrNull(EDIDesadvQuery.builder()
+																						 .poReference(order.getPOReference())
+																						 .bPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
+																						 .ctxAware(InterfaceWrapperHelper.getContextAware(order))
+																						 .build());
 
 		assertThat(desadvRecord).isNotNull();
 		assertThat(desadvRecord.getC_BPartner_ID()).isEqualTo(bpartnerID);

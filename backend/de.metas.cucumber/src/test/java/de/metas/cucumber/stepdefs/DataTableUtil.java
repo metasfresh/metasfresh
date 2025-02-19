@@ -38,6 +38,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -78,7 +79,7 @@ public class DataTableUtil
 				() -> dataTableRow.get(columnNamePrefix + "." + TABLECOLUMN_IDENTIFIER),
 				() -> createFallbackRecordIdentifier(fallbackPrefix));
 	}
-	
+
 	private String createFallbackRecordIdentifier(@NonNull final String prefix)
 	{
 		return prefix + '_' + (++recordIdentifierFallback);
@@ -102,6 +103,14 @@ public class DataTableUtil
 
 	@Nullable
 	public Integer extractIntegerOrNullForColumnName(
+			@NonNull final DataTableRow dataTableRow,
+			@NonNull final String columnName)
+	{
+		return extractIntegerOrNullForColumnName(dataTableRow.asMap(), columnName);
+	}
+
+	@Nullable
+	public Integer extractIntegerOrNullForColumnName(
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName)
 	{
@@ -109,7 +118,6 @@ public class DataTableUtil
 
 		try
 		{
-			//noinspection DataFlowIssue
 			return Check.isBlank(string) ? null : Integer.parseInt(string);
 		}
 		catch (final NumberFormatException e)
@@ -190,10 +198,11 @@ public class DataTableUtil
 		return dataTableRow.get(columnName);
 	}
 
+	@Contract("null -> null")
 	@Nullable
 	public String nullToken2Null(@Nullable final String value)
 	{
-		return value == null || NULL_STRING.equals(value) ? null : value;
+		return Check.isBlank(value) || NULL_STRING.equals(value) ? null : value;
 	}
 
 	@NonNull
@@ -256,6 +265,40 @@ public class DataTableUtil
 		catch (final DateTimeParseException e)
 		{
 			throw new AdempiereException("Can't parse value=" + string + " of index=" + index, e).appendParametersToMessage()
+					.setParameter("dataTableRow", dataTableRow);
+		}
+	}
+
+	@Nullable
+	public static LocalDate extractLocalDateOrNullForColumnName(
+			@NonNull final Map<String, String> dataTableRow,
+			@NonNull final String columnName)
+	{
+		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
+		try
+		{
+			return Check.isBlank(string) ? null : LocalDate.parse(string);
+		}
+		catch (final DateTimeParseException e)
+		{
+			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
+					.setParameter("dataTableRow", dataTableRow);
+		}
+	}
+
+	@NonNull
+	public static LocalDate extractLocalDateForColumnName(
+			@NonNull final Map<String, String> dataTableRow,
+			@NonNull final String columnName)
+	{
+		final String string = extractStringForColumnName(dataTableRow, columnName);
+		try
+		{
+			return LocalDate.parse(string);
+		}
+		catch (final DateTimeParseException e)
+		{
+			throw new AdempiereException("Can't parse value=" + string + " of columnName=" + columnName, e).appendParametersToMessage()
 					.setParameter("dataTableRow", dataTableRow);
 		}
 	}
@@ -352,7 +395,6 @@ public class DataTableUtil
 
 		try
 		{
-			//noinspection DataFlowIssue
 			return Check.isBlank(string) ? null : new BigDecimal(string);
 		}
 		catch (final NumberFormatException e)
@@ -432,6 +474,7 @@ public class DataTableUtil
 		return StringUtils.toBoolean(string, defaultValue);
 	}
 
+	@Nullable
 	public static Boolean extractBooleanForColumnNameOrNull(
 			@NonNull final Map<String, String> dataTableRow,
 			@NonNull final String columnName)
@@ -474,7 +517,6 @@ public class DataTableUtil
 
 		try
 		{
-			//noinspection DataFlowIssue
 			return Check.isBlank(string) ? null : Double.parseDouble(string);
 		}
 		catch (final NumberFormatException e)

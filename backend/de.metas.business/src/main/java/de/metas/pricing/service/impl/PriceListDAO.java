@@ -29,7 +29,7 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.currency.ICurrencyBL;
 import de.metas.lang.SOTrx;
@@ -625,7 +625,7 @@ public class PriceListDAO implements IPriceListDAO
 		final I_M_PriceList_Version previousPlv = Services.get(IPriceListDAO.class).retrievePreviousVersionOrNull(plv, true);
 		if (previousPlv != null)
 		{
-			plv.setM_Pricelist_Version_Base(previousPlv);
+			plv.setM_Pricelist_Version_Base_ID(previousPlv.getM_PriceList_Version_ID());
 			save(plv);
 		}
 
@@ -894,7 +894,7 @@ public class PriceListDAO implements IPriceListDAO
 				.matchingColumnNames(I_M_PriceList.COLUMNNAME_M_PricingSystem_ID, I_C_BPartner.COLUMNNAME_M_PricingSystem_ID)
 				.subQuery(customerQuery)
 				.end()
-				.andCollectChildren(I_M_PriceList_Version.COLUMN_M_PriceList_ID)
+				.andCollectChildren(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, I_M_PriceList_Version.class)
 				.addOnlyActiveRecordsFilter()
 
 				.addNotEqualsFilter(I_M_PriceList_Version.COLUMNNAME_M_PriceList_ID, basePriceListId)
@@ -1010,9 +1010,8 @@ public class PriceListDAO implements IPriceListDAO
 		{
 			cacheInvalidateMultiRequest = CacheInvalidateMultiRequest.fromTableNameAndRecordIds(I_M_ProductPrice.Table_Name, productPriceQuery.listIds());
 		}
-		Services
-				.get(IModelCacheInvalidationService.class)
-				.invalidate(cacheInvalidateMultiRequest, ModelCacheInvalidationTiming.CHANGE);
+		ModelCacheInvalidationService.get()
+				.invalidate(cacheInvalidateMultiRequest, ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	@Override

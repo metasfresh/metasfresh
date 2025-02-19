@@ -28,8 +28,11 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.handlingunits.HUItemType;
+import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuItemId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -73,8 +76,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
+import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -491,7 +493,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 	@Override
 	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
-			@NonNull HuPackingInstructionsId piId,
+			@NonNull final HuPackingInstructionsId piId,
 			@NonNull final HuPackingInstructionsId includedPIId,
 			@Nullable final BPartnerId bpartnerId)
 	{
@@ -1228,5 +1230,26 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.addOnlyWithAttribute(AttributeConstants.HU_ExternalLotNumber, externalLotNo)
 				.createQuery()
 				.firstIdOnlyOptional(HuId::ofRepoId);
+	}
+
+	@NonNull
+	@Override
+	public ImmutableSet<HuId> retrieveHuIdAndDownstream(@NonNull final HuId huId)
+	{
+		final ImmutableSet.Builder<HuId> huIdAndDownstream = ImmutableSet.builder();
+		new HUIterator()
+				.setEnableStorageIteration(false)
+				.setListener(new HUIteratorListenerAdapter()
+				{
+					@Override
+					public Result beforeHU(final IMutable<I_M_HU> hu)
+					{
+						huIdAndDownstream.add(HuId.ofRepoId(hu.getValue().getM_HU_ID()));
+						return Result.CONTINUE;
+					}
+				})
+				.iterate(getById(huId));
+
+		return huIdAndDownstream.build();
 	}
 }

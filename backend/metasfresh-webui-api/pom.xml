@@ -48,6 +48,18 @@
 			<version>${metasfresh.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>de.metas.payment.sumup</groupId>
+			<artifactId>de.metas.payment.sumup.webui</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.metas.swat</groupId>
+			<artifactId>de.metas.swat.webui</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+		
 		<!-- logging -->
 		<!-- logstash-logback-encoder and janino are related to https://github.com/metasfresh/metasfresh/issues/1504 -->
 		<dependency>

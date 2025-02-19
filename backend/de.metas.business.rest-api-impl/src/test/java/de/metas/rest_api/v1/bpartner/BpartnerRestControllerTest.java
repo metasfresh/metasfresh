@@ -22,6 +22,8 @@
 
 package de.metas.rest_api.v1.bpartner;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.BPartnerBankAccountId;
@@ -70,7 +72,6 @@ import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil;
-import de.metas.test.SnapshotFunctionFactory;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.JSONObjectMapper;
@@ -92,8 +93,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.util.Env;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -115,16 +114,14 @@ import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.C_BPARTNER_LOCAT
 import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.C_BPARTNER_VALUE;
 import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.C_BP_GROUP_ID;
 import static de.metas.rest_api.v1.bpartner.BPartnerRecordsUtil.createBPartnerData;
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@ExtendWith(AdempiereTestWatcher.class)
+@ExtendWith({AdempiereTestWatcher.class, SnapshotExtension.class})
 class BpartnerRestControllerTest
 {
 	private BpartnerRestController bpartnerRestController;
@@ -132,17 +129,7 @@ class BpartnerRestControllerTest
 	private BPartnerCompositeRepository bpartnerCompositeRepository;
 	private CurrencyRepository currencyRepository;
 
-	@BeforeAll
-	static void beforeAll()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
-	}
+	private Expect expect;
 
 	@BeforeEach
 	void init()
@@ -190,7 +177,7 @@ class BpartnerRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
 
-		expect(resultBody).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -202,7 +189,7 @@ class BpartnerRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
 
-		expect(resultBody).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -214,7 +201,7 @@ class BpartnerRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
 
-		expect(resultBody).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -228,7 +215,7 @@ class BpartnerRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseContact resultBody = result.getBody();
 
-		expect(resultBody).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -242,7 +229,7 @@ class BpartnerRestControllerTest
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseLocation resultBody = result.getBody();
 
-		expect(resultBody).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 	}
 
 	@Test
@@ -287,7 +274,7 @@ class BpartnerRestControllerTest
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(metasfreshId.getValue());
 
 		final BPartnerComposite persistedResult = bpartnerCompositeRepository.getById(bpartnerId);
-		expect(persistedResult).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(persistedResult);
 
 		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner.class)).hasSize(initialBPartnerRecordCount + 1);
 		assertThat(POJOLookupMap.get().getRecords(I_AD_User.class)).hasSize(initialUserRecordCount + 2);
@@ -442,7 +429,7 @@ class BpartnerRestControllerTest
 		final ResponseEntity<JsonResponseComposite> result = bpartnerRestController.retrieveBPartner("val-12345");
 		assertThat(result.getStatusCode()).isEqualByComparingTo(HttpStatus.OK);
 		final JsonResponseComposite resultBody = result.getBody();
-		expect(resultBody).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(resultBody);
 
 		// finally, also make sure that if we repeat the same invocation, no new location record is created
 		final RecordCounts countsBefore2ndInvocation = new RecordCounts();
@@ -623,21 +610,21 @@ class BpartnerRestControllerTest
 		assertThat(resultContactId.getRepoId()).isEqualTo(metasfreshId.getValue());
 
 		final BPartnerComposite persistedResult = optContactIdAndBPartner.get().getBpartnerComposite();
-		expect(persistedResult).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(persistedResult);
 	}
 
 	@Test
 	void createOrUpdateContact_update_extContactIdentifier()
 	{
 		final BPartnerComposite persistedResult = perform_createOrUpdateContact_update("ext-" + AD_USER_EXTERNAL_ID);
-		expect(persistedResult).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(persistedResult);
 	}
 
 	@Test
 	void createOrUpdateContact_update_idContactIdentifier()
 	{
 		final BPartnerComposite persistedResult = perform_createOrUpdateContact_update(Integer.toString(AD_USER_ID));
-		expect(persistedResult).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(persistedResult);
 	}
 
 	private BPartnerComposite perform_createOrUpdateContact_update(@NonNull final String contactIdentifier)
@@ -714,7 +701,7 @@ class BpartnerRestControllerTest
 
 		assertThat(persistedLocation.get().getId().getRepoId()).isEqualTo(metasfreshId.getValue());
 
-		expect(persistedResult).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(persistedResult);
 	}
 
 	@Test
@@ -791,6 +778,8 @@ class BpartnerRestControllerTest
 
 		assertThat(page3Body.getPagingDescriptor().getNextPage()).isNull();
 
-		expect(page1Body, page2Body, page3Body).toMatchSnapshot();
+		expect.scenario("page1").serializer("orderedJson").toMatchSnapshot(page1Body);
+		expect.scenario("page2").serializer("orderedJson").toMatchSnapshot(page2Body);
+		expect.scenario("page3").serializer("orderedJson").toMatchSnapshot(page3Body);
 	}
 }

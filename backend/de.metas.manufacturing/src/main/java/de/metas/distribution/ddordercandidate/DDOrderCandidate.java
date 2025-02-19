@@ -145,7 +145,7 @@ public class DDOrderCandidate
 				//
 				.productId(ProductId.ofRepoId(data.getProductId()))
 				.hupiItemProductId(data.getHupiItemProductId())
-				.qty(Quantitys.create(data.getQty(), UomId.ofRepoId(data.getUomId())))
+				.qty(Quantitys.of(data.getQty(), UomId.ofRepoId(data.getUomId())))
 				.qtyTUs(1)// TODO
 				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(data.getAttributeSetInstanceId()))
 				//

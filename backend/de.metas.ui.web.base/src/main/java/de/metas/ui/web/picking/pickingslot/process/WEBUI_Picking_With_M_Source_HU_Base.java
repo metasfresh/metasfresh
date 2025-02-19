@@ -15,10 +15,13 @@ import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.order.DeliveryRule;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.IPackagingDAO;
+import de.metas.picking.api.PickingConfig;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
@@ -32,6 +35,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
+import org.springframework.lang.Nullable;
 
 import java.util.List;
 
@@ -71,6 +75,7 @@ import java.util.List;
 	private final PickingConfigRepository pickingConfigRepo = SpringContextHolder.instance.getBean(PickingConfigRepository.class);
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
 	private final IShipmentSchedulePA shipmentSchedulePA =  Services.get(IShipmentSchedulePA.class);
+	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 	protected final boolean noSourceHUAvailable()
 	{
@@ -89,7 +94,7 @@ import java.util.List;
 				.onlyIfAttributesMatchWithShipmentSchedules(true)
 				.build();
 
-		return huPickingSlotBL.retrieveAvailableSourceHUs(query)
+		return  huPickingSlotBL.retrieveAvailableSourceHUs(query)
 				.stream()
 				.map(I_M_HU::getM_HU_ID)
 				.map(HuId::ofRepoId)
@@ -125,26 +130,26 @@ import java.util.List;
 		return huPickingSlotBL.retrieveAvailableHUIdsToPickForShipmentSchedule(request);
 	}
 
-	protected boolean isForceDelivery()
+	protected final boolean isForceDelivery()
 	{
-		return DeliveryRule.ofCode(getCurrentShipmentSchedule().getDeliveryRule()).isForce();
+		final DeliveryRule deliveryRule = shipmentScheduleEffectiveBL.getDeliveryRule(getCurrentShipmentSchedule());
+		return deliveryRule.isForce();
 	}
 
 	protected Quantity pickHUsAndPackTo(@NonNull final ImmutableList<HuId> huIdsToPick, @NonNull final Quantity qtyToPack, @NonNull final HuId packToHuId)
 	{
-		final boolean allowOverDelivery = pickingConfigRepo.getPickingConfig().isAllowOverDelivery();
-
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 		final PickingSlotId pickingSlotId = pickingSlotRow.getPickingSlotId();
 
 		return pickingCandidateService.addQtyToHU(AddQtyToHURequest.builder()
-				.qtyToPack(qtyToPack)
-				.packToHuId(packToHuId)
-				.sourceHUIds(huIdsToPick)
-				.pickingSlotId(pickingSlotId)
-				.shipmentScheduleId(getCurrentShipmentScheduleId())
-				.allowOverDelivery(allowOverDelivery)
-				.build());
+														  .qtyToPack(qtyToPack)
+														  .packToHuId(packToHuId)
+														  .sourceHUIds(huIdsToPick)
+														  .pickingSlotId(pickingSlotId)
+														  .shipmentScheduleId(getCurrentShipmentScheduleId())
+														  .allowOverDelivery(getPickingConfig().isAllowOverDelivery())
+														  .isForbidAggCUsForDifferentOrders(getPickingConfig().isForbidAggCUsForDifferentOrders())
+														  .build());
 	}
 
 	protected void forcePick(Quantity qtyToPack, final HuId packToHuId)
@@ -199,6 +204,19 @@ import java.util.List;
 		qtyToPack = qtyToPack.subtract(qtyPickedFromSuppliedHU);
 
 		Loggables.withLogger(log, Level.DEBUG).addLog(" *** forcePick(): packToHuId: {}, qtyLeftToBePicked: {}.", packToHuId, qtyToPack);
+	}
+
+	@NonNull
+	protected PickingConfig getPickingConfig()
+	{
+		return pickingConfigRepo.getPickingConfig();
+	}
+
+	@Nullable
+	protected OrderId getCurrentlyPickingOrderId()
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();
+		return OrderId.ofRepoIdOrNull(shipmentSchedule.getC_Order_ID());
 	}
 
 	private HuId createInventoryForMissingQty(@NonNull final Quantity qtyToBeAdded)

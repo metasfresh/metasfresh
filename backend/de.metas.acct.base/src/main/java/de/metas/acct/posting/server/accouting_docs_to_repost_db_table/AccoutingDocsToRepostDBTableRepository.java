@@ -66,7 +66,7 @@ final class AccoutingDocsToRepostDBTableRepository
 
 	public void delete(@NonNull final AccountingDocToRepost docToRepost)
 	{
-		DB.executeUpdateEx(
+		DB.executeUpdateAndThrowExceptionOnFail(
 				"DELETE FROM " + Table_Name + " WHERE SeqNo=?",
 				new Object[] { docToRepost.getSeqNo() },
 				ITrx.TRXNAME_None);

@@ -44,6 +44,8 @@ import lombok.ToString;
 @ToString
 public final class JSONFilterViewRequest
 {
+	public static final JSONFilterViewRequest EMPTY = new JSONFilterViewRequest(ImmutableList.of());
+
 	@JsonProperty("filters")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@Getter

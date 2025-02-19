@@ -134,7 +134,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 			return;
 		}
 		final String sql = "UPDATE PP_Cost_Collector SET Processed=? WHERE PP_Cost_Collector_ID=?";
-		DB.executeUpdateEx(sql, new Object[] { processed, get_ID() }, get_TrxName());
+		DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { processed, get_ID() }, get_TrxName());
 	}
 
 	@Override

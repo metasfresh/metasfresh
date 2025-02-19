@@ -218,7 +218,7 @@ public class HUItemStorage implements IHUItemStorage
 	{
 		final I_M_HU_Item_Storage storage = dao.retrieveItemStorage(item, productId);
 		return storage != null
-				? Optional.of(Quantitys.create(storage.getQty(), UomId.ofRepoId(storage.getC_UOM_ID())))
+				? Optional.of(Quantitys.of(storage.getQty(), UomId.ofRepoId(storage.getC_UOM_ID())))
 				: Optional.empty();
 	}
 

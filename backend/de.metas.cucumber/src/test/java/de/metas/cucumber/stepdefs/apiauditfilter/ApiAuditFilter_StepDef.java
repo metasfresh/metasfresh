@@ -26,45 +26,40 @@ import com.google.common.collect.ImmutableList;
 import de.metas.audit.apirequest.request.ApiRequestAudit;
 import de.metas.audit.apirequest.request.ApiRequestAuditId;
 import de.metas.audit.apirequest.request.ApiRequestAuditRepository;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.util.web.audit.ApiRequestReplayService;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.When;
-import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class ApiAuditFilter_StepDef
 {
 	private final ApiRequestAuditRepository apiRequestAuditRepository = SpringContextHolder.instance.getBean(ApiRequestAuditRepository.class);
 	private final ApiRequestReplayService apiRequestReplayService = SpringContextHolder.instance.getBean(ApiRequestReplayService.class);
 	private final TestContext testContext;
 
-	public ApiAuditFilter_StepDef(@NonNull final TestContext testContext)
-	{
-		this.testContext = testContext;
-	}
-
 	@And("all the API audit data is reset")
 	public void reset_data()
 	{
-		DB.executeUpdateEx("TRUNCATE TABLE API_Response_Audit cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE API_Request_Audit_Log cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE API_Request_Audit cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE API_Audit_Config cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE API_Response_Audit cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE API_Request_Audit_Log cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE API_Request_Audit cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE API_Audit_Config cascade", ITrx.TRXNAME_None);
 	}
 
 	@When("invoke replay audit")
 	public void invoke_replay_audit()
 	{
-		final JsonMetasfreshId requestId = testContext.getApiResponse().getRequestId();
+		final ApiRequestAuditId requestId = testContext.getApiResponse().getRequestId();
 		assertThat(requestId).isNotNull();
 
-		final ImmutableList<ApiRequestAudit> responseAuditRecords = ImmutableList.of(apiRequestAuditRepository.getById(ApiRequestAuditId.ofRepoId(requestId.getValue())));
+		final ImmutableList<ApiRequestAudit> responseAuditRecords = ImmutableList.of(apiRequestAuditRepository.getById(requestId));
 
 		apiRequestReplayService.replayApiRequests(responseAuditRecords);
 	}

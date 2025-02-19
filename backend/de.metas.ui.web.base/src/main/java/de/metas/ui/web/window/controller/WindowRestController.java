@@ -1,8 +1,8 @@
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,16 +22,21 @@
 
 package de.metas.ui.web.window.controller;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
+import de.metas.ad_reference.ADRefTable;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.document.NewRecordContext;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
+import de.metas.logging.LogManager;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
-import de.metas.reflist.ReferenceId;
+import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.comments.CommentsService;
 import de.metas.ui.web.config.WebConfig;
+import de.metas.ui.web.debug.DebugRestController;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.DocumentPreconditionsAsContext;
 import de.metas.ui.web.process.ProcessRestController;
@@ -60,6 +65,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.datatypes.json.JSONOptions.JSONOptionsBuilder;
 import de.metas.ui.web.window.datatypes.json.JSONZoomInto;
+import de.metas.ui.web.window.datatypes.json.JsonWindowsHealthResponse;
 import de.metas.ui.web.window.descriptor.ButtonFieldActionDescriptor;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentDescriptor;
@@ -67,8 +73,10 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.AdvancedSearchDescriptorsProvider;
+import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.factory.NewRecordDescriptorsProvider;
 import de.metas.ui.web.window.events.DocumentWebsocketPublisher;
+import de.metas.ui.web.window.exceptions.DocumentLayoutBuildException;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentChangeLogService;
 import de.metas.ui.web.window.model.DocumentCollection;
@@ -77,18 +85,24 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
-import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
+import de.metas.ui.web.window.model.OrderedDocumentsList;
 import de.metas.ui.web.window.model.lookup.LabelsLookup;
+import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoInfo;
+import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoService;
 import de.metas.util.Services;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import de.metas.util.lang.RepoIdAwares;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.NonNull;
-import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.TableRefInfo;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -102,13 +116,15 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.WebRequest;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-@Api
+@Tag(name = "WindowRestController")
 @RestController
 @RequestMapping(value = WindowRestController.ENDPOINT)
+@RequiredArgsConstructor
 public class WindowRestController
 {
 	public static final String ENDPOINT = WebConfig.ENDPOINT_ROOT + "/window";
@@ -119,38 +135,20 @@ public class WindowRestController
 
 	private static final ReasonSupplier REASON_Value_DirectSetFromCommitAPI = () -> "direct set from commit API";
 
-	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-	private final UserSession userSession;
-	private final DocumentCollection documentCollection;
-	private final DocumentChangeLogService documentChangeLogService;
-	private final NewRecordDescriptorsProvider newRecordDescriptorsProvider;
-	private final AdvancedSearchDescriptorsProvider advancedSearchDescriptorsProvider;
-	private final ProcessRestController processRestController;
-	private final DocumentWebsocketPublisher websocketPublisher;
-	private final CommentsService commentsService;
-	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
-
-	public WindowRestController(
-			@NonNull final UserSession userSession,
-			@NonNull final DocumentCollection documentCollection,
-			@NonNull final DocumentChangeLogService documentChangeLogService,
-			@NonNull final NewRecordDescriptorsProvider newRecordDescriptorsProvider,
-			@NonNull final AdvancedSearchDescriptorsProvider advancedSearchDescriptorsProvider,
-			@NonNull final ProcessRestController processRestController,
-			@NonNull final DocumentWebsocketPublisher websocketPublisher,
-			@NonNull final CommentsService commentsService,
-			@NonNull final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository)
-	{
-		this.userSession = userSession;
-		this.documentCollection = documentCollection;
-		this.documentChangeLogService = documentChangeLogService;
-		this.newRecordDescriptorsProvider = newRecordDescriptorsProvider;
-		this.advancedSearchDescriptorsProvider = advancedSearchDescriptorsProvider;
-		this.processRestController = processRestController;
-		this.websocketPublisher = websocketPublisher;
-		this.commentsService = commentsService;
-		this.customizedWindowInfoMapRepository = customizedWindowInfoMapRepository;
-	}
+	@NonNull private static final Logger logger = LogManager.getLogger(DebugRestController.class);
+	@NonNull private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+	@NonNull private final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
+	@NonNull private final UserSession userSession;
+	@NonNull private final DocumentCollection documentCollection;
+	@NonNull private final DocumentZoomIntoService documentZoomIntoService;
+	@NonNull private final DocumentChangeLogService documentChangeLogService;
+	@NonNull private final NewRecordDescriptorsProvider newRecordDescriptorsProvider;
+	@NonNull private final AdvancedSearchDescriptorsProvider advancedSearchDescriptorsProvider;
+	@NonNull private final ProcessRestController processRestController;
+	@NonNull private final DocumentWebsocketPublisher websocketPublisher;
+	@NonNull private final CommentsService commentsService;
+	@NonNull private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
+	@NonNull private final ADReferenceService adReferenceService;
 
 	private JSONOptionsBuilder newJSONOptions()
 	{
@@ -219,16 +217,18 @@ public class WindowRestController
 	public List<JSONDocument> getRootDocuments(
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentIdStr,
-			@RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr,
+			@RequestParam(name = PARAM_FieldsList, required = false) @Parameter(description = "comma separated field names") final String fieldsListStr,
 			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced)
 	{
+		userSession.assertLoggedIn();
+
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
 		final JSONDocumentOptions jsonOpts = newJSONDocumentOptions()
 				.showOnlyFieldsListStr(fieldsListStr)
 				.showAdvancedFields(advanced)
 				.build();
-		return getData(documentPath, DocumentQueryOrderByList.EMPTY, jsonOpts);
+		return getData(documentPath, DocumentQueryOrderByList.EMPTY, jsonOpts).toList();
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}")
@@ -236,11 +236,13 @@ public class WindowRestController
 			@PathVariable("windowId") final String windowIdStr,
 			@PathVariable("documentId") final String documentIdStr,
 			@PathVariable("tabId") final String tabIdStr,
-			@RequestParam(name = "ids", required = false) @ApiParam("comma separated rowIds") final String rowIdsListStr,
-			@RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr,
+			@RequestParam(name = "ids", required = false) @Parameter(description = "comma separated rowIds") final String rowIdsListStr,
+			@RequestParam(name = PARAM_FieldsList, required = false) @Parameter(description = "comma separated field names") final String fieldsListStr,
 			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced,
 			@RequestParam(name = "orderBy", required = false) final String orderBysListStr)
 	{
+		userSession.assertLoggedIn();
+
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentId documentId = DocumentId.of(documentIdStr);
 		final DetailId tabId = DetailId.fromJson(tabIdStr);
@@ -263,27 +265,8 @@ public class WindowRestController
 				.showAdvancedFields(advanced)
 				.build();
 
-		final List<JSONDocument> rows = getData(documentPath, orderBys, jsonOpts);
-
-		final Set<DocumentId> missingRowIds;
-		if (!onlyRowIds.isEmpty() && !onlyRowIds.isAll())
-		{
-			final ImmutableSet<DocumentId> foundRowIds = rows.stream()
-					.map(JSONDocument::getRowId)
-					.collect(ImmutableSet.toImmutableSet());
-
-			missingRowIds = Sets.difference(onlyRowIds.toSet(), foundRowIds);
-		}
-		else
-		{
-			missingRowIds = null;
-		}
-
-		return JSONDocumentList.builder()
-				.result(rows)
-				.missingIds(missingRowIds)
-				.build();
-
+		return getData(documentPath, orderBys, jsonOpts)
+				.withMissingIdsUpdatedFromExpectedRowIds(onlyRowIds);
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}")
@@ -300,13 +283,15 @@ public class WindowRestController
 			@PathVariable("rowId") final String rowIdStr
 			//
 			,
-			@RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr
+			@RequestParam(name = PARAM_FieldsList, required = false) @Parameter(description = "comma separated field names") final String fieldsListStr
 			//
 			,
 			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced
 			//
 	)
 	{
+		userSession.assertLoggedIn();
+
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentIdStr, tabIdStr, rowIdStr);
 		final JSONDocumentOptions jsonOpts = newJSONDocumentOptions()
@@ -314,10 +299,10 @@ public class WindowRestController
 				.showAdvancedFields(advanced)
 				.build();
 
-		return getData(documentPath, DocumentQueryOrderByList.EMPTY, jsonOpts);
+		return getData(documentPath, DocumentQueryOrderByList.EMPTY, jsonOpts).toList();
 	}
 
-	private List<JSONDocument> getData(
+	private JSONDocumentList getData(
 			@NonNull final DocumentPath documentPath,
 			@Nullable final DocumentQueryOrderByList orderBys,
 			@NonNull final JSONDocumentOptions jsonOpts)
@@ -325,30 +310,28 @@ public class WindowRestController
 		userSession.assertLoggedIn();
 
 		return documentCollection.forRootDocumentReadonly(documentPath, rootDocument -> {
-			final List<Document> documents;
+			final OrderedDocumentsList documents;
 			if (documentPath.isRootDocument())
 			{
-				documents = ImmutableList.of(rootDocument);
+				documents = OrderedDocumentsList.of(rootDocument);
 			}
 			else if (documentPath.isAnyIncludedDocument())
 			{
-				documents = rootDocument.getIncludedDocuments(documentPath.getDetailId(), orderBys).toList();
+				documents = rootDocument.getIncludedDocuments(documentPath.getDetailId(), orderBys);
 			}
 			else if (documentPath.isSingleIncludedDocument())
 			{
 				// IMPORTANT: in case the document was not found, don't fail but return empty.
 				final Document document = rootDocument.getIncludedDocument(documentPath.getDetailId(), documentPath.getSingleRowId()).orElse(null);
-				documents = document != null
-						? ImmutableList.of(document)
-						: ImmutableList.of();
+				documents = OrderedDocumentsList.ofNullable(document);
 			}
 			else
 			{
-				documents = rootDocument.getIncludedDocuments(documentPath.getDetailId(), documentPath.getRowIds()).toList();
+				documents = rootDocument.getIncludedDocuments(documentPath.getDetailId(), documentPath.getRowIds());
 			}
 
 			final Boolean hasComments = documentPath.isRootDocument() ? commentsService.hasComments(documentPath) : null;
-			return JSONDocument.ofDocumentsList(documents, jsonOpts, hasComments);
+			return JSONDocumentList.ofDocumentsList(documents, jsonOpts, hasComments);
 		});
 	}
 
@@ -415,7 +398,7 @@ public class WindowRestController
 				documentPath,
 				changesCollector,
 				document -> {
-					document.processValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
+					document.processValueChanges(events, REASON_Value_DirectSetFromCommitAPI, jsonOpts.getDocumentFieldReadonlyChecker());
 					changesCollector.setPrimaryChange(document.getDocumentPath());
 					return null; // void
 				});
@@ -464,7 +447,7 @@ public class WindowRestController
 			@PathVariable("windowId") final String windowIdStr
 			//
 			,
-			@RequestParam(name = "ids") @ApiParam("comma separated documentIds") final String idsListStr
+			@RequestParam(name = "ids") @Parameter(description = "comma separated documentIds") final String idsListStr
 			//
 	)
 	{
@@ -509,7 +492,7 @@ public class WindowRestController
 			@PathVariable("tabId") final String tabId
 			//
 			,
-			@RequestParam(name = "ids") @ApiParam("comma separated rowIds") final String rowIdsListStr
+			@RequestParam(name = "ids") @Parameter(description = "comma separated rowIds") final String rowIdsListStr
 			//
 	)
 	{
@@ -665,7 +648,7 @@ public class WindowRestController
 				.transform(this::toJSONLookupValuesList);
 	}
 
-	@ApiOperation("field current value's window layout to zoom into")
+	@Operation(summary = "field current value's window layout to zoom into")
 	@GetMapping("/{windowId}/{documentId}/field/{fieldName}/zoomInto")
 	public JSONZoomInto getDocumentFieldZoomInto(
 			@PathVariable("windowId") final String windowIdStr
@@ -683,7 +666,7 @@ public class WindowRestController
 		return getDocumentFieldZoomInto(documentPath, fieldName);
 	}
 
-	@ApiOperation("field current value's window layout to zoom into")
+	@Operation(summary = "field current value's window layout to zoom into")
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/field/{fieldName}/zoomInto")
 	public JSONZoomInto getDocumentFieldZoomInto(
 			@PathVariable("windowId") final String windowIdStr
@@ -707,40 +690,21 @@ public class WindowRestController
 		return getDocumentFieldZoomInto(documentPath, fieldName);
 	}
 
-	private JSONZoomInto getDocumentFieldZoomInto(
-			final DocumentPath documentPath,
-			final String fieldName)
+	private JSONZoomInto getDocumentFieldZoomInto(final DocumentPath documentPath, final String fieldName)
 	{
 		userSession.assertLoggedIn();
 
-		final JSONDocumentPath jsonZoomIntoDocumentPath;
 		final DocumentZoomIntoInfo zoomIntoInfo = documentCollection.forDocumentReadonly(documentPath, document -> getDocumentFieldZoomInto(document, fieldName));
-		if (zoomIntoInfo == null)
-		{
-			throw new EntityNotFoundException("ZoomInto not supported")
-					.setParameter("documentPath", documentPath)
-					.setParameter("fieldName", fieldName);
-		}
-		else if (!zoomIntoInfo.isRecordIdPresent())
-		{
-			final WindowId windowId = documentCollection.getWindowId(zoomIntoInfo);
-			jsonZoomIntoDocumentPath = JSONDocumentPath.newWindowRecord(windowId);
-		}
-		else
-		{
-			final DocumentPath zoomIntoDocumentPath = documentCollection.getDocumentPath(zoomIntoInfo);
-			jsonZoomIntoDocumentPath = JSONDocumentPath.ofWindowDocumentPath(zoomIntoDocumentPath);
-		}
+		final DocumentPath zoomIntoDocumentPath = documentZoomIntoService.getDocumentPath(zoomIntoInfo);
 
 		return JSONZoomInto.builder()
-				.documentPath(jsonZoomIntoDocumentPath)
+				.documentPath(JSONDocumentPath.ofWindowDocumentPath(zoomIntoDocumentPath))
 				.source(JSONDocumentPath.ofWindowDocumentPath(documentPath, fieldName))
 				.build();
 	}
 
-	private DocumentZoomIntoInfo getDocumentFieldZoomInto(
-			@NonNull final Document document,
-			@NonNull final String fieldName)
+	@NonNull
+	private DocumentZoomIntoInfo getDocumentFieldZoomInto(@NonNull final Document document, @NonNull final String fieldName)
 	{
 		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
 		final DocumentFieldDescriptor singleKeyFieldDescriptor = entityDescriptor.getSingleIdFieldOrNull();
@@ -778,19 +742,17 @@ public class WindowRestController
 		else if (field.getDescriptor().getWidgetType() == DocumentFieldWidgetType.Labels)
 		{
 			final LabelsLookup lookup = LabelsLookup.cast(field.getDescriptor()
-																  .getLookupDescriptor()
-																  .orElseThrow(() -> new AdempiereException("Because the widget type is Labels, expect a LookupDescriptor")
-																		  .setParameter("field", field)));
+					.getLookupDescriptor()
+					.orElseThrow(() -> new AdempiereException("Because the widget type is Labels, expect a LookupDescriptor")
+							.setParameter("field", field)));
 			final String labelsValueColumnName = lookup.getLabelsValueColumnName();
 
 			if (labelsValueColumnName.endsWith("_ID"))
 			{
-				final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
-
 				final ReferenceId labelsValueReferenceId = lookup.getLabelsValueReferenceId();
-				final TableRefInfo tableRefInfo = labelsValueReferenceId != null
-						? lookupDAO.retrieveTableRefInfo(labelsValueReferenceId.getRepoId())
-						: lookupDAO.retrieveTableDirectRefInfo(labelsValueColumnName);
+				final ADRefTable tableRefInfo = labelsValueReferenceId != null
+						? adReferenceService.retrieveTableRefInfo(labelsValueReferenceId)
+						: adReferenceService.getTableDirectRefInfo(labelsValueColumnName);
 
 				return DocumentZoomIntoInfo.of(tableRefInfo.getTableName(), -1);
 			}
@@ -880,6 +842,24 @@ public class WindowRestController
 				DisplayPlace.IncludedTabTopActionsMenu);
 	}
 
+	@GetMapping("/{windowId}/{documentId}/topActions")
+	public JSONDocumentActionsList getIncludedTabTopActions(
+			@PathVariable("windowId") final String windowIdStr,
+			@PathVariable("documentId") final String documentIdStr)
+	{
+		final WindowId windowId = WindowId.fromJson(windowIdStr);
+		final DocumentPath rootDocumentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
+		final Set<TableRecordReference> selectedIncludedRecords = ImmutableSet.of();
+		final boolean returnDisabled = false;
+
+		return getDocumentActions(
+				rootDocumentPath,
+				null,
+				selectedIncludedRecords,
+				returnDisabled,
+				DisplayPlace.IncludedTabTopActionsMenu);
+	}
+
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/actions")
 	public JSONDocumentActionsList getIncludedDocumentActions(
 			@PathVariable("windowId") final String windowIdStr,
@@ -903,7 +883,7 @@ public class WindowRestController
 
 	private JSONDocumentActionsList getDocumentActions(
 			@NonNull final DocumentPath documentPath,
-			final DetailId selectedTabId,
+			@Nullable final DetailId selectedTabId,
 			@NonNull final Set<TableRecordReference> selectedIncludedRecords,
 			final boolean returnDisabled,
 			@NonNull final DisplayPlace displayPlace)
@@ -963,7 +943,7 @@ public class WindowRestController
 			return newRecordDescriptorsProvider.getNewRecordDescriptor(document.getEntityDescriptor())
 					.getProcessor()
 					.processNewRecordDocument(document,
-											  newRecordContext);
+							newRecordContext);
 		}));
 	}
 
@@ -1035,7 +1015,7 @@ public class WindowRestController
 	{
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
-		return getDocumentChangeLog(documentPath);
+		return documentChangeLogService.getJSONDocumentChangeLog(documentPath);
 	}
 
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/changeLog")
@@ -1050,14 +1030,77 @@ public class WindowRestController
 		final DetailId tabId = DetailId.fromJson(tabIdStr);
 		final DocumentId rowId = DocumentId.of(rowIdStr);
 		final DocumentPath documentPath = DocumentPath.singleWindowDocumentPath(windowId, documentId, tabId, rowId);
-		return getDocumentChangeLog(documentPath);
+
+		return documentChangeLogService.getJSONDocumentChangeLog(documentPath);
 	}
 
-	private JSONDocumentChangeLog getDocumentChangeLog(final DocumentPath documentPath)
+	@GetMapping("/health")
+	public JsonWindowsHealthResponse healthCheck(
+			@RequestParam(name = "windowIds", required = false) final String windowIdsCommaSeparated
+	)
 	{
-		final TableRecordReference recordRef = documentCollection.getTableRecordReference(documentPath);
-		final JSONDocumentChangeLog json = documentChangeLogService.getJSONDocumentChangeLog(recordRef, userSession.getAD_Language());
-		json.setPath(JSONDocumentPath.ofWindowDocumentPath(documentPath));
-		return json;
+		final DocumentDescriptorFactory documentDescriptorFactory = documentCollection.getDocumentDescriptorFactory();
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+
+		final ImmutableSet<AdWindowId> skipAdWindowIds = ImmutableSet.of(
+				AdWindowId.ofRepoId(540371), // Picking Tray Clearing - placeholder window
+				AdWindowId.ofRepoId(540674), // Shipment Schedule Editor - placeholder window
+				AdWindowId.ofRepoId(540759), // Payment Allocation - placeholder window
+				AdWindowId.ofRepoId(540485) // Picking Terminal (v2) - placeholder window
+		);
+
+		final ImmutableSet<AdWindowId> onlyAdWindowIds = RepoIdAwares.ofCommaSeparatedSet(windowIdsCommaSeparated, AdWindowId.class);
+		final ImmutableSet<AdWindowId> allAdWidowIds = adWindowDAO.retrieveAllActiveAdWindowIds();
+		final ImmutableSet<AdWindowId> adWindowIds = !onlyAdWindowIds.isEmpty() ? onlyAdWindowIds : allAdWidowIds;
+
+		final ArrayList<JsonWindowsHealthResponse.Entry> errors = new ArrayList<>();
+		final int countTotal = adWindowIds.size();
+		int countCurrent = 0;
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		for (final AdWindowId adWindowId : adWindowIds)
+		{
+			countCurrent++;
+
+			if (skipAdWindowIds.contains(adWindowId))
+			{
+				continue;
+			}
+
+			final WindowId windowId = WindowId.of(adWindowId);
+			try
+			{
+				if (!allAdWidowIds.contains(adWindowId))
+				{
+					throw new AdempiereException("Not an existing/active window");
+				}
+
+				documentDescriptorFactory.invalidateForWindow(windowId);
+				final DocumentDescriptor documentDescriptor = documentDescriptorFactory.getDocumentDescriptor(windowId);
+				documentDescriptorFactory.invalidateForWindow(windowId);
+
+				final String windowName = documentDescriptor.getEntityDescriptor().getCaption().translate(adLanguage);
+				logger.info("testWindows [{}/{}] Window `{}` ({}) is OK", countCurrent, countTotal, windowName, windowId);
+			}
+			catch (final Exception ex)
+			{
+				final String windowName = adWindowDAO.retrieveWindowName(adWindowId).translate(adLanguage);
+				logger.info("testWindows [{}/{}] Window `{}` ({}) is NOK: {}", countCurrent, countTotal, windowName, windowId, ex.getLocalizedMessage());
+
+				final Throwable cause = DocumentLayoutBuildException.extractCause(ex);
+				errors.add(JsonWindowsHealthResponse.Entry.builder()
+						.windowId(windowId)
+						.windowName(windowName)
+						.error(JsonErrors.ofThrowable(cause, adLanguage))
+						.build());
+			}
+		}
+
+		stopwatch.stop();
+
+		return JsonWindowsHealthResponse.builder()
+				.took(stopwatch.toString())
+				.countTotal(countTotal)
+				.errors(errors)
+				.build();
 	}
 }

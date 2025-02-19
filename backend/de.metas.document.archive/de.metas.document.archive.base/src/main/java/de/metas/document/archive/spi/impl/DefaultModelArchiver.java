@@ -98,7 +98,6 @@ public class DefaultModelArchiver
 	private final boolean isDirectEnqueue;
 	private final boolean isDirectProcessQueueItem;
 
-
 	//
 	// Status & cached values
 	private final AtomicBoolean _processed = new AtomicBoolean(false);
@@ -225,7 +224,8 @@ public class DefaultModelArchiver
 				.archiveName(report.getFilename())
 				.bpartnerId(report.getBpartnerId())
 				.language(report.getLanguage())
-  			    .isDirectEnqueue(isDirectEnqueue)
+				.poReference(report.getPoReference())
+				.isDirectEnqueue(isDirectEnqueue)
 				.isDirectProcessQueueItem(isDirectProcessQueueItem)
 				.build());
 

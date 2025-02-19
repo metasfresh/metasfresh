@@ -71,7 +71,8 @@ import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyTU;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 /*
  * #%L
@@ -127,7 +128,8 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		huTestHelper = HUTestHelper.newInstanceOutOfTrx(); // we need to do this before registering our custom SSCC18CodeBL
 
 		sscc18SerialNo = 0;
-		sscc18CodeBL = new SSCC18CodeBL(orgId -> ++sscc18SerialNo);
+		sscc18CodeBL = new SSCC18CodeBL();
+		sscc18CodeBL.setOverrideNextSerialNumberProvider(orgId -> ++sscc18SerialNo);
 		Services.registerService(ISSCC18CodeBL.class, sscc18CodeBL);
 
 		Services.get(ISysConfigBL.class).setValue(SSCC18CodeBL.SYSCONFIG_ManufacturerCode, "111111", ClientId.METASFRESH, OrgId.ANY);
@@ -215,7 +217,8 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		inOutLineRecord.setM_InOut_ID(inOutRecord.getM_InOut_ID());
 		saveRecord(inOutLineRecord);
 
-		desadvBL = new DesadvBL(new EDIDesadvPackService(new HURepository(), new EDIDesadvPackRepository()));
+		final HURepository huRepository = new HURepository();
+		desadvBL = new DesadvBL(new EDIDesadvPackService(huRepository, new EDIDesadvPackRepository()), new EDIDesadvInOutLineDAO());
 	}
 
 	@Test

@@ -1,19 +1,18 @@
 package de.metas.banking.api;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.UUID;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-
 import de.metas.banking.Bank;
 import de.metas.banking.BankCreateRequest;
 import de.metas.banking.BankId;
 import de.metas.location.LocationId;
 import lombok.Builder;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -96,6 +95,7 @@ public class BankRepositoryTest
 							.cashBank(true)
 							.locationId(LocationId.ofRepoId(123))
 							.esrPostBank(true)
+							.importAsSingleSummaryLine(false)
 							.build());
 		}
 	}

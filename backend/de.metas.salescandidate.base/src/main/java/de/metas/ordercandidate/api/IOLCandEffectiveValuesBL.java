@@ -9,6 +9,7 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -136,7 +137,7 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 	 * <li><code>C_BPartner_Location_ID</code></li>
 	 * <li>the effective BPartner's ShipTo-location</li>
 	 * </ul>
-	 *
+	 * <p>
 	 * #100 FRESH-435: even if the (effective) DropShip_Location_ID is the same as the (effective) C_BPartner_Location_ID, this method shall not return 0.
 	 */
 	I_C_BPartner_Location getDropShip_Location_Effective(I_C_OLCand olCand);
@@ -191,4 +192,8 @@ public interface IOLCandEffectiveValuesBL extends ISingletonService
 
 	@NonNull
 	BigDecimal getEffectiveQtyEntered(@NonNull I_C_OLCand olCand);
+
+	Optional<StockQtyAndUOMQty> getQtyShipped(I_C_OLCand olCand);
+
+	Optional<BigDecimal> getManualQtyInPriceUOM(@NonNull I_C_OLCand record);
 }

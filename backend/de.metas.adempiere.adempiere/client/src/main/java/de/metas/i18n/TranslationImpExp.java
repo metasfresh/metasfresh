@@ -25,6 +25,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Language;
 import org.compiere.util.DB;
+import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.w3c.dom.Document;
@@ -33,7 +34,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 
@@ -509,7 +509,7 @@ public class TranslationImpExp
 				{
 					m_sql.append(",");
 				}
-				m_sql.append("Updated=").append(DB.TO_DATE(m_time, false));
+				m_sql.append("Updated=").append(DB.TO_DATE(m_time, DisplayType.DateTime));
 				if (!m_isBaseLanguage)
 				{
 					if (m_trl != null
@@ -537,7 +537,7 @@ public class TranslationImpExp
 				m_sql.insert(0, m_updateSQL);
 
 				// Execute
-				final int no = DB.executeUpdate(m_sql.toString(), null);
+				final int no = DB.executeUpdateAndSaveErrorOnFail(m_sql.toString(), null);
 				if (no == 1)
 				{
 					if (LogManager.isLevelFinest())

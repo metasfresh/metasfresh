@@ -36,11 +36,13 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
 import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.organization.OrgId;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -94,7 +96,8 @@ class HUQRCodesServiceTest
 	void beforeEach()
 	{
 		this.helper = HUTestHelper.newInstanceOutOfTrx();
-		this.huQRCodesService = new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService());
+		this.huQRCodesService = new HUQRCodesService(new HUQRCodesRepository(),
+				new GlobalQRCodeService(DoNothingMassPrintingService.instance));
 
 		this.productId = BusinessTestHelper.createProductId("MyProduct", helper.uomEach);
 
@@ -309,5 +312,20 @@ class HUQRCodesServiceTest
 			assertThat(gs1.getBestBeforeDate()).contains(LocalDate.parse("2017-08-09"));
 			assertThat(gs1.getLotNumber()).isEmpty();
 		}
+
+		@Test
+		void ean13()
+		{
+			final IHUQRCode huQRCode = HUQRCodesService.toHUQRCode("2859414004825");
+			assertThat(huQRCode).isInstanceOf(EAN13HUQRCode.class);
+
+			final EAN13HUQRCode ean13 = (EAN13HUQRCode)huQRCode;
+			assertThat(ean13.getPrefix()).contains(EAN13HUQRCode.PREFIX_VariableWeight);
+			assertThat(ean13.getProductNo()).contains("59414");
+			assertThat(ean13.getWeightInKg()).contains(new BigDecimal("0.482"));
+			assertThat(ean13.getBestBeforeDate()).isEmpty();
+			assertThat(ean13.getLotNumber()).isEmpty();
+		}
+
 	}
 }

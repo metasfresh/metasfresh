@@ -31,8 +31,10 @@ import de.metas.bpartner.exceptions.BPartnerNoShipToAddressException;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
@@ -45,6 +47,7 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.IMsgBL;
+import de.metas.lang.SOTrx;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderBL;
@@ -60,6 +63,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
@@ -98,6 +102,7 @@ import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -853,16 +858,6 @@ public class MOrder extends X_C_Order implements IDocument
 	}    // getShipments
 
 	/**
-	 * Get Document Status
-	 *
-	 * @return Document Status Clear Text
-	 */
-	public String getDocStatusName()
-	{
-		return MRefList.getListName(getCtx(), DocStatus.AD_REFERENCE_ID, getDocStatus());
-	}    // getDocStatusName
-
-	/**
 	 * Set Processed.
 	 * Propagate to Lines/Taxes
 	 *
@@ -879,8 +874,8 @@ public class MOrder extends X_C_Order implements IDocument
 		final String set = "SET Processed='"
 				+ (processed ? "Y" : "N")
 				+ "' WHERE C_Order_ID=" + getC_Order_ID();
-		final int noLine = DB.executeUpdateEx("UPDATE C_OrderLine " + set, get_TrxName());
-		final int noTax = DB.executeUpdateEx("UPDATE C_OrderTax " + set, get_TrxName());
+		final int noLine = DB.executeUpdateAndThrowExceptionOnFail("UPDATE C_OrderLine " + set, get_TrxName());
+		final int noTax = DB.executeUpdateAndThrowExceptionOnFail("UPDATE C_OrderTax " + set, get_TrxName());
 		invalidateLines();
 		m_taxes = null;
 		log.debug("setProcessed - " + processed + " - Lines=" + noLine + ", Tax=" + noTax);
@@ -993,12 +988,14 @@ public class MOrder extends X_C_Order implements IDocument
 		// Default Payment Term
 		if (getC_PaymentTerm_ID() == 0)
 		{
-			final PaymentTermId defaultPaymentTermId = Services.get(IPaymentTermRepository.class)
-					.getDefaultPaymentTermIdOrNull();
-			if (defaultPaymentTermId != null)
-			{
-				setC_PaymentTerm_ID(defaultPaymentTermId.getRepoId());
-			}
+			final PaymentTermQuery paymentTermQuery = PaymentTermQuery.forPartner(
+					BPartnerId.ofRepoId(CoalesceUtil.firstGreaterThanZero(getBill_BPartner_ID(), getC_BPartner_ID())),
+					SOTrx.ofBoolean(isSOTrx()));
+
+			final Optional<PaymentTermId> paymentTermId = Services.get(IPaymentTermRepository.class)
+					.retrievePaymentTermId(paymentTermQuery);
+
+			paymentTermId.ifPresent(termId -> setC_PaymentTerm_ID(termId.getRepoId()));
 		}
 		return true;
 	}    // beforeSave
@@ -1026,7 +1023,7 @@ public class MOrder extends X_C_Order implements IDocument
 															 + "(SELECT Description,POReference "
 															 + "FROM C_Order o WHERE i.C_Order_ID=o.C_Order_ID) "
 															 + "WHERE DocStatus NOT IN ('RE','CL') AND C_Order_ID=" + getC_Order_ID());
-			final int no = DB.executeUpdateEx(sql, get_TrxName());
+			final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, get_TrxName());
 			log.debug("Description -> #" + no);
 		}
 
@@ -1041,7 +1038,7 @@ public class MOrder extends X_C_Order implements IDocument
 															 + "FROM C_Order o WHERE i.C_Order_ID=o.C_Order_ID)"
 															 + "WHERE DocStatus NOT IN ('RE','CL') AND C_Order_ID=" + getC_Order_ID());
 			// Don't touch Closed/Reversed entries
-			final int no = DB.executeUpdate(sql, get_TrxName());
+			final int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 			log.debug("Payment -> #" + no);
 		}
 
@@ -1185,7 +1182,7 @@ public class MOrder extends X_C_Order implements IDocument
 		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getById(getC_DocTypeTarget_ID());
 
 		// Std Period open?
-		if (!MPeriod.isOpen(getCtx(), getDateAcct(), dt.getDocBaseType(), getAD_Org_ID()))
+		if (!MPeriod.isOpen(getCtx(), getDateAcct(), DocBaseType.ofCode(dt.getDocBaseType()), getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return IDocument.STATUS_Invalid;
@@ -1311,8 +1308,15 @@ public class MOrder extends X_C_Order implements IDocument
 	// of stocks before delete.
 	public boolean reserveStock(final I_C_DocType docType, final List<MOrderLine> lines)
 	{
+		int docTypeId = getC_DocType_ID(); // in case of draft, doctype is 0
+		if (docTypeId <= 0 )
+		{
+			// check DocTypeTarget
+			docTypeId= getC_DocTypeTarget_ID();
+		}
+
 		final I_C_DocType dt = docType == null
-				? Services.get(IDocTypeDAO.class).getById(getC_DocType_ID())
+				? Services.get(IDocTypeDAO.class).getById(docTypeId)
 				: docType;
 
 		// Binding
@@ -1372,7 +1376,7 @@ public class MOrder extends X_C_Order implements IDocument
 			final BigDecimal difference = target
 					.subtract(line.getQtyReserved())
 					.subtract(line.getQtyDelivered());
-			if (difference.signum() == 0)
+			if (difference.signum() == 0 && !line.isDeliveryClosed())
 			{
 				final MProduct product = line.getProduct();
 				if (product != null)
@@ -1437,7 +1441,7 @@ public class MOrder extends X_C_Order implements IDocument
 							line.getM_AttributeSetInstance_ID(),
 							line.getM_AttributeSetInstance_ID(),
 							BigDecimal.ZERO,
-							reserved,
+							line.isDeliveryClosed() ? line.getQtyDelivered().subtract(line.getQtyOrdered()) : reserved,
 							ordered,
 							get_TrxName());
 				}    // stockec
@@ -1470,7 +1474,7 @@ public class MOrder extends X_C_Order implements IDocument
 		log.debug("");
 
 		// Delete Taxes
-		DB.executeUpdateEx("DELETE FROM C_OrderTax WHERE C_Order_ID=" + getC_Order_ID(), trxName);
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM C_OrderTax WHERE C_Order_ID=" + getC_Order_ID(), trxName);
 		m_taxes = null;
 
 		// Lines
@@ -1511,7 +1515,7 @@ public class MOrder extends X_C_Order implements IDocument
 				{
 					final CurrencyPrecision taxPrecision = orderBL.getTaxPrecision(this);
 					final boolean taxIncluded = orderBL.isTaxIncluded(this, TaxUtils.from(cTax));
-					final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTax(cTax, oTax.getTaxBaseAmt(), taxIncluded, taxPrecision.toInt());
+					final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTaxAmt(cTax, oTax.getTaxBaseAmt(), taxIncluded, taxPrecision.toInt());
 					//
 					final MOrderTax newOTax = new MOrderTax(getCtx(), 0, trxName);
 					newOTax.setClientOrg(this);
@@ -1673,7 +1677,8 @@ public class MOrder extends X_C_Order implements IDocument
 		MInOut shipment = null;
 		if (X_C_DocType.DOCSUBTYPE_OnCreditOrder.equals(docSubType)        // (W)illCall(I)nvoice
 				|| X_C_DocType.DOCSUBTYPE_WarehouseOrder.equals(docSubType)    // (W)illCall(P)ickup
-				|| X_C_DocType.DOCSUBTYPE_POSOrder.equals(docSubType))            // (W)alkIn(R)eceipt
+				//|| X_C_DocType.DOCSUBTYPE_POSOrder.equals(docSubType)            // (W)alkIn(R)eceipt
+		)
 		{
 			if (!DeliveryRule.FORCE.getCode().equals(getDeliveryRule()))
 			{
@@ -1694,8 +1699,9 @@ public class MOrder extends X_C_Order implements IDocument
 		}    // Shipment
 
 		// Create SO Invoice - Always invoice complete Order
-		if (X_C_DocType.DOCSUBTYPE_POSOrder.equals(docSubType)
-				|| X_C_DocType.DOCSUBTYPE_OnCreditOrder.equals(docSubType))
+		if (X_C_DocType.DOCSUBTYPE_OnCreditOrder.equals(docSubType)
+				//|| X_C_DocType.DOCSUBTYPE_POSOrder.equals(docSubType)
+		)
 		{
 			final MInvoice invoice = createInvoice(dt, shipment, realTimePOS ? null : getDateOrdered());
 			if (invoice == null)
@@ -1873,7 +1879,8 @@ public class MOrder extends X_C_Order implements IDocument
 		// If we have a Shipment - use that as a base
 		if (shipment != null)
 		{
-			if (!INVOICERULE_AfterDelivery.equals(getInvoiceRule()))
+			if (!INVOICERULE_AfterDelivery.equals(getInvoiceRule())
+					&& !X_C_DocType.DOCSUBTYPE_POSOrder.equals(dt.getDocSubType()))
 			{
 				setInvoiceRule(INVOICERULE_AfterDelivery);
 			}

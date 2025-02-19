@@ -24,7 +24,7 @@ package de.metas.ui.web.pattribute;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.service.impl.TooltipType;
-import de.metas.cache.CCache.CCacheStats;
+import de.metas.cache.CCacheStats;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
@@ -50,6 +50,7 @@ import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 import org.compiere.util.NamePair;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -58,9 +59,15 @@ import java.util.Set;
 @ToString
 public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
 {
-	public static ASILookupDescriptor of(final I_M_Attribute attribute)
+	public static ASILookupDescriptor of(@NonNull final I_M_Attribute attribute)
 	{
-		final IAttributeValuesProvider attributeValuesProvider = Services.get(IAttributesBL.class).createAttributeValuesProvider(attribute);
+		final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
+		final IAttributeValuesProvider attributeValuesProvider = attributesBL.createAttributeValuesProvider(attribute);
+		return of(attributeValuesProvider);
+	}
+
+	public static ASILookupDescriptor of(@NonNull final IAttributeValuesProvider attributeValuesProvider)
+	{
 		return new ASILookupDescriptor(attributeValuesProvider);
 	}
 
@@ -145,16 +152,14 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 		return attributeValuesProvider.getCacheStats();
 	}
 
-	public int getM_AttributeValue_ID(final LookupValue lookupValue)
+	public AttributeValueId getAttributeValueId(@Nullable final LookupValue lookupValue)
 	{
-		if (lookupValue == null)
-		{
-			return -1;
-		}
+		return lookupValue != null ? getAttributeValueId(lookupValue.getIdAsString()) : null;
+	}
 
-		final String valueKey = lookupValue.getIdAsString();
-		final AttributeValueId attributeValueId = attributeValuesProvider.getAttributeValueIdOrNull(valueKey);
-		return AttributeValueId.toRepoId(attributeValueId);
+	public AttributeValueId getAttributeValueId(@Nullable final String code)
+	{
+		return code != null ? attributeValuesProvider.getAttributeValueIdOrNull(code) : null;
 	}
 
 	@Override
@@ -202,7 +207,6 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 				.filter(filter)
 				.collect(LookupValuesList.collect())
 				.pageByOffsetAndLimit(offset, limit);
-
 
 	}
 

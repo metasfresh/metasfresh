@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -63,6 +63,7 @@ import de.metas.handlingunits.allocation.impl.LULoader;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.inout.returns.ReturnsServiceFacade;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateRequest;
 import de.metas.handlingunits.inventory.internaluse.HUInternalUseInventoryCreateResponse;
@@ -75,6 +76,7 @@ import de.metas.handlingunits.model.I_M_HU_QRCode;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.model.I_M_InventoryLine;
+import de.metas.handlingunits.model.I_M_Picking_Candidate;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.handlingunits.storage.IHUProductStorage;
@@ -111,6 +113,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -138,11 +141,13 @@ public class M_HU_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
 	private final IInventoryDAO inventoryDAO = Services.get(IInventoryDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	private final ReturnsServiceFacade returnsServiceFacade = SpringContextHolder.instance.getBean(ReturnsServiceFacade.class);
 
 	private final M_Product_StepDefData productTable;
 	private final M_HU_StepDefData huTable;
@@ -158,10 +163,12 @@ public class M_HU_StepDef
 
 	private final HandlingUnitsService handlingUnitsService = SpringContextHolder.instance.getBean(HandlingUnitsService.class);
 
+	private final TestContext testContext;
+
 	@And("all the hu data is reset")
 	public void reset_data()
 	{
-		DB.executeUpdateEx("TRUNCATE TABLE m_hu cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE m_hu cascade", ITrx.TRXNAME_None);
 	}
 
 	@And("validate M_HUs:")
@@ -231,7 +238,7 @@ public class M_HU_StepDef
 	}
 
 	@And("^after not more than (.*)s, there are added M_HUs for inventory$")
-	public void find_HUs(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	public void find_HUs(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach((row) -> {
 			final InventoryLineId inventoryLineId = inventoryLineTable.getId(row.getAsIdentifier(I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID));
@@ -239,7 +246,8 @@ public class M_HU_StepDef
 
 			final I_M_InventoryLine inventoryLine = inventoryDAO.getLineById(inventoryLineId, I_M_InventoryLine.class);
 			assertThat(inventoryLine).isNotNull();
-			final HuId huId = HuId.ofRepoId(inventoryLine.getM_HU_ID());
+			final HuId huId = HuId.ofRepoIdOrNull(inventoryLine.getM_HU_ID());
+			assertThat(huId).as("inventory line has HU set").isNotNull();
 
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> loadHU(LoadHURequest.builder()
 					.huId(huId)
@@ -251,7 +259,7 @@ public class M_HU_StepDef
 	}
 
 	@And("^after not more than (.*)s, M_HUs should have$")
-	public void wait_M_HUs_status(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	public void wait_M_HUs_status(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach((row) -> {
 			final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(COLUMNNAME_M_HU_ID);
@@ -272,16 +280,25 @@ public class M_HU_StepDef
 		});
 	}
 
+	/**
+	 * @param dataTable: <ul>
+	 *                   <li>OPT.resultedNewTUs: comma-separated identifiers of the TUs that are expected when the given quantity is transferred using the given packing-instruction.<br>
+	 *                   If given, then the stepdef expects one identifier for each TU that resulted from the transfer.</li>
+	 *                   <li>OPT.resultedNewCUs: comma-separated identifiers of the CUs that are expected from the transfer.<br>
+	 *                   If given, then there need to be as many CU-identifiers as there are TU-identifiers.</li>
+	 *                   </ul>
+	 */
 	@And("transform CU to new TUs")
 	public void transformCUtoNewTUs(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach((row) -> {
+
 			final StepDefDataIdentifier sourceCuIdentifier = row.getAsIdentifier("sourceCU");
 			final BigDecimal cuQty = row.getAsBigDecimal("cuQty");
 			final StepDefDataIdentifier huPIItemProductIdentifier = row.getAsIdentifier(COLUMNNAME_M_HU_PI_Item_Product_ID);
 
 			final I_M_HU cuHU = huTable.get(sourceCuIdentifier);
-			assertThat(cuHU).isNotNull();
+			assertThat(cuHU).as("sourceCU").isNotNull();
 
 			final I_C_UOM uom = uomDAO.getById(StepDefConstants.PCE_UOM_ID);
 			final Quantity cuQuantity = Quantity.of(cuQty, uom);
@@ -296,7 +313,7 @@ public class M_HU_StepDef
 					.orElse(null);
 			if (tuIdentifiers != null)
 			{
-				assertThat(tuIdentifiers).hasSameSizeAs(resultedNewTUs);
+				assertThat(tuIdentifiers).as("resultedNewTUs").hasSameSizeAs(resultedNewTUs);
 			}
 
 			final List<StepDefDataIdentifier> cuIdentifiers = row.getAsOptionalIdentifier("resultedNewCUs")
@@ -304,7 +321,7 @@ public class M_HU_StepDef
 					.orElse(null);
 			if (cuIdentifiers != null)
 			{
-				assertThat(cuIdentifiers).hasSameSizeAs(resultedNewTUs);
+				assertThat(cuIdentifiers).as("resultedNewCUs").hasSameSizeAs(resultedNewTUs);
 			}
 
 			for (int index = 0; index < resultedNewTUs.size(); index++)
@@ -372,7 +389,7 @@ public class M_HU_StepDef
 				final LULoader luLoader = new LULoader(huContext);
 
 				@NonNull final List<StepDefDataIdentifier> sourceTUIdentifiers = row.getAsIdentifier("sourceTUs").toCommaSeparatedList();
-				for (StepDefDataIdentifier sourceTUIdentifier : sourceTUIdentifiers)
+				for (final StepDefDataIdentifier sourceTUIdentifier : sourceTUIdentifiers)
 				{
 					final I_M_HU sourceTU = huTable.get(sourceTUIdentifier);
 					luLoader.addTU(sourceTU);
@@ -408,7 +425,7 @@ public class M_HU_StepDef
 	{
 		final I_M_HU sourceCU = row.getAsIdentifier("sourceCU").lookupIn(huTable);
 
-		final IHUProductStorage sourceCUProductStorage = handlingUnitsBL.getStorageFactory().getStorage(sourceCU).getSingleHUProductStorage();
+		final IHUProductStorage sourceCUProductStorage = handlingUnitsBL.getSingleHUProductStorage(sourceCU);
 		final ProductId productId = sourceCUProductStorage.getProductId();
 		final I_C_UOM uom = sourceCUProductStorage.getC_UOM();
 
@@ -515,15 +532,6 @@ public class M_HU_StepDef
 		validateHU(ImmutableList.of(topLevelHU), ImmutableList.of(huIdentifier), identifierToRow);
 	}
 
-	@And("^after not more than (.*)s, M_HU are found:$")
-	public void is_HU_found(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
-	{
-		for (final Map<String, String> row : table.asMaps())
-		{
-			findHU(row, timeoutSec);
-		}
-	}
-
 	@And("M_HU_Storage are validated")
 	public void validate_HU_Storage(@NonNull final DataTable table)
 	{
@@ -627,8 +635,10 @@ public class M_HU_StepDef
 		handlingUnitsBL.markDestroyed(huContext, availableHUs);
 	}
 
-	@And("load newly created M_HU record based on SourceHU")
-	public void load_newly_created_M_HU(@NonNull final DataTable dataTable)
+	@And("^after not more than (.*)s, load newly created M_HU record based on SourceHU$")
+	public void load_newly_created_M_HU(
+			final int timeoutSec,
+			@NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final List<Map<String, String>> rows = dataTable.asMaps();
 		for (final Map<String, String> row : rows)
@@ -640,7 +650,7 @@ public class M_HU_StepDef
 			final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_Trace.COLUMNNAME_Qty);
 			final String huTraceType = DataTableUtil.extractStringForColumnName(row, I_M_HU_Trace.COLUMNNAME_HUTraceType);
 
-			final Optional<Integer> huId = queryBL.createQueryBuilder(I_M_HU_Trace.class)
+			final Supplier<Optional<I_M_HU>> huSupplier = () -> queryBL.createQueryBuilder(I_M_HU_Trace.class)
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_VHU_Source_ID, vhuSourceHU.getM_HU_ID())
 					.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_Qty, qty)
@@ -649,10 +659,10 @@ public class M_HU_StepDef
 					.create()
 					.stream()
 					.map(I_M_HU_Trace::getM_HU_ID)
-					.findFirst();
+					.findFirst()
+					.map(id -> InterfaceWrapperHelper.load(id, I_M_HU.class));
 
-			assertThat(huId).isPresent();
-			final I_M_HU newHU = load(huId.get(), I_M_HU.class);
+			final I_M_HU newHU = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, huSupplier);
 
 			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
 			huTable.putOrReplace(huIdentifier, newHU);
@@ -703,35 +713,6 @@ public class M_HU_StepDef
 		assertThat(huStorageRecord).isPresent();
 		assertThat(huStorageRecord.get().getM_Product_ID()).isEqualTo(productRecord.getM_Product_ID());
 		assertThat(huStorageRecord.get().getQty()).isEqualTo(qty);
-	}
-
-	private void findHU(@NonNull final Map<String, String> row, @NonNull final Integer timeoutSec) throws InterruptedException
-	{
-		final String huStatus = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_HUStatus);
-		final boolean isActive = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsActive);
-
-		StepDefUtil.tryAndWait(timeoutSec, 500, this::isHUFound);
-
-		final Optional<I_M_HU> huOptional = getHuRecord();
-
-		assertThat(huOptional).isPresent();
-		assertThat(huOptional.get().getHUStatus()).isEqualTo(huStatus);
-		assertThat(huOptional.get().isActive()).isEqualTo(isActive);
-
-		huTable.putOrReplace(DataTableUtil.extractRecordIdentifier(row, I_M_HU.COLUMNNAME_M_HU_ID), huOptional.get());
-	}
-
-	private Optional<I_M_HU> getHuRecord()
-	{
-		return queryBL.createQueryBuilder(I_M_HU.class)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.firstOnlyOptional(I_M_HU.class);
-	}
-
-	private boolean isHUFound()
-	{
-		return getHuRecord().isPresent();
 	}
 
 	private Optional<I_M_HU_Storage> getHuStorageRecord(@NonNull final I_M_HU huRecord)
@@ -819,6 +800,24 @@ public class M_HU_StepDef
 				validateHU(jsonHU.getIncludedHUs(), includedHusIdentifiers, huIdentifierToRow);
 			}
 		}
+	}
+
+	@And("return hu from customer")
+	public void return_HU_from_customer(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> tableRow : dataTable.asMaps())
+		{
+			returnHUFromCustomer(tableRow);
+		}
+	}
+
+	private void returnHUFromCustomer(@NonNull final Map<String, String> tableRow)
+	{
+		final String huIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Picking_Candidate.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_M_HU hu = huTable.get(huIdentifier);
+		assertThat(hu).isNotNull();
+
+		returnsServiceFacade.createCustomerReturnInOutForHUs(ImmutableList.of(hu));
 	}
 
 	@NonNull
