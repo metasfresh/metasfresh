@@ -20,7 +20,7 @@
  * #L%
  */
 
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Details(IN p_ShipperTransportation_ID numeric)
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Details (IN p_M_ShipperTransportation_ID numeric)
 ;
 
@@ -62,7 +62,8 @@ FROM (SELECT name,
             FROM M_ShippingPackage sp
                      INNER JOIN C_BPartner bp ON sp.C_BPartner_ID = bp.C_BPartner_ID
                      INNER JOIN C_BPartner_Location bpl ON sp.C_BPartner_Location_ID = bpl.C_BPartner_Location_ID
-                     LEFT OUTER JOIN M_Package_HU phu ON sp.M_Package_ID = phu.M_Package_ID
+                     INNER JOIN M_Package pk ON pk.M_Package_ID = sp.M_Package_ID
+                     LEFT OUTER JOIN M_Package_HU phu ON pk.M_Package_ID = phu.M_Package_ID
                      LEFT OUTER JOIN M_HU hu ON phu.M_HU_ID = hu.M_HU_ID
                      LEFT OUTER JOIN M_HU_PI_Item hupii ON hu.M_HU_PI_Version_ID = hupii.M_HU_PI_Version_ID AND itemtype = 'PM'
                      LEFT OUTER JOIN M_HU_PackingMaterial hupm ON hupii.M_HU_PackingMaterial_ID = hupm.M_HU_PackingMaterial_ID
