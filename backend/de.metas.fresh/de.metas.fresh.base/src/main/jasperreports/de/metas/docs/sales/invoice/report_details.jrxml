@@ -365,60 +365,60 @@ $F{shiplocation}
 )]]></textFieldExpression>
 				</textField>
 			</band>
-			<band height="12">
+			<band height="22">
 				<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				<printWhenExpression><![CDATA[!$F{ishu}]]></printWhenExpression>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-13" x="223" y="0" width="41" height="12" forecolor="#000000" uuid="6b40a14f-999a-4a4c-aafd-a3d930d5b605"/>
+					<reportElement key="textField-13" x="223" y="6" width="41" height="12" forecolor="#000000" uuid="6b40a14f-999a-4a4c-aafd-a3d930d5b605"/>
 					<textElement textAlignment="Right" markup="none">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{HUQuantity}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-13" x="153" y="0" width="70" height="12" forecolor="#000000" uuid="f38ae9ce-df27-4ebd-9a9e-221cb6330965"/>
+					<reportElement key="textField-13" x="153" y="6" width="70" height="12" forecolor="#000000" uuid="f38ae9ce-df27-4ebd-9a9e-221cb6330965"/>
 					<textElement markup="none">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Attributes}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-17" x="266" y="0" width="78" height="12" forecolor="#000000" uuid="7813f80b-5d5f-43ac-ab2c-89b012285808"/>
+					<reportElement key="textField-17" x="266" y="6" width="78" height="12" forecolor="#000000" uuid="7813f80b-5d5f-43ac-ab2c-89b012285808"/>
 					<textElement markup="none">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-16" x="37" y="0" width="116" height="12" forecolor="#000000" uuid="9d8aa05f-13a7-4100-94b3-1cccae2883f7"/>
+					<reportElement key="textField-16" x="37" y="6" width="116" height="12" forecolor="#000000" uuid="9d8aa05f-13a7-4100-94b3-1cccae2883f7"/>
 					<textElement markup="none">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-20" x="389" y="0" width="37" height="12" forecolor="#000000" uuid="e4a0b9cb-d8bd-4cb0-946d-1bc9f8e41866"/>
+					<reportElement key="textField-20" x="389" y="6" width="37" height="12" forecolor="#000000" uuid="e4a0b9cb-d8bd-4cb0-946d-1bc9f8e41866"/>
 					<textElement markup="none">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-20" x="500" y="0" width="43" height="12" forecolor="#000000" uuid="4072d60d-3d0c-4127-82d8-38c5898de5e6"/>
+					<reportElement key="textField-20" x="500" y="6" width="43" height="12" forecolor="#000000" uuid="4072d60d-3d0c-4127-82d8-38c5898de5e6"/>
 					<textElement textAlignment="Right" markup="none">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-20" x="426" y="0" width="33" height="12" forecolor="#000000" uuid="4829f110-fa95-429a-b450-10c28f535158"/>
+					<reportElement key="textField-20" x="426" y="6" width="33" height="12" forecolor="#000000" uuid="4829f110-fa95-429a-b450-10c28f535158"/>
 					<textElement textAlignment="Right" markup="none">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Price}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-20" x="529" y="0" width="47" height="12" forecolor="#000000" uuid="3df73f8d-ba61-48b0-92e0-fbdf5d2df279">
+					<reportElement key="textField-20" x="529" y="6" width="47" height="12" forecolor="#000000" uuid="3df73f8d-ba61-48b0-92e0-fbdf5d2df279">
 						<printWhenExpression><![CDATA[new Boolean($F{isprinttax}.equals( "Y" ))]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
@@ -427,7 +427,7 @@ $F{shiplocation}
 					<textFieldExpression><![CDATA[$R{Tax}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" evaluationTime="Report" isBlankWhenNull="true">
-					<reportElement key="textField-19" x="458" y="0" width="42" height="12" forecolor="#000000" uuid="1342df9a-6972-4e2b-829d-a1ae83512bf5">
+					<reportElement key="textField-19" x="458" y="6" width="42" height="12" forecolor="#000000" uuid="1342df9a-6972-4e2b-829d-a1ae83512bf5">
 						<printWhenExpression><![CDATA[new Boolean ($F{isdiscountprinted}.equals( "Y" ))]]></printWhenExpression>
 					</reportElement>
 					<textElement textAlignment="Right" markup="none">
@@ -439,12 +439,22 @@ $F{shiplocation}
 )]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement key="textField-19" x="344" y="0" width="44" height="12" forecolor="#000000" uuid="f260d37b-5355-444b-9ea5-28a2a2314086"/>
+					<reportElement key="textField-19" x="344" y="6" width="44" height="12" forecolor="#000000" uuid="f260d37b-5355-444b-9ea5-28a2a2314086"/>
 					<textElement textAlignment="Right" markup="none">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 				</textField>
+				<line>
+					<reportElement x="34" y="3" width="545" height="1" uuid="f5d9ba67-e428-41e7-ac05-457d50d346a7">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
+				</line>
+				<line>
+					<reportElement x="34" y="19" width="545" height="1" uuid="57f3d4b9-f3fa-4c1f-a303-31cab1a906aa">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
+				</line>
 			</band>
 		</groupHeader>
 		<groupFooter>
