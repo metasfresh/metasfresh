@@ -20,11 +20,11 @@
  * #L%
  */
 
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_ShippingOrder_Root(IN p_ShipperTransportation_ID numeric,
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Root(IN p_ShipperTransportation_ID numeric,
                                                                                          IN p_Language                 Character Varying(6))
 ;
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_ShippingOrder_Root(IN p_ShipperTransportation_ID numeric,
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Root(IN p_ShipperTransportation_ID numeric,
                                                                                  IN p_Language                 Character Varying(6))
     RETURNS TABLE
             (

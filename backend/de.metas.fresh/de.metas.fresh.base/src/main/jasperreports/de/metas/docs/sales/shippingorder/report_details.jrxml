@@ -19,7 +19,7 @@
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT *
-FROM de_metas_endcustomer_fresh_reports.Docs_Sales_ShippingOrder_Details($P{RECORD_ID})
+FROM de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Details($P{RECORD_ID})
 ;
 ]]>
 	</queryString>
