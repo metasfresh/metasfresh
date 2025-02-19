@@ -40,7 +40,6 @@ import java.util.Map;
  * What's the point, you ask? {@link de.metas.event.Event} contains a properties map, in which we may want to store JSON (as in the case of material events).
  * This allows to have such events copy-paste friendly in the event log window.
  *
- * @see RawMapDeserializer
  */
 public class RawMapSerializer extends JsonSerializer<Map<String, Object>>
 {

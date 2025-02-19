@@ -138,8 +138,10 @@ public interface MaterialEvent
 	 * Implement to provide accurate event data, like name & parent object
 	 */
 	@Nullable
+	@JsonIgnore
 	default TableRecordReference getSourceTableReference() {return null;}
 
+	@JsonIgnore
 	String getEventName();
 
 	@NonNull

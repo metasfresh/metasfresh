@@ -25,10 +25,10 @@ package de.metas.event;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -38,7 +38,6 @@ import de.metas.event.log.EventLogEntryCollector;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
-import de.metas.util.RawMapDeserializer;
 import de.metas.util.RawMapSerializer;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -82,10 +81,9 @@ public class Event
 
 	// put this first, because this is imho the most interesting part of the event's json representation, at least when shown in the event log
 	@JsonProperty("properties")
-	@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
+	@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	@JsonSerialize(using = RawMapSerializer.class)
-	@JsonDeserialize(using = RawMapDeserializer.class)
 	ImmutableMap<String, Object> properties;
 
 	@JsonProperty("uuid")
@@ -114,11 +112,9 @@ public class Event
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	ImmutableSet<Integer> recipientUserIds;
 
-	@JsonProperty("eventInfo")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@JsonIgnore
 	@Nullable TableRecordReference sourceRecordReference;
-	@JsonProperty("eventInfo")
-	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@JsonIgnore
 	@Nullable String eventName;
 
 	private enum LoggingStatus
@@ -167,7 +163,7 @@ public class Event
 			@JsonProperty("recipientUserIds") final Set<Integer> recipientUserIds,
 			@JsonProperty("properties") final Map<String, Object> properties,
 			@JsonProperty("loggingStatus") final LoggingStatus loggingStatus,
-			@Nullable @JsonProperty("sourceRecord") final TableRecordReference sourceRecordReference,
+			@Nullable @JsonProperty("sourceRecordReference") final TableRecordReference sourceRecordReference,
 			@Nullable @JsonProperty("eventName") final String eventName)
 	{
 		this.uuid = uuid;

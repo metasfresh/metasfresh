@@ -55,6 +55,7 @@ public class MaterialEventConverter
 
 		if (materialEventObj instanceof Map)
 		{
+			// When the Event is deserialized, the PROPERTY_MATERIAL_EVENT has already been deserialized as a Map
 			@SuppressWarnings("unchecked") final Map<String, Object> valueMap = (Map<String, Object>)materialEventObj;
 
 			// Check if the valueMap contains the "type" field for a MaterialEvent
@@ -65,7 +66,13 @@ public class MaterialEventConverter
 			}
 		}
 
-		return null;
+		if (materialEventObj instanceof String)
+		{
+			// in case the Event has not been deserialized, then the material event is still a string
+			return jsonObjectMapper.readValue(materialEventObj.toString());
+		}
+
+		throw new IllegalArgumentException("Cannot convert " + materialEventObj + " to MaterialEvent");
 	}
 
 	/**
