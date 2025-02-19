@@ -1,7 +1,7 @@
 DROP FUNCTION IF EXISTS getCurrentStorageStock(p_M_Product_ID   numeric,
                                                p_C_UOM_ID       numeric,
                                                p_M_Attribute_ID numeric,
-                                               p_AttrivuteValue character varying,
+                                               p_AttributeValue character varying,
                                                p_AD_Client_ID   numeric,
                                                p_AD_Org_ID      numeric)
 ;
@@ -9,7 +9,7 @@ DROP FUNCTION IF EXISTS getCurrentStorageStock(p_M_Product_ID   numeric,
 CREATE OR REPLACE FUNCTION getCurrentStorageStock(p_M_Product_ID   numeric,
                                                   p_C_UOM_ID       numeric,
                                                   p_M_Attribute_ID numeric,
-                                                  p_AttrivuteValue character varying,
+                                                  p_AttributeValue character varying,
                                                   p_AD_Client_ID   numeric,
                                                   p_AD_Org_ID      numeric)
     RETURNS numeric
@@ -31,7 +31,7 @@ WHERE p_M_Product_ID = s.M_Product_ID
                       'S',
                       'I')
   AND hu.m_hu_item_parent_id IS NULL
-  AND ((p_AttrivuteValue IS NULL AND
+  AND ((p_AttributeValue IS NULL AND
         (EXISTS (SELECT 1
                  FROM m_hu_attribute hua
                  WHERE s.m_hu_id = hua.m_hu_id
@@ -42,7 +42,7 @@ WHERE p_M_Product_ID = s.M_Product_ID
                 FROM m_hu_attribute hua
                 WHERE s.m_hu_id = hua.m_hu_id
                   AND hua.m_attribute_id = p_M_Attribute_ID
-                  AND hua.value = p_AttrivuteValue)))
+                  AND hua.value = p_AttributeValue)))
 
 $$
     LANGUAGE SQL STABLE

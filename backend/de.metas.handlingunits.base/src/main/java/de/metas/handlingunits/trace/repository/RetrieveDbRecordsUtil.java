@@ -151,6 +151,12 @@ public class RetrieveDbRecordsUtil
 		private final Set<I_M_HU_Trace> set = new TreeSet<>(ModelByIdComparator.instance);
 
 		@Override
+		public Result newEmptyResult()
+		{
+			return new ListResult();
+		}
+
+		@Override
 		public void executeQueryAndAddAll(final IQuery<I_M_HU_Trace> query)
 		{
 			set.addAll(query.list());
@@ -512,7 +518,7 @@ public class RetrieveDbRecordsUtil
 					.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_M_HU_ID, query.getAnyHuId())
 					.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_VHU_ID, query.getAnyHuId())
 					.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_VHU_Source_ID, query.getAnyHuId());
-			
+
 			queryBuilder.addFilter(anyHuFilter);
 			queryIsEmpty = false;
 		}

@@ -141,7 +141,7 @@ final class HuTraceQueryCreator
 				&& !parameter.getSqlWhereClause().isEmpty())
 		{ // case: zooming
 			if (parameter.getSqlWhereClause().getSql().startsWith(I_M_HU.COLUMNNAME_M_HU_ID))
-			{ 
+			{
 				queryUpdateFunction = HuTraceQueryCreator::updateAnyHuFromParameterWhereClause;
 			}
 			else if (parameter.getSqlWhereClause().getSql().startsWith(I_M_HU_Trace.COLUMNNAME_M_Product_ID))
@@ -169,7 +169,7 @@ final class HuTraceQueryCreator
 				queryUpdateFunction = HuTraceQueryCreator::updateMovementIdFromParameterWhereClause;
 			}
 		}
-		
+
 		if(queryUpdateFunction == null)
 		{
 			final String message = StringUtils.formatMessage("The given filterParam has has nothing we can extract into the HUTraceQuery={}", parameter);

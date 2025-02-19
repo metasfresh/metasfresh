@@ -37,8 +37,6 @@ UPDATE AD_Column SET IsMandatory='N',Updated=TO_TIMESTAMP('2025-02-14 17:32:05.4
 ALTER TABLE AD_BusinessRule_Event ADD CONSTRAINT TriggeringUser_ADBusinessRuleEvent FOREIGN KEY (Triggering_User_ID) REFERENCES public.AD_User DEFERRABLE INITIALLY DEFERRED
 ;
 
-UPDATE ad_businessrule_event SET triggering_user_id=100
-;
 -- Column: AD_BusinessRule_Event.Triggering_User_ID
 -- 2025-02-14T17:33:19.150Z
 UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2025-02-14 17:33:19.150000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=589671
@@ -48,7 +46,4 @@ UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2025-02-14 17:33:19.1
 INSERT INTO t_alter_column values('ad_businessrule_event','Triggering_User_ID','NUMERIC(10)',null,null)
 ;
 
--- 2025-02-14T17:33:19.640Z
-INSERT INTO t_alter_column values('ad_businessrule_event','Triggering_User_ID',null,'NOT NULL',null)
-;
 

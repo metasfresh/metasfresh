@@ -35,6 +35,7 @@ import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
+import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
@@ -46,6 +47,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
@@ -404,4 +406,14 @@ public class HUAttributesBL implements IHUAttributesBL
 			attributeStorage.saveChangesIfNeeded();
 		});
 	}
+	@Override
+	@Nullable
+	public String getHUAttributeValue(@NonNull final I_M_HU hu, @NonNull final AttributeCode attributeCode)
+	{
+		return Optional.ofNullable(attributeDAO.retrieveAttributeIdByValueOrNull(attributeCode))
+				.map(atrId -> huAttributesDAO.retrieveAttribute(hu, atrId))
+				.map(I_M_HU_Attribute::getValue)
+				.orElse(null);
+	}
+
 }

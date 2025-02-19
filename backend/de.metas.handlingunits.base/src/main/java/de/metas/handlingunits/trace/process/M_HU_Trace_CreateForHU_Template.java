@@ -39,7 +39,6 @@ import de.metas.handlingunits.trace.HUTraceEventsService;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;

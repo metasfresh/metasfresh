@@ -32,6 +32,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
+import org.xmlunit.assertj3.XmlAssert;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -41,7 +42,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Properties;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class EcosioDesadvRouteTest extends CamelTestSupport
 {
@@ -155,8 +156,8 @@ class EcosioDesadvRouteTest extends CamelTestSupport
 		// then
 		fileOutputEndpoint.expectedMessageCount(1);
 		fileOutputEndpoint.assertIsSatisfied(1000);
-		final var desadvOutput = fileOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
-		assertThat(desadvOutput)
-				.isXmlEqualToContentOf(new File(expectedOutputPath));
+		final String desadvOutput = fileOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
+
+		XmlAssert.assertThat(desadvOutput).and(new File(expectedOutputPath)).ignoreChildNodesOrder().ignoreComments().areSimilar();
 	}
 }

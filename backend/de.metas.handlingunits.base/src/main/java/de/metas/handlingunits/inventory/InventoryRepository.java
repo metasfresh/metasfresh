@@ -69,7 +69,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -124,7 +123,7 @@ public class InventoryRepository
 		return getInventoryLineRecordById(inventoryLine.getId());
 	}
 
-	private ImmutableSet getInventoryLinesByIDs(@Nullable final Set<InventoryLineId> inventoryLineIds)
+	private ImmutableSet<I_M_InventoryLine> getInventoryLinesByIDs(@Nullable final Set<InventoryLineId> inventoryLineIds)
 	{
 		return loadByRepoIdAwares(inventoryLineIds, I_M_InventoryLine.class)
 				.stream()
@@ -802,6 +801,8 @@ public class InventoryRepository
 		{
 			return ImmutableSet.of();
 		}
+}
+
 
 		final IQuery<I_M_InventoryLine> huFilter = queryBL.createQueryBuilder(de.metas.handlingunits.model.I_M_InventoryLine.class)
 				.addOnlyActiveRecordsFilter()
