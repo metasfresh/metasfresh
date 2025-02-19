@@ -130,7 +130,7 @@ import java.util.Set;
 			orderLineBuilder.manualDiscount(purchaseOrderItem.getDiscount().toBigDecimal());
 		}
 		orderLineBuilder.manualPrice(purchaseOrderItem.getPrice());
-		orderLineBuilder.manualPriceUomId(purchaseOrderItem.getPriceUomId());
+		orderLineBuilder.priceUomId(purchaseOrderItem.getPriceUomId());
 
 		purchaseItem2OrderLine.put(purchaseOrderItem, orderLineBuilder);
 	}

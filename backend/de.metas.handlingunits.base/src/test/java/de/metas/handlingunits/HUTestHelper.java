@@ -97,6 +97,8 @@ import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import de.metas.materialtransaction.MTransactionUtil;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
@@ -452,6 +454,7 @@ public class HUTestHelper
 
 		SpringContextHolder.registerJUnitBean(new AllocationStrategyFactory(new AllocationStrategySupportingServicesFacade()));
 		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, bpartnerBL);

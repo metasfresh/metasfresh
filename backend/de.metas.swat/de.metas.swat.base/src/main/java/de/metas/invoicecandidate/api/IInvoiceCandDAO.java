@@ -65,7 +65,7 @@ import java.util.Set;
 
 public interface IInvoiceCandDAO extends ISingletonService
 {
-	I_C_Invoice_Candidate getById(InvoiceCandidateId invoiceCandId);
+	I_C_Invoice_Candidate getById(@NonNull InvoiceCandidateId invoiceCandId);
 
 	I_C_Invoice_Candidate getByIdOutOfTrx(InvoiceCandidateId invoiceCandidateId);
 

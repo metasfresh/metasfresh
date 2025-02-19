@@ -1,0 +1,18 @@
+{
+  "traceId": "traceId",
+  "orgCode": "orgCode",
+  "externalSystemName": "ProCareManagement",
+  "externalSystemChildConfigValue": "pcmValue",
+  "command": "startWarehouseSyncLocalFile",
+  "externalSystemConfigId": 1,
+  "adPInstanceId": 2,
+  "writeAuditEndpoint": "auditEndpoint",
+  "parameters": {
+    "LocalFileRootLocation": "rootDirectory",
+    "LocalFileProcessedDirectory": "processedDirectory",
+    "LocalFileErroredDirectory": "errorDirectory",
+    "LocalFilePollingFrequencyInMs": "1000",
+    "LocalFileWarehouseFileNamePattern": "doesntmatter",
+    "BPartnerId": "123456"
+  }
+}

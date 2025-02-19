@@ -235,7 +235,7 @@ public class PricingBL implements IPricingBL
 		return result;
 	}
 
-	private static boolean isManualPrice(final IPricingContext pricingCtx)
+	public static boolean isManualPrice(final IPricingContext pricingCtx)
 	{
 		// Direct
 		{

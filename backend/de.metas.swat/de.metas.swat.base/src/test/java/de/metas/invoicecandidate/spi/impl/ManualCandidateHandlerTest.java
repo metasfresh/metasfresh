@@ -22,13 +22,26 @@ package de.metas.invoicecandidate.spi.impl;
  * #L%
  */
 
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.Iterator;
-import java.util.Properties;
-
+import ch.qos.logback.classic.Level;
+import de.metas.ShutdownListener;
+import de.metas.StartupListener;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
+import de.metas.currency.CurrencyRepository;
+import de.metas.document.engine.DocStatus;
+import de.metas.invoicecandidate.AbstractICTestSupport;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
+import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.logging.LogManager;
+import de.metas.money.MoneyService;
+import de.metas.process.PInstanceId;
+import de.metas.util.Services;
+import de.metas.util.collections.IteratorUtils;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -50,26 +63,12 @@ import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import ch.qos.logback.classic.Level;
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
-import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
-import de.metas.currency.CurrencyRepository;
-import de.metas.document.engine.DocStatus;
-import de.metas.invoicecandidate.AbstractICTestSupport;
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.InvoiceCandRecomputeTag;
-import de.metas.invoicecandidate.model.I_C_ILCandHandler;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
-import de.metas.logging.LogManager;
-import de.metas.money.MoneyService;
-import de.metas.process.PInstanceId;
-import de.metas.util.Services;
-import de.metas.util.collections.IteratorUtils;
+import java.math.BigDecimal;
+import java.util.Iterator;
+import java.util.Properties;
+
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.junit.Assert.assertThat;
 
 @Ignore
 @RunWith(SpringRunner.class)
@@ -445,7 +444,7 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 		POJOWrapper.setInstanceName(manualIc1, "manualIc1");
 
 		manualIc1.setC_ILCandHandler(manualHandler);
-		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation(ctx, manualIc1);
+		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation(manualIc1);
 		InterfaceWrapperHelper.save(manualIc1);
 
 		final I_C_Invoice_Candidate manualIc2 = createInvoiceCandidate()
@@ -526,7 +525,7 @@ public class ManualCandidateHandlerTest extends AbstractICTestSupport
 
 		manualIc1.setIsToClear(true);
 
-		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation(ctx, manualIc1);
+		invoiceCandBL.set_QtyInvoiced_NetAmtInvoiced_Aggregation(manualIc1);
 
 		// Tests isCreditMemo. Needs to be manual and have a price actual override (which is why manualIc2 would return false)
 		manualIc1.setPriceActual_Override(new BigDecimal("-50"));

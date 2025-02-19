@@ -106,6 +106,10 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 
 		switch (typeConditions)
 		{
+			case FLAT_FEE:
+				final I_M_Product flatFeeProduct = loadOutOfTrx(conditions.getM_Product_Flatrate_ID(), I_M_Product.class);
+				addProduct(flatFeeProduct);
+				break;
 			case REFUND:
 				final RefundConfigQuery query = RefundConfigQuery.builder()
 						.conditionsId(conditionsId)
@@ -125,8 +129,8 @@ public class C_Flatrate_Term_Create_For_BPartners extends C_Flatrate_Term_Create
 					}
 					else
 					{
-						final I_M_Product product = loadOutOfTrx(productId, I_M_Product.class);
-						addProduct(product);
+						final I_M_Product refundProduct = loadOutOfTrx(productId, I_M_Product.class);
+						addProduct(refundProduct);
 					}
 				}
 				break;

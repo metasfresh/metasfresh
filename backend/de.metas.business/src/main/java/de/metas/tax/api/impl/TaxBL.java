@@ -171,4 +171,11 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 				.map(I_C_TaxCategory::getC_TaxCategory_ID)
 				.map(TaxCategoryId::ofRepoId);
 	}
+
+	@Override
+	public Tax getDefaultTax(final TaxCategoryId taxCategoryId)
+	{
+		return taxDAO.getDefaultTax(taxCategoryId);
+	}
+
 }

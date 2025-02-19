@@ -125,4 +125,6 @@ public interface IPricingContext extends IContextAware
 	boolean isSkipCheckingPriceListSOTrxFlag();
 
 	Quantity getQuantity();
+
+	BigDecimal getManualPrice();
 }

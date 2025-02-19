@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.common.util.Check;
+import de.metas.common.util.StringUtils;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
@@ -30,6 +31,7 @@ import de.metas.cucumber.stepdefs.attribute.M_Attribute_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
+import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
@@ -44,7 +46,6 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -59,6 +60,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
@@ -79,6 +81,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_Product_ID;
+import static org.compiere.model.I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID;
 
 public class C_OrderLine_StepDef
 {
@@ -93,6 +96,8 @@ public class C_OrderLine_StepDef
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final C_Flatrate_Conditions_StepDefData flatrateConditionsTable;
 	private final C_Flatrate_Term_StepDefData contractTable;
+	private final C_TaxCategory_StepDefData taxCategoryTable;
+
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	private final M_Attribute_StepDefData attributeTable;
 	private final C_Tax_StepDefData taxTable;
@@ -107,6 +112,7 @@ public class C_OrderLine_StepDef
 			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
 			@NonNull final C_Flatrate_Conditions_StepDefData flatrateConditionsTable,
 			@NonNull final C_Flatrate_Term_StepDefData contractTable,
+			@NonNull final C_TaxCategory_StepDefData taxCategoryTable,
 			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
 			@NonNull final M_Attribute_StepDefData attributeTable,
 			@NonNull final C_Tax_StepDefData taxTable,
@@ -120,6 +126,7 @@ public class C_OrderLine_StepDef
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
 		this.flatrateConditionsTable = flatrateConditionsTable;
 		this.contractTable = contractTable;
+		this.taxCategoryTable = taxCategoryTable;
 		this.huPiItemProductTable = huPiItemProductTable;
 		this.attributeTable = attributeTable;
 		this.taxTable = taxTable;
@@ -451,6 +458,7 @@ public class C_OrderLine_StepDef
 		final BigDecimal discount = DataTableUtil.extractBigDecimalForColumnName(row, "discount");
 		final String currencyCode = DataTableUtil.extractStringForColumnName(row, "currencyCode");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
+		final String taxCategoryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_TaxCategory_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		final Integer expectedProductId = productTable.getOptional(productIdentifier)
 				.map(I_M_Product::getM_Product_ID)
@@ -506,11 +514,18 @@ public class C_OrderLine_StepDef
 			assertThat(orderLine.getQtyItemCapacity()).isEqualByComparingTo(qtyItemCapacity);
 		}
 
-		assertThat(orderLine.getC_Order_ID()).as("C_Order_ID").isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID());
-
 		if (dateOrdered != null)
 		{
 			assertThat(orderLine.getDateOrdered()).as("DateOrdered").isEqualTo(dateOrdered);
+		}
+
+		if (Check.isNotBlank(taxCategoryIdentifier))
+		{
+			final Integer taxCategoryId = taxCategoryTable.getOptional(taxCategoryIdentifier)
+					.map(I_C_TaxCategory::getC_TaxCategory_ID)
+					.orElseGet(() -> Integer.parseInt(taxCategoryIdentifier));
+
+			assertThat(orderLine.getC_TaxCategory_ID()).as("C_TaxCategory_ID").isEqualTo(taxCategoryId);
 		}
 
 		assertThat(orderLine.getC_Order_ID()).as("C_Order_ID").isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID());

@@ -32,6 +32,7 @@ import de.metas.bpartner.BPartnerType;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.GeographicalCoordinatesWithBPartnerLocationId;
 import de.metas.bpartner.OrgMappingId;
+import de.metas.bpartner.service.impl.GLNQuery;
 import de.metas.email.EMailAddress;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -322,7 +323,8 @@ public interface IBPartnerDAO extends ISingletonService
 
 	BPartnerLocationId retrieveBPartnerLocationId(BPartnerLocationQuery query);
 
-	I_C_BPartner_Location retrieveBPartnerLocation(BPartnerLocationQuery query);
+	@Nullable
+	I_C_BPartner_Location retrieveBPartnerLocation(@NonNull BPartnerLocationQuery query);
 
 	BPartnerPrintFormatMap getPrintFormats(@NonNull BPartnerId bpartnerId);
 
@@ -402,4 +404,7 @@ public interface IBPartnerDAO extends ISingletonService
 	List<I_C_BPartner> retrieveByIds(Set<BPartnerId> bpartnerIds);
 
 	BPartnerLocationId getCurrentLocation(final BPartnerLocationId locationId);
+
+	@NonNull
+	Optional<BPartnerLocationId> retrieveSingleBPartnerLocationIdBy(@NonNull GLNQuery query);
 }
