@@ -151,12 +151,6 @@ public class RetrieveDbRecordsUtil
 		private final Set<I_M_HU_Trace> set = new TreeSet<>(ModelByIdComparator.instance);
 
 		@Override
-		public Result newEmptyResult()
-		{
-			return new ListResult();
-		}
-
-		@Override
 		public void executeQueryAndAddAll(final IQuery<I_M_HU_Trace> query)
 		{
 			set.addAll(query.list());
