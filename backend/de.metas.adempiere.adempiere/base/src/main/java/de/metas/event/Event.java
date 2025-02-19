@@ -113,6 +113,10 @@ public class Event
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	ImmutableSet<Integer> recipientUserIds;
 
+	@JsonProperty("eventInfo")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Nullable EventInfo eventInfo;
+
 	private enum LoggingStatus
 	{
 		SHALL_NOT_BE_LOGGED,
@@ -144,6 +148,7 @@ public class Event
 		recipientUserIds = ImmutableSet.copyOf(builder.recipientUserIds);
 		properties = deepCopy(builder.getProperties());
 		loggingStatus = builder.loggingStatus;
+		eventInfo = builder.eventInfo;
 	}
 
 	@JsonCreator
@@ -156,7 +161,8 @@ public class Event
 			@JsonProperty("senderId") final String senderId,
 			@JsonProperty("recipientUserIds") final Set<Integer> recipientUserIds,
 			@JsonProperty("properties") final Map<String, Object> properties,
-			@JsonProperty("loggingStatus") final LoggingStatus loggingStatus)
+			@JsonProperty("loggingStatus") final LoggingStatus loggingStatus,
+			@Nullable @JsonProperty("eventInfo") final EventInfo eventInfo)
 	{
 		this.uuid = uuid;
 		this.when = when;
@@ -168,6 +174,7 @@ public class Event
 		this.recipientUserIds = recipientUserIds != null ? ImmutableSet.copyOf(recipientUserIds) : ImmutableSet.of();
 		this.properties = deepCopy(properties);
 		this.loggingStatus = loggingStatus;
+		this.eventInfo = eventInfo;
 	}
 
 	private static ImmutableMap<String, Object> deepCopy(final Map<String, Object> properties)
@@ -225,8 +232,7 @@ public class Event
 	 */
 	public <T> T getProperty(final String name)
 	{
-		@SuppressWarnings("unchecked")
-		final T value = (T)properties.get(name);
+		@SuppressWarnings("unchecked") final T value = (T)properties.get(name);
 		return value;
 	}
 
@@ -318,6 +324,7 @@ public class Event
 		builder.uuid = uuid;
 		builder.when = when;
 		builder.loggingStatus = loggingStatus;
+		builder.eventInfo = eventInfo;
 
 		return builder;
 	}
@@ -336,6 +343,7 @@ public class Event
 		private final Set<Integer> recipientUserIds = new HashSet<>();
 		private final Map<String, Object> properties = Maps.newLinkedHashMap();
 		private LoggingStatus loggingStatus = LoggingStatus.SHALL_NOT_BE_LOGGED;
+		private @Nullable EventInfo eventInfo;
 
 		private Builder()
 		{
@@ -408,6 +416,12 @@ public class Event
 			}
 
 			detailADMessage = adMessage;
+			return this;
+		}
+
+		public Builder setEventInfo(@Nullable final EventInfo eventInfo)
+		{
+			this.eventInfo = eventInfo;
 			return this;
 		}
 

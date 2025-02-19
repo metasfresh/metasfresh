@@ -2,6 +2,7 @@ package de.metas.event.log;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.event.Event;
+import de.metas.event.EventInfo;
 import de.metas.event.Topic;
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
@@ -10,6 +11,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -97,6 +99,17 @@ public class EventLogService
 		eventLogRecord.setEventData(eventString);
 		eventLogRecord.setEventTopicName(eventBusTopic.getName());
 		eventLogRecord.setEventTypeName(eventBusTopic.getType().toString());
+		final EventInfo eventInfo = event.getEventInfo();
+		if (eventInfo != null)
+		{
+			eventLogRecord.setEventName(eventInfo.getEventName());
+			final TableRecordReference sourceRecordReference = eventInfo.getSourceRecordReference();
+			if (sourceRecordReference != null)
+			{
+				eventLogRecord.setAD_Table_ID(sourceRecordReference.getAD_Table_ID());
+				eventLogRecord.setRecord_ID(sourceRecordReference.getRecord_ID());
+			}
+		}
 
 		save(eventLogRecord);
 

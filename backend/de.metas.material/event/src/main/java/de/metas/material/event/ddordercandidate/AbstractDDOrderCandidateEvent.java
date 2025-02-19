@@ -2,6 +2,7 @@ package de.metas.material.event.ddordercandidate;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import de.metas.event.EventInfo;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
@@ -138,4 +139,5 @@ public abstract class AbstractDDOrderCandidateEvent implements MaterialEvent
 
 	@JsonIgnore
 	public int getExistingDDOrderCandidateId() {return getDdOrderCandidate().getExitingDDOrderCandidateId();}
+
 }

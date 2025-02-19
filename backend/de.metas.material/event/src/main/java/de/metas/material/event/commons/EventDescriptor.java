@@ -2,6 +2,7 @@ package de.metas.material.event.commons;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import de.metas.event.EventInfo;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
