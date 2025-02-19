@@ -408,14 +408,6 @@ public class ObjectFactory {
     }
 
     /**
-     * Create an instance of {@link EDIDesadvPackItem1PerInOutType }
-     * 
-     */
-    public EDIDesadvPackItem1PerInOutType createEDIDesadvPackItem1PerInOutType() {
-        return new EDIDesadvPackItem1PerInOutType();
-    }
-
-    /**
      * Create an instance of {@link JAXBElement }{@code <}{@link EDIExpCBPartnerProductVType }{@code >}
      * 
      * @param value
