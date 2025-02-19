@@ -15,7 +15,7 @@ import {
   resetPrintingOptions,
   setPrintingOptions,
 } from '../../actions/WindowActions';
-import { setBreadcrumb } from '../../actions/MenuActions';
+import { setBreadcrumb, updateBreadcrumb } from '../../actions/MenuActions';
 
 import keymap from '../../shortcuts/keymap';
 import GlobalContextShortcuts from '../keyshortcuts/GlobalContextShortcuts';
@@ -29,7 +29,20 @@ import NewLetter from '../letter/NewLetter';
 import Tooltips from '../tooltips/Tooltips';
 import Breadcrumb from './Breadcrumb';
 import SideList from './SideList';
-import Subheader from './SubHeader';
+import Subheader, {
+  ACTION_ABOUT_DOCUMENT,
+  ACTION_BREADCRUMB_CLICK,
+  ACTION_CLONE_DOCUMENT,
+  ACTION_DELETE_DOCUMENT,
+  ACTION_DOWNLOAD_SELECTED,
+  ACTION_NEW_DOCUMENT,
+  ACTION_OPEN_ADVANCED_EDIT,
+  ACTION_OPEN_COMMENTS,
+  ACTION_OPEN_EMAIL,
+  ACTION_OPEN_LETTER,
+  ACTION_OPEN_PRINT_RAPORT,
+  ACTION_TOGGLE_EDIT_MODE,
+} from './SubHeader';
 import UserDropdown from './UserDropdown';
 
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
@@ -39,6 +52,7 @@ import {
 } from '../../reducers/windowHandlerUtils';
 import { isShowCommentsMarker } from '../../utils/tableHelpers';
 import { getIndicatorFromState } from '../../reducers/windowHandler';
+import { getSelection, getTableId } from '../../reducers/tables';
 
 /**
  * @file The Header component is shown in every view besides Modal or RawModal in frontend. It defines
@@ -273,27 +287,15 @@ class Header extends PureComponent {
     );
   };
 
-  /**
-   * @method openModel
-   * @summary ToDo: Describe the method
-   * @param {string} windowId
-   * @param {*} modalType
-   * @param {*} caption
-   * @param {bool} isAdvanced
-   * @param {*} selected
-   * @param {*} childViewId
-   * @param {*} childViewSelectedIds
-   * @param {*} staticModalType
-   */
   openModal = (
     windowId,
     modalType,
     caption,
     isAdvanced,
     selected,
-    childViewId,
-    childViewSelectedIds,
-    staticModalType
+    childViewId = null,
+    childViewSelectedIds = null,
+    staticModalType = null
   ) => {
     const { dispatch, viewId } = this.props;
 
@@ -312,17 +314,6 @@ class Header extends PureComponent {
     );
   };
 
-  /**
-   * @method openModalRow
-   * @summary ToDo: Describe the method
-   * @param {string} windowId
-   * @param {*} modalType
-   * @param {*} caption
-   * @param {string} tabId
-   * @param {string} rowId
-   * @param {string} rowId
-   * @param {*} staticModalType
-   */
   openModalRow = (
     windowId,
     modalType,
@@ -406,34 +397,18 @@ class Header extends PureComponent {
     });
   };
 
-  /**
-   * @method handleEmail
-   * @summary ToDo: Describe the method
-   */
   handleEmail = () => {
     this.setState({ isEmailOpen: true });
   };
 
-  /**
-   * @method handleLetter
-   * @summary ToDo: Describe the method
-   */
-  handleLetter = () => {
-    this.setState({ isLetterOpen: true });
-  };
-
-  /**
-   * @method handleCloseEmail
-   * @summary ToDo: Describe the method
-   */
   handleCloseEmail = () => {
     this.setState({ isEmailOpen: false });
   };
 
-  /**
-   * @method handleCloseLetter
-   * @summary ToDo: Describe the method
-   */
+  handleLetter = () => {
+    this.setState({ isLetterOpen: true });
+  };
+
   handleCloseLetter = () => {
     this.setState({ isLetterOpen: false });
   };
@@ -476,11 +451,6 @@ class Header extends PureComponent {
     }
   };
 
-  /**
-   * @method handleSidelistToggle
-   * @summary ToDo: Describe the method
-   * @param {string} id
-   */
   handleSidelistToggle = (id = null) => {
     const { sideListTab } = this.state;
 
@@ -525,11 +495,8 @@ class Header extends PureComponent {
 
   closeDropdownOverlay = () => this.closeOverlays('dropdown');
 
-  /**
-   * @method redirect
-   * @summary Redirect to a page
-   * @param {string} where
-   */
+  closeSubheader = () => this.closeOverlays('isSubheaderShow');
+
   redirect = (where) => {
     history.push(where);
   };
@@ -548,10 +515,119 @@ class Header extends PureComponent {
     }
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   */
+  handleAboutButton = () => {
+    const { windowId, tabId, selected } = this.props;
+
+    if (selected?.length === 1) {
+      this.openModalRow(
+        windowId,
+        'static',
+        counterpart.translate('window.about.caption'),
+        tabId,
+        selected,
+        'about'
+      );
+    } else {
+      this.openModal(
+        windowId,
+        'static',
+        counterpart.translate('window.about.caption'),
+        null,
+        null,
+        null,
+        null,
+        'about'
+      );
+    }
+  };
+
+  handleUpdateBreadcrumb = (nodes) => {
+    const { dispatch } = this.props;
+    nodes.map((node) => dispatch(updateBreadcrumb(node)));
+  };
+
+  handleDownloadSelected = (event) => {
+    if (this.props.selected.length === 0) {
+      event.preventDefault();
+    }
+  };
+
+  handleAction = ({ action, payload }) => {
+    const { windowId, dataId } = this.props;
+
+    switch (action) {
+      case ACTION_BREADCRUMB_CLICK: {
+        this.handleUpdateBreadcrumb(payload);
+        break;
+      }
+      case ACTION_TOGGLE_EDIT_MODE: {
+        const { handleEditModeToggle } = this.props;
+        handleEditModeToggle();
+        this.closeSubheader();
+        break;
+      }
+      case ACTION_ABOUT_DOCUMENT: {
+        this.handleAboutButton();
+        break;
+      }
+      case ACTION_DOWNLOAD_SELECTED: {
+        this.handleDownloadSelected();
+        break;
+      }
+      case ACTION_NEW_DOCUMENT: {
+        this.redirect('/window/' + windowId + '/new');
+        this.closeSubheader();
+        break;
+      }
+      case ACTION_OPEN_ADVANCED_EDIT: {
+        this.openModal(
+          windowId,
+          'window',
+          counterpart.translate('window.advancedEdit.caption'),
+          true
+        );
+        this.closeSubheader();
+        break;
+      }
+      case ACTION_CLONE_DOCUMENT: {
+        this.handleClone(windowId, dataId);
+        this.closeSubheader();
+        break;
+      }
+      case ACTION_OPEN_EMAIL: {
+        this.handleEmail();
+        this.closeSubheader();
+        break;
+      }
+      case ACTION_OPEN_LETTER: {
+        this.handleLetter();
+        this.closeSubheader();
+        break;
+      }
+      case ACTION_OPEN_PRINT_RAPORT: {
+        const { docNoData } = this.props;
+        const docNo = docNoData?.value;
+        this.closeSubheader();
+        return this.handlePrint(windowId, dataId, docNo);
+        // break;
+      }
+      case ACTION_DELETE_DOCUMENT: {
+        this.handleDelete();
+        this.closeSubheader();
+        break;
+      }
+      case ACTION_OPEN_COMMENTS: {
+        this.handleComments();
+        this.closeSubheader();
+        break;
+      }
+      default: {
+        console.log(`Action ${action} not implemented`, { payload });
+        break;
+      }
+    }
+  };
+
   render() {
     const {
       docSummaryData,
@@ -619,7 +695,7 @@ class Header extends PureComponent {
             <div className="header-container">
               <div className="header-left-side">
                 <div
-                  onClick={() => this.closeOverlays('isSubheaderShow')}
+                  onClick={this.closeSubheader}
                   onMouseEnter={() =>
                     this.toggleTooltip(keymap.OPEN_ACTIONS_MENU)
                   }
@@ -809,17 +885,10 @@ class Header extends PureComponent {
 
         {isSubheaderShow && (
           <Subheader
-            closeSubheader={() => this.closeOverlays('isSubheaderShow')}
-            docNo={docNoData && docNoData.value}
+            closeSubheader={this.closeSubheader}
             openModal={this.openModal}
             openModalRow={this.openModalRow}
-            handlePrint={this.handlePrint}
-            handleClone={this.handleClone}
-            handleDelete={this.handleDelete}
-            handleEmail={this.handleEmail}
-            handleLetter={this.handleLetter}
-            handleComments={this.handleComments}
-            redirect={this.redirect}
+            onMenuItemAction={this.handleAction}
             disableOnClickOutside={!isSubheaderShow}
             breadcrumb={breadcrumb}
             notfound={notFound}
@@ -830,7 +899,6 @@ class Header extends PureComponent {
             viewId={viewId}
             siteName={siteName}
             editmode={editmode}
-            handleEditModeToggle={handleEditModeToggle}
           />
         )}
 
@@ -913,33 +981,6 @@ class Header extends PureComponent {
   }
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {*} activeTab
- * @prop {*} breadcrumb
- * @prop {string} dataId
- * @prop {func} dispatch
- * @prop {string} docId
- * @prop {*} docSummaryData
- * @prop {*} docNoData
- * @prop {*} docStatus
- * @prop {*} dropzoneFocused
- * @prop {*} editmode
- * @prop {*} entity
- * @prop {*} handleDeletedStatus
- * @prop {*} handleEditModeToggle
- * @prop {object} inbox
- * @prop {bool} isDocumentNotSaved
- * @prop {object} me
- * @prop {*} notFound
- * @prop {*} plugins
- * @prop {*} viewId
- * @prop {*} showSidelist
- * @prop {*} showIndicator
- * @prop {*} siteName
- * @prop {*} windowId
- * @prop {bool} hasComments - used to indicate comments available for the details view
- */
 Header.propTypes = {
   activeTab: PropTypes.any,
   breadcrumb: PropTypes.any,
@@ -964,18 +1005,29 @@ Header.propTypes = {
   showIndicator: PropTypes.bool,
   siteName: PropTypes.any,
   windowId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  tabId: PropTypes.string,
   indicator: PropTypes.string,
   saveStatus: PropTypes.object,
   isShowComments: PropTypes.bool,
   hasComments: PropTypes.bool,
+  selected: PropTypes.array,
 };
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state, ownProps) => {
   const {
     master: { saveStatus },
   } = state.windowHandler;
 
+  const activeTab = state.windowHandler.master.layout.activeTab;
+  const tabId = activeTab ? activeTab : null;
+
+  const { windowId, viewId, docId: documentId } = ownProps;
+  const tableId = getTableId({ windowId, viewId, tabId, docId: documentId });
+  const selector = getSelection();
+  const selected = selector(state, tableId);
+
   return {
+    tabId,
     inbox: state.appHandler.inbox,
     me: state.appHandler.me,
     plugins: state.pluginsHandler.files,
@@ -984,6 +1036,7 @@ const mapStateToProps = (state) => {
     isShowComments: isShowCommentsMarker(state),
     indicator: getIndicatorFromState({ state }),
     saveStatus,
+    selected,
   };
 };
 

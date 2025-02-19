@@ -347,6 +347,43 @@ const updateIndicatorToState = ({ windowHandler, indicator, isModal }) => {
   });
 };
 
+export const computeSaveStatusFlags = ({
+  state,
+  modal: modalParam,
+  master: masterParam,
+  considerSavedWhenUnknownStatus = null,
+}) => {
+  let master = {};
+  let modal = {};
+
+  if (state != null) {
+    const windowHandlerState = state.windowHandler;
+    modal = windowHandlerState?.modal ?? {};
+    master = windowHandlerState?.master ?? {};
+  }
+
+  if (masterParam != null) {
+    master = masterParam;
+  }
+  if (modalParam != null) {
+    modal = modalParam;
+  }
+
+  let saveStatus;
+  if (modal.visible) {
+    saveStatus = modal.saveStatus;
+  } else {
+    saveStatus = master.saveStatus;
+  }
+
+  const saved = saveStatus?.saved ?? considerSavedWhenUnknownStatus;
+
+  return {
+    isDocumentSaved: saved != null ? saved : false,
+    isDocumentNotSaved: saved != null ? !saved : false,
+  };
+};
+
 //
 //
 //

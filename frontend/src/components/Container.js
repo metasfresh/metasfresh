@@ -2,10 +2,10 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 
-import { viewState, getView } from '../reducers/viewHandler';
+import { getView, viewState } from '../reducers/viewHandler';
 import {
-  setRawModalTitle,
   setRawModalDescription,
+  setRawModalTitle,
 } from '../actions/WindowActions';
 
 import DocumentList from '../containers/DocumentList';
@@ -14,6 +14,7 @@ import SpinnerOverlay from './app/SpinnerOverlay';
 import Modal from './app/Modal';
 import RawModal from './app/RawModal';
 import Header from './header/Header';
+import { computeSaveStatusFlags } from '../reducers/windowHandler';
 
 /**
  * @file Class based component.
@@ -134,13 +135,13 @@ class Container extends PureComponent {
               modalViewDocumentIds={modal.viewDocumentIds}
               closeCallback={closeModalCallback}
               modalSaveStatus={
-                modal.saveStatus && modal.saveStatus.saved !== undefined
-                  ? modal.saveStatus.saved
-                  : true
+                computeSaveStatusFlags({
+                  modal,
+                  considerSavedWhenUnknownStatus: true,
+                }).isDocumentSaved
               }
               isDocumentNotSaved={
-                modal.saveStatus &&
-                !modal.saveStatus.saved &&
+                computeSaveStatusFlags({ modal }).isDocumentNotSaved &&
                 modal.validStatus &&
                 !modal.validStatus.initialValue
               }
@@ -298,11 +299,6 @@ Container.propTypes = {
   showSpinner: PropTypes.bool,
 };
 
-/**
- * @method mapStateToProps
- * @summary ToDo: Describe the method.
- * @param {object} state
- */
 const mapStateToProps = (state, { windowId }) => {
   let master = getView(state, windowId);
 

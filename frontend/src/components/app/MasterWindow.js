@@ -11,6 +11,8 @@ import Container from '../Container';
 import SectionGroup from '../SectionGroup';
 import Overlay from '../app/Overlay';
 import { introHints, introSteps } from '../intro/intro';
+import { computeSaveStatusFlags } from '../../reducers/windowHandler';
+import PreventLeavingUnsavedPage from './PreventLeavingUnsavedPage';
 
 /**
  * @file Class based component.
@@ -29,19 +31,8 @@ export default class MasterWindow extends PureComponent {
     introHints: null,
   };
 
-  componentDidMount() {
-    const { master } = this.props;
-    const isDocumentNotSaved = !master.saveStatus.saved;
-
-    if (isDocumentNotSaved) {
-      this.initEventListeners();
-    }
-  }
-
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(/*prevProps*/) {
     const { master, me } = this.props;
-    const isDocumentNotSaved = !master.saveStatus.saved;
-    const isDocumentSaved = master.saveStatus.saved;
 
     if (
       me &&
@@ -90,13 +81,6 @@ export default class MasterWindow extends PureComponent {
         introHints: docIntroHints,
       });
     }
-
-    if (prevProps.master.saveStatus.saved && isDocumentNotSaved) {
-      this.initEventListeners();
-    }
-    if (!prevProps.master.saveStatus.saved && isDocumentSaved) {
-      this.removeEventListeners();
-    }
   }
 
   // TODO: Figure out if we can handle `not saved` via redux+middleware
@@ -107,10 +91,7 @@ export default class MasterWindow extends PureComponent {
       params: { windowId, docId: documentId },
     } = this.props;
     const { isDeleted } = this.state;
-    const isDocumentNotSaved =
-      !master.saveStatus.saved && master.saveStatus.saved !== undefined;
-
-    this.removeEventListeners();
+    const { isDocumentNotSaved } = computeSaveStatusFlags({ master });
 
     if (isDocumentNotSaved && !isDeleted) {
       const result = window.confirm('Do you really want to leave?');
@@ -123,33 +104,6 @@ export default class MasterWindow extends PureComponent {
       }
     }
   }
-
-  /**
-   * @method confirm
-   * @summary ToDo: Describe the method.
-   */
-  confirm = (e) => {
-    e.returnValue = '';
-  };
-
-  /**
-   * @method initEventListeners
-   * @summary ToDo: Describe the method.
-   */
-  initEventListeners = () => {
-    if (!navigator.userAgent.includes('Cypress')) {
-      // try workaround https://github.com/cypress-io/cypress/issues/1235#issuecomment-411839157 for our "hanging" problem
-      window.addEventListener('beforeunload', this.confirm);
-    }
-  };
-
-  /**
-   * @method removeEventListeners
-   * @summary ToDo: Describe the method.
-   */
-  removeEventListeners = () => {
-    window.removeEventListener('beforeunload', this.confirm);
-  };
 
   /**
    * @method closeModalCallback
@@ -308,8 +262,10 @@ export default class MasterWindow extends PureComponent {
         : master.validStatus.valid;
     const isDocumentNotSaved =
       dataId !== 'notfound' &&
-      master.saveStatus.saved !== undefined &&
-      !master.saveStatus.saved &&
+      computeSaveStatusFlags({
+        master: master,
+        initialValidStatus: initialValidStatus,
+      }).isDocumentNotSaved &&
       !initialValidStatus;
 
     return (
@@ -335,6 +291,7 @@ export default class MasterWindow extends PureComponent {
         handleDeletedStatus={this.handleDeletedStatus}
         hasComments={master.hasComments}
       >
+        <PreventLeavingUnsavedPage />
         <Overlay data={overlay.data} showOverlay={overlay.visible} />
 
         {dataId === 'notfound' ? (

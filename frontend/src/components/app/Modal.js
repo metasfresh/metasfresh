@@ -904,7 +904,7 @@ Modal.propTypes = {
   parentWindowId: PropTypes.any,
   parentViewId: PropTypes.any,
   rawModalVisible: PropTypes.any,
-  rowId: PropTypes.string,
+  rowId: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
   triggerField: PropTypes.any,
   viewId: PropTypes.string,
   windowId: PropTypes.string,
