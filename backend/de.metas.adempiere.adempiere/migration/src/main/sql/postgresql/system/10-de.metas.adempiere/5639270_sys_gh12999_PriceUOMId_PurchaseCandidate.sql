@@ -16,11 +16,11 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- 2022-05-17T12:07:59.196Z
-/* DDL */  select update_Column_Translation_From_AD_Element(542464)
+/* DDL */  PERFORM update_Column_Translation_From_AD_Element(542464)
 ;
 
 -- 2022-05-17T12:08:01.835Z
-/* DDL */ SELECT public.db_alter_table('C_PurchaseCandidate','ALTER TABLE public.C_PurchaseCandidate ADD COLUMN Price_UOM_ID NUMERIC(10)')
+/* DDL */ PERFORM public.db_alter_table('C_PurchaseCandidate','ALTER TABLE public.C_PurchaseCandidate ADD COLUMN Price_UOM_ID NUMERIC(10)')
 ;
 
 -- 2022-05-17T12:08:01.998Z
