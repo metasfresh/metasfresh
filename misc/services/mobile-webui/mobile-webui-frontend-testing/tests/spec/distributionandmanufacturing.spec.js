@@ -103,7 +103,7 @@ test('Distribution and manufacturing test', async ({ page }) => {
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
     await DistributionJobsListScreen.filterByFacetId({ facetId: warehouseFrom1FacetId, expectHitCount: 2 });
-    await DistributionJobsListScreen.startJob({ launcherTest1Id });
+    await DistributionJobsListScreen.startJob({ launcherTestId: launcherTest1Id });
     await DistributionJobScreen.clickLineButton({ index: 1 });
     await DistributionLineScreen.scanHUToMove({ huQRCode: comp1_huQRCode });
     await DistributionLineScreen.clickStepButton({ index: 1 });
@@ -112,7 +112,7 @@ test('Distribution and manufacturing test', async ({ page }) => {
     await DistributionStepScreen.goBack();
     await DistributionLineScreen.goBack();
     await DistributionJobScreen.complete();
-    await DistributionJobsListScreen.startJob({ launcherTest2Id });
+    await DistributionJobsListScreen.startJob({ launcherTestId: launcherTest2Id });
     await DistributionJobScreen.clickLineButton({ index: 1 });
     await DistributionLineScreen.scanHUToMove({ huQRCode: comp2_huQRCode });
     await DistributionLineScreen.clickStepButton({ index: 1 });
