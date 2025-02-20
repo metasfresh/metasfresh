@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/invoice/report" uuid="2fa464b6-5b59-45d9-8f05-3c4f9b99aa01">
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isSummaryNewPage="true" resourceBundle="de/metas/docs/purchase/invoice/report" uuid="2fa464b6-5b59-45d9-8f05-3c4f9b99aa01">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.2100000000000006"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="192"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -21,12 +21,34 @@
 		<defaultValueExpression><![CDATA["Y"]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Root($P{RECORD_ID}, $P{ad_language});]]>
+		<![CDATA[SELECT v.*, r.rows_no FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Root($P{RECORD_ID}, $P{ad_language}) as v
+join
+    (
+         select Count(1) as rows_no from de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Points ($P{RECORD_ID}, $P{ad_language}) as v
+                 
+        ) as r on 1=1
+;]]>
 	</queryString>
-	<field name="ad_org_id" class="java.math.BigDecimal"/>
-	<field name="docstatus" class="java.lang.String"/>
-	<field name="printname" class="java.lang.String"/>
-	<field name="displayhu" class="java.lang.String"/>
+	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="ad_org_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+	</field>
+	<field name="docstatus" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="docstatus"/>
+		<property name="com.jaspersoft.studio.field.label" value="docstatus"/>
+	</field>
+	<field name="printname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="printname"/>
+		<property name="com.jaspersoft.studio.field.label" value="printname"/>
+	</field>
+	<field name="displayhu" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="displayhu"/>
+		<property name="com.jaspersoft.studio.field.label" value="displayhu"/>
+	</field>
+	<field name="rows_no" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.name" value="rows_no"/>
+		<property name="com.jaspersoft.studio.field.label" value="rows_no"/>
+	</field>
 	<background>
 		<band height="842" splitType="Stretch">
 			<textField evaluationTime="Auto" isBlankWhenNull="false">
@@ -227,7 +249,7 @@
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_footer.jasper"]]></subreportExpression>
 			</subreport>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-62" x="501" y="20" width="21" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="7ff81658-a97b-4c0a-bddd-2371638a2808"/>
+				<reportElement key="textField-62" x="501" y="65" width="21" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="7ff81658-a97b-4c0a-bddd-2371638a2808"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -240,7 +262,7 @@
 				<textFieldExpression><![CDATA[$V{PAGE_NUMBER} + "     / "]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-63" x="431" y="20" width="63" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="64279604-f09c-49c2-99d9-d75961ea7d2d"/>
+				<reportElement key="textField-63" x="431" y="65" width="63" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="64279604-f09c-49c2-99d9-d75961ea7d2d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -253,7 +275,7 @@
 				<textFieldExpression><![CDATA[$R{Page}]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-64" x="528" y="20" width="15" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="bbf31a40-6bec-4911-924f-4d7d780b8565"/>
+				<reportElement key="textField-64" x="528" y="65" width="15" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="bbf31a40-6bec-4911-924f-4d7d780b8565"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -267,4 +289,41 @@
 			</textField>
 		</band>
 	</pageFooter>
+	<summary>
+		<band height="80">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-3" x="0" y="21" width="595" height="12" uuid="9dc596a1-5d7d-4935-8fd8-b9a7dd93c28d">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<printWhenExpression><![CDATA[$F{rows_no} > 0]]></printWhenExpression>
+				</reportElement>
+				<subreportParameter name="c_invoice_id">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/purchase/invoice/report_details_points.jasper"]]></subreportExpression>
+			</subreport>
+			<break>
+				<reportElement x="0" y="49" width="100" height="1" uuid="121ec67c-ee69-4acb-b54e-cf931d6fe4fa"/>
+			</break>
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-3" positionType="Float" x="0" y="64" width="595" height="12" uuid="f39c6692-312b-4b2e-8785-2b5a9d8b378d">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				</reportElement>
+				<subreportParameter name="c_invoice_id">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/purchase/invoice/report_points_sum.jasper"]]></subreportExpression>
+			</subreport>
+		</band>
+	</summary>
 </jasperReport>
