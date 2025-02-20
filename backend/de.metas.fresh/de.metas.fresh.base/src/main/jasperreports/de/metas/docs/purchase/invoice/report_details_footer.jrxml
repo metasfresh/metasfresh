@@ -25,21 +25,16 @@
 		<property name="com.jaspersoft.studio.field.name" value="descriptionbottom"/>
 		<property name="com.jaspersoft.studio.field.label" value="descriptionbottom"/>
 	</field>
-	<field name="p_cond" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="p_cond"/>
-		<property name="com.jaspersoft.studio.field.label" value="p_cond"/>
-	</field>
 	<field name="p_term" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="p_term"/>
 		<property name="com.jaspersoft.studio.field.label" value="p_term"/>
 	</field>
+	<field name="paymentrule" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="paymentrule"/>
+	</field>
 	<field name="textcenter" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="textcenter"/>
 		<property name="com.jaspersoft.studio.field.label" value="textcenter"/>
-	</field>
-	<field name="paymentterm" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="paymentterm"/>
-		<property name="com.jaspersoft.studio.field.label" value="paymentterm"/>
 	</field>
 	<field name="discount1" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.name" value="discount1"/>
@@ -69,6 +64,14 @@
 		<property name="com.jaspersoft.studio.field.name" value="incotermlocation"/>
 		<property name="com.jaspersoft.studio.field.label" value="incotermlocation"/>
 	</field>
+	<field name="deliveryrule" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="deliveryrule"/>
+		<property name="com.jaspersoft.studio.field.label" value="deliveryrule"/>
+	</field>
+	<field name="deliveryviarule" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="deliveryviarule"/>
+		<property name="com.jaspersoft.studio.field.label" value="deliveryviarule"/>
+	</field>
 	<detail>
 		<band height="15" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -96,11 +99,12 @@
 				<textElement markup="html">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{p_cond}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{p_term}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="15">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[new Boolean( $F{p_term} != null )]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="37" y="0" width="112" height="12" isPrintWhenDetailOverflows="true" uuid="a702cc46-13fd-4c9f-8459-f2bbbac27217"/>
 				<box>
@@ -125,7 +129,7 @@
 				<textElement markup="html">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{p_term}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{paymentrule}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="15">

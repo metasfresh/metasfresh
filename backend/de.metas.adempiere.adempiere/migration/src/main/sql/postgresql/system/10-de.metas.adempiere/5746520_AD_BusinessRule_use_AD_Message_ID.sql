@@ -35,12 +35,6 @@ UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2025-02-13 09:07:09.3
 INSERT INTO t_alter_column values('ad_businessrule','AD_Message_ID','NUMERIC(10)',null,null)
 ;
 
---TODO add migration
-
--- 2025-02-13T09:07:27.319Z
-INSERT INTO t_alter_column values('ad_businessrule','AD_Message_ID',null,'NOT NULL',null)
-;
-
 -- UI Element: Business Rule(541837,D) -> Business Rule(547699,D) -> main -> 10 -> warning.Warning Message
 -- Column: AD_BusinessRule.WarningMessage
 -- 2025-02-13T09:12:28.874Z

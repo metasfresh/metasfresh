@@ -62,10 +62,10 @@
 			</band>
 		</groupHeader>
 		<groupFooter>
-			<band height="26">
+			<band height="21">
 				<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				<textField isBlankWhenNull="false">
-					<reportElement key="textField-16" x="37" y="7" width="261" height="12" forecolor="#000000" uuid="de6bfa6e-e440-4073-972a-f37b1a686ec2"/>
+					<reportElement key="textField-16" x="37" y="6" width="261" height="12" forecolor="#000000" uuid="de6bfa6e-e440-4073-972a-f37b1a686ec2"/>
 					<box rightPadding="5">
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -80,7 +80,7 @@
 )]]></textFieldExpression>
 				</textField>
 				<textField pattern="#,##0.00" isBlankWhenNull="false">
-					<reportElement key="textField-20" x="483" y="7" width="60" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
+					<reportElement key="textField-20" x="483" y="6" width="60" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -93,12 +93,7 @@
 					<textFieldExpression><![CDATA[$F{total}]]></textFieldExpression>
 				</textField>
 				<line>
-					<reportElement x="34" y="3" width="543" height="1" uuid="be144241-b645-4b18-b299-fe8be5bb7fe6">
-						<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					</reportElement>
-				</line>
-				<line>
-					<reportElement x="34" y="22" width="543" height="1" uuid="883131ac-aac8-40e3-8333-861b7208d77e">
+					<reportElement x="34" y="3" width="545" height="1" uuid="15e28325-e454-4e0c-8ed0-77983e6a35d8">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					</reportElement>
 				</line>
