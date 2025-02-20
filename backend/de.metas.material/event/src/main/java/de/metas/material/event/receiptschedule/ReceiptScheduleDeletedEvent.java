@@ -79,4 +79,7 @@ public class ReceiptScheduleDeletedEvent extends AbstractReceiptScheduleEvent
 	{
 		return getReservedQuantity().negate();
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

@@ -24,7 +24,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -144,7 +144,7 @@ public class EventTestHelper
 		//
 		// Test via materialEventConverter
 		{
-			MaterialEventConverter materialEventConverter = new MaterialEventConverter();
+			final MaterialEventConverter materialEventConverter = new MaterialEventConverter();
 			final Event eventbusEvent = materialEventConverter.fromMaterialEvent(originalEvent);
 			final MaterialEvent deserializedEvent = materialEventConverter.toMaterialEvent(eventbusEvent);
 

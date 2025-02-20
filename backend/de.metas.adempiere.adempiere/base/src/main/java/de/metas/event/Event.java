@@ -25,6 +25,7 @@ package de.metas.event;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -42,6 +43,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.DisplayType;
 
 import javax.annotation.Nullable;
@@ -107,6 +109,11 @@ public class Event
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	ImmutableSet<Integer> recipientUserIds;
 
+	@JsonIgnore
+	@Nullable TableRecordReference sourceRecordReference;
+	@JsonIgnore
+	@Nullable String eventName;
+
 	private enum LoggingStatus
 	{
 		SHALL_NOT_BE_LOGGED,
@@ -138,6 +145,8 @@ public class Event
 		recipientUserIds = ImmutableSet.copyOf(builder.recipientUserIds);
 		properties = deepCopy(builder.getProperties());
 		loggingStatus = builder.loggingStatus;
+		sourceRecordReference = builder.sourceRecordReference;
+		eventName = builder.eventName;
 	}
 
 	@JsonCreator
@@ -150,7 +159,9 @@ public class Event
 			@JsonProperty("senderId") final String senderId,
 			@JsonProperty("recipientUserIds") final Set<Integer> recipientUserIds,
 			@JsonProperty("properties") final Map<String, Object> properties,
-			@JsonProperty("loggingStatus") final LoggingStatus loggingStatus)
+			@JsonProperty("loggingStatus") final LoggingStatus loggingStatus,
+			@Nullable @JsonProperty("sourceRecordReference") final TableRecordReference sourceRecordReference,
+			@Nullable @JsonProperty("eventName") final String eventName)
 	{
 		this.uuid = uuid;
 		this.when = when;
@@ -162,6 +173,8 @@ public class Event
 		this.recipientUserIds = recipientUserIds != null ? ImmutableSet.copyOf(recipientUserIds) : ImmutableSet.of();
 		this.properties = deepCopy(properties);
 		this.loggingStatus = loggingStatus;
+		this.sourceRecordReference = sourceRecordReference;
+		this.eventName = eventName;
 	}
 
 	private static ImmutableMap<String, Object> deepCopy(final Map<String, Object> properties)
@@ -219,8 +232,7 @@ public class Event
 	 */
 	public <T> T getProperty(final String name)
 	{
-		@SuppressWarnings("unchecked")
-		final T value = (T)properties.get(name);
+		@SuppressWarnings("unchecked") final T value = (T)properties.get(name);
 		return value;
 	}
 
@@ -312,6 +324,8 @@ public class Event
 		builder.uuid = uuid;
 		builder.when = when;
 		builder.loggingStatus = loggingStatus;
+		builder.sourceRecordReference = sourceRecordReference;
+		builder.eventName = eventName;
 
 		return builder;
 	}
@@ -330,6 +344,8 @@ public class Event
 		private final Set<Integer> recipientUserIds = new HashSet<>();
 		private final Map<String, Object> properties = Maps.newLinkedHashMap();
 		private LoggingStatus loggingStatus = LoggingStatus.SHALL_NOT_BE_LOGGED;
+		private @Nullable TableRecordReference sourceRecordReference;
+		private @Nullable String eventName;
 
 		private Builder()
 		{
@@ -402,6 +418,18 @@ public class Event
 			}
 
 			detailADMessage = adMessage;
+			return this;
+		}
+
+		public Builder setSourceRecordReference(@Nullable final TableRecordReference sourceRecordReference)
+		{
+			this.sourceRecordReference = sourceRecordReference;
+			return this;
+		}
+
+		public Builder setEventName(@NonNull final String eventName)
+		{
+			this.eventName = eventName;
 			return this;
 		}
 
@@ -480,6 +508,12 @@ public class Event
 			return properties;
 		}
 
+		public Builder putProperty(final String name, final Object value)
+		{
+			properties.put(name, value);
+			return this;
+		}
+
 		public Builder putProperty(final String name, final int value)
 		{
 			properties.put(name, value);
@@ -556,11 +590,11 @@ public class Event
 			}
 			else if (value instanceof Integer)
 			{
-				return putProperty(name, (Integer)value);
+				return putProperty(name, value);
 			}
 			else if (value instanceof Long)
 			{
-				return putProperty(name, (Long)value);
+				return putProperty(name, value);
 			}
 			else if (value instanceof Double)
 			{
@@ -585,7 +619,7 @@ public class Event
 			}
 			else if (value instanceof Boolean)
 			{
-				return putProperty(name, (Boolean)value);
+				return putProperty(name, value);
 			}
 			else if (value instanceof ITableRecordReference)
 			{
