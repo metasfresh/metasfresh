@@ -109,6 +109,7 @@ test('Distribution and manufacturing test', async ({ page }) => {
     await DistributionStepScreen.expectVisible();
     await DistributionStepScreen.goBack();
     await DistributionLineScreen.goBack();
+    await DistributionJobScreen.complete();
     await DistributionJobScreen.clickLineButton({ index: 1 });
     await DistributionLineScreen.scanHUToMove({ huQRCode: comp2_huQRCode });
     await DistributionLineScreen.clickStepButton({ index: 1 });
