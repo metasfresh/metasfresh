@@ -23,18 +23,18 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.event.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for AD_EventLog
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_AD_EventLog extends org.compiere.model.PO implements I_AD_EventLog, org.compiere.model.I_Persistent 
+public class X_AD_EventLog extends org.compiere.model.PO implements I_AD_EventLog, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = 761827159L;
+	private static final long serialVersionUID = 1575447785L;
 
     /** Standard Constructor */
     public X_AD_EventLog (final Properties ctx, final int AD_EventLog_ID, @Nullable final String trxName)
@@ -98,6 +98,99 @@ public class X_AD_EventLog extends org.compiere.model.PO implements I_AD_EventLo
 		return get_ValueAsString(COLUMNNAME_EventData);
 	}
 
+	/** 
+	 * EventName AD_Reference_ID=541929
+	 * Reference name: Material Event Names
+	 */
+	public static final int EVENTNAME_AD_Reference_ID=541929;
+	/** AttributesChangedEvent = AttributesChangedEvent */
+	public static final String EVENTNAME_AttributesChangedEvent = "AttributesChangedEvent";
+	/** DDOrderCreatedEvent = DDOrderCreatedEvent */
+	public static final String EVENTNAME_DDOrderCreatedEvent = "DDOrderCreatedEvent";
+	/** DDOrderDocStatusChangedEvent = DDOrderDocStatusChangedEvent */
+	public static final String EVENTNAME_DDOrderDocStatusChangedEvent = "DDOrderDocStatusChangedEvent";
+	/** DDOrderDeletedEvent = DDOrderDeletedEvent */
+	public static final String EVENTNAME_DDOrderDeletedEvent = "DDOrderDeletedEvent";
+	/** DDOrderCandidateAdvisedEvent = DDOrderCandidateAdvisedEvent */
+	public static final String EVENTNAME_DDOrderCandidateAdvisedEvent = "DDOrderCandidateAdvisedEvent";
+	/** DDOrderCandidateCreatedEvent = DDOrderCandidateCreatedEvent */
+	public static final String EVENTNAME_DDOrderCandidateCreatedEvent = "DDOrderCandidateCreatedEvent";
+	/** DDOrderCandidateUpdatedEvent = DDOrderCandidateUpdatedEvent */
+	public static final String EVENTNAME_DDOrderCandidateUpdatedEvent = "DDOrderCandidateUpdatedEvent";
+	/** DDOrderCandidateRequestedEvent = DDOrderCandidateRequestedEvent */
+	public static final String EVENTNAME_DDOrderCandidateRequestedEvent = "DDOrderCandidateRequestedEvent";
+	/** ForecastCreatedEvent = ForecastCreatedEvent */
+	public static final String EVENTNAME_ForecastCreatedEvent = "ForecastCreatedEvent";
+	/** PickingRequestedEvent = PickingRequestedEvent */
+	public static final String EVENTNAME_PickingRequestedEvent = "PickingRequestedEvent";
+	/** PPOrderCreatedEvent = PPOrderCreatedEvent */
+	public static final String EVENTNAME_PPOrderCreatedEvent = "PPOrderCreatedEvent";
+	/** PPOrderDeletedEvent = PPOrderDeletedEvent */
+	public static final String EVENTNAME_PPOrderDeletedEvent = "PPOrderDeletedEvent";
+	/** PPOrderChangedEvent = PPOrderChangedEvent */
+	public static final String EVENTNAME_PPOrderChangedEvent = "PPOrderChangedEvent";
+	/** PPOrderRequestedEvent = PPOrderRequestedEvent */
+	public static final String EVENTNAME_PPOrderRequestedEvent = "PPOrderRequestedEvent";
+	/** PPOrderCandidateAdvisedEvent = PPOrderCandidateAdvisedEvent */
+	public static final String EVENTNAME_PPOrderCandidateAdvisedEvent = "PPOrderCandidateAdvisedEvent";
+	/** PPOrderCandidateRequestedEvent = PPOrderCandidateRequestedEvent */
+	public static final String EVENTNAME_PPOrderCandidateRequestedEvent = "PPOrderCandidateRequestedEvent";
+	/** PPOrderCandidateUpdatedEvent = PPOrderCandidateUpdatedEvent */
+	public static final String EVENTNAME_PPOrderCandidateUpdatedEvent = "PPOrderCandidateUpdatedEvent";
+	/** PPOrderCandidateCreatedEvent = PPOrderCandidateCreatedEvent */
+	public static final String EVENTNAME_PPOrderCandidateCreatedEvent = "PPOrderCandidateCreatedEvent";
+	/** PPOrderCandidateDeletedEvent = PPOrderCandidateDeletedEvent */
+	public static final String EVENTNAME_PPOrderCandidateDeletedEvent = "PPOrderCandidateDeletedEvent";
+	/** PurchaseCandidateAdvisedEvent = PurchaseCandidateAdvisedEvent */
+	public static final String EVENTNAME_PurchaseCandidateAdvisedEvent = "PurchaseCandidateAdvisedEvent";
+	/** PurchaseCandidateCreatedEvent = PurchaseCandidateCreatedEvent */
+	public static final String EVENTNAME_PurchaseCandidateCreatedEvent = "PurchaseCandidateCreatedEvent";
+	/** PurchaseCandidateUpdatedEvent = PurchaseCandidateUpdatedEvent */
+	public static final String EVENTNAME_PurchaseCandidateUpdatedEvent = "PurchaseCandidateUpdatedEvent";
+	/** PurchaseCandidateRequestedEvent = PurchaseCandidateRequestedEvent */
+	public static final String EVENTNAME_PurchaseCandidateRequestedEvent = "PurchaseCandidateRequestedEvent";
+	/** PurchaseOfferCreatedEvent = PurchaseOfferCreatedEvent */
+	public static final String EVENTNAME_PurchaseOfferCreatedEvent = "PurchaseOfferCreatedEvent";
+	/** PurchaseOfferUpdatedEvent = PurchaseOfferUpdatedEvent */
+	public static final String EVENTNAME_PurchaseOfferUpdatedEvent = "PurchaseOfferUpdatedEvent";
+	/** PurchaseOfferDeletedEvent = PurchaseOfferDeletedEvent */
+	public static final String EVENTNAME_PurchaseOfferDeletedEvent = "PurchaseOfferDeletedEvent";
+	/** ReceiptScheduleCreatedEvent = ReceiptScheduleCreatedEvent */
+	public static final String EVENTNAME_ReceiptScheduleCreatedEvent = "ReceiptScheduleCreatedEvent";
+	/** ReceiptScheduleDeletedEvent = ReceiptScheduleDeletedEvent */
+	public static final String EVENTNAME_ReceiptScheduleDeletedEvent = "ReceiptScheduleDeletedEvent";
+	/** ReceiptScheduleUpdatedEvent = ReceiptScheduleUpdatedEvent */
+	public static final String EVENTNAME_ReceiptScheduleUpdatedEvent = "ReceiptScheduleUpdatedEvent";
+	/** ShipmentScheduleCreatedEvent = ShipmentScheduleCreatedEvent */
+	public static final String EVENTNAME_ShipmentScheduleCreatedEvent = "ShipmentScheduleCreatedEvent";
+	/** ShipmentScheduleDeletedEvent = ShipmentScheduleDeletedEvent */
+	public static final String EVENTNAME_ShipmentScheduleDeletedEvent = "ShipmentScheduleDeletedEvent";
+	/** ShipmentScheduleUpdatedEvent = ShipmentScheduleUpdatedEvent */
+	public static final String EVENTNAME_ShipmentScheduleUpdatedEvent = "ShipmentScheduleUpdatedEvent";
+	/** StockChangedEvent = StockChangedEvent */
+	public static final String EVENTNAME_StockChangedEvent = "StockChangedEvent";
+	/** StockEstimateCreatedEvent = StockEstimateCreatedEvent */
+	public static final String EVENTNAME_StockEstimateCreatedEvent = "StockEstimateCreatedEvent";
+	/** SupplyRequiredEvent = SupplyRequiredEvent */
+	public static final String EVENTNAME_SupplyRequiredEvent = "SupplyRequiredEvent";
+	/** NoSupplyAdviceEvent = NoSupplyAdviceEvent */
+	public static final String EVENTNAME_NoSupplyAdviceEvent = "NoSupplyAdviceEvent";
+	/** TransactionCreatedEvent = TransactionCreatedEvent */
+	public static final String EVENTNAME_TransactionCreatedEvent = "TransactionCreatedEvent";
+	/** TransactionDeletedEvent = TransactionDeletedEvent */
+	public static final String EVENTNAME_TransactionDeletedEvent = "TransactionDeletedEvent";
+	/** StockCandidateChangedEvent = StockCandidateChangedEvent */
+	public static final String EVENTNAME_StockCandidateChangedEvent = "StockCandidateChangedEvent";
+	/** MaterialCandidateChangedEvent = MaterialCandidateChangedEvent */
+	public static final String EVENTNAME_MaterialCandidateChangedEvent = "MaterialCandidateChangedEvent";
+	/** SimulatedDemandCreatedEvent = SimulatedDemandCreatedEvent */
+	public static final String EVENTNAME_SimulatedDemandCreatedEvent = "SimulatedDemandCreatedEvent";
+	/** DeactivateAllSimulatedCandidatesEvent = DeactivateAllSimulatedCandidatesEvent */
+	public static final String EVENTNAME_DeactivateAllSimulatedCandidatesEvent = "DeactivateAllSimulatedCandidatesEvent";
+	/** AllEventsProcessedEvent = AllEventsProcessedEvent */
+	public static final String EVENTNAME_AllEventsProcessedEvent = "AllEventsProcessedEvent";
+	/** StockEstimateDeletedEvent = StockEstimateDeletedEvent */
+	public static final String EVENTNAME_StockEstimateDeletedEvent = "StockEstimateDeletedEvent";
 	@Override
 	public void setEventName (final @Nullable java.lang.String EventName)
 	{

@@ -22,8 +22,9 @@
 
 package de.metas.event.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for AD_EventLog
  *  @author metasfresh (generated) 
@@ -164,7 +165,7 @@ public interface I_AD_EventLog
 	/**
 	 * Set Event Name.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -173,7 +174,7 @@ public interface I_AD_EventLog
 	/**
 	 * Get Event Name.
 	 *
-	 * <br>Type: String
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
