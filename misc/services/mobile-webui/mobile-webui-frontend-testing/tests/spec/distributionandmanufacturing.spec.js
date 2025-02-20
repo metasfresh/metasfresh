@@ -49,13 +49,13 @@ const createMasterdata = async () => {
                     warehouseFrom: "whSource",
                     warehouseTo: "whTarget",
                     warehouseInTransit: "whInTransit",
-                    lines: [{ product: "COMP1", qtyEntered: 1 }],
+                    lines: [{ product: "COMP1", qtyEntered: 5 }],
                 },
                 "DD2": {
                     warehouseFrom: "whSource",
                     warehouseTo: "whTarget",
                     warehouseInTransit: "whInTransit",
-                    lines: [{ product: "COMP2", qtyEntered: 2 }],
+                    lines: [{ product: "COMP2", qtyEntered: 10 }],
                 }
             },
             manufacturingOrders: {
@@ -128,11 +128,11 @@ test('Distribution and manufacturing test', async ({ page }) => {
     await ManufacturingJobsListScreen.startJob({ documentNo });
 
     await ManufacturingJobScreen.clickIssueButton({ index: 1 });
-    await RawMaterialIssueLineScreen.scanQRCode({ qrCode: comp1_huQRCode, expectQtyEntered: '1' });
+    await RawMaterialIssueLineScreen.scanQRCode({ qrCode: comp1_huQRCode, expectQtyEntered: '5' });
     await RawMaterialIssueLineScreen.goBack();
 
     await ManufacturingJobScreen.clickIssueButton({ index: 2 });
-    await RawMaterialIssueLineScreen.scanQRCode({ qrCode: comp2_huQRCode, expectQtyEntered: '2' });
+    await RawMaterialIssueLineScreen.scanQRCode({ qrCode: comp2_huQRCode, expectQtyEntered: '10' });
     await RawMaterialIssueLineScreen.goBack();
 
     await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
