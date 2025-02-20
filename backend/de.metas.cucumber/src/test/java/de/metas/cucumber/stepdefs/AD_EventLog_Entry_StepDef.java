@@ -32,6 +32,7 @@ import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.eventbus.MaterialEventConverter;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
+import de.metas.printing.esb.base.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -132,7 +133,6 @@ public class AD_EventLog_Entry_StepDef
 			final Supplier<Optional<I_AD_EventLog>> getEventLogRecord = () -> {
 
 				final List<I_AD_EventLog> eventLogRecords = queryBL.createQueryBuilder(I_AD_EventLog.class)
-						.addStringLikeFilter(I_AD_EventLog.COLUMNNAME_EventData, eventDataPattern, true)
 						.addEqualsFilter(I_AD_EventLog.COLUMNNAME_EventName, eventName)
 						.orderByDescending(I_AD_EventLog.COLUMNNAME_Created)
 						.create()
@@ -141,7 +141,11 @@ public class AD_EventLog_Entry_StepDef
 				{
 					return Optional.empty();
 				}
-				return extractSupplyRequiredEventLog(row, eventLogRecords);
+				if (Check.equals(eventName, SupplyRequiredEvent.TYPE))
+				{
+					return extractSupplyRequiredEventLog(row, eventLogRecords);
+				}
+				throw new AdempiereException("EventName " + eventName + " not supported");
 			};
 
 			final I_AD_EventLog eventLog = StepDefUtil.tryAndWaitForItem(timeoutSec,
