@@ -62,8 +62,6 @@ import javax.annotation.Nullable;
  * Thanks to <a href="https://spring.io/blog/2016/11/08/cqrs-and-event-sourcing-with-jakub-pilimon">https://spring.io/blog/2016/11/08/cqrs-and-event-sourcing-with-jakub-pilimon</a> for the samples and hints on how to use jackson.
  * Also thanks to <a href="https://reinhard.codes/2015/09/16/lomboks-builder-annotation-and-inheritance">https://reinhard.codes/2015/09/16/lomboks-builder-annotation-and-inheritance/</a> for the hint about using builder with inheritance, but I didn't get it to fly when i also had to provide allargsconstructors to the concrete sub classes
  *
- * Please keep subtypes in sync with AD_Reference=`Material Event Names`
- *
  * @author metas-dev <dev@metasfresh.com>
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
