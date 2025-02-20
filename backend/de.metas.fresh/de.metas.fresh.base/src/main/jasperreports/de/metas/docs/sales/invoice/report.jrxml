@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/invoice/report" uuid="2fa464b6-5b59-45d9-8f05-3c4f9b99aa01">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="0.9090909090909095"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="240"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -24,34 +24,54 @@
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Root ( $P{RECORD_ID}, $P{ad_language}) r
 JOIN report.isShowQRBill(1000000, r.ad_org_id)  showQRBill on 1=1
 JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
+join
+    (
+         select Count(1) as rows_no from de_metas_endcustomer_fresh_reports.Docs_Invoice_Points ($P{RECORD_ID}, $P{ad_language}) as v
+                 
+        ) as v on 1=1
+;
+;
 ;]]>
 	</queryString>
 	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="ad_org_id"/>
 		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
 	</field>
 	<field name="docstatus" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="docstatus"/>
 		<property name="com.jaspersoft.studio.field.label" value="docstatus"/>
 	</field>
 	<field name="printname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="printname"/>
 		<property name="com.jaspersoft.studio.field.label" value="printname"/>
 	</field>
 	<field name="countrycode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="countrycode"/>
 		<property name="com.jaspersoft.studio.field.label" value="countrycode"/>
 	</field>
 	<field name="c_currency_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_currency_id"/>
 		<property name="com.jaspersoft.studio.field.label" value="c_currency_id"/>
 	</field>
 	<field name="displayhu" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="displayhu"/>
 		<property name="com.jaspersoft.studio.field.label" value="displayhu"/>
 	</field>
 	<field name="iscreditmemo" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="iscreditmemo"/>
 		<property name="com.jaspersoft.studio.field.label" value="iscreditmemo"/>
 	</field>
 	<field name="showqrbill" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="showqrbill"/>
 		<property name="com.jaspersoft.studio.field.label" value="showqrbill"/>
 	</field>
 	<field name="showesr_qr" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="showesr_qr"/>
 		<property name="com.jaspersoft.studio.field.label" value="showesr_qr"/>
+	</field>
+	<field name="rows_no" class="java.lang.Long">
+		<property name="com.jaspersoft.studio.field.name" value="rows_no"/>
+		<property name="com.jaspersoft.studio.field.label" value="rows_no"/>
 	</field>
 	<background>
 		<band height="842" splitType="Stretch">
@@ -245,6 +265,45 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/sales/invoice/report_details_footer.jasper"]]></subreportExpression>
 			</subreport>
+		</band>
+		<band height="56">
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-3" x="0" y="6" width="595" height="12" uuid="dbdb3b19-e578-4e35-b704-a03de6be7966">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<printWhenExpression><![CDATA[$F{rows_no} > 0]]></printWhenExpression>
+				</reportElement>
+				<subreportParameter name="c_invoice_id">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/purchase/invoice/report_details_points.jasper"]]></subreportExpression>
+			</subreport>
+			<break>
+				<reportElement x="0" y="26" width="100" height="1" uuid="050bd989-0b7a-47a5-bc32-16f941381e56"/>
+			</break>
+			<subreport isUsingCache="true">
+				<reportElement key="subreport-3" positionType="Float" x="0" y="34" width="595" height="12" uuid="f2c3c0f3-cc85-4fe1-8764-84f1c3dd6c3b">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				</reportElement>
+				<subreportParameter name="c_invoice_id">
+					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="ad_language">
+					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
+				</subreportParameter>
+				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+				<subreportExpression><![CDATA["de/metas/docs/purchase/invoice/report_points_sum.jasper"]]></subreportExpression>
+			</subreport>
+			<break>
+				<reportElement x="0" y="1" width="100" height="1" uuid="5187eb13-5bc5-4b03-ba7f-689f9e0eec83">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+			</break>
 		</band>
 	</detail>
 	<columnFooter>
