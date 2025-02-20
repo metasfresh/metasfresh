@@ -43,4 +43,7 @@ public class DDOrderCreatedEvent extends AbstractDDOrderEvent
 		return (DDOrderCreatedEvent)ddOrderEvent;
 	}
 
+	@Override
+	public String getEventName() {return TYPE;}
+
 }

@@ -37,4 +37,7 @@ public class AllEventsProcessedEvent implements MaterialEvent
 	public static final String TYPE = "AllEventsProcessedEvent";
 
 	@NonNull EventDescriptor eventDescriptor;
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

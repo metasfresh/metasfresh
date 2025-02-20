@@ -161,8 +161,8 @@ Feature: ASI support in Product BOM rest-api
     And the order identified by order_SO is completed
 
     And after not more than 60s, AD_EventLog are found
-      | AD_EventLog_ID.Identifier | EventType           | SupplyRequiredEvent.M_Product_ID.Identifier | EventData.Pattern   |
-      | eventLog_1                | SupplyRequiredEvent | product_S1                                  | SupplyRequiredEvent |
+      | AD_EventLog_ID.Identifier | EventName           | SupplyRequiredEvent.M_Product_ID.Identifier |
+      | eventLog_1                | SupplyRequiredEvent | product_S1                                  |
 
     And after not more than 60s, AD_EventLog_Entry are found
       | AD_EventLog_Entry_ID.Identifier | AD_EventLog_ID.Identifier | Classname                                              | MsgText                                               | Processed |

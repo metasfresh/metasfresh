@@ -44,4 +44,7 @@ public class PPOrderCandidateCreatedEvent extends AbstractPPOrderCandidateEvent
 	{
 		super(eventDescriptor, ppOrderCandidate, null);
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

@@ -9,8 +9,11 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
+
+import static de.metas.material.event.MaterialEventConstants.C_PURCHASE_CANDIDATE_TABLE_NAME;
 
 /*
  * #%L
@@ -58,5 +61,12 @@ public abstract class PurchaseCandidateEvent implements MaterialEvent
 		this.eventDescriptor = eventDescriptor;
 		this.purchaseCandidateRepoId = Check.assumeGreaterThanZero(purchaseCandidateRepoId, "purchaseCandidateRepoId");
 		this.vendorId = Check.assumeGreaterThanZero(vendorId, "vendorId");
+	}
+
+	@Nullable
+	@Override
+	public TableRecordReference getSourceTableReference()
+	{
+		return TableRecordReference.of(C_PURCHASE_CANDIDATE_TABLE_NAME, purchaseCandidateRepoId);
 	}
 }

@@ -50,8 +50,24 @@ Feature: material dispo reacts to order docactions
       | Identifier        | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID         | DateProjected        | Qty | ATP | M_Warehouse_ID |
       | 01/d_1_1_S0461_10 | DEMAND            | SHIPMENT                  | product_1_1_S0461_10 | 2024-09-22T21:00:00Z | 12  | -12 | WH_S0461       |
 
-    When the order identified by o_1_S0461_10 is voided
+    When the order identified by o_1_S0461_10 is reactivated
 
     Then after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier        | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID         | DateProjected        | Qty | ATP | M_Warehouse_ID |
+      | 01/d_1_1_S0461_10 | DEMAND            | SHIPMENT                  | product_1_1_S0461_10 | 2024-09-22T21:00:00Z | 0   | 0   | WH_S0461       |
+
+    And update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.QtyEntered |
+      | ol_1_S0461_10             | 16             |
+
+    And the order identified by o_1_S0461_10 is completed
+
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier        | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID         | DateProjected        | Qty | ATP | M_Warehouse_ID |
+      | 01/d_1_1_S0461_10 | DEMAND            | SHIPMENT                  | product_1_1_S0461_10 | 2024-09-22T21:00:00Z | 16  | -16 | WH_S0461       |
+
+    And the order identified by o_1_S0461_10 is voided
+
+    And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier        | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID         | DateProjected        | Qty | ATP | M_Warehouse_ID |
       | 01/d_1_1_S0461_10 | DEMAND            | SHIPMENT                  | product_1_1_S0461_10 | 2024-09-22T21:00:00Z | 0   | 0   | WH_S0461       |
