@@ -88,7 +88,7 @@ import javax.annotation.Nullable;
 		@JsonSubTypes.Type(name = PPOrderDeletedEvent.TYPE, value = PPOrderDeletedEvent.class),
 		@JsonSubTypes.Type(name = PPOrderChangedEvent.TYPE, value = PPOrderChangedEvent.class),
 		@JsonSubTypes.Type(name = PPOrderRequestedEvent.TYPE, value = PPOrderRequestedEvent.class),
-//30
+
 		@JsonSubTypes.Type(name = PPOrderCandidateAdvisedEvent.TYPE, value = PPOrderCandidateAdvisedEvent.class),
 		@JsonSubTypes.Type(name = PPOrderCandidateRequestedEvent.TYPE, value = PPOrderCandidateRequestedEvent.class),
 		@JsonSubTypes.Type(name = PPOrderCandidateUpdatedEvent.TYPE, value = PPOrderCandidateUpdatedEvent.class),
