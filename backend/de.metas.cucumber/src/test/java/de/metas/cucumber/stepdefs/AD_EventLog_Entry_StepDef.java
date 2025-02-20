@@ -127,7 +127,6 @@ public class AD_EventLog_Entry_StepDef
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
-			final String eventDataPattern = DataTableUtil.extractStringForColumnName(row, I_AD_EventLog.COLUMNNAME_EventData + ".Pattern");
 			final String eventName = DataTableUtil.extractStringForColumnName(row, "EventName");
 
 			final Supplier<Optional<I_AD_EventLog>> getEventLogRecord = () -> {
