@@ -204,7 +204,16 @@ public interface IProductBL extends ISingletonService
 
 	boolean isHaddexProduct(ProductId productId);
 
+	/**
+	 * @return {@code M_Product.M_AttributeSet_ID}
+	 */
 	I_M_AttributeSet getProductMasterDataSchemaOrNull(ProductId productId);
+
+	/**
+	 * @return {@code M_Product.M_AttributeSet_ID}
+	 */
+	@NonNull
+	AttributeSetId getMasterDataSchemaAttributeSetId(@NonNull ProductId productId);
 
 	ImmutableList<String> retrieveSupplierApprovalNorms(ProductId productId);
 

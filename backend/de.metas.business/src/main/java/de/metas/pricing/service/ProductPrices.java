@@ -315,7 +315,7 @@ public class ProductPrices
 	 * @deprecated Please use {@link IPriceListDAO#addProductPrice(AddProductPriceRequest)}. If doesn't fit, extend it ;)
 	 */
 	@Deprecated
-	public static I_M_ProductPrice createProductPriceOrUpdateExistentOne(@NonNull ProductPriceCreateRequest ppRequest, @NonNull final I_M_PriceList_Version plv)
+	public static I_M_ProductPrice createProductPriceOrUpdateExistentOne(@NonNull final ProductPriceCreateRequest ppRequest, @NonNull final I_M_PriceList_Version plv)
 	{
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 

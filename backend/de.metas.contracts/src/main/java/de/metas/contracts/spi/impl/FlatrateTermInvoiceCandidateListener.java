@@ -1,13 +1,5 @@
 package de.metas.contracts.spi.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery;
-
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -15,6 +7,14 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateListener;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
+
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 public class FlatrateTermInvoiceCandidateListener implements IInvoiceCandidateListener
 {
@@ -26,7 +26,7 @@ public class FlatrateTermInvoiceCandidateListener implements IInvoiceCandidateLi
 	}
 
 	@Override
-	public void onBeforeClosed(I_C_Invoice_Candidate candidate)
+	public void onBeforeClosed(@NonNull final I_C_Invoice_Candidate candidate)
 	{
 		final int tableID = candidate.getAD_Table_ID();
 

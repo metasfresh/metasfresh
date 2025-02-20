@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.attribute;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.util.Services;
@@ -98,6 +99,41 @@ public class M_AttributeValue_StepDef
 
 			final String attributeValueIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_AttributeValue.COLUMNNAME_M_AttributeValue_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			attributeValueTable.putOrReplace(attributeValueIdentifier, attributeValue);
+		}
+	}
+
+	@And("metasfresh contains M_AttributeValues:")
+	public void metasfresh_contains_M_AttributeValues(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String attributeValueIdentifier = DataTableUtil.extractStringForColumnName(row, StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+			final String attributeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_AttributeValue.COLUMNNAME_M_Attribute_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_M_Attribute attributeRecord = attributeTable.get(attributeIdentifier);
+
+			final String value = DataTableUtil.extractStringForColumnName(row, I_M_AttributeValue.COLUMNNAME_Value);
+			final String name = DataTableUtil.extractStringForColumnName(row, I_M_AttributeValue.COLUMNNAME_Name);
+
+			final boolean isNullFieldValue = DataTableUtil.extractBooleanForColumnName(row, I_M_AttributeValue.COLUMNNAME_IsNullFieldValue);
+
+			final I_M_AttributeValue attributeValueRecord = CoalesceUtil.coalesceSuppliersNotNull(
+					() -> queryBL.createQueryBuilder(I_M_AttributeValue.class)
+							.addEqualsFilter(I_M_AttributeValue.COLUMNNAME_M_Attribute_ID, attributeRecord.getM_Attribute_ID())
+							.addEqualsFilter(I_M_AttributeValue.COLUMNNAME_Value, value)
+							.addOnlyActiveRecordsFilter()
+							.create()
+							.firstOnly(I_M_AttributeValue.class),
+					() -> InterfaceWrapperHelper.newInstance(I_M_AttributeValue.class));
+
+			attributeValueRecord.setM_Attribute_ID(attributeRecord.getM_Attribute_ID());
+			attributeValueRecord.setValue(value);
+			attributeValueRecord.setName(name);
+			attributeValueRecord.setIsNullFieldValue(isNullFieldValue);
+
+			InterfaceWrapperHelper.saveRecord(attributeValueRecord);
+
+			attributeValueTable.putOrReplace(attributeValueIdentifier, attributeValueRecord);
 		}
 	}
 }

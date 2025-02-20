@@ -22,22 +22,6 @@ package de.metas.fresh.api.invoicecandidate.impl;
  * #L%
  */
 
-
-import static org.hamcrest.CoreMatchers.hasItems;
-import static org.hamcrest.Matchers.comparesEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Properties;
-
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
 import de.metas.StartupListener;
 import de.metas.currency.CurrencyRepository;
 import de.metas.fresh.invoicecandidate.spi.impl.FreshQuantityDiscountAggregator;
@@ -50,6 +34,21 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Agg;
 import de.metas.money.MoneyService;
 import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
+import org.junit.runner.RunWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit4.SpringRunner;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Properties;
+
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.Matchers.comparesEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 /**
  * Similar to its super class {@link TestTwoReceiptsOneInvoice_QualityDiscount1}, but uses the {@link FreshQuantityDiscountAggregator} instead of the default aggregator.<br>
@@ -77,7 +76,7 @@ public class TestFreshTwoReceiptssOneInvoice_FreshQualityDiscount1 extends TestT
 	}
 
 	@Override
-	protected void step_validate_before_aggregation(List<I_C_Invoice_Candidate> invoiceCandidates, List<I_M_InOutLine> ignored)
+	protected void step_validate_before_aggregation(@NonNull List<I_C_Invoice_Candidate> invoiceCandidates, @NonNull List<I_M_InOutLine> ignored)
 	{
 		super.step_validate_before_aggregation(invoiceCandidates, ignored);
 

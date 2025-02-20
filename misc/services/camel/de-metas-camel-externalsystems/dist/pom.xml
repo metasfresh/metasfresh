@@ -21,6 +21,20 @@
             <groupId>de.metas.common.rest_api</groupId>
             <artifactId>de-metas-common-rest_api</artifactId>
             <version>${metasfresh.version}</version>
+			<!-- Avoid startup failure
+             org.springframework.context.ApplicationContextException: Failed to start bean 'documentationPluginsBootstrapper'; nested exception is java.lang.NullPointerException: Cannot invoke "org.springframework.web.servlet.mvc.condition.PatternsRequestCondition.getPatterns()" because "this.condition" is null
+             Please revise this exclusion when the rest of MF also runs with java-17 or later
+            -->
+			<exclusions>
+				<exclusion>
+					<artifactId>springfox-boot-starter</artifactId>
+					<groupId>io.springfox</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>springfox-enum-plugin</artifactId>
+					<groupId>de.pentabyte</groupId>
+				</exclusion>
+			</exclusions>
         </dependency>
         <dependency>
             <groupId>de.metas.camel.externalsystems</groupId>

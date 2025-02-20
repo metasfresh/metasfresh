@@ -1,0 +1,74 @@
+{
+  "orgCode": "orgCode",
+  "jsonRequestBPartnerUpsert": {
+    "requestItems": [
+      {
+        "bpartnerIdentifier": "123456",
+        "externalVersion": null,
+        "externalReferenceUrl": null,
+        "bpartnerComposite": {
+          "bpartner": null,
+          "locations": {
+            "requestItems": [
+              {
+                "locationIdentifier": "ext-ProCareManagement-warehouseIdentifier_1",
+                "externalVersion": null,
+                "location": {
+                  "active": null,
+                  "activeSet": false,
+                  "name": "warehouseName_1",
+                  "nameSet": true,
+                  "bpartnerName": null,
+                  "bpartnerNameSet": false,
+                  "address1": "address_1",
+                  "address1Set": true,
+                  "address2": null,
+                  "address2Set": false,
+                  "address3": null,
+                  "address3Set": false,
+                  "address4": null,
+                  "address4Set": false,
+                  "poBox": null,
+                  "poBoxSet": false,
+                  "postal": "postal_1",
+                  "postalSet": true,
+                  "city": "city_1",
+                  "citySet": true,
+                  "district": null,
+                  "districtSet": false,
+                  "region": null,
+                  "regionSet": false,
+                  "countryCode": "DE",
+                  "countryCodeSet": true,
+                  "gln": "gln_1",
+                  "glnSet": true,
+                  "shipTo": null,
+                  "shipToSet": false,
+                  "shipToDefault": null,
+                  "shipToDefaultSet": false,
+                  "billTo": null,
+                  "billToSet": false,
+                  "billToDefault": null,
+                  "billToDefaultSet": false,
+                  "ephemeral": false,
+                  "ephemeralSet": false,
+                  "email": null,
+                  "emailSet": false,
+                  "phone": null,
+                  "phoneSet": false,
+                  "visitorsAddress": null,
+                  "visitorsAddressSet": false
+                }
+              }
+            ],
+            "syncAdvise": null
+          }
+        }
+      }
+    ],
+    "syncAdvise": {
+      "ifNotExists": "CREATE",
+      "ifExists": "UPDATE_MERGE"
+    }
+  }
+}

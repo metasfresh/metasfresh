@@ -148,7 +148,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final I_C_Invoice_Candidate icRecord = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
 
 		icRecord.setAD_Org_ID(orderLine.getAD_Org_ID());
-		icRecord.setC_ILCandHandler(getHandlerRecord());
 
 		icRecord.setAD_Table_ID(tableDAO.retrieveTableId(org.compiere.model.I_C_OrderLine.Table_Name));
 		icRecord.setRecord_ID(orderLine.getC_OrderLine_ID());

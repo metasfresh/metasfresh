@@ -60,6 +60,7 @@ import de.metas.util.collections.IdentityHashSet;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -83,6 +84,7 @@ import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -155,6 +157,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	// Parameters
 	private Properties _ctx;
 	private String _trxName;
+	@Setter
 	private Class<? extends IInvoiceGeneratorRunnable> invoiceGeneratorClass = null;
 	private static final boolean createInvoiceFromOrder = false; // FIXME: 08511 workaround
 	private Boolean _ignoreInvoiceSchedule = null;
@@ -792,7 +795,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoiceCandDAO.save(icRecord);
 		}
 
-		private I_M_AttributeSetInstance createASI(final Set<IInvoiceLineAttribute> invoiceLineAttributes)
+		@Nullable
+		private I_M_AttributeSetInstance createASI(@Nullable final List<IInvoiceLineAttribute> invoiceLineAttributes)
 		{
 			// If there are no attributes, return a null ASI
 			if (Check.isEmpty(invoiceLineAttributes))
@@ -1123,14 +1127,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			}
 		}
 		return candidates;
-	}
-
-	/**
-	 * Set the invoice generator to use in invoicing.
-	 */
-	public void setInvoiceGeneratorClass(final Class<? extends IInvoiceGeneratorRunnable> invoiceGeneratorClass)
-	{
-		this.invoiceGeneratorClass = invoiceGeneratorClass;
 	}
 
 	@Override

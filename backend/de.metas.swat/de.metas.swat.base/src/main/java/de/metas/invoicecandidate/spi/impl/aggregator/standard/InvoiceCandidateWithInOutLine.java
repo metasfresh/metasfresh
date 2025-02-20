@@ -41,11 +41,10 @@ public final class InvoiceCandidateWithInOutLine
 	private final I_C_InvoiceCandidate_InOutLine iciol;
 
 	@Getter
-	private final Set<IInvoiceLineAttribute> invoiceLineAttributes;
+	private final Set<IInvoiceLineAttribute> attributesFromInoutLines;
 
 	/**
-	 * -- GETTER --
-	 *  Specify if, when the aggregation is done and if
+	 *  Specifies if, when the aggregation is done and if
 	 *  is not <code>null</code> the full remaining <code>QtyToInvoice</code> of the invoice candidate shall
 	 *  be allocated to the <code>icIol</code>'s invoice line, or not. If <code>false</code>, then the maximum qty to be allocated is the delivered qty.
 	 *  <p>
@@ -74,7 +73,7 @@ public final class InvoiceCandidateWithInOutLine
 		this.ic = request.getC_Invoice_Candidate();
 		this.iciol = request.getC_InvoiceCandidate_InOutLine();
 		this.allocateRemainingQty = request.isAllocateRemainingQty();
-		this.invoiceLineAttributes = ImmutableSet.copyOf(request.getInvoiceLineAttributes());
+		this.attributesFromInoutLines = ImmutableSet.copyOf(request.getAttributesFromInoutLines());
 
 		this.invoicecandidateId = InvoiceCandidateId.ofRepoId(ic.getC_Invoice_Candidate_ID());
 		this.productId = ProductId.ofRepoId(ic.getM_Product_ID());
