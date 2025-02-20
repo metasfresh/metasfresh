@@ -19,10 +19,10 @@ const createMasterdata = async () => {
             login: {
                 user: { language: "en_US" },
             },
-            mobileConfig: {},
+
             warehouses: {
-                "wh1": {},
-                "wh2": {},
+                "whSource": {},
+                "whTarget": {},
                 "whInTransit": { inTransit: true },
             },
             products: {
@@ -41,29 +41,29 @@ const createMasterdata = async () => {
                 "PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "BOM", qtyCUsPerTU: 4 },
             },
             handlingUnits: {
-                "HU_COMP1": { product: 'COMP1', warehouse: 'wh1', qty: 100 },
-                "HU_COMP2": { product: 'COMP2', warehouse: 'wh1', qty: 100 },
-            },
-            manufacturingOrders: {
-                "PP1": {
-                    warehouse: 'wh2',
-                    product: 'BOM',
-                    qty: 5,
-                    datePromised: '2025-03-01T00:00:00.000+02:00',
-                }
+                "HU_COMP1": { product: 'COMP1', warehouse: 'whSource', qty: 100 },
+                "HU_COMP2": { product: 'COMP2', warehouse: 'whSource', qty: 100 },
             },
             distributionOrders: {
                 "DD1": {
-                    warehouseFrom: "wh1",
-                    warehouseTo: "wh2",
+                    warehouseFrom: "whSource",
+                    warehouseTo: "whTarget",
                     warehouseInTransit: "whInTransit",
                     lines: [{ product: "COMP1", qtyEntered: 1 }],
                 },
                 "DD2": {
-                    warehouseFrom: "wh1",
-                    warehouseTo: "wh2",
+                    warehouseFrom: "whSource",
+                    warehouseTo: "whTarget",
                     warehouseInTransit: "whInTransit",
                     lines: [{ product: "COMP2", qtyEntered: 2 }],
+                }
+            },
+            manufacturingOrders: {
+                "PP1": {
+                    warehouse: 'whTarget',
+                    product: 'BOM',
+                    qty: 5,
+                    datePromised: '2025-03-01T00:00:00.000+02:00',
                 }
             },
         }
@@ -73,10 +73,9 @@ const createMasterdata = async () => {
         login: response.login.user,
         warehouseFrom1FacetId: response.distributionOrders.DD1.warehouseFromFacetId,
         launcherTestId: response.distributionOrders.DD1.launcherTestId,
-
         comp1_huQRCode: response.handlingUnits.HU_COMP1.qrCode,
         comp2_huQRCode: response.handlingUnits.HU_COMP2.qrCode,
-        dropToLocatorQRCode: response.warehouses.wh2.locatorQRCode,
+        dropToLocatorQRCode: response.warehouses.whTarget.locatorQRCode,
         luPIItemTestId: response.packingInstructions.PI.luPIItemTestId,
         documentNo: response.manufacturingOrders.PP1.documentNo,
 
@@ -86,7 +85,8 @@ const createMasterdata = async () => {
 // noinspection JSUnusedLocalSymbols
 test('Distribution and manufacturing test', async ({ page }) => {
     const {
-        login, warehouseFrom1FacetId,
+        login,
+        warehouseFrom1FacetId,
         launcherTestId,
         comp1_huQRCode,
         comp2_huQRCode,
@@ -103,21 +103,20 @@ test('Distribution and manufacturing test', async ({ page }) => {
     await DistributionJobsListScreen.filterByFacetId({ facetId: warehouseFrom1FacetId, expectHitCount: 2 });
     await DistributionJobsListScreen.startJob({ launcherTestId });
     await DistributionJobScreen.clickLineButton({ index: 1 });
-    await DistributionLineScreen.scanHUToMove({ comp1_huQRCode });
+    await DistributionLineScreen.scanHUToMove({ huQRCode: comp1_huQRCode });
     await DistributionLineScreen.clickStepButton({ index: 1 });
-    await DistributionStepScreen.scanDropToLocator({ dropToLocatorQRCode });
+    await DistributionStepScreen.scanDropToLocator({ dropToLocatorQRCode: dropToLocatorQRCode });
     await DistributionStepScreen.expectVisible();
     await DistributionStepScreen.goBack();
     await DistributionLineScreen.goBack();
     await DistributionJobScreen.clickLineButton({ index: 1 });
-    await DistributionLineScreen.scanHUToMove({ comp2_huQRCode });
+    await DistributionLineScreen.scanHUToMove({ huQRCode: comp2_huQRCode });
     await DistributionLineScreen.clickStepButton({ index: 1 });
-    await DistributionStepScreen.scanDropToLocator({ dropToLocatorQRCode });
+    await DistributionStepScreen.scanDropToLocator({ dropToLocatorQRCode: dropToLocatorQRCode });
     await DistributionStepScreen.expectVisible();
     await DistributionStepScreen.goBack();
     await DistributionLineScreen.goBack();
     await DistributionJobScreen.complete();
-
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('mfg');
     await ManufacturingJobsListScreen.waitForScreen();
@@ -139,4 +138,5 @@ test('Distribution and manufacturing test', async ({ page }) => {
     })
 
     await ManufacturingJobScreen.complete();
+
 });
