@@ -26,7 +26,7 @@ JOIN report.isShowQRBill(1000000, r.ad_org_id)  showQRBill on 1=1
 JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 join
     (
-         select Count(1) as rows_no from de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Points ($P{RECORD_ID}, $P{ad_language}) as v
+         select Count(1) as rows_no from de_metas_endcustomer_fresh_reports.Docs_Invoice_Points ($P{RECORD_ID}, $P{ad_language}) as v
                  
         ) as v on 1=1
 ;
