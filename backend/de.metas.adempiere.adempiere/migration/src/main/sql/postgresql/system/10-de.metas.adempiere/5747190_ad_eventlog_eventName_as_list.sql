@@ -531,3 +531,8 @@ UPDATE AD_Column SET AD_Reference_ID=17, AD_Reference_Value_ID=541929,Updated=TO
 INSERT INTO t_alter_column values('ad_eventlog','EventName','VARCHAR(255)',null,null)
 ;
 
+-- Column: AD_EventLog.Record_ID
+-- 2025-02-20T13:46:20.951Z
+UPDATE AD_Column SET IsExcludeFromZoomTargets='N',Updated=TO_TIMESTAMP('2025-02-20 13:46:20.950000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=589674
+;
+
