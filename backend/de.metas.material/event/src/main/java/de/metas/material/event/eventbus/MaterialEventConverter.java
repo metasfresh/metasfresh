@@ -6,10 +6,6 @@ import de.metas.util.JSONObjectMapper;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-
-import static de.metas.util.RawMapSerializer.RAW_PROPERTY_SUFFIX;
-
 /*
  * #%L
  * metasfresh-material-event
@@ -40,7 +36,7 @@ import static de.metas.util.RawMapSerializer.RAW_PROPERTY_SUFFIX;
 @Service
 public class MaterialEventConverter
 {
-	private static final String PROPERTY_MATERIAL_EVENT = "MaterialEvent" + RAW_PROPERTY_SUFFIX;
+	private static final String PROPERTY_MATERIAL_EVENT = "MaterialEvent";
 
 	private final JSONObjectMapper<MaterialEvent> jsonObjectMapper;
 
@@ -53,17 +49,9 @@ public class MaterialEventConverter
 	{
 		final Object materialEventObj = metasfreshEvent.getProperty(PROPERTY_MATERIAL_EVENT);
 
-		if (materialEventObj instanceof Map)
+		if (materialEventObj instanceof MaterialEvent)
 		{
-			// When the Event is deserialized, the PROPERTY_MATERIAL_EVENT has already been deserialized as a Map
-			@SuppressWarnings("unchecked") final Map<String, Object> valueMap = (Map<String, Object>)materialEventObj;
-
-			// Check if the valueMap contains the "type" field for a MaterialEvent
-			if (valueMap.containsKey("type"))
-			{
-				// Deserialize the map into a MaterialEvent subclass
-				return jsonObjectMapper.convertValue(valueMap);
-			}
+			return (MaterialEvent)materialEventObj;
 		}
 
 		if (materialEventObj instanceof String)
@@ -80,10 +68,8 @@ public class MaterialEventConverter
 	 */
 	public Event fromMaterialEvent(@NonNull final MaterialEvent materialEvent)
 	{
-		final String eventStr = jsonObjectMapper.writeValueAsString(materialEvent);
-
 		return Event.builder()
-				.putProperty(PROPERTY_MATERIAL_EVENT, eventStr)
+				.putProperty(PROPERTY_MATERIAL_EVENT, materialEvent)
 				.setEventName(materialEvent.getEventName())
 				.setSourceRecordReference(materialEvent.getSourceTableReference())
 				.shallBeLogged()

@@ -29,7 +29,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
@@ -38,7 +37,6 @@ import de.metas.event.log.EventLogEntryCollector;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.NumberUtils;
-import de.metas.util.RawMapSerializer;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -81,9 +79,8 @@ public class Event
 
 	// put this first, because this is imho the most interesting part of the event's json representation, at least when shown in the event log
 	@JsonProperty("properties")
-	@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
+	@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	@JsonSerialize(using = RawMapSerializer.class)
 	ImmutableMap<String, Object> properties;
 
 	@JsonProperty("uuid")
@@ -511,6 +508,12 @@ public class Event
 			return properties;
 		}
 
+		public Builder putProperty(final String name, final Object value)
+		{
+			properties.put(name, value);
+			return this;
+		}
+
 		public Builder putProperty(final String name, final int value)
 		{
 			properties.put(name, value);
@@ -587,11 +590,11 @@ public class Event
 			}
 			else if (value instanceof Integer)
 			{
-				return putProperty(name, (Integer)value);
+				return putProperty(name, value);
 			}
 			else if (value instanceof Long)
 			{
-				return putProperty(name, (Long)value);
+				return putProperty(name, value);
 			}
 			else if (value instanceof Double)
 			{
@@ -616,7 +619,7 @@ public class Event
 			}
 			else if (value instanceof Boolean)
 			{
-				return putProperty(name, (Boolean)value);
+				return putProperty(name, value);
 			}
 			else if (value instanceof ITableRecordReference)
 			{
