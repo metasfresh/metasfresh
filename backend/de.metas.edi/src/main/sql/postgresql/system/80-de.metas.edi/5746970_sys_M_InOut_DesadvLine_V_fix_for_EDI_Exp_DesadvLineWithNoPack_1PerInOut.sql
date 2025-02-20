@@ -2,7 +2,7 @@
  * #%L
  * de.metas.edi
  * %%
- * Copyright (C) 2024 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -28,10 +28,10 @@ SELECT shipment.m_inout_id                                                      
 
        CASE WHEN desadvInOutLine.edi_desadvline_id > 0 THEN 'Y' ELSE 'N' END                                                                AS IsDesadvLineInCurrentShipment,
 
-       /*
-         If there is no m_inoutline_id, it means that we want the row in Exp_Format EDI_Exp_DesadvLineWithNoPack_1PerInOut_ActualDesadvLine (EXP_Format_ID=540433),
-         and in that case, the lookup is taking place via EDI_DesadvLine_ID
-        */
+    /*
+      If there is no m_inoutline_id, it means that we want the row in Exp_Format EDI_Exp_DesadvLineWithNoPack_1PerInOut_ActualDesadvLine (EXP_Format_ID=540433),
+      and in that case, the lookup is taking place via EDI_DesadvLine_ID
+     */
        COALESCE(shipmentLine.m_inoutline_id, dline.edi_desadvline_id)                                                                       AS M_InOut_DesadvLine_V_ID,
        shipment.m_inout_id,
        shipmentLine.m_inoutline_id,
