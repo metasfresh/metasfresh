@@ -72,7 +72,8 @@ const createMasterdata = async () => {
     return {
         login: response.login.user,
         warehouseFrom1FacetId: response.distributionOrders.DD1.warehouseFromFacetId,
-        launcherTestId: response.distributionOrders.DD1.launcherTestId,
+        launcherTest1Id: response.distributionOrders.DD1.launcherTestId,
+        launcherTest2Id: response.distributionOrders.DD2.launcherTestId,
         comp1_huQRCode: response.handlingUnits.HU_COMP1.qrCode,
         comp2_huQRCode: response.handlingUnits.HU_COMP2.qrCode,
         dropToLocatorQRCode: response.warehouses.whTarget.locatorQRCode,
@@ -87,7 +88,8 @@ test('Distribution and manufacturing test', async ({ page }) => {
     const {
         login,
         warehouseFrom1FacetId,
-        launcherTestId,
+        launcherTest1Id,
+        launcherTest2Id,
         comp1_huQRCode,
         comp2_huQRCode,
         dropToLocatorQRCode,
@@ -101,7 +103,7 @@ test('Distribution and manufacturing test', async ({ page }) => {
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
     await DistributionJobsListScreen.filterByFacetId({ facetId: warehouseFrom1FacetId, expectHitCount: 2 });
-    await DistributionJobsListScreen.startJob({ launcherTestId });
+    await DistributionJobsListScreen.startJob({ launcherTest1Id });
     await DistributionJobScreen.clickLineButton({ index: 1 });
     await DistributionLineScreen.scanHUToMove({ huQRCode: comp1_huQRCode });
     await DistributionLineScreen.clickStepButton({ index: 1 });
@@ -110,6 +112,7 @@ test('Distribution and manufacturing test', async ({ page }) => {
     await DistributionStepScreen.goBack();
     await DistributionLineScreen.goBack();
     await DistributionJobScreen.complete();
+    await DistributionJobsListScreen.startJob({ launcherTest2Id });
     await DistributionJobScreen.clickLineButton({ index: 1 });
     await DistributionLineScreen.scanHUToMove({ huQRCode: comp2_huQRCode });
     await DistributionLineScreen.clickStepButton({ index: 1 });
