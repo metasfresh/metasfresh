@@ -121,6 +121,7 @@ test('Distribution and manufacturing test', async ({ page }) => {
     await DistributionStepScreen.goBack();
     await DistributionLineScreen.goBack();
     await DistributionJobScreen.complete();
+    await DistributionJobsListScreen.goBack();
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('mfg');
     await ManufacturingJobsListScreen.waitForScreen();
