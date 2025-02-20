@@ -519,8 +519,8 @@
             <xsd:element minOccurs="0" name="ISO_Code" type="xsd:string"/>
             <xsd:element minOccurs="0" name="MovementDate" type="xsd:date"/>
             <xsd:element minOccurs="0" name="POReference" type="xsd:string"/>
-            <xsd:element minOccurs="0" name="ReceiverGLN" type="xsd:string"/>
-            <xsd:element minOccurs="0" name="SenderGLN" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="receivergln" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="sendergln" type="xsd:string"/>
             <xsd:element minOccurs="0" name="shipment_documentno" type="xsd:string"/>
             <xsd:element minOccurs="0" name="EDIDesadvDocumentNo" type="xsd:string"/>
             <xsd:element minOccurs="0" name="TotalLines" type="xsd:decimal"/>
