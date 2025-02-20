@@ -512,7 +512,7 @@ public class RetrieveDbRecordsUtil
 					.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_M_HU_ID, query.getAnyHuId())
 					.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_VHU_ID, query.getAnyHuId())
 					.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_VHU_Source_ID, query.getAnyHuId());
-			
+
 			queryBuilder.addFilter(anyHuFilter);
 			queryIsEmpty = false;
 		}

@@ -119,6 +119,7 @@ public class RepoIdAwares
 		return ofRepoIdFunction.apply(repoId);
 	}
 
+	@Nullable
 	public static <T extends RepoIdAware> T ofObjectOrNull(
 			@Nullable final Object repoIdObj,
 			@NonNull final Class<T> repoIdClass)

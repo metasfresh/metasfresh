@@ -1,40 +1,8 @@
 package de.metas.handlingunits.trace.process;
 
-import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.hutransaction.IHUTrxDAO;
-import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Assignment;
-import de.metas.handlingunits.model.I_M_HU_Trx_Line;
-import de.metas.handlingunits.model.I_M_InventoryLine;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
-import de.metas.handlingunits.model.I_PP_Cost_Collector;
-import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
-import de.metas.handlingunits.trace.HUTraceEvent;
-import de.metas.handlingunits.trace.HUTraceEventsService;
-import de.metas.process.JavaProcess;
-import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.ad.dao.ConstantQueryFilter;
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.apache.commons.collections4.IteratorUtils;
-import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MovementLine;
-
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /*
  * #%L

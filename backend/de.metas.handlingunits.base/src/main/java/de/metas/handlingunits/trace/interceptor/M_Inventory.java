@@ -2,7 +2,7 @@
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -31,7 +31,6 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.Adempiere;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;

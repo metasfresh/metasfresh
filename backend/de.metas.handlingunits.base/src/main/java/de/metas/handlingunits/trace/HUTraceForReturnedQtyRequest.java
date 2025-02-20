@@ -32,7 +32,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.Set;
 
