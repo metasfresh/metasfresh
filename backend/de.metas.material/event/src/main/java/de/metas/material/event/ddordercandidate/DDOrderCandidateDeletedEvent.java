@@ -32,4 +32,11 @@ public class DDOrderCandidateDeletedEvent extends AbstractDDOrderCandidateEvent
 				.ddOrderCandidate(data)
 				.build();
 	}
+
+	@Override
+	@NonNull
+	public String getEventName()
+	{
+		return TYPE;
+	}
 }
