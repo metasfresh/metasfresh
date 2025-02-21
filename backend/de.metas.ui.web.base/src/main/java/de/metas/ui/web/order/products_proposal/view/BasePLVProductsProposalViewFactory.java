@@ -63,10 +63,10 @@ public class BasePLVProductsProposalViewFactory extends ProductsProposalViewFact
 	private final OrderProductProposalsService orderProductProposalsService;
 	private final LookupDataSourceFactory lookupDataSourceFactory;
 
-	protected BasePLVProductsProposalViewFactory(
-			@NonNull final BPartnerProductStatsService bpartnerProductStatsService,
-			@NonNull final OrderProductProposalsService orderProductProposalsService,
-			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
+
+	protected BasePLVProductsProposalViewFactory(final @NonNull BPartnerProductStatsService bpartnerProductStatsService,
+												 final @NonNull OrderProductProposalsService orderProductProposalsService,
+												 final @NonNull LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		super(WINDOW_ID);
 
@@ -105,9 +105,9 @@ public class BasePLVProductsProposalViewFactory extends ProductsProposalViewFact
 		final PriceListVersionId basePriceListVersionId = parentView.getBasePriceListVersionIdOrFail();
 
 		final ProductsProposalRowsData rowsData = ProductsProposalRowsLoader.builder()
-				.lookupDataSourceFactory(lookupDataSourceFactory)
 				.bpartnerProductStatsService(bpartnerProductStatsService)
 				.orderProductProposalsService(orderProductProposalsService)
+				.lookupDataSourceFactory(lookupDataSourceFactory)
 				//
 				.priceListVersionId(basePriceListVersionId)
 				.productIdsToExclude(parentView.getProductIds())
