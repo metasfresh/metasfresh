@@ -21,6 +21,7 @@ public class DDOrderReference
 	@NonNull DDOrderId ddOrderId;
 	@NonNull String documentNo;
 	@NonNull InstantAndOrgId datePromised;
+	@Nullable InstantAndOrgId pickDate;
 	@NonNull WarehouseId fromWarehouseId;
 	@NonNull WarehouseId toWarehouseId;
 	@Nullable PPOrderId ppOrderId;
@@ -31,4 +32,15 @@ public class DDOrderReference
 
 	@NonNull
 	public JsonTestId getTestId() {return JsonTestId.ofRepoId(ddOrderId);}
+
+	@NonNull
+	public InstantAndOrgId getDisplayDate()
+	{
+		if (pickDate != null)
+		{
+			return pickDate;
+		}
+
+		return datePromised;
+	}
 }

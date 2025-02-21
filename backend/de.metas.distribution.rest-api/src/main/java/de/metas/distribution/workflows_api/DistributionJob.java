@@ -25,6 +25,7 @@ public class DistributionJob
 	@NonNull private final String documentNo;
 	@NonNull private final BPartnerId customerId;
 	@NonNull private final ZonedDateTime dateRequired;
+	@NonNull private final ZonedDateTime pickDate;
 	@NonNull private final WarehouseInfo pickFromWarehouse;
 	@NonNull private final WarehouseInfo dropToWarehouse;
 	@Nullable private final UserId responsibleId;
@@ -42,6 +43,7 @@ public class DistributionJob
 			final @NonNull String documentNo,
 			final @NonNull BPartnerId customerId,
 			final @NonNull ZonedDateTime dateRequired,
+			final @NonNull ZonedDateTime pickDate,
 			final @NonNull WarehouseInfo pickFromWarehouse,
 			final @NonNull WarehouseInfo dropToWarehouse,
 			final @Nullable UserId responsibleId,
@@ -55,6 +57,7 @@ public class DistributionJob
 		this.documentNo = documentNo;
 		this.customerId = customerId;
 		this.dateRequired = dateRequired;
+		this.pickDate = pickDate;
 		this.pickFromWarehouse = pickFromWarehouse;
 		this.dropToWarehouse = dropToWarehouse;
 		this.responsibleId = responsibleId;
