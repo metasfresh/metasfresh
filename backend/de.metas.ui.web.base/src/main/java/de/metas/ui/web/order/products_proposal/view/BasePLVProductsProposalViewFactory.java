@@ -61,7 +61,7 @@ public class BasePLVProductsProposalViewFactory extends ProductsProposalViewFact
 
 	private final BPartnerProductStatsService bpartnerProductStatsService;
 	private final OrderProductProposalsService orderProductProposalsService;
-	final LookupDataSourceFactory lookupDataSourceFactory;
+	private final LookupDataSourceFactory lookupDataSourceFactory;
 
 	protected BasePLVProductsProposalViewFactory(
 			@NonNull final BPartnerProductStatsService bpartnerProductStatsService,
