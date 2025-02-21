@@ -71,7 +71,7 @@ import java.util.Map;
  */
 public class AggregateHUTrxListener implements IHUTrxListener
 {
-	public static final AggregateHUTrxListener INSTANCE = new AggregateHUTrxListener();
+	public static final AggregateHUTrxListener INSTANCE = new AggregateHUTrxListener(SpringContextHolder.instance.getBean(HUQRCodesService.class));
 
 	/**
 	 * Makes sure the {@link #afterLoad(IHUContext, List)} is not called recurrently.
@@ -97,9 +97,9 @@ public class AggregateHUTrxListener implements IHUTrxListener
 		return AggregateHUTrxListener.class.getSimpleName() + "_" + I_M_HU_Item.Table_Name + "_ID_" + haItem.getM_HU_Item_ID() + "_QTY_TUS_TO_SPLIT";
 	}
 
-	private AggregateHUTrxListener()
+	private AggregateHUTrxListener(final HUQRCodesService huqrCodesService)
 	{
-		this.huqrCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
+		this.huqrCodesService = huqrCodesService;
 	}
 
 	/**

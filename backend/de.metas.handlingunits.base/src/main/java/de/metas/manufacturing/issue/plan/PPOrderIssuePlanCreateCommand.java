@@ -121,7 +121,7 @@ public class PPOrderIssuePlanCreateCommand
 
 		Quantity qtyToAllocate = targetQty.subtract(allocatedQty);
 
-		if (qtyToAllocate.signum() > 0 && shouldConsiderHUsFromTheWholeWarehouse())
+		if (qtyToAllocate.signum() > 0 && isConsiderHUsFromTheWholeWarehouse())
 		{
 			final Set<LocatorId> theOtherLocatorsInWarehouse = warehouseDAO.getLocatorIds(pickFromLocatorId.getWarehouseId())
 					.stream()
@@ -249,7 +249,7 @@ public class PPOrderIssuePlanCreateCommand
 		return allocatedQty;
 	}
 
-	private boolean shouldConsiderHUsFromTheWholeWarehouse()
+	private boolean isConsiderHUsFromTheWholeWarehouse()
 	{
 		return sysConfigBL.getBooleanValue(SYS_CONFIG_CONSIDER_HUs_FROM_THE_WHOLE_WAREHOUSE, false);
 	}

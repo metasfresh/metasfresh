@@ -36,6 +36,9 @@ DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=679029
 DELETE FROM AD_Field WHERE AD_Field_ID=679029
 ;
 
+select backup_table('M_HU_QRCode')
+;
+
 -- 2024-02-14T14:14:21.136Z
 /* DDL */ SELECT public.db_alter_table('M_HU_QRCode','ALTER TABLE M_HU_QRCode DROP COLUMN IF EXISTS M_HU_ID')
 ;

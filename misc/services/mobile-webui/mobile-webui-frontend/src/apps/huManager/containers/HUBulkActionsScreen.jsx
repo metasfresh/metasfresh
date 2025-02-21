@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory, useRouteMatch } from 'react-router-dom';
+import { useRouteMatch } from 'react-router-dom';
 
 import { trl } from '../../../utils/translations';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
@@ -10,10 +10,14 @@ import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent
 import { toQRCodeDisplayable } from '../../../utils/qrCode/hu';
 import * as api from '../api';
 import { toastError, toastNotification } from '../../../utils/toast';
+import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 
 const HUBulkActionsScreen = () => {
   const dispatch = useDispatch();
-  const history = useHistory();
+  const { history } = useScreenDefinition({
+    screenId: 'HUBulkActionsScreen',
+    back: '/',
+  });
 
   const handlingUnitInfo = useSelector((state) => getHandlingUnitInfoFromGlobalState(state));
 
