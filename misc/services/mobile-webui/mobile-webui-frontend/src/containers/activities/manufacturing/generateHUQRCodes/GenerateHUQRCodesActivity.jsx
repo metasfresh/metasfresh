@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useHistory } from 'react-router-dom';
 import { selectOptionsLocation } from '../../../../routes/generateHUQRCodes';
 import Button from '../../../../components/buttons/Button';
+import { useMobileNavigation } from '../../../../hooks/useMobileNavigation';
 
 const GenerateHUQRCodesActivity = ({
   applicationId,
@@ -13,7 +13,7 @@ const GenerateHUQRCodesActivity = ({
     dataStored: { isUserEditable },
   },
 }) => {
-  const history = useHistory();
+  const history = useMobileNavigation();
 
   return (
     <div className="mt-5">

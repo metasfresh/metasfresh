@@ -1,21 +1,22 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
-import { useHistory, useRouteMatch } from 'react-router-dom';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import { postDistributionPickFrom } from '../../../api/distribution';
 import { parseQRCodeString, toQRCodeString } from '../../../utils/qrCode/hu';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
-import { useDistributionLineProps, useHeaderUpdate } from './DistributionLineScreen';
+import { useDistributionLineProps, useDistributionScreenDefinition } from './DistributionLineScreen';
 import { trl } from '../../../utils/translations';
+import { distributionLineScreenLocation } from '../../../routes/distribution';
 
 const DistributionLinePickFromScreen = () => {
-  const dispatch = useDispatch();
-  const history = useHistory();
-  const {
-    params: { workflowId: wfProcessId, activityId, lineId },
-  } = useRouteMatch();
+  const { history, wfProcessId, activityId, lineId } = useDistributionScreenDefinition({
+    screenId: 'DistributionLinePickFromScreen',
+    captionKey: 'activities.distribution.scanHU',
+    back: distributionLineScreenLocation,
+  });
 
-  useHeaderUpdate({ captionKey: 'activities.distribution.scanHU' });
+  const dispatch = useDispatch();
+
   const { productId } = useDistributionLineProps({ wfProcessId, activityId, lineId });
 
   const resolveScannedBarcode = ({ scannedBarcode }) => {
@@ -37,7 +38,7 @@ const DistributionLinePickFromScreen = () => {
       },
     }).then((wfProcess) => {
       dispatch(updateWFProcess({ wfProcess }));
-      history.go(-1);
+      history.goBack();
     });
   };
 

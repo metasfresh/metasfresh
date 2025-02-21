@@ -74,7 +74,7 @@ const ChangeHUQtyDialog = ({
 
   return (
     <div>
-      <Dialog className="change-hu-qty-dialog">
+      <Dialog className="change-hu-qty-dialog" testId="ChangeHUQtyDialog">
         <div className="table-container">
           <table className="table">
             <tbody>
@@ -82,6 +82,7 @@ const ChangeHUQtyDialog = ({
                 <th>{trl('huManager.action.changeQty.qtyLabel')}</th>
                 <td>
                   <QtyInputField
+                    testId="qtyEntered"
                     qty={qtyInfos.toNumberOrString(qtyInfo)}
                     uom={uom}
                     validateQtyEntered={validateQtyEntered}
@@ -96,7 +97,12 @@ const ChangeHUQtyDialog = ({
                   <td>
                     <div className="field">
                       <div className="control">
-                        <DateInput type="date" value={bestBeforeDate} onChange={onBestBeforeDateEntered} />
+                        <DateInput
+                          testId="bestBeforeDate"
+                          type="date"
+                          value={bestBeforeDate}
+                          onChange={onBestBeforeDateEntered}
+                        />
                       </div>
                     </div>
                   </td>
@@ -108,7 +114,13 @@ const ChangeHUQtyDialog = ({
                   <td>
                     <div className="field">
                       <div className="control">
-                        <input className="input" type="text" value={lotNo} onChange={onLotNoEntered} />
+                        <input
+                          data-testid="lotNo"
+                          className="input"
+                          type="text"
+                          value={lotNo}
+                          onChange={onLotNoEntered}
+                        />
                       </div>
                     </div>
                   </td>
@@ -117,7 +129,12 @@ const ChangeHUQtyDialog = ({
               <tr>
                 <th>{trl('huManager.action.changeQty.descriptionLabel')}</th>
                 <td>
-                  <textarea className="input" value={qtyChangeDescription} onChange={onDescriptionChange} />
+                  <textarea
+                    data-testid="description"
+                    className="input"
+                    value={qtyChangeDescription}
+                    onChange={onDescriptionChange}
+                  />
                 </td>
               </tr>
             </tbody>
@@ -125,12 +142,18 @@ const ChangeHUQtyDialog = ({
         </div>
         <div className="buttons is-centered">
           <DialogButton
+            testId="ok-button"
             captionKey="activities.picking.confirmDone"
             className="is-danger"
             disabled={!allValid}
             onClick={onDialogYes}
           />
-          <DialogButton captionKey="general.cancelText" className="is-success" onClick={onCloseDialog} />
+          <DialogButton
+            testId="cancel-button"
+            captionKey="general.cancelText"
+            className="is-success"
+            onClick={onCloseDialog}
+          />
         </div>
       </Dialog>
     </div>

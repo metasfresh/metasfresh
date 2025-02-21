@@ -1,21 +1,24 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import { getLineById } from '../../../../reducers/wfProcesses';
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
-import { useHistory, useRouteMatch } from 'react-router-dom';
 import {
   updateManufacturingLUReceiptTarget,
   updateManufacturingTUReceiptTarget,
 } from '../../../../actions/ManufacturingActions';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
-import { pushHeaderEntry } from '../../../../actions/HeaderActions';
-import { trl } from '../../../../utils/translations';
+import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
+import {
+  manufacturingReceiptReceiveTargetScreen,
+  manufacturingReceiptScreenLocation,
+} from '../../../../routes/manufacturing_receipt';
 
 const ReceiptNewHUScreen = () => {
-  const {
-    url,
-    params: { workflowId: wfProcessId, activityId, lineId },
-  } = useRouteMatch();
+  const { history, wfProcessId, activityId, lineId } = useScreenDefinition({
+    screenId: 'ReceiptNewHUScreen',
+    captionKey: 'activities.mfg.receipts.newHU',
+    back: manufacturingReceiptReceiveTargetScreen,
+  });
 
   const { availableReceivingTargets, availableReceivingTUTargets } = useSelector((state) => {
     const line = getLineById(state, wfProcessId, activityId, lineId);
@@ -26,16 +29,7 @@ const ReceiptNewHUScreen = () => {
   }, shallowEqual);
 
   const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(
-      pushHeaderEntry({
-        location: url,
-        caption: trl('activities.mfg.receipts.newHU'),
-      })
-    );
-  }, []);
 
-  const history = useHistory();
   const handleLUTargetClick = (target) => {
     submitSelection(updateManufacturingLUReceiptTarget, target);
   };
@@ -46,7 +40,7 @@ const ReceiptNewHUScreen = () => {
 
   const submitSelection = (submitFunction, target) => {
     dispatch(submitFunction({ wfProcessId, activityId, lineId, target }));
-    history.go(-2);
+    history.goTo(manufacturingReceiptScreenLocation);
   };
 
   return (
@@ -56,6 +50,7 @@ const ReceiptNewHUScreen = () => {
           key={target.luPIItemId}
           caption={target.luCaption}
           onClick={() => handleLUTargetClick(target)}
+          testId={target.testId}
         >
           <div className="row is-full is-size-7">{target.tuCaption}</div>
         </ButtonWithIndicator>
@@ -66,6 +61,7 @@ const ReceiptNewHUScreen = () => {
           key={tuTarget.tuPIItemProductId}
           caption={tuTarget.caption}
           onClick={() => handleTUTargetClick(tuTarget)}
+          testId={tuTarget.testId}
         />
       ))}
     </div>

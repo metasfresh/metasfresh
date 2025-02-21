@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for MobileUI_UserProfile_Picking
  *  @author metasfresh (generated) 
@@ -123,25 +122,25 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Allow picking any HU.
+	 * Set Allow any Customer.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsAllowPickingAnyHU (boolean IsAllowPickingAnyHU);
+	void setIsAllowAnyCustomer (boolean IsAllowAnyCustomer);
 
 	/**
-	 * Get Allow picking any HU.
+	 * Get Allow any Customer.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isAllowPickingAnyHU();
+	boolean isAllowAnyCustomer();
 
-	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowPickingAnyHU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowPickingAnyHU", null);
-	String COLUMNNAME_IsAllowPickingAnyHU = "IsAllowPickingAnyHU";
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowAnyCustomer = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowAnyCustomer", null);
+	String COLUMNNAME_IsAllowAnyCustomer = "IsAllowAnyCustomer";
 
 	/**
 	 * Set Allow new TU.
@@ -163,6 +162,27 @@ public interface I_MobileUI_UserProfile_Picking
 
 	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowNewTU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowNewTU", null);
 	String COLUMNNAME_IsAllowNewTU = "IsAllowNewTU";
+
+	/**
+	 * Set Allow picking any HU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowPickingAnyHU (boolean IsAllowPickingAnyHU);
+
+	/**
+	 * Get Allow picking any HU.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowPickingAnyHU();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowPickingAnyHU = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowPickingAnyHU", null);
+	String COLUMNNAME_IsAllowPickingAnyHU = "IsAllowPickingAnyHU";
 
 	/**
 	 * Set Allow picking with no rejected qty reason.

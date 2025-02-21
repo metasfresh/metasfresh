@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { trl } from '../../../../utils/translations';
 
 import { toastError } from '../../../../utils/toast';
 import { updateManufacturingReceiptQty } from '../../../../actions/ManufacturingActions';
-import { pushHeaderEntry } from '../../../../actions/HeaderActions';
+import { updateHeaderEntry } from '../../../../actions/HeaderActions';
 import { manufacturingReceiptReceiveTargetScreen } from '../../../../routes/manufacturing_receipt';
 import { getActivityById, getLineByIdFromActivity } from '../../../../reducers/wfProcesses';
 
@@ -13,12 +12,14 @@ import PickQuantityButton from './PickQuantityButton';
 import { toQRCodeDisplayable } from '../../../../utils/qrCode/hu';
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import Spinner from '../../../../components/Spinner';
+import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
+import { getWFProcessScreenLocation } from '../../../../routes/workflow_locations';
 
 const MaterialReceiptLineScreen = () => {
-  const {
-    url,
-    params: { applicationId, workflowId: wfProcessId, activityId, lineId },
-  } = useRouteMatch();
+  const { history, url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
+    screenId: 'MaterialReceiptLineScreen',
+    back: getWFProcessScreenLocation,
+  });
 
   const {
     activityCaption,
@@ -30,7 +31,7 @@ const MaterialReceiptLineScreen = () => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(
-      pushHeaderEntry({
+      updateHeaderEntry({
         location: url,
         caption: activityCaption,
         userInstructions,
@@ -60,7 +61,6 @@ const MaterialReceiptLineScreen = () => {
     );
   }, []);
 
-  const history = useHistory();
   const handleQuantityChange = (qtyReceived) => {
     // shall not happen
     if (!aggregateToLU && !currentReceivingHU && !aggregateToTU) {
@@ -106,7 +106,7 @@ const MaterialReceiptLineScreen = () => {
     <>
       {showSpinner && <Spinner />}
       <div className="section pt-2">
-        <ButtonWithIndicator caption={btnReceiveTargetCaption} onClick={handleClick}>
+        <ButtonWithIndicator caption={btnReceiveTargetCaption} onClick={handleClick} testId="receive-target-button">
           <div className="row is-full is-size-7">{btnReceiveTargetCaption2}</div>
         </ButtonWithIndicator>
         <PickQuantityButton

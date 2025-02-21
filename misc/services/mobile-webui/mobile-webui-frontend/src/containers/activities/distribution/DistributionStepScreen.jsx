@@ -1,24 +1,25 @@
-import React, { useEffect } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
+import React from 'react';
+import { useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../utils/translations';
 import * as CompleteStatus from '../../../constants/CompleteStatus';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import { updateHeaderEntry } from '../../../actions/HeaderActions';
 import { getStepById } from '../../../reducers/wfProcesses';
 import {
+  distributionLineScreenLocation,
   distributionStepDropToScreenLocation,
   distributionStepPickFromScreenLocation,
 } from '../../../routes/distribution';
 
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { toQRCodeDisplayable } from '../../../utils/qrCode/hu';
+import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 
 const HIDE_UNDO_BUTTONS = true; // hide them because they are not working
 
 const DistributionStepScreen = () => {
   const {
-    url,
     params: { applicationId, workflowId: wfProcessId, activityId, lineId, stepId },
   } = useRouteMatch();
 
@@ -38,37 +39,33 @@ const DistributionStepScreen = () => {
   } = useSelector((state) => getStepById(state, wfProcessId, activityId, lineId, stepId));
 
   const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(
-      pushHeaderEntry({
-        location: url,
-        values: [
-          {
-            caption: trl('general.Locator'),
-            value: pickFromLocator.caption,
-          },
-          {
-            caption: trl('general.DropToLocator'),
-            value: dropToLocator.caption,
-          },
-          {
-            caption: trl('general.QtyToMove'),
-            value: qtyToMove + ' ' + uom,
-          },
-          {
-            caption: trl('general.QtyPicked'),
-            value: qtyPicked + ' ' + uom,
-          },
-          {
-            caption: trl('activities.distribution.scanHU'),
-            value: toQRCodeDisplayable(pickFromHU.qrCode),
-          },
-        ],
-      })
-    );
-  }, []);
+  const { history } = useScreenDefinition({
+    screenId: 'DistributionStepScreen',
+    back: distributionLineScreenLocation,
+    values: [
+      {
+        caption: trl('general.Locator'),
+        value: pickFromLocator.caption,
+      },
+      {
+        caption: trl('general.DropToLocator'),
+        value: dropToLocator.caption,
+      },
+      {
+        caption: trl('general.QtyToMove'),
+        value: qtyToMove + ' ' + uom,
+      },
+      {
+        caption: trl('general.QtyPicked'),
+        value: qtyPicked + ' ' + uom,
+      },
+      {
+        caption: trl('activities.distribution.scanHU'),
+        value: toQRCodeDisplayable(pickFromHU.qrCode),
+      },
+    ],
+  });
 
-  const history = useHistory();
   const onScanPickFromHU = () => {
     history.push(
       distributionStepPickFromScreenLocation({
@@ -91,7 +88,7 @@ const DistributionStepScreen = () => {
     });
     history.push(location);
     dispatch(
-      pushHeaderEntry({
+      updateHeaderEntry({
         location,
         values: [
           {
@@ -126,13 +123,14 @@ const DistributionStepScreen = () => {
 
       {!HIDE_UNDO_BUTTONS && (
         <ButtonWithIndicator
-          caption={trl('activities.picking.unPickBtn')}
+          captionKey="activities.picking.unPickBtn"
           disabled={!(isPickedFrom && !isDroppedToLocator)}
           onClick={() => console.warn('TODO: not implemented')} // TODO: implement
         />
       )}
 
       <ButtonWithIndicator
+        testId="scanDropToLocator-button"
         caption={dropToLocatorCaption}
         completeStatus={dropToLocatorStatus}
         disabled={!(isPickedFrom && !isDroppedToLocator)}

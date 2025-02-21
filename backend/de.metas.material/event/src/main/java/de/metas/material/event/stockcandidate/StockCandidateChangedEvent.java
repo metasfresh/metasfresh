@@ -30,6 +30,11 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
+
+import static de.metas.material.event.MaterialEventConstants.MD_CANDIDATE_TABLE_NAME;
 
 @Value
 @Builder
@@ -43,12 +48,26 @@ public class StockCandidateChangedEvent implements MaterialEvent
 	@NonNull
 	MaterialDescriptor materialDescriptor;
 
+	int mdCandidateId;
+
 	@JsonCreator
 	public StockCandidateChangedEvent(
 			@JsonProperty("eventDescriptor") final @NonNull EventDescriptor eventDescriptor,
-			@JsonProperty("materialDescriptor") final @NonNull MaterialDescriptor materialDescriptor)
+			@JsonProperty("materialDescriptor") final @NonNull MaterialDescriptor materialDescriptor,
+			@JsonProperty("mdCandidateId") final int mdCandidateId)
 	{
 		this.eventDescriptor = eventDescriptor;
 		this.materialDescriptor = materialDescriptor;
+		this.mdCandidateId = mdCandidateId;
 	}
+
+	@Nullable
+	@Override
+	public TableRecordReference getSourceTableReference()
+	{
+		return TableRecordReference.ofNullable(MD_CANDIDATE_TABLE_NAME, mdCandidateId);
+	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

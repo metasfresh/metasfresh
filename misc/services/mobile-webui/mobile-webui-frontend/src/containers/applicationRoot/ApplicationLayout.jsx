@@ -1,39 +1,38 @@
-import { useHistory, useRouteMatch } from 'react-router-dom';
+import { useRouteMatch } from 'react-router-dom';
 import { ViewHeader } from '../ViewHeader';
 import ScreenToaster from '../../components/ScreenToaster';
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
-import { getCaptionFromHeaders, useHomeLocation } from '../../reducers/headers';
+import { useNavigationInfoFromHeaders } from '../../reducers/headers';
 import { isWfProcessLoaded } from '../../reducers/wfProcesses';
 import { trl } from '../../utils/translations';
 import { useApplicationInfo } from '../../reducers/applications';
 import { isApplicationFullScreen } from '../../apps';
 import { useUITraceLocationChange } from '../../utils/ui_trace/useUITraceLocationChange';
 import * as uiTrace from '../../utils/ui_trace';
+import { useMobileNavigation } from '../../hooks/useMobileNavigation';
+import { computeId } from '../../utils/testing_support';
 
 export const ApplicationLayout = ({ applicationId, Component }) => {
-  const history = useHistory();
+  const history = useMobileNavigation();
 
   //
-  // If the required process was not loaded,
-  // then redirect to home
+  // If the required process was not loaded, then redirect to home
   const redirectToHome = isWFProcessRequiredButNotLoaded();
   useEffect(() => {
     if (redirectToHome) {
-      history.push('/');
+      history.goHome();
     }
   }, [redirectToHome]);
 
   const applicationInfo = useApplicationInfo({ applicationId });
-  const homeLocation = useHomeLocation();
-
-  const captionFromHeaders = useSelector((state) => getCaptionFromHeaders(state));
-  const caption = captionFromHeaders ? captionFromHeaders : applicationInfo.caption;
+  const { screenId, caption, homeLocation } = useNavigationInfoFromHeaders();
+  const captionEffective = caption ? caption : applicationInfo.caption;
 
   useEffect(() => {
-    document.title = caption;
-  }, [caption]);
+    document.title = captionEffective;
+  }, [captionEffective]);
 
   useUITraceLocationChange();
 
@@ -51,7 +50,7 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
   }
 
   return (
-    <div className="app-container">
+    <div id={screenId} className="app-container">
       <div className="app-header">
         <div className="columns is-mobile">
           <div className="column is-2 app-icon">
@@ -60,7 +59,7 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
             </span>
           </div>
           <div className="column is-10 app-caption">
-            <span>{caption}</span>
+            <span>{captionEffective}</span>
           </div>
         </div>
       </div>
@@ -93,11 +92,12 @@ ApplicationLayout.propTypes = {
 };
 
 const BottomButton = ({ captionKey, icon, onClick: onClickParam }) => {
+  const id = computeId({ captionKey });
   const caption = trl(captionKey);
   const onClick = uiTrace.traceFunction(onClickParam, { eventName: 'buttonClick', captionKey, caption, icon });
 
   return (
-    <button className="button is-fullwidth" onClick={onClick}>
+    <button id={id} className="button is-fullwidth" onClick={onClick}>
       <span className="icon">
         <i className={icon} />
       </span>

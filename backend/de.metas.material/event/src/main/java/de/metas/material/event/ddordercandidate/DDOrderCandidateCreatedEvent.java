@@ -42,4 +42,7 @@ public class DDOrderCandidateCreatedEvent extends AbstractDDOrderCandidateEvent
 				? Optional.of((DDOrderCandidateCreatedEvent)event)
 				: Optional.empty();
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

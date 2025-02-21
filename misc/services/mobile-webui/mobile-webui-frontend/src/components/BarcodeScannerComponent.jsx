@@ -190,6 +190,7 @@ const BarcodeScannerComponent = ({
       <video key="video" ref={videoRef} width="100%" height="100%" />
       {isShowInputText && !isProcessing && (
         <input
+          id="input-text"
           key="input-text"
           ref={inputTextRef}
           className="input-text"
@@ -199,6 +200,7 @@ const BarcodeScannerComponent = ({
           onBlur={handleInputTextBlur}
           onChange={handleInputTextChangedDebounced}
           onKeyUp={handleInputTextKeyPress}
+          data-testid="qrCode-input"
         />
       )}
     </div>

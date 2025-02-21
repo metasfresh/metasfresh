@@ -15,7 +15,9 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.api.PPOrderAndBOMLineId;
+import org.eevolution.model.I_PP_Order;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -220,4 +222,14 @@ public class PPOrderChangedEvent implements MaterialEvent
 			this.qtyDelivered = qtyDelivered;
 		}
 	}
+
+	@Nullable
+	@Override
+	public TableRecordReference getSourceTableReference()
+	{
+		return TableRecordReference.ofNullable(I_PP_Order.Table_Name, ppOrderAfterChanges.getPpOrderId());
+	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

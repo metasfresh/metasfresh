@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
-import { useHistory, useRouteMatch } from 'react-router-dom';
 
 import { trl } from '../../../utils/translations';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import { updateHeaderEntry } from '../../../actions/HeaderActions';
 import { getLineById } from '../../../reducers/wfProcesses';
 
 import PickStepButton from './PickStepButton';
@@ -18,12 +17,14 @@ import {
 import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
 import { closePickingJobLine, openPickingJobLine } from '../../../api/picking';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
+import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
+import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
 
 const PickLineScreen = () => {
-  const {
-    url,
-    params: { applicationId, workflowId: wfProcessId, activityId, lineId },
-  } = useRouteMatch();
+  const { history, url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
+    screenId: 'PickLineScreen',
+    back: getWFProcessScreenLocation,
+  });
 
   const {
     caption,
@@ -41,7 +42,6 @@ const PickLineScreen = () => {
 
   useHeaderUpdate({ url, caption, uom, pickingUnit, packingItemName, qtyToPick, qtyPicked });
 
-  const history = useHistory();
   const onScanButtonClick = () =>
     history.push(
       pickingLineScanScreenLocation({
@@ -58,7 +58,7 @@ const PickLineScreen = () => {
       .then((wfProcess) => {
         dispatch(updateWFProcess({ wfProcess }));
       })
-      .then(() => history.go(-1)); // go back to Picking Job
+      .then(() => history.goBack); // go back to Picking Job
   };
 
   const onReOpen = () => {
@@ -71,12 +71,13 @@ const PickLineScreen = () => {
     <div className="section pt-2">
       <div className="buttons">
         {!manuallyClosed && allowPickingAnyHU && (
-          <ButtonWithIndicator caption={trl('activities.picking.scanQRCode')} onClick={onScanButtonClick} />
+          <ButtonWithIndicator captionKey="activities.picking.scanQRCode" onClick={onScanButtonClick} />
         )}
         {steps.length > 0 &&
           steps.map((stepItem, idx) => {
             return (
               <PickStepButton
+                id={`step-${idx}-button`}
                 key={idx}
                 disabled={manuallyClosed}
                 applicationId={applicationId}
@@ -94,9 +95,9 @@ const PickLineScreen = () => {
             );
           })}
         {!manuallyClosed && qtyToPickRemaining > 0 && (
-          <ButtonWithIndicator caption={trl('general.closeText')} onClick={onClose} />
+          <ButtonWithIndicator captionKey="general.closeText" onClick={onClose} />
         )}
-        {manuallyClosed && <ButtonWithIndicator caption={trl('general.reOpenText')} onClick={onReOpen} />}
+        {manuallyClosed && <ButtonWithIndicator captionKey="general.reOpenText" onClick={onReOpen} />}
       </div>
     </div>
   );
@@ -125,7 +126,7 @@ export const useHeaderUpdate = ({ url, caption, pickingUnit, packingItemName, uo
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(
-      pushHeaderEntry({
+      updateHeaderEntry({
         location: url,
         caption: trl('activities.picking.PickingLine'),
         values: [

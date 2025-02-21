@@ -27,9 +27,10 @@ import lombok.NonNull;
 import lombok.Value;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class MobileConfig
 {
-	@NonNull
-	MobileAuthMethod defaultAuthMethod;
+	public static MobileConfig DEFAULT = builder().defaultAuthMethod(MobileAuthMethod.USER_PASS).build();
+	
+	@NonNull MobileAuthMethod defaultAuthMethod;
 }

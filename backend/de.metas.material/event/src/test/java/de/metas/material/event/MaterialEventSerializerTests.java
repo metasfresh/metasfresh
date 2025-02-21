@@ -107,7 +107,6 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
 public class MaterialEventSerializerTests
 {
 
@@ -141,12 +140,26 @@ public class MaterialEventSerializerTests
 		}
 
 		//
-		// Test via materialEventConverter
+		// Test via materialEventConverter, without serializing the Event wrapper
 		{
 			final Event eventbusEvent = materialEventConverter.fromMaterialEvent(originalEvent);
-			final MaterialEvent deserializedEvent = materialEventConverter.toMaterialEvent(eventbusEvent);
+			final MaterialEvent deserializedMaterialEvent = materialEventConverter.toMaterialEvent(eventbusEvent);
 
-			assertThat(deserializedEvent).isEqualTo(originalEvent);
+			assertThat(deserializedMaterialEvent).isEqualTo(originalEvent);
+		}
+
+		//
+		// Test via materialEventConverter, serializing/deserializing the Event wrapper
+		{
+			final JSONObjectMapper<Event> jsonObjectMapper = JSONObjectMapper.forClass(Event.class);
+
+			final Event eventbusEvent = materialEventConverter.fromMaterialEvent(originalEvent);
+
+			final String serializedEvent = jsonObjectMapper.writeValueAsString(eventbusEvent);
+			final Event deserializedEvent = jsonObjectMapper.readValue(serializedEvent);
+			final MaterialEvent deserializedMaterialEvent = materialEventConverter.toMaterialEvent(deserializedEvent);
+
+			assertThat(deserializedMaterialEvent).isEqualTo(originalEvent);
 		}
 	}
 
@@ -624,11 +637,11 @@ public class MaterialEventSerializerTests
 				.materialDescriptor(newMaterialDescriptor())
 				.minMaxDescriptor(createSampleMinMaxDescriptor())
 				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
-												.orderedQuantity(TEN)
-												.orderedQuantityDelta(TEN)
-												.reservedQuantityDelta(new BigDecimal("3"))
-												.reservedQuantity(new BigDecimal("3"))
-												.build())
+						.orderedQuantity(TEN)
+						.orderedQuantityDelta(TEN)
+						.reservedQuantityDelta(new BigDecimal("3"))
+						.reservedQuantity(new BigDecimal("3"))
+						.build())
 				.shipmentScheduleId(4);
 	}
 
@@ -640,11 +653,11 @@ public class MaterialEventSerializerTests
 				.materialDescriptor(newMaterialDescriptor())
 				.minMaxDescriptor(createSampleMinMaxDescriptor())
 				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
-												.orderedQuantity(new BigDecimal("2"))
-												.orderedQuantityDelta(new BigDecimal("2"))
-												.reservedQuantity(new BigDecimal("3"))
-												.reservedQuantityDelta(new BigDecimal("4"))
-												.build())
+						.orderedQuantity(new BigDecimal("2"))
+						.orderedQuantityDelta(new BigDecimal("2"))
+						.reservedQuantity(new BigDecimal("3"))
+						.reservedQuantityDelta(new BigDecimal("4"))
+						.build())
 				.shipmentScheduleId(5)
 				.build();
 

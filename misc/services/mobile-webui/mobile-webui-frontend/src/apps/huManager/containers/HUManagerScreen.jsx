@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
 
-import { push } from 'connected-react-router';
 import { useDispatch, useSelector } from 'react-redux';
-
-import { trl } from '../../../utils/translations';
 import * as api from '../api';
 import { changeClearanceStatus, clearLoadedData, handlingUnitLoaded } from '../actions';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
@@ -17,8 +13,6 @@ import {
 
 import { HUInfoComponent } from '../components/HUInfoComponent';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
-
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import ClearanceDialog from '../components/ClearanceDialog';
 import { toastError } from '../../../utils/toast';
 import ChangeHUQtyDialog from '../../../components/dialogs/ChangeHUQtyDialog';
@@ -26,6 +20,7 @@ import HUScanner from '../../../components/huSelector/HUScanner';
 import ChangeCurrentLocatorDialog from '../components/ChangeCurrentLocatorDialog';
 import { HU_ATTRIBUTE_BestBeforeDate, HU_ATTRIBUTE_LotNo } from '../../../constants/HUAttributes';
 import * as scanAnythingRoutes from '../../scanAnything/routes';
+import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 
 const MODALS = {
   CHANGE_QTY: 'CHANGE_QTY',
@@ -34,8 +29,12 @@ const MODALS = {
 };
 
 const HUManagerScreen = () => {
+  const { history } = useScreenDefinition({
+    screenId: 'HUManagerScreen',
+    back: '/',
+  });
+
   const dispatch = useDispatch();
-  const history = useHistory();
   const [modalToDisplay, setModalToDisplay] = useState('');
   const [currentLocatorQRCode, setCurrentLocatorQRCode] = useState();
   const [handlingUnitInfo, setHandlingUnitInfo] = useHandlingUnitInfo();
@@ -138,19 +137,29 @@ const HUManagerScreen = () => {
         <HUInfoComponent handlingUnitInfo={handlingUnitInfo} currentLocatorQRCode={currentLocatorQRCode} />
         <div className="pt-3 section">
           {isExistingHU && (
-            <ButtonWithIndicator caption={trl('huManager.action.dispose.buttonCaption')} onClick={onDisposeClick} />
+            <ButtonWithIndicator
+              captionKey="huManager.action.dispose.buttonCaption"
+              onClick={onDisposeClick}
+              testId="dispose-button"
+            />
           )}
-          <ButtonWithIndicator caption={trl('huManager.action.move.buttonCaption')} onClick={onMoveClick} />
+          <ButtonWithIndicator
+            captionKey="huManager.action.move.buttonCaption"
+            onClick={onMoveClick}
+            testId="move-button"
+          />
           {isExistingHU && (
             <ButtonWithIndicator
-              caption={trl('huManager.action.setClearance.buttonCaption')}
+              captionKey="huManager.action.setClearance.buttonCaption"
               onClick={() => setModalToDisplay(MODALS.CLEARANCE_STATUS)}
+              testId="set-clearance-button"
             />
           )}
           {!isExistingHU && (
             <ButtonWithIndicator
-              caption={trl('huManager.action.setCurrentLocator.buttonCaption')}
+              captionKey="huManager.action.setCurrentLocator.buttonCaption"
               onClick={() => setModalToDisplay(MODALS.SCAN_CURRENT_LOCATOR)}
+              testId="set-current-locator-button"
             />
           )}
           <ButtonWithIndicator
@@ -159,15 +168,21 @@ const HUManagerScreen = () => {
           />
           {isAllowQtyChange && (
             <ButtonWithIndicator
-              caption={trl('huManager.action.changeQty.buttonCaption')}
+              captionKey="huManager.action.changeQty.buttonCaption"
               onClick={() => setModalToDisplay(MODALS.CHANGE_QTY)}
+              testId="change-qty-button"
             />
           )}
           <ButtonWithIndicator
-            caption={trl('huManager.action.printLabels.buttonCaption')}
+            captionKey="huManager.action.printLabels.buttonCaption"
             onClick={onPrintLabelsClicked}
+            testId="print-labels-button"
           />
-          <ButtonWithIndicator caption={trl('huManager.action.scanAgain.buttonCaption')} onClick={onScanAgainClick} />
+          <ButtonWithIndicator
+            captionKey="huManager.action.scanAgain.buttonCaption"
+            onClick={onScanAgainClick}
+            testId="scan-again-button"
+          />
         </div>
       </>
     );

@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for MobileUI_UserProfile_Picking
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1727879137L;
+	private static final long serialVersionUID = 1082695111L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking (final Properties ctx, final int MobileUI_UserProfile_Picking_ID, @Nullable final String trxName)
@@ -60,6 +60,30 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
+	public void setIsAllowAnyCustomer (final boolean IsAllowAnyCustomer)
+	{
+		set_Value (COLUMNNAME_IsAllowAnyCustomer, IsAllowAnyCustomer);
+	}
+
+	@Override
+	public boolean isAllowAnyCustomer() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowAnyCustomer);
+	}
+
+	@Override
+	public void setIsAllowNewTU (final boolean IsAllowNewTU)
+	{
+		set_Value (COLUMNNAME_IsAllowNewTU, IsAllowNewTU);
+	}
+
+	@Override
+	public boolean isAllowNewTU() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowNewTU);
+	}
+
+	@Override
 	public void setIsAllowPickingAnyHU (final boolean IsAllowPickingAnyHU)
 	{
 		set_Value (COLUMNNAME_IsAllowPickingAnyHU, IsAllowPickingAnyHU);
@@ -72,25 +96,13 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public void setIsAllowNewTU (final boolean IsAllowNewTU)
-	{
-		set_Value (COLUMNNAME_IsAllowNewTU, IsAllowNewTU);
-	}
-
-	@Override
-	public boolean isAllowNewTU()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsAllowNewTU);
-	}
-
-	@Override
 	public void setIsAllowSkippingRejectedReason (final boolean IsAllowSkippingRejectedReason)
 	{
 		set_Value (COLUMNNAME_IsAllowSkippingRejectedReason, IsAllowSkippingRejectedReason);
 	}
 
 	@Override
-	public boolean isAllowSkippingRejectedReason()
+	public boolean isAllowSkippingRejectedReason() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAllowSkippingRejectedReason);
 	}
@@ -114,7 +126,7 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public boolean isCatchWeightTUPickingEnabled()
+	public boolean isCatchWeightTUPickingEnabled() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCatchWeightTUPickingEnabled);
 	}
@@ -126,7 +138,7 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public boolean isConsiderSalesOrderCapacity()
+	public boolean isConsiderSalesOrderCapacity() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsConsiderSalesOrderCapacity);
 	}
@@ -138,7 +150,7 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public boolean isPickingWithNewLU()
+	public boolean isPickingWithNewLU() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPickingWithNewLU);
 	}

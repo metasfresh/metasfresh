@@ -20,39 +20,40 @@
  * #L%
  */
 
-drop view if exists M_InOut_DesadvLine_V
+DROP VIEW IF EXISTS M_InOut_DesadvLine_V
 ;
 
-create or replace view M_InOut_DesadvLine_V as
-select shipment.m_inout_id                                                       as M_InOut_Desadv_ID,
-       case
-           when desadvInOutLine.edi_desadvline_id > 0 then
-                  desadvInOutLine.m_inoutline_id
-                                                      else
-           FLOOR(RANDOM() * (100000))  -- using a random string for those desadv lines that are not in the current shipment, as we don't want any packs to match it
-       end                                                                        as M_InOut_DesadvLine_V_ID,
+CREATE OR REPLACE VIEW M_InOut_DesadvLine_V AS
+SELECT shipment.m_inout_id                                                                                                                  AS M_InOut_Desadv_ID,
 
+       CASE WHEN desadvInOutLine.edi_desadvline_id > 0 THEN 'Y' ELSE 'N' END                                                                AS IsDesadvLineInCurrentShipment,
+
+       /*
+         If there is no m_inoutline_id, it means that we want the row in Exp_Format EDI_Exp_DesadvLineWithNoPack_1PerInOut_ActualDesadvLine (EXP_Format_ID=540433),
+         and in that case, the lookup is taking place via EDI_DesadvLine_ID
+        */
+       COALESCE(shipmentLine.m_inoutline_id, dline.edi_desadvline_id)                                                                       AS M_InOut_DesadvLine_V_ID,
        shipment.m_inout_id,
        shipmentLine.m_inoutline_id,
 
        desadv.edi_desadv_id,
        desadv.AD_Client_ID,
        desadv.ad_org_id,
-       coalesce(desadvInOutLine.updated, dline.updated)                           as updated,
-       coalesce(desadvInOutLine.updatedby, dline.updatedby)                       as updatedby,
-       coalesce(desadvInOutLine.created, dline.created)                           as created,
-       coalesce(desadvInOutLine.createdby, dline.createdby)                       as createdby,
+       COALESCE(desadvInOutLine.updated, dline.updated)                                                                                     AS updated,
+       COALESCE(desadvInOutLine.updatedby, dline.updatedby)                                                                                 AS updatedby,
+       COALESCE(desadvInOutLine.created, dline.created)                                                                                     AS created,
+       COALESCE(desadvInOutLine.createdby, dline.createdby)                                                                                 AS createdby,
 
-       coalesce(desadvInOutLine.edi_desadvline_id, dline.edi_desadvline_id)       as edi_desadvline_id,
-       coalesce(desadvInOutLine.M_Product_ID, dline.M_Product_ID)                 as M_Product_ID,
+       COALESCE(desadvInOutLine.edi_desadvline_id, dline.edi_desadvline_id)                                                                 AS edi_desadvline_id,
+       COALESCE(desadvInOutLine.M_Product_ID, dline.M_Product_ID)                                                                           AS M_Product_ID,
 
-       coalesce(desadvInOutLine.qtydeliveredinstockinguom, 0)                     as qtydeliveredinstockinguom,
-       coalesce(desadvInOutLine.C_UOM_ID, dline.C_UOM_ID)                         as C_UOM_ID,
-       coalesce(desadvInOutLine.QtyDeliveredInUOM, 0)                             as QtyDeliveredInUOM,
-       coalesce(desadvInOutLine.C_UOM_Invoice_ID, dline.C_UOM_Invoice_ID)         as C_UOM_Invoice_ID,
-       coalesce(desadvInOutLine.QtyDeliveredInInvoiceUOM, 0)                      as QtyDeliveredInInvoiceUOM,
-       coalesce(desadvInOutLine.C_UOM_BPartner_ID, dline.C_UOM_BPartner_ID)       as C_UOM_BPartner_ID,
-       coalesce(desadvInOutLine.QtyEnteredInBPartnerUOM, 0)                       as QtyEnteredInBPartnerUOM,
+       COALESCE(desadvInOutLine.qtydeliveredinstockinguom, 0)                                                                               AS qtydeliveredinstockinguom,
+       COALESCE(desadvInOutLine.C_UOM_ID, dline.C_UOM_ID)                                                                                   AS C_UOM_ID,
+       COALESCE(desadvInOutLine.QtyDeliveredInUOM, 0)                                                                                       AS QtyDeliveredInUOM,
+       COALESCE(desadvInOutLine.C_UOM_Invoice_ID, dline.C_UOM_Invoice_ID)                                                                   AS C_UOM_Invoice_ID,
+       COALESCE(desadvInOutLine.QtyDeliveredInInvoiceUOM, 0)                                                                                AS QtyDeliveredInInvoiceUOM,
+       COALESCE(desadvInOutLine.C_UOM_BPartner_ID, dline.C_UOM_BPartner_ID)                                                                 AS C_UOM_BPartner_ID,
+       COALESCE(desadvInOutLine.QtyEnteredInBPartnerUOM, 0)                                                                                 AS QtyEnteredInBPartnerUOM,
 
        dline.isactive,
        dline.Line,
@@ -69,20 +70,22 @@ select shipment.m_inout_id                                                      
        dline.PriceActual,
        dline.QtyOrdered,
        dline.QtyOrdered_Override,
-       (select x12de355 from C_UOM where C_UOM.C_UOM_ID = dline.C_UOM_Invoice_ID) as EanCom_Invoice_UOM,
+       (SELECT x12de355 FROM C_UOM WHERE C_UOM.C_UOM_ID = dline.C_UOM_Invoice_ID)                                                           AS EanCom_Invoice_UOM,
        dline.InvoicableQtyBasedOn,
        dline.OrderPOReference,
        dline.QtyItemCapacity,
        dline.OrderLine,
        dline.ExternalSeqNo,
        dline.BPartner_QtyItemCapacity,
-       case when desadvInOutLine.DesadvLineTotalQtyDelivered >= coalesce(dline.QtyOrdered_Override, dline.QtyOrdered) then 'Y' else 'N' end as IsDeliveryClosed
+       CASE WHEN desadvInOutLine.DesadvLineTotalQtyDelivered >= COALESCE(dline.QtyOrdered_Override, dline.QtyOrdered) THEN 'Y' ELSE 'N' END AS IsDeliveryClosed
 
-from edi_desadv desadv
-         inner join edi_desadvline dline on desadv.edi_desadv_id = dline.edi_desadv_id
-         left join m_inout shipment on desadv.edi_desadv_id = shipment.edi_desadv_id
-         left join m_inoutline shipmentLine on shipmentLine.m_inout_id = shipment.m_inout_id
-    and shipmentLine.edi_desadvline_id = dline.edi_desadvline_id
-         left join EDI_DesadvLine_InOutLine desadvInOutLine on shipmentLine.m_inoutline_id = desadvInOutLine.m_inoutline_id
-where coalesce(dline.QtyOrdered_Override, dline.QtyOrdered) > dline.qtydeliveredinstockinguom or dline.edi_desadvline_id = shipmentLine.edi_desadvline_id
+FROM edi_desadv desadv
+         INNER JOIN edi_desadvline dline ON desadv.edi_desadv_id = dline.edi_desadv_id
+         LEFT JOIN m_inout shipment ON desadv.edi_desadv_id = shipment.edi_desadv_id
+         LEFT JOIN m_inoutline shipmentLine ON shipmentLine.m_inout_id = shipment.m_inout_id
+    AND shipmentLine.edi_desadvline_id = dline.edi_desadvline_id
+         LEFT JOIN EDI_DesadvLine_InOutLine desadvInOutLine ON shipmentLine.m_inoutline_id = desadvInOutLine.m_inoutline_id
+
+WHERE COALESCE(dline.QtyOrdered_Override, dline.QtyOrdered) > dline.qtydeliveredinstockinguom
+   OR dline.edi_desadvline_id = shipmentLine.edi_desadvline_id
 ;
