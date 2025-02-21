@@ -395,7 +395,7 @@ Feature: Production + Distribution material dispo scenarios
       | 2          | SUPPLY            | PRODUCTION                | bom_product  | 2021-04-16T21:00:00Z | 0   | -10 | production_WH   | -                   |
       | 3          | DEMAND            | PRODUCTION                | component    | 2021-04-16T21:00:00Z | 0   | 0   | production_WH   | -                   |
       # DD_Order_Candidate:
-      | 4          | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 0   | 0   | production_WH   | ppOrder             |
+      | 4          | SUPPLY            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 0   | -10 | production_WH   | ppOrder             |
       | 5          | DEMAND            | DISTRIBUTION              | component    | 2021-04-16T21:00:00Z | 0   | 0   | rawMaterials_WH | ppOrder             |
       # PP_Order:
       | 6          | SUPPLY            | PRODUCTION                | bom_product  | 2021-04-16T21:00:00Z | 10  | 0   | production_WH   | -                   |
