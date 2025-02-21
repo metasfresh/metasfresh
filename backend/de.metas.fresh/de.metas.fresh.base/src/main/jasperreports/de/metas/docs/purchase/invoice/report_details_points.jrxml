@@ -114,14 +114,14 @@ order by C_InvoiceLine_id, bpValue, productvalue;]]>
 					<textElement textAlignment="Right" markup="html">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["&Sigma;      " +  $V{point_sum}]]></textFieldExpression>
+					<textFieldExpression><![CDATA["&Sigma;      " +  ($V{point_sum}!=null ? $V{point_sum} : "")]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="378" y="2" width="70" height="12" uuid="273264b0-7c78-4d3e-acde-845834d2c66e"/>
 					<textElement textAlignment="Right" markup="html">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA["&Sigma;      " + $V{pointsbase_sum}]]></textFieldExpression>
+					<textFieldExpression><![CDATA["&Sigma;      " +( $V{pointsbase_sum} != null ?  $V{pointsbase_sum} : "")]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -150,14 +150,14 @@ order by C_InvoiceLine_id, bpValue, productvalue;]]>
 				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="296" y="71" width="40" height="25" backcolor="#D9D7D7" uuid="a2dc306c-c273-4989-9f97-994063d86ac6"/>
+				<reportElement x="280" y="71" width="52" height="25" backcolor="#D9D7D7" uuid="a2dc306c-c273-4989-9f97-994063d86ac6"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="339" y="71" width="41" height="25" uuid="a164435c-a4f2-43d3-9ba3-421557d279c8"/>
+				<reportElement x="334" y="71" width="46" height="25" uuid="a164435c-a4f2-43d3-9ba3-421557d279c8"/>
 				<textElement>
 					<font fontName="Arial" size="10" isBold="true"/>
 				</textElement>
@@ -190,21 +190,21 @@ order by C_InvoiceLine_id, bpValue, productvalue;]]>
 		<band height="13" splitType="Prevent">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="50" y="0" width="246" height="13" uuid="c348b769-49f5-4733-b2bd-bc7d67826d14"/>
+				<reportElement x="50" y="0" width="240" height="13" uuid="c348b769-49f5-4733-b2bd-bc7d67826d14"/>
 				<textElement>
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{productname}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="296" y="0" width="40" height="13" uuid="0c15b2e7-a40a-4525-a9f2-a05b6cfa4703"/>
+				<reportElement x="292" y="0" width="40" height="13" uuid="0c15b2e7-a40a-4525-a9f2-a05b6cfa4703"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qtyentered}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="339" y="0" width="41" height="13" uuid="503bad58-773d-4b00-91f0-aaf93cec5e80"/>
+				<reportElement x="334" y="0" width="46" height="13" uuid="503bad58-773d-4b00-91f0-aaf93cec5e80"/>
 				<textElement>
 					<font fontName="Arial" size="9"/>
 				</textElement>

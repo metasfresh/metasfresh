@@ -37,7 +37,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Transpo
             )
 AS
 $$
-SELECT name,
+    SELECT name,
        address,
        DeliveryDateTimeMax,
        isPallet,
