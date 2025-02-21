@@ -1,7 +1,8 @@
 import { test } from "../../../../playwright.config";
-import { page, SLOW_ACTION_TIMEOUT } from "../../common";
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from "../../common";
 import { DistributionJobScreen } from "./DistributionJobScreen";
 import { DistributionJobsListFiltersScreen } from "./DistributionJobsListFiltersScreen";
+import { ApplicationsListScreen } from '../ApplicationsListScreen';
 
 const NAME = 'DistributionJobsListScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -29,4 +30,9 @@ export const DistributionJobsListScreen = {
             await DistributionJobScreen.waitForScreen();
         });
     },
+
+    goBack: async () => await test.step(`${NAME} - Go back`, async () => {
+        await page.locator(ID_BACK_BUTTON).tap();
+        await ApplicationsListScreen.waitForScreen();
+    }),
 };
