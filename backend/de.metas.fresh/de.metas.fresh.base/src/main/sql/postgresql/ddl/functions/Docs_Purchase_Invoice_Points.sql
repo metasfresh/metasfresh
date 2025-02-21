@@ -1,7 +1,7 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Invoice_Points (IN Record_ID numeric, IN AD_Language Character Varying(6));
-DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Invoice_Points;
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Points (IN Record_ID numeric, IN AD_Language Character Varying(6));
+DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Points;
 
-CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Invoice_Points
+CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Points
 (
     C_Invoice_id          numeric,
     C_InvoiceLine_id      numeric,
@@ -22,9 +22,9 @@ CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Invoice_Points
 );
 
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Invoice_Points(IN p_record_ID numeric,
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Points(IN p_record_ID numeric,
                                                                                 IN p_AD_Language Character Varying(6))
-    RETURNS SETOF de_metas_endcustomer_fresh_reports.Docs_Invoice_Points AS
+    RETURNS SETOF de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Points AS
 $$
 select c.C_Invoice_Commission_ID as C_Invoice_id,
        c.C_InvoiceLine_Commission_ID as C_InvoiceLine_id,

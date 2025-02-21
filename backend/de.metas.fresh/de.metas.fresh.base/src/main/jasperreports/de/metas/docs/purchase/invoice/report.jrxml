@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isSummaryNewPage="true" resourceBundle="de/metas/docs/purchase/invoice/report" uuid="2fa464b6-5b59-45d9-8f05-3c4f9b99aa01">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -24,7 +24,7 @@
 		<![CDATA[SELECT v.*, r.rows_no FROM de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Root($P{RECORD_ID}, $P{ad_language}) as v
 join
     (
-         select Count(1) as rows_no from de_metas_endcustomer_fresh_reports.Docs_Invoice_Points ($P{RECORD_ID}, $P{ad_language}) as v
+         select Count(1) as rows_no from de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Points ($P{RECORD_ID}, $P{ad_language}) as v
                  
         ) as r on 1=1
 ;]]>

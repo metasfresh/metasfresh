@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.17.0.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_points" pageWidth="595" pageHeight="842" whenNoDataType="NoDataSection" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" isSummaryNewPage="true" resourceBundle="de/metas/docs/purchase/invoice/report" uuid="9cbb1211-c2e8-4a8e-966b-e564bfc4c4f5">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -19,7 +19,7 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[select v.* from de_metas_endcustomer_fresh_reports.Docs_Invoice_Points ($P{c_invoice_id}, $P{ad_language}) as v
+		<![CDATA[select v.* from de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Points ($P{c_invoice_id}, $P{ad_language}) as v
 order by C_InvoiceLine_id, bpValue, productvalue;]]>
 	</queryString>
 	<field name="c_invoice_id" class="java.math.BigDecimal">
