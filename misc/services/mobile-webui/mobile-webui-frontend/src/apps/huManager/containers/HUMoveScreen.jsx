@@ -11,7 +11,6 @@ import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { huManagerLocation } from '../routes';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import ReadQtyDialog from '../../../components/dialogs/ReadQtyDialog';
-import { huManagerLocation } from '../routes';
 
 const HUMoveScreen = () => {
   const { history } = useScreenDefinition({

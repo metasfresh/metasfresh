@@ -23,6 +23,7 @@ import * as scanAnythingRoutes from '../../scanAnything/routes';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import { useRouteMatch } from 'react-router-dom';
+import { trl } from '../../../utils/translations';
 
 const MODALS = {
   CHANGE_QTY: 'CHANGE_QTY',
@@ -58,7 +59,7 @@ const HUManagerScreen = () => {
   };
   const onScanAgainClick = () => {
     dispatch(clearLoadedData());
-    dispatch(push(scanAnythingRoutes.appLocation()));
+    history.push(scanAnythingRoutes.appLocation());
   };
   const onPrintLabelsClicked = () => {
     history.push(huManagerHuLabelsLocation());

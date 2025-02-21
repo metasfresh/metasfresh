@@ -14,9 +14,9 @@ export const HUInfoComponent = ({ handlingUnitInfo, currentLocatorQRCode }) => {
       <tbody>
         <Row captionKey="huManager.HU" value={handlingUnitInfo.displayName} />
         <Row
-            captionKey="huManager.numberOfAggregatedHUs"
-            value={handlingUnitInfo.numberOfAggregatedHUs}
-            hidden={!(handlingUnitInfo.numberOfAggregatedHUs && handlingUnitInfo.numberOfAggregatedHUs > 1)}
+          captionKey="huManager.numberOfAggregatedHUs"
+          value={handlingUnitInfo.numberOfAggregatedHUs}
+          hidden={!(handlingUnitInfo.numberOfAggregatedHUs && handlingUnitInfo.numberOfAggregatedHUs > 1)}
         />
         <Row captionKey="huManager.qrCode" value={toQRCodeDisplayable(handlingUnitInfo.qrCode)} />
         <Row captionKey="huManager.locator" value={computeLocatorCaption({ handlingUnitInfo, currentLocatorQRCode })} />
