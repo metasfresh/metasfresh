@@ -215,7 +215,10 @@ public class PP_Order
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE,
-			ifColumnsChanged = { I_PP_Order.COLUMNNAME_QtyEntered, I_PP_Order.COLUMNNAME_AD_Workflow_ID, I_PP_Order.COLUMNNAME_PP_Product_BOM_ID })
+			ifColumnsChanged = {
+					I_PP_Order.COLUMNNAME_QtyEntered,
+					I_PP_Order.COLUMNNAME_DateStartSchedule,
+					I_PP_Order.COLUMNNAME_AD_Workflow_ID })
 	public void updateAndPostEventOnQtyEnteredChange(final I_PP_Order ppOrderRecord)
 	{
 		if (ppOrderBL.isSomethingProcessed(ppOrderRecord))
