@@ -85,6 +85,8 @@ public class DocumentPostingBusService
 
 		return Event.builder()
 				.putProperty(PROPERTY_DocumentPostRequest, requestStr)
+				.setSourceRecordReference(request.getRecord())
+				.setEventName(PROPERTY_DocumentPostRequest)
 				.shallBeLogged()
 				.build();
 	}
@@ -139,7 +141,7 @@ public class DocumentPostingBusService
 
 			try (final IAutoCloseable ctx = switchCtx(request);
 					final MDCCloseable requestRecordMDC = TableRecordMDC.putTableRecordReference(request.getRecord());
-					final MDCCloseable eventHandlerMDC = MDC.putCloseable("eventHandler.className", handler.getClass().getName());)
+					final MDCCloseable eventHandlerMDC = MDC.putCloseable("eventHandler.className", handler.getClass().getName()))
 			{
 				eventLogUserService.invokeHandlerAndLog(InvokeHandlerAndLogRequest.builder()
 						.handlerClass(handler.getClass())
