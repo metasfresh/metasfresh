@@ -426,10 +426,13 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 
 		for (final I_M_Attribute attributeRecord : attributeSet.getAttributes())
 		{
-			setAttributeInstanceValue(
-					asiId,
-					AttributeCode.ofString(attributeRecord.getValue()),
-					attributeSet.getValue(attributeRecord));
+			if(attributeRecord.getValue() != null)
+			{
+				setAttributeInstanceValue(
+						asiId,
+						AttributeCode.ofString(attributeRecord.getValue()),
+						attributeSet.getValue(attributeRecord));
+			}
 		}
 		asiAware.setM_AttributeSetInstance_ID(asiId.getRepoId());
 	}
