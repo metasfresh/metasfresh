@@ -49,6 +49,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodeAttribute;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.rest_api.move_hu.BulkMoveHURequest;
 import de.metas.handlingunits.rest_api.move_hu.MoveHURequest;
 import de.metas.inventory.InventoryCandidateService;
 import de.metas.printing.frontend.FrontendPrinter;
@@ -59,6 +60,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
@@ -141,21 +143,10 @@ public class HandlingUnitsRestController
 	}
 
 	@PostMapping("/byQRCode")
-	public ResponseEntity<JsonGetSingleHUResponse> getByQRCode(
-			@RequestBody @NonNull final JsonGetByQRCodeRequest request)
+	public ResponseEntity<JsonGetSingleHUResponse> getByQRCode(@RequestBody @NonNull final JsonGetByQRCodeRequest request)
 	{
-		final ResponseEntity<JsonGetSingleHUResponse> responseEntity = handlingUnitsService.getByIdSupplier(() -> {
-			final GlobalQRCode globalQRCode = GlobalQRCode.parse(request.getQrCode()).orNullIfError();
-			if (globalQRCode != null)
-			{
-				final HUQRCode huQRCode = HUQRCode.fromGlobalQRCode(globalQRCode);
-				return huQRCodesService.getHuIdByQRCodeIfExists(huQRCode).orElse(null);
-			}
-			else
-			{
-				return HuId.ofHUValue(request.getQrCode());
-			}
-		}, request.isIncludeAllowedClearanceStatuses());
+		final ResponseEntity<JsonGetSingleHUResponse> responseEntity = handlingUnitsService.getByIdSupplier(
+				() -> handlingUnitsService.toGetByIdRequest(request));
 
 		//
 		// If no HU was found for given QR Code then try to directly convert given QR code to a "new HU"
@@ -178,10 +169,12 @@ public class HandlingUnitsRestController
 
 	@GetMapping("/byId/{M_HU_ID}")
 	public ResponseEntity<JsonGetSingleHUResponse> getById(
-			@ApiParam(required = true, value = HU_IDENTIFIER_DOC) //
+			@Parameter(required = true, description = HU_IDENTIFIER_DOC) //
 			@PathVariable("M_HU_ID") final int huRepoId)
 	{
-		return getByIdSupplier(() -> HuId.ofRepoId(huRepoId));
+		return handlingUnitsService.getByIdSupplier(() -> GetByIdRequest.builder()
+				.huId(HuId.ofRepoId(huRepoId))
+				.build());
 	}
 
 	@GetMapping("/byIds")
@@ -192,16 +185,9 @@ public class HandlingUnitsRestController
 		return JsonHUList.builder()
 				.hus(huRepoIds.stream()
 							 .map(HuId::ofRepoId)
-							 .map(repoId -> handlingUnitsService.getFullHU(repoId, Env.getADLanguageOrBaseLanguage(), false))
+							 .map(repoId -> handlingUnitsService.getFullHU(repoId, null, Env.getADLanguageOrBaseLanguage(), false))
 							 .collect(ImmutableList.toImmutableList()))
 				.build();
-	}
-
-	@NonNull
-	private ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<HuId> huIdSupplier)
-	{
-		final boolean getAllowedClearanceStatuses = false;
-		return handlingUnitsService.getByIdSupplier(huIdSupplier, getAllowedClearanceStatuses);
 	}
 
 	private ResponseEntity<JsonGetSingleHUResponse> toSingleHUResponseEntity(@NonNull final Supplier<I_M_HU> huSupplier)
@@ -319,21 +305,30 @@ public class HandlingUnitsRestController
 	}
 
 	@PostMapping("/move")
-	public ResponseEntity<JsonGetSingleHUResponse> moveHU(
+	public void moveHU(
 			@RequestBody @NonNull final JsonMoveHURequest request)
 	{
 		final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode());
 
 		handlingUnitsService.move(MoveHURequest.builder()
-				.huId(request.getHuId())
-				.huQRCode(huQRCode)
+										  .huId(request.getHuId())
+										  .huQRCode(huQRCode)
+										  .numberOfTUs(request.getNumberOfTUs())
+										  .targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
+										  .build());
+	}
+
+	@PostMapping("/bulk/move")
+	public void bulkMove(@RequestBody @NonNull final JsonBulkMoveHURequest request)
+	{
+		final List<HUQRCode> huQrCodes = request.getHuQRCodes().stream()
+				.map(HUQRCode::fromGlobalQRCodeJsonString)
+				.collect(ImmutableList.toImmutableList());
+
+		handlingUnitsService.bulkMove(BulkMoveHURequest.builder()
+				.huQrCodes(huQrCodes)
 				.targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
 				.build());
-
-		// IMPORTANT: don't retrieve by ID because the ID might be different
-		// (e.g. we extracted one TU from an aggregated TU),
-		// but the QR Code is always the same.
-		return getByIdSupplier(() -> huQRCodesService.getHuIdByQRCode(huQRCode));
 	}
 
 	@PostMapping("/huLabels/print")
@@ -370,7 +365,11 @@ public class HandlingUnitsRestController
 	public ResponseEntity<JsonGetSingleHUResponse> changeHUQty(@RequestBody @NonNull final JsonHUQtyChangeRequest request)
 	{
 		final HuId huId = handlingUnitsService.updateQty(request);
-		return getByIdSupplier(() -> huId);
+
+		return handlingUnitsService.getByIdSupplier(() -> GetByIdRequest.builder()
+				.huId(huId)
+				.expectedQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode()))
+				.build());
 	}
 
 	private JsonHU toNewJsonHU(final @NonNull HUQRCode huQRCode)
@@ -400,6 +399,19 @@ public class HandlingUnitsRestController
 				.build();
 	}
 
+	@PostMapping("/list/byQRCode")
+	public List<JsonHU> listByQRCode(@RequestBody @NonNull final JsonGetByQRCodeRequest request)
+	{
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+		return handlingUnitsService.getHUsByQrCode(request, adLanguage);
+	}
+
+	private static @NonNull ResponseEntity<JsonGetSingleHUResponse> toBadRequestResponseEntity(final Exception e)
+	{
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+		return ResponseEntity.badRequest().body(JsonGetSingleHUResponse.ofError(JsonErrors.ofThrowable(e, adLanguage)));
+	}
+
 	private JsonHUAttribute toJsonHUAttribute(final HUQRCodeAttribute huQRCodeAttribute)
 	{
 		final AttributeCode attributeCode = huQRCodeAttribute.getCode();
@@ -425,11 +437,4 @@ public class HandlingUnitsRestController
 				throw new AdempiereException("Unknown HU Unit Type: " + huUnitType);
 		}
 	}
-
-	private static @NonNull ResponseEntity<JsonGetSingleHUResponse> toBadRequestResponseEntity(final Exception e)
-	{
-		final String adLanguage = Env.getADLanguageOrBaseLanguage();
-		return ResponseEntity.badRequest().body(JsonGetSingleHUResponse.ofError(JsonErrors.ofThrowable(e, adLanguage)));
-	}
-
 }

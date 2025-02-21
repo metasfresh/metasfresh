@@ -24,6 +24,16 @@
     "setClearance": {
       "buttonCaption": "Change HU clearance"
     },
+    "bulkActions": {
+      "buttonCaption": "Bulk actions",
+      "windowName": "Bulk actions",
+      "scan": "Scan",
+      "move": "Move",
+      "closeScanner": "Close scanner",
+      "scanHUPlaceholder": "Scan HU",
+      "scanTargetPlaceholder": "Scan target",
+      "moveSuccess": "Successfully moved"
+    },
     "setCurrentLocator": {
       "buttonCaption": "Change current locator"
     },

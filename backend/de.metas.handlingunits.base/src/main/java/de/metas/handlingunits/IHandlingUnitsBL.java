@@ -517,6 +517,9 @@ public interface IHandlingUnitsBL extends ISingletonService
 	I_M_HU_PI getEffectivePI(I_M_HU hu);
 
 	@Nullable
+	I_M_HU_PI getEffectivePI(@NonNull HuId huId);
+
+	@Nullable
 	static BPartnerId extractBPartnerIdOrNull(final I_M_HU hu)
 	{
 		return BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID());

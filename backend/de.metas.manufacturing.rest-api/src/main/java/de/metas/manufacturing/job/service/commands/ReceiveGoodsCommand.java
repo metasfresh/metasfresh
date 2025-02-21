@@ -129,7 +129,7 @@ public class ReceiveGoodsCommand
 				final I_M_HU tu = createHUProducer().receiveSingleTU(getQtyToReceive(), packingInfo.getPackingInstructionsId());
 				final HuId tuId = HuId.ofRepoId(tu.getM_HU_ID());
 
-				loadingAndSavingSupportServices.assignQRCode(qrCode, tuId);
+				loadingAndSavingSupportServices.assignQRCodeForReceiptHU(qrCode, tuId);
 
 				// NOTE: returning null because this receiving target is not re-usable
 				// i.e. receiving again to this HU is not supported
