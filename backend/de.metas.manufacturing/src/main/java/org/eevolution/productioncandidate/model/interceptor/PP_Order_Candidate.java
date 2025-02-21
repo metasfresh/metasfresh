@@ -22,6 +22,8 @@
 
 package org.eevolution.productioncandidate.model.interceptor;
 
+import de.metas.distribution.ddordercandidate.DDOrderCandidateQuery;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
 import de.metas.handlingunits.HuId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -69,6 +71,7 @@ public class PP_Order_Candidate
 	private final PPOrderCandidatePojoConverter ppOrderCandidateConverter;
 	private final PostMaterialEventService materialEventService;
 	private final PPOrderCandidateService ppOrderCandidateService;
+	private final DDOrderCandidateRepository ddOrderCandidateRepository;
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
 	public void syncLinesAndPostPPOrderCreatedEvent(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
@@ -99,7 +102,7 @@ public class PP_Order_Candidate
 		{
 			ppOrderCandidateService.syncLines(ppOrderCandidateRecord);
 
-			fireMaterialUpdateEvent(ppOrderCandidateRecord);
+			syncUpdatesToMaterialDispo(ppOrderCandidateRecord);
 		}
 	}
 
@@ -118,7 +121,7 @@ public class PP_Order_Candidate
 		final Timestamp datePromised = TimeUtil.asTimestamp(recomputedDatePromised.get());
 		ppOrderCandidateRecord.setDatePromised(datePromised);
 
-		fireMaterialUpdateEvent(ppOrderCandidateRecord);
+		syncUpdatesToMaterialDispo(ppOrderCandidateRecord);
 	}
 
 	@ModelChange(
@@ -128,7 +131,7 @@ public class PP_Order_Candidate
 	{
 		ppOrderCandidateService.syncLines(ppOrderCandidateRecord);
 
-		fireMaterialUpdateEvent(ppOrderCandidateRecord);
+		syncUpdatesToMaterialDispo(ppOrderCandidateRecord);
 	}
 
 	@ModelChange(
@@ -169,8 +172,13 @@ public class PP_Order_Candidate
 		validateQtyToProcess(ppOrderCandidateRecord);
 	}
 
-	private void fireMaterialUpdateEvent(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	private void syncUpdatesToMaterialDispo(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
+		ddOrderCandidateRepository.delete(DDOrderCandidateQuery.builder()
+												  .ppOrderCandidateId(PPOrderCandidateId.ofRepoId(ppOrderCandidateRecord.getPP_Order_Candidate_ID()))
+												  .processed(false)
+												  .build());
+
 		final PPOrderCandidate ppOrderCandidatePojo = ppOrderCandidateConverter.toPPOrderCandidate(ppOrderCandidateRecord);
 
 		final PPOrderCandidateUpdatedEvent ppOrderCandidateUpdatedEvent = PPOrderCandidateUpdatedEvent.builder()

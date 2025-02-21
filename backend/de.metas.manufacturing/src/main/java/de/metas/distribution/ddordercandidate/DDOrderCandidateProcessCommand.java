@@ -227,6 +227,7 @@ class DDOrderCandidateProcessCommand
 		record.setDocAction(X_DD_Order.DOCACTION_Complete);
 		record.setDateOrdered(Timestamp.from(key.getDateOrdered()));
 		record.setDatePromised(Timestamp.from(key.getSupplyDate()));
+		record.setPickDate(Timestamp.from(key.getDemandDate()));
 		record.setM_Shipper_ID(key.getShipperId().getRepoId());
 		record.setIsInDispute(false);
 		record.setIsInTransit(false);
@@ -372,6 +373,7 @@ class DDOrderCandidateProcessCommand
 		@NonNull OrgId orgId;
 
 		@NonNull Instant dateOrdered;
+		@NonNull Instant demandDate;
 		@NonNull Instant supplyDate;
 
 		@NonNull WarehouseId sourceWarehouseId;
@@ -393,6 +395,7 @@ class DDOrderCandidateProcessCommand
 			return builder()
 					.orgId(candidate.getOrgId())
 					.dateOrdered(candidate.getDateOrdered())
+					.demandDate(candidate.getDemandDate())
 					.supplyDate(candidate.getSupplyDate())
 					.sourceWarehouseId(candidate.getSourceWarehouseId())
 					.targetWarehouseId(candidate.getTargetWarehouseId())

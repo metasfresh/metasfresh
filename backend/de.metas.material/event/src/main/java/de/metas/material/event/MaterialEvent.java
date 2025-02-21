@@ -10,6 +10,7 @@ import de.metas.material.event.ddorder.DDOrderDeletedEvent;
 import de.metas.material.event.ddorder.DDOrderDocStatusChangedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateAdvisedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateCreatedEvent;
+import de.metas.material.event.ddordercandidate.DDOrderCandidateDeletedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateRequestedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateUpdatedEvent;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
@@ -75,10 +76,10 @@ import javax.annotation.Nullable;
 
 		@JsonSubTypes.Type(name = DDOrderCandidateAdvisedEvent.TYPE, value = DDOrderCandidateAdvisedEvent.class),
 		@JsonSubTypes.Type(name = DDOrderCandidateCreatedEvent.TYPE, value = DDOrderCandidateCreatedEvent.class),
+		@JsonSubTypes.Type(name = DDOrderCandidateDeletedEvent.TYPE, value = DDOrderCandidateDeletedEvent.class),
 		@JsonSubTypes.Type(name = DDOrderCandidateUpdatedEvent.TYPE, value = DDOrderCandidateUpdatedEvent.class),
 		// @JsonSubTypes.Type(name = DDOrderCandidateDocStatusChangedEvent.TYPE, value = DDOrderCandidateDocStatusChangedEvent.class),
 		@JsonSubTypes.Type(name = DDOrderCandidateRequestedEvent.TYPE, value = DDOrderCandidateRequestedEvent.class),
-		// @JsonSubTypes.Type(name = DDOrderCandidateDeletedEvent.TYPE, value = DDOrderCandidateDeletedEvent.class),
 
 		@JsonSubTypes.Type(name = ForecastCreatedEvent.TYPE, value = ForecastCreatedEvent.class),
 
@@ -162,5 +163,8 @@ public interface MaterialEvent
 
 	@Nullable
 	@JsonIgnore
-	default String getTraceId() {return getEventDescriptor().getTraceId();}
+	default String getTraceId()
+	{
+		return getEventDescriptor().getTraceId();
+	}
 }
