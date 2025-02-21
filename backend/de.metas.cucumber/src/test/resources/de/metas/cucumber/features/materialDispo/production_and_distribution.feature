@@ -360,8 +360,8 @@ Feature: Production + Distribution material dispo scenarios
       | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyOrdered | C_BPartner_ID | DatePromised         |
       | ppOrder    | bom_product  | bom_1             | bom_product_planning   | plant         | 10 PCE     | 10         | customer      | 2021-04-16T21:00:00Z |
     And after not more than 60s, following DD_Order_Candidates are found
-      | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed | Forward_PP_Order_ID |
-      | component    | rawMaterials_WH     | production_WH    | 10 PCE | N         | ppOrder             |
+      | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed | Forward_PP_Order_ID |
+      | ddoc_1     | component    | rawMaterials_WH     | production_WH    | 10 PCE | N         | ppOrder             |
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID  |
       # Sales Order / Shipment Schedule:
@@ -380,7 +380,7 @@ Feature: Production + Distribution material dispo scenarios
     # Process the DD_Order_Candidate and expect DD_Order to be generated
     And the following DD_Order_Candidates are enqueued for generating DD_Orders
       | DD_Order_Candidate_ID |
-      | ddoc                  |
+      | ddoc_1                |
     And after not more than 60s, DD_OrderLine found for orderLine SO_L1
       | Identifier | DD_Order_ID | M_Product_ID | QtyEntered | M_Warehouse_From_ID | M_Warehouse_To_ID |
       | ddol       | ddo         | component    | 10         | rawMaterials_WH     | production_WH     |
