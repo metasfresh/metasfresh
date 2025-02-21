@@ -151,8 +151,8 @@ Feature: Production + Distribution material dispo scenarios
       | oc_1                  | ppOrder     | 10 PCE     |
 
     And after not more than 60s, following DD_Order_Candidates are found
-      | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed | Forward_PP_Order_Candidate_ID | Forward_PP_OrderLine_Candidate_ID | Forward_PP_Order_ID |
-      | component    | rawMaterials_WH     | production_WH    | 10 PCE | N         | oc_1                          | ocl_1                             | ppOrder             |
+      | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | Qty    | Processed | Forward_PP_Order_ID |
+      | component    | rawMaterials_WH     | production_WH    | 10 PCE | N         | ppOrder             |
 
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise | M_Warehouse_ID  |
@@ -360,8 +360,8 @@ Feature: Production + Distribution material dispo scenarios
       | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyOrdered | C_BPartner_ID | DatePromised         |
       | ppOrder    | bom_product  | bom_1             | bom_product_planning   | plant         | 10 PCE     | 10         | customer      | 2021-04-16T21:00:00Z |
     And after not more than 60s, following DD_Order_Candidates are found
-      | Identifier | Forward_PP_Order_Candidate_ID | Forward_PP_OrderLine_Candidate_ID | Forward_PP_Order_ID |
-      | ddoc       | oc_1                          | ocl_1                             | ppOrder             |
+      | Identifier | Forward_PP_Order_ID |
+      | ddoc       | ppOrder             |
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | ATP | M_Warehouse_ID  |
       # Sales Order / Shipment Schedule:
