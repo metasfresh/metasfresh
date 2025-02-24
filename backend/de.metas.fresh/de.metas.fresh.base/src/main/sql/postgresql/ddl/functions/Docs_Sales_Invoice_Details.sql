@@ -1,15 +1,16 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details (IN p_record_id numeric,
-                                                                                       IN p_language  Character Varying(6))
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details (IN p_C_Invoice_ID numeric,
+                                                                                      IN p_AD_Language  Character Varying(6))
 ;
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details (IN p_record_id numeric,
-                                                                               IN p_language  Character Varying(6))
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details(IN p_C_Invoice_ID numeric,
+                                                                                        IN p_AD_Language  Character Varying(6))
     RETURNS TABLE
             (
                 InOuts                     text,
                 docType                    character varying,
                 reference                  character varying(40),
                 shipLocation               character varying(60),
+                Tour                       text,
                 InOuts_DateFrom            text,
                 InOuts_DateTo              text,
                 InOuts_IsSameDate          boolean,
@@ -46,6 +47,8 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details (I
                 isprintwhenpackingmaterial character,
                 PricePattern               text,
                 AmountPattern              text
+                catchweight                numeric,
+                weight_uom                 character varying(10)
             )
     STABLE
     LANGUAGE sql
@@ -55,6 +58,7 @@ SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
        io.docType,
        io.reference,
        io.shipLocation,
+       io.Tour,
        TO_CHAR(io.DateFrom, 'DD.MM.YYYY')                     AS InOuts_DateFrom,
        TO_CHAR(io.DateTo, 'DD.MM.YYYY')                       AS InOuts_DateTo,
        DateFrom :: date = DateTo :: Date                      AS InOuts_IsSameDate,
@@ -107,7 +111,8 @@ SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
        p.IsPrintWhenPackingMaterial,
        report.getPricePatternForJasper(i.m_pricelist_id)      AS PricePattern,
        report.getAmountPatternForJasper(c.c_currency_id)    AS AmountPattern
-
+       catchweight,
+       weight_uom
 FROM C_InvoiceLine il
          INNER JOIN C_Invoice i ON il.C_Invoice_ID = i.C_Invoice_ID
          INNER JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
@@ -118,7 +123,7 @@ FROM C_InvoiceLine il
 
     -- Get Product and its translation
          LEFT OUTER JOIN M_Product p ON il.M_Product_ID = p.M_Product_ID
-         LEFT OUTER JOIN M_Product_Trl pt ON il.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = p_language
+         LEFT OUTER JOIN M_Product_Trl pt ON il.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = p_AD_Language
          LEFT OUTER JOIN LATERAL
     (
     SELECT M_Product_Category_ID =
@@ -129,39 +134,44 @@ FROM C_InvoiceLine il
 
     -- Get Unit of measurement and its translation
          LEFT OUTER JOIN C_UOM uom ON il.C_UOM_ID = uom.C_UOM_ID
-         LEFT OUTER JOIN C_UOM_Trl uomt ON il.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = p_language
+         LEFT OUTER JOIN C_UOM_Trl uomt ON il.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = p_AD_Language
          LEFT OUTER JOIN C_UOM puom ON il.Price_UOM_ID = puom.C_UOM_ID
          LEFT OUTER JOIN C_UOM_Trl puomt
-                         ON il.Price_UOM_ID = puomt.C_UOM_ID AND puomt.AD_Language = p_language
-
+                         ON il.Price_UOM_ID = puomt.C_UOM_ID AND puomt.AD_Language = p_AD_Language
     -- Tax rate
          LEFT OUTER JOIN C_Tax t ON il.C_Tax_ID = t.C_Tax_ID
 
          LEFT OUTER JOIN C_Currency c ON i.C_Currency_ID = c.C_Currency_ID
 
     -- Get shipment details
-         LEFT OUTER JOIN (SELECT DISTINCT x.C_InvoiceLine_ID,
-                                          First_Agg(x.DocType)         AS DocType,
-                                          STRING_AGG(x.DocNo, ', '
-                                                     ORDER BY x.DocNo) AS DocNo,
-                                          MIN(x.DateFrom)              AS DateFrom,
-                                          MAX(x.DateTo)                AS DateTo,
-                                          STRING_AGG(x.reference, ', '
-                                                     ORDER BY x.DocNo) AS reference,
-                                          x.shipLocation
-                          FROM (SELECT DISTINCT iliol.C_InvoiceLine_ID,
-                                                First_Agg(COALESCE(dtt.Printname, dt.Printname)
-                                                          ORDER BY io.DocumentNo)  AS DocType,
-                                                STRING_AGG(io.DocumentNo, ', '
-                                                           ORDER BY io.DocumentNo) AS DocNo,
-                                                MIN(io.MovementDate)               AS DateFrom,
-                                                MAX(io.MovementDate)               AS DateTo,
-                                                io.poreference                     AS reference,
-                                                bpl.name                           AS shipLocation
-                                FROM (SELECT DISTINCT M_InOut_ID,
-                                                      C_InvoiceLine_ID
+         LEFT OUTER JOIN (SELECT DISTINCT ON (x.C_InvoiceLine_ID) x.C_InvoiceLine_ID,
+                                                                  First_Agg(x.DocType)         AS DocType,
+                                                                  STRING_AGG(x.DocNo, ', '
+                                                                             ORDER BY x.DocNo) AS DocNo,
+                                                                  MIN(x.DateFrom)              AS DateFrom,
+                                                                  MAX(x.DateTo)                AS DateTo,
+                                                                  STRING_AGG(x.reference, ', '
+                                                                             ORDER BY x.DocNo) AS reference,
+                                                                  x.shipLocation,
+                                                                  x.tour,
+                                                                  x.catchweight,
+                                                                  x.weight_uom
+                          FROM (SELECT DISTINCT ON (iliol.C_InvoiceLine_ID) iliol.C_InvoiceLine_ID,
+                                                                            First_Agg(COALESCE(dtt.Printname, dt.Printname)
+                                                                                      ORDER BY io.DocumentNo)  AS DocType,
+                                                                            STRING_AGG(io.DocumentNo, ', '
+                                                                                       ORDER BY io.DocumentNo) AS DocNo,
+                                                                            MIN(io.MovementDate)               AS DateFrom,
+                                                                            MAX(io.MovementDate)               AS DateTo,
+                                                                            io.poreference                     AS reference,
+                                                                            bpl.name                           AS shipLocation,
+                                                                            t.name                             AS tour,
+                                                                            w.catchweight,
+                                                                            w.weight_uom                       AS weight_uom
+                                FROM (SELECT DISTINCT ON (C_InvoiceLine_ID) M_InOut_ID,
+                                                                            C_InvoiceLine_ID
                                       FROM Report.fresh_IL_to_IOL_V
-                                      WHERE C_Invoice_ID = p_record_id) iliol
+                                      WHERE C_Invoice_ID = p_C_Invoice_ID) iliol
                                          LEFT OUTER JOIN M_InOut io ON iliol.M_InOut_ID = io.M_InOut_ID
                                     AND io.DocStatus IN ('CO', 'CL')
                                     /* task 09290 */
@@ -169,12 +179,31 @@ FROM C_InvoiceLine il
                                                     ON io.C_BPartner_Location_ID = bpl.C_BPartner_Location_ID
                                          LEFT OUTER JOIN C_DocType dt ON io.C_DocType_ID = dt.C_DocType_ID
                                          LEFT OUTER JOIN C_DocType_Trl dtt
-                                                         ON io.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_language
-                                GROUP BY C_InvoiceLine_ID, io.poreference, bpl.C_BPartner_Location_ID) x
+                                                         ON io.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_AD_Language
+                                         LEFT OUTER JOIN M_tour t ON io.m_tour_id = t.m_tour_id
+                                         LEFT OUTER JOIN LATERAL
+                                    (SELECT COALESCE(uomt.UOMSymbol, uom.UOMSymbol) AS weight_uom,
+                                            SUM(
+                                                    COALESCE((CASE
+                                                                  WHEN qtydeliveredcatch IS NOT NULL
+                                                                      THEN qtydeliveredcatch
+                                                                      ELSE uomConvert(M_Product_ID, iol.C_UOM_ID, (SELECT c_uom_Id FROM C_uom WHERE isactive = 'Y' AND x12de355 = 'KGM'), qtyentered) -- UOM for KG
+                                                              END), 0))             AS catchweight,
+                                            SUM(iol.QtyEnteredTU)                   AS HUQty,
+                                            iol.m_inout_id
+                                     FROM M_InOutline iol
+                                              LEFT OUTER JOIN C_UOM uom ON uom.C_UOM_ID = COALESCE(iol.catch_uom_id, (SELECT c_uom_Id FROM C_uom WHERE isactive = 'Y' AND x12de355 = 'KGM')) -- fallback to KG
+                                              LEFT OUTER JOIN C_UOM_Trl uomt ON uomt.c_UOM_ID = uom.C_UOM_ID AND uomt.AD_Language = p_AD_Language
+                                         AND iol.isPackagingMaterial = 'N'
+                                     where iol.m_inout_id = io.m_inout_id
+                                     GROUP BY uomt.UOMSymbol, uom.UOMSymbol, iol.m_inout_id) w ON w.m_inout_id = io.m_inout_id
 
-                          GROUP BY x.C_InvoiceLine_ID, x.shipLocation) io ON il.C_InvoiceLine_ID = io.C_InvoiceLine_ID
+                                GROUP BY C_InvoiceLine_ID, io.poreference, bpl.C_BPartner_Location_ID, t.name,
+                                         w.catchweight,
+                                         w.weight_uom) x
 
-
+                          GROUP BY x.C_InvoiceLine_ID, x.shipLocation, x.tour, catchweight,
+                                   weight_uom) io ON il.C_InvoiceLine_ID = io.C_InvoiceLine_ID
     -- Get Packing instruction
          LEFT OUTER JOIN (SELECT STRING_AGG(Name, E'\n'
                                             ORDER BY Name) AS Name,
@@ -201,7 +230,7 @@ FROM C_InvoiceLine il
                                          LEFT OUTER JOIN M_HU_PI_Version piv
                                                          ON piv.M_HU_PI_Version_ID = COALESCE(pit.M_HU_PI_Version_ID, piit.M_HU_PI_Version_ID)
                                 WHERE piv.M_HU_PI_Version_ID != 101
-                                  AND iliol.C_Invoice_ID = p_record_id) pi
+                                  AND iliol.C_Invoice_ID = p_C_Invoice_ID) pi
                           GROUP BY C_InvoiceLine_ID) piip ON il.C_InvoiceLine_ID = piip.C_InvoiceLine_ID
 
     -- Get Attributes
@@ -210,10 +239,10 @@ FROM C_InvoiceLine il
                         ORDER BY LENGTH(ai_value)) AS Attributes,
              att.M_AttributeSetInstance_ID,
              il.C_InvoiceLine_ID
-      FROM Report.fresh_Attributes att
+      FROM report.fresh_Attributes att
                JOIN C_InvoiceLine il ON il.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID
       WHERE att.IsPrintedInDocument = 'Y'
-        AND il.C_Invoice_ID = p_record_id
+        AND il.C_Invoice_ID = p_C_Invoice_ID
       GROUP BY att.M_AttributeSetInstance_ID, il.C_InvoiceLine_ID) att ON il.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID AND il.C_InvoiceLine_ID = att.C_InvoiceLine_ID
 
          LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID
@@ -228,13 +257,10 @@ FROM C_InvoiceLine il
     AND EXISTS(SELECT 0
                FROM C_BP_DocLine_Sort bpdls
                WHERE bpdls.C_DocLine_Sort_ID = dls.C_DocLine_Sort_ID
-                 AND bpdls.C_BPartner_ID = mio.C_BPartner_ID
-                 AND bpdls.isActive = 'Y')
+                 AND bpdls.C_BPartner_ID = mio.C_BPartner_ID)
          LEFT OUTER JOIN C_DocLine_Sort_Item dlsi
                          ON dls.C_DocLine_Sort_ID = dlsi.C_DocLine_Sort_ID AND dlsi.M_Product_ID = il.M_Product_ID
-
-WHERE il.C_Invoice_ID = p_record_id
-
+WHERE il.C_Invoice_ID = p_C_Invoice_ID
 ORDER BY io.DateFrom,
          io.DocNo,
          COALESCE(pc.IsHU, FALSE),

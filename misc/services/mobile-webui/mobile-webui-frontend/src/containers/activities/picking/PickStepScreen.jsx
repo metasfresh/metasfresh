@@ -1,13 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useRouteMatch } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 import { trl } from '../../../utils/translations';
 import { toastError } from '../../../utils/toast';
 import { postStepPicked, postStepUnPicked } from '../../../api/picking';
-import { pickingStepScanScreenLocation } from '../../../routes/picking';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import { pickingLineScreenLocation, pickingStepScanScreenLocation } from '../../../routes/picking';
 import { getStepById } from '../../../reducers/wfProcesses';
 import { getPickFromForStep, getQtyToPickForStep } from '../../../utils/picking';
 
@@ -16,45 +15,41 @@ import ConfirmButton from '../../../components/buttons/ConfirmButton';
 import { toQRCodeDisplayable, toQRCodeString } from '../../../utils/qrCode/hu';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import UnpickDialog from './UnpickDialog';
+import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 
 const PickStepScreen = () => {
   const {
-    url,
     params: { applicationId, workflowId: wfProcessId, activityId, lineId, stepId, altStepId },
   } = useRouteMatch();
-
   const { pickFrom, qtyToPick, uom } = useSelector(
     (state) => getPropsFromState({ state, wfProcessId, activityId, lineId, stepId, altStepId }),
     shallowEqual
   );
+
+  const { history } = useScreenDefinition({
+    screenId: 'PickStepScreen',
+    captionKey: 'activities.picking.PickHU',
+    back: pickingLineScreenLocation,
+    values: [
+      {
+        caption: trl('general.Locator'),
+        value: pickFrom?.locatorName,
+      },
+      {
+        caption: trl('general.QtyToPick'),
+        value: qtyToPick + ' ' + uom,
+      },
+      {
+        caption: trl('general.QRCode'),
+        value: toQRCodeDisplayable(pickFrom?.huQRCode),
+      },
+    ],
+  });
+
   const dispatch = useDispatch();
 
   const [showTargetHUScanner, setShowTargetHUScanner] = useState(false);
 
-  useEffect(() => {
-    dispatch(
-      pushHeaderEntry({
-        location: url,
-        caption: trl('activities.picking.PickHU'),
-        values: [
-          {
-            caption: trl('general.Locator'),
-            value: pickFrom?.locatorName,
-          },
-          {
-            caption: trl('general.QtyToPick'),
-            value: qtyToPick + ' ' + uom,
-          },
-          {
-            caption: trl('general.QRCode'),
-            value: toQRCodeDisplayable(pickFrom?.huQRCode),
-          },
-        ],
-      })
-    );
-  }, []);
-
-  const history = useHistory();
   const unpick = ({ unpickToTargetQRCode }) => {
     postStepUnPicked({
       wfProcessId,
@@ -66,7 +61,7 @@ const PickStepScreen = () => {
     })
       .then((wfProcess) => {
         dispatch(updateWFProcess({ wfProcess }));
-        history.go(-1);
+        history.goBack();
       })
       .catch((axiosError) => toastError({ axiosError }));
   };
@@ -118,7 +113,8 @@ const PickStepScreen = () => {
           onClick={onScanButtonClick}
         />
         <ButtonWithIndicator
-          caption={trl('activities.picking.unPickBtn')}
+          id="unpick-button"
+          captionKey="activities.picking.unPickBtn"
           disabled={nothingPicked}
           onClick={() => setShowTargetHUScanner(true)}
         />

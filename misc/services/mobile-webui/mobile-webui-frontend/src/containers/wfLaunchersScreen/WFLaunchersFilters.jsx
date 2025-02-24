@@ -151,6 +151,7 @@ const WFLaunchersFilters = ({
       {showFilterByDocumentNo && (
         <>
           <ButtonWithIndicator
+            id="filterByDocumentNo-button"
             caption={filterByDocumentNo ? filterByDocumentNo : trl('general.DocumentNo')}
             onClick={() => setIsFilterByDocumentNoModalDisplayed(true)}
           />
@@ -176,13 +177,15 @@ const WFLaunchersFilters = ({
       <div className="bottom-buttons">
         {!groupsLoading && resultsCount > 0 && (
           <ButtonWithIndicator
+            id="showResults"
             caption={trl('general.filter.showResults', { count: resultsCount })}
             typeFASIconName={resultsCountLoading ? 'fa-spinner fa-spin' : null}
             disabled={resultsCountLoading}
             onClick={onApplyFilters}
+            data-hitcount={resultsCount}
           />
         )}
-        <ButtonWithIndicator caption={trl('general.filter.clearFilters')} onClick={onClearFilters} />
+        <ButtonWithIndicator id="clearFilters" captionKey="general.filter.clearFilters" onClick={onClearFilters} />
       </div>
     </div>
   );
@@ -221,10 +224,18 @@ FacetGroup.propTypes = {
   onClick: PropTypes.func.isRequired,
 };
 
-const Facet = ({ facetId, groupId, caption, active, onClick }) => {
+const Facet = ({ facetId, groupId, caption, active, hitCount, onClick }) => {
+  let captionEffective = caption;
+  if (hitCount != null && hitCount >= 0) {
+    captionEffective += ` (${hitCount})`;
+  }
+
   return (
     <ButtonWithIndicator
-      caption={caption}
+      testId={facetId}
+      data-hitcount={hitCount}
+      additionalCssClass="facet-button"
+      caption={captionEffective}
       typeFASIconName={active ? 'fa-check' : null}
       onClick={() => onClick({ facetId, groupId })}
     />
@@ -235,6 +246,7 @@ Facet.propTypes = {
   groupId: PropTypes.string.isRequired,
   caption: PropTypes.string.isRequired,
   active: PropTypes.bool.isRequired,
+  hitCount: PropTypes.number,
   onClick: PropTypes.func.isRequired,
 };
 

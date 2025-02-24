@@ -4,9 +4,9 @@ import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.location.IDocumentLocationBL;
-import de.metas.handlingunits.picking.config.MobileUIPickingUserProfile;
-import de.metas.handlingunits.picking.config.MobileUIPickingUserProfileRepository;
-import de.metas.handlingunits.picking.config.PickingJobFieldType;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobFieldType;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.model.PickingJobFacets;
@@ -86,7 +86,7 @@ class PickingWorkflowLaunchersProvider
 		final PickingJobReferenceList existingPickingJobs = pickingJobRestService.streamDraftPickingJobReferences(
 						PickingJobReferenceQuery.builder()
 								.pickerId(userId)
-								.onlyBPartnerIds(profile.getOnlyBPartnerIds())
+								.onlyCustomerIds(profile.getPickOnlyCustomerIds())
 								.warehouseId(workplaceService.getWarehouseIdByUserId(userId).orElse(null))
 								.salesOrderDocumentNo(query.getFilterByDocumentNo())
 								.build())
@@ -108,7 +108,7 @@ class PickingWorkflowLaunchersProvider
 							.userId(userId)
 							.excludeShipmentScheduleIds(existingPickingJobs.getShipmentScheduleIds())
 							.facets(facets)
-							.onlyBPartnerIds(profile.getOnlyBPartnerIds())
+							.onlyCustomerIds(profile.getPickOnlyCustomerIds())
 							.warehouseId(workplaceService.getWarehouseIdByUserId(userId).orElse(null))
 							.salesOrderDocumentNo(query.getFilterByDocumentNo())
 							.build())
@@ -177,7 +177,7 @@ class PickingWorkflowLaunchersProvider
 		final PickingJobFacets pickingFacets = pickingJobRestService.getFacets(
 				PickingJobQuery.builder()
 						.userId(userId)
-						.onlyBPartnerIds(profile.getOnlyBPartnerIds())
+						.onlyCustomerIds(profile.getPickOnlyCustomerIds())
 						.warehouseId(workplaceService.getWarehouseIdByUserId(userId).orElse(null))
 						.salesOrderDocumentNo(query.getFilterByDocumentNo())
 						//.facets(activeFacets) // IMPORTANT: don't filter by active facets because we want to collect all facets, not only the active ones

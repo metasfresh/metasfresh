@@ -1,6 +1,7 @@
 package de.metas.distribution.workflows_api;
 
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.frontend_testing.JsonTestId;
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
@@ -20,6 +21,7 @@ public class DDOrderReference
 	@NonNull DDOrderId ddOrderId;
 	@NonNull String documentNo;
 	@NonNull InstantAndOrgId datePromised;
+	@Nullable InstantAndOrgId pickDate;
 	@NonNull WarehouseId fromWarehouseId;
 	@NonNull WarehouseId toWarehouseId;
 	@Nullable PPOrderId ppOrderId;
@@ -27,4 +29,18 @@ public class DDOrderReference
 	@Nullable ProductId productId;
 	@Nullable Quantity qty;
 	boolean isJobStarted;
+
+	@NonNull
+	public JsonTestId getTestId() {return JsonTestId.ofRepoId(ddOrderId);}
+
+	@NonNull
+	public InstantAndOrgId getDisplayDate()
+	{
+		if (pickDate != null)
+		{
+			return pickDate;
+		}
+
+		return datePromised;
+	}
 }

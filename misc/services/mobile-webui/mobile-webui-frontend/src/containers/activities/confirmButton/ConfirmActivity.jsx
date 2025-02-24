@@ -4,9 +4,9 @@ import { postUserConfirmation } from '../../../api/confirmation';
 import ConfirmButton from '../../../components/buttons/ConfirmButton';
 import { toastError } from '../../../utils/toast';
 import { useDispatch } from 'react-redux';
-import { useHistory } from 'react-router-dom';
 import { appLaunchersLocation } from '../../../routes/launchers';
 import { setActivityProcessing, updateWFProcess } from '../../../actions/WorkflowActions';
+import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 
 const ConfirmActivity = ({
   applicationId,
@@ -21,7 +21,7 @@ const ConfirmActivity = ({
   isLastActivity,
 }) => {
   const dispatch = useDispatch();
-  const history = useHistory();
+  const history = useMobileNavigation();
   const onUserConfirmed = () => {
     dispatch(setActivityProcessing({ wfProcessId, activityId, processing: true }));
     postUserConfirmation({ wfProcessId, activityId })
@@ -40,6 +40,7 @@ const ConfirmActivity = ({
   return (
     <div className="mt-5">
       <ConfirmButton
+        id={isLastActivity ? 'last-confirm-button' : null}
         caption={caption}
         promptQuestion={promptQuestion}
         userInstructions={userInstructions}

@@ -17,6 +17,7 @@ const ClearanceStatusRadioGroup = ({ clearanceStatuses, selectedStatus, onSelect
           <div className="column is-full">
             <label className="radio">
               <input
+                data-testid={`clearanceStatus-${status.key}`}
                 className="mr-2"
                 type="radio"
                 name={status.key}

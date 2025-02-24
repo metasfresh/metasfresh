@@ -1,31 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { trl } from '../../../utils/translations';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
 import Spinner from '../../../components/Spinner';
 import { getClosedLUs, getHUInfoForIds, setPickTarget } from '../../../api/picking';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import SelectHUIntermediateList from '../../../apps/huManager/containers/SelectHUIntermediateList';
+import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
+import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
 
 export const ReopenLUScreen = () => {
+  const { history, wfProcessId } = useScreenDefinition({
+    captionKey: 'activities.picking.reopenLU',
+    back: getWFProcessScreenLocation,
+  });
   const dispatch = useDispatch();
-  const history = useHistory();
-  const {
-    url,
-    params: { workflowId: wfProcessId },
-  } = useRouteMatch();
   const [loading, setLoading] = useState(false);
   const [closedLUs, setClosedLUs] = useState([]);
-
-  useEffect(() => {
-    dispatch(
-      pushHeaderEntry({
-        location: url,
-        caption: trl('activities.picking.reopenLU'),
-      })
-    );
-  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -50,7 +39,7 @@ export const ReopenLUScreen = () => {
     setLoading(true);
     setPickTarget({ wfProcessId, target: pickTarget })
       .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
-      .then(() => history.go(-1)) // go back to Picking Job
+      .then(() => history.goBack()) // go back to Picking Job
       .finally(() => setLoading(false));
   };
 

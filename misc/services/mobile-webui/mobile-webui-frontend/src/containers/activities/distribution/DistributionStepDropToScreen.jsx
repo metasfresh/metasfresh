@@ -1,32 +1,24 @@
-import React, { useEffect } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
+import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { postDistributionDropTo } from '../../../api/distribution';
 import { getStepById } from '../../../reducers/wfProcesses';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
+import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
+import { distributionStepScreenLocation } from '../../../routes/distribution';
 
 const DistributionStepDropToScreen = () => {
-  const {
-    url,
-    params: { workflowId: wfProcessId, activityId, lineId, stepId },
-  } = useRouteMatch();
+  const { history, wfProcessId, activityId, lineId, stepId } = useScreenDefinition({
+    screenId: 'DistributionStepDropToScreen',
+    back: distributionStepScreenLocation,
+  });
 
   const { locatorQRCode } = useSelector((state) =>
     getPropsFromState({ state, wfProcessId, activityId, lineId, stepId })
   );
 
-  const history = useHistory();
   const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(
-      pushHeaderEntry({
-        location: url,
-      })
-    );
-  }, []);
 
   const onResult = () => {
     return postDistributionDropTo({
@@ -35,7 +27,7 @@ const DistributionStepDropToScreen = () => {
       stepId,
     }).then((wfProcess) => {
       dispatch(updateWFProcess({ wfProcess }));
-      history.go(-1);
+      history.goBack();
     });
   };
 

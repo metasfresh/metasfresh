@@ -30,6 +30,8 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 @Jacksonized
@@ -40,6 +42,7 @@ public class JsonWorkflowLaunchersFacet
 	@NonNull String caption;
 	long sortNo;
 	boolean active;
+	@Nullable Integer hitCount;
 
 	public static JsonWorkflowLaunchersFacet of(
 			@NonNull final WorkflowLaunchersFacet facet,
@@ -52,6 +55,7 @@ public class JsonWorkflowLaunchersFacet
 				.caption(facet.getCaption().translate(jsonOpts.getAdLanguage()))
 				.sortNo(facet.getSortNo())
 				.active(facet.isActive())
+				.hitCount(facet.getHitCount())
 				.build();
 	}
 }

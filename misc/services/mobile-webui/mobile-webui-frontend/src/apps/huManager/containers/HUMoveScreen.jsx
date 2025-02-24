@@ -1,8 +1,5 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useHistory, useRouteMatch } from 'react-router-dom';
-
-import { trl } from '../../../utils/translations';
 import * as api from '../api';
 import { handlingUnitLoaded } from '../actions';
 
@@ -10,22 +7,24 @@ import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
 import { toastError } from '../../../utils/toast';
 import { HUInfoComponent } from '../components/HUInfoComponent';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
+import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
+import { huManagerLocation } from '../routes';
 
 const HUMoveScreen = () => {
+  const { history } = useScreenDefinition({
+    screenId: 'HUMoveScreen',
+    captionKey: 'huManager.action.move.scanTarget',
+    back: huManagerLocation,
+  });
+
   const dispatch = useDispatch();
-  const history = useHistory();
 
   const handlingUnitInfo = useSelector((state) => getHandlingUnitInfoFromGlobalState(state));
 
-  const { url } = useRouteMatch();
   useEffect(() => {
     if (!handlingUnitInfo) {
       history.goBack();
-      return;
     }
-
-    dispatch(pushHeaderEntry({ location: url, caption: trl('huManager.action.move.scanTarget') }));
   }, []);
 
   const onResolvedResult = ({ scannedBarcode }) => {

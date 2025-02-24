@@ -45,4 +45,7 @@ public class DeactivateAllSimulatedCandidatesEvent implements MaterialEvent
 	{
 		this.eventDescriptor = eventDescriptor;
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

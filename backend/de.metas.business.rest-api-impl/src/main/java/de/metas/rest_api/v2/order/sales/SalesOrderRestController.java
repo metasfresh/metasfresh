@@ -156,7 +156,6 @@ public class SalesOrderRestController
 		return toSalesOrderAttachment(salesOrderId, entry);
 	}
 
-
 	private JsonSalesOrder createOrder0(@RequestBody final JsonSalesOrderCreateRequest request)
 	{
 		final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
@@ -221,6 +220,7 @@ public class SalesOrderRestController
 	{
 		return JsonSalesOrder.builder()
 				.salesOrderId(String.valueOf(salesOrderRecord.getC_Order_ID()))
+				.documentNo(salesOrderRecord.getDocumentNo())
 				.build();
 	}
 

@@ -8,6 +8,7 @@ import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -78,6 +79,7 @@ public class DDOrderReferenceCollector implements DistributionOrderCollector<DDO
 				.ddOrderId(extractDDOrderId(ddOrder))
 				.documentNo(ddOrder.getDocumentNo())
 				.datePromised(InstantAndOrgId.ofTimestamp(ddOrder.getDatePromised(), ddOrder.getAD_Org_ID()))
+				.pickDate(InstantAndOrgId.ofTimestampOrNull(ddOrder.getPickDate(), OrgId.ofRepoId(ddOrder.getAD_Org_ID())))
 				.fromWarehouseId(WarehouseId.ofRepoId(ddOrder.getM_Warehouse_From_ID()))
 				.toWarehouseId(WarehouseId.ofRepoId(ddOrder.getM_Warehouse_To_ID()))
 				.salesOrderId(OrderId.ofRepoIdOrNull(ddOrder.getC_Order_ID()))
