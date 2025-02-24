@@ -6,8 +6,18 @@
 DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=547261
 ;
 
+DELETE
+FROM AD_UI_Element
+WHERE ad_field_id IN (SELECT ad_field_id FROM ad_field WHERE ad_column_id = 550426)
+;
+
 -- 2025-02-21T13:25:45.589Z
 DELETE FROM AD_Element_Link WHERE AD_Field_ID=554017
+;
+
+DELETE
+FROM AD_Element_Link
+WHERE AD_Field_ID IN (SELECT ad_field_id FROM ad_field WHERE ad_column_id = 550426)
 ;
 
 -- Field: Auftragsdisposition(540095,de.metas.ordercandidate) -> Kandidat(540282,de.metas.ordercandidate) -> Freig.
@@ -16,8 +26,18 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=554017
 DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=554017
 ;
 
+DELETE
+FROM AD_Field_Trl
+WHERE AD_Field_ID IN (SELECT ad_field_id FROM ad_field WHERE ad_column_id = 550426)
+;
+
 -- 2025-02-21T13:25:45.602Z
 DELETE FROM AD_Field WHERE AD_Field_ID=554017
+;
+
+DELETE
+FROM AD_Field
+WHERE ad_column_id = 550426
 ;
 
 -- 2025-02-21T13:25:45.643Z
