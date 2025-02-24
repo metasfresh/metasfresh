@@ -228,10 +228,6 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	Boolean isManualPrice;
 
-	@Schema(description = "Translates to C_OLCand.isImportedWithIssues")
-	@JsonInclude(Include.NON_NULL)
-	Boolean isImportedWithIssues;
-
 	@Schema(description = "Translates to C_OLCand.DeliveryViaRule")
 	@JsonInclude(Include.NON_NULL)
 	String deliveryViaRule;
@@ -325,7 +321,6 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("line") final @Nullable Integer line,
 			@JsonProperty("description") final @Nullable String description,
 			@JsonProperty("isManualPrice") final @Nullable Boolean isManualPrice,
-			@JsonProperty("isImportedWithIssues") final @Nullable Boolean isImportedWithIssues,
 			@JsonProperty("deliveryViaRule") final @Nullable String deliveryViaRule,
 			@JsonProperty("deliveryRule") final @Nullable String deliveryRule,
 			@JsonProperty("importWarningMessage") final @Nullable String importWarningMessage,
@@ -382,7 +377,6 @@ public class JsonOLCandCreateRequest
 		this.line = line;
 		this.description = description;
 		this.isManualPrice = isManualPrice;
-		this.isImportedWithIssues = isImportedWithIssues;
 		this.deliveryViaRule = deliveryViaRule;
 		this.deliveryRule = deliveryRule;
 		this.importWarningMessage = importWarningMessage;

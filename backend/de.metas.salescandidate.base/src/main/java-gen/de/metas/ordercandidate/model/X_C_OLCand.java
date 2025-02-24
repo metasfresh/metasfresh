@@ -1332,18 +1332,6 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public void setIsImportedWithIssues (final boolean IsImportedWithIssues)
-	{
-		set_Value (COLUMNNAME_IsImportedWithIssues, IsImportedWithIssues);
-	}
-
-	@Override
-	public boolean isImportedWithIssues()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsImportedWithIssues);
-	}
-
-	@Override
 	public void setIsManualDiscount (final boolean IsManualDiscount)
 	{
 		set_Value (COLUMNNAME_IsManualDiscount, IsManualDiscount);

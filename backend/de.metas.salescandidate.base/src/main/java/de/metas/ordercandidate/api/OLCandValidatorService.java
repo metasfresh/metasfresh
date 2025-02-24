@@ -50,9 +50,7 @@ public class OLCandValidatorService
 
 		if (!olCand.isError())
 		{
-			final org.adempiere.process.rpl.model.I_C_OLCand olCandWithIssues = InterfaceWrapperHelper.create(olCand, org.adempiere.process.rpl.model.I_C_OLCand.class);
-			olCandWithIssues.setIsImportedWithIssues(false);
-			return olCandWithIssues;
+			return InterfaceWrapperHelper.create(olCand, org.adempiere.process.rpl.model.I_C_OLCand.class);
 		}
 		else
 		{
