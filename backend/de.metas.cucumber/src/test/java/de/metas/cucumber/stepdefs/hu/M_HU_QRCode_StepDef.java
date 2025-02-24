@@ -30,6 +30,8 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
@@ -44,6 +46,8 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateForExistingHUsResu
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -60,14 +64,19 @@ import java.util.Map;
 import java.util.UUID;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @RequiredArgsConstructor
 public class M_HU_QRCode_StepDef
 {
 	@NonNull private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 	@NonNull private final HUQRCodesRepository huQRCodesRepository = SpringContextHolder.instance.getBean(HUQRCodesRepository.class);
+	@NonNull private final QRCodeConfigurationService qrCodeConfigurationService = SpringContextHolder.instance.getBean(QRCodeConfigurationService.class);
+
 	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 
 	@NonNull private final M_HU_StepDefData huTable;
 	@NonNull private final M_HU_QRCode_StepDefData qrCodesTable;
@@ -137,6 +146,11 @@ public class M_HU_QRCode_StepDef
 		final HUQRCodeGenerateForExistingHUsResult result = HUQRCodeGenerateForExistingHUsCommand.builder()
 				.huId(huId)
 				.huQRCodesRepository(huQRCodesRepository)
+				.handlingUnitsBL(handlingUnitsBL)
+				.productBL(productBL)
+				.attributeDAO(attributeDAO)
+				.qrCodeConfigurationService(qrCodeConfigurationService)
+				.attributeStorageFactoryService(attributeStorageFactoryService)
 				.build()
 				.execute();
 

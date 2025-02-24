@@ -54,6 +54,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -617,4 +618,10 @@ public final class ProductBL implements IProductBL
 		return productsRepo.getProductIdsMatchingQueryString(queryString, clientId, limit);
 	}
 
+	@Override
+	@NonNull
+	public List<I_M_Product> getByIds(@NonNull final Set<ProductId> productIds)
+	{
+		return productsRepo.getByIds(productIds);
+	}
 }

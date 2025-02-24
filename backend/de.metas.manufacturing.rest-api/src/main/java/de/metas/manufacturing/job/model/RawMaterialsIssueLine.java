@@ -33,6 +33,7 @@ public class RawMaterialsIssueLine
 
 	@NonNull Quantity qtyIssued; // computed
 	@NonNull WFActivityStatus status;
+	int seqNo;
 
 	@Builder(toBuilder = true)
 	private RawMaterialsIssueLine(
@@ -42,7 +43,8 @@ public class RawMaterialsIssueLine
 			final boolean isWeightable,
 			@NonNull final Quantity qtyToIssue,
 			@Nullable final IssuingToleranceSpec issuingToleranceSpec,
-			@NonNull final ImmutableList<RawMaterialsIssueStep> steps)
+			@NonNull final ImmutableList<RawMaterialsIssueStep> steps,
+			final int seqNo)
 	{
 		this.productId = productId;
 		this.productName = productName;
@@ -53,6 +55,7 @@ public class RawMaterialsIssueLine
 		this.steps = steps;
 
 		this.qtyIssued = computeQtyIssued(this.steps).orElseGet(qtyToIssue::toZero);
+		this.seqNo = seqNo;
 		this.status = computeStatus(this.qtyToIssue, this.qtyIssued, this.steps);
 	}
 

@@ -100,7 +100,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
@@ -296,6 +298,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		}
 
 		return result;
+	}
+
+	@NonNull
+	public List<I_M_HU> retrieveIncludedHUs(@NonNull final HuId huId)
+	{
+		return retrieveIncludedHUs(getById(huId));
 	}
 
 	@Override
@@ -1136,6 +1144,19 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		}
 	}
 
+	@NonNull
+	public Optional<HuPackingInstructionsItemId> retrieveDefaultParentPIItemId(
+			@NonNull final I_M_HU_PI huPI,
+			@Nullable final String huUnitType,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		final I_M_HU_PI_Item parentPIItem = retrieveDefaultParentPIItem(huPI, huUnitType, bpartnerId);
+
+		return Optional.ofNullable(parentPIItem)
+				.map(I_M_HU_PI_Item::getM_HU_PI_Item_ID)
+				.map(HuPackingInstructionsItemId::ofRepoId);
+	}
+
 	private boolean isDefaultLU(final I_M_HU_PI_Item parentPIItem)
 	{
 		return parentPIItem.getM_HU_PI_Version().getM_HU_PI().isDefaultLU();
@@ -1251,5 +1272,14 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.iterate(getById(huId));
 
 		return huIdAndDownstream.build();
+	}
+
+	@Override
+	public <T> Stream<T> streamByQuery(@NonNull final IQueryBuilder<I_M_HU> queryBuilder, @NonNull final Function<I_M_HU, T> mapper)
+	{
+		return queryBuilder
+				.create()
+				.iterateAndStream()
+				.map(mapper);
 	}
 }

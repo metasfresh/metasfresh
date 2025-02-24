@@ -15,12 +15,12 @@ import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonH
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonFinishGoodsReceiveQRCodesGenerateRequest;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEventResult;
+import de.metas.mobile.application.MobileApplicationId;
+import de.metas.mobile.application.MobileApplicationInfo;
 import de.metas.product.ResourceId;
 import de.metas.report.PrintCopies;
 import de.metas.resource.UserWorkstationService;
 import de.metas.user.UserId;
-import de.metas.mobile.application.MobileApplicationId;
-import de.metas.mobile.application.MobileApplicationInfo;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
@@ -120,8 +120,9 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	@Override
 	public WFProcess continueWorkflow(final WFProcessId wfProcessId, final UserId callerId)
 	{
-		final ManufacturingJob job = manufacturingRestService.assignJob(toPPOrderId(wfProcessId), callerId);
-		return ManufacturingRestService.toWFProcess(job);
+		final ManufacturingJob job = manufacturingRestService.createJob(toPPOrderId(wfProcessId), callerId);
+		final ManufacturingJob updatedJob = manufacturingRestService.assignJob(job.getPpOrderId(), callerId);
+		return ManufacturingRestService.toWFProcess(updatedJob);
 	}
 
 	@Override
