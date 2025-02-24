@@ -11,8 +11,8 @@
     <ISO_Code>CHF</ISO_Code>
     <MovementDate>2021-02-18+01:00</MovementDate>
     <POReference>POReference</POReference>
-    <ReceiverGLN>1234567890123</ReceiverGLN>
-    <SenderGLN>1234567890124</SenderGLN>
+    <receivergln>1234567890123</receivergln>
+    <sendergln>1234567890124</sendergln>
     <shipment_documentno>1171084</shipment_documentno>
     <TotalLines>173.24</TotalLines>
     <TotalTaxBaseAmt>173.24</TotalTaxBaseAmt>
