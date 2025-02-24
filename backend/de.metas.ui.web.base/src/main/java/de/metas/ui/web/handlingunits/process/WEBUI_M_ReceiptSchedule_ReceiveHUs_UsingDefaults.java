@@ -133,6 +133,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults extends WEBUI_M_Re
 			if (lutuConfig.isInfiniteQtyCU())
 			{
 				lutuConfig.setIsInfiniteQtyCU(false);
+				// This is similar to the default behaviour of limited capacity packaging
 				final BigDecimal qtyToMove = receiptSchedule.getQtyToMove().divide(lutuConfig.getQtyTU(), RoundingMode.UP);
 
 				lutuConfig.setQtyCUsPerTU(qtyToMove);
