@@ -132,7 +132,7 @@ StepComXMLInvoicBean
 	{
 		final EDICctopInvoicVType xmlCctopInvoice = exchange.getIn().getBody(EDICctopInvoicVType.class);
 
-		final InvoicSettings settings = InvoicSettings.forReceiverGLN(exchange.getContext(), xmlCctopInvoice.getReceiverGLN());
+		final InvoicSettings settings = InvoicSettings.forReceiverGLN(exchange.getContext(), xmlCctopInvoice.getReceivergln());
 		final Xrech4H xrech4H = createDocument(exchange, xmlCctopInvoice, settings);
 
 		final Document document = INVOIC_objectFactory.createDocument();
