@@ -244,7 +244,6 @@ public class JsonConverters
 				.description(request.getDescription())
 				.line(request.getLine())
 				.isManualPrice(request.getIsManualPrice())
-				.isImportedWithIssues(request.getIsImportedWithIssues())
 				.importWarningMessage(request.getImportWarningMessage())
 				.deliveryRule(request.getDeliveryRule())
 				.deliveryViaRule(request.getDeliveryViaRule())

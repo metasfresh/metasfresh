@@ -61,7 +61,6 @@ Feature: Allow order discount via API (compensation group)
       "dateCandidate": "2021-05-11",
       "line": 1,
       "isManualPrice": true,
-      "isImportedWithIssues": true,
       "deliveryViaRule": "S",
       "deliveryRule": "A",
       "orderLineGroup": {
@@ -98,7 +97,6 @@ Feature: Allow order discount via API (compensation group)
       "dateCandidate": "2021-05-11",
       "line": 2,
       "isManualPrice": true,
-      "isImportedWithIssues": true,
       "deliveryViaRule": "S",
       "deliveryRule": "A",
       "orderLineGroup": {
