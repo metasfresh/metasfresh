@@ -17,20 +17,26 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.Account;
+import de.metas.acct.accounts.ProductAccounts;
+import de.metas.acct.accounts.ProductAccountsRepository;
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.accounts.WarehouseAccountType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.costing.CostAmount;
 import de.metas.document.DocBaseType;
 import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import de.metas.acct.Account;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Inventory;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -50,6 +56,8 @@ import java.util.List;
  */
 public class Doc_Inventory extends Doc<DocLine_Inventory>
 {
+	private final ProductAccountsRepository productAccountsRepository = SpringContextHolder.instance.getBean(ProductAccountsRepository.class);
+
 	public Doc_Inventory(final AcctDocContext ctx)
 	{
 		super(ctx, DocBaseType.MaterialPhysicalInventory);
@@ -119,6 +127,8 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 
 		final CostAmount costs = line.getCreateCosts(as);
 
+		final ActivityId activityId = getActivityIdOrNull(line, as);
+
 		//
 		// Inventory DR/CR
 		fact.createLine()
@@ -127,6 +137,7 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 				.setAmtSourceDrOrCr(costs.toMoney())
 				.setQty(line.getQty())
 				.locatorId(line.getM_Locator_ID())
+				.activityId(activityId)
 				.buildAndAdd();
 
 		//
@@ -138,11 +149,21 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 				.setAmtSourceDrOrCr(costs.toMoney().negate())
 				.setQty(line.getQty().negate())
 				.locatorId(line.getM_Locator_ID())
+				.activityId(activityId)
 				.buildAndAdd();
 		if (line.getC_Charge_ID().isPresent())    // explicit overwrite for charge
 		{
 			cr.setAD_Org_ID(line.getOrgId());
 		}
+	}
+
+	@Nullable
+	private ActivityId getActivityIdOrNull(final DocLine_Inventory line, final AcctSchema as)
+	{
+		return CoalesceUtil.coalesceSuppliers(this::getActivityId,
+				() -> productAccountsRepository.getAccountsIfExists(line.getProductId(), as.getId())
+						.flatMap(ProductAccounts::getActivityId)
+						.orElse(null));
 	}
 
 	@NonNull
