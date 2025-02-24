@@ -29,5 +29,4 @@ public interface I_C_OLCand extends de.metas.ordercandidate.model.I_C_OLCand, IR
 {
 	// no additional cols, besides the ones from de.metas.ordercandidate.model.I_C_OLCand + those 2 from IReplicationIssueAware 
 	String COLUMNNAME_EXP_ReplicationTrx_ID = de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_EXP_ReplicationTrx_ID;
-	String COLUMNNAME_IsImportedWithIssues = de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_IsImportedWithIssues;
 }

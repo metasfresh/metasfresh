@@ -63,7 +63,6 @@ public class OrderTransformerImpl implements OrderTransformer {
                 .externalHeaderId(order.getSalesOrderIDValue())
                 //.importWarningMessage(order.getDeliveryAtIndex(0).getDeliveryTermsAtIndex(0).getSpecialTermsAtIndex(0).getValue())  // //todo NPE && ArrayOutOfBoundException
                 .invoiceDocType(JsonDocTypeInfo.builder().docBaseType(MetasfreshOrderConstants.MF_ORDER_DOC_BASE_TYPE).build())
-                .isImportedWithIssues(false)
                 .isManualPrice(true)
                 .paymentRule(JSONPaymentRule.ofCodeOrNull(MetasfreshOrderConstants.MF_PAYMENT_RULE))
                 .paymentTerm(MetasfreshOrderConstants.MF_PAYMENT_TERM)

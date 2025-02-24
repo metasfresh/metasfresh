@@ -1881,27 +1881,6 @@ public interface I_C_OLCand
 	String COLUMNNAME_IsGroupingError = "IsGroupingError";
 
 	/**
-	 * Set Approval needed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsImportedWithIssues (boolean IsImportedWithIssues);
-
-	/**
-	 * Get Approval needed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isImportedWithIssues();
-
-	ModelColumn<I_C_OLCand, Object> COLUMN_IsImportedWithIssues = new ModelColumn<>(I_C_OLCand.class, "IsImportedWithIssues", null);
-	String COLUMNNAME_IsImportedWithIssues = "IsImportedWithIssues";
-
-	/**
 	 * Set Discount Manual.
 	 *
 	 * <br>Type: YesNo

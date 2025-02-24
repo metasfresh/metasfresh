@@ -72,7 +72,6 @@ Feature: Check renumber lines logic
          "dateCandidate":"2021-05-11",
          "line":1,
          "isManualPrice":true,
-         "isImportedWithIssues":true,
          "deliveryViaRule":"S",
          "deliveryRule":"A",
          "orderLineGroup":{
@@ -105,7 +104,6 @@ Feature: Check renumber lines logic
          "dateCandidate":"2021-05-11",
          "line":2,
          "isManualPrice":true,
-         "isImportedWithIssues":true,
          "deliveryViaRule":"S",
          "deliveryRule":"A",
          "orderLineGroup":{
@@ -139,7 +137,6 @@ Feature: Check renumber lines logic
          "dateCandidate":"2021-05-11",
          "line":3,
          "isManualPrice":true,
-         "isImportedWithIssues":true,
          "deliveryViaRule":"S",
          "deliveryRule":"A",
          "description":"lineDescription5",
@@ -167,7 +164,6 @@ Feature: Check renumber lines logic
          "dateCandidate":"2021-05-11",
          "line":4,
          "isManualPrice":true,
-         "isImportedWithIssues":true,
          "deliveryViaRule":"S",
          "deliveryRule":"A",
          "orderLineGroup":{
@@ -200,7 +196,6 @@ Feature: Check renumber lines logic
          "dateCandidate":"2021-05-11",
          "line":5,
          "isManualPrice":true,
-         "isImportedWithIssues":true,
          "deliveryViaRule":"S",
          "deliveryRule":"A",
          "orderLineGroup":{
@@ -300,7 +295,6 @@ Feature: Check renumber lines logic
          "dateCandidate":"2021-05-11",
          "line":1,
          "isManualPrice":true,
-         "isImportedWithIssues":true,
          "deliveryViaRule":"S",
          "deliveryRule":"A",
          "orderLineGroup":{
@@ -332,7 +326,6 @@ Feature: Check renumber lines logic
          "dateCandidate":"2021-05-11",
          "line":2,
          "isManualPrice":true,
-         "isImportedWithIssues":true,
          "deliveryViaRule":"S",
          "deliveryRule":"A",
          "orderLineGroup":{
@@ -365,7 +358,6 @@ Feature: Check renumber lines logic
          "dateCandidate":"2021-05-11",
          "line":3,
          "isManualPrice":true,
-         "isImportedWithIssues":true,
          "deliveryViaRule":"S",
          "deliveryRule":"A",
          "description":"lineDescription5",
@@ -393,7 +385,6 @@ Feature: Check renumber lines logic
          "dateCandidate":"2021-05-11",
          "line":4,
          "isManualPrice":true,
-         "isImportedWithIssues":true,
          "deliveryViaRule":"S",
          "deliveryRule":"A",
          "orderLineGroup":{
@@ -425,7 +416,6 @@ Feature: Check renumber lines logic
          "dateCandidate":"2021-05-11",
          "line":5,
          "isManualPrice":true,
-         "isImportedWithIssues":true,
          "deliveryViaRule":"S",
          "deliveryRule":"A",
          "orderLineGroup":{

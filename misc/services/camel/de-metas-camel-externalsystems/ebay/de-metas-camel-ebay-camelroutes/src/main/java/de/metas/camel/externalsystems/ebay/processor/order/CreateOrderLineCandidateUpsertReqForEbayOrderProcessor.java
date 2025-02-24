@@ -97,7 +97,6 @@ public class CreateOrderLineCandidateUpsertReqForEbayOrderProcessor implements P
 				.dateRequired(getDateOrdered(ebayOrder).plusDays(7)) // TODO - no mapping.
 				.dataSource(DATA_SOURCE_INT_EBAY)
 				.isManualPrice(true)
-				.isImportedWithIssues(true)
 				.discount(DEFAULT_ORDER_LINE_DISCOUNT)
 				.importWarningMessage("PRE ALPHA TEST IMPORT"); // FIXME ;)
 
