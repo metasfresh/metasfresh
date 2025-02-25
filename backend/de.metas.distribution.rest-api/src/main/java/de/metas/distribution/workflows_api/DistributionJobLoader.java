@@ -24,6 +24,7 @@ import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 class DistributionJobLoader
 {
@@ -64,6 +65,10 @@ class DistributionJobLoader
 
 		final ZonedDateTime dateRequired = InstantAndOrgId.ofTimestamp(ddOrder.getDatePromised(), ddOrder.getAD_Org_ID())
 				.toZonedDateTime(loadingSupportServices::getTimeZone);
+		final ZonedDateTime pickDate = Optional.ofNullable(ddOrder.getPickDate())
+				.map(date -> InstantAndOrgId.ofTimestamp(date, ddOrder.getAD_Org_ID()))
+				.map(instant -> instant.toZonedDateTime(loadingSupportServices::getTimeZone))
+				.orElse(dateRequired);
 
 		return DistributionJob.builder()
 				.id(DistributionJobId.ofDDOrderId(ddOrderId))
@@ -72,6 +77,7 @@ class DistributionJobLoader
 				.ppOrderDocumentNo(loadingSupportServices.getPPOrderDocNo(ddOrder))
 				.customerId(BPartnerId.ofRepoId(ddOrder.getC_BPartner_ID()))
 				.dateRequired(dateRequired)
+				.pickDate(pickDate)
 				.pickFromWarehouse(loadingSupportServices.getWarehouseInfoByRepoId(ddOrder.getM_Warehouse_From_ID()))
 				.dropToWarehouse(loadingSupportServices.getWarehouseInfoByRepoId(ddOrder.getM_Warehouse_To_ID()))
 				.responsibleId(extractResponsibleId(ddOrder))

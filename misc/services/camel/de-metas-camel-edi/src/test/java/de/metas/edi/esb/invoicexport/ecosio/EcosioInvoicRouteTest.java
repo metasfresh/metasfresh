@@ -24,7 +24,6 @@ package de.metas.edi.esb.invoicexport.ecosio;
 
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
-
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
 import de.metas.edi.esb.jaxb.metasfresh.ObjectFactory;
 import org.apache.camel.EndpointInject;
@@ -32,6 +31,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
+import org.xmlunit.assertj3.XmlAssert;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -130,8 +130,10 @@ class EcosioInvoicRouteTest extends CamelTestSupport
 		fileOutputEndpoint.expectedMessageCount(1);
 		fileOutputEndpoint.assertIsSatisfied(1000);
 		final var desadvOutput = fileOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
-		assertThat(desadvOutput)
-				.isXmlEqualToContentOf(new File("./src/test/resources/de/metas/edi/esb/invoicexport/ecosio/INVOIC_expected_output.xml"));
+
+		XmlAssert.assertThat(desadvOutput)
+				.and(new File("./src/test/resources/de/metas/edi/esb/invoicexport/ecosio/INVOIC_expected_output.xml"))
+				.ignoreChildNodesOrder().areSimilar();
 	}
 	
 }

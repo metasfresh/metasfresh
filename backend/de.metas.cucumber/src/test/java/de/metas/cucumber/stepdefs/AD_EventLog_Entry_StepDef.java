@@ -29,13 +29,18 @@ import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
 import de.metas.event.remote.JacksonJsonEventSerializer;
 import de.metas.logging.LogManager;
+import de.metas.material.event.MaterialEvent;
+import de.metas.material.event.eventbus.MaterialEventConverter;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
+import de.metas.printing.esb.base.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -58,6 +63,7 @@ public class AD_EventLog_Entry_StepDef
 	private final AD_EventLog_Entry_StepDefData eventLogEntryTable;
 	private final AD_EventLog_StepDefData eventLogTable;
 	private final M_Product_StepDefData productTable;
+	private final MaterialEventConverter materialEventConverter = SpringContextHolder.instance.getBean(MaterialEventConverter.class);
 
 	public AD_EventLog_Entry_StepDef(
 			@NonNull final AD_EventLog_Entry_StepDefData eventLogEntryTable,
@@ -121,40 +127,36 @@ public class AD_EventLog_Entry_StepDef
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
-			final String eventDataPattern = DataTableUtil.extractStringForColumnName(row, I_AD_EventLog.COLUMNNAME_EventData + ".Pattern");
-			final String eventType = DataTableUtil.extractStringForColumnName(row, "EventType");
+			final String eventName = DataTableUtil.extractStringForColumnName(row, "EventName");
 
 			final Supplier<Optional<I_AD_EventLog>> getEventLogRecord = () -> {
 
 				final List<I_AD_EventLog> eventLogRecords = queryBL.createQueryBuilder(I_AD_EventLog.class)
-						.addStringLikeFilter(I_AD_EventLog.COLUMNNAME_EventData, eventDataPattern, true)
+						.addEqualsFilter(I_AD_EventLog.COLUMNNAME_EventName, eventName)
+						.orderByDescending(I_AD_EventLog.COLUMNNAME_Created)
 						.create()
 						.list(I_AD_EventLog.class);
-
 				if (eventLogRecords.isEmpty())
 				{
 					return Optional.empty();
 				}
-
-				if (SupplyRequiredEvent.TYPE.equals(eventType))
+				if (Check.equals(eventName, SupplyRequiredEvent.TYPE))
 				{
 					return extractSupplyRequiredEventLog(row, eventLogRecords);
 				}
-
-				throw new RuntimeException("Unsupported MaterialEvent type=" + eventType);
+				throw new AdempiereException("EventName " + eventName + " not supported");
 			};
 
 			final I_AD_EventLog eventLog = StepDefUtil.tryAndWaitForItem(timeoutSec,
-																		 500,
-																		 getEventLogRecord,
-																		 this::logCurrentContextForEventLogRecords);
+					500,
+					getEventLogRecord,
+					this::logCurrentContextForEventLogRecords);
 
 			final String eventLogIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_EventLog.COLUMNNAME_AD_EventLog_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 			eventLogTable.put(eventLogIdentifier, eventLog);
 		}
 	}
-
 
 	private void logCurrentContext(@NonNull final Map<String, String> row)
 	{
@@ -200,10 +202,15 @@ public class AD_EventLog_Entry_StepDef
 		{
 			final Event event = JacksonJsonEventSerializer.instance.fromString(eventLog.getEventData());
 
-			final SupplyRequiredEvent supplyRequiredEvent = getSpecificMaterialEvent(event, SupplyRequiredEvent.class);
+			final MaterialEvent materialEvent = materialEventConverter.toMaterialEvent(event);
 
-			if (supplyRequiredEvent != null
-					&& supplyRequiredEvent.getSupplyRequiredDescriptor().getProductId() == productId)
+			if (!(materialEvent instanceof SupplyRequiredEvent))
+			{
+				throw new AdempiereException("Material event " + materialEvent + " not of type SupplyRequiredEvent, but the Event wrapping it has this eventName");
+			}
+			final SupplyRequiredEvent supplyRequiredEvent = (SupplyRequiredEvent)materialEvent;
+
+			if (supplyRequiredEvent.getSupplyRequiredDescriptor().getProductId() == productId)
 			{
 				matchingLogs.add(eventLog);
 
@@ -234,7 +241,7 @@ public class AD_EventLog_Entry_StepDef
 	}
 
 	@Nullable
-	private static  <T> T getSpecificMaterialEvent(@NonNull final Event materialEvent, @NonNull final Class<T> clazz)
+	private static <T> T getSpecificMaterialEvent(@NonNull final Event materialEvent, @NonNull final Class<T> clazz)
 	{
 		try
 		{

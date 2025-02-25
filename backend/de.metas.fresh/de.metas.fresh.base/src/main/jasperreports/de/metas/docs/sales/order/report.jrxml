@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/order/report" uuid="be165937-8a54-45bb-9624-cc1da8b204f3">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.100000000000001"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="96"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -193,6 +193,9 @@
 				<subreportParameter name="c_order_id">
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="PRINTER_OPTS_IsPrintTotals">
+					<subreportParameterExpression><![CDATA[$P{PRINTER_OPTS_IsPrintTotals}]]></subreportParameterExpression>
+				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/sales/order/report_details.jasper"]]></subreportExpression>
 			</subreport>
@@ -200,7 +203,6 @@
 				<reportElement key="subreport-3" x="0" y="0" width="595" height="14" uuid="84fc5c9a-aec4-419c-b2fd-04860f9c707a">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<printWhenExpression><![CDATA[new Boolean($R{details_product_overflow}.equals( "N" ))]]></printWhenExpression>
 				</reportElement>
 				<subreportParameter name="ad_language">
 					<subreportParameterExpression><![CDATA[$P{ad_language}]]></subreportParameterExpression>
@@ -210,6 +212,9 @@
 				</subreportParameter>
 				<subreportParameter name="displayhu">
 					<subreportParameterExpression><![CDATA[$F{displayhu}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="PRINTER_OPTS_IsPrintTotals">
+					<subreportParameterExpression><![CDATA[$P{PRINTER_OPTS_IsPrintTotals}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/sales/order/report_details_v2.jasper"]]></subreportExpression>
@@ -227,6 +232,9 @@
 				<subreportParameter name="c_order_id">
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
 				</subreportParameter>
+				<subreportParameter name="PRINTER_OPTS_IsPrintTotals">
+					<subreportParameterExpression><![CDATA[$P{PRINTER_OPTS_IsPrintTotals}]]></subreportParameterExpression>
+				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/sales/order/report_details_hu.jasper"]]></subreportExpression>
 			</subreport>
@@ -241,6 +249,9 @@
 				</subreportParameter>
 				<subreportParameter name="c_order_id">
 					<subreportParameterExpression><![CDATA[$P{RECORD_ID}]]></subreportParameterExpression>
+				</subreportParameter>
+				<subreportParameter name="PRINTER_OPTS_IsPrintTotals">
+					<subreportParameterExpression><![CDATA[$P{PRINTER_OPTS_IsPrintTotals}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 				<subreportExpression><![CDATA["de/metas/docs/sales/order/report_details_hu_v2.jasper"]]></subreportExpression>
