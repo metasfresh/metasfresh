@@ -19,6 +19,7 @@
 	</parameter>
 	<parameter name="displayhu" class="java.lang.String">
 		<parameterDescription><![CDATA[]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new String("N")]]></defaultValueExpression>
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details ($P{c_invoice_id}, $P{ad_language});]]>
