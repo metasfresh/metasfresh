@@ -18,8 +18,6 @@ package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.Account;
-import de.metas.acct.accounts.ProductAccounts;
-import de.metas.acct.accounts.ProductAccountsRepository;
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.accounts.WarehouseAccountType;
 import de.metas.acct.api.AcctSchema;
@@ -33,7 +31,6 @@ import de.metas.inventory.InventoryId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Inventory;
 
 import javax.annotation.Nullable;
@@ -56,8 +53,6 @@ import java.util.List;
  */
 public class Doc_Inventory extends Doc<DocLine_Inventory>
 {
-	private final ProductAccountsRepository productAccountsRepository = SpringContextHolder.instance.getBean(ProductAccountsRepository.class);
-
 	public Doc_Inventory(final AcctDocContext ctx)
 	{
 		super(ctx, DocBaseType.MaterialPhysicalInventory);
@@ -160,10 +155,8 @@ public class Doc_Inventory extends Doc<DocLine_Inventory>
 	@Nullable
 	private ActivityId getActivityIdOrNull(final DocLine_Inventory line, final AcctSchema as)
 	{
-		return CoalesceUtil.coalesceSuppliers(this::getActivityId,
-				() -> productAccountsRepository.getAccountsIfExists(line.getProductId(), as.getId())
-						.flatMap(ProductAccounts::getActivityId)
-						.orElse(null));
+		return CoalesceUtil.coalesceSuppliers(line::getActivityId,
+				this::getActivityId);
 	}
 
 	@NonNull
