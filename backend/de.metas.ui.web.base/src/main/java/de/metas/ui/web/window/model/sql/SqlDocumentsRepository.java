@@ -528,7 +528,7 @@ public final class SqlDocumentsRepository implements DocumentsRepository
 			// Actual save
 			// TODO: advice the PO to not reload after save.
 			InterfaceWrapperHelper.save(po);
-			document.markAsNotNew();
+			document.markAsSaved();
 			needsRefresh = true;
 		}
 		else
