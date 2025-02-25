@@ -127,8 +127,8 @@ public class WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults extends WEBUI_M_Re
 				{
 					lutuConfig.setQtyTU(qtyToMoveTU);
 
-					// Adjust CU if TU can hold infinite
-					// in this case divide the remaining CUQty to the number of TUs that are still to be received
+					// Adjust CU if TU can hold an infinite qty
+					// In this case divide the remaining CUQty to the number of TUs that are still to be received
 					if (lutuConfig.isInfiniteQtyCU())
 					{
 						lutuConfig.setIsInfiniteQtyCU(false);
