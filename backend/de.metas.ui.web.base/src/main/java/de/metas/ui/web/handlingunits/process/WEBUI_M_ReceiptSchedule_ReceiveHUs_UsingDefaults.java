@@ -126,18 +126,21 @@ public class WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults extends WEBUI_M_Re
 				if (qtyToMoveTU.signum() > 0 && qtyToMoveTU.compareTo(lutuConfig.getQtyTU()) < 0)
 				{
 					lutuConfig.setQtyTU(qtyToMoveTU);
+
+					// Adjust CU if TU can hold infinite
+					// in this case divide the remaining CUQty to the number of TUs that are still to be received
+					if (lutuConfig.isInfiniteQtyCU())
+					{
+						lutuConfig.setIsInfiniteQtyCU(false);
+
+						final BigDecimal remainingCUQty = receiptSchedule.getQtyToMove().subtract(receiptSchedule.getQtyMoved());
+						final BigDecimal qtyToMoveCU = remainingCUQty.divide(lutuConfig.getQtyTU(), RoundingMode.UP);
+
+						lutuConfig.setQtyCUsPerTU(qtyToMoveCU);
+					}
 				}
 			}
 
-			// Adjust CU if TU can hold infinite
-			if (lutuConfig.isInfiniteQtyCU())
-			{
-				lutuConfig.setIsInfiniteQtyCU(false);
-				// This is similar to the default behaviour of limited capacity packaging
-				final BigDecimal qtyToMove = receiptSchedule.getQtyToMove().divide(lutuConfig.getQtyTU(), RoundingMode.UP);
-
-				lutuConfig.setQtyCUsPerTU(qtyToMove);
-			}
 		}
 	}
 
