@@ -63,6 +63,7 @@ import {
 import { updateTab } from '../utils';
 import { shallowEqual, useSelector } from 'react-redux';
 import { getScope } from '../utils/documentListHelper';
+import * as IndicatorState from '../constants/IndicatorState';
 
 const initialMasterState = {
   layout: {
@@ -71,7 +72,7 @@ const initialMasterState = {
   data: [],
   saveStatus: {},
   validStatus: {},
-  indicator: 'saved',
+  indicator: IndicatorState.SAVED,
   includedTabsInfo: {},
   hasComments: false,
   docId: undefined,
@@ -97,7 +98,7 @@ const initialModalState = {
   triggerField: null,
   saveStatus: {},
   validStatus: {},
-  indicator: 'saved',
+  indicator: IndicatorState.SAVED,
   includedTabsInfo: {},
   staticModalType: '',
 };

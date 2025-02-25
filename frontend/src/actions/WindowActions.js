@@ -3,6 +3,7 @@ import counterpart from 'counterpart';
 import currentDevice from 'current-device';
 
 import history from '../services/History';
+import * as IndicatorState from '../constants/IndicatorState';
 
 import {
   ACTIVATE_TAB,
@@ -922,7 +923,7 @@ export function patch(
     };
 
     await dispatch({ type: PATCH_REQUEST, symbol, options });
-    await dispatch(indicatorState({ state: 'pending', isModal }));
+    await dispatch(indicatorState({ state: IndicatorState.PENDING, isModal }));
 
     //
     // Update the state with the new property value
@@ -1026,7 +1027,7 @@ export function patch(
       // Propagate the exception, so callers are aware that something went wrong.
       throw error;
     } finally {
-      await dispatch(indicatorState({ state: 'saved', isModal }));
+      await dispatch(indicatorState({ state: IndicatorState.SAVED, isModal }));
     }
   };
 }

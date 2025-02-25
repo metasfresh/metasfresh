@@ -42,6 +42,7 @@ import ChangeCurrentWorkplace, {
   STATIC_MODAL_TYPE_ChangeCurrentWorkplace,
 } from './ChangeCurrentWorkplace';
 import { getIndicatorFromState } from '../../reducers/windowHandler';
+import * as IndicatorState from '../../constants/IndicatorState';
 
 /**
  * @file Modal is an overlay view that can be opened over the main view.
@@ -443,7 +444,7 @@ class Modal extends Component {
   handleStart = () => {
     const { dispatch, layout, windowId, indicator, parentId } = this.props;
 
-    if (indicator === 'pending') {
+    if (indicator === IndicatorState.PENDING) {
       this.setState({ waitingFetch: true, pending: true });
       return;
     }
@@ -693,7 +694,7 @@ class Modal extends Component {
                   tabIndex={0}
                   onMouseEnter={() => this.toggleTooltip(keymap.DONE)}
                   onMouseLeave={this.toggleTooltip}
-                  disabled={indicator === 'error'}
+                  disabled={indicator === IndicatorState.ERROR}
                 >
                   {counterpart.translate('modal.actions.start')}
 
@@ -848,36 +849,6 @@ class Modal extends Component {
   }
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {*} [activeTabId]
- * @prop {*} [childViewId]
- * @prop {*} [closeCallback]
- * @prop {*} [childViewSelectedIds]
- * @prop {shape} [data]
- * @prop {string} [dataId]
- * @prop {func} dispatch Dispatch function
- * @prop {string} [indicator]
- * @prop {shape} [layout]
- * @prop {bool} [isAdvanced]
- * @prop {bool} [isDocumentNotSaved]
- * @prop {bool} [isNewDoc]
- * @prop {string} [modalType]
- * @prop {*} [modalTitle]
- * @prop {*} [modalSaveStatus]
- * @prop {*} [modalViewDocumentIds]
- * @prop {string} [staticModalType]
- * @prop {string} [tabId]
- * @prop {*} [parentSelection]
- * @prop {*} [parentWindowId]
- * @prop {*} [parentViewId]
- * @prop {*} [rawModalVisible]
- * @prop {string} [rowId]
- * @prop {*} [triggerField]
- * @prop {string} [viewId]
- * @prop {string} [windowId]
- * @prop {string} [documentType]
- */
 Modal.propTypes = {
   dispatch: PropTypes.func.isRequired,
   isNewDoc: PropTypes.bool,

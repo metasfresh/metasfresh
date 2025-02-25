@@ -9,6 +9,7 @@ import { deepUnfreeze } from '../utils';
 
 import { getTableId } from '../reducers/tables';
 import { getEntityRelatedId } from '../reducers/filters';
+import * as IndicatorState from '../constants/IndicatorState';
 
 import {
   addViewLocationData,
@@ -549,7 +550,7 @@ class DocumentListContainer extends Component {
 
     updateUri?.({ viewId: id, page, sort: sortingQuery });
 
-    indicatorState({ state: 'pending', isModal });
+    indicatorState({ state: IndicatorState.PENDING, isModal });
     return fetchDocument({
       windowId,
       viewId: id,
@@ -607,7 +608,7 @@ class DocumentListContainer extends Component {
         console.error(e);
       })
       .finally(() => {
-        indicatorState({ state: 'saved', isModal });
+        indicatorState({ state: IndicatorState.SAVED, isModal });
       });
   };
 
