@@ -19,6 +19,7 @@ import {
   DISABLE_SHORTCUT,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
+  MARK_MASTER_DATA_DISCARDED,
   OPEN_FILTER_BOX,
   OPEN_MODAL,
   OPEN_PLUGIN_MODAL,
@@ -353,6 +354,9 @@ export const computeSaveStatusFlags = ({
   master: masterParam,
   considerSavedWhenUnknownStatus = null,
 }) => {
+  // shall we handle: documentId !== 'notfound' ?
+  // shall we handle: initialValidStatus = master.validStatus.initialValue !== undefined ? master.validStatus.initialValue : master.validStatus.valid;
+
   let master = {};
   let modal = {};
 
@@ -369,19 +373,53 @@ export const computeSaveStatusFlags = ({
     modal = modalParam;
   }
 
+  let windowId = null;
+  let documentId = null;
   let saveStatus;
-  if (modal.visible) {
+  if (modal?.visible) {
     saveStatus = modal.saveStatus;
+    if (modal.modalType === 'window') {
+      windowId = modal.windowId;
+      documentId = modal.docId;
+    }
   } else {
     saveStatus = master.saveStatus;
+    windowId = master.layout?.windowId;
+    documentId = master.docId;
   }
 
-  const saved = saveStatus?.saved ?? considerSavedWhenUnknownStatus;
+  let saved;
+  if (master.saveStatus?.discarded) {
+    saved = null;
+  } else {
+    saved = saveStatus?.saved ?? considerSavedWhenUnknownStatus;
+  }
 
-  return {
+  const retValue = {
     isDocumentSaved: saved != null ? saved : false,
     isDocumentNotSaved: saved != null ? !saved : false,
+    windowId,
+    documentId,
   };
+
+  // console.log('computeSaveStatusFlags', {
+  //   retValue,
+  //   saved,
+  //   saveStatus,
+  //   considerSavedWhenUnknownStatus,
+  //   state,
+  //   masterParam,
+  //   modalParam,
+  // });
+
+  return retValue;
+};
+
+export const useSaveStatusFlags = () => {
+  return useSelector(
+    (state) => computeSaveStatusFlags({ state }),
+    shallowEqual
+  );
 };
 
 //
@@ -695,6 +733,17 @@ export default function windowHandler(state = initialState, action) {
           includedTabsInfo: {
             ...state.master.includedTabsInfo,
             ...action.includedTabsInfo,
+          },
+        },
+      };
+    case MARK_MASTER_DATA_DISCARDED:
+      return {
+        ...state,
+        master: {
+          ...state.master,
+          saveStatus: {
+            ...state.master.saveStatus,
+            discarded: true,
           },
         },
       };

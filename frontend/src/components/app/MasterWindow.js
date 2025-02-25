@@ -4,7 +4,6 @@ import React, { PureComponent } from 'react';
 
 import { discardNewRequest } from '../../api';
 import { getTableId } from '../../reducers/tables';
-import history from '../../services/History';
 
 import { BlankPage } from '../BlankPage';
 import Container from '../Container';
@@ -12,7 +11,6 @@ import SectionGroup from '../SectionGroup';
 import Overlay from '../app/Overlay';
 import { introHints, introSteps } from '../intro/intro';
 import { computeSaveStatusFlags } from '../../reducers/windowHandler';
-import PreventLeavingUnsavedPage from './PreventLeavingUnsavedPage';
 
 /**
  * @file Class based component.
@@ -23,7 +21,6 @@ export default class MasterWindow extends PureComponent {
   state = {
     newRow: false,
     modalTitle: null,
-    isDeleted: false,
     dropzoneFocused: false,
     introEnabled: null,
     hintsEnabled: null,
@@ -83,32 +80,6 @@ export default class MasterWindow extends PureComponent {
     }
   }
 
-  // TODO: Figure out if we can handle `not saved` via redux+middleware
-  componentWillUnmount() {
-    const {
-      master,
-      location: { pathname },
-      params: { windowId, docId: documentId },
-    } = this.props;
-    const { isDeleted } = this.state;
-    const { isDocumentNotSaved } = computeSaveStatusFlags({ master });
-
-    if (isDocumentNotSaved && !isDeleted) {
-      const result = window.confirm('Do you really want to leave?');
-
-      if (result) {
-        // discardNewRequest({ windowType, documentId });
-        discardNewRequest({ windowType: windowId, documentId });
-      } else {
-        history.push(pathname);
-      }
-    }
-  }
-
-  /**
-   * @method closeModalCallback
-   * @summary handler for closing the modal window
-   */
   closeModalCallback = ({
     isNew,
     windowType,
@@ -202,29 +173,13 @@ export default class MasterWindow extends PureComponent {
     );
   };
 
-  /**
-   * @method setModalTitle
-   * @summary ToDo: Describe the method.
-   */
   setModalTitle = (title) => {
     this.setState({ modalTitle: title });
   };
 
-  /**
-   * @method handleDeletedStatus
-   * @summary ToDo: Describe the method.
-   */
-  handleDeletedStatus = (param) => {
-    this.setState({ isDeleted: param });
-  };
-
-  /**
-   * @method handleIntroExit
-   * @summary ToDo: Describe the method.
-   */
-  handleIntroExit = () => {
-    this.setState({ introEnabled: false });
-  };
+  // handleIntroExit = () => {
+  //   this.setState({ introEnabled: false });
+  // };
 
   render() {
     const {
@@ -254,19 +209,12 @@ export default class MasterWindow extends PureComponent {
     const dataId = master.docId;
     const docNoData = master.data.DocumentNo;
 
-    // valid status for unsaved items with errors does not
-    // have initialValue set, but does have the error message
-    const initialValidStatus =
-      master.validStatus.initialValue !== undefined
-        ? master.validStatus.initialValue
-        : master.validStatus.valid;
+    // valid status for unsaved items with errors does not have initialValue set, but does have the error message
+    // const initialValidStatus = master.validStatus.initialValue !== undefined ? master.validStatus.initialValue : master.validStatus.valid;
     const isDocumentNotSaved =
       dataId !== 'notfound' &&
-      computeSaveStatusFlags({
-        master: master,
-        initialValidStatus: initialValidStatus,
-      }).isDocumentNotSaved &&
-      !initialValidStatus;
+      computeSaveStatusFlags({ master }).isDocumentNotSaved;
+    // && !initialValidStatus // TODO !?!?!
 
     return (
       <Container
@@ -288,10 +236,8 @@ export default class MasterWindow extends PureComponent {
         docId={params.docId}
         showSidelist
         modalHidden={!modal.visible}
-        handleDeletedStatus={this.handleDeletedStatus}
         hasComments={master.hasComments}
       >
-        <PreventLeavingUnsavedPage />
         <Overlay data={overlay.data} showOverlay={overlay.visible} />
 
         {dataId === 'notfound' ? (

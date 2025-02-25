@@ -13,6 +13,10 @@ export function topActionsRequest(windowId, documentId, tabId = null) {
   return get(url);
 }
 
+export function deleteDocument({ windowId, documentId }) {
+  return deleteRequest('window', windowId, null, null, [documentId]);
+}
+
 export function deleteRequest(
   entity,
   docType,

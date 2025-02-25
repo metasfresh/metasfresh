@@ -18,6 +18,7 @@ import {
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
   INIT_WINDOW,
+  MARK_MASTER_DATA_DISCARDED,
   OPEN_FILTER_BOX,
   OPEN_MODAL,
   OPEN_RAW_MODAL,
@@ -316,6 +317,12 @@ export function updateDataValidStatus(scope, validStatus) {
     type: UPDATE_DATA_VALID_STATUS,
     scope,
     validStatus,
+  };
+}
+
+export function markMasterDataAsChanged() {
+  return {
+    type: MARK_MASTER_DATA_DISCARDED,
   };
 }
 

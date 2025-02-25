@@ -12,19 +12,9 @@ import Overlay from '../components/app/Overlay';
 const EMPTY_ARRAY = [];
 const EMPTY_OBJECT = {};
 
-/**
- * @file Class based component.
- * @module DocList
- * @extends Component
- */
 class DocList extends PureComponent {
   state = {};
 
-  /**
-   * getDerivedStateFromProps lifecycle - hold in the state of the component the last page
-   * @param {obj} props
-   * @param {obj} state
-   */
   static getDerivedStateFromProps(props, state) {
     return props.query && props.query.page !== state.lastPage
       ? { lastPage: props.query.page }
@@ -45,10 +35,6 @@ class DocList extends PureComponent {
     }
   };
 
-  /**
-   * @method updateUriCallback
-   * @summary Update the url with query params if needed (ie add viewId, page etc)
-   */
   updateUriCallback = (updatedQuery) => {
     const { query, pathname } = this.props;
     const { viewId } = updatedQuery;
@@ -147,21 +133,6 @@ class DocList extends PureComponent {
   }
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {array} breadcrumb
- * @prop {object} includedView
- * @prop {string} indicator
- * @prop {object} modal
- * @prop {object} overlay
- * @prop {string} pathname
- * @prop {object} pluginModal
- * @prop {string} processStatus
- * @prop {object} query - routing query
- * @prop {object} rawModal
- * @prop {string} windowId
- * @prop {string} pathname
- */
 DocList.propTypes = {
   includedView: PropTypes.object,
   modal: PropTypes.object.isRequired,

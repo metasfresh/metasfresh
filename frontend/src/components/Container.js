@@ -45,7 +45,6 @@ class Container extends PureComponent {
       // TODO: We should be using indicator from the state instead of another variable
       isDocumentNotSaved,
       hideHeader,
-      handleDeletedStatus,
       dropzoneFocused,
       notFound,
       rawModal,
@@ -89,7 +88,6 @@ class Container extends PureComponent {
             {...{
               entity,
               docNoData,
-              handleDeletedStatus,
               isDocumentNotSaved,
               viewId,
               siteName,
@@ -219,46 +217,6 @@ class Container extends PureComponent {
   }
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {*} actions
- * @prop {*} attachments
- * @prop {*} breadcrumb
- * @prop {*} children
- * @prop {string} connectionErrorType
- * @prop {*} closeModalCallback
- * @prop {string} dataId
- * @prop {*} docNoData
- * @prop {string} docId
- * @prop {*} dropzoneFocused
- * @prop {*} editmode
- * @prop {*} entity
- * @prop {*} handleDeletedStatus
- * @prop {*} handleEditModeToggle
- * @prop {*} hideHeader
- * @prop {*} includedView
- * @prop {bool} isDocumentNotSaved
- * @prop {*} masterDocumentList
- * @prop {*} modal
- * @prop {string} modalDescription
- * @prop {string} modalTitle
- * @prop {bool} notFound
- * @prop {*} noMargin
- * @prop {*} pluginComponents
- * @prop {object} pluginModal
- * @prop {*} pluginComponents
- * @prop {*} processStatus
- * @prop {string} viewId
- * @prop {object} rawModal
- * @prop {*} references
- * @prop {*} modalHidden
- * @prop {*} showSidelist
- * @prop {*} setModalDescription
- * @prop {*} setModalTitle
- * @prop {string} siteName
- * @prop {string} windowId
- * @prop {bool} hasComments - used to indicate comments in the details view
- */
 Container.propTypes = {
   actions: PropTypes.any,
   attachments: PropTypes.any,
@@ -273,7 +231,6 @@ Container.propTypes = {
   editmode: PropTypes.any,
   entity: PropTypes.any,
   hideHeader: PropTypes.any,
-  handleDeletedStatus: PropTypes.any,
   handleEditModeToggle: PropTypes.any,
   includedView: PropTypes.any,
   isDocumentNotSaved: PropTypes.any,

@@ -5,10 +5,10 @@ import { connect } from 'react-redux';
 import classnames from 'classnames';
 
 import history from '../../services/History';
-import { getPrintingOptions } from '../../api/window';
-import { deleteRequest } from '../../api';
+import { deleteDocument, getPrintingOptions } from '../../api/window';
 import { duplicateRequest } from '../../actions/GenericActions';
 import {
+  clearMasterData,
   openModal,
   openPrintingOptionsModal,
   printDocument,
@@ -27,7 +27,7 @@ import NewEmail from '../email/NewEmail';
 import Inbox from '../inbox/Inbox';
 import NewLetter from '../letter/NewLetter';
 import Tooltips from '../tooltips/Tooltips';
-import Breadcrumb from './Breadcrumb';
+import Breadcrumb from './breadcrumb/Breadcrumb';
 import SideList from './SideList';
 import Subheader, {
   ACTION_ABOUT_DOCUMENT,
@@ -53,6 +53,10 @@ import {
 import { isShowCommentsMarker } from '../../utils/tableHelpers';
 import { getIndicatorFromState } from '../../reducers/windowHandler';
 import { getSelection, getTableId } from '../../reducers/tables';
+import RedirectHandler from './RedirectHandler';
+import { requestRedirect } from '../../reducers/redirect';
+
+const PROMPT_TYPE_CONFIRM_DELETE = 'confirmDelete';
 
 /**
  * @file The Header component is shown in every view besides Modal or RawModal in frontend. It defines
@@ -73,7 +77,6 @@ class Header extends PureComponent {
     isUDOpen: false,
     tooltipOpen: '',
     isEmailOpen: false,
-    deletePrompt: { open: false },
   };
 
   udRef = React.createRef();
@@ -414,27 +417,57 @@ class Header extends PureComponent {
   };
 
   handleDelete = () => {
-    this.setState({ deletePrompt: { ...this.state.deletePrompt, open: true } });
-  };
-
-  handleDeletePromptCancelClick = () => {
-    this.setState({
-      deletePrompt: { ...this.state.deletePrompt, open: false },
+    this.showPrompt({
+      type: PROMPT_TYPE_CONFIRM_DELETE,
+      title: counterpart.translate('window.Delete.caption'),
+      text: counterpart.translate('window.delete.message'),
+      submitCaption: counterpart.translate('window.delete.confirm'),
+      cancelCaption: counterpart.translate('window.delete.cancel'),
     });
   };
 
-  handleDeletePromptSubmitClick = () => {
-    const { handleDeletedStatus, windowId, dataId } = this.props;
+  showPrompt = ({
+    type,
+    title,
+    text,
+    submitCaption,
+    cancelCaption,
+    ...params
+  }) => {
+    this.setState({
+      prompt: {
+        type,
+        title,
+        text,
+        submitCaption,
+        cancelCaption,
+        ...params,
+      },
+    });
+  };
 
-    this.setState(
-      { deletePrompt: { ...this.state.deletePrompt, open: false } },
-      () => {
-        deleteRequest('window', windowId, null, null, [dataId]).then(() => {
-          handleDeletedStatus(true);
-          this.redirectBackAfterDelete({ windowId });
-        });
-      }
-    );
+  closePrompt = () => {
+    this.setState({ prompt: null });
+  };
+
+  handlePromptSubmitClick = () => {
+    const { dispatch } = this.props;
+    const { prompt } = this.state;
+    if (!prompt) return;
+
+    const { type } = prompt;
+
+    if (type === PROMPT_TYPE_CONFIRM_DELETE) {
+      const { windowId, dataId: documentId } = this.props;
+
+      deleteDocument({ windowId, documentId }).then(() => {
+        this.closePrompt();
+        dispatch(clearMasterData());
+        dispatch(() => this.redirectBackAfterDelete({ windowId }));
+      });
+    } else {
+      console.log(`Unknown prompt ${type}`, { prompt });
+    }
   };
 
   handleDocStatusToggle = (close) => {
@@ -498,7 +531,8 @@ class Header extends PureComponent {
   closeSubheader = () => this.closeOverlays('isSubheaderShow');
 
   redirect = (where) => {
-    history.push(where);
+    const { dispatch } = this.props;
+    dispatch(requestRedirect(where));
   };
 
   redirectBackAfterDelete = ({ windowId }) => {
@@ -664,7 +698,7 @@ class Header extends PureComponent {
       scrolled,
       isMenuOverlayShow,
       tooltipOpen,
-      deletePrompt,
+      prompt,
       sideListTab,
       isUDOpen,
       isEmailOpen,
@@ -673,16 +707,17 @@ class Header extends PureComponent {
 
     return (
       <div>
-        {deletePrompt && deletePrompt.open && (
+        <RedirectHandler />
+        {prompt && (
           <Prompt
-            title={counterpart.translate('window.Delete.caption')}
-            text={counterpart.translate('window.delete.message')}
+            title={prompt.title}
+            text={prompt.text}
             buttons={{
-              submit: counterpart.translate('window.delete.confirm'),
-              cancel: counterpart.translate('window.delete.cancel'),
+              submit: prompt.submitCaption,
+              cancel: prompt.cancelCaption,
             }}
-            onCancelClick={this.handleDeletePromptCancelClick}
-            onSubmitClick={this.handleDeletePromptSubmitClick}
+            onSubmitClick={this.handlePromptSubmitClick}
+            onCancelClick={this.closePrompt}
           />
         )}
 
@@ -829,7 +864,6 @@ class Header extends PureComponent {
                   open={isUDOpen}
                   handleUDOpen={this.handleUDOpen}
                   disableOnClickOutside={true}
-                  redirect={this.redirect}
                   shortcut={keymap.OPEN_AVATAR_MENU}
                   toggleTooltip={this.toggleTooltip}
                   tooltipOpen={tooltipOpen}
@@ -993,7 +1027,6 @@ Header.propTypes = {
   dropzoneFocused: PropTypes.any,
   editmode: PropTypes.any,
   entity: PropTypes.any,
-  handleDeletedStatus: PropTypes.any,
   handleEditModeToggle: PropTypes.any,
   inbox: PropTypes.object.isRequired,
   isDocumentNotSaved: PropTypes.bool,

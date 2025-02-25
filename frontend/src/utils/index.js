@@ -11,15 +11,15 @@ export function updateUri(pathname, query, updatedQuery) {
   const isDifferentPage =
     query.page && Number(query.page) !== Number(updatedQuery.page);
   const isDifferentView = query.viewId && query.viewId !== updatedQuery.viewId;
+  const isUsePush = isDifferentPage || isDifferentView;
 
-  const queryObject = {
+  const urlQueryString = queryString.stringify({
     ...query,
     ...updatedQuery,
-  };
-  const queryUrl = queryString.stringify(queryObject);
-  const url = `${pathname}?${queryUrl}`;
+  });
+  const url = `${pathname}?${urlQueryString}`;
 
-  isDifferentPage || isDifferentView ? history.push(url) : history.replace(url);
+  isUsePush ? history.push(url) : history.replace(url);
 }
 
 /**

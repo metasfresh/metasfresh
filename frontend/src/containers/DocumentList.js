@@ -6,7 +6,6 @@ import { LOCATION_SEARCH_NAME } from '../constants/Constants';
 import { getViewRowsByIds, locationSearchRequest } from '../api';
 import { connectWS, disconnectWS } from '../utils/websockets';
 import { deepUnfreeze } from '../utils';
-import history from '../services/History';
 
 import { getTableId } from '../reducers/tables';
 import { getEntityRelatedId } from '../reducers/filters';
@@ -54,6 +53,7 @@ import {
 import { filtersActiveContains } from '../utils/filterHelpers';
 
 import DocumentList from '../components/app/DocumentList';
+import { requestRedirect } from '../reducers/redirect';
 
 // TODO: This can be further simplified by extracting methods that are not responsible
 // for fetching data to a child container/component (or maybe back to DocumentList component)
@@ -65,6 +65,8 @@ import DocumentList from '../components/app/DocumentList';
 class DocumentListContainer extends Component {
   constructor(props) {
     super(props);
+
+    this.fetchLayoutAndDataOnUpdate = false;
 
     this.state = {
       pageColumnInfosByFieldName: null,
@@ -156,7 +158,7 @@ class DocumentListContainer extends Component {
      */
 
     if (
-      (queryViewId && !isIncluded && nextViewId !== nextQueryViewId) || // for the case when you applied a filter and come back via browser back button
+      (queryViewId && !isIncluded && nextViewId !== nextQueryViewId) || // for the case when you applied a filter and come back via browser back button, or you clicked on breadcrumb to get a new view
       staticFilterCleared ||
       nextWindowId !== windowId ||
       (nextWindowId === windowId &&
@@ -197,12 +199,32 @@ class DocumentListContainer extends Component {
               unsetIncludedView(includedView);
             }
 
-            this.fetchLayoutAndData();
+            this.fetchLayoutAndDataOnUpdate = true;
+            //this.fetchLayoutAndData();
           }
         );
       }
     }
   }
+
+  componentDidUpdate = (prevProps) => {
+    if (
+      // prevProps.windowId !== this.props.windowId ||
+      // prevProps.viewId !== this.props.viewId ||
+      this.fetchLayoutAndDataOnUpdate
+    ) {
+      console.log(
+        `[${prevProps.viewId}->${this.props.viewId} / ${prevProps.windowId}->${this.props.windowId}] componentDidUpdate - calling fetchLayoutAndData`,
+        {
+          fetchLayoutAndDataOnUpdate: this.fetchLayoutAndDataOnUpdate,
+          props: this.props,
+          prevProps,
+        }
+      );
+      this.fetchLayoutAndData();
+      this.fetchLayoutAndDataOnUpdate = false;
+    }
+  };
 
   /**
    * @summary Subscribe to websocket stream for this view
@@ -305,7 +327,7 @@ class DocumentListContainer extends Component {
    * @method fetchLayoutAndData
    * @summary ToDo: Describe the method.
    */
-  fetchLayoutAndData = (isNewFilter, locationAreaSearch) => {
+  fetchLayoutAndData = ({ isNewFilter = false, locationAreaSearch } = {}) => {
     const {
       windowId,
       type,
@@ -371,25 +393,28 @@ class DocumentListContainer extends Component {
       sort,
       filters: { filtersActive },
     } = this.props;
+
+    // in case of redirect from a notification, first call will have viewId empty
+    if (!viewId) {
+      return;
+    }
+
     const locationSearchFilter = filtersActiveContains({
       filtersActive,
       key: LOCATION_SEARCH_NAME,
     });
 
-    // in case of redirect from a notification, first call will have viewId empty
-    if (viewId) {
-      this.getData(
-        viewId,
-        page,
-        sort,
-        locationSearchFilter,
-        websocketRefresh
-      ).catch((err) => {
-        if (err.response && err.response.status === 404) {
-          this.createNewView();
-        }
-      });
-    }
+    this.getData(
+      viewId,
+      page,
+      sort,
+      locationSearchFilter,
+      websocketRefresh
+    ).catch((err) => {
+      if (err.response && err.response.status === 404) {
+        this.createNewView();
+      }
+    });
   };
 
   /**
@@ -522,15 +547,7 @@ class DocumentListContainer extends Component {
       filters: { filtersActive },
     } = this.props;
 
-    if (updateUri) {
-      const updateQuery = {
-        viewId: id,
-        page,
-        sort: sortingQuery,
-      };
-
-      updateUri(updateQuery);
-    }
+    updateUri?.({ viewId: id, page, sort: sortingQuery });
 
     indicatorState({ state: 'pending', isModal });
     return fetchDocument({
@@ -672,7 +689,10 @@ class DocumentListContainer extends Component {
       key: LOCATION_SEARCH_NAME,
     });
 
-    this.fetchLayoutAndData(true, locationSearchFilter);
+    this.fetchLayoutAndData({
+      isNewFilter: true,
+      locationAreaSearch: locationSearchFilter,
+    });
   };
 
   /**
@@ -700,13 +720,14 @@ class DocumentListContainer extends Component {
       setListSorting,
       setListPagination,
       setListId,
+      requestRedirect,
     } = this.props;
 
     if (isModal) {
       return;
     }
 
-    history.push(`/window/${windowId}/${id}`);
+    requestRedirect(`/window/${windowId}/${id}`);
 
     if (!isSideListShow) {
       // Caching last settings
@@ -722,8 +743,9 @@ class DocumentListContainer extends Component {
    */
   redirectToNewDocument = () => {
     const { windowId } = this.props;
+    const { requestRedirect } = this.props;
 
-    history.push(`/window/${windowId}/new`);
+    requestRedirect(`/window/${windowId}/new`);
   };
 
   /**
@@ -826,6 +848,7 @@ export default connect(
     fetchQuickActions,
     deleteQuickActions,
     addViewLocationData,
+    requestRedirect,
   },
   null,
   { forwardRef: true }

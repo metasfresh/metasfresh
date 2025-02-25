@@ -3,28 +3,25 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
 import { connect } from 'react-redux';
-import { leftTrim } from '../../utils';
+import { leftTrim } from '../../../utils';
 import { debounce } from 'lodash';
 
-import history from '../../services/History';
-import { pathRequest, queryPathsRequest, breadcrumbRequest } from '../../api';
+import {
+  breadcrumbRequest,
+  pathRequest,
+  queryPathsRequest,
+} from '../../../api';
 import {
   flattenLastElem,
   getRootBreadcrumb,
   getWindowBreadcrumb,
-  setBreadcrumb,
-} from '../../actions/MenuActions';
-import { clearMasterData, closeModal } from '../../actions/WindowActions';
+} from '../../../actions/MenuActions';
 import MenuOverlayContainer from './MenuOverlayContainer';
 import MenuOverlayItem from './MenuOverlayItem';
-import { DEBOUNCE_TIME_SEARCH } from '../../constants/Constants';
-import SpinnerOverlay from '../app/SpinnerOverlay';
+import { DEBOUNCE_TIME_SEARCH } from '../../../constants/Constants';
+import SpinnerOverlay from '../../app/SpinnerOverlay';
+import { requestRedirect } from '../../../reducers/redirect';
 
-/**
- * @file Class based component.
- * @module MenuOverlay
- * @extends Component
- */
 class MenuOverlay extends Component {
   state = {
     queriedResults: [],
@@ -77,18 +74,8 @@ class MenuOverlay extends Component {
     }
   };
 
-  /**
-   * @method handleClickOutside
-   * @summary ToDo: Describe the method.
-   * @param {object} event
-   */
   handleClickOutside = (e) => this.props.onClickOutside(e);
 
-  /**
-   * @method handleQuery
-   * @summary ToDo: Describe the method.
-   * @param {object} event
-   */
   handleQuery = (e) => {
     e.preventDefault();
 
@@ -97,7 +84,7 @@ class MenuOverlay extends Component {
     if (query) {
       this.setState({
         query,
-        pendingQuery: query ? true : false,
+        pendingQuery: !!query,
       });
 
       queryPathsRequest(query, 9)
@@ -133,11 +120,6 @@ class MenuOverlay extends Component {
     }
   };
 
-  /**
-   * @method handleClear
-   * @summary ToDo: Describe the method.
-   * @param {object} event
-   */
   handleClear = (e) => {
     e.preventDefault();
     this.setState(
@@ -151,23 +133,17 @@ class MenuOverlay extends Component {
     );
   };
 
-  /**
-   * @method handleRedirect
-   * @summary ToDo: Describe the method.
-   * @param {*} elementId
-   * @param {*} isNew
-   * @param {*} entity
-   */
   handleRedirect = (elementId, isNew, entity) => {
     const { dispatch } = this.props;
 
     this.handleClickOutside();
 
-    dispatch(closeModal());
-    dispatch(clearMasterData());
-
-    history.push(
-      `/${entity ? entity : 'window'}/${elementId}${isNew ? '/new' : ''}`
+    // dispatch(closeModal());
+    // dispatch(clearMasterData());
+    dispatch(
+      requestRedirect(
+        `/${entity ? entity : 'window'}/${elementId}${isNew ? '/new' : ''}`
+      )
     );
   };
 
@@ -178,11 +154,6 @@ class MenuOverlay extends Component {
    */
   handleNewRedirect = (elementId) => this.handleRedirect(elementId, true);
 
-  /**
-   * @method handlePath
-   * @summary ToDo: Describe the method.
-   * @param {*} nodeId
-   */
   handlePath = (nodeId) => {
     pathRequest(nodeId).then((response) => {
       let pathArray = [];
@@ -205,11 +176,6 @@ class MenuOverlay extends Component {
     });
   };
 
-  /**
-   * @method renderPath
-   * @summary ToDo: Describe the method.
-   * @param {*} path
-   */
   renderPath = (path) => {
     return (
       <span>
@@ -225,11 +191,6 @@ class MenuOverlay extends Component {
     );
   };
 
-  /**
-   * @method renderNavigation
-   * @summary ToDo: Describe the method.
-   * @param {*} node
-   */
   renderNavigation = (node) => {
     const { handleMenuOverlay, openModal, dispatch, siteName } = this.props;
     return (
@@ -249,10 +210,10 @@ class MenuOverlay extends Component {
                   e.stopPropagation();
                 }
 
-                dispatch(closeModal());
-                dispatch(clearMasterData());
-                dispatch(setBreadcrumb([]));
-                history.push('/');
+                // dispatch(closeModal());
+                // dispatch(clearMasterData());
+                // dispatch(setBreadcrumb([]));
+                dispatch(requestRedirect('/'));
               }}
               tabIndex={0}
             >
@@ -270,10 +231,9 @@ class MenuOverlay extends Component {
                   e.stopPropagation();
                 }
 
-                dispatch(closeModal());
-                dispatch(clearMasterData());
-
-                history.push('/sitemap');
+                // dispatch(closeModal());
+                // dispatch(clearMasterData());
+                dispatch(requestRedirect('/sitemap'));
               }}
               tabIndex={0}
             >
@@ -708,16 +668,6 @@ class MenuOverlay extends Component {
   }
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {func} dispatch
- * @prop {*} [nodeId]
- * @prop {*} [node]
- * @prop {*} [handleMenuOverlay]
- * @prop {*} [openModal]
- * @prop {*} [siteName]
- * @prop {func} [onClickOutside]
- */
 MenuOverlay.propTypes = {
   dispatch: PropTypes.func.isRequired,
   nodeId: PropTypes.any,
