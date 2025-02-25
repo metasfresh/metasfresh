@@ -4,6 +4,7 @@ import currentDevice from 'current-device';
 
 import history from '../services/History';
 import * as IndicatorState from '../constants/IndicatorState';
+import * as StaticModalType from '../constants/StaticModalType';
 
 import {
   ACTIVATE_TAB,
@@ -83,7 +84,6 @@ import {
 } from './TableActions';
 import { inlineTabAfterGetLayout, patchInlineTab } from './InlineTabActions';
 import { getPrintFile, getPrintUrl } from '../api/window';
-import { STATIC_MODAL_TYPE_ChangeCurrentWorkplace } from '../components/app/ChangeCurrentWorkplace';
 
 export function toggleOverlay(data) {
   return {
@@ -815,7 +815,7 @@ export function callAPI({ windowId, docId, tabId, rowId, target, verb, data }) {
           data.rowsData = rowData;
         }
         // update corresponding target in the store - might be adapted for more separated entities
-        if (target === 'comments') {
+        if (target === StaticModalType.Comments) {
           dispatch(updateCommentsPanel(data));
         }
         // -- end updating corresponding target
@@ -834,7 +834,7 @@ export function callAPI({ windowId, docId, tabId, rowId, target, verb, data }) {
       const dataToSend = preFormatPostDATA({ target, postData: { txt: data } });
       return axios.post(parentUrl, dataToSend).then(async (response) => {
         const data = response.data;
-        if (target === 'comments') {
+        if (target === StaticModalType.Comments) {
           dispatch(
             callAPI({
               windowId,
@@ -1378,7 +1378,7 @@ export function openPrintingOptionsModal({
     //viewId,
     viewDocumentIds: [documentNo],
     dataId: documentId,
-    staticModalType: 'printing',
+    staticModalType: StaticModalType.Printing,
   });
 }
 
@@ -1387,7 +1387,7 @@ export function openSelectCurrentWorkplaceModal() {
     title: counterpart.translate('userDropdown.changeWorkplace.caption'),
     windowId: 'selectCurrentWorkplace',
     modalType: 'static',
-    staticModalType: STATIC_MODAL_TYPE_ChangeCurrentWorkplace,
+    staticModalType: StaticModalType.ChangeCurrentWorkplace,
   });
 }
 

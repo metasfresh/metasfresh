@@ -27,7 +27,6 @@ import {
 import MasterWindow from '../components/app/MasterWindow';
 import { toOrderBysCommaSeparatedString } from '../utils/windowHelpers';
 import { fetchTopActions } from '../actions/Actions';
-import { getIndicatorFromState } from '../reducers/windowHandler';
 
 import history from '../services/History';
 
@@ -333,7 +332,6 @@ MasterWindowContainer.propTypes = {
   master: PropTypes.object.isRequired,
   breadcrumb: PropTypes.array.isRequired,
   rawModal: PropTypes.object.isRequired,
-  indicator: PropTypes.string.isRequired,
   me: PropTypes.object.isRequired,
   pluginModal: PropTypes.object,
   overlay: PropTypes.object,
@@ -364,7 +362,6 @@ const mapStateToProps = (state) => ({
   rawModal: state.windowHandler.rawModal,
   pluginModal: state.windowHandler.pluginModal,
   overlay: state.windowHandler.overlay,
-  indicator: getIndicatorFromState({ state, isModal: false }),
   includedView: state.viewHandler.includedView,
   allowShortcut: state.windowHandler.allowShortcut,
   enableTutorial: state.appHandler.enableTutorial,

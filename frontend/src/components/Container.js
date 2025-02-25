@@ -42,8 +42,6 @@ class Container extends PureComponent {
       viewId,
       attachments,
       modalHidden,
-      // TODO: We should be using indicator from the state instead of another variable
-      isDocumentNotSaved,
       hideHeader,
       dropzoneFocused,
       notFound,
@@ -88,7 +86,6 @@ class Container extends PureComponent {
             {...{
               entity,
               docNoData,
-              isDocumentNotSaved,
               viewId,
               siteName,
               showSidelist,
@@ -137,11 +134,6 @@ class Container extends PureComponent {
                   modal,
                   considerSavedWhenUnknownStatus: true,
                 }).isDocumentSaved
-              }
-              isDocumentNotSaved={
-                computeSaveStatusFlags({ modal }).isDocumentNotSaved &&
-                modal.validStatus &&
-                !modal.validStatus.initialValue
               }
             />
           )}
@@ -233,7 +225,6 @@ Container.propTypes = {
   hideHeader: PropTypes.any,
   handleEditModeToggle: PropTypes.any,
   includedView: PropTypes.any,
-  isDocumentNotSaved: PropTypes.any,
   masterDocumentList: PropTypes.any,
   modal: PropTypes.any,
   modalDescription: PropTypes.string,

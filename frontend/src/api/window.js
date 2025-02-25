@@ -3,6 +3,7 @@ import { delete as del, get, post } from 'axios';
 import { getData } from './view';
 import { parseToDisplay } from '../utils/documentListHelper';
 import { getQueryString } from '../utils';
+import * as StaticModalType from '../constants/StaticModalType';
 
 export function topActionsRequest(windowId, documentId, tabId = null) {
   const url =
@@ -128,7 +129,7 @@ const getAPIUrl = function ({ windowId, docId, tabId, rowId, path }) {
 export function formatParentUrl({ windowId, docId, rowId, target }) {
   let parentUrl;
   switch (target) {
-    case 'comments':
+    case StaticModalType.Comments:
       parentUrl = getAPIUrl({
         windowId,
         docId,

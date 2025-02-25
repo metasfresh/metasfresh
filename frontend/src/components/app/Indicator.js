@@ -62,11 +62,6 @@ const Indicator = ({
   );
 };
 
-/**
- * @typedef {object} Props Component props
- * @prop {string} indicator
- * @prop {bool} [isDocumentNotSaved]
- */
 Indicator.propTypes = {
   indicator: PropTypes.string.isRequired,
   isDocumentNotSaved: PropTypes.bool,

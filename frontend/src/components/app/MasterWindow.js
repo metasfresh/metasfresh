@@ -10,7 +10,6 @@ import Container from '../Container';
 import SectionGroup from '../SectionGroup';
 import Overlay from '../app/Overlay';
 import { introHints, introSteps } from '../intro/intro';
-import { computeSaveStatusFlags } from '../../reducers/windowHandler';
 
 /**
  * @file Class based component.
@@ -209,13 +208,6 @@ export default class MasterWindow extends PureComponent {
     const dataId = master.docId;
     const docNoData = master.data.DocumentNo;
 
-    // valid status for unsaved items with errors does not have initialValue set, but does have the error message
-    // const initialValidStatus = master.validStatus.initialValue !== undefined ? master.validStatus.initialValue : master.validStatus.valid;
-    const isDocumentNotSaved =
-      dataId !== 'notfound' &&
-      computeSaveStatusFlags({ master }).isDocumentNotSaved;
-    // && !initialValidStatus // TODO !?!?!
-
     return (
       <Container
         entity="window"
@@ -224,7 +216,6 @@ export default class MasterWindow extends PureComponent {
         dataId={dataId}
         breadcrumb={breadcrumb}
         docNoData={docNoData}
-        isDocumentNotSaved={isDocumentNotSaved}
         rawModal={rawModal}
         pluginModal={pluginModal}
         modalTitle={modalTitle}
@@ -294,7 +285,6 @@ MasterWindow.propTypes = {
   master: PropTypes.object.isRequired,
   breadcrumb: PropTypes.array.isRequired,
   rawModal: PropTypes.object.isRequired,
-  indicator: PropTypes.string.isRequired,
   me: PropTypes.object.isRequired,
   pluginModal: PropTypes.object,
   overlay: PropTypes.object,

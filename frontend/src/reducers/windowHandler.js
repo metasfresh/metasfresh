@@ -64,6 +64,7 @@ import { updateTab } from '../utils';
 import { shallowEqual, useSelector } from 'react-redux';
 import { getScope } from '../utils/documentListHelper';
 import * as IndicatorState from '../constants/IndicatorState';
+import * as StaticModalType from '../constants/StaticModalType';
 
 const initialMasterState = {
   layout: {
@@ -377,28 +378,48 @@ export const computeSaveStatusFlags = ({
   let windowId = null;
   let documentId = null;
   let saveStatus;
+  let indicator;
   if (modal?.visible) {
-    saveStatus = modal.saveStatus;
+    if (StaticModalType.hasSaveSupport(modal.staticModalType)) {
+      saveStatus = modal.saveStatus;
+      indicator = modal.indicator;
+    } else {
+      saveStatus = { saved: true };
+      indicator = IndicatorState.SAVED;
+    }
+
     if (modal.modalType === 'window') {
       windowId = modal.windowId;
       documentId = modal.docId;
     }
   } else {
     saveStatus = master.saveStatus;
+    indicator = master.indicator;
     windowId = master.layout?.windowId;
     documentId = master.docId;
   }
 
   let saved;
+  let presentInDatabase;
   if (master.saveStatus?.discarded) {
     saved = null;
+    presentInDatabase = null;
   } else {
     saved = saveStatus?.saved ?? considerSavedWhenUnknownStatus;
+    presentInDatabase = saveStatus?.presentInDatabase ?? true;
+  }
+
+  const isDocumentSaved = saved != null ? saved : false;
+  const isDocumentNotSaved = saved != null ? !saved : false;
+
+  if (isDocumentNotSaved && presentInDatabase) {
+    indicator = IndicatorState.ERROR;
   }
 
   const retValue = {
-    isDocumentSaved: saved != null ? saved : false,
-    isDocumentNotSaved: saved != null ? !saved : false,
+    indicator,
+    isDocumentSaved,
+    isDocumentNotSaved,
     windowId,
     documentId,
   };

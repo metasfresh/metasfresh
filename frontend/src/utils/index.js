@@ -2,6 +2,7 @@ import queryString from 'query-string';
 import counterpart from 'counterpart';
 import { updateLastBackPage } from '../actions/AppActions';
 import history from '../services/History';
+import * as StaticModalType from '../constants/StaticModalType';
 
 /**
  * @method updateUri
@@ -172,7 +173,7 @@ export function translateCaption(caption) {
  */
 export function preFormatPostDATA({ target, postData }) {
   const dataToSend = {};
-  if (target === 'comments') {
+  if (target === StaticModalType.Comments) {
     dataToSend.text = postData.txt;
   }
   return dataToSend;

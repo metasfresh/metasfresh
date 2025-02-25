@@ -51,10 +51,11 @@ import {
   getDocSummaryDataFromState,
 } from '../../reducers/windowHandlerUtils';
 import { isShowCommentsMarker } from '../../utils/tableHelpers';
-import { getIndicatorFromState } from '../../reducers/windowHandler';
+import { computeSaveStatusFlags } from '../../reducers/windowHandler';
 import { getSelection, getTableId } from '../../reducers/tables';
 import RedirectHandler from './RedirectHandler';
 import { requestRedirect } from '../../reducers/redirect';
+import * as StaticModalType from '../../constants/StaticModalType';
 
 const PROMPT_TYPE_CONFIRM_DELETE = 'confirmDelete';
 
@@ -286,7 +287,7 @@ class Header extends PureComponent {
       null,
       null,
       null,
-      'comments'
+      StaticModalType.Comments
     );
   };
 
@@ -559,7 +560,7 @@ class Header extends PureComponent {
         counterpart.translate('window.about.caption'),
         tabId,
         selected,
-        'about'
+        StaticModalType.About
       );
     } else {
       this.openModal(
@@ -570,7 +571,7 @@ class Header extends PureComponent {
         null,
         null,
         null,
-        'about'
+        StaticModalType.About
       );
     }
   };
@@ -677,7 +678,6 @@ class Header extends PureComponent {
       showIndicator,
       windowId,
       // TODO: We should be using indicator from the state instead of another variable
-      isDocumentNotSaved,
       notFound,
       docId,
       me,
@@ -769,11 +769,9 @@ class Header extends PureComponent {
                   breadcrumb={breadcrumb}
                   windowType={windowId}
                   docSummaryData={docSummaryData}
-                  dataId={dataId}
                   siteName={siteName}
                   menuOverlay={menuOverlay}
                   docId={docId}
-                  isDocumentNotSaved={isDocumentNotSaved}
                   handleMenuOverlay={this.handleMenuOverlay}
                   openModal={this.openModal}
                 />
@@ -910,7 +908,6 @@ class Header extends PureComponent {
           {showIndicator && (
             <Indicator
               indicator={indicator}
-              isDocumentNotSaved={isDocumentNotSaved}
               error={saveStatus?.error ? saveStatus?.reason : ''}
               exception={saveStatus?.error ? saveStatus?.exception : null}
             />
@@ -1021,24 +1018,25 @@ Header.propTypes = {
   dataId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   dispatch: PropTypes.func.isRequired,
   docId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  docSummaryData: PropTypes.any,
   docNoData: PropTypes.any,
-  docStatus: PropTypes.any,
   dropzoneFocused: PropTypes.any,
   editmode: PropTypes.any,
   entity: PropTypes.any,
   handleEditModeToggle: PropTypes.any,
-  inbox: PropTypes.object.isRequired,
-  isDocumentNotSaved: PropTypes.bool,
-  me: PropTypes.object.isRequired,
   notFound: PropTypes.any,
-  plugins: PropTypes.any,
   viewId: PropTypes.string,
   showSidelist: PropTypes.any,
   showIndicator: PropTypes.bool,
   siteName: PropTypes.any,
   windowId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  //
+  // From state:
   tabId: PropTypes.string,
+  inbox: PropTypes.object.isRequired,
+  me: PropTypes.object.isRequired,
+  plugins: PropTypes.any,
+  docStatus: PropTypes.any,
+  docSummaryData: PropTypes.any,
   indicator: PropTypes.string,
   saveStatus: PropTypes.object,
   isShowComments: PropTypes.bool,
@@ -1047,17 +1045,18 @@ Header.propTypes = {
 };
 
 const mapStateToProps = (state, ownProps) => {
-  const {
-    master: { saveStatus },
-  } = state.windowHandler;
-
-  const activeTab = state.windowHandler.master.layout.activeTab;
-  const tabId = activeTab ? activeTab : null;
+  const master = state.windowHandler.master;
+  const saveStatus = master.saveStatus;
+  const tabId = master.layout.activeTab ?? null;
 
   const { windowId, viewId, docId: documentId } = ownProps;
   const tableId = getTableId({ windowId, viewId, tabId, docId: documentId });
   const selector = getSelection();
   const selected = selector(state, tableId);
+
+  const { indicator } = computeSaveStatusFlags({
+    master,
+  });
 
   return {
     tabId,
@@ -1067,7 +1066,7 @@ const mapStateToProps = (state, ownProps) => {
     docStatus: getDocActionElementFromState(state),
     docSummaryData: getDocSummaryDataFromState(state),
     isShowComments: isShowCommentsMarker(state),
-    indicator: getIndicatorFromState({ state }),
+    indicator,
     saveStatus,
     selected,
   };
