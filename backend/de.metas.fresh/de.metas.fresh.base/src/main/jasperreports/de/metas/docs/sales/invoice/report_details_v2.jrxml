@@ -19,6 +19,7 @@
 	</parameter>
 	<parameter name="displayhu" class="java.lang.String">
 		<parameterDescription><![CDATA[]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new String("N")]]></defaultValueExpression>
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details ($P{c_invoice_id}, $P{ad_language});]]>
@@ -577,7 +578,7 @@ $F{shiplocation}
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" mode="Transparent" x="59" y="0" width="121" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					<printWhenExpression><![CDATA[new Boolean(!$F{attributes}.isEmpty())]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
