@@ -119,7 +119,6 @@ public class OLCandCreateRequest
 	String description;
 
 	Boolean isManualPrice;
-	Boolean isImportedWithIssues;
 
 	String deliveryViaRule;
 	String deliveryRule;
@@ -182,7 +181,6 @@ public class OLCandCreateRequest
 			@Nullable final Integer line,
 			@Nullable final String description,
 			@Nullable final Boolean isManualPrice,
-			@Nullable final Boolean isImportedWithIssues,
 			@Nullable final String deliveryViaRule,
 			@Nullable final String deliveryRule,
 			@Nullable final String importWarningMessage,
@@ -248,7 +246,6 @@ public class OLCandCreateRequest
 		this.line = line;
 		this.description = description;
 		this.isManualPrice = isManualPrice;
-		this.isImportedWithIssues = isImportedWithIssues;
 		this.deliveryViaRule = deliveryViaRule;
 		this.deliveryRule = deliveryRule;
 		this.importWarningMessage = importWarningMessage;
