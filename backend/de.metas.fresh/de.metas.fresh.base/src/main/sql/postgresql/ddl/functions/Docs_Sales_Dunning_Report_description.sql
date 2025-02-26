@@ -16,7 +16,9 @@ CREATE FUNCTION report.Docs_Sales_Dunning_Report_description(p_record_id numeric
                 taxid                character varying,
                 condition            character varying,
                 Account_manager      character varying,
-                Account_manager_mail character varying
+                Account_manager_mail character varying,
+                ExternalID           character varying,
+                poreference          character varying
             )
     STABLE
     LANGUAGE sql
@@ -44,7 +46,9 @@ SELECT COALESCE(dlt.PrintName, dl.PrintName) AS DocType,
                TO_CHAR(dd.dunningdate::date + p.discountdays2, 'DD.MM.YYYY')
        )                                     AS condition,
        usr.firstname || ' ' || usr.lastname  AS Account_manager,
-       usr.email                             AS Account_manager_mail
+       usr.email                             AS Account_manager_mail,
+       report.getPartnerExternalID(bp.C_BPartner_ID) AS ExternalID,
+       inv.poreference                                 AS poreference
 
 FROM C_DunningDoc dd
          INNER JOIN C_DunningLevel dl ON dd.C_Dunninglevel_ID = dl.C_DunningLevel_ID
@@ -56,7 +60,8 @@ FROM C_DunningDoc dd
          LEFT OUTER JOIN C_PaymentTerm p ON dl.C_PaymentTerm_ID = p.C_PaymentTerm_ID
          LEFT OUTER JOIN C_PaymentTerm_Trl pt ON dl.C_PaymentTerm_ID = pt.C_PaymentTerm_ID AND pt.ad_Language = p_language
          LEFT OUTER JOIN
-     (SELECT inv.salesrep_id
+     (SELECT inv.salesrep_id,
+             inv.poreference
       FROM c_dunningdoc dd
                INNER JOIN c_dunningdoc_line ddl ON dd.c_dunningdoc_id = ddl.c_dunningdoc_id
                INNER JOIN c_dunningdoc_line_source ddls ON ddl.c_dunningdoc_line_id = ddls.c_dunningdoc_line_id

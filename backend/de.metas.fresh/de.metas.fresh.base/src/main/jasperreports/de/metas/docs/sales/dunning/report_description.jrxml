@@ -60,6 +60,12 @@
 		<property name="com.jaspersoft.studio.field.name" value="account_manager_mail"/>
 		<property name="com.jaspersoft.studio.field.label" value="account_manager_mail"/>
 	</field>
+    <field name="externalid" class="java.lang.String">
+        <property name="com.jaspersoft.studio.field.label" value="externalid"/>
+    </field>
+    <field name="poreference" class="java.lang.String">
+        <property name="com.jaspersoft.studio.field.label" value="poreference"/>
+    </field>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -100,7 +106,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="10"/>
+					<font fontName="Arial" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{dunningdate}]]></textFieldExpression>
 			</textField>
@@ -113,7 +119,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="10"/>
+					<font fontName="Arial" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{date}]]></textFieldExpression>
 			</textField>
@@ -125,8 +131,8 @@
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement>
-					<font size="10"/>
+				<textElement textAlignment="Left" markup="html">
+					<font fontName="Arial" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
 			</textField>
@@ -139,7 +145,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="10"/>
+					<font fontName="Arial" size="12" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{customer}]]></textFieldExpression>
 			</textField>
@@ -165,7 +171,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="10"/>
+					<font fontName="Arial" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Account_manager}]]></textFieldExpression>
 			</textField>
@@ -194,6 +200,37 @@
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{account_manager_mail}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{customer}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement key="textField-3" mode="Transparent" x="373" y="34" width="212" height="13" uuid="52407a45-f71d-4ffc-84d3-f7fbff8cc057">
+					<printWhenExpression><![CDATA[new Boolean($F{externalid} != null && !$F{externalid}.equals( "" ))]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{External_ID}+": "+$F{externalid}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-10" x="59" y="50" width="246" height="13" uuid="1ead53a9-41ae-4bb7-9107-d6e96175e7b7">
+					<printWhenExpression><![CDATA[new Boolean($F{poreference} != null && !$F{poreference}.equals( "" ))]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Reference}+": "+$F{poreference}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
