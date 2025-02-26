@@ -661,7 +661,7 @@ public class DesadvBL implements IDesadvBL
 				.setAD_ProcessByValue(AD_PROCESS_VALUE_EDI_DesadvLine_SSCC_Print)
 				//
 				// Parameter: REPORT_SQL_QUERY: provide a different report query which will select from our datasource instead of using the standard query (which is M_HU_ID based).
-				.addParameter(ReportConstants.REPORT_PARAM_SQL_QUERY, "select *, count(p_value) OVER(PARTITION BY m_hu_id) as totalProd from report.fresh_EDI_DesadvLine_SSCC_Label_Report"
+				.addParameter(ReportConstants.REPORT_PARAM_SQL_QUERY, "select * from report.fresh_EDI_DesadvLine_SSCC_Label_Report"
 						+ " where AD_PInstance_ID=" + ReportConstants.REPORT_PARAM_SQL_QUERY_AD_PInstance_ID_Placeholder + " "
 						+ " order by EDI_DesadvLine_SSCC_ID")
 				//
