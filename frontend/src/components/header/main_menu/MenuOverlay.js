@@ -1,21 +1,25 @@
 import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import onClickOutside from 'react-onclickoutside';
-import {connect} from 'react-redux';
-import {leftTrim} from '../../../utils';
-import {debounce} from 'lodash';
+import { connect } from 'react-redux';
+import { leftTrim } from '../../../utils';
+import { debounce } from 'lodash';
 
-import {breadcrumbRequest, pathRequest, queryPathsRequest,} from '../../../api';
+import {
+  breadcrumbRequest,
+  pathRequest,
+  queryPathsRequest,
+} from '../../../api';
 import {
   flattenLastElem,
   getRootBreadcrumb,
 } from '../../../actions/MenuActions';
 import MenuOverlayContainer from './MenuOverlayContainer';
 import MenuOverlayItem from './MenuOverlayItem';
-import {DEBOUNCE_TIME_SEARCH} from '../../../constants/Constants';
+import { DEBOUNCE_TIME_SEARCH } from '../../../constants/Constants';
 import SpinnerOverlay from '../../app/SpinnerOverlay';
-import {requestRedirect} from '../../../reducers/redirect';
+import { requestRedirect } from '../../../reducers/redirect';
 
 class MenuOverlay extends Component {
   state = {
