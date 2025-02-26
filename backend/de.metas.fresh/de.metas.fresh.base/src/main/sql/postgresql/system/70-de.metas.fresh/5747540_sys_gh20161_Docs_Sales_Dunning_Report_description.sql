@@ -1,34 +1,36 @@
-DROP FUNCTION IF EXISTS report.Docs_Sales_Dunning_Report_description (IN p_Record_ID numeric,
-                                                                      IN p_Language  Character Varying(6))
+DROP FUNCTION IF EXISTS report.Docs_Sales_Dunning_Report_description (IN p_record_id numeric,
+                                                                      IN p_language  Character Varying(6))
 ;
 
-CREATE FUNCTION report.Docs_Sales_Dunning_Report_description(p_Record_ID numeric,
-                                                             p_Language  character varying)
+CREATE FUNCTION report.Docs_Sales_Dunning_Report_description(p_record_id numeric,
+                                                             p_language  character varying)
     RETURNS TABLE
             (
-                doctype     character varying,
-                docno       character varying,
-                noteheader  character varying,
-                note        character varying,
-                dunningdate timestamp without time zone,
-                bp_value    character varying,
-                org_value   character varying,
-                taxid       character varying,
-                condition   character varying,
-                ExternalID  character varying,
-                poreference character varying
+                doctype              character varying,
+                docno                character varying,
+                noteheader           character varying,
+                note                 character varying,
+                dunningdate          timestamp without time zone,
+                bp_value             character varying,
+                org_value            character varying,
+                taxid                character varying,
+                condition            character varying,
+                Account_manager      character varying,
+                Account_manager_mail character varying,
+                ExternalID           character varying,
+                poreference          character varying
             )
     STABLE
     LANGUAGE sql
 AS
 $$
-SELECT COALESCE(dlt.PrintName, dl.PrintName)         AS DocType,
-       dd.documentno                                 AS docno,
+SELECT COALESCE(dlt.PrintName, dl.PrintName) AS DocType,
+       dd.documentno                         AS docno,
        COALESCE(dlt.noteheader, dl.noteheader),
        COALESCE(dlt.note, dl.note),
        dd.dunningdate,
-       bp.value                                      AS bp_value,
-       o.value                                       AS org_value,
+       bp.value                              AS bp_value,
+       o.value                               AS org_value,
        inf.taxid,
        REPLACE(
                REPLACE(
@@ -42,28 +44,34 @@ SELECT COALESCE(dlt.PrintName, dl.PrintName)         AS DocType,
                ),
                '$datum_skonto_2',
                TO_CHAR(dd.dunningdate::date + p.discountdays2, 'DD.MM.YYYY')
-       )                                             AS condition,
+       )                                     AS condition,
+       usr.firstname || ' ' || usr.lastname  AS Account_manager,
+       usr.email                             AS Account_manager_mail,
        report.getPartnerExternalID(bp.C_BPartner_ID) AS ExternalID,
-       i.poreference                                 AS poreference
+       inv.poreference                                 AS poreference
 
 FROM C_DunningDoc dd
-         JOIN C_DunningLevel dl ON dd.C_Dunninglevel_ID = dl.C_DunningLevel_ID
-         LEFT JOIN C_DunningLevel_Trl dlt
-                   ON dd.C_Dunninglevel_ID = dlt.C_DunningLevel_ID AND dlt.ad_Language = p_Language
-         LEFT JOIN C_BPartner bp ON dd.C_BPartner_ID = bp.C_BPartner_ID
-         LEFT JOIN AD_Org o ON dd.AD_Org_ID = o.AD_Org_ID
-         LEFT JOIN AD_OrgInfo inf ON o.AD_Org_ID = inf.AD_Org_ID
-         LEFT JOIN C_PaymentTerm p ON dl.C_PaymentTerm_ID = p.C_PaymentTerm_ID
-         LEFT JOIN C_PaymentTerm_Trl pt
-                   ON dl.C_PaymentTerm_ID = pt.C_PaymentTerm_ID AND pt.ad_Language = p_Language
-         LEFT JOIN C_DunningDoc_line dll ON dd.C_DunningDoc_ID = dll.C_DunningDoc_ID
-         LEFT JOIN C_DunningDoc_Line_Source dls ON dll.C_DunningDoc_Line_ID = dls.C_DunningDoc_Line_ID
-         LEFT JOIN C_Dunning_Candidate dc ON dls.C_Dunning_Candidate_ID = dc.C_Dunning_Candidate_ID
-         LEFT JOIN C_Invoice_v i ON (dc.Record_ID = i.C_Invoice_ID AND
-                                     dc.AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Invoice'))
-WHERE dd.C_DunningDoc_ID = p_Record_ID
+         INNER JOIN C_DunningLevel dl ON dd.C_Dunninglevel_ID = dl.C_DunningLevel_ID
+         LEFT OUTER JOIN C_DunningLevel_Trl dlt ON dd.C_Dunninglevel_ID = dlt.C_DunningLevel_ID AND dlt.ad_Language = p_language
+
+         LEFT OUTER JOIN C_BPartner bp ON dd.C_BPartner_ID = bp.C_BPartner_ID
+         LEFT OUTER JOIN AD_Org o ON dd.AD_Org_ID = o.AD_Org_ID
+         LEFT OUTER JOIN AD_OrgInfo inf ON o.AD_Org_ID = inf.AD_Org_ID
+         LEFT OUTER JOIN C_PaymentTerm p ON dl.C_PaymentTerm_ID = p.C_PaymentTerm_ID
+         LEFT OUTER JOIN C_PaymentTerm_Trl pt ON dl.C_PaymentTerm_ID = pt.C_PaymentTerm_ID AND pt.ad_Language = p_language
+         LEFT OUTER JOIN
+     (SELECT inv.salesrep_id,
+             inv.poreference
+      FROM c_dunningdoc dd
+               INNER JOIN c_dunningdoc_line ddl ON dd.c_dunningdoc_id = ddl.c_dunningdoc_id
+               INNER JOIN c_dunningdoc_line_source ddls ON ddl.c_dunningdoc_line_id = ddls.c_dunningdoc_line_id
+               INNER JOIN c_dunning_candidate dc ON ddls.c_dunning_candidate_id = dc.c_dunning_candidate_id
+               INNER JOIN c_invoice inv ON dc.record_id = inv.c_invoice_id AND dc.ad_table_id = get_table_id('C_Invoice')
+      WHERE dd.c_dunningdoc_id = p_record_id) inv ON TRUE
+         LEFT OUTER JOIN ad_user usr ON inv.salesrep_id = usr.ad_user_id
+WHERE dd.C_DunningDoc_ID = p_record_id
+  AND dd.isActive = 'Y'
     ;
 $$
 ;
-
 
