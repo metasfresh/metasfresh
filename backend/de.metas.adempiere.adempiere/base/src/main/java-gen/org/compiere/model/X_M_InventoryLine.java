@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_InventoryLine
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_InventoryLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1368015240L;
+	private static final long serialVersionUID = -1428165668L;
 
     /** Standard Constructor */
     public X_M_InventoryLine (final Properties ctx, final int M_InventoryLine_ID, @Nullable final String trxName)
@@ -45,6 +45,21 @@ public class X_M_InventoryLine extends org.compiere.model.PO implements I_M_Inve
 	public java.lang.String getAssignedTo() 
 	{
 		return get_ValueAsString(COLUMNNAME_AssignedTo);
+	}
+
+	@Override
+	public void setC_Activity_ID (final int C_Activity_ID)
+	{
+		if (C_Activity_ID < 1) 
+			set_Value (COLUMNNAME_C_Activity_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Activity_ID, C_Activity_ID);
+	}
+
+	@Override
+	public int getC_Activity_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Activity_ID);
 	}
 
 	@Override
