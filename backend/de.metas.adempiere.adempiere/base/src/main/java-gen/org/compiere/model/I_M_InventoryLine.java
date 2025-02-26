@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_InventoryLine
  *  @author metasfresh (generated) 
@@ -71,6 +72,28 @@ public interface I_M_InventoryLine
 
 	ModelColumn<I_M_InventoryLine, Object> COLUMN_AssignedTo = new ModelColumn<>(I_M_InventoryLine.class, "AssignedTo", null);
 	String COLUMNNAME_AssignedTo = "AssignedTo";
+
+	/**
+	 * Set Activity.
+	 * Business Activity
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Activity_ID (int C_Activity_ID);
+
+	/**
+	 * Get Activity.
+	 * Business Activity
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Activity_ID();
+
+	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
 	 * Set Costs.
