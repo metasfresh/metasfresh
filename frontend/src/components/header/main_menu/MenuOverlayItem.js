@@ -1,10 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-
-import history from '../../services/History';
-import { getElementBreadcrumb } from '../../actions/MenuActions';
-import BookmarkButton from './BookmarkButton';
+import BookmarkButton from '../BookmarkButton';
 
 class MenuOverlayItem extends Component {
   componentDidMount() {
@@ -35,7 +32,7 @@ class MenuOverlayItem extends Component {
       handleNewRedirect(elementId);
     } else if (type === 'window' || type === 'board' || type === 'calendar') {
       if (breadcrumb[1] && breadcrumb[1].nodeId === nodeId) {
-        history.go(0);
+        history.go(0); // reload
       } else {
         this.handleClick(elementId, type);
       }
@@ -52,7 +49,6 @@ class MenuOverlayItem extends Component {
     const { handleRedirect } = this.props;
 
     handleRedirect(elementId, null, entity);
-    this.renderBreadcrumb(entity, elementId);
   };
 
   handleKeyDown = (e) => {
@@ -148,12 +144,6 @@ class MenuOverlayItem extends Component {
       }
     }
   }
-
-  renderBreadcrumb = (entity, elementId) => {
-    const { dispatch } = this.props;
-
-    dispatch(getElementBreadcrumb(entity, elementId));
-  };
 
   iconByType = (type) => {
     switch (type) {

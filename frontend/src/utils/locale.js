@@ -1,7 +1,13 @@
+import counterpart from 'counterpart';
 import axios from 'axios';
 import Moment from 'moment';
 
 import { LOCAL_LANG } from '../constants/Constants';
+
+/** Just a shortcut & abstraction of counterpart's translate function */
+export const trl = (key, args = {}) => {
+  return counterpart.translate(key, args);
+};
 
 export function initCurrentActiveLocale() {
   const lang = getCurrentActiveLocale();

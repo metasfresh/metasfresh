@@ -1,13 +1,19 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import cx from 'classnames';
+import * as IndicatorState from '../../constants/IndicatorState';
 
 /**
  * @file Indicator is a component that shows the save status to user in form of a save progress
  * line beneath the Header.
  * @module Indicator
  */
-const Indicator = ({ indicator, isDocumentNotSaved, error, exception }) => {
+const Indicator = ({
+  indicator: indicatorParam,
+  isDocumentNotSaved,
+  error,
+  exception,
+}) => {
   const copyErrorToClipboard = () => {
     if (!error) return;
 
@@ -32,12 +38,12 @@ const Indicator = ({ indicator, isDocumentNotSaved, error, exception }) => {
     navigator.clipboard.writeText(message);
   };
 
-  const indicatorEffective = isDocumentNotSaved ? 'error' : indicator;
+  const indicator = isDocumentNotSaved ? IndicatorState.ERROR : indicatorParam;
 
   return (
     <div className="window-indicator-container">
-      <div className={cx('bar', indicatorEffective)} />
-      {indicatorEffective === 'error' && error ? (
+      <div className={cx('bar', indicator)} />
+      {indicator === IndicatorState.ERROR && error ? (
         <div className="container-fluid message-bar" title={error}>
           <span className="text">{error}</span>
           <button
@@ -56,11 +62,6 @@ const Indicator = ({ indicator, isDocumentNotSaved, error, exception }) => {
   );
 };
 
-/**
- * @typedef {object} Props Component props
- * @prop {string} indicator
- * @prop {bool} [isDocumentNotSaved]
- */
 Indicator.propTypes = {
   indicator: PropTypes.string.isRequired,
   isDocumentNotSaved: PropTypes.bool,

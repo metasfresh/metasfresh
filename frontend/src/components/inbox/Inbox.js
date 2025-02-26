@@ -13,6 +13,7 @@ import {
 } from '../../actions/AppActions';
 import InboxItem from './InboxItem';
 import { extractWindowIdFromViewId } from '../../utils/windowHelpers';
+import { requestRedirect } from '../../reducers/redirect';
 
 class Inbox extends Component {
   isCurrentWindowId = (windowId) => {
@@ -37,10 +38,14 @@ class Inbox extends Component {
   };
 
   handleItemTarget = (itemTarget) => {
-    const { history } = this.props;
+    const { dispatch } = this.props;
     switch (itemTarget.targetType) {
       case 'window':
-        history.push(`/window/${itemTarget.windowId}/${itemTarget.documentId}`);
+        dispatch(
+          requestRedirect(
+            `/window/${itemTarget.windowId}/${itemTarget.documentId}`
+          )
+        );
         break;
       case 'view': {
         // keep in sync with de.metas.notification.UserNotificationRequest.TargetViewAction
@@ -55,14 +60,15 @@ class Inbox extends Component {
           targetLocation = `/window/${itemTarget.windowId}/?viewId=${targetViewId}`;
         }
 
-        if (this.isCurrentWindowId(targetWindowId)) {
-          // In case we're on the same page,
-          // for some reason DocumentList won't refresh on history.push,
-          // so we force a full page reload by setting `window.location`.
-          window.location = targetLocation;
-        } else {
-          history.push(targetLocation);
-        }
+        dispatch(
+          requestRedirect({
+            url: targetLocation,
+            // In case we're on the same page,
+            // for some reason DocumentList won't refresh on history.push,
+            // so we force a full page reload by setting `window.location`.
+            setWindowLocation: this.isCurrentWindowId(targetWindowId),
+          })
+        );
 
         break;
       }
@@ -78,8 +84,8 @@ class Inbox extends Component {
   };
 
   handleShowAll = () => {
-    const { close, history } = this.props;
-    history.push('/inbox');
+    const { close, dispatch } = this.props;
+    dispatch(requestRedirect('/inbox'));
     close && close();
   };
 
@@ -185,16 +191,6 @@ const addClickOutsideHandler = (Child) => {
   };
 };
 
-/**
- * @typedef {object} Props Component props
- * @prop {bool} [open]
- * @prop {bool} modalVisible
- * @prop {object} [location]
- * @prop {func} [close]
- * @prop {shape} [inbox]
- * @prop {bool} [all]
- * @todo Check title, buttons. Which proptype? Required or optional?
- */
 Inbox.propTypes = {
   open: PropTypes.bool,
   modalVisible: PropTypes.bool.isRequired,
@@ -202,7 +198,7 @@ Inbox.propTypes = {
   close: PropTypes.func,
   inbox: PropTypes.object,
   all: PropTypes.bool,
-  history: PropTypes.object,
+  dispatch: PropTypes.func,
 };
 
 Inbox.defaultProps = {};

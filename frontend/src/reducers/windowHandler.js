@@ -19,6 +19,7 @@ import {
   DISABLE_SHORTCUT,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
+  MARK_MASTER_DATA_DISCARDED,
   OPEN_FILTER_BOX,
   OPEN_MODAL,
   OPEN_PLUGIN_MODAL,
@@ -62,6 +63,8 @@ import {
 import { updateTab } from '../utils';
 import { shallowEqual, useSelector } from 'react-redux';
 import { getScope } from '../utils/documentListHelper';
+import * as IndicatorState from '../constants/IndicatorState';
+import * as StaticModalType from '../constants/StaticModalType';
 
 const initialMasterState = {
   layout: {
@@ -70,7 +73,7 @@ const initialMasterState = {
   data: [],
   saveStatus: {},
   validStatus: {},
-  indicator: 'saved',
+  indicator: IndicatorState.SAVED,
   includedTabsInfo: {},
   hasComments: false,
   docId: undefined,
@@ -96,7 +99,7 @@ const initialModalState = {
   triggerField: null,
   saveStatus: {},
   validStatus: {},
-  indicator: 'saved',
+  indicator: IndicatorState.SAVED,
   includedTabsInfo: {},
   staticModalType: '',
 };
@@ -345,6 +348,100 @@ const updateIndicatorToState = ({ windowHandler, indicator, isModal }) => {
   return update(windowHandler, {
     [getScope(isModal)]: { indicator: { $set: indicator } },
   });
+};
+
+export const computeSaveStatusFlags = ({
+  state,
+  modal: modalParam,
+  master: masterParam,
+  considerSavedWhenUnknownStatus = null,
+}) => {
+  // shall we handle: documentId !== 'notfound' ?
+  // shall we handle: initialValidStatus = master.validStatus.initialValue !== undefined ? master.validStatus.initialValue : master.validStatus.valid;
+
+  let master = {};
+  let modal = {};
+
+  if (state != null) {
+    const windowHandlerState = state.windowHandler;
+    modal = windowHandlerState?.modal ?? {};
+    master = windowHandlerState?.master ?? {};
+  }
+
+  if (masterParam != null) {
+    master = masterParam;
+  }
+  if (modalParam != null) {
+    modal = modalParam;
+  }
+
+  let windowId = null;
+  let documentId = null;
+  let saveStatus;
+  let indicator;
+  if (modal?.visible) {
+    if (StaticModalType.hasSaveSupport(modal.staticModalType)) {
+      saveStatus = modal.saveStatus;
+      indicator = modal.indicator;
+    } else {
+      saveStatus = { saved: true };
+      indicator = IndicatorState.SAVED;
+    }
+
+    if (modal.modalType === 'window') {
+      windowId = modal.windowId;
+      documentId = modal.docId;
+    }
+  } else {
+    saveStatus = master.saveStatus;
+    indicator = master.indicator;
+    windowId = master.layout?.windowId;
+    documentId = master.docId;
+  }
+
+  let saved;
+  let presentInDatabase;
+  if (master.saveStatus?.discarded) {
+    saved = null;
+    presentInDatabase = null;
+  } else {
+    saved = saveStatus?.saved ?? considerSavedWhenUnknownStatus;
+    presentInDatabase = saveStatus?.presentInDatabase ?? true;
+  }
+
+  const isDocumentSaved = saved != null ? saved : false;
+  const isDocumentNotSaved = saved != null ? !saved : false;
+
+  if (isDocumentNotSaved && presentInDatabase) {
+    indicator = IndicatorState.ERROR;
+  }
+
+  const retValue = {
+    indicator,
+    isDocumentSaved,
+    isDocumentNotSaved,
+    windowId,
+    documentId,
+  };
+
+  // console.log('computeSaveStatusFlags', {
+  //   retValue,
+  //   saved,
+  //   saveStatus,
+  //   considerSavedWhenUnknownStatus,
+  //   state,
+  //   masterParam,
+  //   modalParam,
+  // });
+
+  return retValue;
+};
+
+export const useSaveStatusFlags = () => {
+  return useSelector(
+    (state) => computeSaveStatusFlags({ state }),
+    shallowEqual
+  );
 };
 
 //
@@ -658,6 +755,17 @@ export default function windowHandler(state = initialState, action) {
           includedTabsInfo: {
             ...state.master.includedTabsInfo,
             ...action.includedTabsInfo,
+          },
+        },
+      };
+    case MARK_MASTER_DATA_DISCARDED:
+      return {
+        ...state,
+        master: {
+          ...state.master,
+          saveStatus: {
+            ...state.master.saveStatus,
+            discarded: true,
           },
         },
       };

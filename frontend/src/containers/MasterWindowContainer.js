@@ -27,7 +27,6 @@ import {
 import MasterWindow from '../components/app/MasterWindow';
 import { toOrderBysCommaSeparatedString } from '../utils/windowHelpers';
 import { fetchTopActions } from '../actions/Actions';
-import { getIndicatorFromState } from '../reducers/windowHandler';
 
 import history from '../services/History';
 
@@ -328,37 +327,11 @@ class MasterWindowContainer extends PureComponent {
   }
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {object} modal
- * @prop {object} master
- * @prop {array} breadcrumb
- * @prop {func} dispatch
- * @prop {object} rawModal
- * @prop {string} indicator
- * @prop {object} me
- * @prop {object} [pluginModal]
- * @prop {object} [overlay]
- * @prop {bool} [allowShortcut]
- * @prop {*} [params]
- * @prop {*} [includedView]
- * @prop {*} [processStatus]
- * @prop {*} [enableTutorial]
- * @prop {*} [location]
- * @prop {func} addNotification
- * @prop {func} attachFileAction
- * @prop {func} sortTab
- * @prop {func} push
- * @prop {func} clearMasterData
- * @prop {func} fireUpdateData
- * @prop {func} updateTabRowsdata
- */
 MasterWindowContainer.propTypes = {
   modal: PropTypes.object.isRequired,
   master: PropTypes.object.isRequired,
   breadcrumb: PropTypes.array.isRequired,
   rawModal: PropTypes.object.isRequired,
-  indicator: PropTypes.string.isRequired,
   me: PropTypes.object.isRequired,
   pluginModal: PropTypes.object,
   overlay: PropTypes.object,
@@ -389,7 +362,6 @@ const mapStateToProps = (state) => ({
   rawModal: state.windowHandler.rawModal,
   pluginModal: state.windowHandler.pluginModal,
   overlay: state.windowHandler.overlay,
-  indicator: getIndicatorFromState({ state, isModal: false }),
   includedView: state.viewHandler.includedView,
   allowShortcut: state.windowHandler.allowShortcut,
   enableTutorial: state.appHandler.enableTutorial,

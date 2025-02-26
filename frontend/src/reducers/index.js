@@ -12,6 +12,7 @@ import tables from './tables';
 import actionsHandler from './actionsHandler';
 import widgetHandler from './widgetHandler';
 import tableQuickInputHandler from './tableQuickInputHandler';
+import redirect from './redirect';
 
 export const createRootReducer = () =>
   combineReducers({
@@ -27,4 +28,5 @@ export const createRootReducer = () =>
     actionsHandler,
     widgetHandler,
     tableQuickInputHandler,
+    redirect,
   });

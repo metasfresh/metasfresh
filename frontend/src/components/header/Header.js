@@ -5,17 +5,17 @@ import { connect } from 'react-redux';
 import classnames from 'classnames';
 
 import history from '../../services/History';
-import { getPrintingOptions } from '../../api/window';
-import { deleteRequest } from '../../api';
+import { deleteDocument, getPrintingOptions } from '../../api/window';
 import { duplicateRequest } from '../../actions/GenericActions';
 import {
+  clearMasterData,
   openModal,
   openPrintingOptionsModal,
   printDocument,
   resetPrintingOptions,
   setPrintingOptions,
 } from '../../actions/WindowActions';
-import { setBreadcrumb } from '../../actions/MenuActions';
+import { setBreadcrumb, updateBreadcrumb } from '../../actions/MenuActions';
 
 import keymap from '../../shortcuts/keymap';
 import GlobalContextShortcuts from '../keyshortcuts/GlobalContextShortcuts';
@@ -27,9 +27,22 @@ import NewEmail from '../email/NewEmail';
 import Inbox from '../inbox/Inbox';
 import NewLetter from '../letter/NewLetter';
 import Tooltips from '../tooltips/Tooltips';
-import Breadcrumb from './Breadcrumb';
+import Breadcrumb from './breadcrumb/Breadcrumb';
 import SideList from './SideList';
-import Subheader from './SubHeader';
+import Subheader, {
+  ACTION_ABOUT_DOCUMENT,
+  ACTION_BREADCRUMB_CLICK,
+  ACTION_CLONE_DOCUMENT,
+  ACTION_DELETE_DOCUMENT,
+  ACTION_DOWNLOAD_SELECTED,
+  ACTION_NEW_DOCUMENT,
+  ACTION_OPEN_ADVANCED_EDIT,
+  ACTION_OPEN_COMMENTS,
+  ACTION_OPEN_EMAIL,
+  ACTION_OPEN_LETTER,
+  ACTION_OPEN_PRINT_RAPORT,
+  ACTION_TOGGLE_EDIT_MODE,
+} from './SubHeader';
 import UserDropdown from './UserDropdown';
 
 import logo from '../../assets/images/metasfresh_logo_green_thumb.png';
@@ -38,7 +51,13 @@ import {
   getDocSummaryDataFromState,
 } from '../../reducers/windowHandlerUtils';
 import { isShowCommentsMarker } from '../../utils/tableHelpers';
-import { getIndicatorFromState } from '../../reducers/windowHandler';
+import { computeSaveStatusFlags } from '../../reducers/windowHandler';
+import { getSelection, getTableId } from '../../reducers/tables';
+import RedirectHandler from './RedirectHandler';
+import { requestRedirect } from '../../reducers/redirect';
+import * as StaticModalType from '../../constants/StaticModalType';
+
+const PROMPT_TYPE_CONFIRM_DELETE = 'confirmDelete';
 
 /**
  * @file The Header component is shown in every view besides Modal or RawModal in frontend. It defines
@@ -59,7 +78,6 @@ class Header extends PureComponent {
     isUDOpen: false,
     tooltipOpen: '',
     isEmailOpen: false,
-    deletePrompt: { open: false },
   };
 
   udRef = React.createRef();
@@ -269,31 +287,19 @@ class Header extends PureComponent {
       null,
       null,
       null,
-      'comments'
+      StaticModalType.Comments
     );
   };
 
-  /**
-   * @method openModel
-   * @summary ToDo: Describe the method
-   * @param {string} windowId
-   * @param {*} modalType
-   * @param {*} caption
-   * @param {bool} isAdvanced
-   * @param {*} selected
-   * @param {*} childViewId
-   * @param {*} childViewSelectedIds
-   * @param {*} staticModalType
-   */
   openModal = (
     windowId,
     modalType,
     caption,
     isAdvanced,
     selected,
-    childViewId,
-    childViewSelectedIds,
-    staticModalType
+    childViewId = null,
+    childViewSelectedIds = null,
+    staticModalType = null
   ) => {
     const { dispatch, viewId } = this.props;
 
@@ -312,17 +318,6 @@ class Header extends PureComponent {
     );
   };
 
-  /**
-   * @method openModalRow
-   * @summary ToDo: Describe the method
-   * @param {string} windowId
-   * @param {*} modalType
-   * @param {*} caption
-   * @param {string} tabId
-   * @param {string} rowId
-   * @param {string} rowId
-   * @param {*} staticModalType
-   */
   openModalRow = (
     windowId,
     modalType,
@@ -406,60 +401,74 @@ class Header extends PureComponent {
     });
   };
 
-  /**
-   * @method handleEmail
-   * @summary ToDo: Describe the method
-   */
   handleEmail = () => {
     this.setState({ isEmailOpen: true });
   };
 
-  /**
-   * @method handleLetter
-   * @summary ToDo: Describe the method
-   */
-  handleLetter = () => {
-    this.setState({ isLetterOpen: true });
-  };
-
-  /**
-   * @method handleCloseEmail
-   * @summary ToDo: Describe the method
-   */
   handleCloseEmail = () => {
     this.setState({ isEmailOpen: false });
   };
 
-  /**
-   * @method handleCloseLetter
-   * @summary ToDo: Describe the method
-   */
+  handleLetter = () => {
+    this.setState({ isLetterOpen: true });
+  };
+
   handleCloseLetter = () => {
     this.setState({ isLetterOpen: false });
   };
 
   handleDelete = () => {
-    this.setState({ deletePrompt: { ...this.state.deletePrompt, open: true } });
-  };
-
-  handleDeletePromptCancelClick = () => {
-    this.setState({
-      deletePrompt: { ...this.state.deletePrompt, open: false },
+    this.showPrompt({
+      type: PROMPT_TYPE_CONFIRM_DELETE,
+      title: counterpart.translate('window.Delete.caption'),
+      text: counterpart.translate('window.delete.message'),
+      submitCaption: counterpart.translate('window.delete.confirm'),
+      cancelCaption: counterpart.translate('window.delete.cancel'),
     });
   };
 
-  handleDeletePromptSubmitClick = () => {
-    const { handleDeletedStatus, windowId, dataId } = this.props;
+  showPrompt = ({
+    type,
+    title,
+    text,
+    submitCaption,
+    cancelCaption,
+    ...params
+  }) => {
+    this.setState({
+      prompt: {
+        type,
+        title,
+        text,
+        submitCaption,
+        cancelCaption,
+        ...params,
+      },
+    });
+  };
 
-    this.setState(
-      { deletePrompt: { ...this.state.deletePrompt, open: false } },
-      () => {
-        deleteRequest('window', windowId, null, null, [dataId]).then(() => {
-          handleDeletedStatus(true);
-          this.redirectBackAfterDelete({ windowId });
-        });
-      }
-    );
+  closePrompt = () => {
+    this.setState({ prompt: null });
+  };
+
+  handlePromptSubmitClick = () => {
+    const { dispatch } = this.props;
+    const { prompt } = this.state;
+    if (!prompt) return;
+
+    const { type } = prompt;
+
+    if (type === PROMPT_TYPE_CONFIRM_DELETE) {
+      const { windowId, dataId: documentId } = this.props;
+
+      deleteDocument({ windowId, documentId }).then(() => {
+        this.closePrompt();
+        dispatch(clearMasterData());
+        dispatch(() => this.redirectBackAfterDelete({ windowId }));
+      });
+    } else {
+      console.log(`Unknown prompt ${type}`, { prompt });
+    }
   };
 
   handleDocStatusToggle = (close) => {
@@ -476,11 +485,6 @@ class Header extends PureComponent {
     }
   };
 
-  /**
-   * @method handleSidelistToggle
-   * @summary ToDo: Describe the method
-   * @param {string} id
-   */
   handleSidelistToggle = (id = null) => {
     const { sideListTab } = this.state;
 
@@ -525,13 +529,11 @@ class Header extends PureComponent {
 
   closeDropdownOverlay = () => this.closeOverlays('dropdown');
 
-  /**
-   * @method redirect
-   * @summary Redirect to a page
-   * @param {string} where
-   */
+  closeSubheader = () => this.closeOverlays('isSubheaderShow');
+
   redirect = (where) => {
-    history.push(where);
+    const { dispatch } = this.props;
+    dispatch(requestRedirect(where));
   };
 
   redirectBackAfterDelete = ({ windowId }) => {
@@ -548,10 +550,119 @@ class Header extends PureComponent {
     }
   };
 
-  /**
-   * @method render
-   * @summary ToDo: Describe the method
-   */
+  handleAboutButton = () => {
+    const { windowId, tabId, selected } = this.props;
+
+    if (selected?.length === 1) {
+      this.openModalRow(
+        windowId,
+        'static',
+        counterpart.translate('window.about.caption'),
+        tabId,
+        selected,
+        StaticModalType.About
+      );
+    } else {
+      this.openModal(
+        windowId,
+        'static',
+        counterpart.translate('window.about.caption'),
+        null,
+        null,
+        null,
+        null,
+        StaticModalType.About
+      );
+    }
+  };
+
+  handleUpdateBreadcrumb = (nodes) => {
+    const { dispatch } = this.props;
+    nodes.map((node) => dispatch(updateBreadcrumb(node)));
+  };
+
+  handleDownloadSelected = (event) => {
+    if (this.props.selected.length === 0) {
+      event.preventDefault();
+    }
+  };
+
+  handleAction = ({ action, payload }) => {
+    const { windowId, dataId } = this.props;
+
+    switch (action) {
+      case ACTION_BREADCRUMB_CLICK: {
+        this.handleUpdateBreadcrumb(payload);
+        break;
+      }
+      case ACTION_TOGGLE_EDIT_MODE: {
+        const { handleEditModeToggle } = this.props;
+        handleEditModeToggle();
+        this.closeSubheader();
+        break;
+      }
+      case ACTION_ABOUT_DOCUMENT: {
+        this.handleAboutButton();
+        break;
+      }
+      case ACTION_DOWNLOAD_SELECTED: {
+        this.handleDownloadSelected();
+        break;
+      }
+      case ACTION_NEW_DOCUMENT: {
+        this.redirect('/window/' + windowId + '/new');
+        this.closeSubheader();
+        break;
+      }
+      case ACTION_OPEN_ADVANCED_EDIT: {
+        this.openModal(
+          windowId,
+          'window',
+          counterpart.translate('window.advancedEdit.caption'),
+          true
+        );
+        this.closeSubheader();
+        break;
+      }
+      case ACTION_CLONE_DOCUMENT: {
+        this.handleClone(windowId, dataId);
+        this.closeSubheader();
+        break;
+      }
+      case ACTION_OPEN_EMAIL: {
+        this.handleEmail();
+        this.closeSubheader();
+        break;
+      }
+      case ACTION_OPEN_LETTER: {
+        this.handleLetter();
+        this.closeSubheader();
+        break;
+      }
+      case ACTION_OPEN_PRINT_RAPORT: {
+        const { docNoData } = this.props;
+        const docNo = docNoData?.value;
+        this.closeSubheader();
+        return this.handlePrint(windowId, dataId, docNo);
+        // break;
+      }
+      case ACTION_DELETE_DOCUMENT: {
+        this.handleDelete();
+        this.closeSubheader();
+        break;
+      }
+      case ACTION_OPEN_COMMENTS: {
+        this.handleComments();
+        this.closeSubheader();
+        break;
+      }
+      default: {
+        console.log(`Action ${action} not implemented`, { payload });
+        break;
+      }
+    }
+  };
+
   render() {
     const {
       docSummaryData,
@@ -567,7 +678,6 @@ class Header extends PureComponent {
       showIndicator,
       windowId,
       // TODO: We should be using indicator from the state instead of another variable
-      isDocumentNotSaved,
       notFound,
       docId,
       me,
@@ -588,7 +698,7 @@ class Header extends PureComponent {
       scrolled,
       isMenuOverlayShow,
       tooltipOpen,
-      deletePrompt,
+      prompt,
       sideListTab,
       isUDOpen,
       isEmailOpen,
@@ -597,16 +707,17 @@ class Header extends PureComponent {
 
     return (
       <div>
-        {deletePrompt && deletePrompt.open && (
+        <RedirectHandler />
+        {prompt && (
           <Prompt
-            title={counterpart.translate('window.Delete.caption')}
-            text={counterpart.translate('window.delete.message')}
+            title={prompt.title}
+            text={prompt.text}
             buttons={{
-              submit: counterpart.translate('window.delete.confirm'),
-              cancel: counterpart.translate('window.delete.cancel'),
+              submit: prompt.submitCaption,
+              cancel: prompt.cancelCaption,
             }}
-            onCancelClick={this.handleDeletePromptCancelClick}
-            onSubmitClick={this.handleDeletePromptSubmitClick}
+            onSubmitClick={this.handlePromptSubmitClick}
+            onCancelClick={this.closePrompt}
           />
         )}
 
@@ -619,7 +730,7 @@ class Header extends PureComponent {
             <div className="header-container">
               <div className="header-left-side">
                 <div
-                  onClick={() => this.closeOverlays('isSubheaderShow')}
+                  onClick={this.closeSubheader}
                   onMouseEnter={() =>
                     this.toggleTooltip(keymap.OPEN_ACTIONS_MENU)
                   }
@@ -658,11 +769,9 @@ class Header extends PureComponent {
                   breadcrumb={breadcrumb}
                   windowType={windowId}
                   docSummaryData={docSummaryData}
-                  dataId={dataId}
                   siteName={siteName}
                   menuOverlay={menuOverlay}
                   docId={docId}
-                  isDocumentNotSaved={isDocumentNotSaved}
                   handleMenuOverlay={this.handleMenuOverlay}
                   openModal={this.openModal}
                 />
@@ -753,7 +862,6 @@ class Header extends PureComponent {
                   open={isUDOpen}
                   handleUDOpen={this.handleUDOpen}
                   disableOnClickOutside={true}
-                  redirect={this.redirect}
                   shortcut={keymap.OPEN_AVATAR_MENU}
                   toggleTooltip={this.toggleTooltip}
                   tooltipOpen={tooltipOpen}
@@ -800,7 +908,6 @@ class Header extends PureComponent {
           {showIndicator && (
             <Indicator
               indicator={indicator}
-              isDocumentNotSaved={isDocumentNotSaved}
               error={saveStatus?.error ? saveStatus?.reason : ''}
               exception={saveStatus?.error ? saveStatus?.exception : null}
             />
@@ -809,17 +916,10 @@ class Header extends PureComponent {
 
         {isSubheaderShow && (
           <Subheader
-            closeSubheader={() => this.closeOverlays('isSubheaderShow')}
-            docNo={docNoData && docNoData.value}
+            closeSubheader={this.closeSubheader}
             openModal={this.openModal}
             openModalRow={this.openModalRow}
-            handlePrint={this.handlePrint}
-            handleClone={this.handleClone}
-            handleDelete={this.handleDelete}
-            handleEmail={this.handleEmail}
-            handleLetter={this.handleLetter}
-            handleComments={this.handleComments}
-            redirect={this.redirect}
+            onMenuItemAction={this.handleAction}
             disableOnClickOutside={!isSubheaderShow}
             breadcrumb={breadcrumb}
             notfound={notFound}
@@ -830,7 +930,6 @@ class Header extends PureComponent {
             viewId={viewId}
             siteName={siteName}
             editmode={editmode}
-            handleEditModeToggle={handleEditModeToggle}
           />
         )}
 
@@ -913,77 +1012,63 @@ class Header extends PureComponent {
   }
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {*} activeTab
- * @prop {*} breadcrumb
- * @prop {string} dataId
- * @prop {func} dispatch
- * @prop {string} docId
- * @prop {*} docSummaryData
- * @prop {*} docNoData
- * @prop {*} docStatus
- * @prop {*} dropzoneFocused
- * @prop {*} editmode
- * @prop {*} entity
- * @prop {*} handleDeletedStatus
- * @prop {*} handleEditModeToggle
- * @prop {object} inbox
- * @prop {bool} isDocumentNotSaved
- * @prop {object} me
- * @prop {*} notFound
- * @prop {*} plugins
- * @prop {*} viewId
- * @prop {*} showSidelist
- * @prop {*} showIndicator
- * @prop {*} siteName
- * @prop {*} windowId
- * @prop {bool} hasComments - used to indicate comments available for the details view
- */
 Header.propTypes = {
   activeTab: PropTypes.any,
   breadcrumb: PropTypes.any,
   dataId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   dispatch: PropTypes.func.isRequired,
   docId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-  docSummaryData: PropTypes.any,
   docNoData: PropTypes.any,
-  docStatus: PropTypes.any,
   dropzoneFocused: PropTypes.any,
   editmode: PropTypes.any,
   entity: PropTypes.any,
-  handleDeletedStatus: PropTypes.any,
   handleEditModeToggle: PropTypes.any,
-  inbox: PropTypes.object.isRequired,
-  isDocumentNotSaved: PropTypes.bool,
-  me: PropTypes.object.isRequired,
   notFound: PropTypes.any,
-  plugins: PropTypes.any,
   viewId: PropTypes.string,
   showSidelist: PropTypes.any,
   showIndicator: PropTypes.bool,
   siteName: PropTypes.any,
   windowId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+  //
+  // From state:
+  tabId: PropTypes.string,
+  inbox: PropTypes.object.isRequired,
+  me: PropTypes.object.isRequired,
+  plugins: PropTypes.any,
+  docStatus: PropTypes.any,
+  docSummaryData: PropTypes.any,
   indicator: PropTypes.string,
   saveStatus: PropTypes.object,
   isShowComments: PropTypes.bool,
   hasComments: PropTypes.bool,
+  selected: PropTypes.array,
 };
 
-const mapStateToProps = (state) => {
-  const {
-    master: { saveStatus },
-  } = state.windowHandler;
+const mapStateToProps = (state, ownProps) => {
+  const master = state.windowHandler.master;
+  const saveStatus = master.saveStatus;
+  const tabId = master.layout.activeTab ?? null;
+
+  const { windowId, viewId, docId: documentId } = ownProps;
+  const tableId = getTableId({ windowId, viewId, tabId, docId: documentId });
+  const selector = getSelection();
+  const selected = selector(state, tableId);
+
+  const { indicator } = computeSaveStatusFlags({
+    master,
+  });
 
   return {
+    tabId,
     inbox: state.appHandler.inbox,
     me: state.appHandler.me,
     plugins: state.pluginsHandler.files,
     docStatus: getDocActionElementFromState(state),
     docSummaryData: getDocSummaryDataFromState(state),
     isShowComments: isShowCommentsMarker(state),
-    indicator: getIndicatorFromState({ state }),
+    indicator,
     saveStatus,
+    selected,
   };
 };
 
