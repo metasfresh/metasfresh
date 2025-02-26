@@ -27,6 +27,7 @@ import Amount from './Amount';
 import Password from './Password';
 import CostPrice from './CostPrice';
 import PropTypes from 'prop-types';
+import CostPriceRange from './CostPriceRange';
 
 class WidgetRenderer extends PureComponent {
   constructor(props) {
@@ -475,14 +476,34 @@ class WidgetRenderer extends PureComponent {
         );
       case 'Number':
       case 'CostPrice':
-        return (
-          <div className={classnames(this.getClassNames(), 'number-field')}>
-            <CostPrice
-              {...widgetProperties}
+        if (range) {
+          return (
+            <CostPriceRange
+              ref={widgetProperties.ref}
+              rank={type}
+              valueFrom={widgetData[0].value}
+              valueTo={widgetData[0].valueTo}
               precision={widgetData[0].precision}
+              autoComplete={widgetProperties.autoComplete}
+              className={widgetProperties.className}
+              disabled={widgetProperties.disabled}
+              placeholder={widgetProperties.placeholder}
+              onChange={widgetProperties.onChange}
+              onFocus={widgetProperties.onFocus}
+              onBlur={widgetProperties.onBlur}
+              onKeyDown={widgetProperties.onKeyDown}
             />
-          </div>
-        );
+          );
+        } else {
+          return (
+            <div className={classnames(this.getClassNames(), 'number-field')}>
+              <CostPrice
+                {...widgetProperties}
+                precision={widgetData[0].precision}
+              />
+            </div>
+          );
+        }
       case 'YesNo':
         return (
           <Checkbox
