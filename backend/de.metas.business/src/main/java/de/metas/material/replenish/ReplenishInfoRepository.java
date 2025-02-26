@@ -31,9 +31,14 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Replenish;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
 public class ReplenishInfoRepository
@@ -51,12 +56,8 @@ public class ReplenishInfoRepository
 
 	public ReplenishInfo getBy(@NonNull final WarehouseId warehouseId, @NonNull final ProductId productId)
 	{
-		final I_M_Replenish replenishRecord = queryBL.createQueryBuilder(I_M_Replenish.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_Replenish.COLUMNNAME_M_Product_ID, productId)
-				.addEqualsFilter(I_M_Replenish.COLUMNNAME_M_Warehouse_ID, warehouseId)
-				.create()
-				.firstOnly(I_M_Replenish.class);
+		final I_M_Replenish replenishRecord = getRecordBy(warehouseId, productId)
+				.orElse(null);
 
 		final UomId uomId = productBL.getStockUOMId(productId);
 
@@ -81,4 +82,35 @@ public class ReplenishInfoRepository
 				.build();
 	}
 
+	public void save(@NonNull final ReplenishInfo replenishInfo)
+	{
+		final I_M_Replenish replenishRecord = getRecordBy(replenishInfo.getWarehouseId(), replenishInfo.getProductId())
+				.orElseGet(() -> createNewRecord(replenishInfo));
+
+		replenishRecord.setLevel_Min(replenishInfo.getMin().getStockQty().toBigDecimal());
+		replenishRecord.setLevel_Max(replenishInfo.getMax().getStockQty().toBigDecimal());
+
+		saveRecord(replenishRecord);
+	}
+
+	@NonNull
+	private I_M_Replenish createNewRecord(@NonNull final ReplenishInfo replenishInfo)
+	{
+		final I_M_Replenish replenishRecord = InterfaceWrapperHelper.newInstance(I_M_Replenish.class);
+		replenishRecord.setM_Product_ID(replenishInfo.getProductId().getRepoId());
+		replenishRecord.setM_Warehouse_ID(replenishInfo.getWarehouseId().getRepoId());
+
+		return replenishRecord;
+	}
+
+	@NonNull
+	private Optional<I_M_Replenish> getRecordBy(@NonNull final WarehouseId warehouseId, @NonNull final ProductId productId)
+	{
+		return queryBL.createQueryBuilder(I_M_Replenish.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Replenish.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_M_Replenish.COLUMNNAME_M_Warehouse_ID, warehouseId)
+				.create()
+				.firstOnlyOptional(I_M_Replenish.class);
+	}
 }

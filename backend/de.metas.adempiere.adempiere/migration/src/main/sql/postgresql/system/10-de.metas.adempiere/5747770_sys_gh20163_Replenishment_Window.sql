@@ -725,3 +725,389 @@ UPDATE AD_Element base SET Description=trl.Description, Updated=trl.Updated, Upd
 -- 2025-02-26T10:45:44.618Z
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583507,'fr_CH')
 ;
+
+-- Run mode: SWING_CLIENT
+
+-- Column: M_Material_Needs_Planner_V.M_Material_Needs_Planner_V_ID
+-- 2025-02-26T14:26:40.326Z
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=589736
+;
+
+-- 2025-02-26T14:26:40.341Z
+DELETE FROM AD_Column WHERE AD_Column_ID=589736
+;
+
+-- Column: M_Material_Needs_Planner_V.M_Product_ID
+-- 2025-02-26T14:28:18.689Z
+UPDATE AD_Column SET IsParent='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2025-02-26 14:28:18.689000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=589739
+;
+
+-- Column: M_Material_Needs_Planner_V.M_Warehouse_ID
+-- 2025-02-26T14:28:27.014Z
+UPDATE AD_Column SET IsParent='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2025-02-26 14:28:27.014000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=589737
+;
+
+-- Run mode: SWING_CLIENT
+
+-- Element: Total_Qty_One_Week_Ago
+-- 2025-02-26T16:32:19.236Z
+UPDATE AD_Element_Trl SET Name='-1', PrintName='-1',Updated=TO_TIMESTAMP('2025-02-26 16:32:19.236000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583501 AND AD_Language='de_CH'
+;
+
+-- 2025-02-26T16:32:19.237Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:32:19.825Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583501,'de_CH')
+;
+
+-- Element: Total_Qty_One_Week_Ago
+-- 2025-02-26T16:32:22.236Z
+UPDATE AD_Element_Trl SET Name='-1', PrintName='-1',Updated=TO_TIMESTAMP('2025-02-26 16:32:22.236000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583501 AND AD_Language='de_DE'
+;
+
+-- 2025-02-26T16:32:22.238Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_DE' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:32:24.298Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(583501,'de_DE')
+;
+
+-- 2025-02-26T16:32:24.303Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583501,'de_DE')
+;
+
+-- Element: Total_Qty_One_Week_Ago
+-- 2025-02-26T16:32:26.253Z
+UPDATE AD_Element_Trl SET Name='-1', PrintName='-1',Updated=TO_TIMESTAMP('2025-02-26 16:32:26.253000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583501 AND AD_Language='en_US'
+;
+
+-- 2025-02-26T16:32:26.254Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:32:26.793Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583501,'en_US')
+;
+
+-- Element: Total_Qty_One_Week_Ago
+-- 2025-02-26T16:32:29.345Z
+UPDATE AD_Element_Trl SET Name='-1', PrintName='-1',Updated=TO_TIMESTAMP('2025-02-26 16:32:29.345000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583501 AND AD_Language='fr_CH'
+;
+
+-- 2025-02-26T16:32:29.346Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='fr_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:32:29.837Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583501,'fr_CH')
+;
+
+-- Element: Total_Qty_Two_Weeks_Ago
+-- 2025-02-26T16:32:53.537Z
+UPDATE AD_Element_Trl SET Name='-2', PrintName='-2',Updated=TO_TIMESTAMP('2025-02-26 16:32:53.537000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583502 AND AD_Language='de_CH'
+;
+
+-- 2025-02-26T16:32:53.538Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:32:54.199Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583502,'de_CH')
+;
+
+-- Element: Total_Qty_Two_Weeks_Ago
+-- 2025-02-26T16:32:55.963Z
+UPDATE AD_Element_Trl SET Name='-2', PrintName='-2',Updated=TO_TIMESTAMP('2025-02-26 16:32:55.963000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583502 AND AD_Language='de_DE'
+;
+
+-- 2025-02-26T16:32:55.964Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_DE' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:32:57.252Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(583502,'de_DE')
+;
+
+-- 2025-02-26T16:32:57.253Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583502,'de_DE')
+;
+
+-- Element: Total_Qty_Two_Weeks_Ago
+-- 2025-02-26T16:32:59.017Z
+UPDATE AD_Element_Trl SET Name='-2', PrintName='-2',Updated=TO_TIMESTAMP('2025-02-26 16:32:59.017000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583502 AND AD_Language='en_US'
+;
+
+-- 2025-02-26T16:32:59.017Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:32:59.508Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583502,'en_US')
+;
+
+-- Element: Total_Qty_Two_Weeks_Ago
+-- 2025-02-26T16:33:01.947Z
+UPDATE AD_Element_Trl SET Name='-2', PrintName='-2',Updated=TO_TIMESTAMP('2025-02-26 16:33:01.947000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583502 AND AD_Language='fr_CH'
+;
+
+-- 2025-02-26T16:33:01.948Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='fr_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:33:02.401Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583502,'fr_CH')
+;
+
+-- Element: Total_Qty_Three_Weeks_Ago
+-- 2025-02-26T16:33:16.811Z
+UPDATE AD_Element_Trl SET Name='-3', PrintName='-3',Updated=TO_TIMESTAMP('2025-02-26 16:33:16.811000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583503 AND AD_Language='de_CH'
+;
+
+-- 2025-02-26T16:33:16.812Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:33:17.863Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583503,'de_CH')
+;
+
+-- Element: Total_Qty_Three_Weeks_Ago
+-- 2025-02-26T16:33:19.667Z
+UPDATE AD_Element_Trl SET Name='-3', PrintName='-3',Updated=TO_TIMESTAMP('2025-02-26 16:33:19.667000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583503 AND AD_Language='de_DE'
+;
+
+-- 2025-02-26T16:33:19.667Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_DE' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:33:21.386Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(583503,'de_DE')
+;
+
+-- 2025-02-26T16:33:21.387Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583503,'de_DE')
+;
+
+-- Element: Total_Qty_Three_Weeks_Ago
+-- 2025-02-26T16:33:23.123Z
+UPDATE AD_Element_Trl SET Name='-3', PrintName='-3',Updated=TO_TIMESTAMP('2025-02-26 16:33:23.123000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583503 AND AD_Language='en_US'
+;
+
+-- 2025-02-26T16:33:23.124Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:33:23.834Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583503,'en_US')
+;
+
+-- Element: Total_Qty_Three_Weeks_Ago
+-- 2025-02-26T16:33:25.715Z
+UPDATE AD_Element_Trl SET Name='-3', PrintName='-3',Updated=TO_TIMESTAMP('2025-02-26 16:33:25.715000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583503 AND AD_Language='fr_CH'
+;
+
+-- 2025-02-26T16:33:25.716Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='fr_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:33:26.790Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583503,'fr_CH')
+;
+
+-- Element: Total_Qty_Four_Weeks_Ago
+-- 2025-02-26T16:33:44.110Z
+UPDATE AD_Element_Trl SET Name='-4', PrintName='-4',Updated=TO_TIMESTAMP('2025-02-26 16:33:44.110000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583504 AND AD_Language='de_CH'
+;
+
+-- 2025-02-26T16:33:44.111Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:33:44.685Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583504,'de_CH')
+;
+
+-- Element: Total_Qty_Four_Weeks_Ago
+-- 2025-02-26T16:33:46.772Z
+UPDATE AD_Element_Trl SET Name='-4', PrintName='-4',Updated=TO_TIMESTAMP('2025-02-26 16:33:46.772000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583504 AND AD_Language='de_DE'
+;
+
+-- 2025-02-26T16:33:46.773Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_DE' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:33:47.982Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(583504,'de_DE')
+;
+
+-- 2025-02-26T16:33:47.983Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583504,'de_DE')
+;
+
+-- Element: Total_Qty_Four_Weeks_Ago
+-- 2025-02-26T16:33:49.751Z
+UPDATE AD_Element_Trl SET Name='-4', PrintName='-4',Updated=TO_TIMESTAMP('2025-02-26 16:33:49.751000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583504 AND AD_Language='en_US'
+;
+
+-- 2025-02-26T16:33:49.753Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:33:50.265Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583504,'en_US')
+;
+
+-- Element: Total_Qty_Four_Weeks_Ago
+-- 2025-02-26T16:33:52.293Z
+UPDATE AD_Element_Trl SET Name='-4', PrintName='-4',Updated=TO_TIMESTAMP('2025-02-26 16:33:52.293000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583504 AND AD_Language='fr_CH'
+;
+
+-- 2025-02-26T16:33:52.294Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='fr_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:33:52.781Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583504,'fr_CH')
+;
+
+-- Element: Total_Qty_Five_Weeks_Ago
+-- 2025-02-26T16:34:08.348Z
+UPDATE AD_Element_Trl SET Name='-5', PrintName='-5',Updated=TO_TIMESTAMP('2025-02-26 16:34:08.348000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583505 AND AD_Language='de_CH'
+;
+
+-- 2025-02-26T16:34:08.349Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:34:08.827Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583505,'de_CH')
+;
+
+-- Element: Total_Qty_Five_Weeks_Ago
+-- 2025-02-26T16:34:11.119Z
+UPDATE AD_Element_Trl SET Name='-5', PrintName='-5',Updated=TO_TIMESTAMP('2025-02-26 16:34:11.119000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583505 AND AD_Language='de_DE'
+;
+
+-- 2025-02-26T16:34:11.120Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_DE' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:34:12.070Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(583505,'de_DE')
+;
+
+-- 2025-02-26T16:34:12.071Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583505,'de_DE')
+;
+
+-- Element: Total_Qty_Five_Weeks_Ago
+-- 2025-02-26T16:34:13.938Z
+UPDATE AD_Element_Trl SET Name='-5', PrintName='-5',Updated=TO_TIMESTAMP('2025-02-26 16:34:13.938000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583505 AND AD_Language='en_US'
+;
+
+-- 2025-02-26T16:34:13.939Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:34:14.428Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583505,'en_US')
+;
+
+-- Element: Total_Qty_Five_Weeks_Ago
+-- 2025-02-26T16:34:16.323Z
+UPDATE AD_Element_Trl SET Name='-5', PrintName='-5',Updated=TO_TIMESTAMP('2025-02-26 16:34:16.323000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583505 AND AD_Language='fr_CH'
+;
+
+-- 2025-02-26T16:34:16.323Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='fr_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:34:16.896Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583505,'fr_CH')
+;
+
+-- Element: Total_Qty_Six_Weeks_Ago
+-- 2025-02-26T16:34:42.523Z
+UPDATE AD_Element_Trl SET Name='-6', PrintName='-6',Updated=TO_TIMESTAMP('2025-02-26 16:34:42.523000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583506 AND AD_Language='de_CH'
+;
+
+-- 2025-02-26T16:34:42.525Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:34:43.026Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583506,'de_CH')
+;
+
+-- Element: Total_Qty_Six_Weeks_Ago
+-- 2025-02-26T16:34:45.173Z
+UPDATE AD_Element_Trl SET Name='-6', PrintName='-6',Updated=TO_TIMESTAMP('2025-02-26 16:34:45.173000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583506 AND AD_Language='de_DE'
+;
+
+-- 2025-02-26T16:34:45.173Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_DE' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:34:46.063Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(583506,'de_DE')
+;
+
+-- 2025-02-26T16:34:46.064Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583506,'de_DE')
+;
+
+-- Element: Total_Qty_Six_Weeks_Ago
+-- 2025-02-26T16:34:48.103Z
+UPDATE AD_Element_Trl SET Name='-6', PrintName='-6',Updated=TO_TIMESTAMP('2025-02-26 16:34:48.102000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583506 AND AD_Language='en_US'
+;
+
+-- 2025-02-26T16:34:48.103Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:34:48.663Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583506,'en_US')
+;
+
+-- Element: Total_Qty_Six_Weeks_Ago
+-- 2025-02-26T16:34:50.520Z
+UPDATE AD_Element_Trl SET Name='-6', PrintName='-6',Updated=TO_TIMESTAMP('2025-02-26 16:34:50.520000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583506 AND AD_Language='fr_CH'
+;
+
+-- 2025-02-26T16:34:50.521Z
+UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='fr_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-02-26T16:34:51.088Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583506,'fr_CH')
+;
+
+CREATE INDEX md_candidate_demand_latest_date_perf
+    ON md_candidate (dateprojected DESC)
+    WHERE isactive = 'Y' AND md_candidate_type = 'DEMAND'
+;
+
+-- Run mode: SWING_CLIENT
+
+-- Field: Wiederauffüllung(541869,D) -> Materialbedarf(547920,D) -> Produkt Kategorie
+-- Column: M_Material_Needs_Planner_V.M_Product_Category_ID
+-- 2025-02-26T17:17:31.539Z
+UPDATE AD_Field SET SortNo=1.000000000000,Updated=TO_TIMESTAMP('2025-02-26 17:17:31.539000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=740342
+;
+
+-- Field: Wiederauffüllung(541869,D) -> Materialbedarf(547920,D) -> Produkt
+-- Column: M_Material_Needs_Planner_V.M_Product_ID
+-- 2025-02-26T17:17:44.630Z
+UPDATE AD_Field SET SortNo=2.000000000000,Updated=TO_TIMESTAMP('2025-02-26 17:17:44.630000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=740343
+;
+
+-- Run mode: SWING_CLIENT
+
+-- UI Element: Wiederauffüllung(541869,D) -> Materialbedarf(547920,D) -> main -> 10 -> default.Lager
+-- Column: M_Material_Needs_Planner_V.M_Warehouse_ID
+-- 2025-02-26T17:19:34.622Z
+UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2025-02-26 17:19:34.621000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=630652
+;

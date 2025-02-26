@@ -44,12 +44,24 @@ WITH qty_data AS (SELECT candidate.m_product_id,
                   WHERE candidate.md_candidate_type = 'DEMAND'
                     AND candidate.dateprojected >= DATE_TRUNC('week', CURRENT_DATE) - INTERVAL '42 days'
                     AND candidate.dateprojected < DATE_TRUNC('week', CURRENT_DATE)
-                    AND candidate.qty IS NOT NULL AND candidate.qty <> 0
+                    AND candidate.qty IS NOT NULL
+                    AND candidate.qty <> 0
 
                   GROUP BY candidate.m_product_id,
-                           candidate.m_warehouse_id)
-SELECT ROW_NUMBER() OVER () + 999999                  AS M_Material_Needs_Planner_V_ID,
-       COALESCE(demand.Total_Qty_One_Week_Ago, 0)     AS Total_Qty_One_Week_Ago,
+                           candidate.m_warehouse_id),
+     stock_data AS (SELECT m_product_id, m_warehouse_id, SUM(qtyonhand) AS QuantityOnHand FROM md_stock GROUP BY m_product_id, m_warehouse_id),
+     replenish_data AS (SELECT m_product_id, m_warehouse_id, level_min
+                        FROM m_replenish
+                        WHERE isactive = 'Y'),
+     product_warehouse_combinations AS (SELECT DISTINCT m_product_id, m_warehouse_id
+                                        FROM qty_data
+                                        UNION
+                                        SELECT DISTINCT m_product_id, m_warehouse_id
+                                        FROM stock_data
+                                        UNION
+                                        SELECT DISTINCT m_product_id, m_warehouse_id
+                                        FROM replenish_data)
+SELECT COALESCE(demand.Total_Qty_One_Week_Ago, 0)     AS Total_Qty_One_Week_Ago,
        COALESCE(demand.Total_Qty_Two_Weeks_Ago, 0)    AS Total_Qty_Two_Weeks_Ago,
        COALESCE(demand.Total_Qty_Three_Weeks_Ago, 0)  AS Total_Qty_Three_Weeks_Ago,
        COALESCE(demand.Total_Qty_Four_Weeks_Ago, 0)   AS Total_Qty_Four_Weeks_Ago,
@@ -60,7 +72,7 @@ SELECT ROW_NUMBER() OVER () + 999999                  AS M_Material_Needs_Planne
        COALESCE(replenish.level_min, 0)               AS Demand,
        product.m_product_category_id                  AS M_Product_Category_ID,
        product.m_product_id                           AS M_Product_ID,
-       demand.m_warehouse_id                          AS M_Warehouse_ID,
+       wc.m_warehouse_id                              AS M_Warehouse_ID,
 
        -- Standard columns
        product.AD_Client_ID,
@@ -72,9 +84,13 @@ SELECT ROW_NUMBER() OVER () + 999999                  AS M_Material_Needs_Planne
        product.IsActive
 
 FROM m_product product
-         LEFT JOIN qty_data demand ON demand.m_product_id = product.m_product_id
-         LEFT JOIN (SELECT m_product_id, m_warehouse_id, SUM(qtyonhand) AS QuantityOnHand FROM md_stock GROUP BY m_product_id, m_warehouse_id) stock
-                   ON stock.m_product_id = demand.m_product_id AND stock.m_warehouse_id = demand.m_warehouse_id
-         LEFT JOIN m_replenish replenish ON replenish.m_product_id = demand.m_product_id AND replenish.m_warehouse_id = demand.m_warehouse_id AND replenish.isactive = 'Y'
+         LEFT JOIN product_warehouse_combinations wc ON wc.m_product_id = product.m_product_id
+         LEFT JOIN replenish_data replenish ON replenish.m_product_id = wc.m_product_id
+    AND replenish.m_warehouse_id = wc.m_warehouse_id
+         LEFT JOIN qty_data demand ON demand.m_product_id = wc.m_product_id
+    AND demand.m_warehouse_id = wc.m_warehouse_id
+         LEFT JOIN stock_data stock ON stock.m_product_id = wc.m_product_id
+    AND stock.m_warehouse_id = wc.m_warehouse_id
 WHERE product.isactive = 'Y'
+  AND product.isstocked = 'Y'
 ;
