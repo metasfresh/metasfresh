@@ -17,6 +17,7 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.Account;
 import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.accounts.WarehouseAccountType;
 import de.metas.acct.api.AcctSchema;
@@ -28,7 +29,6 @@ import de.metas.inventory.IInventoryDAO;
 import de.metas.inventory.InventoryId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import de.metas.acct.Account;
 import org.compiere.model.I_M_Inventory;
 
 import java.math.BigDecimal;
