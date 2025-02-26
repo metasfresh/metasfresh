@@ -335,6 +335,7 @@ $F{shiplocation}
 						<property name="com.jaspersoft.studio.unit.y" value="px"/>
 						<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
 					</reportElement>
+					<box leftPadding="2"/>
 					<textElement markup="none">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
@@ -657,7 +658,7 @@ $F{shiplocation}
 				<reportElement key="textField-31" mode="Transparent" x="215" y="0" width="98" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="03b0c9ed-0fb3-482e-98ac-b16490d6d9a1">
 					<printWhenExpression><![CDATA[new Boolean($P{displayhu}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
-				<box>
+				<box leftPadding="2">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -834,7 +835,7 @@ $F{shiplocation}
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement key="textField-34" mode="Transparent" x="468" y="0" width="75" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="de5e58a7-6131-4080-b0ef-911c6a8b92a6">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
