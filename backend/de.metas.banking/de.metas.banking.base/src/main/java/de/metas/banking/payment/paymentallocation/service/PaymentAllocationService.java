@@ -143,14 +143,16 @@ public class PaymentAllocationService
 		final I_C_Payment payment = paymentAllocationCriteria.getPayment();
 
 		final PaymentDocument paymentDocument = toPaymentDocument(payment);
-		final ZonedDateTime paymentDate = TimeUtil.asZonedDateTime(paymentDocument.getDateTrx(), ZoneId.systemDefault());
+		
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoIdOrAny(payment.getAD_Org_ID()));
+		final ZonedDateTime paymentDate = TimeUtil.asZonedDateTime(paymentDocument.getDateTrx(), timeZone);
 
 		final ImmutableList<PayableDocument> invoiceDocuments = paymentAllocationCriteria.getPaymentAllocationPayableItems()
 				.stream()
 				.map(paymentAllocationPayableItem -> toPayableDocument(paymentAllocationPayableItem, paymentDate))
 				.collect(ImmutableList.toImmutableList());
 
-		final LocalDate dateTrx = TimeUtil.asLocalDate(paymentAllocationCriteria.getDateTrx());
+		final LocalDate dateTrx = TimeUtil.asLocalDate(paymentAllocationCriteria.getDateTrx(), timeZone);
 		final PaymentAllocationBuilder builder = PaymentAllocationBuilder.newBuilder()
 				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
 				.defaultDateTrx(dateTrx)

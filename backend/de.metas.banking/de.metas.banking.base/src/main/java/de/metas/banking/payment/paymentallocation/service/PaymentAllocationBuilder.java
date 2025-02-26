@@ -167,6 +167,10 @@ public class PaymentAllocationBuilder
 		}
 	}
 
+	/**
+	 * If the given candidate has type={@link AllocationLineCandidateType#InvoiceProcessingFee}, 
+	 * then we create a service-invoice on the fly and return a different candidate that creates the service-invoice as payment-document.
+	 */
 	private AllocationLineCandidate processInvoiceProcessingFeeCandidate(@NonNull final AllocationLineCandidate candidate)
 	{
 		if (!AllocationLineCandidateType.InvoiceProcessingFee.equals(candidate.getType()))
@@ -693,7 +697,7 @@ public class PaymentAllocationBuilder
 	/**
 	 * Check if given payment document can be allocated to payable document.
 	 *
-	 * @return true if the invoice and payment are compatible and we could try to do an allocation
+	 * @return true if the invoice and payment are compatible, and we could try to do an allocation
 	 */
 	private static boolean isCompatible(@NonNull final PayableDocument payable, @NonNull final IPaymentDocument payment)
 	{
@@ -705,9 +709,9 @@ public class PaymentAllocationBuilder
 
 		//
 		// Check invoice-payment compatibility: same sign
-		final boolean positiveInvoiceAmtToAllocate = payable.getAmountsToAllocateInitial().getPayAmt().signum() >= 0;
+		final boolean positivePayableAmtToAllocate = payable.getAmountsToAllocateInitial().getPayAmt().signum() >= 0;
 		final boolean positivePaymentAmtToAllocate = payment.getAmountToAllocateInitial().signum() >= 0;
-		if (positiveInvoiceAmtToAllocate != positivePaymentAmtToAllocate)
+		if (positivePayableAmtToAllocate != positivePaymentAmtToAllocate)
 		{
 			if(!payable.isAllowAllocateAgainstDifferentSignumPayment())
 			{

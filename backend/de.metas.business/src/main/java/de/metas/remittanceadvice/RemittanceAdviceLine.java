@@ -127,7 +127,7 @@ public class RemittanceAdviceLine
 	private boolean isServiceFeeResolved;
 
 	private boolean isServiceFeeVatRateValid;
-
+	
 	@Setter private boolean processed;
 
 	@Builder

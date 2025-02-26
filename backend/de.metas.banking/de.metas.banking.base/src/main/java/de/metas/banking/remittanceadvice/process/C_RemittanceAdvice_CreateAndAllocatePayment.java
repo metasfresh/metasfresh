@@ -35,6 +35,7 @@ import de.metas.banking.payment.paymentallocation.service.PaymentAllocationServi
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
@@ -148,7 +149,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 
 		return PaymentAllocationCriteria.builder()
 				.payment(payment)
-				.dateTrx(remittanceAdvice.getSendDate() != null ? remittanceAdvice.getSendDate() : Instant.now())
+				.dateTrx(remittanceAdvice.getSendDate() != null ? remittanceAdvice.getSendDate() : SystemTime.asInstant())
 				.paymentAllocationPayableItems(paymentAllocationPayableItems)
 				.allowPartialAllocations(true)
 				.build();
@@ -282,7 +283,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 					.setParameter("remittanceAdviceLine", remittanceAdviceLine);
 		}
 
-		final SOTrx soTrx = SOTrx.ofBooleanNotNull(invoice.isSOTrx());
+		final SOTrx soTrx = SOTrx.ofBooleanNotNull(remittanceAdvice.isSOTrx()); // not sure why we don't have invoice.isSOTrx(), but it is like this and seems to work   
 		final boolean isCreditMemo = invoiceBL.isCreditMemo(invoice);
 		final InvoiceAmtMultiplier amtMultiplier = toInvoiceAmtMultiplier(soTrx, isCreditMemo);
 
@@ -361,7 +362,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 		else
 		{
 			Loggables.withLogger(logger, Level.INFO).addLog("Skipping Remittance Advice, RemittanceAdviceId={}, DocStatus={}, PaymentId={}",
-					remittanceAdvice.getRemittanceAdviceId(), remittanceAdvice.getDocStatus(), remittanceAdvice.getPaymentId());
+					remittanceAdvice.getRemittanceAdviceId().getRepoId(), remittanceAdvice.getDocStatus(), remittanceAdvice.getPaymentId());
 		}
 	}
 }
