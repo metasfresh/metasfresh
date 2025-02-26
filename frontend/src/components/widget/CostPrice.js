@@ -18,13 +18,26 @@ export default class CostPrice extends PureComponent {
   };
 
   focus = () => {
+    const { onFocus } = this.props;
     this.setState({ editMode: true }, () => {
-      this.inputRef?.current?.focus?.();
+      this.inputRef.current.focus();
+      onFocus?.();
     });
   };
 
   render() {
-    const { className, rank, value, precision } = this.props;
+    const {
+      autoComplete,
+      className,
+      disabled,
+      placeholder,
+      tabIndex,
+      title,
+      rank,
+      value,
+      precision,
+    } = this.props;
+    const { onChange, onFocus, onKeyDown } = this.props;
     const { editMode } = this.state;
 
     if (!editMode) {
@@ -35,8 +48,8 @@ export default class CostPrice extends PureComponent {
             'input-field js-input-field',
             rank ? `input-${rank}` : null
           )}
+          type={'text'}
           value={fieldValueToString({ fieldValue: value, precision })}
-          type="text"
           onChange={() => false}
           onFocus={this.focus}
         />
@@ -44,11 +57,20 @@ export default class CostPrice extends PureComponent {
     } else {
       return (
         <input
-          {...this.props}
-          className={cx(className, rank ? `input-${rank}` : null)}
-          onBlur={this.handleBlur}
-          type="number"
           ref={this.inputRef}
+          type={'number'}
+          value={value}
+          autoComplete={autoComplete}
+          className={cx(className, rank ? `input-${rank}` : null)}
+          disabled={disabled}
+          placeholder={placeholder}
+          tabIndex={tabIndex}
+          title={title}
+          //
+          onChange={onChange}
+          onFocus={onFocus}
+          onBlur={this.handleBlur}
+          onKeyDown={onKeyDown}
         />
       );
     }
@@ -63,6 +85,9 @@ CostPrice.propTypes = {
   className: PropTypes.string,
   disabled: PropTypes.bool,
   placeholder: PropTypes.string,
+  tabIndex: PropTypes.number,
+  title: PropTypes.string,
+  //
   onChange: PropTypes.func.isRequired,
   onFocus: PropTypes.func,
   onBlur: PropTypes.func.isRequired,

@@ -13,6 +13,8 @@ const CostPriceRange = forwardRef((props, ref) => {
     className,
     disabled,
     placeholder,
+    tabIndex,
+    title,
     onChange,
     onFocus,
     onBlur,
@@ -29,6 +31,8 @@ const CostPriceRange = forwardRef((props, ref) => {
         className={cx(className, 'input-range-from')}
         disabled={disabled}
         placeholder={placeholder}
+        tabIndex={tabIndex}
+        title={title}
         onChange={(e) => onChange?.(e, false)}
         onFocus={(e) => onFocus?.(e, false)}
         onBlur={(e) => onBlur?.(e, false)}
@@ -43,6 +47,8 @@ const CostPriceRange = forwardRef((props, ref) => {
         className={cx(className, 'input-range-to')}
         disabled={disabled}
         placeholder={placeholder}
+        tabIndex={tabIndex}
+        //title
         onChange={(e) => onChange?.(e, true)}
         onFocus={(e) => onFocus?.(e, true)}
         onBlur={(e) => onBlur?.(e, true)}
@@ -52,6 +58,7 @@ const CostPriceRange = forwardRef((props, ref) => {
   );
 });
 
+CostPriceRange.displayName = 'CostPriceRange';
 CostPriceRange.propTypes = {
   rank: PropTypes.string,
   valueFrom: PropTypes.string,
@@ -61,6 +68,9 @@ CostPriceRange.propTypes = {
   className: PropTypes.string,
   disabled: PropTypes.bool,
   placeholder: PropTypes.string,
+  tabIndex: PropTypes.number,
+  title: PropTypes.string,
+  //
   onChange: PropTypes.func.isRequired,
   onFocus: PropTypes.func,
   onBlur: PropTypes.func.isRequired,

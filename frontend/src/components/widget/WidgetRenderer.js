@@ -28,6 +28,7 @@ import Password from './Password';
 import CostPrice from './CostPrice';
 import PropTypes from 'prop-types';
 import CostPriceRange from './CostPriceRange';
+import AmountRange from './AmountRange';
 
 class WidgetRenderer extends PureComponent {
   constructor(props) {
@@ -458,22 +459,61 @@ class WidgetRenderer extends PureComponent {
         );
       case 'Integer':
       case 'Amount':
-      case 'Quantity':
-        return (
-          <Amount
-            {...{
-              widgetData,
-              widgetField,
-              fields,
-              subentity,
-              widgetProperties,
-              onPatch,
-              isFilterActive: filterActiveState,
-              updateItems,
-            }}
-            getClassNames={this.getClassNames}
-          />
-        );
+      case 'Quantity': {
+        const step = subentity === 'quickInput' ? 'any' : 1;
+        const devices = widgetData?.[0]?.devices;
+        if (range) {
+          return (
+            <AmountRange
+              widgetField={widgetField}
+              valueFrom={widgetData[0].value}
+              valueTo={widgetData[0].valueTo}
+              step={step}
+              devices={devices}
+              //
+              id={widgetProperties.id}
+              autoComplete={widgetProperties.autoComplete}
+              className={this.getClassNames()}
+              inputClassName={widgetProperties.className}
+              disabled={widgetProperties.disabled}
+              placeholder={widgetProperties.placeholder}
+              tabIndex={widgetProperties.tabIndex}
+              title={widgetProperties.title}
+              //
+              onChange={widgetProperties.onChange}
+              onFocus={widgetProperties.onFocus}
+              onBlur={widgetProperties.onBlur}
+              onKeyDown={widgetProperties.onKeyDown}
+              onPatch={onPatch}
+            />
+          );
+        } else {
+          return (
+            <Amount
+              widgetField={widgetField}
+              value={widgetData[0].value}
+              step={step}
+              devices={devices}
+              //
+              id={widgetProperties.id}
+              autoComplete={widgetProperties.autoComplete}
+              className={this.getClassNames()}
+              inputClassName={widgetProperties.className}
+              disabled={widgetProperties.disabled}
+              placeholder={widgetProperties.placeholder}
+              tabIndex={widgetProperties.tabIndex}
+              title={widgetProperties.title}
+              //
+              getClassNames={this.getClassNames}
+              onChange={widgetProperties.onChange}
+              onFocus={widgetProperties.onFocus}
+              onBlur={widgetProperties.onBlur}
+              onKeyDown={widgetProperties.onKeyDown}
+              onPatch={onPatch}
+            />
+          );
+        }
+      }
       case 'Number':
       case 'CostPrice':
         if (range) {
@@ -488,6 +528,9 @@ class WidgetRenderer extends PureComponent {
               className={widgetProperties.className}
               disabled={widgetProperties.disabled}
               placeholder={widgetProperties.placeholder}
+              tabIndex={widgetProperties.tabIndex}
+              title={widgetProperties.title}
+              //
               onChange={widgetProperties.onChange}
               onFocus={widgetProperties.onFocus}
               onBlur={widgetProperties.onBlur}
