@@ -214,14 +214,6 @@ class DocumentListContainer extends Component {
       // prevProps.viewId !== this.props.viewId ||
       this.fetchLayoutAndDataOnUpdate
     ) {
-      console.log(
-        `[${prevProps.viewId}->${this.props.viewId} / ${prevProps.windowId}->${this.props.windowId}] componentDidUpdate - calling fetchLayoutAndData`,
-        {
-          fetchLayoutAndDataOnUpdate: this.fetchLayoutAndDataOnUpdate,
-          props: this.props,
-          prevProps,
-        }
-      );
       this.fetchLayoutAndData();
       this.fetchLayoutAndDataOnUpdate = false;
     }
