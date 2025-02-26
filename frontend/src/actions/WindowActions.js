@@ -70,7 +70,7 @@ import {
   deleteNotification,
   setNotificationProgress,
 } from './AppActions';
-import { getWindowBreadcrumb } from './MenuActions';
+import { setBreadcrumbByWindowId } from './MenuActions';
 import {
   updateCommentsPanel,
   updateCommentsPanelOpenFlag,
@@ -254,7 +254,7 @@ export function initDataSuccess({
 
 function initDataNotFound({ windowId, message, messageDetail }) {
   return (dispose) => {
-    dispose(getWindowBreadcrumb(windowId));
+    dispose(setBreadcrumbByWindowId(windowId));
     dispose(
       initDataSuccess({
         data: {},
@@ -687,7 +687,7 @@ export function createWindow({
             }
           }
         } else {
-          dispatch(getWindowBreadcrumb(windowId));
+          dispatch(setBreadcrumbByWindowId(windowId));
         }
 
         //

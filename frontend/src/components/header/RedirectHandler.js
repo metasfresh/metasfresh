@@ -26,7 +26,6 @@ const handleBeforeUnload = (event) => {
 };
 
 const confirmDiscardChanges = () => {
-  console.trace('confirmDiscardChanges');
   return window.confirm(trl(MSG_DiscardChanges));
 };
 

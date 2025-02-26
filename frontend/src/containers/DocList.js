@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import classnames from 'classnames';
 
 import { updateUri } from '../utils';
-import { getWindowBreadcrumb } from '../actions/MenuActions';
+import { setBreadcrumbByWindowId } from '../actions/MenuActions';
 import Container from '../components/Container';
 import DocumentList from './DocumentList';
 import Overlay from '../components/app/Overlay';
@@ -22,16 +22,16 @@ class DocList extends PureComponent {
   }
 
   componentDidMount = () => {
-    const { windowId, getWindowBreadcrumb } = this.props;
+    const { windowId, setBreadcrumbByWindowId } = this.props;
 
-    getWindowBreadcrumb(windowId);
+    setBreadcrumbByWindowId(windowId);
   };
 
   componentDidUpdate = (prevProps) => {
-    const { windowId, getWindowBreadcrumb } = this.props;
+    const { windowId, setBreadcrumbByWindowId } = this.props;
 
     if (prevProps.windowId !== windowId) {
-      getWindowBreadcrumb(windowId);
+      setBreadcrumbByWindowId(windowId);
     }
   };
 
@@ -140,7 +140,7 @@ DocList.propTypes = {
   processStatus: PropTypes.string.isRequired,
   rawModal: PropTypes.object.isRequired,
   windowId: PropTypes.string,
-  getWindowBreadcrumb: PropTypes.func.isRequired,
+  setBreadcrumbByWindowId: PropTypes.func.isRequired,
   pathname: PropTypes.string.isRequired,
   query: PropTypes.object.isRequired,
 };
@@ -157,4 +157,4 @@ const mapStateToProps = (state) => {
   };
 };
 
-export default connect(mapStateToProps, { getWindowBreadcrumb })(DocList);
+export default connect(mapStateToProps, { setBreadcrumbByWindowId })(DocList);

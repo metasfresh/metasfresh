@@ -1,8 +1,6 @@
 import PropTypes from 'prop-types';
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-
-import { getElementBreadcrumb } from '../../../actions/MenuActions';
+import React, {Component} from 'react';
+import {connect} from 'react-redux';
 import BookmarkButton from '../BookmarkButton';
 
 class MenuOverlayItem extends Component {
@@ -51,7 +49,6 @@ class MenuOverlayItem extends Component {
     const { handleRedirect } = this.props;
 
     handleRedirect(elementId, null, entity);
-    this.renderBreadcrumb(entity, elementId);
   };
 
   handleKeyDown = (e) => {
@@ -147,12 +144,6 @@ class MenuOverlayItem extends Component {
       }
     }
   }
-
-  renderBreadcrumb = (entity, elementId) => {
-    const { dispatch } = this.props;
-
-    dispatch(getElementBreadcrumb(entity, elementId));
-  };
 
   iconByType = (type) => {
     switch (type) {
