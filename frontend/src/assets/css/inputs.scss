@@ -244,7 +244,7 @@ input {
 
 .input-checkbox input:disabled ~ .input-checkbox-tick {
   pointer-events: none;
-  background: #76b727a6;
+  background: #ccc;
   border: 0;
 }
 
@@ -1017,4 +1017,23 @@ table {
 
 input:disabled, textarea:disabled {
   color: black !important;
+}
+
+.input-range-container {
+  display: flex;
+  flex-flow: row nowrap;
+  
+  .input-range-from {
+    flex-grow: 1;
+    flex-shrink: 1;
+  }
+  .input-range-separator {
+    flex-grow: 0;
+    flex-shrink: 0;
+    padding: .3rem .50rem;
+  }
+  .input-range-to {
+    flex-grow: 1;
+    flex-shrink: 1;
+  }
 }
