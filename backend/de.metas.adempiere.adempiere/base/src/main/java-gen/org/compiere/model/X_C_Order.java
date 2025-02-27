@@ -1429,7 +1429,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		return get_ValueAsString(COLUMNNAME_InvoiceAdditionalText);
 	}
 
-	/** 
+	/**
 	 * InvoiceRule AD_Reference_ID=150
 	 * Reference name: C_Order InvoiceRule
 	 */
@@ -1559,7 +1559,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public boolean isNotShowOriginCountry() 
+	public boolean isNotShowOriginCountry()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsNotShowOriginCountry);
 	}
@@ -2181,14 +2181,14 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	@Override
 	public void setProjectManager_ID (final int ProjectManager_ID)
 	{
-		if (ProjectManager_ID < 1) 
+		if (ProjectManager_ID < 1)
 			set_Value (COLUMNNAME_ProjectManager_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_ProjectManager_ID, ProjectManager_ID);
 	}
 
 	@Override
-	public int getProjectManager_ID() 
+	public int getProjectManager_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_ProjectManager_ID);
 	}
@@ -2315,14 +2315,14 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	@Override
 	public void setRequestor_ID (final int Requestor_ID)
 	{
-		if (Requestor_ID < 1) 
+		if (Requestor_ID < 1)
 			set_Value (COLUMNNAME_Requestor_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_Requestor_ID, Requestor_ID);
 	}
 
 	@Override
-	public int getRequestor_ID() 
+	public int getRequestor_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_Requestor_ID);
 	}
