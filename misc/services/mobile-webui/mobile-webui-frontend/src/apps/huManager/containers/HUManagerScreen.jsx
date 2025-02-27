@@ -21,8 +21,6 @@ import ChangeCurrentLocatorDialog from '../components/ChangeCurrentLocatorDialog
 import { HU_ATTRIBUTE_BestBeforeDate, HU_ATTRIBUTE_LotNo } from '../../../constants/HUAttributes';
 import * as scanAnythingRoutes from '../../scanAnything/routes';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
-import { useRouteMatch } from 'react-router-dom';
 import { trl } from '../../../utils/translations';
 
 const MODALS = {
