@@ -75,3 +75,4 @@ WHERE dd.C_DunningDoc_ID = p_record_id
 $$
 ;
 
+
