@@ -82,7 +82,6 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
@@ -350,7 +349,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 
 			final PaymentAllocationCriteria paymentAllocationCriteria = getPaymentAllocationCriteria(remittanceAdvice, payment);
 
-			final PaymentAllocationResult paymentAllocationResult = paymentAllocationService.allocatePayment(paymentAllocationCriteria);
+			final PaymentAllocationResult paymentAllocationResult = paymentAllocationService.allocatePaymentForRemittanceAdvise(paymentAllocationCriteria);
 
 			final Map<InvoiceId, RemittanceAdviceLine> remittanceAdviceLineMap = getRemittanceAdviceLinesByInvoiceId(remittanceAdvice.getLines());
 			populateRemittanceWithAllocationData(remittanceAdviceLineMap, paymentAllocationResult);
