@@ -33,7 +33,6 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
@@ -97,7 +96,7 @@ public class RemittanceAdviceLine
 	private BPartnerId billBPartnerId;
 
 	@Nullable
-	private final Instant dateInvoiced;
+	private Instant dateInvoiced;
 
 	@Nullable
 	private InvoiceId serviceFeeInvoiceId;
@@ -128,7 +127,7 @@ public class RemittanceAdviceLine
 
 	private boolean isServiceFeeVatRateValid;
 
-	@Setter private boolean processed;
+	private boolean processed;
 
 	@Builder
 	public RemittanceAdviceLine(@NonNull final OrgId orgId, @NonNull final RemittanceAdviceLineId remittanceAdviceLineId, @NonNull final RemittanceAdviceId remittanceAdviceId, @NonNull final Amount remittedAmount, @Nullable final Amount invoiceGrossAmount, @Nullable final Amount paymentDiscountAmount, @Nullable final Amount serviceFeeAmount, @Nullable final String externalInvoiceDocBaseType,
@@ -242,5 +241,10 @@ public class RemittanceAdviceLine
 	public boolean isReadyForCompletion()
 	{
 		return isInvoiceResolved && (isLineAcknowledged || isAmountValid);
+	}
+
+	public void setProcessed(final boolean processed)
+	{
+		this.processed = processed;
 	}
 }

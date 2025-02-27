@@ -1421,7 +1421,7 @@ public class TimeUtil
 	 * @param day day
 	 * @return year last day with 00:00
 	 */
-	@NonNull
+	// metas
 	static public Timestamp getYearLastDay(@Nullable Date day)
 	{
 		if (day == null)
