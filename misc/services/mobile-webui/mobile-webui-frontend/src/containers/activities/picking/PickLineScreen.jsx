@@ -3,12 +3,13 @@ import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../utils/translations';
 import { updateHeaderEntry } from '../../../actions/HeaderActions';
-import { getLineById } from '../../../reducers/wfProcesses';
+import { getActivityById, getLineByIdFromActivity } from '../../../reducers/wfProcesses';
 
 import PickStepButton from './PickStepButton';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { pickingLineScanScreenLocation } from '../../../routes/picking';
 import {
+  getCurrentPickFromHUQRCode,
   getQtyPickedOrRejectedTotalForLine,
   getQtyToPickForLine,
   getQtyToPickRemainingForLine,
@@ -25,9 +26,11 @@ const PickLineScreen = () => {
     screenId: 'PickLineScreen',
     back: getWFProcessScreenLocation,
   });
+  const dispatch = useDispatch();
 
   const {
     caption,
+    pickFromHUQRCode,
     allowPickingAnyHU,
     steps,
     pickingUnit,
@@ -52,7 +55,18 @@ const PickLineScreen = () => {
       })
     );
 
-  const dispatch = useDispatch();
+  const onPickButtonClick = () => {
+    history.push(
+      pickingLineScanScreenLocation({
+        applicationId,
+        wfProcessId,
+        activityId,
+        lineId,
+        qrCode: pickFromHUQRCode,
+      })
+    );
+  };
+
   const onClose = () => {
     closePickingJobLine({ wfProcessId, lineId })
       .then((wfProcess) => {
@@ -67,12 +81,16 @@ const PickLineScreen = () => {
     });
   };
 
+  const isShowScanQRCodeButton = !manuallyClosed && allowPickingAnyHU && pickFromHUQRCode == null;
+  const isShowPickButton = !manuallyClosed && pickFromHUQRCode != null;
+
   return (
     <div className="section pt-2">
       <div className="buttons">
-        {!manuallyClosed && allowPickingAnyHU && (
+        {isShowScanQRCodeButton && (
           <ButtonWithIndicator captionKey="activities.picking.scanQRCode" onClick={onScanButtonClick} />
         )}
+        {isShowPickButton && <ButtonWithIndicator captionKey="activities.picking.PickHU" onClick={onPickButtonClick} />}
         {steps.length > 0 &&
           steps.map((stepItem, idx) => {
             return (
@@ -104,11 +122,13 @@ const PickLineScreen = () => {
 };
 
 const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
-  const line = getLineById(state, wfProcessId, activityId, lineId);
-  const stepsById = line != null && line.steps ? line.steps : {};
+  const activity = getActivityById(state, wfProcessId, activityId);
+  const line = getLineByIdFromActivity(activity, lineId);
+  const stepsById = line?.steps ?? {};
 
   return {
     caption: line?.caption,
+    pickFromHUQRCode: getCurrentPickFromHUQRCode({ activity }),
     allowPickingAnyHU: isAllowPickingAnyHUForLine({ line }),
     steps: Object.values(stepsById),
     pickingUnit: line?.pickingUnit,

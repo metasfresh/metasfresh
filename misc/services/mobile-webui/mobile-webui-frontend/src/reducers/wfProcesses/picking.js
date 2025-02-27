@@ -174,6 +174,8 @@ const normalizePickingSteps = (steps) => {
 };
 
 const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStored, fromActivity }) => {
+  draftActivityDataStored.aggregationType = fromActivity.componentProps.aggregationType;
+  draftActivityDataStored.pickFromHU = fromActivity.componentProps.pickFromHU;
   draftActivityDataStored.pickTarget = fromActivity.componentProps.pickTarget;
   draftActivityDataStored.tuPickTarget = fromActivity.componentProps.tuPickTarget;
   draftActivityDataStored.isPickWithNewLU = fromActivity.componentProps.isPickWithNewLU;

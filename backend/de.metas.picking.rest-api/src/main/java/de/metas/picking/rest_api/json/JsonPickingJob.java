@@ -23,7 +23,9 @@
 package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
+import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import lombok.Builder;
 import lombok.NonNull;
@@ -40,6 +42,7 @@ public class JsonPickingJob
 {
 	@NonNull PickingJobAggregationType aggregationType;
 	@NonNull JsonCompleteStatus completeStatus;
+	@Nullable JsonDisplayableQRCode pickFromHU;
 	@Nullable JsonLUPickingTarget pickTarget;
 	@Nullable JsonTUPickingTarget tuPickTarget;
 	@NonNull List<JsonPickingJobLine> lines;
@@ -50,6 +53,7 @@ public class JsonPickingJob
 		return builder()
 				.aggregationType(pickingJob.getAggregationType())
 				.completeStatus(JsonCompleteStatus.of(pickingJob.getProgress()))
+				.pickFromHU(pickingJob.getPickFromHU().map(HUInfo::toQRCodeRenderedJson).orElse(null))
 				.pickTarget(pickingJob.getLuPickTarget().map(JsonLUPickingTarget::of).orElse(null))
 				.tuPickTarget(pickingJob.getTuPickTarget().map(JsonTUPickingTarget::of).orElse(null))
 				.pickFromAlternatives(pickingJob.getPickFromAlternatives()

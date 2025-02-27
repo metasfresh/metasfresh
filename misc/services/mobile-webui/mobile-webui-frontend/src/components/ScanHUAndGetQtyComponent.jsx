@@ -270,7 +270,6 @@ const ScanHUAndGetQtyComponent = ({
       );
     }
     case STATUS_READ_QTY: {
-      console.log('rendering qty dialog', { resolvedBarcodeData });
       return (
         <GetQuantityDialog
           userInfo={resolvedBarcodeData.userInfo}

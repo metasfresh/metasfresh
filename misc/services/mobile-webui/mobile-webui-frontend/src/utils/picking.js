@@ -1,6 +1,13 @@
 import { getLinesArrayFromActivity } from '../reducers/wfProcesses';
 import * as CompleteStatus from '../constants/CompleteStatus';
 
+export const AGGREGATION_TYPE_SalesOrder = 'sales_order';
+export const AGGREGATION_TYPE_Product = 'product';
+
+export const getAggregationType = ({ activity }) => activity.dataStored.aggregationType;
+
+export const getCurrentPickFromHUQRCode = ({ activity }) => activity.dataStored?.pickFromHU?.code;
+
 export const getPickFromForStep = ({ stepProps, altStepId }) => {
   return altStepId ? stepProps.pickFromAlternatives[altStepId] : stepProps.mainPickFrom;
 };
@@ -45,6 +52,13 @@ export const getNextEligibleLineToPick = ({ activity, productId, excludeLineId }
 };
 
 export const isAllowPickingAnyHUForActivity = ({ activity }) => {
+  const aggregationType = getAggregationType({ activity });
+  console.log('isAllowPickingAnyHUForActivity', { aggregationType, activity });
+  if (aggregationType === AGGREGATION_TYPE_Product) {
+    // i.e. don't show the Scan HU button above the lines because it is supposed to be scanned by a previous activity
+    return false;
+  }
+
   return getLinesArrayFromActivity(activity).some((line) => isAllowPickingAnyHUForLine({ line }));
 };
 
