@@ -42,6 +42,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 @Repository
@@ -210,6 +211,7 @@ public class MobileUIPickingUserProfileRepository
 
 	private static void updateRecord(@NonNull final I_MobileUI_UserProfile_Picking record, @NonNull final PickingJobOptions from)
 	{
+		record.setPickingJobAggregationType(Objects.requireNonNull(from.getAggregationType()).getCode());
 		record.setIsAllowPickingAnyHU(from.isAllowPickingAnyHU());
 		record.setIsAlwaysSplitHUsEnabled(from.isAlwaysSplitHUsEnabled());
 		record.setIsPickingWithNewLU(from.isPickWithNewLU());

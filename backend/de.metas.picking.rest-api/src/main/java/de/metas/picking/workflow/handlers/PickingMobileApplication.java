@@ -33,6 +33,7 @@
 	import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 	import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 	import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+	import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 	import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 	import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 	import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -47,6 +48,7 @@
 	import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 	import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 	import de.metas.i18n.AdMessageKey;
+	import de.metas.i18n.ITranslatableString;
 	import de.metas.i18n.ImmutableTranslatableString;
 	import de.metas.i18n.TranslatableStrings;
 	import de.metas.mobile.application.MobileApplicationId;
@@ -82,6 +84,7 @@
 	import de.metas.workplace.WorkplaceService;
 	import lombok.NonNull;
 	import org.adempiere.exceptions.AdempiereException;
+	import org.jetbrains.annotations.NotNull;
 	import org.springframework.stereotype.Component;
 
 	import javax.annotation.Nullable;
@@ -103,6 +106,14 @@
 		public static final WFActivityId ACTIVITY_ID_PickLines = WFActivityId.ofString("A2");
 		public static final WFActivityId ACTIVITY_ID_Complete = WFActivityId.ofString("A3");
 		private static final AdMessageKey INVALID_QR_CODE_ERROR_MSG = AdMessageKey.of("mobileui.picking.INVALID_QR_CODE_ERROR_MSG");
+
+		private static final ImmutableTranslatableString captionScanPickingSlot = ImmutableTranslatableString.builder()
+				.trl("de_DE", "Kommissionierplatz scannen")
+				.trl("de_CH", "Kommissionierplatz scannen")
+				.defaultValue("Scan picking slot")
+				.build();
+		private static final ITranslatableString captionPickLines = TranslatableStrings.anyLanguage("Pick");
+
 
 		private final PickingJobRestService pickingJobRestService;
 		private final PickingWorkflowLaunchersProvider wfLaunchersProvider;
@@ -273,30 +284,71 @@
 					.responsibleId(responsibleId)
 					.document(pickingJob)
 					.isAllowAbort(pickingJob.isAllowAbort())
-					.activities(ImmutableList.of(
-							WFActivity.builder()
-									.id(ACTIVITY_ID_ScanPickingSlot)
-									.caption(ImmutableTranslatableString.builder()
-											.trl("de_DE", "Kommissionierplatz scannen")
-											.trl("de_CH", "Kommissionierplatz scannen")
-											.defaultValue("Scan picking slot")
-											.build())
-									.wfActivityType(SetPickingSlotWFActivityHandler.HANDLED_ACTIVITY_TYPE)
-									.status(SetPickingSlotWFActivityHandler.computeActivityState(pickingJob))
-									.build(),
-							WFActivity.builder()
-									.id(ACTIVITY_ID_PickLines)
-									.caption(TranslatableStrings.anyLanguage("Pick"))
-									.wfActivityType(ActualPickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
-									.status(ActualPickingWFActivityHandler.computeActivityState(pickingJob))
-									.build(),
-							WFActivity.builder()
-									.id(ACTIVITY_ID_Complete)
-									.caption(TranslatableStrings.adRefList(IDocument.ACTION_AD_Reference_ID, IDocument.ACTION_Complete))
-									.wfActivityType(CompletePickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
-									.status(CompletePickingWFActivityHandler.computeActivityState(pickingJob))
-									.build()))
+					.activities(toWFActivities(pickingJob))
 					.build();
+		}
+
+		private static ImmutableList<WFActivity> toWFActivities(@NonNull final PickingJob pickingJob)
+		{
+			final PickingJobAggregationType aggregationType = pickingJob.getAggregationType();
+			switch (aggregationType)
+			{
+				case SALES_ORDER:
+					return toWFActivities_SalesOrderBasedAggregation(pickingJob);
+				case PRODUCT:
+					return toWFActivities_ProductBasedAggregation(pickingJob);
+				default:
+					throw new AdempiereException("Unknown aggregation type: " + aggregationType);
+			}
+		}
+
+		private static ImmutableList<WFActivity> toWFActivities_SalesOrderBasedAggregation(@NonNull final PickingJob pickingJob)
+		{
+			return ImmutableList.of(
+					toWActivity_ScanPickingSlot(pickingJob),
+					toWFActivity_PickLines(pickingJob),
+					toWFActivity_Complete(pickingJob)
+			);
+		}
+
+		private static WFActivity toWFActivity_Complete(final @NotNull PickingJob pickingJob)
+		{
+			return WFActivity.builder()
+					.id(ACTIVITY_ID_Complete)
+					.caption(TranslatableStrings.adRefList(IDocument.ACTION_AD_Reference_ID, IDocument.ACTION_Complete))
+					.wfActivityType(CompletePickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+					.status(CompletePickingWFActivityHandler.computeActivityState(pickingJob))
+					.build();
+		}
+
+		private static WFActivity toWActivity_ScanPickingSlot(final @NotNull PickingJob pickingJob)
+		{
+			return WFActivity.builder()
+					.id(ACTIVITY_ID_ScanPickingSlot)
+					.caption(captionScanPickingSlot)
+					.wfActivityType(SetPickingSlotWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+					.status(SetPickingSlotWFActivityHandler.computeActivityState(pickingJob))
+					.build();
+		}
+
+		private static WFActivity toWFActivity_PickLines(final @NotNull PickingJob pickingJob)
+		{
+			return WFActivity.builder()
+					.id(ACTIVITY_ID_PickLines)
+					.caption(captionPickLines)
+					.wfActivityType(ActualPickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+					.status(ActualPickingWFActivityHandler.computeActivityState(pickingJob))
+					.build();
+		}
+
+		private static ImmutableList<WFActivity> toWFActivities_ProductBasedAggregation(@NonNull final PickingJob pickingJob)
+		{
+			return ImmutableList.of(
+					// TODO activity to scan the HU to pick from
+					toWActivity_ScanPickingSlot(pickingJob),
+					toWFActivity_PickLines(pickingJob),
+					toWFActivity_Complete(pickingJob)
+			);
 		}
 
 		public WFProcess processStepEvent(
@@ -352,7 +404,7 @@
 		private PickingJob processStepEvents(@NonNull final PickingJob pickingJob, @NonNull final Collection<JsonPickingStepEvent> jsonEvents)
 		{
 			final PickingJobOptions pickingJobOptions = mobileUIPickingUserProfileRepository.getPickingJobOptions(pickingJob.getCustomerId());
-			
+
 			final ImmutableList<PickingJobStepEvent> events = jsonEvents.stream()
 					.map(json -> fromJson(json, pickingJob, pickingJobOptions))
 					.collect(ImmutableList.toImmutableList());

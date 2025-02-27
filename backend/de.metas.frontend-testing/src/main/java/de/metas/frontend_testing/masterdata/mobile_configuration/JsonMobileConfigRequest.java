@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.mobile_configuration;
 
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.mobile.MobileAuthMethod;
 import lombok.Builder;
@@ -26,6 +27,7 @@ public class JsonMobileConfigRequest
 	@Jacksonized
 	public static class Picking
 	{
+		@Nullable PickingJobAggregationType aggregationType;
 		@Nullable Boolean allowPickingAnyCustomer;
 		@Nullable Boolean allowPickingAnyHU;
 		@Nullable CreateShipmentPolicy createShipmentPolicy;
