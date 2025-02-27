@@ -302,6 +302,15 @@ public final class DocumentFilterParam
 		return mapper.apply(value);
 	}
 
+	public boolean isNullValues()
+	{
+		return value == null
+				&& (!isRangeOperator() || valueTo == null)
+				&& sqlWhereClause == null;
+	}
+
+	private boolean isRangeOperator() {return operator != null && operator.isRangeOperator();}
+
 	//
 	//
 	// ------------------
