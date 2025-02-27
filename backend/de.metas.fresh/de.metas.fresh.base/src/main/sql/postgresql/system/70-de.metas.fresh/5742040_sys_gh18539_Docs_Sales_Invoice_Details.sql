@@ -2,8 +2,6 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_De
                                                                                        IN p_language  Character Varying(6))
 ;
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details (IN p_record_id numeric,
-                                                                               IN p_language  Character Varying(6))
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details(IN p_C_Invoice_ID numeric,
                                                                                          IN p_AD_Language  Character Varying(6))
     RETURNS TABLE
