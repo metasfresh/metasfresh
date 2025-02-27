@@ -11,8 +11,6 @@ import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapRepository;
 import de.metas.email.MailService;
-import de.metas.email.mailboxes.MailboxRepository;
-import de.metas.email.templates.MailTemplateRepository;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.impl.NotificationRepository;
 import de.metas.order.IOrderLineBL;
