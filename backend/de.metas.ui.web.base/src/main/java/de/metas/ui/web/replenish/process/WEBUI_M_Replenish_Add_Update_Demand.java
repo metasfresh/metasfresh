@@ -86,27 +86,11 @@ public class WEBUI_M_Replenish_Add_Update_Demand extends ViewBasedProcessTemplat
 		replenishInfoRepository.save(ReplenishInfo.builder()
 				.productId(productId)
 				.warehouseId(warehouseId)
-				.warehouseId(warehouseId)
 				.min(minAndMax)
 				.max(minAndMax)
 				.build());
 
 		return MSG_OK;
-	}
-
-	private static int getProductId(@NonNull final IViewRow row)
-	{
-		return row.getFieldValueAsInt(I_M_Material_Needs_Planner_V.COLUMNNAME_M_Product_ID, -1);
-	}
-
-	private static int getWarehouseId(@NonNull final IViewRow row)
-	{
-		return row.getFieldValueAsInt(I_M_Material_Needs_Planner_V.COLUMNNAME_M_Warehouse_ID, -1);
-	}
-
-	private static BigDecimal getDemand(@NonNull final IViewRow row)
-	{
-		return row.getFieldValueAsBigDecimal(I_M_Material_Needs_Planner_V.COLUMNNAME_Demand, BigDecimal.ZERO);
 	}
 
 	@Nullable
@@ -135,5 +119,20 @@ public class WEBUI_M_Replenish_Add_Update_Demand extends ViewBasedProcessTemplat
 	protected void postProcess(final boolean success)
 	{
 		getView().invalidateSelection();
+	}
+
+	private static int getProductId(@NonNull final IViewRow row)
+	{
+		return row.getFieldValueAsInt(I_M_Material_Needs_Planner_V.COLUMNNAME_M_Product_ID, -1);
+	}
+
+	private static int getWarehouseId(@NonNull final IViewRow row)
+	{
+		return row.getFieldValueAsInt(I_M_Material_Needs_Planner_V.COLUMNNAME_M_Warehouse_ID, -1);
+	}
+
+	private static BigDecimal getDemand(@NonNull final IViewRow row)
+	{
+		return row.getFieldValueAsBigDecimal(I_M_Material_Needs_Planner_V.COLUMNNAME_Demand, BigDecimal.ZERO);
 	}
 }
