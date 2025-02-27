@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.invoicecandidate.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_Invoice_Candidate
  *  @author metasfresh (generated) 
@@ -1968,14 +1968,14 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setModCntr_Settings_ID (final int ModCntr_Settings_ID)
 	{
-		if (ModCntr_Settings_ID < 1) 
+		if (ModCntr_Settings_ID < 1)
 			set_Value (COLUMNNAME_ModCntr_Settings_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_ModCntr_Settings_ID, ModCntr_Settings_ID);
 	}
 
 	@Override
-	public int getModCntr_Settings_ID() 
+	public int getModCntr_Settings_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_ModCntr_Settings_ID);
 	}
@@ -2751,7 +2751,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** 
+	/**
 	 * QualityInvoiceLineGroupType AD_Reference_ID=540617
 	 * Reference name: QualityInvoiceLineGroupType
 	 */
