@@ -34,7 +34,7 @@ WHERE c_invoice_candidate.ad_table_id = 320
 
 -- update to default one
 UPDATE c_invoice_candidate
-SET c_paymentterm_id= (select c_paymentterm_id from c_paymentterm pt where pt.isdefault='Y' and pt.isactive='Y' and pt.AD_Client_ID=c_invoice_candidate.AD_Client_ID) where c_paymentterm_id IS NULL;
+SET c_paymentterm_id= (select c_paymentterm_id from c_paymentterm pt where pt.isdefault='Y' and pt.ad_org_id = c_invoice_candidate.ad_org_id and pt.isactive='Y' and pt.AD_Client_ID=c_invoice_candidate.AD_Client_ID) where c_paymentterm_id IS NULL;
 
 
 

@@ -273,7 +273,9 @@
 				<textFieldExpression><![CDATA[$F{eori}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField-5" x="37" y="100" width="163" height="13" uuid="261be2af-8ff8-423b-9e86-6602c51df867"/>
+				<reportElement key="textField-5" x="37" y="100" width="163" height="13" uuid="261be2af-8ff8-423b-9e86-6602c51df867">
+					<printWhenExpression><![CDATA[new Boolean($F{customernoatvendor}!=null)]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

@@ -4,6 +4,8 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_De
 
 CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details (IN p_record_id numeric,
                                                                                IN p_language  Character Varying(6))
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details(IN p_C_Invoice_ID numeric,
+                                                                                         IN p_AD_Language  Character Varying(6))
     RETURNS TABLE
             (
                 InOuts                     text,
@@ -32,23 +34,21 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Invoice_Details (I
                 QtyPattern                 character varying,
                 linenetamt                 numeric,
                 rate                       numeric,
-                isdiscountprinted          character,
-                isprinttax                 character,
-                description                character varying,
-                productdescription         character varying,
-                bp_product_no              character varying,
-                bp_product_name            character varying,
-                p_value                    character varying,
-                p_description              character varying,
-                invoice_description        character varying,
-                cursymbol                  character varying,
-                iscampaignprice            character,
-                isprintwhenpackingmaterial character,
+                isDiscountPrinted          character(1),
+                IsPrintTax                 character(1),
+                Description                character varying(255),
+                productdescription         character varying(255),
+                bp_product_no              character varying(30),
+                bp_product_name            character varying(100),
+                p_value                    character varying(40),
+                p_description              character varying(255),
+                invoice_description        character varying(1024),
+                cursymbol                  character varying(10),
+                iscampaignprice            character(1),
+                IsPrintWhenPackingMaterial char(1),
                 PricePattern               text,
                 AmountPattern              text
             )
-    STABLE
-    LANGUAGE sql
 AS
 $$
 SELECT io.DocType || ': ' || io.DocNo                         AS InOuts,
@@ -118,7 +118,7 @@ FROM C_InvoiceLine il
 
     -- Get Product and its translation
          LEFT OUTER JOIN M_Product p ON il.M_Product_ID = p.M_Product_ID
-         LEFT OUTER JOIN M_Product_Trl pt ON il.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = p_language
+         LEFT OUTER JOIN M_Product_Trl pt ON il.M_Product_ID = pt.M_Product_ID AND pt.AD_Language = p_AD_Language AND pt.isActive = 'Y'
          LEFT OUTER JOIN LATERAL
     (
     SELECT M_Product_Category_ID =
@@ -129,10 +129,10 @@ FROM C_InvoiceLine il
 
     -- Get Unit of measurement and its translation
          LEFT OUTER JOIN C_UOM uom ON il.C_UOM_ID = uom.C_UOM_ID
-         LEFT OUTER JOIN C_UOM_Trl uomt ON il.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = p_language
+         LEFT OUTER JOIN C_UOM_Trl uomt ON il.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = p_AD_Language
          LEFT OUTER JOIN C_UOM puom ON il.Price_UOM_ID = puom.C_UOM_ID
          LEFT OUTER JOIN C_UOM_Trl puomt
-                         ON il.Price_UOM_ID = puomt.C_UOM_ID AND puomt.AD_Language = p_language
+                         ON il.Price_UOM_ID = puomt.C_UOM_ID AND puomt.AD_Language = p_AD_Language
 
     -- Tax rate
          LEFT OUTER JOIN C_Tax t ON il.C_Tax_ID = t.C_Tax_ID
@@ -140,100 +140,115 @@ FROM C_InvoiceLine il
          LEFT OUTER JOIN C_Currency c ON i.C_Currency_ID = c.C_Currency_ID
 
     -- Get shipment details
-         LEFT OUTER JOIN (SELECT DISTINCT x.C_InvoiceLine_ID,
-                                          First_Agg(x.DocType)         AS DocType,
-                                          STRING_AGG(x.DocNo, ', '
-                                                     ORDER BY x.DocNo) AS DocNo,
-                                          MIN(x.DateFrom)              AS DateFrom,
-                                          MAX(x.DateTo)                AS DateTo,
-                                          STRING_AGG(x.reference, ', '
-                                                     ORDER BY x.DocNo) AS reference,
-                                          x.shipLocation
-                          FROM (SELECT DISTINCT iliol.C_InvoiceLine_ID,
-                                                First_Agg(COALESCE(dtt.Printname, dt.Printname)
-                                                          ORDER BY io.DocumentNo)  AS DocType,
-                                                STRING_AGG(io.DocumentNo, ', '
-                                                           ORDER BY io.DocumentNo) AS DocNo,
-                                                MIN(io.MovementDate)               AS DateFrom,
-                                                MAX(io.MovementDate)               AS DateTo,
-                                                io.poreference                     AS reference,
-                                                bpl.name                           AS shipLocation
-                                FROM (SELECT DISTINCT M_InOut_ID,
-                                                      C_InvoiceLine_ID
-                                      FROM Report.fresh_IL_to_IOL_V
-                                      WHERE C_Invoice_ID = p_record_id) iliol
-                                         LEFT OUTER JOIN M_InOut io ON iliol.M_InOut_ID = io.M_InOut_ID
-                                    AND io.DocStatus IN ('CO', 'CL')
-                                    /* task 09290 */
-                                         INNER JOIN C_BPartner_Location bpl
-                                                    ON io.C_BPartner_Location_ID = bpl.C_BPartner_Location_ID
-                                         LEFT OUTER JOIN C_DocType dt ON io.C_DocType_ID = dt.C_DocType_ID
-                                         LEFT OUTER JOIN C_DocType_Trl dtt
-                                                         ON io.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_language
-                                GROUP BY C_InvoiceLine_ID, io.poreference, bpl.C_BPartner_Location_ID) x
+         LEFT OUTER JOIN (
+    SELECT DISTINCT x.C_InvoiceLine_ID,
+                    First_Agg(x.DocType)         AS DocType,
+                    STRING_AGG(x.DocNo, ', '
+                               ORDER BY x.DocNo) AS DocNo,
+                    MIN(x.DateFrom)              AS DateFrom,
+                    MAX(x.DateTo)                AS DateTo,
+                    STRING_AGG(x.reference, ', '
+                               ORDER BY x.DocNo) AS reference,
+                    x.shipLocation
+    FROM (
+             SELECT DISTINCT iliol.C_InvoiceLine_ID,
+                             First_Agg(COALESCE(dtt.Printname, dt.Printname)
+                                       ORDER BY io.DocumentNo)  AS DocType,
+                             STRING_AGG(io.DocumentNo, ', '
+                                        ORDER BY io.DocumentNo) AS DocNo,
+                             MIN(io.MovementDate)               AS DateFrom,
+                             MAX(io.MovementDate)               AS DateTo,
+                             io.poreference                     AS reference,
+                             bpl.name                           AS shipLocation
+             FROM (SELECT DISTINCT M_InOut_ID,
+                                   C_InvoiceLine_ID
+                   FROM Report.fresh_IL_to_IOL_V
+                   WHERE C_Invoice_ID = p_C_Invoice_ID) iliol
+                      LEFT OUTER JOIN M_InOut io ON iliol.M_InOut_ID = io.M_InOut_ID AND io.isActive = 'Y'
+                 AND io.DocStatus IN ('CO', 'CL')
+                 /* task 09290 */
+                      INNER JOIN C_BPartner_Location bpl
+                                 ON io.C_BPartner_Location_ID = bpl.C_BPartner_Location_ID AND bpl.isActive = 'Y'
+                      LEFT OUTER JOIN C_DocType dt ON io.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
+                      LEFT OUTER JOIN C_DocType_Trl dtt
+                                      ON io.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_AD_Language AND dtt.isActive = 'Y'
+             GROUP BY C_InvoiceLine_ID, io.poreference, bpl.C_BPartner_Location_ID
+         ) x
 
-                          GROUP BY x.C_InvoiceLine_ID, x.shipLocation) io ON il.C_InvoiceLine_ID = io.C_InvoiceLine_ID
+    GROUP BY x.C_InvoiceLine_ID, x.shipLocation
+) io ON il.C_InvoiceLine_ID = io.C_InvoiceLine_ID
 
 
     -- Get Packing instruction
-         LEFT OUTER JOIN (SELECT STRING_AGG(Name, E'\n'
-                                            ORDER BY Name) AS Name,
-                                 C_InvoiceLine_ID
-                          FROM (SELECT DISTINCT COALESCE(pifb.name, pi.name) AS name,
-                                                C_InvoiceLine_ID
-                                FROM Report.fresh_IL_TO_IOL_V iliol
-                                         INNER JOIN M_InOutLine iol
-                                                    ON iliol.M_InOutLine_ID = iol.M_InOutLine_ID
-                                         LEFT OUTER JOIN M_HU_PI_Item_Product pi
-                                                         ON iol.M_HU_PI_Item_Product_ID = pi.M_HU_PI_Item_Product_ID
-                                         LEFT OUTER JOIN M_HU_PI_Item piit
-                                                         ON piit.M_HU_PI_Item_ID = pi.M_HU_PI_Item_ID
+         LEFT OUTER JOIN (
+    SELECT STRING_AGG(Name, E'\n'
+                      ORDER BY Name) AS Name,
+           C_InvoiceLine_ID
+    FROM (
+             SELECT DISTINCT COALESCE(pifb.name, pi.name) AS name,
+                             C_InvoiceLine_ID
+             FROM Report.fresh_IL_TO_IOL_V iliol
+                      INNER JOIN M_InOutLine iol
+                                 ON iliol.M_InOutLine_ID = iol.M_InOutLine_ID AND iol.isActive = 'Y'
+                      LEFT OUTER JOIN M_HU_PI_Item_Product pi
+                                      ON iol.M_HU_PI_Item_Product_ID = pi.M_HU_PI_Item_Product_ID AND pi.isActive = 'Y'
+                      LEFT OUTER JOIN M_HU_PI_Item piit
+                                      ON piit.M_HU_PI_Item_ID = pi.M_HU_PI_Item_ID AND piit.isActive = 'Y'
 
-                                         LEFT OUTER JOIN M_HU_Assignment asgn
-                                                         ON asgn.AD_Table_ID = ((SELECT get_Table_ID('M_InOutLine')))
-                                                             AND asgn.Record_ID = iol.M_InOutLine_ID
-                                         LEFT OUTER JOIN M_HU tu ON asgn.M_TU_HU_ID = tu.M_HU_ID
-                                         LEFT OUTER JOIN M_HU_PI_Item_Product pifb
-                                                         ON tu.M_HU_PI_Item_Product_ID = pifb.M_HU_PI_Item_Product_ID
-                                         LEFT OUTER JOIN M_HU_PI_Item pit
-                                                         ON pifb.M_HU_PI_Item_ID = pit.M_HU_PI_Item_ID
-                                    --
-                                         LEFT OUTER JOIN M_HU_PI_Version piv
-                                                         ON piv.M_HU_PI_Version_ID = COALESCE(pit.M_HU_PI_Version_ID, piit.M_HU_PI_Version_ID)
-                                WHERE piv.M_HU_PI_Version_ID != 101
-                                  AND iliol.C_Invoice_ID = p_record_id) pi
-                          GROUP BY C_InvoiceLine_ID) piip ON il.C_InvoiceLine_ID = piip.C_InvoiceLine_ID
+                      LEFT OUTER JOIN M_HU_Assignment asgn
+                                      ON asgn.AD_Table_ID = ((SELECT get_Table_ID('M_InOutLine')))
+                                          AND asgn.Record_ID = iol.M_InOutLine_ID AND asgn.isActive = 'Y'
+                      LEFT OUTER JOIN M_HU tu ON asgn.M_TU_HU_ID = tu.M_HU_ID
+                      LEFT OUTER JOIN M_HU_PI_Item_Product pifb
+                                      ON tu.M_HU_PI_Item_Product_ID = pifb.M_HU_PI_Item_Product_ID AND pifb.isActive = 'Y'
+                      LEFT OUTER JOIN M_HU_PI_Item pit
+                                      ON pifb.M_HU_PI_Item_ID = pit.M_HU_PI_Item_ID AND pit.isActive = 'Y'
+                 --
+                      LEFT OUTER JOIN M_HU_PI_Version piv
+                                      ON piv.M_HU_PI_Version_ID = COALESCE(pit.M_HU_PI_Version_ID, piit.M_HU_PI_Version_ID) AND
+                                         piv.isActive = 'Y'
+             WHERE piv.M_HU_PI_Version_ID != 101
+               AND iliol.C_Invoice_ID = p_C_Invoice_ID
+         ) pi
+    GROUP BY C_InvoiceLine_ID
+) piip ON il.C_InvoiceLine_ID = piip.C_InvoiceLine_ID
 
     -- Get Attributes
          LEFT OUTER JOIN
-     (SELECT STRING_AGG(ai_value, ', '
-                        ORDER BY LENGTH(ai_value)) AS Attributes,
-             att.M_AttributeSetInstance_ID,
-             il.C_InvoiceLine_ID
-      FROM Report.fresh_Attributes att
-               JOIN C_InvoiceLine il ON il.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID
-      WHERE att.IsPrintedInDocument = 'Y'
-        AND il.C_Invoice_ID = p_record_id
-      GROUP BY att.M_AttributeSetInstance_ID, il.C_InvoiceLine_ID) att ON il.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID AND il.C_InvoiceLine_ID = att.C_InvoiceLine_ID
+     (
+         SELECT STRING_AGG(ai_value, ', '
+                           ORDER BY LENGTH(ai_value)) AS Attributes,
+                att.M_AttributeSetInstance_ID,
+                il.C_InvoiceLine_ID
+         FROM Report.fresh_Attributes att
+                  JOIN C_InvoiceLine il ON il.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID
+         WHERE att.IsPrintedInDocument = 'Y'
+           AND il.C_Invoice_ID = p_C_Invoice_ID
+         GROUP BY att.M_AttributeSetInstance_ID, il.C_InvoiceLine_ID
+     ) att ON il.M_AttributeSetInstance_ID = att.M_AttributeSetInstance_ID AND il.C_InvoiceLine_ID = att.C_InvoiceLine_ID
 
          LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID
-    AND p.M_Product_ID = bpp.M_Product_ID
+    AND p.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y'
 
     -- get inoutline - to order by it. The main error i think is that the lines in invoice are not ordered anymore as they used to
-         LEFT OUTER JOIN M_InOutLine miol ON il.M_InOutLine_ID = miol.M_InOutLine_ID
+         LEFT OUTER JOIN M_InOutLine miol ON il.M_InOutLine_ID = miol.M_InOutLine_ID AND miol.isActive = 'Y'
     --ordering gebinde if config exists
-         LEFT OUTER JOIN M_InOut mio ON mio.M_Inout_ID = miol.M_Inout_ID
-         LEFT OUTER JOIN C_DocType mdt ON mio.C_DocType_ID = mdt.C_DocType_ID
-         LEFT OUTER JOIN C_DocLine_Sort dls ON mdt.DocBaseType = dls.DocBaseType
-    AND EXISTS(SELECT 0
-               FROM C_BP_DocLine_Sort bpdls
-               WHERE bpdls.C_DocLine_Sort_ID = dls.C_DocLine_Sort_ID
-                 AND bpdls.C_BPartner_ID = mio.C_BPartner_ID
-                 AND bpdls.isActive = 'Y')
+         LEFT OUTER JOIN M_InOut mio ON mio.M_Inout_ID = miol.M_Inout_ID AND mio.isActive = 'Y'
+         LEFT OUTER JOIN C_DocType mdt ON mio.C_DocType_ID = mdt.C_DocType_ID AND mdt.isActive = 'Y'
+         LEFT OUTER JOIN C_DocLine_Sort dls ON mdt.DocBaseType = dls.DocBaseType AND dls.isActive = 'Y'
+    AND EXISTS(
+                                                       SELECT 0
+                                                       FROM C_BP_DocLine_Sort bpdls
+                                                       WHERE bpdls.C_DocLine_Sort_ID = dls.C_DocLine_Sort_ID
+                                                         AND bpdls.C_BPartner_ID = mio.C_BPartner_ID
+                                                         AND bpdls.isActive = 'Y'
+                                                   )
          LEFT OUTER JOIN C_DocLine_Sort_Item dlsi
-                         ON dls.C_DocLine_Sort_ID = dlsi.C_DocLine_Sort_ID AND dlsi.M_Product_ID = il.M_Product_ID
+                         ON dls.C_DocLine_Sort_ID = dlsi.C_DocLine_Sort_ID AND dlsi.M_Product_ID = il.M_Product_ID AND dlsi.isActive = 'Y'
 
-WHERE il.C_Invoice_ID = p_record_id
+
+WHERE il.C_Invoice_ID = p_C_Invoice_ID
+  AND il.isActive = 'Y'
 
 ORDER BY io.DateFrom,
          io.DocNo,
@@ -250,5 +265,6 @@ ORDER BY io.DateFrom,
          line
 
 $$
+    LANGUAGE sql
+    STABLE
 ;
-
