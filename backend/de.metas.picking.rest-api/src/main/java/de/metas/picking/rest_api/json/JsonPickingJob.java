@@ -23,6 +23,7 @@
 package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import lombok.Builder;
 import lombok.NonNull;
@@ -38,6 +39,7 @@ import java.util.function.Function;
 @Jacksonized
 public class JsonPickingJob
 {
+	@NonNull PickingJobAggregationType aggregationType;
 	@NonNull JsonCompleteStatus completeStatus;
 	@Nullable JsonLUPickingTarget pickTarget;
 	@Nullable JsonTUPickingTarget tuPickTarget;
@@ -49,6 +51,7 @@ public class JsonPickingJob
 			@NonNull final Function<PickingJob, List<JsonPickingJobLine>> getJsonPickingLines)
 	{
 		return builder()
+				.aggregationType(pickingJob.getAggregationType())
 				.completeStatus(JsonCompleteStatus.of(pickingJob.getProgress()))
 				.pickTarget(pickingJob.getLuPickTarget().map(JsonLUPickingTarget::of).orElse(null))
 				.tuPickTarget(pickingJob.getTuPickTarget().map(JsonTUPickingTarget::of).orElse(null))

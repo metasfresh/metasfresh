@@ -22,10 +22,16 @@
 
 package de.metas.picking.workflow;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
+import de.metas.product.ProductId;
+import de.metas.uom.UomId;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -39,16 +45,24 @@ import javax.annotation.Nullable;
 @Builder
 public class PickingWFProcessStartParams
 {
-	@NonNull OrderId salesOrderId;
-	@NonNull BPartnerLocationId deliveryBPLocationId;
+	@NonNull PickingJobAggregationType aggregationType;
+	@Nullable OrderId salesOrderId;
+	@Nullable BPartnerLocationId deliveryBPLocationId;
 	@Nullable WarehouseTypeId warehouseTypeId;
+	@Nullable ProductId productId;
+	@Nullable UomId uomId;
+	@Nullable ImmutableSet<ShipmentScheduleId> shipmentScheduleIds;
 
 	public static PickingWFProcessStartParams of(@NonNull final PickingJobCandidate candidate)
 	{
 		return builder()
+				.aggregationType(candidate.getAggregationType())
 				.salesOrderId(candidate.getSalesOrderId())
 				.deliveryBPLocationId(candidate.getDeliveryBPLocationId())
 				.warehouseTypeId(candidate.getWarehouseTypeId())
+				.productId(candidate.getProductId())
+				.uomId(candidate.getUomId())
+				.shipmentScheduleIds(candidate.getShipmentScheduleIds())
 				.build();
 	}
 
@@ -57,11 +71,17 @@ public class PickingWFProcessStartParams
 	 */
 	public Params toParams()
 	{
+		final BPartnerId customerId = getCustomerId();
+
 		return Params.builder()
-				.value("salesOrderId", salesOrderId.getRepoId())
-				.value("customerId", getCustomerId().getRepoId())
-				.value("customerLocationId", deliveryBPLocationId.getRepoId())
+				.value("aggregationType", aggregationType.toJson())
+				.value("salesOrderId", salesOrderId != null ? salesOrderId.getRepoId() : 0)
+				.value("customerId", customerId != null ? customerId.getRepoId() : 0)
+				.value("customerLocationId", deliveryBPLocationId != null ? deliveryBPLocationId.getRepoId() : 0)
 				.value("warehouseTypeId", warehouseTypeId != null ? warehouseTypeId.getRepoId() : null)
+				.value("productId", productId != null ? productId.getRepoId() : null)
+				.value("uomId", uomId != null ? uomId.getRepoId() : null)
+				.value("shipmentScheduleIds", shipmentScheduleIds != null ? RepoIdAwares.toCommaSeparatedString(shipmentScheduleIds) : null)
 				.build();
 	}
 
@@ -72,14 +92,20 @@ public class PickingWFProcessStartParams
 	{
 		try
 		{
+			final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = RepoIdAwares.ofCommaSeparatedSet(params.getParameterAsString("shipmentScheduleIds"), ShipmentScheduleId.class);
+
 			//noinspection ConstantConditions
 			return builder()
+					.aggregationType(PickingJobAggregationType.ofJson(params.getParameterAsString("aggregationType")))
 					.salesOrderId(params.getParameterAsId("salesOrderId", OrderId.class))
 					.deliveryBPLocationId(
 							BPartnerLocationId.ofRepoIdOrNull(
 									params.getParameterAsId("customerId", BPartnerId.class),
 									params.getParameterAsInt("customerLocationId", -1)))
 					.warehouseTypeId(params.getParameterAsId("warehouseTypeId", WarehouseTypeId.class))
+					.productId(params.getParameterAsId("productId", ProductId.class))
+					.uomId(params.getParameterAsId("uomId", UomId.class))
+					.shipmentScheduleIds(shipmentScheduleIds != null && !shipmentScheduleIds.isEmpty() ? shipmentScheduleIds : null)
 					.build();
 		}
 		catch (Exception ex)
@@ -88,5 +114,6 @@ public class PickingWFProcessStartParams
 		}
 	}
 
-	public BPartnerId getCustomerId() {return this.deliveryBPLocationId.getBpartnerId();}
+	@Nullable
+	public BPartnerId getCustomerId() {return this.deliveryBPLocationId != null ? this.deliveryBPLocationId.getBpartnerId() : null;}
 }

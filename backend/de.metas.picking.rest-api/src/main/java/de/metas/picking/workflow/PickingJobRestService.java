@@ -29,6 +29,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -93,13 +94,20 @@ public class PickingJobRestService
 			final @NonNull PickingWFProcessStartParams params,
 			final @NonNull UserId invokerId)
 	{
-		final PickingJobOptions pickingJobOptions = getPickingJobOptions(params.getCustomerId());
+		final PickingJobAggregationType aggregationType = params.getAggregationType();
+
+		final BPartnerId customerId = params.getCustomerId();
+		final PickingJobOptions pickingJobOptions = customerId != null ? getPickingJobOptions(customerId) : null;
+		final boolean allowPickingAnyHU = pickingJobOptions != null ? pickingJobOptions.isAllowPickingAnyHU() : aggregationType.isDefaultAllowPickingAnyHU();
+
 		return pickingJobService.createPickingJob(PickingJobCreateRequest.builder()
 				.pickerId(invokerId)
+				.aggregationType(aggregationType)
 				.salesOrderId(params.getSalesOrderId())
 				.deliveryBPLocationId(params.getDeliveryBPLocationId())
 				.warehouseTypeId(params.getWarehouseTypeId())
-				.isAllowPickingAnyHU(pickingJobOptions.isAllowPickingAnyHU())
+				.isAllowPickingAnyHU(allowPickingAnyHU)
+				.shipmentScheduleIds(params.getShipmentScheduleIds())
 				.build());
 	}
 
@@ -149,9 +157,7 @@ public class PickingJobRestService
 
 	public PickingJob complete(@NonNull final PickingJob pickingJob)
 	{
-		final PickingJobOptions pickingJobOptions = getPickingJobOptions(pickingJob.getCustomerId());
 		return pickingJobService.prepareToComplete(pickingJob)
-				.createShipmentPolicy(pickingJobOptions.getCreateShipmentPolicy())
 				.execute();
 	}
 
@@ -190,7 +196,7 @@ public class PickingJobRestService
 		return pickingJobService.closeTUPickTarget(pickingJob);
 	}
 
-	public PickingJobOptions getPickingJobOptions(final BPartnerId customerId) {return mobileUIPickingUserProfileRepository.getPickingJobOptions(customerId);}
+	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId) {return mobileUIPickingUserProfileRepository.getPickingJobOptions(customerId);}
 
 	@NonNull
 	public List<HuId> getClosedLUs(@NonNull final PickingJob pickingJob)

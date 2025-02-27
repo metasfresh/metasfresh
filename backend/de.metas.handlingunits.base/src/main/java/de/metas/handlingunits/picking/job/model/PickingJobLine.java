@@ -26,6 +26,8 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.QtyTU;
@@ -63,6 +65,7 @@ public class PickingJobLine
 	@NonNull Quantity qtyToPick;
 	@NonNull OrderAndLineId salesOrderAndLineId;
 	int orderLineSeqNo;
+	@NonNull BPartnerLocationId deliveryBPLocationId;
 	@NonNull ShipmentScheduleId shipmentScheduleId;
 	@Nullable UomId catchUomId;
 	@NonNull ImmutableList<PickingJobStep> steps;
@@ -91,6 +94,7 @@ public class PickingJobLine
 			@NonNull final Quantity qtyToPick,
 			@NonNull final OrderAndLineId salesOrderAndLineId,
 			@NonNull final Integer orderLineSeqNo,
+			@NonNull final BPartnerLocationId deliveryBPLocationId,
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@Nullable final UomId catchUomId,
 			@NonNull final ImmutableList<PickingJobStep> steps,
@@ -106,6 +110,7 @@ public class PickingJobLine
 		this.qtyToPick = qtyToPick;
 		this.salesOrderAndLineId = salesOrderAndLineId;
 		this.orderLineSeqNo = orderLineSeqNo;
+		this.deliveryBPLocationId = deliveryBPLocationId;
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.catchUomId = catchUomId;
 		this.steps = steps;
@@ -136,6 +141,8 @@ public class PickingJobLine
 
 		this.progress = computeProgress(this.steps, this.isManuallyClosed);
 	}
+
+	public BPartnerId getCustomerId() {return this.deliveryBPLocationId.getBpartnerId();}
 
 	private static PickingJobProgress computeProgress(@NonNull final ImmutableList<PickingJobStep> steps, final boolean isManuallyClosed)
 	{

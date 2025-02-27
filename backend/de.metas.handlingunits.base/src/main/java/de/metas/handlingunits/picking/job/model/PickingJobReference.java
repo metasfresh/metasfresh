@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -16,12 +18,14 @@ import java.time.ZonedDateTime;
 public class PickingJobReference
 {
 	@NonNull PickingJobId pickingJobId;
-	@NonNull String salesOrderDocumentNo;
-	@NonNull BPartnerId customerId;
-	@NonNull String customerName;
-	@NonNull ZonedDateTime deliveryDate;
-	@NonNull ZonedDateTime preparationDate;
-	@NonNull BPartnerLocationId deliveryLocationId;
+	@Nullable String salesOrderDocumentNo;
+	@Nullable BPartnerId customerId;
+	@Nullable String customerName;
+	@Nullable ZonedDateTime deliveryDate;
+	@Nullable ZonedDateTime preparationDate;
+	@Nullable BPartnerLocationId deliveryLocationId;
+	@Nullable ProductId productId;
+	@Nullable Quantity qtyToDeliver;
 	@NonNull ImmutableSet<ShipmentScheduleId> shipmentScheduleIds;
 	boolean isShipmentSchedulesLocked;
 

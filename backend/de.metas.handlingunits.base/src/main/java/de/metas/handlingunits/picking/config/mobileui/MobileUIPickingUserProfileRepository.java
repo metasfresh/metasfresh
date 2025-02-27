@@ -60,9 +60,16 @@ public class MobileUIPickingUserProfileRepository
 			.tableName(I_MobileUI_UserProfile_Picking_Job.Table_Name)
 			.build();
 
-	public PickingJobOptions getPickingJobOptions(@NonNull final BPartnerId customerId)
+	@NonNull
+	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId)
 	{
 		return getProfile().getPickingJobOptions(customerId, getPickingJobOptionsCollection());
+	}
+
+	@NonNull
+	public PickingJobAggregationType getAggregationType(@Nullable final BPartnerId customerId)
+	{
+		return getProfile().getAggregationType(customerId, getPickingJobOptionsCollection());
 	}
 
 	private PickingJobOptionsCollection getPickingJobOptionsCollection()
@@ -98,6 +105,7 @@ public class MobileUIPickingUserProfileRepository
 	private static PickingJobOptions extractPickingJobOptions(final I_MobileUI_UserProfile_Picking profileRecord)
 	{
 		return PickingJobOptions.builder()
+				.aggregationType(PickingJobAggregationType.ofCode(profileRecord.getPickingJobAggregationType()))
 				.isAlwaysSplitHUsEnabled(profileRecord.isAlwaysSplitHUsEnabled())
 				.isAllowPickingAnyHU(profileRecord.isAllowPickingAnyHU())
 				.isPickWithNewLU(profileRecord.isPickingWithNewLU())
@@ -267,6 +275,7 @@ public class MobileUIPickingUserProfileRepository
 	{
 		final PickingJobOptionsId pickingJobOptionsId = PickingJobOptionsId.ofRepoId(record.getMobileUI_UserProfile_Picking_Job_ID());
 		final PickingJobOptions pickingJobOptions = PickingJobOptions.builder()
+				.aggregationType(PickingJobAggregationType.ofNullableCode(record.getPickingJobAggregationType()))
 				.isAlwaysSplitHUsEnabled(record.isAlwaysSplitHUsEnabled())
 				.isAllowPickingAnyHU(record.isAllowPickingAnyHU())
 				.isPickWithNewLU(record.isPickingWithNewLU())

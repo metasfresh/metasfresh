@@ -31,11 +31,15 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PackToSpec;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
@@ -48,10 +52,12 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
@@ -110,16 +116,25 @@ public final class PickingJob
 		this.progress = computeProgress(lines);
 	}
 
+	@NonNull
+	public PickingJobAggregationType getAggregationType() {return header.getAggregationType();}
+
+	@Nullable
 	public String getSalesOrderDocumentNo() {return header.getSalesOrderDocumentNo();}
 
+	@Nullable
 	public ZonedDateTime getPreparationDate() {return header.getPreparationDate();}
 
+	@Nullable
 	public ZonedDateTime getDeliveryDate() {return header.getDeliveryDate();}
 
+	@Nullable
 	public BPartnerId getCustomerId() {return header.getCustomerId();}
 
+	@Nullable
 	public String getCustomerName() {return header.getCustomerName();}
 
+	@Nullable
 	public BPartnerLocationId getDeliveryBPLocationId() {return header.getDeliveryBPLocationId();}
 
 	@Nullable
@@ -295,6 +310,76 @@ public final class PickingJob
 		return lines.stream()
 				.map(PickingJobLine::getProductId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	public ITranslatableString getSingleProductNameOrEmpty()
+	{
+		ProductId productId = null;
+		ITranslatableString productName = TranslatableStrings.empty();
+		for (final PickingJobLine line : lines)
+		{
+			if (productId == null)
+			{
+				productId = line.getProductId();
+			}
+			else if (!ProductId.equals(productId, line.getProductId()))
+			{
+				// found different products
+				return TranslatableStrings.empty();
+			}
+
+			productName = line.getProductName();
+		}
+
+		return productName;
+	}
+
+	@Nullable
+	public Quantity getSingleQtyToPickOrNull()
+	{
+		return extractQtyToPickOrNull(lines, PickingJobLine::getProductId, PickingJobLine::getQtyToPick);
+	}
+
+	@Nullable
+	public static <T> Quantity extractQtyToPickOrNull(
+			@NonNull final Collection<T> lines,
+			@NonNull final Function<T, ProductId> extractProductId,
+			@NonNull final Function<T, Quantity> extractQtyToPick)
+	{
+		ProductId productId = null;
+		Quantity qtyToPick = null;
+
+		for (final T line : lines)
+		{
+			final ProductId lineProductId = extractProductId.apply(line);
+			if (productId == null)
+			{
+				productId = lineProductId;
+			}
+			else if (!ProductId.equals(productId, lineProductId))
+			{
+				// found different products
+				return null;
+			}
+
+			final Quantity lineQtyToPick = extractQtyToPick.apply(line);
+			if (qtyToPick == null)
+			{
+				qtyToPick = lineQtyToPick;
+			}
+			else if (UomId.equals(qtyToPick.getUomId(), lineQtyToPick.getUomId()))
+			{
+				qtyToPick = qtyToPick.add(lineQtyToPick);
+			}
+			else
+			{
+				// found different UOMs
+				return null;
+			}
+		}
+
+		return qtyToPick;
 	}
 
 	@NonNull
