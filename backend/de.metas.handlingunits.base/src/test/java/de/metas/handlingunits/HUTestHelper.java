@@ -598,7 +598,10 @@ public class HUTestHelper
 		return new de.metas.handlingunits.model.validator.Main(
 				ddOrderMoveScheduleService,
 				ddOrderService,
-				new PickingBOMService());
+				new PickingBOMService(),
+				new HUQRCodesService(new HUQRCodesRepository(),
+									 new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+									 new QRCodeConfigurationService(new QRCodeConfigurationRepository())));
 	}
 
 	/**

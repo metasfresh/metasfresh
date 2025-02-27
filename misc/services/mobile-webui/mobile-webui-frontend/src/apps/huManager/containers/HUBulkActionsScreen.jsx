@@ -11,12 +11,13 @@ import { toQRCodeDisplayable } from '../../../utils/qrCode/hu';
 import * as api from '../api';
 import { toastError, toastNotification } from '../../../utils/toast';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
+import { huManagerLocation } from '../routes';
 
 const HUBulkActionsScreen = () => {
   const dispatch = useDispatch();
   const { history } = useScreenDefinition({
     screenId: 'HUBulkActionsScreen',
-    back: '/',
+    back: huManagerLocation,
   });
 
   const handlingUnitInfo = useSelector((state) => getHandlingUnitInfoFromGlobalState(state));
