@@ -66,10 +66,12 @@
 	import de.metas.picking.workflow.PickingWFProcessStartParams;
 	import de.metas.picking.workflow.handlers.activity_handlers.ActualPickingWFActivityHandler;
 	import de.metas.picking.workflow.handlers.activity_handlers.CompletePickingWFActivityHandler;
+	import de.metas.picking.workflow.handlers.activity_handlers.SetPickFromHUWFActivityHandler;
 	import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
 	import de.metas.user.UserId;
 	import de.metas.util.StringUtils;
 	import de.metas.workflow.rest_api.model.WFActivity;
+	import de.metas.workflow.rest_api.model.WFActivityAlwaysAvailableToUser;
 	import de.metas.workflow.rest_api.model.WFActivityId;
 	import de.metas.workflow.rest_api.model.WFProcess;
 	import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
@@ -102,9 +104,10 @@
 		@VisibleForTesting
 		public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("picking");
 
-		public static final WFActivityId ACTIVITY_ID_ScanPickingSlot = WFActivityId.ofString("A1");
-		public static final WFActivityId ACTIVITY_ID_PickLines = WFActivityId.ofString("A2");
-		public static final WFActivityId ACTIVITY_ID_Complete = WFActivityId.ofString("A3");
+		public static final WFActivityId ACTIVITY_ID_ScanPickFromHU = WFActivityId.ofString("scanPickFromHU");
+		public static final WFActivityId ACTIVITY_ID_ScanPickingSlot = WFActivityId.ofString("scanPickingSlot"); // keep in sync with javascript code
+		public static final WFActivityId ACTIVITY_ID_PickLines = WFActivityId.ofString("pickLines");
+		public static final WFActivityId ACTIVITY_ID_Complete = WFActivityId.ofString("complete");
 		private static final AdMessageKey INVALID_QR_CODE_ERROR_MSG = AdMessageKey.of("mobileui.picking.INVALID_QR_CODE_ERROR_MSG");
 
 		private static final ImmutableTranslatableString captionScanPickingSlot = ImmutableTranslatableString.builder()
@@ -113,7 +116,6 @@
 				.defaultValue("Scan picking slot")
 				.build();
 		private static final ITranslatableString captionPickLines = TranslatableStrings.anyLanguage("Pick");
-
 
 		private final PickingJobRestService pickingJobRestService;
 		private final PickingWorkflowLaunchersProvider wfLaunchersProvider;
@@ -311,13 +313,24 @@
 			);
 		}
 
-		private static WFActivity toWFActivity_Complete(final @NotNull PickingJob pickingJob)
+		private static ImmutableList<WFActivity> toWFActivities_ProductBasedAggregation(@NonNull final PickingJob pickingJob)
+		{
+			return ImmutableList.of(
+					toWActivity_PickFromHU(pickingJob),
+					toWActivity_ScanPickingSlot(pickingJob),
+					toWFActivity_PickLines(pickingJob),
+					toWFActivity_Complete(pickingJob)
+			);
+		}
+
+		private static WFActivity toWActivity_PickFromHU(final @NotNull PickingJob pickingJob)
 		{
 			return WFActivity.builder()
-					.id(ACTIVITY_ID_Complete)
-					.caption(TranslatableStrings.adRefList(IDocument.ACTION_AD_Reference_ID, IDocument.ACTION_Complete))
-					.wfActivityType(CompletePickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
-					.status(CompletePickingWFActivityHandler.computeActivityState(pickingJob))
+					.id(ACTIVITY_ID_ScanPickFromHU)
+					.caption(TranslatableStrings.anyLanguage("Pick From"))
+					.wfActivityType(SetPickFromHUWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+					.status(SetPickFromHUWFActivityHandler.computeActivityState(pickingJob))
+					.alwaysAvailableToUser(WFActivityAlwaysAvailableToUser.YES)
 					.build();
 		}
 
@@ -341,14 +354,14 @@
 					.build();
 		}
 
-		private static ImmutableList<WFActivity> toWFActivities_ProductBasedAggregation(@NonNull final PickingJob pickingJob)
+		private static WFActivity toWFActivity_Complete(final @NotNull PickingJob pickingJob)
 		{
-			return ImmutableList.of(
-					// TODO activity to scan the HU to pick from
-					toWActivity_ScanPickingSlot(pickingJob),
-					toWFActivity_PickLines(pickingJob),
-					toWFActivity_Complete(pickingJob)
-			);
+			return WFActivity.builder()
+					.id(ACTIVITY_ID_Complete)
+					.caption(TranslatableStrings.adRefList(IDocument.ACTION_AD_Reference_ID, IDocument.ACTION_Complete))
+					.wfActivityType(CompletePickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+					.status(CompletePickingWFActivityHandler.computeActivityState(pickingJob))
+					.build();
 		}
 
 		public WFProcess processStepEvent(

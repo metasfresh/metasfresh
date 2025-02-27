@@ -281,7 +281,7 @@ public class PickingJobSaver
 				.stream()
 				.filter(record -> PickingJobPickFromAlternativeId.equals(extractAlternativeId(record), alternativeId))
 				.collect(GuavaCollectors.toHashMapByKey(record -> huIdAndQrCode2StringKey.apply(HuId.ofRepoId(record.getPicked_HU_ID()),
-																								record.getPicked_RenderedQRCode())));
+						record.getPicked_RenderedQRCode())));
 
 		if (pickedTo != null)
 		{
@@ -335,6 +335,11 @@ public class PickingJobSaver
 	private static void updateRecord(final I_M_Picking_Job record, final PickingJob from)
 	{
 		record.setPicking_User_ID(UserId.toRepoId(from.getLockedBy()));
+
+		final HUInfo pickFromHU = from.getPickFromHU().orElse(null);
+		record.setPickFrom_HU_ID(pickFromHU != null ? pickFromHU.getId().getRepoId() : -1);
+		record.setPickFrom_HUQRCode(pickFromHU != null ? pickFromHU.getQrCode().toGlobalQRCodeString() : null);
+
 		record.setM_PickingSlot_ID(from.getPickingSlotId().map(PickingSlotId::getRepoId).orElse(-1));
 
 		final LUPickingTarget pickTarget = from.getLuPickTarget().orElse(null);

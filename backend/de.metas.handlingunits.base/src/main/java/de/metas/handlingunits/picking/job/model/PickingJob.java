@@ -74,6 +74,7 @@ public final class PickingJob
 
 	@NonNull private final PickingJobHeader header;
 
+	@NonNull @Getter private final Optional<HUInfo> pickFromHU;
 	@NonNull @Getter private final Optional<PickingSlotIdAndCaption> pickingSlot;
 	@NonNull @Getter private final Optional<LUPickingTarget> luPickTarget;
 	@NonNull @Getter private final Optional<TUPickingTarget> tuPickTarget;
@@ -95,6 +96,7 @@ public final class PickingJob
 	private PickingJob(
 			final @NonNull PickingJobId id,
 			final @NonNull PickingJobHeader header,
+			final @Nullable Optional<HUInfo> pickFromHU,
 			final @Nullable Optional<PickingSlotIdAndCaption> pickingSlot,
 			final @Nullable Optional<LUPickingTarget> luPickTarget,
 			final @Nullable Optional<TUPickingTarget> tuPickTarget,
@@ -106,6 +108,7 @@ public final class PickingJob
 
 		this.id = id;
 		this.header = header;
+		this.pickFromHU = pickFromHU != null ? pickFromHU : Optional.empty();
 		this.pickingSlot = pickingSlot != null ? pickingSlot : Optional.empty();
 		this.luPickTarget = luPickTarget != null ? luPickTarget : Optional.empty();
 		this.tuPickTarget = tuPickTarget != null ? tuPickTarget : Optional.empty();
@@ -216,6 +219,13 @@ public final class PickingJob
 		return PickingSlotIdAndCaption.equals(this.pickingSlot.orElse(null), pickingSlot)
 				? this
 				: toBuilder().pickingSlot(Optional.ofNullable(pickingSlot)).build();
+	}
+
+	public PickingJob withPickFromHU(@Nullable final HUInfo pickFromHU)
+	{
+		return HUInfo.equals(this.pickFromHU.orElse(null), pickFromHU)
+				? this
+				: toBuilder().pickFromHU(Optional.ofNullable(pickFromHU)).build();
 	}
 
 	public ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds()

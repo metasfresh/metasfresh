@@ -409,6 +409,52 @@ public interface I_M_Picking_Job
 	String COLUMNNAME_M_TU_HU_PI_ID = "M_TU_HU_PI_ID";
 
 	/**
+	 * Set Pick From HU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPickFrom_HU_ID (int PickFrom_HU_ID);
+
+	/**
+	 * Get Pick From HU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPickFrom_HU_ID();
+
+	@Nullable de.metas.handlingunits.model.I_M_HU getPickFrom_HU();
+
+	void setPickFrom_HU(@Nullable de.metas.handlingunits.model.I_M_HU PickFrom_HU);
+
+	ModelColumn<I_M_Picking_Job, de.metas.handlingunits.model.I_M_HU> COLUMN_PickFrom_HU_ID = new ModelColumn<>(I_M_Picking_Job.class, "PickFrom_HU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_PickFrom_HU_ID = "PickFrom_HU_ID";
+
+	/**
+	 * Set Pick From HU QR Code.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPickFrom_HUQRCode (@Nullable java.lang.String PickFrom_HUQRCode);
+
+	/**
+	 * Get Pick From HU QR Code.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPickFrom_HUQRCode();
+
+	ModelColumn<I_M_Picking_Job, Object> COLUMN_PickFrom_HUQRCode = new ModelColumn<>(I_M_Picking_Job.class, "PickFrom_HUQRCode", null);
+	String COLUMNNAME_PickFrom_HUQRCode = "PickFrom_HUQRCode";
+
+	/**
 	 * Set Aggregation Type.
 	 *
 	 * <br>Type: List

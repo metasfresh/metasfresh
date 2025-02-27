@@ -72,6 +72,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -230,16 +231,14 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 
 	private PickingJob loadJob(final I_M_Picking_Job record)
 	{
-		final Optional<PickingSlotIdAndCaption> pickingSlot = Optional.ofNullable(PickingSlotId.ofRepoIdOrNull(record.getM_PickingSlot_ID()))
-				.map(loadingSupportingServices::getPickingSlotIdAndCaption);
-
 		final PickingJobId pickingJobId = PickingJobId.ofRepoId(record.getM_Picking_Job_ID());
 		final PickingJobHeader pickingJobHeader = toPickingJobHeader(record);
 
 		return PickingJob.builder()
 				.id(pickingJobId)
 				.header(pickingJobHeader)
-				.pickingSlot(pickingSlot)
+				.pickFromHU(extractPickFromHU(record))
+				.pickingSlot(extractPickingSlot(record))
 				.luPickTarget(extractLUPickingTarget(record))
 				.tuPickTarget(extractTUPickingTarget(record))
 				.docStatus(PickingJobDocStatus.ofCode(record.getDocStatus()))
@@ -252,6 +251,28 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 						.map(this::loadPickFromAlternative)
 						.collect(ImmutableSet.toImmutableSet()))
 				.build();
+	}
+
+	private Optional<HUInfo> extractPickFromHU(final I_M_Picking_Job record)
+	{
+		final HuId pickFromHUId = HuId.ofRepoIdOrNull(record.getPickFrom_HU_ID());
+		if (pickFromHUId == null)
+		{
+			return Optional.empty();
+		}
+		
+		return Optional.of(
+				HUInfo.builder()
+						.id(pickFromHUId)
+						.qrCode(HUQRCode.fromGlobalQRCodeJsonString(Objects.requireNonNull(record.getPickFrom_HUQRCode())))
+						.build()
+		);
+	}
+
+	private @NotNull Optional<PickingSlotIdAndCaption> extractPickingSlot(final I_M_Picking_Job record)
+	{
+		return Optional.ofNullable(PickingSlotId.ofRepoIdOrNull(record.getM_PickingSlot_ID()))
+				.map(loadingSupportingServices::getPickingSlotIdAndCaption);
 	}
 
 	private PickingJobHeader toPickingJobHeader(final I_M_Picking_Job record)

@@ -31,6 +31,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
+import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
@@ -109,6 +110,13 @@ public class PickingJobRestService
 				.isAllowPickingAnyHU(allowPickingAnyHU)
 				.shipmentScheduleIds(params.getShipmentScheduleIds())
 				.build());
+	}
+	
+	public PickingJob setPickFromHU(
+			@NonNull final PickingJob pickingJob,
+			@NonNull final HUInfo pickFromHU)
+	{
+		return pickingJobService.setPickFromHU(pickingJob, pickFromHU);
 	}
 
 	public PickingJob allocateAndSetPickingSlot(

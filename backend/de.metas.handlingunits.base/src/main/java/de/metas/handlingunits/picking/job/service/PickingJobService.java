@@ -17,6 +17,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
@@ -221,6 +222,17 @@ public class PickingJobService
 	public ADRefList getQtyRejectedReasons()
 	{
 		return pickingCandidateService.getQtyRejectedReasons();
+	}
+
+	public PickingJob setPickFromHU(final @NonNull PickingJob pickingJob, final @NonNull HUInfo pickFromHU)
+	{
+		// TODO validate that pickFromHU is eligible pick from HU, i.e.
+		// * not reserved
+		// * contains at least one product that we have to pick
+		
+		final PickingJob changedPickingJob = pickingJob.withPickFromHU(pickFromHU);
+		pickingJobRepository.save(changedPickingJob);
+		return changedPickingJob;
 	}
 
 	public PickingJob allocateAndSetPickingSlot(

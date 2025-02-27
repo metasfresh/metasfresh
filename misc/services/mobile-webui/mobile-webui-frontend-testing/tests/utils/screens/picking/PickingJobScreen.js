@@ -11,6 +11,8 @@ import { SelectPickTargetTUScreen } from './SelectPickTargetTUScreen';
 const NAME = 'PickingJobScreen';
 /** @returns {import('@playwright/test').Locator} */
 const containerElement = () => page.locator('#WFProcessScreen');
+const ACTIVITY_ID_ScanPickingSlot = 'scanPickingSlot'; // keep in sync with PickingMobileApplication.ACTIVITY_ID_ScanPickingSlot
+
 
 export const PickingJobScreen = {
     waitForScreen: async () => await step(`${NAME} - Wait for screen`, async () => {
@@ -18,7 +20,7 @@ export const PickingJobScreen = {
     }),
 
     scanPickingSlot: async ({ qrCode }) => await step(`${NAME} - Scan picking slot ${qrCode}`, async () => {
-        await page.locator('#scan-activity-A1-button').tap();
+        await page.locator(`#scan-activity-${ACTIVITY_ID_ScanPickingSlot}-button`).tap();
         await PickingSlotScanScreen.waitForScreen();
         await PickingSlotScanScreen.typeQRCode(qrCode);
         await PickingJobScreen.waitForScreen();

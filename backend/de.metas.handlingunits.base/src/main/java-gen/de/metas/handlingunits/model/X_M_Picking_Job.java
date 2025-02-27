@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Picking_Job, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1543562002L;
+	private static final long serialVersionUID = 4878922L;
 
     /** Standard Constructor */
     public X_M_Picking_Job (final Properties ctx, final int M_Picking_Job_ID, @Nullable final String trxName)
@@ -307,6 +307,45 @@ public class X_M_Picking_Job extends org.compiere.model.PO implements I_M_Pickin
 	public int getM_TU_HU_PI_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_TU_HU_PI_ID);
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_HU getPickFrom_HU()
+	{
+		return get_ValueAsPO(COLUMNNAME_PickFrom_HU_ID, de.metas.handlingunits.model.I_M_HU.class);
+	}
+
+	@Override
+	public void setPickFrom_HU(final de.metas.handlingunits.model.I_M_HU PickFrom_HU)
+	{
+		set_ValueFromPO(COLUMNNAME_PickFrom_HU_ID, de.metas.handlingunits.model.I_M_HU.class, PickFrom_HU);
+	}
+
+	@Override
+	public void setPickFrom_HU_ID (final int PickFrom_HU_ID)
+	{
+		if (PickFrom_HU_ID < 1) 
+			set_Value (COLUMNNAME_PickFrom_HU_ID, null);
+		else 
+			set_Value (COLUMNNAME_PickFrom_HU_ID, PickFrom_HU_ID);
+	}
+
+	@Override
+	public int getPickFrom_HU_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PickFrom_HU_ID);
+	}
+
+	@Override
+	public void setPickFrom_HUQRCode (final @Nullable java.lang.String PickFrom_HUQRCode)
+	{
+		set_Value (COLUMNNAME_PickFrom_HUQRCode, PickFrom_HUQRCode);
+	}
+
+	@Override
+	public java.lang.String getPickFrom_HUQRCode() 
+	{
+		return get_ValueAsString(COLUMNNAME_PickFrom_HUQRCode);
 	}
 
 	/** 
