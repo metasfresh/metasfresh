@@ -23,7 +23,6 @@
 package de.metas.picking.workflow.handlers.activity_handlers;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.config.mobileui.PickingLineGroupBy;
 import de.metas.handlingunits.picking.config.mobileui.PickingLineSortBy;
@@ -54,7 +53,6 @@ import org.adempiere.util.api.Params;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -84,11 +82,10 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 			final @NonNull JsonOpts jsonOpts)
 	{
 		final PickingJob pickingJob = getPickingJob(wfProcess);
-
-		final JsonRejectReasonsList qtyRejectedReasons = JsonRejectReasonsList.of(pickingJobRestService.getQtyRejectedReasons(), jsonOpts);
-
 		final PickingJobOptions pickingJobOptions = pickingJobRestService.getPickingJobOptions(pickingJob.getCustomerId());
-		final JsonPickingJob jsonPickingJob = JsonPickingJob.of(pickingJob, (pj) -> mapLines(pj, pickingJobOptions, jsonOpts));
+		final JsonPickingJob jsonPickingJob = JsonPickingJob.builderFrom(pickingJob)
+				.lines(toJsonPickingJobLines(pickingJob, pickingJobOptions, jsonOpts))
+				.build();
 
 		return UIComponent.builderFrom(COMPONENTTYPE_PICK_PRODUCTS, wfActivity)
 				.properties(Params.builder()
@@ -97,7 +94,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 						.valueObj("tuPickTarget", jsonPickingJob.getTuPickTarget())
 						.valueObj("lines", jsonPickingJob.getLines())
 						.valueObj("pickFromAlternatives", jsonPickingJob.getPickFromAlternatives())
-						.valueObj("qtyRejectedReasons", qtyRejectedReasons)
+						.valueObj("qtyRejectedReasons", JsonRejectReasonsList.of(pickingJobRestService.getQtyRejectedReasons(), jsonOpts))
 						.valueObj("isPickWithNewLU", pickingJobOptions.isPickWithNewLU())
 						.valueObj("isAllowSkippingRejectedReason", pickingJobOptions.isAllowSkippingRejectedReason())
 						.valueObj("isAllowNewTU", pickingJobOptions.isAllowNewTU())
@@ -140,25 +137,24 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 	}
 
 	@NonNull
-	private List<JsonPickingJobLine> mapLines(
+	private List<JsonPickingJobLine> toJsonPickingJobLines(
 			@NonNull final PickingJob pickingJob,
 			@NonNull final PickingJobOptions pickingJobOptions,
 			@NonNull final JsonOpts jsonOpts)
 	{
 		final PickingLineGroupBy groupBy = pickingJobOptions.getPickingLineGroupBy().orElse(PickingLineGroupBy.NONE);
 		final PickingLineSortBy sortBy = pickingJobOptions.getPickingLineSortBy().orElse(PickingLineSortBy.ORDER_LINE_SEQ_NO);
-
-		final Map<String, List<PickingJobLine>> groupedLines = groupBy.groupLines(pickingJob.getLines());
-		final Map<String, List<PickingJobLine>> sortedGroupedLines = groupedLines.entrySet().stream()
-				.map(entry -> new AbstractMap.SimpleEntry<>(entry.getKey(), sortBy.sort(entry.getValue())))
-				.collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+		final Map<String, List<PickingJobLine>> sortedGroupedLines = groupBy.groupLines(pickingJob.getLines(), sortBy);
 
 		final ArrayList<JsonPickingJobLine> result = new ArrayList<>();
 		for (final Map.Entry<String, List<PickingJobLine>> group : sortedGroupedLines.entrySet())
 		{
 			group.getValue().stream()
-					.map(line -> JsonPickingJobLine.builderFrom(line, this::getUOMSymbolById, jsonOpts, group.getKey()))
-					.map(builder -> builder.allowPickingAnyHU(pickingJob.isAllowPickingAnyHU()).build())
+					.map(line -> JsonPickingJobLine.builderFrom(line, this::getUOMSymbolById, jsonOpts)
+							.displayGroupKey(group.getKey())
+							.allowPickingAnyHU(pickingJob.isAllowPickingAnyHU())
+							.build()
+					)
 					.forEach(result::add);
 		}
 		return ImmutableList.copyOf(result);

@@ -36,6 +36,7 @@ import lombok.extern.jackson.Jacksonized;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 @Value
@@ -65,8 +66,7 @@ public class JsonPickingJobLine
 	public static JsonPickingJobLineBuilder builderFrom(
 			@NonNull final PickingJobLine line,
 			@NonNull final Function<UomId, ITranslatableString> getUOMSymbolById,
-			@NonNull final JsonOpts jsonOpts,
-			@NonNull final String displayGroupKey)
+			@NonNull final JsonOpts jsonOpts)
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();
 
@@ -79,10 +79,10 @@ public class JsonPickingJobLine
 		if (pickingUnit.isTU())
 		{
 			uom = "TU";
-			qtyRemainingToPick = line.getQtyRemainingToPickTUs().toBigDecimal();
-			qtyToPick = line.getQtyToPickTUs().toBigDecimal();
-			qtyPicked = line.getQtyPickedTUs().toBigDecimal();
-			qtyRejected = line.getQtyRejectedTUs().toBigDecimal();
+			qtyRemainingToPick = Objects.requireNonNull(line.getQtyRemainingToPickTUs()).toBigDecimal();
+			qtyToPick = Objects.requireNonNull(line.getQtyToPickTUs()).toBigDecimal();
+			qtyPicked = Objects.requireNonNull(line.getQtyPickedTUs()).toBigDecimal();
+			qtyRejected = Objects.requireNonNull(line.getQtyRejectedTUs()).toBigDecimal();
 		}
 		else
 		{
@@ -112,7 +112,6 @@ public class JsonPickingJobLine
 						.map(step -> JsonPickingJobStep.of(step, jsonOpts, getUOMSymbolById))
 						.collect(ImmutableList.toImmutableList()))
 				.completeStatus(JsonCompleteStatus.of(line.getProgress()))
-				.manuallyClosed(line.isManuallyClosed())
-				.displayGroupKey(displayGroupKey);
+				.manuallyClosed(line.isManuallyClosed());
 	}
 }

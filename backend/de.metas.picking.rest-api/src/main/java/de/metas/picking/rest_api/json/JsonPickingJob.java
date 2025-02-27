@@ -32,7 +32,6 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.function.Function;
 
 @Value
 @Builder
@@ -46,20 +45,16 @@ public class JsonPickingJob
 	@NonNull List<JsonPickingJobLine> lines;
 	@NonNull List<JsonPickFromAlternative> pickFromAlternatives;
 
-	public static JsonPickingJob of(
-			@NonNull final PickingJob pickingJob,
-			@NonNull final Function<PickingJob, List<JsonPickingJobLine>> getJsonPickingLines)
+	public static JsonPickingJobBuilder builderFrom(@NonNull final PickingJob pickingJob)
 	{
 		return builder()
 				.aggregationType(pickingJob.getAggregationType())
 				.completeStatus(JsonCompleteStatus.of(pickingJob.getProgress()))
 				.pickTarget(pickingJob.getLuPickTarget().map(JsonLUPickingTarget::of).orElse(null))
 				.tuPickTarget(pickingJob.getTuPickTarget().map(JsonTUPickingTarget::of).orElse(null))
-				.lines(getJsonPickingLines.apply(pickingJob))
 				.pickFromAlternatives(pickingJob.getPickFromAlternatives()
 						.stream()
 						.map(JsonPickFromAlternative::of)
-						.collect(ImmutableList.toImmutableList()))
-				.build();
+						.collect(ImmutableList.toImmutableList()));
 	}
 }
