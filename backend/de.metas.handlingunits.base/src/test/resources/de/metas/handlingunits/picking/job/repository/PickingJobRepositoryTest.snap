@@ -2,6 +2,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
   {
     "docStatus": "Drafted",
     "header": {
+      "aggregationType": "sales_order",
       "allowPickingAnyHU": false,
       "customerName": "bpname-3",
       "deliveryBPLocationId": {
@@ -22,6 +23,10 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
     "id": 1000000,
     "lines": [
       {
+        "deliveryBPLocationId": {
+          "bpartnerId": 3,
+          "repoId": 4
+        },
         "id": 1000000,
         "isManuallyClosed": false,
         "orderLineSeqNo": 0,

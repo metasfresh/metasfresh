@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.global_qrcodes.JsonDisplayableQRCode;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingLineGroupBy;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
 import org.junit.jupiter.api.BeforeEach;
@@ -66,6 +67,7 @@ class JsonPickingJobTest
 	void testSerializeDeserialize() throws JsonProcessingException
 	{
 		testSerializeDeserialize(JsonPickingJob.builder()
+				.aggregationType(PickingJobAggregationType.SALES_ORDER)
 				.completeStatus(JsonCompleteStatus.IN_PROGRESS)
 				.lines(ImmutableList.of(
 						randomJsonPickingJobLine(),
