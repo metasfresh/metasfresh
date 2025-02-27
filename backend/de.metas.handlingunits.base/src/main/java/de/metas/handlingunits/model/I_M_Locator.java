@@ -32,4 +32,10 @@ public interface I_M_Locator extends org.compiere.model.I_M_Locator
 	void setIsAfterPickingLocator(boolean IsAfterPickingLocator);
 
 	boolean isAfterPickingLocator();
+
+	String COLUMNNAME_PlaceAggHUOnNewLU = "PlaceAggHUOnNewLU";
+
+	void setPlaceAggHUOnNewLU(boolean PlaceAggHUOnNewLU);
+
+	boolean isPlaceAggHUOnNewLU();
 }

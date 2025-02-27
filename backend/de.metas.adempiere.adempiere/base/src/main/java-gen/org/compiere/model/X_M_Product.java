@@ -1517,4 +1517,16 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		return get_ValueAsInt(COLUMNNAME_Picking_AgeTolerance_BeforeMonths);
 	}
 
+	@Override
+	public void setQRCode_Configuration_ID (final int QRCode_Configuration_ID)
+	{
+		set_Value (COLUMNNAME_QRCode_Configuration_ID, QRCode_Configuration_ID);
+	}
+
+	@Override
+	public int getQRCode_Configuration_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_QRCode_Configuration_ID);
+	}
+
 }

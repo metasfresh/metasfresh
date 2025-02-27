@@ -64,8 +64,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 class HUQRCodesServiceTest
 {
@@ -97,7 +96,8 @@ class HUQRCodesServiceTest
 	{
 		this.helper = HUTestHelper.newInstanceOutOfTrx();
 		this.huQRCodesService = new HUQRCodesService(new HUQRCodesRepository(),
-				new GlobalQRCodeService(DoNothingMassPrintingService.instance));
+													 new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+													 new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
 
 		this.productId = BusinessTestHelper.createProductId("MyProduct", helper.uomEach);
 
