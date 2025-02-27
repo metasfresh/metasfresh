@@ -97,7 +97,7 @@ public class JsonPickingJobLine
 				.pickingLineId(line.getId().getAsString())
 				.productId(line.getProductId().getAsString())
 				.productNo(line.getProductNo())
-				.caption(line.getProductName().translate(adLanguage))
+				.caption(line.getCaption().translate(adLanguage))
 				.packingItemName(line.getPackingInfo().getName().translate(adLanguage))
 				.pickingUnit(pickingUnit)
 				.uom(uom)

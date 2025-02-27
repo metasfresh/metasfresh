@@ -56,6 +56,7 @@ import java.util.stream.Stream;
 public class PickingJobLine
 {
 	@NonNull PickingJobLineId id;
+	@NonNull ITranslatableString caption;
 
 	@NonNull ProductId productId;
 	@NonNull String productNo;
@@ -64,6 +65,7 @@ public class PickingJobLine
 	@NonNull HUPIItemProduct packingInfo;
 	@NonNull Quantity qtyToPick;
 	@NonNull OrderAndLineId salesOrderAndLineId;
+	@NonNull String salesOrderDocumentNo;
 	int orderLineSeqNo;
 	@NonNull BPartnerLocationId deliveryBPLocationId;
 	@NonNull ShipmentScheduleId shipmentScheduleId;
@@ -86,13 +88,14 @@ public class PickingJobLine
 	@Builder(toBuilder = true)
 	private PickingJobLine(
 			@NonNull final PickingJobLineId id,
+			@NonNull final ITranslatableString caption,
 			@NonNull final ProductId productId,
 			@NonNull final String productNo,
 			@NonNull final ProductCategoryId productCategoryId,
 			@NonNull final ITranslatableString productName,
 			@NonNull final HUPIItemProduct packingInfo,
 			@NonNull final Quantity qtyToPick,
-			@NonNull final OrderAndLineId salesOrderAndLineId,
+			@NonNull final OrderAndLineId salesOrderAndLineId, final @NonNull String salesOrderDocumentNo,
 			@NonNull final Integer orderLineSeqNo,
 			@NonNull final BPartnerLocationId deliveryBPLocationId,
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
@@ -102,6 +105,7 @@ public class PickingJobLine
 			final boolean isManuallyClosed)
 	{
 		this.id = id;
+		this.caption = caption;
 		this.productId = productId;
 		this.productNo = productNo;
 		this.productCategoryId = productCategoryId;
@@ -109,6 +113,7 @@ public class PickingJobLine
 		this.packingInfo = packingInfo;
 		this.qtyToPick = qtyToPick;
 		this.salesOrderAndLineId = salesOrderAndLineId;
+		this.salesOrderDocumentNo = salesOrderDocumentNo;
 		this.orderLineSeqNo = orderLineSeqNo;
 		this.deliveryBPLocationId = deliveryBPLocationId;
 		this.shipmentScheduleId = shipmentScheduleId;
