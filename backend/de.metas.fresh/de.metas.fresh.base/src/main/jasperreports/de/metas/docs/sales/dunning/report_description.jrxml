@@ -60,13 +60,19 @@
 		<property name="com.jaspersoft.studio.field.name" value="account_manager_mail"/>
 		<property name="com.jaspersoft.studio.field.label" value="account_manager_mail"/>
 	</field>
+	<field name="externalid" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="externalid"/>
+	</field>
+	<field name="poreference" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="poreference"/>
+	</field>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
 		<band height="106" splitType="Stretch">
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-9" mode="Transparent" x="56" y="70" width="488" height="13" isRemoveLineWhenBlank="true" uuid="2d570d71-12b0-4e27-a08b-29d8c4d7fc1e"/>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement key="textField-9" mode="Transparent" x="56" y="86" width="488" height="13" isRemoveLineWhenBlank="true" uuid="2d570d71-12b0-4e27-a08b-29d8c4d7fc1e"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -100,7 +106,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement>
-					<font size="10"/>
+					<font fontName="Arial" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{dunningdate}]]></textFieldExpression>
 			</textField>
@@ -113,7 +119,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="10"/>
+					<font fontName="Arial" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{date}]]></textFieldExpression>
 			</textField>
@@ -165,7 +171,7 @@
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left">
-					<font size="10"/>
+					<font fontName="Arial" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Account_manager}]]></textFieldExpression>
 			</textField>
@@ -194,6 +200,36 @@
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{account_manager_mail}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement key="textField-10" x="56" y="60" width="242" height="13" uuid="7fa80d62-a055-42e1-a244-d3f73dbdca5b">
+					<printWhenExpression><![CDATA[new Boolean($F{poreference} != null && !$F{poreference}.equals( "" ))]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Reference}+": "+$F{poreference}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement key="textField-3" mode="Transparent" x="56" y="73" width="242" height="13" uuid="e63b1d9b-eef4-4f53-ac0d-49642aa2934d">
+					<printWhenExpression><![CDATA[new Boolean($F{externalid} != null && !$F{externalid}.equals( "" ))]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{External_ID}+": "+$F{externalid}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

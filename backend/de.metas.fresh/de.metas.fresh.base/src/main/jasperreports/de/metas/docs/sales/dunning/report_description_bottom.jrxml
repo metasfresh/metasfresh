@@ -66,7 +66,7 @@
 	<title>
 		<band height="52" splitType="Stretch">
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-9" mode="Transparent" x="59" y="0" width="486" height="52" isRemoveLineWhenBlank="true" uuid="2d570d71-12b0-4e27-a08b-29d8c4d7fc1e"/>
+				<reportElement uuid="2d570d71-12b0-4e27-a08b-29d8c4d7fc1e" key="textField-9" mode="Transparent" x="59" y="0" width="486" height="52" isRemoveLineWhenBlank="true"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
