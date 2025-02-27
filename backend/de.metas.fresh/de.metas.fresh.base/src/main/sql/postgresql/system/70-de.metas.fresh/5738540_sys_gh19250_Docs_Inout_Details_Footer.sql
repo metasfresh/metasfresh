@@ -1,8 +1,8 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Inout_Details_Footer(IN p_InOut_ID numeric,
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Inout_Details_Footer(IN p_InOut_ID  numeric,
                                                                                      IN p_Language Character Varying(6))
 ;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Inout_Details_Footer(IN p_InOut_ID numeric,
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Inout_Details_Footer(IN p_InOut_ID  numeric,
                                                                                         IN p_Language Character Varying(6))
 
     RETURNS TABLE
@@ -14,17 +14,15 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Inout_Details
                 tag              text,
                 pozition         integer,
                 Incoterms        character varying,
-                incotermlocation character varying,
-                deliveryrule     character varying,
-                deliveryviarule  character varying
+                incotermlocation character varying
+
             )
 
 AS
 $$
 
-SELECT footer.*,
-       COALESCE(o_dr_trl.name, o_dr.name)   AS deliveryrule,
-       COALESCE(o_dvr_trl.name, o_dvr.name) AS deliveryviarule
+SELECT *
+
 FROM (
          --Docnote DE
          SELECT NULL                                                                                        AS textleft,
@@ -43,6 +41,7 @@ FROM (
                   LEFT JOIN c_doctype dt ON io.c_doctype_id = dt.c_doctype_id AND dt.isActive = 'Y'
                   LEFT OUTER JOIN C_Incoterms inc ON io.c_incoterms_id = inc.c_incoterms_id
                   LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = p_Language
+         WHERE io.isActive = 'Y'
          UNION
          ---------------------------------------------------------------------------------------------
          --Docnote TRL
@@ -62,6 +61,7 @@ FROM (
                   LEFT JOIN c_doctype_trl dt ON io.c_doctype_id = dt.c_doctype_id AND dt.isActive = 'Y'
                   LEFT OUTER JOIN C_Incoterms inc ON io.c_incoterms_id = inc.c_incoterms_id
                   LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = p_Language
+         WHERE io.isActive = 'Y'
          UNION
          ---------------------------------------------------------------------------------------------
          --Descriptionbottom
@@ -75,12 +75,8 @@ FROM (
                 io.incotermlocation
          FROM m_inout io
                   LEFT OUTER JOIN C_Incoterms inc ON io.c_incoterms_id = inc.c_incoterms_id
-                  LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = p_Language) AS footer
-         INNER JOIN m_inout io ON io.m_inout_id = footer.m_inout_id
-         LEFT JOIN AD_Ref_List o_dr ON o_dr.AD_Reference_ID = 151 AND o_dr.value = io.deliveryrule
-         LEFT JOIN AD_Ref_List_Trl o_dr_trl ON o_dr.ad_ref_list_id = o_dr_trl.ad_ref_list_id AND o_dr_trl.ad_language = p_Language
-         LEFT JOIN AD_Ref_List o_dvr ON o_dvr.AD_Reference_ID = 152 AND o_dvr.value = io.deliveryviarule
-         LEFT JOIN AD_Ref_List_Trl o_dvr_trl ON o_dvr.ad_ref_list_id = o_dvr_trl.ad_ref_list_id AND o_dvr_trl.ad_language = p_Language
+                  LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = p_Language
+         WHERE io.isActive = 'Y') footer
 
 WHERE footer.m_inout_id = p_InOut_ID
   AND footer.language = p_Language

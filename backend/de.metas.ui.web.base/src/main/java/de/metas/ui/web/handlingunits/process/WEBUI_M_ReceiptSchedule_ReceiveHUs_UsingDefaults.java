@@ -1,10 +1,5 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.math.BigDecimal;
-
-import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
@@ -15,8 +10,12 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /*
  * #%L
@@ -129,6 +128,19 @@ public class WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults extends WEBUI_M_Re
 					lutuConfig.setQtyTU(qtyToMoveTU);
 				}
 			}
+
+			// Adjust CU if TU can hold an infinite qty, but the material receipt is of course finite, so we need to adjust the LUTU Configuration.
+			// Otherwise, receiving using the default configuration will not work.
+			final BigDecimal qtyTU = lutuConfig.getQtyTU();
+			if (lutuConfig.isInfiniteQtyCU() && qtyTU.signum() > 0)
+			{
+				lutuConfig.setIsInfiniteQtyCU(false);
+
+				final BigDecimal qtyToMoveCU = receiptSchedule.getQtyToMove().divide(qtyTU, RoundingMode.UP);
+
+				lutuConfig.setQtyCUsPerTU(qtyToMoveCU);
+			}
+
 		}
 	}
 
