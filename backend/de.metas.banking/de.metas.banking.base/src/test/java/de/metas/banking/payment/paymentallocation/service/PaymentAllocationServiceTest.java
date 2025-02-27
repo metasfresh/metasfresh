@@ -32,6 +32,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
@@ -105,7 +106,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.invoice.InvoiceDocBaseType.CustomerCreditMemo;
 import static de.metas.invoice.InvoiceDocBaseType.CustomerInvoice;
+import static de.metas.invoice.InvoiceDocBaseType.VendorCreditMemo;
 import static de.metas.invoice.InvoiceDocBaseType.VendorInvoice;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -340,7 +343,6 @@ public class PaymentAllocationServiceTest
 		final PaymentAllocationPayableItem secondPaymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(38)).openAmt(new BigDecimal(48)).serviceFeeAmt(new BigDecimal(12)).invoice(secondInvoice).soTrx(SOTrx.SALES).build();
 
 		return getPaymentAllocationCriteria(payment, Arrays.asList(firstPaymentAllocationPayableItem, secondPaymentAllocationPayableItem));
-
 	}
 
 	private PaymentAllocationCriteria createPaymentAllocationCriteriaWithMultiplePayable()
@@ -357,10 +359,41 @@ public class PaymentAllocationServiceTest
 		return getPaymentAllocationCriteria(payment, Arrays.asList(firstPaymentAllocationPayableItem, secondPaymentAllocationPayableItem));
 
 	}
+	
+	private PaymentAllocationCriteria createPaymentAllocationCriteriaWithMultiplePayable_REMADV()
+	{
+		final I_C_Payment payment = payment().payAmt(new BigDecimal(100)).build(); // => 100 left to allocate
+
+		final I_C_Invoice firstInvoice = invoice().type(CustomerInvoice).open("50").currency(euroCurrencyId).build(); // incoming => 50 left to allocate
+		final I_C_Invoice secondInvoice = invoice().type(CustomerCreditMemo).open("25").currency(euroCurrencyId).build(); // outgoing => 75 left to allocate
+		final I_C_Invoice thirdInvoice = invoice().type(CustomerInvoice).open("40").currency(euroCurrencyId).build(); // incoming => 35 left to allocate
+		final I_C_Invoice fourthInvoice = invoice().type(VendorCreditMemo).open("50").currency(euroCurrencyId).build(); // incoming => -15 left to allocate (code under test needs to make sure not to stop here!)
+		final I_C_Invoice fifthInvoice = invoice().type(VendorInvoice).open("15").currency(euroCurrencyId).build(); // outgoing => all allocated
+
+		final PaymentAllocationPayableItem firstPaymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(50)).openAmt(new BigDecimal(50)).invoice(firstInvoice).soTrx(SOTrx.SALES).build();
+		final PaymentAllocationPayableItem secondPaymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(25)).openAmt(new BigDecimal(25)).invoice(secondInvoice).soTrx(SOTrx.SALES).build();
+		final PaymentAllocationPayableItem thirdPaymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(40)).openAmt(new BigDecimal(40)).invoice(thirdInvoice).soTrx(SOTrx.SALES).build();
+		final PaymentAllocationPayableItem fourthPaymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(50)).openAmt(new BigDecimal(50)).invoice(fourthInvoice).soTrx(SOTrx.PURCHASE).build();
+		final PaymentAllocationPayableItem fifthPaymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(15)).openAmt(new BigDecimal(15)).invoice(fifthInvoice).soTrx(SOTrx.PURCHASE).build();
+
+		// note that we'll expect the invoices to be allocated in the order of: 2nd, 5th, (1st or 4th), 3rd
+		final List<PaymentAllocationPayableItem> payableItems = Arrays.asList(
+				firstPaymentAllocationPayableItem,
+				secondPaymentAllocationPayableItem,
+				thirdPaymentAllocationPayableItem,
+				fourthPaymentAllocationPayableItem,
+				fifthPaymentAllocationPayableItem);
+
+		return PaymentAllocationCriteria.builder()
+				.payment(payment)
+				.dateTrx(Instant.now())
+				.paymentAllocationPayableItems(payableItems)
+				.allowPartialAllocations(true)
+				.build();
+	}
 
 	private PaymentAllocationCriteria createPaymentAllocationCriteriaWithMultiplePayable_OverAllocated()
 	{
-
 		final I_C_Payment payment = payment().payAmt(new BigDecimal(150)).build();
 
 		final I_C_Invoice firstInvoice = invoice().type(CustomerInvoice).open("25").currency(euroCurrencyId).build();
@@ -371,15 +404,16 @@ public class PaymentAllocationServiceTest
 		final PaymentAllocationPayableItem secondPaymentAllocationPayableItem = payableItem().payAmt(new BigDecimal(75)).openAmt(new BigDecimal(75))
 				.invoice(secondInvoice).soTrx(SOTrx.SALES).build();
 
-		return getPaymentAllocationCriteria(payment, Arrays.asList(firstPaymentAllocationPayableItem, secondPaymentAllocationPayableItem));
-
+		return getPaymentAllocationCriteria(
+				payment,
+				Arrays.asList(secondPaymentAllocationPayableItem, firstPaymentAllocationPayableItem) /*ordering here shall not matter*/);
 	}
 
 	private PaymentAllocationCriteria getPaymentAllocationCriteria(final I_C_Payment payment, final List<PaymentAllocationPayableItem> paymentAllocationPayableItems)
 	{
 		return PaymentAllocationCriteria.builder()
 				.payment(payment)
-				.dateTrx(Instant.now())
+				.dateTrx(SystemTime.asInstant())
 				.paymentAllocationPayableItems(paymentAllocationPayableItems)
 				.build();
 	}
@@ -416,7 +450,8 @@ public class PaymentAllocationServiceTest
 			@NonNull final I_C_Invoice invoice,
 			@NonNull final SOTrx soTrx)
 	{
-		final InvoiceAmtMultiplier amtMultiplier = C_RemittanceAdvice_CreateAndAllocatePayment.toInvoiceAmtMultiplier(soTrx, isCreditMemo(invoice));
+		final boolean creditMemo = isCreditMemo(invoice);
+		final InvoiceAmtMultiplier amtMultiplier = C_RemittanceAdvice_CreateAndAllocatePayment.toInvoiceAmtMultiplier(soTrx, creditMemo);
 
 		return PaymentAllocationPayableItem.builder()
 				.amtMultiplier(amtMultiplier)
@@ -428,11 +463,12 @@ public class PaymentAllocationServiceTest
 				.invoiceBPartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()))
 				.orgId(adOrgId)
 				.clientId(clientId)
-				.paymentDate(Instant.now())
+				.paymentDate(SystemTime.asInstant())
 				.bPartnerId(bpartnerId)
 				.documentNo(invoice.getDocumentNo())
 				.soTrx(soTrx)
 				.dateInvoiced(LocalDate.now())
+				.invoiceIsCreditMemo(creditMemo)
 				.build();
 	}
 
@@ -527,7 +563,7 @@ public class PaymentAllocationServiceTest
 		return BPartnerId.ofRepoId(bpartnerRecord.getC_BPartner_ID());
 	}
 
-	@org.junit.jupiter.api.Test
+	@Test
 	public void checkTestsAreUsingSameInvoiceAmtMultiplierAsRealLife()
 	{
 		final InvoiceAmtMultiplier multiplierInRealLife = C_RemittanceAdvice_CreateAndAllocatePayment.toInvoiceAmtMultiplier(SOTrx.SALES, false);
@@ -572,7 +608,6 @@ public class PaymentAllocationServiceTest
 	@Test
 	public void paymentValid_MultiplePayableItems_WithServiceFee_FullyAllocated()
 	{
-
 		final PaymentAllocationResult paymentAllocationResult = paymentAllocationService.allocatePayment(createPaymentAllocationCriteriaWithMultiplePayableAndServiceFee());
 		assertThat(paymentAllocationResult.getCandidates().size())
 				.as("Allocation candidates found =" + paymentAllocationResult.getCandidates().size())
@@ -587,7 +622,6 @@ public class PaymentAllocationServiceTest
 		assertThat(paymentAllocationResult.getCandidates().size())
 				.as("Allocation candidates found =" + paymentAllocationResult.getCandidates().size())
 				.isEqualByComparingTo(2);
-
 	}
 
 	@Test
@@ -597,14 +631,24 @@ public class PaymentAllocationServiceTest
 				.isInstanceOf(PaymentDocumentNotAllocatedException.class);
 	}
 
+	/**
+	 * Similar to {@link #paymentValid_MultiplePayableItems_NoServiceFee_FullyAllocated()}, but we have a mix of sales/purchase and invoice/creditmemo.
+	 */
+	@Test
+	public void paymentValid_MultiplePayableItems_NoServiceFee_FullyAllocated_REMADV()
+	{
+		final PaymentAllocationResult paymentAllocationResult = paymentAllocationService.allocatePayment(createPaymentAllocationCriteriaWithMultiplePayable_REMADV());
+		assertThat(paymentAllocationResult.getCandidates().size())
+				.as("Allocation candidates found =" + paymentAllocationResult.getCandidates().size())
+				.isEqualByComparingTo(5);
+	}
+	
 	@Test
 	public void paymentValid_MultipleVendorPayableItems_WithServiceFee_FullyAllocated()
 	{
-
 		final PaymentAllocationResult paymentAllocationResult = paymentAllocationService.allocatePayment(createPaymentAllocationCriteriaWithMultipleVendorPayableAndServiceFee());
 		assertThat(paymentAllocationResult.getCandidates().size())
 				.as("Allocation candidates found =" + paymentAllocationResult.getCandidates().size())
 				.isEqualByComparingTo(4);
-
 	}
 }

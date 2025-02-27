@@ -58,6 +58,7 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -283,9 +284,17 @@ public class PaymentAllocationBuilder
 			return ImmutableList.of();
 		}
 
+		// it's very important to sort, because if 
+		// - everything would add up 
+		// - but some payables are negative and come last
+		// then the for-loop would stop creating candidates prematurely
+		final ImmutableList<PayableDocument> sortedPayableDocuments = payableDocuments.stream()
+				.sorted(Comparator.comparing(d -> d.getAmountsToAllocate().getPayAmt()))
+				.collect(ImmutableList.toImmutableList());
+		
 		final List<AllocationLineCandidate> allocationLineCandidates = new ArrayList<>();
 
-		for (final PayableDocument payable : payableDocuments)
+		for (final PayableDocument payable : sortedPayableDocuments)
 		{
 			for (final IPaymentDocument payment : paymentDocuments)
 			{
