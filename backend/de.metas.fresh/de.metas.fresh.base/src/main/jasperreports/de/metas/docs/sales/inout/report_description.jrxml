@@ -99,7 +99,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 	<title>
 		<band height="206" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<textField isBlankWhenNull="false">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-5" x="352" y="98" width="88" height="13" uuid="2f7f6410-10b7-447c-a38d-ab84c20aa5cd"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -140,7 +140,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-5" x="37" y="111" width="103" height="13" uuid="4a8fba7c-9d63-484e-8acb-abd0894837b3">
 					<printWhenExpression><![CDATA[new Boolean($F{reference}!=null)]]></printWhenExpression>
 				</reportElement>
@@ -155,7 +155,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Reference}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-6" x="37" y="98" width="103" height="13" forecolor="#000000" uuid="ad7e6470-0901-4b6a-84c6-57356f52df4f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -168,7 +168,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 				</textElement>
 				<textFieldExpression><![CDATA[$F{printname}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-11" x="37" y="137" width="103" height="13" uuid="ab134a73-4b9a-426b-baea-75fb4e5be9a0">
 					<printWhenExpression><![CDATA[new Boolean($F{bp_value}!=null)]]></printWhenExpression>
 				</reportElement>
@@ -222,7 +222,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 				</textElement>
 				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-14" x="37" y="150" width="103" height="13" uuid="0a1e7dff-1ba5-4aff-bd24-0211785aaea2">
 					<printWhenExpression><![CDATA[new Boolean($F{eori}!=null)]]></printWhenExpression>
 				</reportElement>
@@ -237,7 +237,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 				</textElement>
 				<textFieldExpression><![CDATA[$R{EORI}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-10" x="140" y="150" width="160" height="13" uuid="d7f0d6bd-a5c7-49d5-b670-f0d0c864934b">
 					<printWhenExpression><![CDATA[new Boolean($F{eori}!=null)]]></printWhenExpression>
 				</reportElement>
@@ -252,7 +252,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 				</textElement>
 				<textFieldExpression><![CDATA[$F{eori}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-5" x="352" y="111" width="88" height="13" uuid="60ca9d56-6b53-4af5-a56a-6b082d62fc4f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -265,7 +265,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Account_manager}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-5" x="37" y="163" width="103" height="13" uuid="2137650e-2130-4f7f-b054-7d80d1d3bf69"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -293,7 +293,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 				</textElement>
 				<textFieldExpression><![CDATA[$F{customernoatvendor}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-5" x="352" y="111" width="88" height="13" uuid="60ca9d56-6b53-4af5-a56a-6b082d62fc4f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -306,7 +306,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Account_manager}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-3" x="440" y="111" width="99" height="13" uuid="86245e80-15e4-46de-b4e5-77f543bd30a0"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -319,7 +319,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 				</textElement>
 				<textFieldExpression><![CDATA[$F{sr_name}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-5" x="352" y="124" width="88" height="13" uuid="02331a9f-a0e1-4205-b581-1b99cddc0a73"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -345,7 +345,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 				</textElement>
 				<textFieldExpression><![CDATA[$F{sr_email}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-14" x="37" y="176" width="103" height="13" uuid="ab226728-ba61-49a2-bf47-c002355944c2">
 					<printWhenExpression><![CDATA[new Boolean($F{billtoaddress}!=null)]]></printWhenExpression>
 				</reportElement>
@@ -360,7 +360,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 				</textElement>
 				<textFieldExpression><![CDATA[$R{BillToAddress}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-10" x="140" y="176" width="399" height="13" uuid="0eb4b367-5f8d-4b34-b215-58f451c953df"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -373,7 +373,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 				</textElement>
 				<textFieldExpression><![CDATA[$F{billtoaddress}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-14" x="37" y="124" width="103" height="13" uuid="f18254d0-abe3-46c4-bb55-e7fe2376027a">
 					<printWhenExpression><![CDATA[new Boolean($F{order_docno}!=null)]]></printWhenExpression>
 				</reportElement>
@@ -388,7 +388,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 				</textElement>
 				<textFieldExpression><![CDATA[$R{orderno}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-10" x="140" y="124" width="160" height="13" uuid="3d404bcd-78c8-422c-a438-93bb5c708893"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
