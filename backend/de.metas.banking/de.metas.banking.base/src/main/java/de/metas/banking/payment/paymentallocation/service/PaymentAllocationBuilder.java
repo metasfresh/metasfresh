@@ -214,8 +214,8 @@ public class PaymentAllocationBuilder
 	{
 		//
 		// Make sure we have something to allocate
-		final List<PayableDocument> payableDocuments = getPayableDocuments();
-		final List<PaymentDocument> paymentDocuments = getPaymentDocuments();
+		final ImmutableList<PayableDocument> payableDocuments = getPayableDocuments();
+		final ImmutableList<PaymentDocument> paymentDocuments = getPaymentDocuments();
 		if (payableDocuments.isEmpty() && paymentDocuments.isEmpty())
 		{
 			throw new NoDocumentsPaymentAllocationException();
@@ -291,7 +291,6 @@ public class PaymentAllocationBuilder
 		final ImmutableList<PayableDocument> sortedPayableDocuments = payableDocuments.stream()
 				.sorted(Comparator.comparing(d -> d.getAmountsToAllocate().getPayAmt()))
 				.collect(ImmutableList.toImmutableList());
-		
 		final List<AllocationLineCandidate> allocationLineCandidates = new ArrayList<>();
 
 		for (final PayableDocument payable : sortedPayableDocuments)
