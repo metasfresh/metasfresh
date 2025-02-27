@@ -31,7 +31,6 @@ import de.metas.cache.model.ITableCacheConfigBuilder;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.hu_spis.DDOrderLineHUDocumentHandler;
 import de.metas.distribution.ddorder.hu_spis.ForecastLineHUDocumentHandler;
-import de.metas.distribution.ddorder.interceptor.DD_Order;
 import de.metas.distribution.ddorder.interceptor.DD_OrderLine;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
@@ -64,6 +63,7 @@ import de.metas.handlingunits.picking.interceptor.M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.pricing.spi.impl.HUPricing;
 import de.metas.handlingunits.pricing.spi.impl.OrderLinePricingHUDocumentHandler;
 import de.metas.handlingunits.pricing.spi.impl.OrderPricingHUDocumentHandler;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.receiptschedule.impl.HUReceiptScheduleListener;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUDocumentFactory;
 import de.metas.handlingunits.receiptschedule.impl.ReceiptScheduleHUTrxListener;
@@ -89,8 +89,6 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsDAO;
 import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
-import de.metas.pricing.attributebased.impl.AttributePricing;
-import de.metas.pricing.rules.price_list_version.PriceListVersionConfiguration;
 import de.metas.storage.IStorageEngineService;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.util.Services;
@@ -119,15 +117,18 @@ public final class Main extends AbstractModuleInterceptor
 	private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
 	private final DDOrderService ddOrderService;
 	private final PickingBOMService pickingBOMService;
+	private final HUQRCodesService huqrCodesService;
 
 	public Main(
 			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService,
 			@NonNull final DDOrderService ddOrderService,
-			@NonNull final PickingBOMService pickingBOMService)
+			@NonNull final PickingBOMService pickingBOMService,
+			@NonNull final HUQRCodesService huqrCodesService)
 	{
 		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
 		this.ddOrderService = ddOrderService;
 		this.pickingBOMService = pickingBOMService;
+		this.huqrCodesService = huqrCodesService;
 	}
 
 	@Override
@@ -314,7 +315,7 @@ public final class Main extends AbstractModuleInterceptor
 		//
 		// aggregate material items
 		{
-			huTrxBL.addListener(de.metas.handlingunits.allocation.spi.impl.AggregateHUTrxListener.INSTANCE);
+			huTrxBL.addListener(new de.metas.handlingunits.allocation.spi.impl.AggregateHUTrxListener(huqrCodesService));
 		}
 		//
 		// Weights Attributes

@@ -42,7 +42,6 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -457,7 +456,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	@Override
-	public final List<I_M_HU> getCreatedHUs()
+	public final ImmutableList<I_M_HU> getCreatedHUs()
 	{
 		if (_createdHUs.isEmpty())
 		{

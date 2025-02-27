@@ -13,6 +13,11 @@ export const HUInfoComponent = ({ handlingUnitInfo, currentLocatorQRCode }) => {
     <table className="table view-header is-size-6" data-testid="huinfo-table">
       <tbody>
         <Row captionKey="huManager.HU" value={handlingUnitInfo.displayName} />
+        <Row
+          captionKey="huManager.numberOfAggregatedHUs"
+          value={handlingUnitInfo.numberOfAggregatedHUs}
+          hidden={!(handlingUnitInfo.numberOfAggregatedHUs && handlingUnitInfo.numberOfAggregatedHUs > 1)}
+        />
         <Row captionKey="huManager.qrCode" value={toQRCodeDisplayable(handlingUnitInfo.qrCode)} />
         <Row captionKey="huManager.locator" value={computeLocatorCaption({ handlingUnitInfo, currentLocatorQRCode })} />
         <Row captionKey="huManager.HUStatus" value={computeHUStatusCaption(handlingUnitInfo)} />
