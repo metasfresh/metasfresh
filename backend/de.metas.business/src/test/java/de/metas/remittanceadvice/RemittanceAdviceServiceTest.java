@@ -88,7 +88,6 @@ public class RemittanceAdviceServiceTest
 		invoiceDocTypes = new HashMap<>();
 
 		SpringContextHolder.registerJUnitBean(RemittanceAdviceRepository.class, new RemittanceAdviceRepository());
-		final RemittanceAdviceRepository remittanceAdviceRepository = SpringContextHolder.instance.getBean(RemittanceAdviceRepository.class);
 
 		SpringContextHolder.registerJUnitBean(MoneyService.class, new MoneyService(new CurrencyRepository()));
 		final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);

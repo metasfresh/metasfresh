@@ -71,13 +71,13 @@ public final class InvoiceAmtMultiplier
 
 	public Amount convertToRealValue(@NonNull final Amount amount)
 	{
-		int toRealValueMultiplier = getToRealValueMultiplier();
+		final int toRealValueMultiplier = getToRealValueMultiplier();
 		return toRealValueMultiplier > 0 ? amount : amount.negate();
 	}
 
 	public Money convertToRealValue(@NonNull final Money money)
 	{
-		int toRealValueMultiplier = getToRealValueMultiplier();
+		final int toRealValueMultiplier = getToRealValueMultiplier();
 		return toRealValueMultiplier > 0 ? money : money.negate();
 	}
 
@@ -134,10 +134,10 @@ public final class InvoiceAmtMultiplier
 		// NOTE: the relative->real and real->relative value multipliers are the same
 		return getToRealValueMultiplier();
 	}
-	
+
 	public Money fromNotAdjustedAmount(@NonNull final Money money)
 	{
-		int multiplier = computeFromNotAdjustedAmountMultiplier();
+		final int multiplier = computeFromNotAdjustedAmountMultiplier();
 		return multiplier > 0 ? money : money.negate();
 	}
 
