@@ -3,6 +3,8 @@ import counterpart from 'counterpart';
 import currentDevice from 'current-device';
 
 import history from '../services/History';
+import * as IndicatorState from '../constants/IndicatorState';
+import * as StaticModalType from '../constants/StaticModalType';
 
 import {
   ACTIVATE_TAB,
@@ -18,6 +20,7 @@ import {
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
   INIT_WINDOW,
+  MARK_MASTER_DATA_DISCARDED,
   OPEN_FILTER_BOX,
   OPEN_MODAL,
   OPEN_RAW_MODAL,
@@ -67,7 +70,7 @@ import {
   deleteNotification,
   setNotificationProgress,
 } from './AppActions';
-import { getWindowBreadcrumb } from './MenuActions';
+import { setBreadcrumbByWindowId } from './MenuActions';
 import {
   updateCommentsPanel,
   updateCommentsPanelOpenFlag,
@@ -81,7 +84,6 @@ import {
 } from './TableActions';
 import { inlineTabAfterGetLayout, patchInlineTab } from './InlineTabActions';
 import { getPrintFile, getPrintUrl } from '../api/window';
-import { STATIC_MODAL_TYPE_ChangeCurrentWorkplace } from '../components/app/ChangeCurrentWorkplace';
 
 export function toggleOverlay(data) {
   return {
@@ -252,7 +254,7 @@ export function initDataSuccess({
 
 function initDataNotFound({ windowId, message, messageDetail }) {
   return (dispose) => {
-    dispose(getWindowBreadcrumb(windowId));
+    dispose(setBreadcrumbByWindowId(windowId));
     dispose(
       initDataSuccess({
         data: {},
@@ -316,6 +318,12 @@ export function updateDataValidStatus(scope, validStatus) {
     type: UPDATE_DATA_VALID_STATUS,
     scope,
     validStatus,
+  };
+}
+
+export function markMasterDataAsChanged() {
+  return {
+    type: MARK_MASTER_DATA_DISCARDED,
   };
 }
 
@@ -679,7 +687,7 @@ export function createWindow({
             }
           }
         } else {
-          dispatch(getWindowBreadcrumb(windowId));
+          dispatch(setBreadcrumbByWindowId(windowId));
         }
 
         //
@@ -807,7 +815,7 @@ export function callAPI({ windowId, docId, tabId, rowId, target, verb, data }) {
           data.rowsData = rowData;
         }
         // update corresponding target in the store - might be adapted for more separated entities
-        if (target === 'comments') {
+        if (target === StaticModalType.Comments) {
           dispatch(updateCommentsPanel(data));
         }
         // -- end updating corresponding target
@@ -826,7 +834,7 @@ export function callAPI({ windowId, docId, tabId, rowId, target, verb, data }) {
       const dataToSend = preFormatPostDATA({ target, postData: { txt: data } });
       return axios.post(parentUrl, dataToSend).then(async (response) => {
         const data = response.data;
-        if (target === 'comments') {
+        if (target === StaticModalType.Comments) {
           dispatch(
             callAPI({
               windowId,
@@ -915,7 +923,7 @@ export function patch(
     };
 
     await dispatch({ type: PATCH_REQUEST, symbol, options });
-    await dispatch(indicatorState({ state: 'pending', isModal }));
+    await dispatch(indicatorState({ state: IndicatorState.PENDING, isModal }));
 
     //
     // Update the state with the new property value
@@ -1019,7 +1027,7 @@ export function patch(
       // Propagate the exception, so callers are aware that something went wrong.
       throw error;
     } finally {
-      await dispatch(indicatorState({ state: 'saved', isModal }));
+      await dispatch(indicatorState({ state: IndicatorState.SAVED, isModal }));
     }
   };
 }
@@ -1370,7 +1378,7 @@ export function openPrintingOptionsModal({
     //viewId,
     viewDocumentIds: [documentNo],
     dataId: documentId,
-    staticModalType: 'printing',
+    staticModalType: StaticModalType.Printing,
   });
 }
 
@@ -1379,7 +1387,7 @@ export function openSelectCurrentWorkplaceModal() {
     title: counterpart.translate('userDropdown.changeWorkplace.caption'),
     windowId: 'selectCurrentWorkplace',
     modalType: 'static',
-    staticModalType: STATIC_MODAL_TYPE_ChangeCurrentWorkplace,
+    staticModalType: StaticModalType.ChangeCurrentWorkplace,
   });
 }
 
