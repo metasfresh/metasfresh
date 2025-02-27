@@ -208,7 +208,7 @@ class DocumentListContainer extends Component {
     }
   }
 
-  componentDidUpdate = (prevProps) => {
+  componentDidUpdate = () => {
     if (
       // prevProps.windowId !== this.props.windowId ||
       // prevProps.viewId !== this.props.viewId ||
