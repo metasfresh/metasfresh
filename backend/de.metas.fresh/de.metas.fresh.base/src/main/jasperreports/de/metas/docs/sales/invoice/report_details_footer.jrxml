@@ -26,9 +26,9 @@ JOIN report.taxnote ( $P{c_invoice_id}, $P{ad_language} ) taxnote  on 1=1;]]>
 		<property name="com.jaspersoft.studio.field.name" value="descriptionbottom"/>
 		<property name="com.jaspersoft.studio.field.label" value="descriptionbottom"/>
 	</field>
-	<field name="p_cond" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="p_cond"/>
-		<property name="com.jaspersoft.studio.field.label" value="p_cond"/>
+	<field name="p_term" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="p_term"/>
+		<property name="com.jaspersoft.studio.field.label" value="p_term"/>
 	</field>
 	<field name="paymentrule" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="paymentrule"/>
@@ -37,10 +37,6 @@ JOIN report.taxnote ( $P{c_invoice_id}, $P{ad_language} ) taxnote  on 1=1;]]>
 	<field name="textcenter" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="textcenter"/>
 		<property name="com.jaspersoft.studio.field.label" value="textcenter"/>
-	</field>
-	<field name="p_term" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="p_term"/>
-		<property name="com.jaspersoft.studio.field.label" value="p_term"/>
 	</field>
 	<field name="discount1" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.name" value="discount1"/>
@@ -85,7 +81,7 @@ JOIN report.taxnote ( $P{c_invoice_id}, $P{ad_language} ) taxnote  on 1=1;]]>
 	<detail>
 		<band height="15" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[new Boolean( $F{p_cond} != null )]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean( $F{p_term} != null )]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-82" style="Test" x="150" y="0" width="370" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
 				<box>
