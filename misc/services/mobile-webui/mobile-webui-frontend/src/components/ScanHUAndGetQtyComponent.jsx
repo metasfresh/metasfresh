@@ -191,20 +191,17 @@ const ScanHUAndGetQtyComponent = ({
       return trl(DEFAULT_MSG_notPositiveQtyNotAllowed);
     }
 
-    if (!resolvedBarcodeData.qtyMax || resolvedBarcodeData.qtyMax < 0) {
-      return null; //OK
-    }
-
     // Qty shall be less than or equal to qtyMax
-    const { qtyEffective: diff, uomEffective: diffUom } = formatQtyToHumanReadable({
-      qty: qtyEntered - resolvedBarcodeData.qtyMax,
-      uom,
-    });
+    if (resolvedBarcodeData.qtyMax && resolvedBarcodeData.qtyMax > 0) {
+      const { qtyEffective: diff, uomEffective: diffUom } = formatQtyToHumanReadable({
+        qty: qtyEntered - resolvedBarcodeData.qtyMax,
+        uom,
+      });
 
-    if (diff > 0) {
-      const qtyDiff = formatQtyToHumanReadableStr({ qty: diff, uom: diffUom });
-
-      return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, { qtyDiff: qtyDiff });
+      if (diff > 0) {
+        const qtyDiff = formatQtyToHumanReadableStr({ qty: diff, uom: diffUom });
+        return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, { qtyDiff: qtyDiff });
+      }
     }
 
     // OK
