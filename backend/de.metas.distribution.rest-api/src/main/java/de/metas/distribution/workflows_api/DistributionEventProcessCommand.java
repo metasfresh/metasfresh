@@ -27,8 +27,6 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.eevolution.model.I_DD_OrderLine;
 
 class DistributionEventProcessCommand
 {
@@ -226,9 +224,8 @@ class DistributionEventProcessCommand
 			@NonNull final HuId pickFromVHUId,
 			@NonNull final Quantity qty)
 	{
-		final I_DD_OrderLine ddOrderLineRecord = loadingSupportServices.getDDOrderLineById(line.getId().toDDOrderLineId());
-		final PackToHUsProducer.PackToInfo packToInfo = packToHUsProducer
-				.getPackToInfoForDistribution(PackToSpec.VIRTUAL, line.getPickFromLocator().getLocatorId());
+		final PackToHUsProducer.PackToInfo packToInfo = packToHUsProducer.extractPackToInfo(PackToSpec.VIRTUAL, line.getPickFromLocatorId())
+				.withPackForShipping(false);
 
 		final I_M_HU splitHU = packToHUsProducer.packToHU(
 				PackToHUsProducer.PackToHURequest.builder()
@@ -237,7 +234,7 @@ class DistributionEventProcessCommand
 						.packToInfo(packToInfo)
 						.productId(line.getProductId())
 						.qtyPicked(qty)
-						.documentRef(TableRecordReference.of(ddOrderLineRecord))
+						.documentRef(line.getDDOrderLineId().toTableRecordReference())
 						.checkIfAlreadyPacked(true)
 						.build()).getSingleTopLevelTURecord();
 

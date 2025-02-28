@@ -39,6 +39,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
@@ -46,13 +47,11 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
-import org.springframework.data.util.Pair;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class PackToHUsProducer
@@ -209,7 +208,7 @@ public class PackToHUsProducer
 							.setQuantity(qtyPicked)
 							.setFromReferencedTableRecord(documentRef)
 							.setForceQtyAllocation(true)
-  						    .setDeleteEmptyAndJustCreatedAggregatedTUs(true)
+							.setDeleteEmptyAndJustCreatedAggregatedTUs(true)
 							.create());
 
 			weightUpdater.updatePickFromHUs(pickFromHUs.toHUsList());
@@ -253,9 +252,9 @@ public class PackToHUsProducer
 		}
 		else
 		{
-			final Pair<HuPackingInstructionsId, Optional<Capacity>> packingInstructionAndCapacity = getPackingInstructionsAndCapacity(stepPackToTUSpec);
-			tuPackingInstructionsId = packingInstructionAndCapacity.getFirst();
-			tuCapacity = packingInstructionAndCapacity.getSecond().orElse(null);
+			final HuPackingInstructionsIdAndCapacity packingInstructionAndCapacity = getPackingInstructionsAndCapacity(stepPackToTUSpec);
+			tuPackingInstructionsId = packingInstructionAndCapacity.getHuPackingInstructionsId();
+			tuCapacity = packingInstructionAndCapacity.getCapacityOrNull();
 		}
 
 		final int packageNo = isPackEachCandidateInItsOwnHU(tuPackingInstructionsId) ? nextPackageNo.getAndIncrement() : PACKAGE_NO_ZERO;
@@ -271,21 +270,16 @@ public class PackToHUsProducer
 	}
 
 	@NonNull
-	public PackToInfo getPackToInfoForDistribution(
+	public PackToInfo extractPackToInfo(
 			@NonNull final PackToSpec packToSpec,
-			@NonNull final LocatorId huLocatorId)
+			@NonNull final LocatorId shipFromLocatorId)
 	{
-		final Pair<HuPackingInstructionsId, Optional<Capacity>> packingInstructionAndCapacity =
-				getPackingInstructionsAndCapacity(packToSpec);
-
-		final HuPackingInstructionsId tuPackingInstructionsId = packingInstructionAndCapacity.getFirst();
-		final Capacity tuCapacity = packingInstructionAndCapacity.getSecond().orElse(null);
+		final HuPackingInstructionsIdAndCapacity packingInstructionAndCapacity = getPackingInstructionsAndCapacity(packToSpec);
 
 		return PackToInfo.builder()
-				.shipFromLocatorId(huLocatorId)
-				.tuPackingInstructionsId(tuPackingInstructionsId)
-				.tuCapacity(tuCapacity)
-				.packForShipping(false)
+				.shipFromLocatorId(shipFromLocatorId)
+				.tuPackingInstructionsId(packingInstructionAndCapacity.getHuPackingInstructionsId())
+				.tuCapacity(packingInstructionAndCapacity.getCapacityOrNull())
 				.build();
 	}
 
@@ -414,25 +408,26 @@ public class PackToHUsProducer
 	}
 
 	@NonNull
-	private Pair<HuPackingInstructionsId, Optional<Capacity>> getPackingInstructionsAndCapacity(@NonNull final PackToSpec packToSpec)
+	private HuPackingInstructionsIdAndCapacity getPackingInstructionsAndCapacity(@NonNull final PackToSpec packToSpec)
 	{
 		if (packToSpec.isVirtual())
 		{
-			return Pair.of(HuPackingInstructionsId.VIRTUAL, Optional.empty());
+			return HuPackingInstructionsIdAndCapacity.of(HuPackingInstructionsId.VIRTUAL, null);
 		}
 		else if (packToSpec.getTuPackingInstructionsId() != null)
 		{
 			final HUPIItemProduct tuPIItemProduct = huPIItemProductBL.getById(packToSpec.getTuPackingInstructionsId());
-			final HuPackingInstructionsId tuPackingInstructionsId = handlingUnitsBL
-					.getPackingInstructionsId(tuPIItemProduct.getPiItemId());
-			return Pair.of(tuPackingInstructionsId, Optional.of(tuPIItemProduct.toCapacity()));
+			final HuPackingInstructionsId tuPackingInstructionsId = handlingUnitsBL.getPackingInstructionsId(tuPIItemProduct.getPiItemId());
+			return HuPackingInstructionsIdAndCapacity.of(tuPackingInstructionsId, tuPIItemProduct.toCapacity());
 		}
 		else if (packToSpec.getGenericPackingInstructionsId() != null)
 		{
-			return Pair.of(packToSpec.getGenericPackingInstructionsId(), Optional.empty());
+			return HuPackingInstructionsIdAndCapacity.of(packToSpec.getGenericPackingInstructionsId());
 		}
-
-		throw new AdempiereException("Unsupported pack to spec: " + packToSpec);
+		else
+		{
+			throw new AdempiereException("Unsupported pack to spec: " + packToSpec);
+		}
 	}
 
 	private static void setupPackToDestinationCommonOptions(@NonNull final IHUProducerAllocationDestination producer, @NonNull final PackToInfo packToInfo)
@@ -468,11 +463,16 @@ public class PackToHUsProducer
 		// LU
 		@Nullable LUPickingTarget lu;
 
-		public WarehouseId getShipFromWarehouseId() {return getShipFromLocatorId().getWarehouseId();}
+		@With @Builder.Default boolean packForShipping = true;
 
-		@Builder.Default
-		boolean packForShipping = true;
+		public WarehouseId getShipFromWarehouseId() {return getShipFromLocatorId().getWarehouseId();}
 	}
+
+	//
+	//
+	// ------------------------------------
+	//
+	//
 
 	@EqualsAndHashCode
 	private static class PickFromHU
