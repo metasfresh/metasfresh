@@ -74,12 +74,18 @@ public class HUManagerRestController
 	{
 		assertApplicationAccess();
 
-		return handlingUnitsService.getByIdSupplier(
-				() -> GetByIdRequest.builder()
-						.huId(getHuId(request.getQrCode()))
-						.includeAllowedClearanceStatuses(request.isIncludeAllowedClearanceStatuses())
-						.orderedAttributeCodes(getDisplayedAttributeCodes())
-						.build()
+		return handlingUnitsService.getByIdSupplier(() -> {
+														final HuId huId = handlingUnitsService.resolveHuId(GlobalQRCode.parse(request.getQrCode()).orThrow());
+														if (huId == null)
+														{
+															return null;
+														}
+														return GetByIdRequest.builder()
+																.huId(huId)
+																.expectedQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getQrCode()))
+																.orderedAttributeCodes(getDisplayedAttributeCodes())
+																.build();
+													}
 		);
 	}
 
