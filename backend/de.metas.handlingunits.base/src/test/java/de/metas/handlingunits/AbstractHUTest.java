@@ -190,10 +190,6 @@ public abstract class AbstractHUTest
 		final  ProductBOMVersionsDAO productBOMVersionsDAO = new ProductBOMVersionsDAO();
 		SpringContextHolder.registerJUnitBean(productBOMVersionsDAO);
 
-		final QRCodeConfigurationService qrCodeConfigurationService = new QRCodeConfigurationService(new QRCodeConfigurationRepository());
-		SpringContextHolder.registerJUnitBean(qrCodeConfigurationService);
-		SpringContextHolder.registerJUnitBean(new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService(DoNothingMassPrintingService.instance), qrCodeConfigurationService));
-
 		initialize();
 	}
 
