@@ -81,10 +81,6 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
-import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
-import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
 import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHURepository;
@@ -611,6 +607,9 @@ public class HUTestHelper
 				ddOrderMoveScheduleService,
 				ddOrderService,
 				new PickingBOMService(),
+				new HUQRCodesService(new HUQRCodesRepository(),
+									 new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+									 new QRCodeConfigurationService(new QRCodeConfigurationRepository())),
 				huUniqueAttributesService);
 	}
 

@@ -127,11 +127,13 @@ public final class Main extends AbstractModuleInterceptor
 			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService,
 			@NonNull final DDOrderService ddOrderService,
 			@NonNull final PickingBOMService pickingBOMService,
+			@NonNull final HUQRCodesService huqrCodesService,
 			@NonNull final HUUniqueAttributesService huUniqueAttributesService)
 	{
 		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
 		this.ddOrderService = ddOrderService;
 		this.pickingBOMService = pickingBOMService;
+		this.huqrCodesService = huqrCodesService;
 		this.huUniqueAttributesService = huUniqueAttributesService;
 	}
 

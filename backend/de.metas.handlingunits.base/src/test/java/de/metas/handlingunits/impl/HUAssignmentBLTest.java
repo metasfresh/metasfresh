@@ -39,6 +39,7 @@ import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFi
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.resource.ResourceService;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
@@ -110,6 +111,9 @@ public class HUAssignmentBLTest
 				ddOrderMoveScheduleService,
 				ddOrderService,
 				new PickingBOMService(),
+				new HUQRCodesService(new HUQRCodesRepository(),
+									 new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+									 new QRCodeConfigurationService(new QRCodeConfigurationRepository())),
 				huUniqueAttributesService));
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new DD_Order(ddOrderService, ddOrderMoveScheduleService, DDOrderCandidateService.newInstanceForUnitTesting()));
 
