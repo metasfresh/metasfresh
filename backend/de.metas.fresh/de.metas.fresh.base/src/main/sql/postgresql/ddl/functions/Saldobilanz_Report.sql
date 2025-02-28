@@ -302,71 +302,38 @@ BEGIN
 
     IF p_IsShowProductDetails = 'Y' OR p_IsShowActivityDetails = 'Y' THEN
 
-        -- compute sums per dateacct, account and activity/product  until given date
-        DROP TABLE IF EXISTS tmp_Fact_Acct_Per_DateAcct;
-        CREATE TEMPORARY TABLE tmp_Fact_Acct_Per_DateAcct AS
+        -- compute balance per  account and activity/product  until given date
+        DROP TABLE IF EXISTS tmp_Fact_Acct_Per_Activity_Product;
+        CREATE TEMPORARY TABLE tmp_Fact_Acct_Per_Activity_Product AS
         SELECT fa.AD_Client_ID
              , fa.Account_ID
+             , fa.C_AcctSchema_ID
              , (CASE WHEN p_IsShowActivityDetails = 'Y' THEN fa.c_activity_id END) AS c_activity_id
              , (CASE WHEN p_IsShowProductDetails = 'Y' THEN fa.m_product_id END)   AS m_product_id
-             , fa.C_AcctSchema_ID
-             , fa.PostingType
-             , p.C_Period_ID
-             , p.C_Year_ID
-             , fa.DateAcct
-             -- Aggregated amounts
-             , COALESCE(SUM(AmtAcctDr), 0)                                         AS AmtAcctDr
-             , COALESCE(SUM(AmtAcctCr), 0)                                         AS AmtAcctCr
-             , COALESCE(SUM(Qty), 0)                                               AS Qty
+             , NULL::text                                                          AS activityName
+             , NULL::text                                                          AS productName
+             , COALESCE(SUM(fa.AmtAcctDr - fa.AmtAcctCr), 0)                       AS Balance
         FROM Fact_Acct fa
                  INNER JOIN c_elementvalue ev ON fa.account_id = ev.c_elementvalue_id
-                 LEFT OUTER JOIN C_Period p ON (p.C_Period_ID = fa.C_Period_ID)
         WHERE fa.dateacct <= p_date
           AND fa.ad_org_id = p_ad_org_id
           AND (fa.PostingType = 'A' OR (p_ExcludePostingTypeYearEnd = 'N' AND fa.PostingType = 'Y') OR (p_IncludePostingTypeStatistical = 'Y' AND fa.PostingType = 'S'))
           AND (ev.AccountType NOT IN ('E', 'R') OR fa.DateAcct >= v_periodInfo.period_CurrentYearStart_StartDate::date)
-        GROUP BY fa.AD_Client_ID
-               , p.C_Period_ID
-               , fa.C_AcctSchema_ID
-               , fa.PostingType
-               , fa.Account_ID
-               , fa.DateAcct
-               , (CASE WHEN p_IsShowActivityDetails = 'Y' THEN fa.c_activity_id END)
-               , (CASE WHEN p_IsShowProductDetails = 'Y' THEN fa.m_product_id END);
+        GROUP BY fa.AD_Client_ID, fa.C_AcctSchema_ID, fa.Account_ID,
+                 (CASE WHEN p_IsShowActivityDetails = 'Y' THEN fa.c_activity_id END), (CASE WHEN p_IsShowProductDetails = 'Y' THEN fa.m_product_id END);
 
         GET DIAGNOSTICS v_rowcount = ROW_COUNT;
         RAISE NOTICE 'Sums  per activity and product for % dates', v_rowcount;
-        CREATE UNIQUE INDEX ON tmp_Fact_Acct_Per_DateAcct (DateAcct, Account_ID, M_Product_ID, C_Activity_ID);
+        CREATE UNIQUE INDEX ON tmp_Fact_Acct_Per_Activity_Product (Account_ID, M_Product_ID, C_Activity_ID);
+
+        UPDATE tmp_Fact_Acct_Per_Activity_Product t SET activityName=(SELECT name FROM C_Activity a WHERE a.C_Activity_ID = t.C_Activity_ID) WHERE t.C_Activity_ID IS NOT NULL;
+        UPDATE tmp_Fact_Acct_Per_Activity_Product t SET productName=(SELECT name FROM M_Product p WHERE p.M_Product_ID = t.M_Product_ID) WHERE t.M_Product_ID IS NOT NULL;
 
         -- compute sums per account and activity/product until given date
         DROP TABLE IF EXISTS tmp_activity_product_balances_todate;
         CREATE TEMPORARY TABLE tmp_activity_product_balances_todate AS
-        WITH filteredAndOrdered AS (
-            SELECT ev.C_ElementValue_ID
-                 , fa.C_AcctSchema_ID
-                 , fa.PostingType
-                 , ev.AccountType
-                 , fa.m_product_id
-                 , fa.c_activity_id
-                 , fa.DateAcct
-                 , a.name                               AS activityName
-                 , p.name                               AS productName
 
-                 -- Aggregated amounts: (beginning) to Date
-                 , SUM(AmtAcctDr) OVER facts_ToDate     AS AmtAcctDr
-                 , SUM(AmtAcctCr) OVER facts_ToDate     AS AmtAcctCr
-                 -- Aggregated amounts: Year to Date
-                 , SUM(AmtAcctDr) OVER facts_YearToDate AS AmtAcctDr_YTD
-                 , SUM(AmtAcctCr) OVER facts_YearToDate AS AmtAcctCr_YTD
-            FROM tmp_Fact_Acct_Per_DateAcct fa
-                     INNER JOIN C_ElementValue ev ON (ev.C_ElementValue_ID = fa.Account_ID) AND ev.isActive = 'Y'
-                     LEFT OUTER JOIN C_Activity a ON (fa.c_activity_id = a.c_activity_id)
-                     LEFT OUTER JOIN M_Product p ON (fa.m_product_id = p.m_product_id)
-                WINDOW
-                    facts_ToDate AS (PARTITION BY fa.AD_Client_ID, fa.C_AcctSchema_ID, fa.PostingType, ev.C_ElementValue_ID, fa.c_activity_id, fa.m_product_id ORDER BY fa.DateAcct)
-                    , facts_YearToDate AS (PARTITION BY fa.AD_Client_ID, fa.C_AcctSchema_ID, fa.PostingType, ev.C_ElementValue_ID, fa.C_Year_ID, fa.c_activity_id, fa.m_product_id ORDER BY fa.DateAcct)
-        )
-        SELECT t.C_ElementValue_ID
+        SELECT a.C_ElementValue_ID
              , a.parentname1
              , a.parentvalue1
              , a.parentname2
@@ -383,37 +350,11 @@ BEGIN
              , activityName
              , productName
              , Balance
-        FROM (
-                 SELECT C_ElementValue_ID
-                      , m_product_id
-                      , c_activity_id
-                      , activityName
-                      , productName
-                      , balance
-
-                 FROM (
-                          SELECT (CASE
-                              -- When the account is Expense/Revenue => we shall consider only the Year to Date amount
-                                      WHEN fo.AccountType IN ('E', 'R') AND fo.DateAcct >= DATE_TRUNC('year', '14-6-2023'::date) THEN (fo.AmtAcctDr_YTD - fo.AmtAcctCr_YTD)
-                                      WHEN fo.AccountType IN ('E', 'R')                                                          THEN 0
-                              -- For any other account => we consider from the beginning to Date amount
-                                                                                                                                 ELSE (fo.AmtAcctDr - fo.AmtAcctCr)
-                                  END)                                                                                                                                                                         AS Balance
-                               , COUNT(dateacct) OVER (PARTITION BY C_ElementValue_ID,C_AcctSchema_ID,PostingType, AccountType, m_product_id, c_activity_id, activityName, productName ORDER BY dateacct DESC) AS cnt
-                               , fo.C_ElementValue_ID
-                               , fo.m_product_id
-                               , fo.c_activity_id
-                               , fo.activityName
-                               , fo.productName
-                          FROM filteredAndOrdered fo
-                      ) AS f
-                 WHERE cnt = 1
-                 ORDER BY activityName, productName
-             ) AS t
-                 INNER JOIN tmp_accounts a ON a.C_ElementValue_ID = t.c_elementvalue_id;
+        FROM tmp_Fact_Acct_Per_Activity_Product AS t
+                 INNER JOIN tmp_accounts a ON a.C_ElementValue_ID = t.Account_ID;
 
         GET DIAGNOSTICS v_rowcount = ROW_COUNT;
-        RAISE NOTICE 'Computed balances per activity and product for % tmp_activity_product_balances_todate', v_rowcount;
+        RAISE NOTICE 'Show balances per activity and product for % tmp_activity_product_balances_todate', v_rowcount;
         CREATE UNIQUE INDEX ON tmp_activity_product_balances_todate (C_ElementValue_ID, M_Product_ID, C_Activity_ID);
 
 
