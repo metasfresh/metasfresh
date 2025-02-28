@@ -108,7 +108,7 @@ public final class SqlDefaultDocumentFilterConverter implements SqlDocumentFilte
 
 		for (final DocumentFilterParam filterParam : filter.getParameters())
 		{
-			if (filterParam.getValue() == null && filterParam.getSqlWhereClause() == null)
+			if (filterParam.isNullValues())
 			{
 				// don't include "null" parameters; The frontend might send them e.g. if a string field was cleared. 
 				// we assume that the user never filters for value = "NULL"
@@ -480,7 +480,8 @@ public final class SqlDefaultDocumentFilterConverter implements SqlDocumentFilte
 				sqlValueStr);
 	}
 
-	private static SqlAndParams buildSqlWhereClause_Between(final String sqlColumnExpr, @Nullable final Object sqlValue, @Nullable final Object sqlValueTo)
+	@VisibleForTesting
+	static SqlAndParams buildSqlWhereClause_Between(final String sqlColumnExpr, @Nullable final Object sqlValue, @Nullable final Object sqlValueTo)
 	{
 		if (sqlValue == null)
 		{
