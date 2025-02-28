@@ -108,4 +108,13 @@ public class DistributionJob
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No line found for " + lineId));
 	}
+
+	@NonNull
+	public DistributionJobLine getLineByStepId(@NonNull final DistributionJobStepId stepId)
+	{
+		return lines.stream()
+				.filter(line -> line.getStepById(stepId).isPresent())
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No line found for " + stepId));
+	}
 }

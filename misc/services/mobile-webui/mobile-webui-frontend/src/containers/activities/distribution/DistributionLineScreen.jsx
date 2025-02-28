@@ -66,9 +66,12 @@ const DistributionLineScreen = () => {
 export const useDistributionLineProps = ({ wfProcessId, activityId, lineId }) => {
   return useSelector((state) => {
     const line = getLineById(state, wfProcessId, activityId, lineId);
+    const stepsArray = getStepsArrayFromLine(line);
+    const qtyToPickRemaining = line.qtyToMove - stepsArray.reduce((sum, step) => sum + (step.qtyPicked || 0), 0);
     return {
       ...line,
-      steps: getStepsArrayFromLine(line),
+      qtyToPickRemaining: Math.max(0, qtyToPickRemaining),
+      steps: stepsArray,
     };
   }, shallowEqual);
 };

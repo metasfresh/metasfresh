@@ -12,6 +12,7 @@ import lombok.Value;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 @Value
@@ -98,5 +99,11 @@ public class DistributionJobLine
 		return changedSteps.equals(steps)
 				? this
 				: toBuilder().steps(changedSteps).build();
+	}
+
+	@NonNull
+	public Optional<DistributionJobStep> getStepById(@NonNull final DistributionJobStepId stepId)
+	{
+		return getSteps().stream().filter(step -> step.getId().equals(stepId)).findFirst();
 	}
 }

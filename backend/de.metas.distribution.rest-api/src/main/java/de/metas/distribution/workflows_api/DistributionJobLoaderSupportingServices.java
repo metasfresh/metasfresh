@@ -3,6 +3,7 @@ package de.metas.distribution.workflows_api;
 import de.metas.distribution.config.MobileUIDistributionConfig;
 import de.metas.distribution.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
@@ -101,6 +102,12 @@ public class DistributionJobLoaderSupportingServices
 	public I_DD_Order getDDOrderById(final DDOrderId ddOrderId)
 	{
 		return ddOrderService.getById(ddOrderId);
+	}
+
+	@NonNull
+	public I_DD_OrderLine getDDOrderLineById(@NonNull final DDOrderLineId ddOrderLineId)
+	{
+		return ddOrderService.getLineById(ddOrderLineId);
 	}
 
 	public List<I_DD_OrderLine> getLines(final I_DD_Order ddOrder)

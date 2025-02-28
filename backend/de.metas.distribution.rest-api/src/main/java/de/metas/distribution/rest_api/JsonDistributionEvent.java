@@ -10,6 +10,7 @@ import lombok.extern.jackson.Jacksonized;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 @Value
 public class JsonDistributionEvent
@@ -27,6 +28,7 @@ public class JsonDistributionEvent
 	public static class PickFrom
 	{
 		@Nullable String qrCode;
+		@Nullable BigDecimal qtyPicked;
 	}
 
 	@Nullable PickFrom pickFrom;
