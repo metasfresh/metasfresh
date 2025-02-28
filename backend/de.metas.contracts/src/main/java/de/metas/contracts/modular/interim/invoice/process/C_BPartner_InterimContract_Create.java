@@ -36,7 +36,6 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -97,8 +96,7 @@ public class C_BPartner_InterimContract_Create extends JavaProcess implements IP
 		flatrateBL.streamModularFlatrateTermsByQuery(modularFlatrateTermQuery)
 				.forEach(flatrateTermRecord -> {
 					isEmpty.set(false);
-					Check.assumeNotNull(flatrateTermRecord.getEndDate(), "End Date shouldn't be null");
-					interimFlatrateTermService.create(flatrateTermRecord, flatrateTermRecord.getStartDate(), flatrateTermRecord.getEndDate());
+					interimFlatrateTermService.create(flatrateTermRecord);
 				});
 		if (isEmpty.get())
 		{

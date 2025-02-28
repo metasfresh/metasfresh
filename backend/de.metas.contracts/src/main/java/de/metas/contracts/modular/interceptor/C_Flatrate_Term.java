@@ -92,11 +92,7 @@ public class C_Flatrate_Term
 			return;
 		}
 
-		Check.assumeNotNull(flatrateTermRecord.getEndDate(), "End Date shouldn't be null");
-		interimFlatrateTermService.create(flatrateTermRecord,
-										  flatrateTermRecord.getStartDate(),
-										  flatrateTermRecord.getEndDate()
-		);
+		interimFlatrateTermService.create(flatrateTermRecord);
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
