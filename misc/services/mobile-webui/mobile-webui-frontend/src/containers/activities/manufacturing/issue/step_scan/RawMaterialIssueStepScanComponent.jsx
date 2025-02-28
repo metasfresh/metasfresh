@@ -33,9 +33,9 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
   const resolveScannedBarcode = (scannedBarcode, huId) => {
     let step;
     if (huId) {
-      step = getNonIssuedStepByHuIdFromActivity(activity, lineId, huId);
+      step = getNonIssuedStepByHuIdFromActivity({ activity, lineId, huId });
     } else {
-      step = getNonIssuedStepByQRCodeFromActivity(activity, lineId, scannedBarcode);
+      step = getNonIssuedStepByQRCodeFromActivity({ activity, lineId, scannedBarcode });
     }
 
     if (!step) {
