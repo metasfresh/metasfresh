@@ -31,6 +31,7 @@ import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
 import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
@@ -324,7 +325,8 @@ public class PickingJobPickCommand
 	private PickingJob executeInTrx()
 	{
 		_pickingJob.assertNotProcessed();
-		_pickingJob.assertPickingSlotScanned();
+
+		allocateLinePickingSlot();
 
 		validatePickFromHU();
 
@@ -365,6 +367,11 @@ public class PickingJobPickCommand
 
 	private PickingJobLine getLine() {return _pickingJob.getLineById(getLineId());}
 
+	private void changeLine(@NonNull final UnaryOperator<PickingJobLine> lineMapper)
+	{
+		_pickingJob = _pickingJob.withChangedLine(getLineId(), lineMapper);
+	}
+
 	private void addStep(@NonNull final PickingJob.AddStepRequest request)
 	{
 		_pickingJob = _pickingJob.withNewStep(request);
@@ -373,6 +380,28 @@ public class PickingJobPickCommand
 	private void changeStep(@NonNull final UnaryOperator<PickingJobStep> stepMapper)
 	{
 		_pickingJob = _pickingJob.withChangedStep(getStepId(), stepMapper);
+	}
+
+	private void allocateLinePickingSlot()
+	{
+		final PickingJobAggregationType aggregationType = getPickingJob().getAggregationType();
+		if (aggregationType.isLineLevelPickTargets())
+		{
+			changeLine(line -> {
+				if (!line.getPickingSlot().isPresent())
+				{
+					return line.withPickingSlot(getPickingJob().getPickingSlotNotNull());
+				}
+				else
+				{
+					return line;
+				}
+			});
+		}
+		else
+		{
+			getPickingJob().assertPickingSlotScanned();
+		}
 	}
 
 	private Optional<LUPickingTarget> getLUPickingTarget()
@@ -517,7 +546,7 @@ public class PickingJobPickCommand
 				step.getPackToSpec(),
 				getLUPickingTarget().orElse(null),
 				getTUPickingTarget().orElse(null),
-				getPickingJob().getDeliveryBPLocationId(),
+				getLine().getDeliveryBPLocationId(),
 				pickFromLocatorId);
 
 		trxManager.assertThreadInheritedTrxExists();
@@ -554,6 +583,7 @@ public class PickingJobPickCommand
 		}
 
 		updatePickingTarget(packedHUs);
+		// TODO: add top level HUs from packedHUs (where isPreExistingLU=false) to picking slot queue?
 
 		if (packedHUs.isEmpty())
 		{

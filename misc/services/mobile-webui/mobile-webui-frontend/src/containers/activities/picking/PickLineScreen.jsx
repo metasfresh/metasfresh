@@ -33,6 +33,7 @@ const PickLineScreen = () => {
     pickFromHUQRCode,
     allowPickingAnyHU,
     steps,
+    pickingSlot,
     pickingUnit,
     packingItemName,
     catchWeightUOM,
@@ -43,7 +44,7 @@ const PickLineScreen = () => {
     manuallyClosed,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
-  useHeaderUpdate({ url, caption, uom, pickingUnit, packingItemName, qtyToPick, qtyPicked });
+  useHeaderUpdate({ url, caption, uom, pickingSlot, pickingUnit, packingItemName, qtyToPick, qtyPicked });
 
   const onScanButtonClick = () =>
     history.push(
@@ -131,6 +132,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     pickFromHUQRCode: getCurrentPickFromHUQRCode({ activity }),
     allowPickingAnyHU: isAllowPickingAnyHUForLine({ line }),
     steps: Object.values(stepsById),
+    pickingSlot: line?.pickingSlot,
     pickingUnit: line?.pickingUnit,
     packingItemName: line?.packingItemName,
     catchWeightUOM: line?.catchWeightUOM,
@@ -142,7 +144,16 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   };
 };
 
-export const useHeaderUpdate = ({ url, caption, pickingUnit, packingItemName, uom, qtyToPick, qtyPicked }) => {
+export const useHeaderUpdate = ({
+  url,
+  caption,
+  pickingSlot,
+  pickingUnit,
+  packingItemName,
+  uom,
+  qtyToPick,
+  qtyPicked,
+}) => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(
@@ -154,6 +165,11 @@ export const useHeaderUpdate = ({ url, caption, pickingUnit, packingItemName, uo
             caption: trl('activities.picking.PickingLine'),
             value: caption,
             bold: true,
+          },
+          {
+            caption: trl('activities.picking.pickingSlot'),
+            value: pickingSlot?.caption,
+            hidden: !pickingSlot?.caption,
           },
           {
             caption: trl('general.PackingItemName'),

@@ -92,7 +92,6 @@ public final class PickingJob
 	private final PickingJobProgress progress;
 
 	@Builder(toBuilder = true)
-	@SuppressWarnings("OptionalAssignedToNull")
 	private PickingJob(
 			final @NonNull PickingJobId id,
 			final @NonNull PickingJobHeader header,
@@ -143,8 +142,6 @@ public final class PickingJob
 	@Nullable
 	public BPartnerLocationId getHandoverLocationId() {return header.getHandoverLocationId();}
 
-	public String getDeliveryRenderedAddress() {return header.getDeliveryRenderedAddress();}
-
 	@JsonIgnore
 	public boolean isAllowPickingAnyHU() {return header.isAllowPickingAnyHU();}
 
@@ -173,10 +170,14 @@ public final class PickingJob
 
 	public void assertPickingSlotScanned()
 	{
-		if (!pickingSlot.isPresent())
-		{
-			throw new AdempiereException(MISSING_PICKING_SLOT_ID_ERROR_MSG);
-		}
+		//noinspection ResultOfMethodCallIgnored
+		getPickingSlotNotNull();
+	}
+
+	@NonNull
+	public PickingSlotIdAndCaption getPickingSlotNotNull()
+	{
+		return pickingSlot.orElseThrow(() -> new AdempiereException(MISSING_PICKING_SLOT_ID_ERROR_MSG));
 	}
 
 	public boolean isProcessed()
@@ -198,9 +199,13 @@ public final class PickingJob
 			return this;
 		}
 
-		return LUPickingTarget.equals(this.luPickTarget.orElse(null), pickTarget)
-				? this
-				: toBuilder()
+		final PickingJobAggregationType aggregationType = getAggregationType();
+		if (aggregationType.isLineLevelPickTargets() && pickTarget != null && pickTarget.isExistingLU())
+		{
+			throw new AdempiereException("Setting existing HU as picking targets on job level is not allowed for " + aggregationType + " aggregation type.");
+		}
+
+		return toBuilder()
 				.luPickTarget(Optional.ofNullable(pickTarget))
 				.tuPickTarget(pickTarget == null ? Optional.empty() : this.getTuPickTarget())
 				.build();

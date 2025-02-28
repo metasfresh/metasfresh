@@ -359,8 +359,9 @@ public class PickingJobSaver
 			@NonNull final PickingJobDocStatus docStatus)
 	{
 		final boolean isManuallyClosed = line.isManuallyClosed();
-		record.setIsManuallyClosed(isManuallyClosed);
 
+		record.setM_PickingSlot_ID(line.getPickingSlotId().map(PickingSlotId::getRepoId).orElse(-1));
+		record.setIsManuallyClosed(isManuallyClosed);
 		record.setProcessed(isManuallyClosed || docStatus.isProcessed());
 	}
 

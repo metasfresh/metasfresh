@@ -34,12 +34,15 @@ import de.metas.handlingunits.QtyTU;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
+import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.compiere.model.I_C_UOM;
@@ -47,12 +50,14 @@ import org.compiere.model.I_C_UOM;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class PickingJobLine
 {
 	@NonNull PickingJobLineId id;
@@ -76,6 +81,7 @@ public class PickingJobLine
 	// computed values
 	@NonNull PickingJobProgress progress;
 	//
+	@NonNull @Getter Optional<PickingSlotIdAndCaption> pickingSlot;
 	@NonNull PickingUnit pickingUnit;
 	@NonNull Quantity qtyPicked;
 	@NonNull Quantity qtyRejected;
@@ -86,6 +92,7 @@ public class PickingJobLine
 	@Nullable QtyTU qtyRemainingToPickTUs;// not null if pickingUnit==TU
 
 	@Builder(toBuilder = true)
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	private PickingJobLine(
 			@NonNull final PickingJobLineId id,
 			@NonNull final ITranslatableString caption,
@@ -101,6 +108,7 @@ public class PickingJobLine
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@Nullable final UomId catchUomId,
 			@NonNull final ImmutableList<PickingJobStep> steps,
+			@Nullable Optional<PickingSlotIdAndCaption> pickingSlot,
 			@NonNull final PickingUnit pickingUnit,
 			final boolean isManuallyClosed)
 	{
@@ -121,6 +129,7 @@ public class PickingJobLine
 		this.steps = steps;
 		this.isManuallyClosed = isManuallyClosed;
 
+		this.pickingSlot = pickingSlot != null ? pickingSlot : Optional.empty();
 		this.pickingUnit = pickingUnit;
 
 		this.qtyPicked = steps.stream().map(PickingJobStep::getQtyPicked).reduce(Quantity::add).orElseGet(qtyToPick::toZero);
@@ -243,5 +252,14 @@ public class PickingJobLine
 				.map(PickingJobStep::getPickedHUIds)
 				.flatMap(List::stream)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public Optional<PickingSlotId> getPickingSlotId() {return pickingSlot.map(PickingSlotIdAndCaption::getPickingSlotId);}
+
+	public PickingJobLine withPickingSlot(@Nullable final PickingSlotIdAndCaption pickingSlot)
+	{
+		return PickingSlotIdAndCaption.equals(this.pickingSlot.orElse(null), pickingSlot)
+				? this
+				: toBuilder().pickingSlot(Optional.ofNullable(pickingSlot)).build();
 	}
 }

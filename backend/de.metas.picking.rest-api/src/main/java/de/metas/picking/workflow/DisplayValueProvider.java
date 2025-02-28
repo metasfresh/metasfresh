@@ -203,6 +203,8 @@ public class DisplayValueProvider
 				.customerName(pickingJobReference.getCustomerName())
 				.preparationDate(pickingJobReference.getPreparationDate())
 				.handoverLocationId(pickingJobReference.getHandoverLocationId())
+				.productName(pickingJobReference.getProductName())
+				.qtyToDeliver(pickingJobReference.getQtyToDeliver())
 				.build();
 	}
 

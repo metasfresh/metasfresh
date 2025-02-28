@@ -3,8 +3,8 @@ package de.metas.handlingunits.picking.job.model;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.i18n.ITranslatableString;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -24,10 +24,9 @@ public class PickingJobReference
 	@Nullable ZonedDateTime deliveryDate;
 	@Nullable ZonedDateTime preparationDate;
 	@Nullable BPartnerLocationId deliveryLocationId;
-	@Nullable ProductId productId;
+	@Nullable ITranslatableString productName;
 	@Nullable Quantity qtyToDeliver;
 	@NonNull ImmutableSet<ShipmentScheduleId> shipmentScheduleIds;
 	boolean isShipmentSchedulesLocked;
-
 	@Nullable BPartnerLocationId handoverLocationId;
 }

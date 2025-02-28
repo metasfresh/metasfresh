@@ -260,7 +260,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		{
 			return Optional.empty();
 		}
-		
+
 		return Optional.of(
 				HUInfo.builder()
 						.id(pickFromHUId)
@@ -363,6 +363,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 
 		final String salesOrderDocumentNo = loadingSupportingServices.getSalesOrderDocumentNo(salesOrderAndLineId.getOrderId());
 		final ITranslatableString productName = loadingSupportingServices.getProductName(productId);
+		final Optional<PickingSlotIdAndCaption> pickingSlot = extractPickingSlot(record);
 
 		final ITranslatableString caption;
 		switch (aggregationType)
@@ -372,6 +373,8 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				break;
 			case PRODUCT:
 				caption = TranslatableStrings.builder()
+						.append(pickingSlot.map(PickingSlotIdAndCaption::getCaption).orElse(""))
+						.appendIfNotEmpty(", ")
 						.append(salesOrderDocumentNo)
 						.build();
 				break;
@@ -400,7 +403,14 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 						.collect(ImmutableList.toImmutableList()))
 				.isManuallyClosed(record.isManuallyClosed())
 				.pickingUnit(computePickingUnit(UomId.ofRepoIdOrNull(record.getCatch_UOM_ID()), packingInfo, pickingJobOptions))
+				.pickingSlot(pickingSlot)
 				.build();
+	}
+
+	private @NotNull Optional<PickingSlotIdAndCaption> extractPickingSlot(final I_M_Picking_Job_Line record)
+	{
+		return Optional.ofNullable(PickingSlotId.ofRepoIdOrNull(record.getM_PickingSlot_ID()))
+				.map(loadingSupportingServices::getPickingSlotIdAndCaption);
 	}
 
 	private static @NotNull BPartnerLocationId extractDeliveryBPLocationId(final @NotNull I_M_Picking_Job_Line record)
@@ -665,9 +675,15 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.isShipmentSchedulesLocked(getShipmentSchedulesIsLocked(pickingJobId).isTrue())
 				.deliveryLocationId(header.getDeliveryBPLocationId())
 				.handoverLocationId(header.getHandoverLocationId())
-				.productId(extractSingleProductIdOrNull(pickingJobId))
+				.productName(extractSingleProductNameOrNull(pickingJobId))
 				.qtyToDeliver(extractQtyToPickOrNull(pickingJobId))
 				.build();
+	}
+
+	private ITranslatableString extractSingleProductNameOrNull(final PickingJobId pickingJobId)
+	{
+		final ProductId productId = extractSingleProductIdOrNull(pickingJobId);
+		return productId != null ? loadingSupportingServices.getProductName(productId) : null;
 	}
 
 	private ProductId extractSingleProductIdOrNull(final PickingJobId pickingJobId)

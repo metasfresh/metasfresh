@@ -26,7 +26,10 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
 import de.metas.i18n.ITranslatableString;
+import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.uom.UomId;
+import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.JsonQRCode;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.Builder;
 import lombok.NonNull;
@@ -48,6 +51,7 @@ public class JsonPickingJobLine
 	@NonNull String productId;
 	@NonNull String productNo;
 	@NonNull String caption;
+	@Nullable JsonQRCode pickingSlot;
 	@NonNull PickingUnit pickingUnit;
 	@NonNull String packingItemName;
 	@NonNull String uom;
@@ -62,6 +66,8 @@ public class JsonPickingJobLine
 	@NonNull JsonCompleteStatus completeStatus;
 	boolean manuallyClosed;
 	@NonNull String displayGroupKey;
+	@Nullable String salesOrderDocumentNo;
+	int orderLineSeqNo;
 
 	public static JsonPickingJobLineBuilder builderFrom(
 			@NonNull final PickingJobLine line,
@@ -98,8 +104,9 @@ public class JsonPickingJobLine
 				.productId(line.getProductId().getAsString())
 				.productNo(line.getProductNo())
 				.caption(line.getCaption().translate(adLanguage))
-				.packingItemName(line.getPackingInfo().getName().translate(adLanguage))
+				.pickingSlot(line.getPickingSlot().map(JsonPickingJobLine::toJsonQRCode).orElse(null))
 				.pickingUnit(pickingUnit)
+				.packingItemName(line.getPackingInfo().getName().translate(adLanguage))
 				.uom(uom)
 				.qtyToPick(qtyToPick)
 				.qtyPicked(qtyPicked)
@@ -112,6 +119,18 @@ public class JsonPickingJobLine
 						.map(step -> JsonPickingJobStep.of(step, jsonOpts, getUOMSymbolById))
 						.collect(ImmutableList.toImmutableList()))
 				.completeStatus(JsonCompleteStatus.of(line.getProgress()))
-				.manuallyClosed(line.isManuallyClosed());
+				.manuallyClosed(line.isManuallyClosed())
+				.salesOrderDocumentNo(line.getSalesOrderDocumentNo())
+				.orderLineSeqNo(line.getOrderLineSeqNo())
+				;
 	}
+
+	public static JsonQRCode toJsonQRCode(final PickingSlotIdAndCaption pickingSlotIdAndCaption)
+	{
+		return JsonQRCode.builder()
+				.qrCode(PickingSlotQRCode.ofPickingSlotIdAndCaption(pickingSlotIdAndCaption).toGlobalQRCodeJsonString())
+				.caption(pickingSlotIdAndCaption.getCaption())
+				.build();
+	}
+
 }

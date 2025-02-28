@@ -59,6 +59,7 @@ public class JsonPickingJob
 				.pickFromAlternatives(pickingJob.getPickFromAlternatives()
 						.stream()
 						.map(JsonPickFromAlternative::of)
-						.collect(ImmutableList.toImmutableList()));
+						.collect(ImmutableList.toImmutableList()))
+				;
 	}
 }

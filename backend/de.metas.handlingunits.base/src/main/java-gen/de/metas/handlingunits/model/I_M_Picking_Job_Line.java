@@ -324,6 +324,27 @@ public interface I_M_Picking_Job_Line
 	String COLUMNNAME_M_Picking_Job_Line_ID = "M_Picking_Job_Line_ID";
 
 	/**
+	 * Set Picking Slot.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_PickingSlot_ID (int M_PickingSlot_ID);
+
+	/**
+	 * Get Picking Slot.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_PickingSlot_ID();
+
+	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_M_PickingSlot_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "M_PickingSlot_ID", null);
+	String COLUMNNAME_M_PickingSlot_ID = "M_PickingSlot_ID";
+
+	/**
 	 * Set Product.
 	 * Product, Service, Item
 	 *
