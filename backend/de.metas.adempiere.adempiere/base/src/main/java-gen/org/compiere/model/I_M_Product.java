@@ -2288,11 +2288,23 @@ public interface I_M_Product
 	String COLUMNNAME_Picking_AgeTolerance_BeforeMonths = "Picking_AgeTolerance_BeforeMonths";
 
 	/**
-	 * Set Primärverpackung.
-	 * Beschreibung der Primärverpackung
+	 * Set QRCode_Configuration_ID.
 	 *
-	 * <br>Type: String
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
+	void setQRCode_Configuration_ID(int QRCode_Configuration_ID);
+
+	/**
+	 * Get QRCode_Configuration_ID.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getQRCode_Configuration_ID();
+
+	ModelColumn<I_M_Product, Object> COLUMN_QRCode_Configuration_ID = new ModelColumn<>(I_M_Product.class, "QRCode_Configuration_ID", null);
+	String COLUMNNAME_QRCode_Configuration_ID = "QRCode_Configuration_ID";
 }

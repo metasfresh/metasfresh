@@ -86,6 +86,14 @@ order by C_InvoiceLine_id, bpValue, productvalue;]]>
 		<property name="com.jaspersoft.studio.field.name" value="percentofbasepoints"/>
 		<property name="com.jaspersoft.studio.field.label" value="percentofbasepoints"/>
 	</field>
+	<field name="documentno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="documentno"/>
+		<property name="com.jaspersoft.studio.field.label" value="documentno"/>
+	</field>
+	<field name="poreference" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="poreference"/>
+		<property name="com.jaspersoft.studio.field.label" value="poreference"/>
+	</field>
 	<variable name="point_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="C_InvoiceLine" calculation="Sum">
 		<variableExpression><![CDATA[$F{pointssum_settled}]]></variableExpression>
 		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
@@ -103,7 +111,7 @@ order by C_InvoiceLine_id, bpValue, productvalue;]]>
 					<textElement>
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{line}  + "  "+ $F{invoiceproductvalue} + "  " + $F{invoiceproductname}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{line}  + "  " + $F{invoiceproductname} + ($F{documentno} != null ? " | " + $R{POrder} + $F{documentno} :  " ")+ ($F{poreference} != null ? " | " + $R{POReference} + $F{poreference} :  " ")]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>

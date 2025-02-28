@@ -8,7 +8,7 @@
 	<property name="ireport.y" value="0"/>
 	<property name="net.sf.jasperreports.governor.max.pages.enabled" value="true"/>
 	<property name="net.sf.jasperreports.governor.max.pages" value="2"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -92,7 +92,7 @@ JOIN report.isShowESR_QR(1000000, r.ad_org_id)  showESR_QR on 1=1
 				<subreportExpression><![CDATA["de/metas/docs/sales/dunning/report_description.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" mode="Transparent" x="330" y="155" width="210" height="127" uuid="3b0e2770-a120-46bb-8203-ed37a3bb6d8d">
+				<reportElement key="subreport-8" mode="Transparent" x="378" y="155" width="184" height="127" uuid="3b0e2770-a120-46bb-8203-ed37a3bb6d8d">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>

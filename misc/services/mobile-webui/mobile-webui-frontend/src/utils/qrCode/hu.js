@@ -287,3 +287,8 @@ const parseQRCodePayload_LeichMehl_v1 = (payload) => {
 
   return result;
 };
+
+export const isKnownQRCodeFormat = (qrCodeString) => {
+  const returnFalseOnError = true;
+  return !!parseQRCodeString(qrCodeString, returnFalseOnError);
+};

@@ -60,9 +60,7 @@ public class OLCandValidatorService
 
 		if (!olCand.isError())
 		{
-			final org.adempiere.process.rpl.model.I_C_OLCand olCandWithIssues = InterfaceWrapperHelper.create(olCand, org.adempiere.process.rpl.model.I_C_OLCand.class);
-			olCandWithIssues.setIsImportedWithIssues(false);
-			return olCandWithIssues;
+			return InterfaceWrapperHelper.create(olCand, org.adempiere.process.rpl.model.I_C_OLCand.class);
 		}
 		else
 		{
@@ -118,8 +116,7 @@ public class OLCandValidatorService
 			return olCandValidationResults;
 		}
 
-		final ICompositeQueryUpdater<org.adempiere.process.rpl.model.I_C_OLCand> updater = queryBL.createCompositeQueryUpdater(org.adempiere.process.rpl.model.I_C_OLCand.class)
-				.addSetColumnValue(org.adempiere.process.rpl.model.I_C_OLCand.COLUMNNAME_IsImportedWithIssues, false);
+		final ICompositeQueryUpdater<org.adempiere.process.rpl.model.I_C_OLCand> updater = queryBL.createCompositeQueryUpdater(org.adempiere.process.rpl.model.I_C_OLCand.class);
 
 		if (asyncBatchId != null)
 		{

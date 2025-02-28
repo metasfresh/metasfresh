@@ -457,6 +457,4 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		return asiId;
 	}
 
-
-
 }

@@ -2,18 +2,12 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { clearAllFilters } from '../../../actions/FiltersActions';
+import keymap from '../../../shortcuts/keymap';
+import Tooltips from '../../tooltips/Tooltips';
+import MenuOverlay from '../main_menu/MenuOverlay';
+import { requestRedirect } from '../../../reducers/redirect';
 
-import history from '../../services/History';
-import { clearAllFilters } from '../../actions/FiltersActions';
-import keymap from '../../shortcuts/keymap';
-import Tooltips from '../tooltips/Tooltips';
-import MenuOverlay from './MenuOverlay';
-
-/**
- * @file Class based component.
- * @module Breadcrumb
- * @extends Component
- */
 class Breadcrumb extends Component {
   constructor(props) {
     super(props);
@@ -24,44 +18,22 @@ class Breadcrumb extends Component {
     };
   }
 
-  /**
-   * @method linkToPage
-   * @summary ToDo: Describe the method.
-   * @todo TODO: use history
-   *
-   * @param {*} page
-   */
-  linkToPage = (page) => {
-    // history.push(`/window/${page}`);
-    window.location = `/window/${page}`;
+  linkToPage = (windowId) => {
+    const { dispatch } = this.props;
+    dispatch(requestRedirect(`/window/${windowId}`));
   };
 
-  /**
-   * @method linkToEntityPage
-   * @summary ToDo: Describe the method.
-   * @param {*} entity
-   * @param {*} page
-   */
   linkToEntityPage = (entity, page) => {
-    history.push(`/${entity}/${page}`);
+    const { dispatch } = this.props;
+    dispatch(requestRedirect(`/${entity}/${page}`));
   };
 
-  /**
-   * @method toggleTooltip
-   * @summary ToDo: Describe the method.
-   * @param {*} tooltip
-   */
   toggleTooltip = (tooltip) => {
     this.setState({
       tooltipOpen: tooltip,
     });
   };
 
-  /**
-   * @method toggleTooltipOnFirstLevel
-   * @summary ToDo: Describe the method.
-   * @param {*} showTooltip
-   */
   toggleTooltipOnFirstLevel = (showTooltip) => {
     const breadcrumbWrapper = document.getElementsByClassName(
       'header-breadcrumb-wrapper'
@@ -92,12 +64,6 @@ class Breadcrumb extends Component {
     });
   };
 
-  /**
-   * @method handleClick
-   * @summary ToDo: Describe the method.
-   * @param {*} e
-   * @param {*} menu
-   */
   handleClick = (e, menu) => {
     const { handleMenuOverlay, windowType, filters, dispatch } = this.props;
     const { type } = menu;
@@ -127,12 +93,6 @@ class Breadcrumb extends Component {
     this.toggleTooltip(false);
   };
 
-  /**
-   * @method renderBtn
-   * @summary ToDo: Describe the method.
-   * @param {*} menu
-   * @param {*} index
-   */
   renderBtn = (menu, index) => {
     const {
       handleMenuOverlay,
@@ -196,12 +156,6 @@ class Breadcrumb extends Component {
     );
   };
 
-  /**
-   * @method renderSummaryBreadcrumb
-   * @summary ToDo: Describe the method.
-   * @param {*} text
-   * @param {isReadOnly: boolean, reason: string} readOnly
-   */
   renderSummaryBreadcrumb(text, readOnly) {
     return [
       <div key="summary-1" className="divider">
@@ -280,31 +234,23 @@ class Breadcrumb extends Component {
   }
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {*} breadcrumb
- * @prop {func} dispatch
- * @prop {*} docId
- * @prop {*} docSummaryData
- * @prop {*} handleMenuOverlay
- * @prop {*} menuOverlay
- * @prop {*} openModal
- * @prop {*} siteName
- * @prop {*} windowType
- */
 Breadcrumb.propTypes = {
   breadcrumb: PropTypes.any,
   dispatch: PropTypes.func.isRequired,
   docId: PropTypes.any,
   docSummaryData: PropTypes.any,
-  handleMenuOverlay: PropTypes.any,
+  handleMenuOverlay: PropTypes.func,
   menuOverlay: PropTypes.any,
-  openModal: PropTypes.any,
+  openModal: PropTypes.func,
   siteName: PropTypes.any,
   windowType: PropTypes.any,
   filters: PropTypes.object,
 };
 
-const mapStateToProps = ({ filters }) => ({ filters });
+const mapStateToProps = (state) => {
+  return {
+    filters: state.filters,
+  };
+};
 
 export default connect(mapStateToProps)(Breadcrumb);

@@ -93,6 +93,13 @@ export const toastNotification = ({ messageKey, plainMessage }) => {
   });
 };
 
+export const extractErrorResponseFromAxiosError = (axiosError) => {
+  if (!axiosError || !axiosError.response || !axiosError.response.data) {
+    return undefined;
+  }
+  return unboxAxiosResponse(axiosError.response);
+};
+
 function extractUserFriendlyErrorSingleErrorObject(error) {
   if (!error) {
     // null/empty error message... shall not happen

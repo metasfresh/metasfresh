@@ -87,7 +87,8 @@ public class HUQRCodeGenerateRequest
 	@Builder
 	public static class Attribute
 	{
-		@NonNull AttributeId attributeId;
+		@Nullable AttributeId attributeId;
+		@Nullable AttributeCode code;
 
 		@Nullable String valueString;
 		@Nullable BigDecimal valueNumber;
