@@ -66,9 +66,7 @@ class DistributionEventProcessCommand
 			@NonNull final IHUPIItemProductBL hupiItemProductBL,
 			@NonNull final HUAccessService huAccessService,
 			@NonNull final DistributionJob job,
-			@NonNull final JsonDistributionEvent event,
-			final DistributionJob changedJob,
-			final HuId _huIdToPick)
+			@NonNull final JsonDistributionEvent event)
 	{
 		this.trxManager = trxManager;
 		this.huQRCodesService = huQRCodesService;
@@ -84,8 +82,9 @@ class DistributionEventProcessCommand
 				.build();
 		this.job = job;
 		this.event = event;
-		this.changedJob = changedJob;
-		this._huIdToPick = _huIdToPick;
+		//state
+		this.changedJob = null;
+		this._huIdToPick = null;
 	}
 
 	public DistributionJob execute()
