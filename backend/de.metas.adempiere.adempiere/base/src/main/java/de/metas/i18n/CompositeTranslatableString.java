@@ -1,13 +1,14 @@
 package de.metas.i18n;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.util.Check;
+import lombok.EqualsAndHashCode;
+
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-
-import lombok.EqualsAndHashCode;
 
 /*
  * #%L
@@ -86,5 +87,15 @@ final class CompositeTranslatableString implements ITranslatableString
 	public boolean isTranslatedTo(final String adLanguage)
 	{
 		return list.stream().anyMatch(trl -> trl.isTranslatedTo(adLanguage));
+	}
+
+	@Override
+	@Nullable
+	public String getErrorCode()
+	{
+		final ImmutableSet<String> collect = list.stream().map(ITranslatableString::getErrorCode)
+				.filter(Check::isNotBlank)
+				.collect(ImmutableSet.toImmutableSet());
+		return collect.size() != 1 ? null : collect.iterator().next();
 	}
 }

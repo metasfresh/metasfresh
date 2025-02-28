@@ -21,6 +21,7 @@ import de.metas.common.rest_api.v1.JsonErrorItem;
 import de.metas.common.rest_api.v1.JsonQuantity;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
+import de.metas.error.impl.ErrorManager;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -531,6 +532,7 @@ class ManufacturingOrderReportProcessCommand
 				.message(ex.getLocalizedMessage())
 				.stackTrace(Trace.toOneLineStackTraceString(ex.getStackTrace()))
 				.adIssueId(JsonMetasfreshId.of(adIssueId.getRepoId()))
+				.errorCode(ErrorManager.getErrorCode(ex))
 				.throwable(ex)
 				.build();
 	}
