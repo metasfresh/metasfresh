@@ -1,6 +1,5 @@
 package de.metas.distribution.workflows_api;
 
-import de.metas.common.util.pair.IPair;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderDropToRequest;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleCreateRequest;
@@ -21,7 +20,6 @@ import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.trace.HUAccessService;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -31,9 +29,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.model.I_DD_OrderLine;
-
-import java.math.BigDecimal;
-import java.util.Optional;
 
 class DistributionEventProcessCommand
 {
@@ -82,6 +77,7 @@ class DistributionEventProcessCommand
 				.build();
 		this.job = job;
 		this.event = event;
+
 		//state
 		this.changedJob = null;
 		this._huIdToPick = null;
@@ -113,12 +109,12 @@ class DistributionEventProcessCommand
 			final DistributionJobStepId stepId = getOrCreateStep();
 
 			final DDOrderMoveSchedule schedule = ddOrderMoveScheduleService.pickFromHU(DDOrderPickFromRequest.builder()
-																							   .scheduleId(stepId.toScheduleId())
-																							   .huId(getHuIdToPick(changedJob.getLineByStepId(stepId)))
-																							   .build());
+					.scheduleId(stepId.toScheduleId())
+					.huId(getHuIdToPick(changedJob.getLineByStepId(stepId)))
+					.build());
 
 			final DistributionJobStep changedStep = DistributionJobLoader.toDistributionJobStep(schedule, loadingSupportServices);
-			return changedJob.withChangedStep(stepId, oldStep -> changedStep);
+			return changedJob.withChangedStep(stepId, changedStep);
 		}
 	}
 
@@ -131,7 +127,7 @@ class DistributionEventProcessCommand
 				.build());
 
 		final DistributionJobStep changedStep = DistributionJobLoader.toDistributionJobStep(schedule, loadingSupportServices);
-		return job.withChangedStep(stepId, ignored -> changedStep);
+		return job.withChangedStep(stepId, changedStep);
 	}
 
 	private DistributionJobStepId getOrCreateStep()
@@ -162,7 +158,7 @@ class DistributionEventProcessCommand
 	{
 		final IHUProductStorage huStorage = handlingUnitsBL.getSingleHUProductStorage(huId);
 
-		if (!ProductId.equals(huStorage.getProductId(), line.getProduct().getProductId()))
+		if (!ProductId.equals(huStorage.getProductId(), line.getProductId()))
 		{
 			throw new AdempiereException("Product not matching")
 					.setParameter("line", line)
@@ -172,13 +168,13 @@ class DistributionEventProcessCommand
 		return ddOrderMoveScheduleService.createScheduleToMove(
 				DDOrderMoveScheduleCreateRequest.builder()
 						.ddOrderId(changedJob.getDdOrderId())
-						.ddOrderLineId(line.getId().toDDOrderLineId())
-						.productId(line.getProduct().getProductId())
-						.pickFromLocatorId(line.getPickFromLocator().getLocatorId())
+						.ddOrderLineId(line.getDDOrderLineId())
+						.productId(line.getProductId())
+						.pickFromLocatorId(line.getPickFromLocatorId())
 						.pickFromHUId(huStorage.getHuId())
 						.qtyToPick(huStorage.getQty())
 						.isPickWholeHU(true)
-						.dropToLocatorId(line.getDropToLocator().getLocatorId())
+						.dropToLocatorId(line.getDropToLocatorId())
 						.build()
 		);
 	}
@@ -198,25 +194,37 @@ class DistributionEventProcessCommand
 	{
 		final JsonDistributionEvent.PickFrom pickFrom = Check.assumeNotNull(event.getPickFrom(), "pickFrom must be set");
 		final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(Check.assumeNotNull(pickFrom.getQrCode(), "pickFrom.qrCode must be set"));
-
 		final HuId sourceHuId = huQRCodesService.getHuIdByQRCode(huQRCode);
-		final Quantity sourceHUQty = huAccessService
-				.retrieveProductAndQty(handlingUnitsBL.getById(sourceHuId))
-				.filter(productAndQty -> productAndQty.getLeft().equals(line.getProduct().getProductId()))
-				.map(IPair::getRight)
-				.orElseThrow(() -> new AdempiereException("Scanned HU doesn't match the line's product!"));
 
-		return getQuantityToDistribute(pickFrom, line)
-				.filter(qty -> !qty.qtyAndUomCompareToEquals(sourceHUQty))
-				.map(qty -> splitQty(line, sourceHuId, qty))
-				.orElse(sourceHuId);
+		final Quantity sourceHUQty = huAccessService.retrieveProductQty(sourceHuId, line.getProductId())
+				.orElseThrow(() -> new AdempiereException("Scanned HU doesn't match the line's product!")); // TODO trl
+
+		final Quantity qtyToPick = pickFrom.getQtyPicked(line.getUOM()).orElse(null);
+		if (qtyToPick == null)
+		{
+			// no qty to pick specified by user => pick the whole HU
+			return sourceHuId;
+		}
+		else if (qtyToPick.compareTo(sourceHUQty) < 0)
+		{
+			throw new AdempiereException("Scanned HU has only " + sourceHUQty); // TODO trl
+		}
+		else if (qtyToPick.compareTo(sourceHUQty) == 0)
+		{
+			// scanned HU has exactly the required qty
+			return sourceHuId;
+		}
+		else
+		{
+			return splitQty(line, sourceHuId, qtyToPick);
+		}
 	}
 
 	@NonNull
 	private HuId splitQty(
 			@NonNull final DistributionJobLine line,
 			@NonNull final HuId pickFromVHUId,
-			@NonNull final Quantity qtyToDistribute)
+			@NonNull final Quantity qty)
 	{
 		final I_DD_OrderLine ddOrderLineRecord = loadingSupportServices.getDDOrderLineById(line.getId().toDDOrderLineId());
 		final PackToHUsProducer.PackToInfo packToInfo = packToHUsProducer
@@ -227,27 +235,12 @@ class DistributionEventProcessCommand
 						.huContext(HUContextHolder.getCurrent())
 						.pickFromHUId(pickFromVHUId)
 						.packToInfo(packToInfo)
-						.productId(line.getProduct().getProductId())
-						.qtyPicked(qtyToDistribute)
+						.productId(line.getProductId())
+						.qtyPicked(qty)
 						.documentRef(TableRecordReference.of(ddOrderLineRecord))
 						.checkIfAlreadyPacked(true)
 						.build()).getSingleTopLevelTURecord();
 
 		return HuId.ofRepoId(splitHU.getM_HU_ID());
-	}
-
-	@NonNull
-	private Optional<Quantity> getQuantityToDistribute(
-			@NonNull final JsonDistributionEvent.PickFrom pickFrom,
-			@NonNull final DistributionJobLine line)
-	{
-		return Optional.ofNullable(pickFrom.getQtyPicked())
-				.map(qtyPicked -> toQty(qtyPicked, line));
-	}
-
-	@NonNull
-	private Quantity toQty(@NonNull final BigDecimal qtyPicked, @NonNull final DistributionJobLine line)
-	{
-		return Quantitys.of(qtyPicked, line.getQtyToMove().getUomId());
 	}
 }

@@ -1,16 +1,20 @@
 package de.metas.distribution.rest_api;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.distribution.workflows_api.DistributionJobLineId;
 import de.metas.distribution.workflows_api.DistributionJobStepId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 @Value
 public class JsonDistributionEvent
@@ -29,6 +33,13 @@ public class JsonDistributionEvent
 	{
 		@Nullable String qrCode;
 		@Nullable BigDecimal qtyPicked;
+
+		@NonNull
+		@JsonIgnore
+		public Optional<Quantity> getQtyPicked(@NonNull final I_C_UOM uom)
+		{
+			return qtyPicked != null ? Optional.of(Quantity.of(qtyPicked, uom)) : Optional.empty();
+		}
 	}
 
 	@Nullable PickFrom pickFrom;
