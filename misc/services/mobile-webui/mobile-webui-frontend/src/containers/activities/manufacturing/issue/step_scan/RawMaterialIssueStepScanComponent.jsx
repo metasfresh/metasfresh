@@ -11,9 +11,7 @@ import { computeStepScanUserInfoQtys } from './computeStepScanUserInfoQtys';
 import PropTypes from 'prop-types';
 import {
   getActivityById,
-  getNonIssuedStepByHuIdFromActivity,
   getStepByIdFromActivity,
-  getNonIssuedStepByQRCodeFromActivity,
 } from '../../../../../reducers/wfProcesses';
 import { trl } from '../../../../../utils/translations';
 import { useBooleanSetting } from '../../../../../reducers/settings';

@@ -4,7 +4,6 @@ import HUMoveScreen from './containers/HUMoveScreen';
 import HUBulkActionsScreen from './containers/HUBulkActionsScreen';
 import HUPrintingOptionsScreen from './containers/HUPrintingOptionsScreen';
 import { APPLICATION_ID } from './constants';
-import HUBulkActionsScreen from './containers/HUBulkActionsScreen';
 
 export const huManagerLocation = () => `/${APPLICATION_ID}`;
 export const huManagerDisposeLocation = () => `/${APPLICATION_ID}/dispose`;

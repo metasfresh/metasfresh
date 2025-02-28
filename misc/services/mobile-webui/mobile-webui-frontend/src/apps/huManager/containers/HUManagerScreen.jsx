@@ -22,7 +22,6 @@ import { HU_ATTRIBUTE_BestBeforeDate, HU_ATTRIBUTE_LotNo } from '../../../consta
 import * as scanAnythingRoutes from '../../scanAnything/routes';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { push } from 'connected-react-router';
-import * as scanAnythingRoutes from '../../scanAnything/routes';
 
 const MODALS = {
   CHANGE_QTY: 'CHANGE_QTY',

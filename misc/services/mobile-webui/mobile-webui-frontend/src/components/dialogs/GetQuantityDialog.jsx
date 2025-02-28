@@ -20,7 +20,6 @@ import Spinner from '../Spinner';
 import DialogButton from './DialogButton';
 import Dialog from './Dialog';
 import * as uiTrace from './../../utils/ui_trace';
-import Spinner from '../Spinner';
 
 const GetQuantityDialog = ({
   readOnly: readOnlyParam = false,
