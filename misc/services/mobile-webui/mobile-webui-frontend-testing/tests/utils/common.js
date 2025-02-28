@@ -1,4 +1,5 @@
 import { test } from '../../playwright.config';
+import { ErrorScreen } from './screens/ErrorScreen';
 
 export const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || 'http://localhost:3001/mobile';
 
@@ -39,6 +40,9 @@ export const runAndWatchForErrors = async (func) => {
                 // console.log(`Error toast detected (watcherId=${watcherId}): ${textContent}. Throwing error.`)
                 throw new Error('Unexpected error toast detected: ' + textContent);
             }),
+            ErrorScreen.watchForScreen(async () => {
+                throw new Error('Unexpected error screen detected. Usually this is an indicator of development errors. Check console for more info.');
+            }),
         ]);
     } finally {
         currentErrorWatcherId = 0;
@@ -69,7 +73,7 @@ export const expectErrorToast = async (func) => {
 
                     const textContent = await toastLocator.textContent();
                     console.log(`[ OK ] Expected error toast detected (watcherId=${watcherId}): ${textContent}`)
-                }),
+                })
             ]);
         } finally {
             currentErrorWatcherId = prevWatcherId;
