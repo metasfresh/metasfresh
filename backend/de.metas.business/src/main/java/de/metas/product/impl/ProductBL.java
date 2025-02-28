@@ -675,11 +675,4 @@ public final class ProductBL implements IProductBL
 	{
 		return productsRepo.getProductIdsMatchingQueryString(queryString, clientId, limit);
 	}
-
-	@Override
-	@NonNull
-	public List<I_M_Product> getByIds(@NonNull final Set<ProductId> productIds)
-	{
-		return productsRepo.getByIds(productIds);
-	}
 }
