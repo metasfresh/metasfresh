@@ -78,7 +78,7 @@ public class PayableDocument
 	@Getter
 	private final PayableDocumentType type;
 	
-	/** Will cause this payable to be wrapped as payment, so it can be allocated agains another invoice. */
+	/** Will cause this payable to be wrapped as payment, so it can be allocated against another invoice. */
 	@Getter
 	private final boolean creditMemo;
 
