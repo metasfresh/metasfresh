@@ -72,7 +72,7 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
   };
 
   const isAtLeastOneReadOnlyLine = (groupedLines) => {
-    return groupedLines.some((lines) => lines.some((line) => isLineReadOnly(line)));
+    return groupedLines.some((lines) => lines.some((line) => isLineReadOnly({ line })));
   };
 
   return (
