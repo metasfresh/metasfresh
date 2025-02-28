@@ -40,6 +40,8 @@ public class CommissionConstants
 
 	public static final String SYSCONFIG_UPDATE_SALESPARTNER_IN_MASTER_DATA = "de.metas.contracts.commission.UpdateSalesPartnerInCustomerMaterdata";
 
+	public static final String SYSCONFIG_UPDATE_SALESPARTNER_IN_MASTER_DATA = "de.metas.contracts.commission.UpdateSalesPartnerInCustomerMaterdata";
+
 	@AllArgsConstructor
 	@Getter
 	public enum CommissionDocType

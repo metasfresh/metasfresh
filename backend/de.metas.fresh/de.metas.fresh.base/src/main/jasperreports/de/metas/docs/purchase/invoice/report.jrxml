@@ -25,7 +25,7 @@
 join
     (
          select Count(1) as rows_no from de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Points ($P{RECORD_ID}, $P{ad_language}) as v
-                 
+
         ) as r on 1=1
 ;]]>
 	</queryString>
