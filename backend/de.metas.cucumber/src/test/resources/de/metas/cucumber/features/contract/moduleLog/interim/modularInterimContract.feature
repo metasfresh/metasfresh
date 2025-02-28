@@ -462,9 +462,9 @@ Feature: Interim contract and interim invoice for bpartner
       | log_4                     | shipmentLine_2       | ModularContract | invoicingGroup                           | bp_interimPO                               | warehouseStd                  | module_log_product_PO_2 | bp_interimPO                        | bp_interimPO                    | 50   | M_InOutLine | moduleLogContract_2           | modCntr_type_3                 | false         | MaterialReceipt              |                            | PCE                   |            | year_2022                         | modCntr_module_7                 | null            | null                      |
 
     When create interim contract for modular contract
-      | C_Flatrate_Term_ID.Identifier | DateFrom   | DateTo     |
-      | moduleLogContract_1           | 2022-03-01 | 2022-03-31 |
-      | moduleLogContract_2           | 2022-03-01 | 2022-03-31 |
+      | C_Flatrate_Term_ID.Identifier |
+      | moduleLogContract_1           |
+      | moduleLogContract_2           |
 
     And retrieve C_Flatrate_Term within 60s:
       | C_Flatrate_Term_ID.Identifier | C_Flatrate_Conditions_ID.Identifier | M_Product_ID.Identifier | OPT.C_Order_Term_ID.Identifier | OPT.C_OrderLine_Term_ID.Identifier |
@@ -497,8 +497,8 @@ Feature: Interim contract and interim invoice for bpartner
       | moduleLogContract_4  | C_Flatrate_Term | SP               |                     |
 
     When create interim contract for modular contract with error
-      | C_Flatrate_Term_ID.Identifier | DateFrom   | DateTo     | errorCode                                                        |
-      | moduleLogContract_1           | 2022-01-01 | 2022-03-31 | de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm |
+      | C_Flatrate_Term_ID.Identifier | errorCode                                                        |
+      | moduleLogContract_1           | de.metas.flatrate.process.C_Flatrate_Term_Create.OverlappingTerm |
 
     And set sys config boolean value true for sys config de.metas.contracts..modular.InterimContractCreateAutomaticallyOnModularContractComplete
 
