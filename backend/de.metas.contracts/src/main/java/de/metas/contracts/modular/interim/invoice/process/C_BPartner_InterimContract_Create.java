@@ -35,24 +35,17 @@ import de.metas.lang.SOTrx;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
-import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
-import org.compiere.util.TimeUtil;
 
-import java.sql.Timestamp;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class C_BPartner_InterimContract_Create extends JavaProcess implements IProcessPrecondition
 {
-	@Param(mandatory = true, parameterName = "DateFrom")
-	private Timestamp p_DateFrom;
-	@Param(mandatory = true, parameterName = "DateTo")
-	private Timestamp p_DateTo;
-
 	private final InterimFlatrateTermService interimFlatrateTermService = SpringContextHolder.instance.getBean(InterimFlatrateTermService.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
@@ -98,15 +91,14 @@ public class C_BPartner_InterimContract_Create extends JavaProcess implements IP
 				.yearId(bPartnerInterimContract.getYearAndCalendarId().yearId())
 				.soTrx(SOTrx.PURCHASE)
 				.typeConditions(TypeConditions.MODULAR_CONTRACT)
-				.dateFromLessOrEqual(TimeUtil.asInstant(p_DateFrom))
-				.dateToGreaterOrEqual(TimeUtil.asInstant(p_DateTo))
 				.build();
 
 		final AtomicBoolean isEmpty = new AtomicBoolean(true);
 		flatrateBL.streamModularFlatrateTermsByQuery(modularFlatrateTermQuery)
 				.forEach(flatrateTermRecord -> {
 					isEmpty.set(false);
-					interimFlatrateTermService.create(flatrateTermRecord, p_DateFrom, p_DateTo);
+					Check.assumeNotNull(flatrateTermRecord.getEndDate(), "End Date shouldn't be null");
+					interimFlatrateTermService.create(flatrateTermRecord, flatrateTermRecord.getStartDate(), flatrateTermRecord.getEndDate());
 				});
 		if (isEmpty.get())
 		{
