@@ -18,6 +18,10 @@ import {
 import { trl } from '../../../../../utils/translations';
 import { useBooleanSetting } from '../../../../../reducers/settings';
 import { useMobileNavigation } from '../../../../../hooks/useMobileNavigation';
+import {
+  getNonIssuedStepByHuIdFromActivity,
+  getNonIssuedStepByQRCodeFromActivity,
+} from '../../../../../reducers/wfProcesses/manufacturing';
 
 const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, stepId }) => {
   console.log('RawMaterialIssueStepScanComponent', { wfProcessId, activityId, lineId, stepId });

@@ -7,7 +7,6 @@ import { manufacturingReducer as manufacturingIssueReducer } from './manufacturi
 import { reducer as manufacturingIssueAdjustmentReducer } from './manufacturing_issue_adjustment';
 import { manufacturingReducer as manufacturingReceiptReducer } from './manufacturing_receipt';
 import { generateHUQRCodesReducer } from './generateHUQRCodes';
-import { toQRCodeString } from '../../utils/qrCode/hu';
 import { trl } from '../../utils/translations';
 
 export const QTY_REJECTED_REASON_TO_IGNORE_KEY = 'IgnoreReason';

@@ -73,9 +73,9 @@ class HUQRCodeGenerateCommand
 				.packingInfo(getPackingInfo(request.getHuPackingInstructionsId()))
 				.product(getProductInfo(request.getProductId()))
 				.attributes(request.getAttributes()
-						.stream()
-						.map(this::toHUQRCodeAttribute)
-						.collect(ImmutableList.toImmutableList()));
+									.stream()
+									.map(this::toHUQRCodeAttribute)
+									.collect(ImmutableList.toImmutableList()));
 
 		final ArrayList<HUQRCode> result = new ArrayList<>();
 		for (int i = 1; i <= count; i++)

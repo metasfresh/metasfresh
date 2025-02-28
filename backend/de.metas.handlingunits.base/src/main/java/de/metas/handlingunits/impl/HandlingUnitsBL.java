@@ -1056,6 +1056,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return huType;
 	}
 
+	@Nullable
+	public I_M_HU_PI getEffectivePI(@NonNull final HuId huId)
+	{
+		return getEffectivePI(getById(huId));
+	}
+
 	@Override
 	public ImmutableSet<HuId> getVHUIds(@NonNull final HuId huId)
 	{

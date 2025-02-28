@@ -250,4 +250,6 @@ public interface IProductBL extends ISingletonService
 			@NonNull String queryString,
 			@NonNull ClientId clientId,
 			@NonNull QueryLimit limit);
+
+	@NonNull List<I_M_Product> getByIds(@NonNull Set<ProductId> productIds);
 }

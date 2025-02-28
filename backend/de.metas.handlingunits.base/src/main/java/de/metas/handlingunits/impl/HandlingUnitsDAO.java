@@ -1268,4 +1268,13 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 		return huIdAndDownstream.build();
 	}
+
+	@Override
+	public <T> Stream<T> streamByQuery(@NonNull final IQueryBuilder<I_M_HU> queryBuilder, @NonNull final Function<I_M_HU, T> mapper)
+	{
+		return queryBuilder
+				.create()
+				.iterateAndStream()
+				.map(mapper);
+	}
 }

@@ -248,6 +248,27 @@ public class HUQRCodesService
 		return huQRCodesRepository.getFirstQRCodeByHuId(huId);
 	}
 
+	public void assign(@NonNull final HUQRCode qrCode, @NonNull final HuId huId, final boolean ensureSingleAssignment)
+	{
+		if (ensureSingleAssignment)
+		{
+			final boolean alreadyAssignedToDifferentHU = huQRCodesRepository.getHUAssignmentByQRCode(qrCode)
+					.map(HUQRCodeAssignment::getHuIds)
+					.map(assignedHUs -> assignedHUs.stream().anyMatch(assignedHuId -> !HuId.equals(assignedHuId, huId)))
+					.orElse(false);
+
+			if (alreadyAssignedToDifferentHU)
+			{
+				throw new AdempiereException("HUQRCode is already assigned to a different HU!")
+						.appendParametersToMessage()
+						.setParameter("HUQRCode", qrCode)
+						.setParameter("huId", huId);
+			}
+		}
+
+		huQRCodesRepository.assign(qrCode, huId);
+	}
+
 	public List<HUQRCode> getOrCreateQRCodesByHuId(@NonNull final HuId huId)
 	{
 		return getOrCreateQRCodesByHuId(huId, true);
@@ -312,6 +333,40 @@ public class HUQRCodesService
 		{
 			throw new AdempiereException("QR Code " + qrCode.toDisplayableQRCode() + " is not assigned to HU " + huId);
 		}
+	}
+
+	@NonNull
+	public Stream<HuId> streamHUIdsByDisplayableQrCode(@NonNull final String displayableQrCodePart)
+	{
+		return huQRCodesRepository.streamAssignmentsForDisplayableQrCode(displayableQrCodePart)
+				.map(HUQRCodeAssignment::getSingleHUId);
+	}
+
+	public void propagateQrForSplitHUs(@NonNull final I_M_HU sourceHU, @NonNull final ImmutableList<I_M_HU> splitHUs)
+	{
+		final ImmutableSet<HuId> idCandidatesToShareQrCode = qrCodeConfigurationService.filterSplitHUsForSharingQr(sourceHU, splitHUs);
+		if (idCandidatesToShareQrCode.isEmpty())
+		{
+			return;
+		}
+		final ImmutableSet<HuId> idsWithQrAlreadyAssigned = huQRCodesRepository.getQRCodeByHuIds(idCandidatesToShareQrCode).keySet();
+		final ImmutableSet<HuId> huIdsToShareQr = idCandidatesToShareQrCode.stream()
+				.filter(huId -> !idsWithQrAlreadyAssigned.contains(huId))
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (!huIdsToShareQr.isEmpty())
+		{
+			getSingleQRCodeByHuIdOrEmpty(HuId.ofRepoId(sourceHU.getM_HU_ID()))
+					.ifPresent(qrCode -> assign(qrCode, huIdsToShareQr));
+		}
+	}
+
+	@NonNull
+	public Map<HUQRCodeUniqueId, HuId> getHuIds(@NonNull final Collection<HUQRCode> huQrCodes)
+	{
+		return huQRCodesRepository.getHUAssignmentsByQRCode(huQrCodes)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(HUQRCodeAssignment::getId, HUQRCodeAssignment::getSingleHUId));
 	}
 
 	public static IHUQRCode toHUQRCode(@NonNull final String jsonString)

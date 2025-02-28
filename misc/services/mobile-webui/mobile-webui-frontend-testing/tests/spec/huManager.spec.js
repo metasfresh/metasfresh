@@ -61,6 +61,9 @@ test('Change Qty', async ({ page }) => {
 
     await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
     await HUManagerScreen.changeQty({ expectQtyEntered: '80', qtyEntered: '100', description: 'test' });
+    await HUManagerScreen.waitForScreen();
+    await HUManagerScreen.expectVisible();
+    await HUManagerScreen.scanHUQRCode({ huQRCode });
     await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '100 PCE' });
 });
 
