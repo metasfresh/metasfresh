@@ -40,6 +40,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
           "name": "infinite-6789",
           "piItemId": 123
         },
+        "pickingSlot": null,
         "pickingUnit": "CU",
         "productCategoryId": 1,
         "productId": 6,
