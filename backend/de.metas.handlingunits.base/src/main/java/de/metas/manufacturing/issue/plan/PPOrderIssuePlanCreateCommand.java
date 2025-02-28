@@ -292,18 +292,6 @@ public class PPOrderIssuePlanCreateCommand
 		}
 	}
 
-	@NonNull
-	private Stream<I_M_HU> streamIncludedTUs(@NonNull final AllocableHU allocableHU)
-	{
-		if (!handlingUnitsBL.isLoadingUnit(allocableHU.getTopLevelHU()))
-		{
-			return Stream.empty();
-		}
-		return handlingUnitsDAO.retrieveIncludedHUs(allocableHU.getTopLevelHU())
-				.stream()
-				.filter(handlingUnitsBL::isTransportUnitOrAggregate);
-	}
-
 	private static LocatorId getPickFromLocatorId(@NonNull final I_PP_Order_BOMLine orderBOMLine)
 	{
 		return LocatorId.ofRepoId(orderBOMLine.getM_Warehouse_ID(), orderBOMLine.getM_Locator_ID());
