@@ -179,30 +179,6 @@ public class HUQRCodesRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public Optional<HUQRCode> getSingleQRCodeByHuIdOrEmpty(@NonNull final HuId huId)
-	{
-		final List<I_M_HU_QRCode> records = queryByHuId(huId)
-				.setLimit(QueryLimit.TWO)
-				.create()
-				.list();
-
-		return records.size() == 1
-				? Optional.of(toHUQRCode(records.get(0)))
-				: Optional.empty();
-	}
-
-	@NonNull
-	public Stream<HUQRCodeAssignment> streamAssignmentsForDisplayableQrCode(@NonNull final String displayableQrCode)
-	{
-		final ImmutableList<I_M_HU_QRCode> qrCodes = queryBL.createQueryBuilder(I_M_HU_QRCode.class)
-				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_HU_QRCode.COLUMNNAME_DisplayableQRCode, displayableQrCode)
-				.create()
-				.listImmutable(I_M_HU_QRCode.class);
-
-		return toHUQRCodeAssignment(qrCodes);
-	}
-
 	private IQueryBuilder<I_M_HU_QRCode> queryByHuId(final @NonNull HuId sourceHuId)
 	{
 		return queryBL.createQueryBuilder(I_M_HU_QRCode_Assignment.class)
