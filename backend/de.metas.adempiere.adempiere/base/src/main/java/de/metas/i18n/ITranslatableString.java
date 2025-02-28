@@ -1,5 +1,6 @@
 package de.metas.i18n;
 
+import javax.annotation.Nullable;
 import java.util.Set;
 
 
@@ -44,4 +45,6 @@ public interface ITranslatableString
 	{
 		return getAD_Languages().contains(adLanguage);
 	}
+
+	default @Nullable String getErrorCode() {return null;}
 }

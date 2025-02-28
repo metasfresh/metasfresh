@@ -1,12 +1,6 @@
 package de.metas.i18n.impl;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.ITranslatableString;
@@ -16,6 +10,10 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -83,4 +81,7 @@ final class ADMessageTranslatableString implements ITranslatableString
 	{
 		return Services.get(ILanguageBL.class).getAvailableLanguages().getAD_Languages();
 	}
+
+	@Override
+	public String getErrorCode() { return Msg.getErrorCode(adMessage.toAD_Message()); }
 }

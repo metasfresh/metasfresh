@@ -1,20 +1,22 @@
 package de.metas.error.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.function.IntFunction;
-
-import javax.annotation.Nullable;
-
 import de.metas.common.util.EmptyUtil;
 import de.metas.error.AdIssueFactory;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.error.InsertRemoteIssueRequest;
+import de.metas.error.IssueCategory;
+import de.metas.error.IssueCountersByCategory;
+import de.metas.error.IssueCreateRequest;
+import de.metas.logging.LogManager;
+import de.metas.process.AdProcessId;
+import de.metas.process.PInstanceId;
+import de.metas.process.ProcessMDC;
+import de.metas.util.Check;
+import de.metas.util.NumberUtils;
+import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -28,20 +30,16 @@ import org.compiere.util.Env;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
-import de.metas.error.AdIssueId;
-import de.metas.error.IErrorManager;
-import de.metas.error.IssueCategory;
-import de.metas.error.IssueCountersByCategory;
-import de.metas.error.IssueCreateRequest;
-import de.metas.logging.LogManager;
-import de.metas.process.AdProcessId;
-import de.metas.process.PInstanceId;
-import de.metas.process.ProcessMDC;
-import de.metas.util.Check;
-import de.metas.util.NumberUtils;
-import de.metas.util.Services;
-import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.function.IntFunction;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class ErrorManager implements IErrorManager
 {
@@ -69,7 +67,6 @@ public class ErrorManager implements IErrorManager
 				.build());
 	}
 
-
 	@Override
 	@NonNull
 	public AdIssueId insertRemoteIssue(@NonNull final InsertRemoteIssueRequest request)
@@ -90,8 +87,9 @@ public class ErrorManager implements IErrorManager
 		issue.setSourceClassName(request.getSourceClassName());
 		issue.setSourceMethodName(request.getSourceMethodName());
 		issue.setStackTrace(request.getStacktrace());
+		issue.setErrorCode(request.getErrorCode());
 		issue.setAD_PInstance_ID(request.getPInstance_ID().getRepoId());
-		issue.setAD_Org_ID(request.getOrgId().getRepoId() );
+		issue.setAD_Org_ID(request.getOrgId().getRepoId());
 
 		saveRecord(issue);
 		return AdIssueId.ofRepoId(issue.getAD_Issue_ID());
@@ -118,6 +116,9 @@ public class ErrorManager implements IErrorManager
 
 			issue.setIssueSummary(buildIssueSummary(request));
 			issue.setLoggerName(request.getLoggerName());
+
+			final String errorCode = getErrorCode(throwable);
+			issue.setErrorCode(errorCode);
 
 			// Source class/method name
 			// might be overridden below
@@ -220,6 +221,24 @@ public class ErrorManager implements IErrorManager
 		return summary;
 	}
 
+	@Nullable
+	public static String getErrorCode(@Nullable final Throwable t)
+	{
+		if (t == null)
+		{
+			return null;
+		}
+		if (t instanceof AdempiereException)
+		{
+			return ((AdempiereException)t).getErrorCode();
+		}
+		if (t.getCause() != null && t.getCause() != t)
+		{
+			return getErrorCode(t.getCause());
+		}
+		return null;
+	}
+
 	private IssueCategory extractIssueCategory(@Nullable final Throwable t)
 	{
 		return t instanceof AdempiereException
@@ -277,7 +296,7 @@ public class ErrorManager implements IErrorManager
 	}
 
 	@Override
-	public void markIssueAcknowledged(@NonNull AdIssueId adIssueId)
+	public void markIssueAcknowledged(@NonNull final AdIssueId adIssueId)
 	{
 		try
 		{
@@ -290,7 +309,7 @@ public class ErrorManager implements IErrorManager
 			adIssueRecord.setProcessed(true);
 			saveRecord(adIssueRecord);
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			logger.warn("Failed marking {} as deprecated. Ignored.", adIssueId, ex);
 		}
@@ -354,7 +373,7 @@ public class ErrorManager implements IErrorManager
 
 			return IssueCountersByCategory.of(counters);
 		}
-		catch (SQLException ex)
+		catch (final SQLException ex)
 		{
 			throw new DBException(ex, sql, sqlParams);
 		}

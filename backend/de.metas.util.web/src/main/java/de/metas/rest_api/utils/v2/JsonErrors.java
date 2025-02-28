@@ -2,6 +2,7 @@ package de.metas.rest_api.utils.v2;
 
 import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.common.rest_api.v2.JsonErrorItem.JsonErrorItemBuilder;
+import de.metas.error.impl.ErrorManager;
 import de.metas.i18n.ITranslatableString;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.ReferenceListAwareEnum;
@@ -59,6 +60,7 @@ public class JsonErrors
 				.userFriendlyError(AdempiereException.isUserValidationError(cause))
 				.stackTrace(Trace.toOneLineStackTraceString(cause.getStackTrace()))
 				.parameters(extractParameters(throwable, adLanguage))
+				.errorCode(ErrorManager.getErrorCode(throwable))
 				.throwable(throwable);
 		if (detail != null)
 		{

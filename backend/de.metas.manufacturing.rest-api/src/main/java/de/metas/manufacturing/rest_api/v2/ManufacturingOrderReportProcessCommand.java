@@ -43,6 +43,7 @@ import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.common.rest_api.v2.JsonQuantity;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
+import de.metas.error.impl.ErrorManager;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -242,10 +243,10 @@ class ManufacturingOrderReportProcessCommand
 	private JsonResponseIssueToManufacturingOrder processIssue(@NonNull final JsonRequestIssueToManufacturingOrder issue)
 	{
 		final PPOrderId orderId = extractPPOrderId(issue);
-		
+
 		final OrgId orgId = OrgId.ofRepoId(getOrderById(orderId).getAD_Org_ID());
 		final String productNo = issue.getProductNo();
-		
+
 		final ProductId productId = productBL.getProductIdByValue(orgId, productNo);
 		if (productId == null)
 		{
@@ -445,8 +446,8 @@ class ManufacturingOrderReportProcessCommand
 	private Set<PPOrderId> getOrderIds()
 	{
 		return Stream.concat(
-				request.getReceipts().stream().map(receipt -> extractPPOrderId(receipt)),
-				request.getIssues().stream().map(issue -> extractPPOrderId(issue)))
+						request.getReceipts().stream().map(receipt -> extractPPOrderId(receipt)),
+						request.getIssues().stream().map(issue -> extractPPOrderId(issue)))
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
@@ -531,6 +532,7 @@ class ManufacturingOrderReportProcessCommand
 				.message(ex.getLocalizedMessage())
 				.stackTrace(Trace.toOneLineStackTraceString(ex.getStackTrace()))
 				.adIssueId(JsonMetasfreshId.of(adIssueId.getRepoId()))
+				.errorCode(ErrorManager.getErrorCode(ex))
 				.throwable(ex)
 				.build();
 	}
