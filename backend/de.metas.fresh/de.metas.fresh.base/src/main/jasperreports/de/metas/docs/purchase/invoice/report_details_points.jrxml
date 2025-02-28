@@ -86,6 +86,14 @@ order by C_InvoiceLine_id, bpValue, productvalue;]]>
 		<property name="com.jaspersoft.studio.field.name" value="percentofbasepoints"/>
 		<property name="com.jaspersoft.studio.field.label" value="percentofbasepoints"/>
 	</field>
+	<field name="documentno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="documentno"/>
+		<property name="com.jaspersoft.studio.field.label" value="documentno"/>
+	</field>
+	<field name="poreference" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="poreference"/>
+		<property name="com.jaspersoft.studio.field.label" value="poreference"/>
+	</field>
 	<variable name="point_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="C_InvoiceLine" calculation="Sum">
 		<variableExpression><![CDATA[$F{pointssum_settled}]]></variableExpression>
 		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
@@ -98,25 +106,25 @@ order by C_InvoiceLine_id, bpValue, productvalue;]]>
 		<groupExpression><![CDATA[$F{c_invoiceline_id}]]></groupExpression>
 		<groupHeader>
 			<band height="15" splitType="Prevent">
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="50" y="1" width="370" height="13" uuid="e18b333c-28db-48f4-9689-76c3f6d3cc3c"/>
+				<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+					<reportElement x="50" y="1" width="470" height="13" uuid="e18b333c-28db-48f4-9689-76c3f6d3cc3c"/>
 					<textElement>
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{line}  + "  "+ $F{invoiceproductvalue} + "  " + $F{invoiceproductname}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{line}  + "  " + $F{invoiceproductname} + ($F{documentno} != null ? " | " + $R{POrder} + $F{documentno} :  " ")+ ($F{poreference} != null ? " | " + $R{POReference} + $F{poreference} :  " ")]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
 		<groupFooter>
 			<band height="15" splitType="Prevent">
-				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+				<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="448" y="2" width="72" height="12" uuid="b7cf848a-c0ab-4817-bb63-c5386011dbbd"/>
 					<textElement textAlignment="Right" markup="html">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA["&Sigma;      " +  ($V{point_sum}!=null ? $V{point_sum} : "")]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+				<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="378" y="2" width="70" height="12" uuid="273264b0-7c78-4d3e-acde-845834d2c66e"/>
 					<textElement textAlignment="Right" markup="html">
 						<font fontName="Arial" size="9" isBold="true"/>
@@ -130,7 +138,7 @@ order by C_InvoiceLine_id, bpValue, productvalue;]]>
 		<groupExpression><![CDATA[$F{c_bpartner_id}]]></groupExpression>
 		<groupHeader>
 			<band height="14" splitType="Prevent">
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 					<reportElement x="50" y="1" width="370" height="12" uuid="91d0da46-099d-4d6a-a36f-76a50f6e7610"/>
 					<textElement>
 						<font fontName="Arial" size="9" isBold="true"/>
@@ -189,35 +197,35 @@ order by C_InvoiceLine_id, bpValue, productvalue;]]>
 	<detail>
 		<band height="13" splitType="Prevent">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement x="50" y="0" width="240" height="13" uuid="c348b769-49f5-4733-b2bd-bc7d67826d14"/>
 				<textElement>
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{productname}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement x="292" y="0" width="40" height="13" uuid="0c15b2e7-a40a-4525-a9f2-a05b6cfa4703"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{qtyentered}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement x="334" y="0" width="46" height="13" uuid="503bad58-773d-4b00-91f0-aaf93cec5e80"/>
 				<textElement>
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{uom}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="378" y="0" width="70" height="13" uuid="4372a570-3672-4c61-9bea-11b86ce88d06"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{pointsbase_invoiced}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+			<textField textAdjust="StretchHeight" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="448" y="0" width="72" height="13" uuid="b0242f01-1a18-4879-8ab4-db129aaac9f0"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="9"/>
