@@ -42,6 +42,6 @@ public class ArchiveResult
 	byte[] data;
 
 	public boolean isNoArchive() { return archiveRecord == null; }
-	
+
 	public Optional<String> getName() { return archiveRecord == null ? Optional.empty() : StringUtils.trimBlankToOptional(archiveRecord.getName()); }
 }

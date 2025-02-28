@@ -74,6 +74,12 @@ BEGIN
     INTO v_AcctSchemaInfo
     FROM AD_Client c
              INNER JOIN AD_ClientInfo ci ON ci.AD_Client_ID = c.ad_client_id
+
+
+
+
+
+
              INNER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = ci.C_AcctSchema1_ID
              INNER JOIN C_Currency cr ON acs.C_Currency_ID = cr.C_Currency_ID AND cr.isActive = 'Y'
     WHERE c.AD_Client_ID = 1000000;
