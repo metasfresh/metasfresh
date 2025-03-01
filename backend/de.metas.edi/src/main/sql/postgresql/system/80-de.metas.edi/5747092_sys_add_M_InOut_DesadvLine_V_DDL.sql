@@ -2,7 +2,7 @@
  * #%L
  * de.metas.edi
  * %%
- * Copyright (C) 2024 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -19,6 +19,7 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
 
 DROP VIEW IF EXISTS M_InOut_DesadvLine_V
 ;

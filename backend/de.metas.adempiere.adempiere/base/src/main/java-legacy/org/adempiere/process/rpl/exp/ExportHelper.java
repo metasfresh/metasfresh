@@ -545,13 +545,12 @@ public class ExportHelper
 			final MTable embeddedTable;
 			final String embeddedTableName;
 			final String embeddedKeyColumnName;
-			if (displayType == DisplayType.Table
-					|| displayType == DisplayType.Search && column.getAD_Reference_Value_ID() > 0)
+			if ((displayType == DisplayType.Table
+					|| displayType == DisplayType.Search) && column.getAD_Reference_Value_ID() > 0)
 			{
 				final int referenceId = column.getAD_Reference_Value_ID();
 				if (referenceId <= 0)
 				{
-					// Check.assume(referenceId > 0, "AD_Reference_Value_ID > 0 for column {} (table {})", column, column.getAD_Table().getTableName());
 					final String columnName = column.getColumnName();
 					final String tableName = Services.get(IADTableDAO.class).retrieveTableName(column.getAD_Table_ID());
 					throw new AdempiereException("AD_Reference_Value_ID > 0 for column " + tableName + "." + columnName);
@@ -838,15 +837,7 @@ public class ExportHelper
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(formatLine);
-		final MColumn column = MColumn.get(ctx, adColumnId);
-		if (column == null)
-		{
-			throw new ExportProcessorException(MSG_EXPColumnMandatory)
-					.setParameter(I_EXP_FormatLine.COLUMNNAME_EXP_FormatLine_ID, formatLine)
-					.setParameter(I_EXP_FormatLine.COLUMNNAME_AD_Column_ID, adColumnId);
-		}
-
-		return column;
+		return MColumn.get(ctx, adColumnId);
 	}
 
 	// NOTE: commented @Cached out because is no longer applied anyways (not a service)
