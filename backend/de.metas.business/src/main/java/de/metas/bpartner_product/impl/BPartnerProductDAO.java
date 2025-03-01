@@ -30,7 +30,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.bpartner_product.ProductExclude;
-import de.metas.bpartner_product.ProductExclude.ProductExcludeBuilder;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.organization.OrgId;
@@ -391,7 +390,7 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 
 		if (productExcluded.isPresent() || manufacturerExcluded.isPresent())
 		{
-			final ProductExcludeBuilder builder = ProductExclude.builder()
+			final ProductExclude.ProductExcludeBuilder builder = ProductExclude.builder()
 					.bpartnerId(partnerId)
 					.productId(productId);
 

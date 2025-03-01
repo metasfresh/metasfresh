@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.gs1.GTIN;
 import de.metas.handlingunits.ClearanceStatus;
-import de.metas.gs1.GTIN;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
 import de.metas.uom.UOMPrecision;

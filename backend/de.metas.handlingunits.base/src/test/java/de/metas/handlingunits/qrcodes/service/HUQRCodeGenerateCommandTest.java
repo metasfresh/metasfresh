@@ -115,6 +115,9 @@ class HUQRCodeGenerateCommandTest
 						UUID.fromString("53c5f490-f46d-4aae-a357-fefc2c0d76b2"),
 						UUID.fromString("64ad6577-fd95-4e47-8e65-f4648d747319")
 				))
+				.handlingUnitsBL(Services.get(IHandlingUnitsBL.class))
+				.productBL(Services.get(IProductBL.class))
+				.attributeDAO(Services.get(IAttributeDAO.class))
 				.request(HUQRCodeGenerateRequest.builder()
 						.count(2)
 						.huPackingInstructionsId(piId)

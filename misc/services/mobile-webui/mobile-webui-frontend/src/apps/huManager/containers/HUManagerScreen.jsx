@@ -12,16 +12,16 @@ import {
 } from '../routes';
 
 import { HUInfoComponent } from '../components/HUInfoComponent';
-import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ClearanceDialog from '../components/ClearanceDialog';
 import { toastError } from '../../../utils/toast';
 import ChangeHUQtyDialog from '../../../components/dialogs/ChangeHUQtyDialog';
+import HUScanner from '../../../components/huSelector/HUScanner';
 import ChangeCurrentLocatorDialog from '../components/ChangeCurrentLocatorDialog';
 import { HU_ATTRIBUTE_BestBeforeDate, HU_ATTRIBUTE_LotNo } from '../../../constants/HUAttributes';
+import * as scanAnythingRoutes from '../../scanAnything/routes';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { push } from 'connected-react-router';
-import * as scanAnythingRoutes from '../../scanAnything/routes';
 
 const MODALS = {
   CHANGE_QTY: 'CHANGE_QTY',
@@ -39,16 +39,6 @@ const HUManagerScreen = () => {
   const [modalToDisplay, setModalToDisplay] = useState('');
   const [currentLocatorQRCode, setCurrentLocatorQRCode] = useState();
   const [handlingUnitInfo, setHandlingUnitInfo] = useHandlingUnitInfo();
-
-  const resolveScannedBarcode = ({ scannedBarcode }) => {
-    return api.getHUByQRCode(scannedBarcode).then((handlingUnitInfo) => ({ handlingUnitInfo }));
-  };
-
-  const onResolvedResult = (result) => {
-    //console.log('onResolvedResult', { result });
-    const { handlingUnitInfo } = result;
-    setHandlingUnitInfo(handlingUnitInfo);
-  };
 
   const onDisposeClick = () => {
     history.push(huManagerDisposeLocation());
@@ -83,7 +73,9 @@ const HUManagerScreen = () => {
         setLotNo,
         lotNo,
       })
-      .then(setHandlingUnitInfo)
+      .then(() => {
+        dispatch(clearLoadedData());
+      })
       .catch((axiosError) => toastError({ axiosError }))
       .finally(() => setModalToDisplay(''));
   };
@@ -187,13 +179,7 @@ const HUManagerScreen = () => {
       </>
     );
   } else {
-    return (
-      <BarcodeScannerComponent
-        continuousRunning={true}
-        resolveScannedBarcode={resolveScannedBarcode}
-        onResolvedResult={onResolvedResult}
-      />
-    );
+    return <HUScanner onResolvedBarcode={(handlingUnitInfo) => setHandlingUnitInfo(handlingUnitInfo)} />;
   }
 };
 

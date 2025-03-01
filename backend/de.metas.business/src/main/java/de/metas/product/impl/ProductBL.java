@@ -675,5 +675,4 @@ public final class ProductBL implements IProductBL
 	{
 		return productsRepo.getProductIdsMatchingQueryString(queryString, clientId, limit);
 	}
-
 }

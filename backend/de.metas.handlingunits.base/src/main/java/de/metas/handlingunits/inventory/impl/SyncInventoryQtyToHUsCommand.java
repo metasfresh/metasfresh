@@ -298,7 +298,7 @@ public class SyncInventoryQtyToHUsCommand
 		if (inventoryLineHU.getHuId() == null)
 		{
 			final HuId createdHUId = extractSingleCreatedHUId(destination);
-			if(inventoryLineHU.getHuQRCode() != null)
+			if (inventoryLineHU.getHuQRCode() != null)
 			{
 				huQRCodesService.assign(inventoryLineHU.getHuQRCode(), ImmutableSet.of(createdHUId));
 			}

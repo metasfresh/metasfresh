@@ -50,8 +50,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Optional;
-
 import static de.metas.common.rest_api.v2.APIConstants.ENDPOINT_MATERIAL;
 
 @RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_V2 + ENDPOINT_MATERIAL + "/handlingunits/hu-manager")
@@ -76,12 +74,18 @@ public class HUManagerRestController
 	{
 		assertApplicationAccess();
 
-		return handlingUnitsService.getByIdSupplier(
-				() -> GetByIdRequest.builder()
-						.huId(getHuId(request.getQrCode()))
-						.includeAllowedClearanceStatuses(request.isIncludeAllowedClearanceStatuses())
-						.orderedAttributeCodes(getDisplayedAttributeCodes())
-						.build()
+		return handlingUnitsService.getByIdSupplier(() -> {
+														final HuId huId = handlingUnitsService.resolveHuId(GlobalQRCode.parse(request.getQrCode()).orThrow());
+														if (huId == null)
+														{
+															return null;
+														}
+														return GetByIdRequest.builder()
+																.huId(huId)
+																.expectedQRCode(HUQRCode.fromGlobalQRCodeJsonString(request.getQrCode()))
+																.orderedAttributeCodes(getDisplayedAttributeCodes())
+																.build();
+													}
 		);
 	}
 
@@ -93,16 +97,5 @@ public class HUManagerRestController
 		return displayedAttributeIdsInOrder != null && !displayedAttributeIdsInOrder.isEmpty()
 				? attributeDAO.getOrderedAttributeCodesByIds(displayedAttributeIdsInOrder)
 				: ImmutableList.of();
-	}
-
-	@NonNull
-	private HuId getHuId(@NonNull final String qrCode)
-	{
-		final GlobalQRCode globalQRCode = GlobalQRCode.parse(qrCode).orNullIfError();
-
-		return Optional.ofNullable(globalQRCode)
-				.map(HUQRCode::fromGlobalQRCode)
-				.flatMap(huQRCodesService::getHuIdByQRCodeIfExists)
-				.orElseGet(() -> HuId.ofHUValue(qrCode));
 	}
 }

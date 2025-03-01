@@ -51,7 +51,6 @@ import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -71,8 +70,6 @@ import java.util.Map;
  */
 public class AggregateHUTrxListener implements IHUTrxListener
 {
-	public static final AggregateHUTrxListener INSTANCE = new AggregateHUTrxListener();
-
 	/**
 	 * Makes sure the {@link #afterLoad(IHUContext, List)} is not called recurrently.
 	 */
@@ -97,9 +94,9 @@ public class AggregateHUTrxListener implements IHUTrxListener
 		return AggregateHUTrxListener.class.getSimpleName() + "_" + I_M_HU_Item.Table_Name + "_ID_" + haItem.getM_HU_Item_ID() + "_QTY_TUS_TO_SPLIT";
 	}
 
-	private AggregateHUTrxListener()
+	public AggregateHUTrxListener(final HUQRCodesService huqrCodesService)
 	{
-		this.huqrCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
+		this.huqrCodesService = huqrCodesService;
 	}
 
 	/**

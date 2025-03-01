@@ -1,15 +1,12 @@
 package de.metas.money.grossprofit;
 
-import java.util.List;
-import java.util.Optional;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.money.Money;
+import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.money.Money;
-import de.metas.money.grossprofit.ProfitPriceActualCalculator.ProfitPriceActualCalculatorBuilder;
-import lombok.NonNull;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -45,7 +42,7 @@ public class ProfitPriceActualFactory
 
 	public Money calculateProfitPriceActual(@NonNull final CalculateProfitPriceActualRequest request)
 	{
-		final ProfitPriceActualCalculatorBuilder builder = ProfitPriceActualCalculator
+		final ProfitPriceActualCalculator.ProfitPriceActualCalculatorBuilder builder = ProfitPriceActualCalculator
 				.builder()
 				.basePrice(request.getBaseAmount());
 

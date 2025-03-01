@@ -9,15 +9,14 @@ import { toQRCodeString } from '../../../../../utils/qrCode/hu';
 import { computeStepScanPropsFromActivity } from './computeStepScanPropsFromActivity';
 import { computeStepScanUserInfoQtys } from './computeStepScanUserInfoQtys';
 import PropTypes from 'prop-types';
-import {
-  getActivityById,
-  getNonIssuedStepByHuIdFromActivity,
-  getStepByIdFromActivity,
-  getNonIssuedStepByQRCodeFromActivity,
-} from '../../../../../reducers/wfProcesses';
+import { getActivityById, getStepByIdFromActivity } from '../../../../../reducers/wfProcesses';
 import { trl } from '../../../../../utils/translations';
 import { useBooleanSetting } from '../../../../../reducers/settings';
 import { useMobileNavigation } from '../../../../../hooks/useMobileNavigation';
+import {
+  getNonIssuedStepByHuIdFromActivity,
+  getNonIssuedStepByQRCodeFromActivity,
+} from '../../../../../reducers/wfProcesses/manufacturing';
 
 const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, stepId }) => {
   console.log('RawMaterialIssueStepScanComponent', { wfProcessId, activityId, lineId, stepId });
@@ -34,9 +33,9 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
   const resolveScannedBarcode = (scannedBarcode, huId) => {
     let step;
     if (huId) {
-      step = getNonIssuedStepByHuIdFromActivity(activity, lineId, huId);
+      step = getNonIssuedStepByHuIdFromActivity({ activity, lineId, huId });
     } else {
-      step = getNonIssuedStepByQRCodeFromActivity(activity, lineId, scannedBarcode);
+      step = getNonIssuedStepByQRCodeFromActivity({ activity, lineId, scannedBarcode });
     }
 
     if (!step) {
