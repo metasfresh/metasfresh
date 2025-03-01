@@ -27,6 +27,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.eevolution.model.I_DD_OrderLine;
 
 import javax.annotation.Nullable;
 
@@ -49,7 +51,7 @@ public class DDOrderLineId implements RepoIdAware
 
 	private DDOrderLineId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "DD_OrderLine_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID);
 	}
 
 	@JsonValue
@@ -59,4 +61,6 @@ public class DDOrderLineId implements RepoIdAware
 	}
 
 	public static int toRepoId(@Nullable final DDOrderLineId id) {return id != null ? id.getRepoId() : -1;}
+
+	public TableRecordReference toTableRecordReference() {return TableRecordReference.of(I_DD_OrderLine.Table_Name, repoId);}
 }
