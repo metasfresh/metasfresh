@@ -121,6 +121,7 @@ const translations = {
       },
       overPickConfirmationPrompt: 'Do you really want to pick more than was ordered?',
       reopenLU: 'Reopen LU',
+      pickingSlot: 'Picking Slot',
     },
     distribution: {
       DistributionLine: 'Distribution Line',

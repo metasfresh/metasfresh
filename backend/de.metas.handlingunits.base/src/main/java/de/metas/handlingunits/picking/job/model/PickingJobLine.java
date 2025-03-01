@@ -26,18 +26,23 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.QtyTU;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
+import de.metas.picking.api.PickingSlotId;
+import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.compiere.model.I_C_UOM;
@@ -45,15 +50,18 @@ import org.compiere.model.I_C_UOM;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class PickingJobLine
 {
 	@NonNull PickingJobLineId id;
+	@NonNull ITranslatableString caption;
 
 	@NonNull ProductId productId;
 	@NonNull String productNo;
@@ -62,7 +70,9 @@ public class PickingJobLine
 	@NonNull HUPIItemProduct packingInfo;
 	@NonNull Quantity qtyToPick;
 	@NonNull OrderAndLineId salesOrderAndLineId;
+	@NonNull String salesOrderDocumentNo;
 	int orderLineSeqNo;
+	@NonNull BPartnerLocationId deliveryBPLocationId;
 	@NonNull ShipmentScheduleId shipmentScheduleId;
 	@Nullable UomId catchUomId;
 	@NonNull ImmutableList<PickingJobStep> steps;
@@ -71,6 +81,7 @@ public class PickingJobLine
 	// computed values
 	@NonNull PickingJobProgress progress;
 	//
+	@NonNull @Getter Optional<PickingSlotIdAndCaption> pickingSlot;
 	@NonNull PickingUnit pickingUnit;
 	@NonNull Quantity qtyPicked;
 	@NonNull Quantity qtyRejected;
@@ -81,23 +92,28 @@ public class PickingJobLine
 	@Nullable QtyTU qtyRemainingToPickTUs;// not null if pickingUnit==TU
 
 	@Builder(toBuilder = true)
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	private PickingJobLine(
 			@NonNull final PickingJobLineId id,
+			@NonNull final ITranslatableString caption,
 			@NonNull final ProductId productId,
 			@NonNull final String productNo,
 			@NonNull final ProductCategoryId productCategoryId,
 			@NonNull final ITranslatableString productName,
 			@NonNull final HUPIItemProduct packingInfo,
 			@NonNull final Quantity qtyToPick,
-			@NonNull final OrderAndLineId salesOrderAndLineId,
+			@NonNull final OrderAndLineId salesOrderAndLineId, final @NonNull String salesOrderDocumentNo,
 			@NonNull final Integer orderLineSeqNo,
+			@NonNull final BPartnerLocationId deliveryBPLocationId,
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@Nullable final UomId catchUomId,
 			@NonNull final ImmutableList<PickingJobStep> steps,
+			@Nullable Optional<PickingSlotIdAndCaption> pickingSlot,
 			@NonNull final PickingUnit pickingUnit,
 			final boolean isManuallyClosed)
 	{
 		this.id = id;
+		this.caption = caption;
 		this.productId = productId;
 		this.productNo = productNo;
 		this.productCategoryId = productCategoryId;
@@ -105,12 +121,15 @@ public class PickingJobLine
 		this.packingInfo = packingInfo;
 		this.qtyToPick = qtyToPick;
 		this.salesOrderAndLineId = salesOrderAndLineId;
+		this.salesOrderDocumentNo = salesOrderDocumentNo;
 		this.orderLineSeqNo = orderLineSeqNo;
+		this.deliveryBPLocationId = deliveryBPLocationId;
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.catchUomId = catchUomId;
 		this.steps = steps;
 		this.isManuallyClosed = isManuallyClosed;
 
+		this.pickingSlot = pickingSlot != null ? pickingSlot : Optional.empty();
 		this.pickingUnit = pickingUnit;
 
 		this.qtyPicked = steps.stream().map(PickingJobStep::getQtyPicked).reduce(Quantity::add).orElseGet(qtyToPick::toZero);
@@ -136,6 +155,8 @@ public class PickingJobLine
 
 		this.progress = computeProgress(this.steps, this.isManuallyClosed);
 	}
+
+	public BPartnerId getCustomerId() {return this.deliveryBPLocationId.getBpartnerId();}
 
 	private static PickingJobProgress computeProgress(@NonNull final ImmutableList<PickingJobStep> steps, final boolean isManuallyClosed)
 	{
@@ -231,5 +252,14 @@ public class PickingJobLine
 				.map(PickingJobStep::getPickedHUIds)
 				.flatMap(List::stream)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public Optional<PickingSlotId> getPickingSlotId() {return pickingSlot.map(PickingSlotIdAndCaption::getPickingSlotId);}
+
+	public PickingJobLine withPickingSlot(@Nullable final PickingSlotIdAndCaption pickingSlot)
+	{
+		return PickingSlotIdAndCaption.equals(this.pickingSlot.orElse(null), pickingSlot)
+				? this
+				: toBuilder().pickingSlot(Optional.ofNullable(pickingSlot)).build();
 	}
 }

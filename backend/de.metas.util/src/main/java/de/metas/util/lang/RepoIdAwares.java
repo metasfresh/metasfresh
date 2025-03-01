@@ -22,6 +22,7 @@ import java.util.Comparator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -173,6 +174,18 @@ public class RepoIdAwares
 		return CollectionUtils.ofCommaSeparatedSet(
 				commaSeparatedStr,
 				repoIdStr -> ofObject(repoIdStr, repoIdClass, ofRepoIdFunction));
+	}
+
+	public static <T extends RepoIdAware> String toCommaSeparatedString(@Nullable final Collection<T> ids)
+	{
+		if (ids == null || ids.isEmpty())
+		{
+			return "";
+		}
+		
+		return ids.stream()
+				.map(id -> Integer.toString(id.getRepoId()))
+				.collect(Collectors.joining(","));
 	}
 
 	public static int toRepoId(@Nullable final RepoIdAware repoIdAware)

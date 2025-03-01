@@ -361,6 +361,27 @@ public interface I_MobileUI_UserProfile_Picking_Job
 	String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Aggregation Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPickingJobAggregationType (@Nullable java.lang.String PickingJobAggregationType);
+
+	/**
+	 * Get Aggregation Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPickingJobAggregationType();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_PickingJobAggregationType = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "PickingJobAggregationType", null);
+	String COLUMNNAME_PickingJobAggregationType = "PickingJobAggregationType";
+
+	/**
 	 * Set Picking line group by.
 	 *
 	 * <br>Type: List

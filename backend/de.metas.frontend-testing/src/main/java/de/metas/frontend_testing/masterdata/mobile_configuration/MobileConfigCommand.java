@@ -78,6 +78,7 @@ public class MobileConfigCommand
 	private static JsonMobileConfigResponse.Picking toJson(final MobileUIPickingUserProfile profile)
 	{
 		return JsonMobileConfigResponse.Picking.builder()
+				.aggregationType(profile.getDefaultPickingJobOptions().getAggregationType())
 				.allowPickingAnyCustomer(profile.isAllowPickingAnyCustomer())
 				.allowPickingAnyHU(profile.getDefaultPickingJobOptions().isAllowPickingAnyHU())
 				.createShipmentPolicy(profile.getDefaultPickingJobOptions().getCreateShipmentPolicy())
@@ -90,6 +91,10 @@ public class MobileConfigCommand
 	private static PickingJobOptions updatePickingJobOptions(final PickingJobOptions pickingJobOptions, final JsonMobileConfigRequest.Picking from)
 	{
 		final PickingJobOptionsBuilder builder = pickingJobOptions.toBuilder();
+		if (from.getAggregationType() != null)
+		{
+			builder.aggregationType(from.getAggregationType());
+		}
 		if (from.getAllowPickingAnyHU() != null)
 		{
 			builder.isAllowPickingAnyHU(from.getAllowPickingAnyHU());

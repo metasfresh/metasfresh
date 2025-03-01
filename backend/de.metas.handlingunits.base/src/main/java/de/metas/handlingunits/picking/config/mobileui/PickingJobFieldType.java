@@ -42,6 +42,8 @@ import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJO
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_DeliveryAddress;
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_DocumentNo;
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_HandoverLocation;
+import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_Product;
+import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_QtyToDeliver;
 import static de.metas.picking.model.X_PickingProfile_PickingJobConfig.PICKINGJOBFIELD_RuestplatzNr;
 
 @AllArgsConstructor
@@ -54,6 +56,8 @@ public enum PickingJobFieldType implements ReferenceListAwareEnum
 	DATE_READY(PICKINGJOBFIELD_DateReady),
 	HANDOVER_LOCATION(PICKINGJOBFIELD_HandoverLocation),
 	RUESTPLATZ_NR(PICKINGJOBFIELD_RuestplatzNr),
+	PRODUCT(PICKINGJOBFIELD_Product),
+	QTY_TO_DELIVER(PICKINGJOBFIELD_QtyToDeliver),
 	;
 
 	private static final ReferenceId PICKING_JOB_FIELD_REFERENCE_ID = ReferenceId.ofRepoId(PICKINGJOBFIELD_AD_Reference_ID);

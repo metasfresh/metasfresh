@@ -21,6 +21,7 @@ import de.metas.handlingunits.model.I_M_Picking_Job_Step_PickedHU;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
@@ -44,6 +45,8 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.lock.spi.ExistingLockInfo;
 import de.metas.order.OrderAndLineId;
@@ -60,14 +63,16 @@ import de.metas.util.OptionalBoolean;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -178,36 +183,68 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 
 		super.loadRecordsFromDB(pickingJobIds);
 
-		final Collection<I_M_Picking_Job> records = pickingJobs.values();
-
-		final ImmutableSet<OrderId> salesOrderIds = records.stream().map(PickingJobLoaderAndSaver::extractSalesOrderId).collect(ImmutableSet.toImmutableSet());
-		loadingSupportingServices.warmUpSalesOrderDocumentNosCache(salesOrderIds);
-
-		final ImmutableSet<BPartnerId> customerIds = records.stream().map(record -> extractDeliveryBPLocationId(record).getBpartnerId()).collect(ImmutableSet.toImmutableSet());
-		loadingSupportingServices.warmUpBPartnerNamesCache(customerIds);
+		loadingSupportingServices.warmUpSalesOrderDocumentNosCache(extractSalesOrderIdsFromCachedObjects());
+		loadingSupportingServices.warmUpBPartnerNamesCache(extractCustomerIdsFromCachedObjects());
 
 		hasLocks.putAll(computePickingJobHasLocks(pickingJobIds));
 	}
 
+	private ImmutableSet<OrderId> extractSalesOrderIdsFromCachedObjects()
+	{
+		final ImmutableSet.Builder<OrderId> result = ImmutableSet.builder();
+
+		this.pickingJobs.values().forEach((pickingJobRecord) -> {
+			final OrderId salesOrderId = extractSalesOrderId(pickingJobRecord);
+			if (salesOrderId != null)
+			{
+				result.add(salesOrderId);
+			}
+		});
+
+		this.pickingJobLines.values().forEach((pickingJobLineRecord) -> {
+			final OrderId salesOrderId = extractSalesOrderId(pickingJobLineRecord);
+			result.add(salesOrderId);
+		});
+
+		return result.build();
+	}
+
+	private ImmutableSet<BPartnerId> extractCustomerIdsFromCachedObjects()
+	{
+		final ImmutableSet.Builder<BPartnerId> result = ImmutableSet.builder();
+
+		this.pickingJobs.values().forEach((pickingJobRecord) -> {
+			final BPartnerLocationId deliveryBPLocationId = extractDeliveryBPLocationId(pickingJobRecord);
+			if (deliveryBPLocationId != null)
+			{
+				result.add(deliveryBPLocationId.getBpartnerId());
+			}
+		});
+
+		this.pickingJobLines.values().forEach((pickingJobLineRecord) -> {
+			final BPartnerLocationId deliveryBPLocationId = extractDeliveryBPLocationId(pickingJobLineRecord);
+			result.add(deliveryBPLocationId.getBpartnerId());
+		});
+
+		return result.build();
+	}
+
 	private PickingJob loadJob(final I_M_Picking_Job record)
 	{
-		final Optional<PickingSlotIdAndCaption> pickingSlot = Optional.ofNullable(PickingSlotId.ofRepoIdOrNull(record.getM_PickingSlot_ID()))
-				.map(loadingSupportingServices::getPickingSlotIdAndCaption);
-
 		final PickingJobId pickingJobId = PickingJobId.ofRepoId(record.getM_Picking_Job_ID());
 		final PickingJobHeader pickingJobHeader = toPickingJobHeader(record);
-		final PickingJobOptions pickingJobOptions = getPickingJobOptions(pickingJobHeader.getCustomerId());
 
 		return PickingJob.builder()
 				.id(pickingJobId)
 				.header(pickingJobHeader)
-				.pickingSlot(pickingSlot)
+				.pickFromHU(extractPickFromHU(record))
+				.pickingSlot(extractPickingSlot(record))
 				.luPickTarget(extractLUPickingTarget(record))
 				.tuPickTarget(extractTUPickingTarget(record))
 				.docStatus(PickingJobDocStatus.ofCode(record.getDocStatus()))
 				.lines(pickingJobLines.get(pickingJobId)
 						.stream()
-						.map(lineRecord -> loadLine(lineRecord, pickingJobOptions))
+						.map(lineRecord -> loadLine(lineRecord, pickingJobHeader.getAggregationType()))
 						.collect(ImmutableList.toImmutableList()))
 				.pickFromAlternatives(pickingJobHUAlternatives.get(pickingJobId)
 						.stream()
@@ -216,16 +253,42 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.build();
 	}
 
+	private Optional<HUInfo> extractPickFromHU(final I_M_Picking_Job record)
+	{
+		final HuId pickFromHUId = HuId.ofRepoIdOrNull(record.getPickFrom_HU_ID());
+		if (pickFromHUId == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(
+				HUInfo.builder()
+						.id(pickFromHUId)
+						.qrCode(HUQRCode.fromGlobalQRCodeJsonString(Objects.requireNonNull(record.getPickFrom_HUQRCode())))
+						.build()
+		);
+	}
+
+	private @NotNull Optional<PickingSlotIdAndCaption> extractPickingSlot(final I_M_Picking_Job record)
+	{
+		return Optional.ofNullable(PickingSlotId.ofRepoIdOrNull(record.getM_PickingSlot_ID()))
+				.map(loadingSupportingServices::getPickingSlotIdAndCaption);
+	}
+
 	private PickingJobHeader toPickingJobHeader(final I_M_Picking_Job record)
 	{
-		final BPartnerLocationId deliveryBPLocationId = extractDeliveryBPLocationId(record);
-		final OrgId orgId = OrgId.ofRepoId(record.getAD_Org_ID());
+		@NonNull final OrgId orgId = OrgId.ofRepoId(record.getAD_Org_ID());
+		@Nullable final OrderId salesOrderId = extractSalesOrderId(record);
+		@Nullable final BPartnerLocationId deliveryBPLocationId = extractDeliveryBPLocationId(record);
+		@Nullable final Timestamp preparationDate = record.getPreparationDate();
+		@Nullable final Timestamp deliveryDate = record.getDeliveryDate();
 
 		return PickingJobHeader.builder()
-				.salesOrderDocumentNo(loadingSupportingServices.getSalesOrderDocumentNo(extractSalesOrderId(record)))
-				.preparationDate(loadingSupportingServices.toZonedDateTime(record.getPreparationDate(), orgId))
-				.deliveryDate(loadingSupportingServices.toZonedDateTime(record.getDeliveryDate(), orgId))
-				.customerName(loadingSupportingServices.getBPartnerName(deliveryBPLocationId.getBpartnerId()))
+				.aggregationType(PickingJobAggregationType.ofCode(record.getPickingJobAggregationType()))
+				.salesOrderDocumentNo(salesOrderId != null ? loadingSupportingServices.getSalesOrderDocumentNo(salesOrderId) : null)
+				.preparationDate(preparationDate != null ? loadingSupportingServices.toZonedDateTime(preparationDate, orgId) : null)
+				.deliveryDate(deliveryDate != null ? loadingSupportingServices.toZonedDateTime(deliveryDate, orgId) : null)
+				.customerName(deliveryBPLocationId != null ? loadingSupportingServices.getBPartnerName(deliveryBPLocationId.getBpartnerId()) : null)
 				.deliveryBPLocationId(deliveryBPLocationId)
 				.deliveryRenderedAddress(record.getDeliveryToAddress())
 				.isAllowPickingAnyHU(record.isAllowPickingAnyHU())
@@ -272,38 +335,66 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		}
 	}
 
-	@NonNull
+	@Nullable
 	private static BPartnerLocationId extractDeliveryBPLocationId(final I_M_Picking_Job record)
 	{
-		return BPartnerLocationId.ofRepoId(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID());
+		return BPartnerLocationId.ofRepoIdOrNull(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID());
 	}
 
-	@NonNull
+	@Nullable
 	private static OrderId extractSalesOrderId(final I_M_Picking_Job record)
 	{
-		return OrderId.ofRepoId(record.getC_Order_ID());
+		return OrderId.ofRepoIdOrNull(record.getC_Order_ID());
 	}
 
 	@NonNull
-	private PickingJobLine loadLine(@NonNull final I_M_Picking_Job_Line record, @NonNull final PickingJobOptions pickingJobOptions)
+	private PickingJobLine loadLine(
+			@NonNull final I_M_Picking_Job_Line record,
+			@NonNull final PickingJobAggregationType aggregationType)
 	{
-		final ProductId productId = ProductId.ofRepoId(record.getM_Product_ID());
+		final ProductId productId = extractProductId(record);
 		final PickingJobLineId pickingJobLineId = PickingJobLineId.ofRepoId(record.getM_Picking_Job_Line_ID());
 
 		final HUPIItemProductId huPIItemProductId = HUPIItemProductId.ofRepoIdOrNone(record.getM_HU_PI_Item_Product_ID());
 		final HUPIItemProduct packingInfo = loadingSupportingServices.getPackingInfo(huPIItemProductId);
-		final OrderAndLineId orderAndLineId = OrderAndLineId.ofRepoIds(record.getC_Order_ID(), record.getC_OrderLine_ID());
+		final OrderAndLineId salesOrderAndLineId = extractSalesOrderAndLineId(record);
+		final BPartnerLocationId deliveryBPLocationId = extractDeliveryBPLocationId(record);
+		final PickingJobOptions pickingJobOptions = getPickingJobOptions(deliveryBPLocationId.getBpartnerId());
+
+		final String salesOrderDocumentNo = loadingSupportingServices.getSalesOrderDocumentNo(salesOrderAndLineId.getOrderId());
+		final ITranslatableString productName = loadingSupportingServices.getProductName(productId);
+		final Optional<PickingSlotIdAndCaption> pickingSlot = extractPickingSlot(record);
+
+		final ITranslatableString caption;
+		switch (aggregationType)
+		{
+			case SALES_ORDER:
+				caption = productName;
+				break;
+			case PRODUCT:
+				caption = TranslatableStrings.builder()
+						.append(pickingSlot.map(PickingSlotIdAndCaption::getCaption).orElse(""))
+						.appendIfNotEmpty(", ")
+						.append(salesOrderDocumentNo)
+						.build();
+				break;
+			default:
+				throw new AdempiereException("Unknown aggregation type: " + aggregationType);
+		}
 
 		return PickingJobLine.builder()
 				.id(pickingJobLineId)
+				.caption(caption)
 				.productId(productId)
 				.productNo(loadingSupportingServices.getProductNo(productId))
-				.productName(loadingSupportingServices.getProductName(productId))
+				.productName(productName)
 				.productCategoryId(loadingSupportingServices.getProductCategoryId(productId))
 				.packingInfo(packingInfo)
-				.qtyToPick(Quantitys.of(record.getQtyToPick(), UomId.ofRepoId(record.getC_UOM_ID())))
-				.salesOrderAndLineId(orderAndLineId)
-				.orderLineSeqNo(loadingSupportingServices.getSalesOrderLineSeqNo(orderAndLineId))
+				.qtyToPick(extractQtyToPick(record))
+				.salesOrderAndLineId(salesOrderAndLineId)
+				.salesOrderDocumentNo(salesOrderDocumentNo)
+				.orderLineSeqNo(loadingSupportingServices.getSalesOrderLineSeqNo(salesOrderAndLineId))
+				.deliveryBPLocationId(deliveryBPLocationId)
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()))
 				.catchUomId(UomId.ofRepoIdOrNull(record.getCatch_UOM_ID()))
 				.steps(pickingJobSteps.get(pickingJobLineId)
@@ -312,7 +403,43 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 						.collect(ImmutableList.toImmutableList()))
 				.isManuallyClosed(record.isManuallyClosed())
 				.pickingUnit(computePickingUnit(UomId.ofRepoIdOrNull(record.getCatch_UOM_ID()), packingInfo, pickingJobOptions))
+				.pickingSlot(pickingSlot)
 				.build();
+	}
+
+	private @NotNull Optional<PickingSlotIdAndCaption> extractPickingSlot(final I_M_Picking_Job_Line record)
+	{
+		return Optional.ofNullable(PickingSlotId.ofRepoIdOrNull(record.getM_PickingSlot_ID()))
+				.map(loadingSupportingServices::getPickingSlotIdAndCaption);
+	}
+
+	private static @NotNull BPartnerLocationId extractDeliveryBPLocationId(final @NotNull I_M_Picking_Job_Line record)
+	{
+		return BPartnerLocationId.ofRepoId(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID());
+	}
+
+	@NotNull
+	private static OrderId extractSalesOrderId(final @NotNull I_M_Picking_Job_Line record)
+	{
+		return OrderId.ofRepoId(record.getC_Order_ID());
+	}
+
+	@NotNull
+	private static OrderAndLineId extractSalesOrderAndLineId(final @NotNull I_M_Picking_Job_Line record)
+	{
+		return OrderAndLineId.ofRepoIds(extractSalesOrderId(record), record.getC_OrderLine_ID());
+	}
+
+	@NonNull
+	private static Quantity extractQtyToPick(final @NotNull I_M_Picking_Job_Line record)
+	{
+		return Quantitys.of(record.getQtyToPick(), UomId.ofRepoId(record.getC_UOM_ID()));
+	}
+
+	@NotNull
+	private static ProductId extractProductId(final @NotNull I_M_Picking_Job_Line record)
+	{
+		return ProductId.ofRepoId(record.getM_Product_ID());
 	}
 
 	private PickingJobStep loadStep(@NonNull final I_M_Picking_Job_Step record)
@@ -525,10 +652,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 
 		// IMPORTANT to take a snapshot of Sets.difference because that's a live view ...and we are going to add data TO pickingJobS map...
 		final ImmutableSet<PickingJobId> pickingJobIdsToLoad = ImmutableSet.copyOf(Sets.difference(pickingJobIds, pickingJobs.keySet()));
-		if (!pickingJobIdsToLoad.isEmpty())
-		{
-			loadRecordsFromDB(pickingJobIdsToLoad);
-		}
+		loadRecordsFromDB(pickingJobIdsToLoad);
 
 		return pickingJobIds.stream()
 				.map(pickingJobs::get)
@@ -551,7 +675,45 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.isShipmentSchedulesLocked(getShipmentSchedulesIsLocked(pickingJobId).isTrue())
 				.deliveryLocationId(header.getDeliveryBPLocationId())
 				.handoverLocationId(header.getHandoverLocationId())
+				.productName(extractSingleProductNameOrNull(pickingJobId))
+				.qtyToDeliver(extractQtyToPickOrNull(pickingJobId))
 				.build();
+	}
+
+	private ITranslatableString extractSingleProductNameOrNull(final PickingJobId pickingJobId)
+	{
+		final ProductId productId = extractSingleProductIdOrNull(pickingJobId);
+		return productId != null ? loadingSupportingServices.getProductName(productId) : null;
+	}
+
+	private ProductId extractSingleProductIdOrNull(final PickingJobId pickingJobId)
+	{
+		ProductId productId = null;
+
+		for (final I_M_Picking_Job_Line line : this.pickingJobLines.get(pickingJobId))
+		{
+			final ProductId lineProductId = extractProductId(line);
+			if (productId == null)
+			{
+				productId = lineProductId;
+			}
+			else if (!ProductId.equals(productId, lineProductId))
+			{
+				// different products found
+				return null;
+			}
+		}
+
+		return productId;
+	}
+
+	private Quantity extractQtyToPickOrNull(final PickingJobId pickingJobId)
+	{
+		return PickingJob.extractQtyToPickOrNull(
+				this.pickingJobLines.get(pickingJobId),
+				PickingJobLoaderAndSaver::extractProductId,
+				PickingJobLoaderAndSaver::extractQtyToPick
+		);
 	}
 
 	private ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds(final PickingJobId pickingJobId)

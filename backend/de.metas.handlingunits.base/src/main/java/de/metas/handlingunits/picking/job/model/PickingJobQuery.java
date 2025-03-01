@@ -29,6 +29,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocumentNoFilter;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.picking.api.PackageableQuery;
 import de.metas.user.UserId;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -87,6 +88,51 @@ public class PickingJobQuery
 	{
 		return facets != null ? facets.getHandoverLocationIds() : ImmutableSet.of();
 	}
+
+	public PackageableQuery toPackageableQuery()
+	{
+		final PackageableQuery.PackageableQueryBuilder builder = PackageableQuery.builder()
+				.onlyFromSalesOrder(true)
+				.salesOrderDocumentNo(this.getSalesOrderDocumentNo())
+				.lockedBy(this.getUserId())
+				.includeNotLocked(true)
+				.excludeLockedForProcessing(true)
+				.excludeShipmentScheduleIds(this.getExcludeShipmentScheduleIds())
+				.orderBys(ImmutableSet.of(
+						PackageableQuery.OrderBy.PriorityRule,
+						PackageableQuery.OrderBy.PreparationDate,
+						PackageableQuery.OrderBy.SetupPlaceNo_Descending,
+						PackageableQuery.OrderBy.SalesOrderId,
+						PackageableQuery.OrderBy.DeliveryBPLocationId,
+						PackageableQuery.OrderBy.WarehouseTypeId));
+
+		final Set<BPartnerId> onlyCustomerIds = this.getOnlyCustomerIdsEffective();
+		if (!onlyCustomerIds.isEmpty())
+		{
+			builder.customerIds(onlyCustomerIds);
+		}
+
+		final ImmutableSet<LocalDate> deliveryDays = this.getDeliveryDays();
+		if (!deliveryDays.isEmpty())
+		{
+			builder.deliveryDays(deliveryDays);
+		}
+
+		final ImmutableSet<BPartnerLocationId> locationIds = this.getOnlyHandoverLocationIds();
+		if (!locationIds.isEmpty())
+		{
+			builder.handoverLocationIds(locationIds);
+		}
+
+		final WarehouseId workplaceWarehouseId = this.getWarehouseId();
+		if (workplaceWarehouseId != null)
+		{
+			builder.warehouseId(workplaceWarehouseId);
+		}
+
+		return builder.build();
+	}
+
 
 	//
 	//

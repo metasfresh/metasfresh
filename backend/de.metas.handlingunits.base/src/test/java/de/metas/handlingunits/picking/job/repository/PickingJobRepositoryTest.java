@@ -10,6 +10,7 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.PackToSpec;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
@@ -95,18 +96,21 @@ class PickingJobRepositoryTest
 
 		final OrderAndLineId salesOrderLineId = OrderAndLineId.ofRepoIds(salesOrderId, 8);
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(7);
+		final BPartnerLocationId deliveryBPLocationId = BPartnerLocationId.ofRepoId(3, 4);
 		final PickingJob jobCreated = pickingJobRepository.createNewAndGet(
 				PickingJobCreateRepoRequest.builder()
+						.aggregationType(PickingJobAggregationType.SALES_ORDER)
 						.orgId(orgId)
 						.salesOrderId(salesOrderId)
 						.preparationDate(instantAndOrgId("2021-11-02T07:39:16Z"))
 						.deliveryDate(instantAndOrgId("2021-11-02T07:39:16Z"))
-						.deliveryBPLocationId(BPartnerLocationId.ofRepoId(3, 4))
-						.handoverLocationId(BPartnerLocationId.ofRepoId(3, 4))
+						.deliveryBPLocationId(deliveryBPLocationId)
+						.handoverLocationId(deliveryBPLocationId)
 						.deliveryRenderedAddress("deliveryRenderedAddress")
 						.pickerId(UserId.ofRepoId(5))
 						.line(PickingJobCreateRepoRequest.Line.builder()
 								.salesOrderAndLineId(salesOrderLineId)
+								.deliveryBPLocationId(deliveryBPLocationId)
 								.shipmentScheduleId(shipmentScheduleId)
 								.productId(ProductId.ofRepoId(6))
 								.huPIItemProductId(HUPIItemProductId.ofRepoId(6789))

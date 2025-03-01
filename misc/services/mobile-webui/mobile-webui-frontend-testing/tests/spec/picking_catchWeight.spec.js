@@ -14,6 +14,7 @@ const createMasterdata = async () => {
             },
             mobileConfig: {
                 picking: {
+                    aggregationType: "sales_order",
                     allowPickingAnyCustomer: true,
                     createShipmentPolicy: 'CL',
                     allowPickingAnyHU: true,

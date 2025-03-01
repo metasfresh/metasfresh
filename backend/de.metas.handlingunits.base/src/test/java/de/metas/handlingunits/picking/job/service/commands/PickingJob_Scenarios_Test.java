@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.expectations.HUStorageExpectation;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
@@ -153,6 +154,7 @@ class PickingJob_Scenarios_Test
 
 		PickingJob pickingJob = helper.pickingJobService.createPickingJob(
 						PickingJobCreateRequest.builder()
+								.aggregationType(PickingJobAggregationType.SALES_ORDER)
 								.pickerId(UserId.ofRepoId(1234))
 								.salesOrderId(orderAndLineId.getOrderId())
 								.deliveryBPLocationId(helper.shipToBPLocationId)
@@ -236,6 +238,7 @@ class PickingJob_Scenarios_Test
 
 			return helper.pickingJobService.createPickingJob(
 					PickingJobCreateRequest.builder()
+							.aggregationType(PickingJobAggregationType.SALES_ORDER)
 							.pickerId(UserId.ofRepoId(1234))
 							.salesOrderId(orderAndLineId.getOrderId())
 							.deliveryBPLocationId(helper.shipToBPLocationId)
@@ -328,6 +331,7 @@ class PickingJob_Scenarios_Test
 
 			return helper.pickingJobService.createPickingJob(
 							PickingJobCreateRequest.builder()
+									.aggregationType(PickingJobAggregationType.SALES_ORDER)
 									.pickerId(UserId.ofRepoId(1234))
 									.salesOrderId(orderAndLineId.getOrderId())
 									.deliveryBPLocationId(helper.shipToBPLocationId)

@@ -2,6 +2,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
   {
     "docStatus": "Drafted",
     "header": {
+      "aggregationType": "sales_order",
       "allowPickingAnyHU": false,
       "customerName": "bpname-3",
       "deliveryBPLocationId": {
@@ -22,6 +23,11 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
     "id": 1000000,
     "lines": [
       {
+        "caption": "productName-6",
+        "deliveryBPLocationId": {
+          "bpartnerId": 3,
+          "repoId": 4
+        },
         "id": 1000000,
         "isManuallyClosed": false,
         "orderLineSeqNo": 0,
@@ -34,6 +40,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
           "name": "infinite-6789",
           "piItemId": 123
         },
+        "pickingSlot": null,
         "pickingUnit": "CU",
         "productCategoryId": 1,
         "productId": 6,
@@ -48,6 +55,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
           "orderId": 2,
           "orderLineId": 8
         },
+        "salesOrderDocumentNo": "docno-2",
         "shipmentScheduleId": 7,
         "steps": [
           {
@@ -151,6 +159,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
         "qtyAvailable": "999 Ea"
       }
     ],
+    "pickFromHU": null,
     "pickingSlot": null,
     "progress": "NOT_STARTED",
     "tuPickTarget": null

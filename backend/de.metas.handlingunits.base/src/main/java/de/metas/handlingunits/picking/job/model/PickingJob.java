@@ -31,11 +31,15 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PackToSpec;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.collections.CollectionUtils;
@@ -48,10 +52,12 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
@@ -68,6 +74,7 @@ public final class PickingJob
 
 	@NonNull private final PickingJobHeader header;
 
+	@NonNull @Getter private final Optional<HUInfo> pickFromHU;
 	@NonNull @Getter private final Optional<PickingSlotIdAndCaption> pickingSlot;
 	@NonNull @Getter private final Optional<LUPickingTarget> luPickTarget;
 	@NonNull @Getter private final Optional<TUPickingTarget> tuPickTarget;
@@ -85,10 +92,10 @@ public final class PickingJob
 	private final PickingJobProgress progress;
 
 	@Builder(toBuilder = true)
-	@SuppressWarnings("OptionalAssignedToNull")
 	private PickingJob(
 			final @NonNull PickingJobId id,
 			final @NonNull PickingJobHeader header,
+			final @Nullable Optional<HUInfo> pickFromHU,
 			final @Nullable Optional<PickingSlotIdAndCaption> pickingSlot,
 			final @Nullable Optional<LUPickingTarget> luPickTarget,
 			final @Nullable Optional<TUPickingTarget> tuPickTarget,
@@ -100,6 +107,7 @@ public final class PickingJob
 
 		this.id = id;
 		this.header = header;
+		this.pickFromHU = pickFromHU != null ? pickFromHU : Optional.empty();
 		this.pickingSlot = pickingSlot != null ? pickingSlot : Optional.empty();
 		this.luPickTarget = luPickTarget != null ? luPickTarget : Optional.empty();
 		this.tuPickTarget = tuPickTarget != null ? tuPickTarget : Optional.empty();
@@ -110,22 +118,29 @@ public final class PickingJob
 		this.progress = computeProgress(lines);
 	}
 
+	@NonNull
+	public PickingJobAggregationType getAggregationType() {return header.getAggregationType();}
+
+	@Nullable
 	public String getSalesOrderDocumentNo() {return header.getSalesOrderDocumentNo();}
 
+	@Nullable
 	public ZonedDateTime getPreparationDate() {return header.getPreparationDate();}
 
+	@Nullable
 	public ZonedDateTime getDeliveryDate() {return header.getDeliveryDate();}
 
+	@Nullable
 	public BPartnerId getCustomerId() {return header.getCustomerId();}
 
+	@Nullable
 	public String getCustomerName() {return header.getCustomerName();}
 
+	@Nullable
 	public BPartnerLocationId getDeliveryBPLocationId() {return header.getDeliveryBPLocationId();}
 
 	@Nullable
 	public BPartnerLocationId getHandoverLocationId() {return header.getHandoverLocationId();}
-
-	public String getDeliveryRenderedAddress() {return header.getDeliveryRenderedAddress();}
 
 	@JsonIgnore
 	public boolean isAllowPickingAnyHU() {return header.isAllowPickingAnyHU();}
@@ -155,10 +170,14 @@ public final class PickingJob
 
 	public void assertPickingSlotScanned()
 	{
-		if (!pickingSlot.isPresent())
-		{
-			throw new AdempiereException(MISSING_PICKING_SLOT_ID_ERROR_MSG);
-		}
+		//noinspection ResultOfMethodCallIgnored
+		getPickingSlotNotNull();
+	}
+
+	@NonNull
+	public PickingSlotIdAndCaption getPickingSlotNotNull()
+	{
+		return pickingSlot.orElseThrow(() -> new AdempiereException(MISSING_PICKING_SLOT_ID_ERROR_MSG));
 	}
 
 	public boolean isProcessed()
@@ -180,9 +199,13 @@ public final class PickingJob
 			return this;
 		}
 
-		return LUPickingTarget.equals(this.luPickTarget.orElse(null), pickTarget)
-				? this
-				: toBuilder()
+		final PickingJobAggregationType aggregationType = getAggregationType();
+		if (aggregationType.isLineLevelPickTargets() && pickTarget != null && pickTarget.isExistingLU())
+		{
+			throw new AdempiereException("Setting existing HU as picking targets on job level is not allowed for " + aggregationType + " aggregation type.");
+		}
+
+		return toBuilder()
 				.luPickTarget(Optional.ofNullable(pickTarget))
 				.tuPickTarget(pickTarget == null ? Optional.empty() : this.getTuPickTarget())
 				.build();
@@ -201,6 +224,13 @@ public final class PickingJob
 		return PickingSlotIdAndCaption.equals(this.pickingSlot.orElse(null), pickingSlot)
 				? this
 				: toBuilder().pickingSlot(Optional.ofNullable(pickingSlot)).build();
+	}
+
+	public PickingJob withPickFromHU(@Nullable final HUInfo pickFromHU)
+	{
+		return HUInfo.equals(this.pickFromHU.orElse(null), pickFromHU)
+				? this
+				: toBuilder().pickFromHU(Optional.ofNullable(pickFromHU)).build();
 	}
 
 	public ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds()
@@ -295,6 +325,76 @@ public final class PickingJob
 		return lines.stream()
 				.map(PickingJobLine::getProductId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	public ITranslatableString getSingleProductNameOrEmpty()
+	{
+		ProductId productId = null;
+		ITranslatableString productName = TranslatableStrings.empty();
+		for (final PickingJobLine line : lines)
+		{
+			if (productId == null)
+			{
+				productId = line.getProductId();
+			}
+			else if (!ProductId.equals(productId, line.getProductId()))
+			{
+				// found different products
+				return TranslatableStrings.empty();
+			}
+
+			productName = line.getProductName();
+		}
+
+		return productName;
+	}
+
+	@Nullable
+	public Quantity getSingleQtyToPickOrNull()
+	{
+		return extractQtyToPickOrNull(lines, PickingJobLine::getProductId, PickingJobLine::getQtyToPick);
+	}
+
+	@Nullable
+	public static <T> Quantity extractQtyToPickOrNull(
+			@NonNull final Collection<T> lines,
+			@NonNull final Function<T, ProductId> extractProductId,
+			@NonNull final Function<T, Quantity> extractQtyToPick)
+	{
+		ProductId productId = null;
+		Quantity qtyToPick = null;
+
+		for (final T line : lines)
+		{
+			final ProductId lineProductId = extractProductId.apply(line);
+			if (productId == null)
+			{
+				productId = lineProductId;
+			}
+			else if (!ProductId.equals(productId, lineProductId))
+			{
+				// found different products
+				return null;
+			}
+
+			final Quantity lineQtyToPick = extractQtyToPick.apply(line);
+			if (qtyToPick == null)
+			{
+				qtyToPick = lineQtyToPick;
+			}
+			else if (UomId.equals(qtyToPick.getUomId(), lineQtyToPick.getUomId()))
+			{
+				qtyToPick = qtyToPick.add(lineQtyToPick);
+			}
+			else
+			{
+				// found different UOMs
+				return null;
+			}
+		}
+
+		return qtyToPick;
 	}
 
 	@NonNull
