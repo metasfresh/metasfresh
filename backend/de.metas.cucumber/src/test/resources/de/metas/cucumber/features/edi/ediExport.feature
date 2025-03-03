@@ -225,7 +225,7 @@ Feature: EDI_cctop_invoic_v export format
 
     And after not more than 60s, EDI_Desadv records have the following export status
       | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
-      | d_1                      | U                |
+      | d_1                      | D                |
 
     And RabbitMQ receives a EDI_Exp_Desadv
       | EDI_Exp_Desadv_ID.Identifier | EXP_Processor_ID.Identifier | EXP_ProcessorParameter.Value |

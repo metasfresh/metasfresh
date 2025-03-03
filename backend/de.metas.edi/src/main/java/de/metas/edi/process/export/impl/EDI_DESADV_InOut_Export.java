@@ -71,6 +71,8 @@ public class EDI_DESADV_InOut_Export extends AbstractExport<I_EDI_Document>
 		InterfaceWrapperHelper.save(shipment);
 
 		final I_EDI_Desadv desadv = desadvDAO.retrieveById(EDIDesadvId.ofRepoId(shipment.getEDI_Desadv_ID()));
+		desadv.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_SendingStarted);
+		InterfaceWrapperHelper.save(desadv);
 
 		try
 		{
