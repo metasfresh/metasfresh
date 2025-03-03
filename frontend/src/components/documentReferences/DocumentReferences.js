@@ -2,8 +2,6 @@ import counterpart from 'counterpart';
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-
-import history from '../../services/History';
 import { setFilter } from '../../actions/ListActions';
 import { referencesEventSource } from '../../api/documentReferences';
 import {
@@ -12,6 +10,7 @@ import {
 } from '../../utils/documentReferencesHelper';
 import SpinnerOverlay from '../app/SpinnerOverlay';
 import DocumentReferenceGroup from './DocumentReferenceGroup';
+import { requestRedirect } from '../../reducers/redirect';
 
 /**
  * Document related documents (references) component
@@ -90,7 +89,7 @@ class DocumentReferences extends Component {
     if (ctrlKeyPressed) {
       window.open(url, '_blank');
     } else {
-      history.push(url);
+      dispatch(requestRedirect(url));
     }
   };
 

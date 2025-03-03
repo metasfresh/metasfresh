@@ -2,10 +2,10 @@ import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 
-import { viewState, getView } from '../reducers/viewHandler';
+import { getView, viewState } from '../reducers/viewHandler';
 import {
-  setRawModalTitle,
   setRawModalDescription,
+  setRawModalTitle,
 } from '../actions/WindowActions';
 
 import DocumentList from '../containers/DocumentList';
@@ -14,6 +14,7 @@ import SpinnerOverlay from './app/SpinnerOverlay';
 import Modal from './app/Modal';
 import RawModal from './app/RawModal';
 import Header from './header/Header';
+import { computeSaveStatusFlags } from '../reducers/windowHandler';
 
 /**
  * @file Class based component.
@@ -41,10 +42,7 @@ class Container extends PureComponent {
       viewId,
       attachments,
       modalHidden,
-      // TODO: We should be using indicator from the state instead of another variable
-      isDocumentNotSaved,
       hideHeader,
-      handleDeletedStatus,
       dropzoneFocused,
       notFound,
       rawModal,
@@ -88,8 +86,6 @@ class Container extends PureComponent {
             {...{
               entity,
               docNoData,
-              handleDeletedStatus,
-              isDocumentNotSaved,
               viewId,
               siteName,
               showSidelist,
@@ -134,15 +130,10 @@ class Container extends PureComponent {
               modalViewDocumentIds={modal.viewDocumentIds}
               closeCallback={closeModalCallback}
               modalSaveStatus={
-                modal.saveStatus && modal.saveStatus.saved !== undefined
-                  ? modal.saveStatus.saved
-                  : true
-              }
-              isDocumentNotSaved={
-                modal.saveStatus &&
-                !modal.saveStatus.saved &&
-                modal.validStatus &&
-                !modal.validStatus.initialValue
+                computeSaveStatusFlags({
+                  modal,
+                  considerSavedWhenUnknownStatus: true,
+                }).isDocumentSaved
               }
             />
           )}
@@ -218,46 +209,6 @@ class Container extends PureComponent {
   }
 }
 
-/**
- * @typedef {object} Props Component props
- * @prop {*} actions
- * @prop {*} attachments
- * @prop {*} breadcrumb
- * @prop {*} children
- * @prop {string} connectionErrorType
- * @prop {*} closeModalCallback
- * @prop {string} dataId
- * @prop {*} docNoData
- * @prop {string} docId
- * @prop {*} dropzoneFocused
- * @prop {*} editmode
- * @prop {*} entity
- * @prop {*} handleDeletedStatus
- * @prop {*} handleEditModeToggle
- * @prop {*} hideHeader
- * @prop {*} includedView
- * @prop {bool} isDocumentNotSaved
- * @prop {*} masterDocumentList
- * @prop {*} modal
- * @prop {string} modalDescription
- * @prop {string} modalTitle
- * @prop {bool} notFound
- * @prop {*} noMargin
- * @prop {*} pluginComponents
- * @prop {object} pluginModal
- * @prop {*} pluginComponents
- * @prop {*} processStatus
- * @prop {string} viewId
- * @prop {object} rawModal
- * @prop {*} references
- * @prop {*} modalHidden
- * @prop {*} showSidelist
- * @prop {*} setModalDescription
- * @prop {*} setModalTitle
- * @prop {string} siteName
- * @prop {string} windowId
- * @prop {bool} hasComments - used to indicate comments in the details view
- */
 Container.propTypes = {
   actions: PropTypes.any,
   attachments: PropTypes.any,
@@ -272,10 +223,8 @@ Container.propTypes = {
   editmode: PropTypes.any,
   entity: PropTypes.any,
   hideHeader: PropTypes.any,
-  handleDeletedStatus: PropTypes.any,
   handleEditModeToggle: PropTypes.any,
   includedView: PropTypes.any,
-  isDocumentNotSaved: PropTypes.any,
   masterDocumentList: PropTypes.any,
   modal: PropTypes.any,
   modalDescription: PropTypes.string,
@@ -298,11 +247,6 @@ Container.propTypes = {
   showSpinner: PropTypes.bool,
 };
 
-/**
- * @method mapStateToProps
- * @summary ToDo: Describe the method.
- * @param {object} state
- */
 const mapStateToProps = (state, { windowId }) => {
   let master = getView(state, windowId);
 

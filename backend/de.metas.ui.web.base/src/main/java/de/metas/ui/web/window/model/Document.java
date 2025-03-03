@@ -127,7 +127,6 @@ public final class Document
 
 	//
 	// Status
-	private boolean _new;
 	private boolean _deleted;
 	private final boolean _writable;
 	private FieldInitializationMode _initializingMode = null;
@@ -192,7 +191,6 @@ public final class Document
 		documentPath = builder.getDocumentPath();
 		windowNo = builder.getWindowNo();
 		_writable = builder.isWritable();
-		_new = builder.isNewDocument();
 		_deleted = false;
 		_staleStatus = new DocumentStaleState();
 		_lock = builder.createLock();
@@ -202,7 +200,7 @@ public final class Document
 		_validOnCheckout = DocumentValidStatus.documentInitiallyInvalid();
 		_valid = _validOnCheckout;
 
-		_saveStatusOnCheckout = DocumentSaveStatus.unknown();
+		_saveStatusOnCheckout = DocumentSaveStatus.unknown(!builder.isNewDocument());
 		_saveStatus = _saveStatusOnCheckout;
 
 		changesCollector = builder.getChangesCollector();
@@ -308,7 +306,6 @@ public final class Document
 		windowNo = from.windowNo;
 		_writable = copyMode.isWritable();
 
-		_new = from._new;
 		_deleted = from._deleted;
 		_staleStatus = new DocumentStaleState(from._staleStatus);
 		_lock = from._lock; // always share the same lock
@@ -850,7 +847,6 @@ public final class Document
 				.add("tableName", entityDescriptor.getTableNameOrNull())
 				.add("parentId", parentDocument == null ? null : parentDocument.getDocumentId())
 				.add("id", getDocumentIdOrNull()) // avoid NPE
-				.add("NEW", _new ? Boolean.TRUE : null)
 				.add("windowNo", windowNo)
 				.add("writable", _writable)
 				.add("valid", _valid)
@@ -1075,13 +1071,12 @@ public final class Document
 
 	public boolean isNew()
 	{
-		return _new;
+		return !getSaveStatus().isPresentInDatabase();
 	}
 
-	// TODO: make this method private/package
-	public void markAsNotNew()
+	public void markAsSaved()
 	{
-		_new = false;
+		setSaveStatusAndReturn(DocumentSaveStatus.saved());
 	}
 
 	/* package */ void markAsDeleted()
@@ -1804,7 +1799,7 @@ public final class Document
 		};
 
 		OnValidStatusChanged MARK_NOT_SAVED = (document, invalidStatus) -> {
-			document.setSaveStatusAndReturn(DocumentSaveStatus.notSaved(invalidStatus));
+			document.setSaveStatusAndReturn(DocumentSaveStatus.notSaved(invalidStatus, document.getSaveStatus()));
 		};
 
 	}
@@ -1948,7 +1943,7 @@ public final class Document
 		if (!validState.isValid())
 		{
 			logger.debug("Skip saving because document {} is not valid: {}", this, validState);
-			return setSaveStatusAndReturn(DocumentSaveStatus.notSaved(validState));
+			return setSaveStatusAndReturn(DocumentSaveStatus.notSaved(validState, getSaveStatus()));
 		}
 
 		//
