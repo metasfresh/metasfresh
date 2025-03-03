@@ -1221,6 +1221,17 @@ public class FlatrateDAO implements IFlatrateDAO
 			queryBuilder.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, Operator.GREATER_OR_EQUAL, modularFlatrateTermQuery.getDateToGreaterOrEqual());
 		}
 
+		if(modularFlatrateTermQuery.isExcludeContractsWithInterim())
+		{
+			final IQuery<I_C_Flatrate_Term> excludeInterimFilter = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, TYPE_CONDITIONS_InterimInvoice)
+					.create();
+
+			queryBuilder.addNotInSubQueryFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Term_ID, I_C_Flatrate_Term.COLUMNNAME_Modular_Flatrate_Term_ID,
+												excludeInterimFilter);
+		}
+
 		return queryBuilder.create()
 				.listImmutable();
 	}
