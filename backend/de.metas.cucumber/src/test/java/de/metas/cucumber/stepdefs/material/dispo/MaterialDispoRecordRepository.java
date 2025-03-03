@@ -33,6 +33,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -103,6 +104,8 @@ public class MaterialDispoRecordRepository
 			{
 				return candidateRepositoryRetrieval.retrieveLatestMatch(CandidatesQuery.fromId(candidate.getParentId()));
 			}
+			case STOCK_UP:
+				return Optional.of(candidate.withQuantity(BigDecimal.ZERO));
 			default:
 			{
 				return Optional.empty();
