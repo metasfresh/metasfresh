@@ -1,9 +1,37 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Points (IN p_record_id   numeric,
-                                                                                         IN p_ad_language Character Varying(6))
+/*
+ * #%L
+ * de.metas.fresh.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Commission_Calculation (IN p_BPartner_SalesRep_ID numeric,
+                                                                                                 IN p_CommissionDate_From  timestamp without time zone,
+                                                                                                 IN p_CommissionDate_To    timestamp without time zone,
+                                                                                                 IN p_Bill_BPartner_ID     numeric,
+                                                                                                 IN p_ad_language          Character Varying(6))
 ;
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Points(p_record_id   numeric,
-                                                                                p_ad_language character varying)
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Commission_Calculation(IN p_BPartner_SalesRep_ID numeric,
+                                                                                        IN p_CommissionDate_From  timestamp without time zone,
+                                                                                        IN p_CommissionDate_To    timestamp without time zone,
+                                                                                        IN p_Bill_BPartner_ID     numeric,
+                                                                                        IN p_ad_language          Character Varying(6))
     RETURNS TABLE
             (
                 c_invoice_id          numeric,
@@ -57,7 +85,9 @@ FROM C_Commission_Overview_V c
          LEFT JOIN m_product_trl pt ON pt.m_product_id = p.m_product_id AND pt.ad_language = p_AD_Language
          LEFT JOIN C_Uom u ON c.C_Uom_id = u.C_Uom_id
          LEFT JOIN C_Uom_trl ut ON ut.C_Uom_id = u.C_Uom_id AND ut.ad_language = p_AD_Language
-WHERE c.c_invoice_commission_id = p_record_ID
+WHERE c.C_BPartner_SalesRep_ID = p_BPartner_SalesRep_ID
+  AND (c.CommissionDate BETWEEN p_CommissionDate_From AND p_CommissionDate_To)
+  AND (c.Bill_BPartner_ID = p_Bill_BPartner_ID OR p_Bill_BPartner_ID IS NULL)
 ORDER BY C_Bpartner_ID, productValue, productName;
 $$
 ;
