@@ -29,21 +29,20 @@ import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.modular.interim.invoice.command.InterimInvoiceFlatrateTermCreateCommand;
 import de.metas.contracts.modular.settings.ModularContractSettings;
-import de.metas.contracts.modular.settings.ModularContractSettingsService;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
+import de.metas.contracts.modular.settings.ModularContractSettingsService;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
-
-import java.sql.Timestamp;
 
 @Service
 @RequiredArgsConstructor
@@ -55,10 +54,7 @@ public class InterimFlatrateTermService
 
 	private static final Logger logger = LogManager.getLogger(InterimFlatrateTermService.class);
 
-	public void create(
-			@NonNull final I_C_Flatrate_Term modularFlatrateTermRecord,
-			@NonNull final Timestamp startDate,
-			@NonNull final Timestamp endDate)
+	public void create(@NonNull final I_C_Flatrate_Term modularFlatrateTermRecord)
 	{
 		final FlatrateTermId flatrateTermId = FlatrateTermId.ofRepoId(modularFlatrateTermRecord.getC_Flatrate_Term_ID());
 
@@ -74,12 +70,14 @@ public class InterimFlatrateTermService
 
 		final CurrencyPrecision currencyPrecision = currencyBL.getStdPrecision(CurrencyId.ofRepoId(modularFlatrateTermRecord.getC_Currency_ID()));
 
+		Check.assumeNotNull(modularFlatrateTermRecord.getEndDate(), "End Date shouldn't be null");
+
 		InterimInvoiceFlatrateTermCreateCommand.builder()
 				.modulareFlatrateTermId(flatrateTermId)
 				.conditionsId(interimConditionsId)
 				.orderLineId(orderLineId)
-				.dateFrom(TimeUtil.asInstantNonNull(startDate))
-				.dateTo(TimeUtil.asInstantNonNull(endDate))
+				.dateFrom(TimeUtil.asInstantNonNull(modularFlatrateTermRecord.getStartDate()))
+				.dateTo(TimeUtil.asInstantNonNull(modularFlatrateTermRecord.getEndDate()))
 				.yearAndCalendarId(YearAndCalendarId.ofRepoId(modularFlatrateTermRecord.getHarvesting_Year_ID(), modularFlatrateTermRecord.getC_Harvesting_Calendar_ID()))
 				.interimPricePercent(modularContractSettings.getInterimPricePercent())
 				.currencyPrecision(currencyPrecision)
