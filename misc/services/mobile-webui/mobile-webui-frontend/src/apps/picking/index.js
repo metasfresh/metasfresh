@@ -1,4 +1,4 @@
-import { getNextEligibleLineToPick } from '../../utils/picking';
+import { AGGREGATION_TYPE_SalesOrder, getAggregationType, getNextEligibleLineToPick } from '../../utils/picking';
 import { getActivityById, getFirstActivityByComponentType } from '../../reducers/wfProcesses';
 import { pickingLineScanScreenLocation } from '../../routes/picking';
 import { COMPONENTTYPE_PickProducts } from '../../containers/activities/picking/PickProductsActivity';
@@ -20,7 +20,10 @@ export const applicationDescriptor = {
     const activity = getActivityById(state, wfProcessId, activityId);
     // console.log('onWFActivityCompleted', { activity });
 
-    if (activity.activityId === ACTIVITY_ID_ScanPickingSlot) {
+    if (
+      getAggregationType({ activity }) === AGGREGATION_TYPE_SalesOrder &&
+      activity.activityId === ACTIVITY_ID_ScanPickingSlot
+    ) {
       // Scan picking slot activity completed => consider scanning HU for the first pick line
       openFirstEligiblePickingLineScanner({ state, applicationId, wfProcessId, history });
     } else {
