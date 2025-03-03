@@ -349,7 +349,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 
 			final PaymentAllocationCriteria paymentAllocationCriteria = getPaymentAllocationCriteria(remittanceAdvice, payment);
 
-			final PaymentAllocationResult paymentAllocationResult = paymentAllocationService.allocatePayment(paymentAllocationCriteria);
+			final PaymentAllocationResult paymentAllocationResult = paymentAllocationService.allocatePaymentForRemittanceAdvise(paymentAllocationCriteria);
 
 			final Map<InvoiceId, RemittanceAdviceLine> remittanceAdviceLineMap = getRemittanceAdviceLinesByInvoiceId(remittanceAdvice.getLines());
 			populateRemittanceWithAllocationData(remittanceAdviceLineMap, paymentAllocationResult);
@@ -361,7 +361,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 		else
 		{
 			Loggables.withLogger(logger, Level.INFO).addLog("Skipping Remittance Advice, RemittanceAdviceId={}, DocStatus={}, PaymentId={}",
-					remittanceAdvice.getRemittanceAdviceId(), remittanceAdvice.getDocStatus(), remittanceAdvice.getPaymentId());
+					remittanceAdvice.getRemittanceAdviceId().getRepoId(), remittanceAdvice.getDocStatus(), remittanceAdvice.getPaymentId());
 		}
 	}
 }

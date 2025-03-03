@@ -150,6 +150,15 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 				"The new M_ShipmentSchedule needs to have the same AD_Client_ID as " + orderLine + ", i.e." + newSched.getAD_Client_ID() + " == " + orderLine.getAD_Client_ID());
 
 		updateShipmentScheduleFromOrderLine(newSched, orderLine);
+		
+		// Moved this from updateShipmentScheduleFromOrderLine() to here as a workaround, until we have M_ShipmentSchedule.M_AttributeSetInstance_Override_ID
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
+		if (asiId.isRegular())
+		{
+			final IAttributeSetInstanceAware asiAware = shipmentScheduleBL.toAttributeSetInstanceAware(newSched);
+			final ImmutableAttributeSet attributeSet = attributeSetInstanceBL.getImmutableAttributeSetById(asiId);
+			attributeSetInstanceBL.syncAttributesToASIAware(attributeSet, asiAware);
+		}
 
 		newSched.setPickFrom_Order_ID(PPOrderId.toRepoId(pickingOrderId));
 
@@ -215,13 +224,14 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		shipmentSchedule.setM_Shipper_ID(orderLine.getM_Shipper_ID());
 
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
-		if (asiId.isRegular())
-		{
-			final IAttributeSetInstanceAware asiAware = shipmentScheduleBL.toAttributeSetInstanceAware(shipmentSchedule);
-			final ImmutableAttributeSet attributeSet = attributeSetInstanceBL.getImmutableAttributeSetById(asiId);
-			attributeSetInstanceBL.syncAttributesToASIAware(attributeSet, asiAware);
-		}
+		// Moved this to createShipmentScheduleForOrderLine() as a workaround, until we have M_ShipmentSchedule.M_AttributeSetInstance_Override_ID
+		// final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
+		// if (asiId.isRegular())
+		// {
+		// 	final IAttributeSetInstanceAware asiAware = shipmentScheduleBL.toAttributeSetInstanceAware(shipmentSchedule);
+		// 	final ImmutableAttributeSet attributeSet = attributeSetInstanceBL.getImmutableAttributeSetById(asiId);
+		// 	attributeSetInstanceBL.syncAttributesToASIAware(attributeSet, asiAware);
+		// }
 
 		// 04290
 		shipmentSchedule.setM_Warehouse_ID(getWarehouseId(orderLine).getRepoId());
