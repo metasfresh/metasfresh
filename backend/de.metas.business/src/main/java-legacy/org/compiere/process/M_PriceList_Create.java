@@ -1,7 +1,13 @@
 package org.compiere.process;
 
+import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
+import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.session.ISessionBL;
 import org.adempiere.ad.trx.api.ITrx;
@@ -22,11 +28,31 @@ import org.compiere.util.DB;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
-public class M_PriceList_Create extends JavaProcess
+public class M_PriceList_Create extends JavaProcess implements IProcessPrecondition
 {
 	// Services
 	private final transient ISessionBL sessionBL = Services.get(ISessionBL.class);
 	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private  final transient IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
+	{
+		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoIdOrNull(context.getSingleSelectedRecordId());
+		if (priceListVersionId == null)
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection().toInternal();
+		}
+
+		final I_M_PriceList_Version plv = priceListDAO.getPriceListVersionById(priceListVersionId);
+
+		if(plv.getM_DiscountSchema_ID() <= 0)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No Pricing Schema Selected");
+		}
+
+		return ProcessPreconditionsResolution.accept();
+	}
 
 	@Override
 	protected String doIt() throws Exception
@@ -42,7 +68,7 @@ public class M_PriceList_Create extends JavaProcess
 					, "select M_PriceList_Version_CopyFromBase(p_M_PriceList_Version_ID:=?, p_AD_User_ID:=?)" //
 					, new Object[] { getTargetPriceListVersion_ID(), getAD_User_ID() } //
 			);
-			
+
 			cloneASIs();
 		}
 		finally
