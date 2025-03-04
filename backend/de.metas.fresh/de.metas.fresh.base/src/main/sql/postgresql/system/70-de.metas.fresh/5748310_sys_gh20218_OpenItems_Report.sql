@@ -1,30 +1,5 @@
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report
 (
-    date
-)
-;
-
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report
-(
-    Reference_Date date,
-    switchDate     character varying
-)
-;
-
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report
-(
-    Reference_Date  date,
-    switchDate      character varying,
-    p_C_BPartner_ID numeric(10)
-)
-;
-
-
-DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report
-;
-
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report
-(
     Reference_Date  date,
     switchDate      character varying,
     p_C_BPartner_ID numeric(10)
