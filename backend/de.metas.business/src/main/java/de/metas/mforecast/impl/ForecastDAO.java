@@ -33,6 +33,7 @@ import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
+import org.compiere.util.TimeUtil;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -47,6 +48,11 @@ public class ForecastDAO implements IForecastDAO
 	@NonNull
 	public Stream<I_M_Forecast> streamRecordsByIds(@NonNull final ImmutableSet<ForecastId> ids)
 	{
+		if (ids.isEmpty())
+		{
+			return Stream.empty();
+		}
+		
 		return queryBL.createQueryBuilder(I_M_Forecast.class)
 				.addInArrayFilter(I_M_ForecastLine.COLUMNNAME_M_Forecast_ID, ids)
 				.create()
@@ -79,7 +85,7 @@ public class ForecastDAO implements IForecastDAO
 		final I_M_Forecast forecastRecord = InterfaceWrapperHelper.newInstance(I_M_Forecast.class);
 
 		forecastRecord.setM_Warehouse_ID(request.getWarehouseId().getRepoId());
-		forecastRecord.setDatePromised(request.getDatePromised());
+		forecastRecord.setDatePromised(TimeUtil.asTimestamp(request.getDatePromised()));
 		forecastRecord.setName(request.getName());
 
 		saveRecord(forecastRecord);

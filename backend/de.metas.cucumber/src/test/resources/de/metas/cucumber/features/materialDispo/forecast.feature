@@ -22,14 +22,12 @@ Feature: material dispo reacts to forecast docactions
       | AD_Workflow_ID | Duration |
       | 540075         | 0        |
 
-  @Id:S0264_200
   @from:cucumber
-  @Id:S0124_140
   Scenario: Forecast is correctly considered in Material Dispo when the product is Manufactured
     Given metasfresh contains M_Products:
-      | Identifier | Name                                | OPT.M_Product_Category_ID.Identifier |
-      | p_1        | trackedProduct_03032025_6           | standard_category                    |
-      | p_2        | trackedProduct_component_03032025_6 | standard_category                    |
+      | Identifier | OPT.M_Product_Category_ID.Identifier |
+      | p_1        | standard_category                    |
+      | p_2        | standard_category                    |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
       | ps_1       | pricing_system_name_03032025_6 | pricing_system_value_03032025_6 | pricing_system_description_03032025_6 | true         |

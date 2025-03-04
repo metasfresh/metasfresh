@@ -102,7 +102,7 @@ public class WEBUI_M_Replenish_Generate_Forecasts extends ViewBasedProcessTempla
 				.map(entry -> ForecastRequest.builder()
 						.name(warehouseBL.getWarehouseName(entry.getKey()) + "_" + p_DatePromised)
 						.warehouseId(entry.getKey())
-						.datePromised(p_DatePromised)
+						.datePromised(TimeUtil.asInstant(p_DatePromised))
 						.forecastLineRequests(entry.getValue().stream()
 								.map(this::toForecastLineRequest)
 								.collect(ImmutableList.toImmutableList()))

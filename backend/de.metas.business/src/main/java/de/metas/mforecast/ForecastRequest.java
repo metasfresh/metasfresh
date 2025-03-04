@@ -30,14 +30,14 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 
 @Value
 @Builder
 public class ForecastRequest
 {
 	@NonNull WarehouseId warehouseId;
-	@NonNull Timestamp datePromised;
+	@NonNull Instant datePromised;
 	@NonNull String name;
 	@NonNull ImmutableList<ForecastLineRequest> forecastLineRequests;
 
