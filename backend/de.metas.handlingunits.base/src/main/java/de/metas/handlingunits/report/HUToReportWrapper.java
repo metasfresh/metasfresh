@@ -44,6 +44,16 @@ public class HUToReportWrapper implements HUToReport
 		return new HUToReportWrapper(hu);
 	}
 
+	public static List<HUToReportWrapper> ofList(final List<I_M_HU> hus)
+	{
+		if (hus.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return hus.stream().map(HUToReportWrapper::of).collect(ImmutableList.toImmutableList());
+	}
+
 	private final I_M_HU hu;
 	private final HuId huId;
 	private final BPartnerId bpartnerId;
