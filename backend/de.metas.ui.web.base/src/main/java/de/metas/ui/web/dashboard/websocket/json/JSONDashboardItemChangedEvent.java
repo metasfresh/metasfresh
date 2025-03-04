@@ -24,6 +24,7 @@ package de.metas.ui.web.dashboard.websocket.json;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import de.metas.ui.web.dashboard.DashboardWidgetType;
 import de.metas.ui.web.dashboard.UserDashboardId;
 import de.metas.ui.web.dashboard.UserDashboardItemId;
 import lombok.EqualsAndHashCode;
@@ -35,16 +36,24 @@ import lombok.Value;
 @EqualsAndHashCode(callSuper = true)
 public class JSONDashboardItemChangedEvent extends JSONDashboardChangedEvent
 {
-	public static JSONDashboardItemChangedEvent of(@NonNull final UserDashboardId dashboardId, @NonNull final UserDashboardItemId itemId)
+	public static JSONDashboardItemChangedEvent of(
+			@NonNull final UserDashboardId dashboardId,
+			@NonNull DashboardWidgetType widgetType,
+			@NonNull final UserDashboardItemId itemId)
 	{
-		return new JSONDashboardItemChangedEvent(dashboardId, itemId);
+		return new JSONDashboardItemChangedEvent(dashboardId, widgetType, itemId);
 	}
 
+	@NonNull DashboardWidgetType widgetType;
 	int itemId;
 
-	private JSONDashboardItemChangedEvent(@NonNull final UserDashboardId dashboardId, @NonNull final UserDashboardItemId itemId)
+	private JSONDashboardItemChangedEvent(
+			@NonNull final UserDashboardId dashboardId,
+			@NonNull final DashboardWidgetType widgetType,
+			@NonNull final UserDashboardItemId itemId)
 	{
 		super(ChangeType.itemChanged, dashboardId.getRepoId());
+		this.widgetType = widgetType;
 		this.itemId = itemId.getRepoId();
 	}
 

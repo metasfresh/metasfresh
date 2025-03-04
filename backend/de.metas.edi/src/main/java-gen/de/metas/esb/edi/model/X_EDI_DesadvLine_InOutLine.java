@@ -94,15 +94,15 @@ public class X_EDI_DesadvLine_InOutLine extends org.compiere.model.PO implements
 	}
 
 	@Override
-	public I_EDI_DesadvLine getEDI_DesadvLine()
+	public de.metas.esb.edi.model.I_EDI_DesadvLine getEDI_DesadvLine()
 	{
-		return get_ValueAsPO(COLUMNNAME_EDI_DesadvLine_ID, I_EDI_DesadvLine.class);
+		return get_ValueAsPO(COLUMNNAME_EDI_DesadvLine_ID, de.metas.esb.edi.model.I_EDI_DesadvLine.class);
 	}
 
 	@Override
-	public void setEDI_DesadvLine(final I_EDI_DesadvLine EDI_DesadvLine)
+	public void setEDI_DesadvLine(final de.metas.esb.edi.model.I_EDI_DesadvLine EDI_DesadvLine)
 	{
-		set_ValueFromPO(COLUMNNAME_EDI_DesadvLine_ID, I_EDI_DesadvLine.class, EDI_DesadvLine);
+		set_ValueFromPO(COLUMNNAME_EDI_DesadvLine_ID, de.metas.esb.edi.model.I_EDI_DesadvLine.class, EDI_DesadvLine);
 	}
 
 	@Override

@@ -19,6 +19,8 @@ import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.IDocument;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
@@ -52,6 +54,7 @@ public class PaySelectionBL implements IPaySelectionBL
 {
 	private static final AdMessageKey MSG_CannotReactivate_PaySelectionLineInBankStatement_2P = AdMessageKey.of("CannotReactivate_PaySelectionLineInBankStatement");
 	private static final AdMessageKey MSG_PaySelectionLines_No_BankAccount = AdMessageKey.of("C_PaySelection_PaySelectionLines_No_BankAccount");
+	private static final AdMessageKey MSG_CannotCreatePayment = AdMessageKey.of("PaySelectionLine.CannotCreatePayment");
 
 	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 
@@ -212,9 +215,16 @@ public class PaySelectionBL implements IPaySelectionBL
 			paySelectionDAO.save(line);
 
 		}
-		catch (final Exception e)
+		catch (final Exception ex)
 		{
-			throw new AdempiereException("Failed creating payment from " + line, e);
+			final TranslatableStringBuilder messageBuilder = TranslatableStrings.builder()
+					.appendADMessage(MSG_CannotCreatePayment, line.getLine());
+			if (AdempiereException.isUserValidationError(ex))
+			{
+				messageBuilder.append(": ").append(AdempiereException.extractMessageTrl(ex));
+			}
+
+			throw new AdempiereException(messageBuilder.build());
 		}
 	}
 
@@ -364,7 +374,7 @@ public class PaySelectionBL implements IPaySelectionBL
 		final List<I_C_PaySelectionLine> lines = getPaySelectionLines(paySelection);
 		if (lines.isEmpty())
 		{
-			throw new AdempiereException("@NoLines@");
+			throw AdempiereException.noLines();
 		}
 
 		validateBankAccounts(paySelection);

@@ -18,6 +18,8 @@ import de.metas.document.dimension.InOutLineDimensionFactory;
 import de.metas.document.dimension.OrderLineDimensionFactory;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.impl.DocumentLocationBL;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.handlingunits.allocation.IAllocationDestination;
 import de.metas.handlingunits.allocation.IAllocationRequest;
 import de.metas.handlingunits.allocation.IAllocationResult;
@@ -60,8 +62,9 @@ import de.metas.handlingunits.attribute.strategy.impl.RedistributeQtyHUAttribute
 import de.metas.handlingunits.attribute.strategy.impl.SumAggregationStrategy;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
+import de.metas.handlingunits.impl.HUQtyService;
 import de.metas.handlingunits.impl.ShipperTransportationRepository;
-import de.metas.handlingunits.model.I_DD_NetworkDistribution;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -75,6 +78,10 @@ import de.metas.handlingunits.model.I_M_HU_Trx_Hdr;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHURepository;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.spi.IHUPackingMaterialCollectorSource;
@@ -139,6 +146,7 @@ import org.compiere.model.I_Test;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.util.DDNetworkBuilder;
 import org.eevolution.util.ProductBOMBuilder;
 
@@ -224,6 +232,8 @@ public class HUTestHelper
 	private static final String NAME_FragileSticker_Attribute = "Fragile";
 
 	private static final String NAME_M_Material_Tracking_ID_Attribute = "M_Material_Tracking_ID";
+	private static final String NAME_AgeOffset = "AgeOffset";
+	private static final String NAME_Age = "Age";
 
 	public static final String NAME_Palet_Product = "Palet";
 	public static final String NAME_IFCO_Product = "IFCO";
@@ -371,6 +381,10 @@ public class HUTestHelper
 	public I_M_Attribute attr_PurchaseOrderLine;
 	public I_M_Attribute attr_ReceiptInOutLine;
 
+	public I_M_Attribute attr_Age;
+
+	public I_M_Attribute attr_AgeOffset;
+
 	//
 	// Default warehouses
 	public I_M_Warehouse defaultWarehouse;
@@ -380,7 +394,7 @@ public class HUTestHelper
 	private DDNetworkBuilder emptiesDDNetworkBuilder;
 
 	public Properties ctx;
-	public String trxName;
+	@Nullable public String trxName;
 	private ZonedDateTime today;
 
 	public final IContextAware contextProvider = new IContextAware()
@@ -416,13 +430,6 @@ public class HUTestHelper
 		{
 			init();
 		}
-	}
-
-	public HUTestHelper setInitAdempiere(final boolean initAdempiere)
-	{
-		Check.assume(!initialized, "helper not initialized");
-		this.initAdempiere = initAdempiere;
-		return this;
 	}
 
 	/**
@@ -556,6 +563,7 @@ public class HUTestHelper
 	 */
 	protected final void setupModuleInterceptors_HU_Full()
 	{
+		SpringContextHolder.registerJUnitBean(IEventBusFactory.class, PlainEventBusFactory.newInstance());
 		Services.get(IModelInterceptorRegistry.class)
 				.addModelInterceptor(newHandlingUnitsModelInterceptor());
 	}
@@ -568,7 +576,12 @@ public class HUTestHelper
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
 				ADReferenceService.newMocked(),
-				huReservationService);
+				huReservationService,
+				new PPOrderSourceHUService(new PPOrderSourceHURepository(),
+										   new PPOrderIssueScheduleService(
+												   new PPOrderIssueScheduleRepository(),
+												   new HUQtyService(InventoryService.newInstanceForUnitTesting())
+				)));
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
 		return new de.metas.handlingunits.model.validator.Main(
@@ -675,6 +688,14 @@ public class HUTestHelper
 		attr_SubProducerBPartner = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_SubProducerBPartner_Value.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);
 
 		attr_M_Material_Tracking_ID = attributesTestHelper.createM_Attribute(NAME_M_Material_Tracking_ID_Attribute, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+		attr_AgeOffset = attributesTestHelper.createM_Attribute(NAME_AgeOffset, X_M_Attribute.ATTRIBUTEVALUETYPE_Number, true);
+		attr_Age = attributesTestHelper.createM_Attribute(NAME_Age, X_M_Attribute.ATTRIBUTEVALUETYPE_List, true);
+		createAttributeListValue(attr_Age, "1", "1");
+		createAttributeListValue(attr_Age, "2", "2");
+		createAttributeListValue(attr_Age, "3", "3");
+		createAttributeListValue(attr_Age, "4", "4");
+		createAttributeListValue(attr_Age, "5", "5");
+		createAttributeListValue(attr_Age, "6", "6");
 
 		attr_LotNumberDate = attributesTestHelper.createM_Attribute(HUAttributeConstants.ATTR_LotNumberDate.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_Date, true);
 		attr_LotNumber = attributesTestHelper.createM_Attribute(AttributeConstants.ATTR_LotNumber.getCode(), X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40, true);

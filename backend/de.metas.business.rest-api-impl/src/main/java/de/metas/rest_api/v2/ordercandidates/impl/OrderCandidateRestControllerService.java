@@ -39,7 +39,6 @@ import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.impex.InputDataSourceId;
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.order.OrderId;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.OLCand;
@@ -47,7 +46,6 @@ import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandId;
 import de.metas.ordercandidate.api.OLCandQuery;
 import de.metas.ordercandidate.api.OLCandRepository;
-import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.rest_api.utils.IdentifierString;
@@ -85,9 +83,7 @@ public class OrderCandidateRestControllerService
 
 	private final JsonConverters jsonConverters;
 	private final OLCandRepository olCandRepo;
-	private final PerformanceMonitoringService perfMonService;
 	private final AlbertaOrderService albertaOrderService;
-	private final OLCandValidatorService olCandValidatorService;
 	private final JsonInvoiceService jsonInvoiceService;
 	private final JsonShipmentService jsonShipmentService;
 	private final ProcessOLCandsWorkpackageEnqueuer processOLCandsWorkpackageEnqueuer;
@@ -96,9 +92,7 @@ public class OrderCandidateRestControllerService
 	public OrderCandidateRestControllerService(
 			@NonNull final JsonConverters jsonConverters,
 			@NonNull final OLCandRepository olCandRepo,
-			@NonNull final PerformanceMonitoringService perfMonService,
 			@NonNull final AlbertaOrderService albertaOrderService,
-			@NonNull final OLCandValidatorService olCandValidatorService,
 			@NonNull final JsonShipmentService jsonShipmentService,
 			@NonNull final JsonInvoiceService jsonInvoiceService,
 			@NonNull final ProcessOLCandsWorkpackageEnqueuer processOLCandsWorkpackageEnqueuer,
@@ -106,9 +100,7 @@ public class OrderCandidateRestControllerService
 	{
 		this.jsonConverters = jsonConverters;
 		this.olCandRepo = olCandRepo;
-		this.perfMonService = perfMonService;
 		this.albertaOrderService = albertaOrderService;
-		this.olCandValidatorService = olCandValidatorService;
 		this.jsonShipmentService = jsonShipmentService;
 		this.jsonInvoiceService = jsonInvoiceService;
 		this.processOLCandsWorkpackageEnqueuer = processOLCandsWorkpackageEnqueuer;
@@ -116,20 +108,6 @@ public class OrderCandidateRestControllerService
 	}
 
 	public JsonOLCandCreateBulkResponse creatOrderLineCandidatesBulk(
-			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
-			@NonNull final MasterdataProvider masterdataProvider)
-	{
-		final PerformanceMonitoringService.SpanMetadata spanMetadata = PerformanceMonitoringService.SpanMetadata.builder()
-				.name("CreatOrderLineCandidatesBulk")
-				.type(PerformanceMonitoringService.Type.REST_API_PROCESSING.getCode())
-				.build();
-
-		return perfMonService.monitorSpan(
-				() -> creatOrderLineCandidates0(bulkRequest, masterdataProvider),
-				spanMetadata);
-	}
-
-	private JsonOLCandCreateBulkResponse creatOrderLineCandidates0(
 			@NonNull final JsonOLCandCreateBulkRequest bulkRequest,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{

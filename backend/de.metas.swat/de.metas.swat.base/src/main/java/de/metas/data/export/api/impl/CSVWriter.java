@@ -22,6 +22,13 @@ package de.metas.data.export.api.impl;
  * #L%
  */
 
+import de.metas.data.export.api.IExportDataDestination;
+import de.metas.util.Check;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
+import org.compiere.util.DisplayType;
+
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -32,14 +39,6 @@ import java.io.Writer;
 import java.text.DateFormat;
 import java.util.List;
 import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.compiere.util.DisplayType;
-
-import de.metas.data.export.api.IExportDataDestination;
-import de.metas.util.Check;
-import lombok.NonNull;
 
 public class CSVWriter implements IExportDataDestination
 {
@@ -53,12 +52,14 @@ public class CSVWriter implements IExportDataDestination
 	public static final String CONFIG_Encoding = "Encoding";
 	public static final String CONFIG_FieldDelimiter = "FieldDelimiter";
 	public static final String CONFIG_FieldQuote = "FieldQuote";
+	public static final String CONFIG_AllowMultilineFields = "AllowMultilineFields";
 
 	private String encoding = "UTF-8";
 	private String fieldDelimiter = ";";
 	private String fieldQuote = "\"";
 	private String lineEnding = "\n";
-	private DateFormat dateFormat;
+	private boolean allowMultilineFields = true;
+	private final DateFormat dateFormat;
 
 	private List<String> header;
 	private boolean headerAppended = false;
@@ -110,6 +111,13 @@ public class CSVWriter implements IExportDataDestination
 		{
 			setFieldQuote(fieldQuote);
 		}
+
+		final String allowMultilineFields = config.getProperty(CONFIG_AllowMultilineFields);
+		if(allowMultilineFields != null)
+		{
+			//noinspection resource
+			setAllowMultilineFields(StringUtils.toBoolean(allowMultilineFields));
+		}
 	}
 
 	public CSVWriter setFieldDelimiter(String delimiter)
@@ -126,6 +134,13 @@ public class CSVWriter implements IExportDataDestination
 	public void setLineEnding(String lineEnding)
 	{
 		this.lineEnding = lineEnding;
+	}
+
+	@SuppressWarnings("UnusedReturnValue")
+	public CSVWriter setAllowMultilineFields(final boolean allowMultilineFields)
+	{
+		this.allowMultilineFields = allowMultilineFields;
+		return this;
 	}
 
 	public void setHeader(final List<String> header)

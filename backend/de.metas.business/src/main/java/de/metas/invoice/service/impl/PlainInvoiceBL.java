@@ -43,15 +43,9 @@ public class PlainInvoiceBL extends AbstractInvoiceBL
 	{
 		final PlainInvoiceDAO invoiceDAO = (PlainInvoiceDAO)Services.get(IInvoiceDAO.class);
 		final BigDecimal writeOffAmt = invoiceDAO.retrieveWriteOffAmt(invoice);
-		final BigDecimal grandTotalAmt = getGrandTotalAbs(invoice);
+		final BigDecimal grandTotalAmt = extractGrandTotal(invoice).toRealValueAsBigDecimal();
 
 		return writeOffAmt.compareTo(grandTotalAmt) == 0;
-	}
-
-	@Override
-	public int copyLinesFrom(final I_C_Invoice fromInvoice, final I_C_Invoice toInvoice, final boolean counter, final boolean setOrderRef, final boolean setInvoiceRef)
-	{
-		throw new UnsupportedOperationException();
 	}
 
 	@Override

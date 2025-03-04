@@ -101,6 +101,8 @@ public interface IPaymentBL extends ISingletonService
 	 */
 	boolean testAllocation(I_C_Payment payment);
 
+	void scheduleUpdateIsAllocated(@NonNull PaymentId paymentId);
+
 	void testAllocation(PaymentId paymentId);
 
 	boolean isCashTrx(final I_C_Payment payment);
@@ -130,6 +132,8 @@ public interface IPaymentBL extends ISingletonService
 
 	void updateDiscountAndPayAmtFromInvoiceIfAny(I_C_Payment payment);
 
+	void markReconciled(@NonNull PaymentReconcileRequest request);
+
 	void markReconciled(@NonNull Collection<PaymentReconcileRequest> requests);
 
 	void markReconciled(
@@ -139,6 +143,8 @@ public interface IPaymentBL extends ISingletonService
 	void markReconciledAndSave(
 			@NonNull I_C_Payment payment,
 			@NonNull PaymentReconcileReference reconcileRef);
+
+	void markNotReconciled(@NonNull PaymentId paymentId);
 
 	void markNotReconciled(@NonNull Collection<PaymentId> paymentIds);
 
@@ -150,4 +156,6 @@ public interface IPaymentBL extends ISingletonService
 	CurrencyConversionContext extractCurrencyConversionContext(@NonNull I_C_Payment payment);
 
 	void validateDocTypeIsInSync(@NonNull final I_C_Payment payment);
+
+	void reversePaymentById(@NonNull PaymentId paymentId);
 }

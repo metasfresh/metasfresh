@@ -36,7 +36,8 @@ import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
+import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
+import de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item;
 import de.metas.esb.edi.model.I_M_InOut_Desadv_V;
 import de.metas.inout.InOutId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -49,9 +50,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_BPartner;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
@@ -144,6 +143,27 @@ public class DesadvDAO implements IDesadvDAO
 				.create()
 				.list();
 
+	}
+
+	@Override
+	public int retrieveMaxDesadvPackSeqNo(@NonNull final EDIDesadvId desadvId)
+	{
+		return queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_ID, desadvId)
+				.create()
+				.maxInt(I_EDI_Desadv_Pack.COLUMNNAME_SeqNo);
+	}
+
+	@Override
+	public int retrieveMaxDesadvPackItemLine(@NonNull final EDIDesadvId desadvId)
+	{
+		return queryBL.createQueryBuilder(I_EDI_Desadv_Pack.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_ID, desadvId)
+				.andCollectChildren(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_ID, I_EDI_Desadv_Pack_Item.class)
+				.create()
+				.maxInt(I_EDI_Desadv_Pack_Item.COLUMNNAME_Line);
 	}
 
 	@Override
@@ -251,57 +271,6 @@ public class DesadvDAO implements IDesadvDAO
 	}
 
 	@Override
-	public List<I_EDI_DesadvLine_Pack> retrieveDesadvLinePacks(@NonNull final I_EDI_DesadvLine desadvLine, @Nullable final Boolean withInOutLine)
-	{
-		final IQueryBuilder<I_EDI_DesadvLine_Pack> queryBuilder = createDesadvLinePackRecordsQuery(desadvLine);
-		if (withInOutLine != null)
-		{
-			if (withInOutLine)
-			{
-				queryBuilder.addNotEqualsFilter(I_EDI_DesadvLine_Pack.COLUMNNAME_M_InOutLine_ID, null);
-			}
-			else
-			{
-				queryBuilder.addEqualsFilter(I_EDI_DesadvLine_Pack.COLUMNNAME_M_InOutLine_ID, null);
-			}
-		}
-		return queryBuilder
-				.create()
-				.list();
-	}
-
-	@Override
-	public int retrieveDesadvLinePackRecordsCount(@NonNull final I_EDI_DesadvLine desadvLine)
-	{
-		return createDesadvLinePackRecordsQuery(desadvLine)
-				.create()
-				.count();
-	}
-
-	private IQueryBuilder<I_EDI_DesadvLine_Pack> createDesadvLinePackRecordsQuery(@NonNull final I_EDI_DesadvLine desadvLine)
-	{
-		final IQueryBuilder<I_EDI_DesadvLine_Pack> queryBuilder = queryBL
-				.createQueryBuilder(I_EDI_DesadvLine_Pack.class, desadvLine)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_EDI_DesadvLine_Pack.COLUMNNAME_EDI_DesadvLine_ID, desadvLine.getEDI_DesadvLine_ID());
-		queryBuilder.orderBy()
-				.addColumn(I_EDI_DesadvLine_Pack.COLUMN_EDI_DesadvLine_Pack_ID);
-
-		return queryBuilder;
-	}
-
-	@Override
-	public List<I_EDI_DesadvLine_Pack> retrieveDesadvLinePackRecords(@NonNull final I_M_InOutLine inOutLineRecord)
-	{
-		return queryBL
-				.createQueryBuilder(I_EDI_DesadvLine_Pack.class, inOutLineRecord)
-				// .addOnlyActiveRecordsFilter() we need all
-				.addEqualsFilter(I_EDI_DesadvLine_Pack.COLUMNNAME_M_InOutLine_ID, inOutLineRecord.getM_InOutLine_ID())
-				.create()
-				.list();
-	}
-
-	@Override
 	public de.metas.handlingunits.model.I_M_ShipmentSchedule retrieveM_ShipmentScheduleOrNull(@NonNull final I_EDI_DesadvLine desadvLine)
 	{
 		final IQueryBuilder<I_C_OrderLine> orderLinesQuery = createAllOrderLinesQuery(desadvLine);
@@ -341,18 +310,6 @@ public class DesadvDAO implements IDesadvDAO
 	public void save(@NonNull final I_EDI_DesadvLine ediDesadvLine)
 	{
 		InterfaceWrapperHelper.save(ediDesadvLine);
-	}
-
-	@Override
-	public BPartnerId retrieveBPartnerFromEdiDesadvPackId(final int desadvLinePackID)
-	{
-		return queryBL
-				.createQueryBuilder(I_EDI_DesadvLine_Pack.class)
-				.addEqualsFilter(I_EDI_DesadvLine_Pack.COLUMNNAME_EDI_DesadvLine_Pack_ID, desadvLinePackID)
-				.andCollect(I_EDI_Desadv.COLUMNNAME_EDI_Desadv_ID, I_EDI_Desadv.class)
-				.andCollect(I_EDI_Desadv.COLUMNNAME_C_BPartner_ID, I_C_BPartner.class)
-				.create()
-				.firstId(BPartnerId::ofRepoId);
 	}
 
 	@Override

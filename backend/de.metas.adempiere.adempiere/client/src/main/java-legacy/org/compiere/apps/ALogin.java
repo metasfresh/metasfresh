@@ -16,33 +16,6 @@
  *****************************************************************************/
 package org.compiere.apps;
 
-import java.awt.BorderLayout;
-import java.awt.ComponentOrientation;
-import java.awt.Cursor;
-import java.awt.Frame;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.ResourceBundle;
-import java.util.Set;
-
-import javax.swing.ImageIcon;
-import javax.swing.JPasswordField;
-import javax.swing.SwingConstants;
-import javax.swing.UIManager;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.Check;
@@ -59,6 +32,7 @@ import de.metas.security.RoleId;
 import de.metas.util.Services;
 import de.metas.util.hash.HashableString;
 import lombok.NonNull;
+import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.plaf.AdempierePLAF;
 import org.adempiere.plaf.MetasFreshTheme;
@@ -78,7 +52,6 @@ import org.compiere.swing.CPanel;
 import org.compiere.swing.CTabbedPane;
 import org.compiere.swing.CTextField;
 import org.compiere.swing.ListComboBoxModel;
-import org.compiere.swing.ToStringListCellRenderer;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -97,6 +70,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -804,7 +778,7 @@ public final class ALogin extends CDialog
 
 		// Reference check
 		Ini.setProperty(Ini.P_ADEMPIERESYS, "Reference".equalsIgnoreCase(CConnection.get().getDbUid()));
-		Ini.setProperty(Ini.P_LOGMIGRATIONSCRIPT, "Reference".equalsIgnoreCase(CConnection.get().getDbUid()));
+		MigrationScriptFileLoggerHolder.setEnabled("Reference".equalsIgnoreCase(CConnection.get().getDbUid()));
 
 		//
 		// Authenticate and get roles
@@ -945,6 +919,7 @@ public final class ALogin extends CDialog
 	{
 		return roles
 				.stream()
+				.filter(role -> role.getId().isSystem()) // to limit annoying mistakes
 				.map(role -> KeyNamePair.of(role.getId(), role.getName()))
 				.distinct()
 				.sorted(Comparator.comparing(KeyNamePair::getName))
@@ -1011,8 +986,7 @@ public final class ALogin extends CDialog
 
 			//
 			final ClientId clientId = ClientId.ofRepoId(clientKNP.getKey());
-			final String clientName = clientKNP.getName();
-			final Set<OrgId> orgIds = m_login.setClientAndGetOrgs(clientId, clientName);
+			final Set<OrgId> orgIds = m_login.setClientAndGetOrgs(clientId);
 			final List<KeyNamePair> orgs = toOrgKeyNamePairList(orgIds);
 			orgCombo.setModel(ListComboBoxModel.ofNullable(orgs));
 			// No Orgs

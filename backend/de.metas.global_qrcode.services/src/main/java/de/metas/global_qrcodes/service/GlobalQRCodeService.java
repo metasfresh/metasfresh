@@ -1,62 +1,70 @@
 package de.metas.global_qrcodes.service;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.global_qrcodes.PrintableQRCode;
+import de.metas.printing.IMassPrintingService;
 import de.metas.process.AdProcessId;
-import de.metas.report.DocumentReportFlavor;
-import de.metas.util.Services;
+import de.metas.process.PInstanceId;
+import de.metas.report.PrintCopies;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.archive.api.ArchiveRequest;
-import org.adempiere.archive.api.ArchiveResult;
-import org.adempiere.archive.api.IArchiveBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.archive.api.ArchiveInfo;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_AD_PInstance;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @Service
 public class GlobalQRCodeService
 {
-	private static final AdProcessId qrCodeProcessId = AdProcessId.ofRepoId(584977); // hard coded process id
+	private static final AdProcessId default_qrCodeProcessId = AdProcessId.ofRepoId(584977); // hard coded process id
 
-	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
+	private final IMassPrintingService massPrintingService;
 
-	public QRCodePDFResource createPDF(final List<PrintableQRCode> qrCodes)
+	public GlobalQRCodeService(@NonNull final IMassPrintingService massPrintingService) {this.massPrintingService = massPrintingService;}
+
+	public QRCodePDFResource createPDF(@NonNull final PrintableQRCode qrCode)
+	{
+		return createPDF(ImmutableList.of(qrCode), null, default_qrCodeProcessId);
+	}
+
+	public QRCodePDFResource createPDF(@NonNull final PrintableQRCode qrCode, @NonNull final AdProcessId qrCodeProcessId)
+	{
+		return createPDF(ImmutableList.of(qrCode), null, qrCodeProcessId);
+	}
+
+	public QRCodePDFResource createPDF(@NonNull final List<PrintableQRCode> qrCodes)
+	{
+		return createPDF(qrCodes, null, default_qrCodeProcessId);
+	}
+
+	public QRCodePDFResource createPDF(@NonNull final List<PrintableQRCode> qrCodes,
+									   @Nullable final PInstanceId pInstanceId,
+									   @Nullable final AdProcessId qrCodeProcessId)
 	{
 		return CreatePDFCommand.builder()
 				.qrCodes(qrCodes)
+				.pInstanceId(pInstanceId)
+				.qrCodeProcessId(qrCodeProcessId != null ? qrCodeProcessId : default_qrCodeProcessId)
 				.build()
 				.execute();
 	}
 
-	public void print(@NonNull final QRCodePDFResource pdf)
+    public void print(@NonNull final QRCodePDFResource pdf)
+    {
+        print(pdf, PrintCopies.ONE);
+    }
+
+	public void print(@NonNull final QRCodePDFResource pdf, @NonNull final PrintCopies copies)
 	{
-		final ArchiveResult archiveResult = archiveBL.archive(ArchiveRequest.builder()
-				.trxName(ITrx.TRXNAME_ThreadInherited)
-				.flavor(DocumentReportFlavor.PRINT)
-				.data(pdf)
-				.archiveName(pdf.getFilename())
-				.processId(qrCodeProcessId)
-				.pinstanceId(pdf.getPinstanceId())
-				.recordRef(TableRecordReference.of(I_AD_PInstance.Table_Name, pdf.getPinstanceId().getRepoId()))
-				.isReport(true)
-				.force(true)
-				.save(false) // don't save it because we have to modify it afterwards anyway, so we will save it then
-				.build());
+		final TableRecordReference recordRef = TableRecordReference.of(I_AD_PInstance.Table_Name, pdf.getPinstanceId().getRepoId());
+		final ArchiveInfo archiveInfo = new ArchiveInfo(pdf.getFilename(), recordRef);
+		archiveInfo.setProcessId(pdf.getProcessId());
+		archiveInfo.setPInstanceId(pdf.getPinstanceId());
+		archiveInfo.setCopies(copies);
 
-		final I_AD_Archive archiveRecord = archiveResult.getArchiveRecord();
-		if (archiveRecord == null)
-		{
-			throw new AdempiereException("Cannot archiveRecord report");
-		}
-
-		archiveRecord.setIsDirectEnqueue(true);
-		archiveRecord.setIsDirectProcessQueueItem(true);
-		InterfaceWrapperHelper.save(archiveRecord);
+		massPrintingService.print(pdf, archiveInfo);
 	}
 
 }

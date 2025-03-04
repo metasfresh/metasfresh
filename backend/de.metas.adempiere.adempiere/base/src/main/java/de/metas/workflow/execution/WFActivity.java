@@ -30,7 +30,6 @@ import de.metas.document.engine.IDocument;
 import de.metas.email.EMailAddress;
 import de.metas.email.templates.MailTemplateId;
 import de.metas.email.templates.MailText;
-import de.metas.email.templates.MailTextBuilder;
 import de.metas.error.AdIssueId;
 import de.metas.i18n.ADMessageAndParams;
 import de.metas.i18n.AdMessageKey;
@@ -65,6 +64,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -320,7 +320,7 @@ public class WFActivity
 
 	public TableRecordReference getDocumentRef() { return documentRef; }
 
-	public Object getDocumentColumnValueByColumnId(final int adColumnId) { return context.getDocumentColumnValueByColumnId(getDocumentRef(), adColumnId); }
+	public Object getDocumentColumnValueByColumnId(final AdColumnId adColumnId) { return context.getDocumentColumnValueByColumnId(getDocumentRef(), adColumnId); }
 
 	public Object getDocumentColumnValueByColumnName(final String columnName) { return context.getDocumentColumnValueByColumnName(getDocumentRef(), columnName); }
 
@@ -331,13 +331,8 @@ public class WFActivity
 	Object getAttributeValue()
 	{
 		final WFNode node = getNode();
-		if (node == null)
-		{
-			return null;
-		}
-
-		final int AD_Column_ID = node.getDocumentColumnId();
-		if (AD_Column_ID <= 0)
+		final AdColumnId AD_Column_ID = AdColumnId.ofRepoIdOrNull(node.getDocumentColumnId());
+		if (AD_Column_ID == null)
 		{
 			return null;
 		}

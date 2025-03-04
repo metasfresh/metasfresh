@@ -27,6 +27,7 @@ package de.metas.esb.util;
 
 import de.metas.ad_reference.ADRefListItem;
 import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
@@ -37,6 +38,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.process.rpl.RPL_Constants;
 import org.adempiere.util.LegacyAdapters;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Reference;
 import org.compiere.model.I_EXP_Format;
@@ -81,8 +83,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-
-;
 
 /**
  * Helper tool that generates XSD Schema for Canonical Messages
@@ -268,7 +268,7 @@ public class CanonicalXSDGenerator
 		Check.assume(toJavaName(name).equals(name),
 				"'name' param '" + name + "' equals '" + toJavaName(name) + "'");
 
-		final List<ADRefListItem> listValues = new ArrayList<>(adReferenceService.retrieveListItems(AD_Reference_ID));
+		final List<ADRefListItem> listValues = new ArrayList<>(adReferenceService.retrieveListItems(ReferenceId.ofRepoId(AD_Reference_ID)));
 		if (listValues.isEmpty())
 		{
 			return null;

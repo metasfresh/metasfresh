@@ -30,6 +30,7 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -388,6 +389,7 @@ public class PurchaseCandidateRepository
 		record.setPriceInternal(purchaseCandidate.getPriceInternal());
 		record.setPriceEntered(purchaseCandidate.getPrice());
 		record.setPriceEffective(purchaseCandidate.getPriceEnteredEff());
+		record.setPrice_UOM_ID(UomId.toRepoId(purchaseCandidate.getPriceUomId()));
 		if (purchaseCandidate.getDiscount() != null)
 		{
 			record.setDiscount(purchaseCandidate.getDiscount().toBigDecimal());
@@ -531,6 +533,7 @@ public class PurchaseCandidateRepository
 				.price(record.getPriceEntered())
 				.priceInternal(record.getPriceInternal())
 				.priceEnteredEff(record.getPriceEffective())
+				.priceUomId(UomId.ofRepoIdOrNull(record.getPrice_UOM_ID()))
 				.discount(Percent.ofNullable(record.getDiscount()))
 				.discountInternal(Percent.ofNullable(record.getDiscountInternal()))
 				.discountEff(Percent.ofNullable(record.getDiscountEff()))
@@ -728,5 +731,29 @@ public class PurchaseCandidateRepository
 				.map(PurchaseCandidateId::ofRepoId)
 				.map(this::getById)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public void deletePurchaseCandidates(@NonNull final DeletePurchaseCandidateQuery deletePurchaseCandidateQuery)
+	{
+		final IQueryBuilder<I_C_PurchaseCandidate> deleteQuery = queryBL.createQueryBuilder(I_C_PurchaseCandidate.class);
+
+		if (deletePurchaseCandidateQuery.isOnlySimulated())
+		{
+			deleteQuery.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_IsSimulated, deletePurchaseCandidateQuery.isOnlySimulated());
+		}
+
+		if (deletePurchaseCandidateQuery.getSalesOrderLineId() != null)
+		{
+			deleteQuery.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_C_OrderLineSO_ID, deletePurchaseCandidateQuery.getSalesOrderLineId());
+		}
+
+		if (deleteQuery.getCompositeFilter().isEmpty())
+		{
+			throw new AdempiereException("Deleting all I_C_PurchaseCandidate records is not allowed!");
+		}
+
+		deleteQuery
+				.create()
+				.deleteDirectly();
 	}
 }

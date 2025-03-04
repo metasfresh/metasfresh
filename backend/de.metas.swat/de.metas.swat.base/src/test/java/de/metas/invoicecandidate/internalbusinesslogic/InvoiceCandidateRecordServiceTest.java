@@ -1,5 +1,7 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
@@ -7,6 +9,7 @@ import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.product.ProductId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
@@ -19,10 +22,9 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -33,13 +35,12 @@ import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFi
 import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.STOCK_UOM_ID;
 import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.createRequiredMasterdata;
 import static de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateFixtureHelper.loadJsonFixture;
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
+import static org.compiere.model.X_M_Product.PRODUCTTYPE_Item;
 
 /*
  * #%L
@@ -63,6 +64,7 @@ import static org.assertj.core.api.Assertions.*;
  * #L%
  */
 
+@ExtendWith(SnapshotExtension.class)
 class InvoiceCandidateRecordServiceTest
 {
 	private static final BigDecimal TWO = new BigDecimal("2");
@@ -75,18 +77,7 @@ class InvoiceCandidateRecordServiceTest
 	private static final BigDecimal FOUR_HUNDRET_TWENTY = new BigDecimal("420");
 
 	private UOMTestHelper uomConversionHelper;
-
-	@BeforeAll
-	static void initStatic()
-	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		validateSnapshots();
-	}
+	private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
@@ -148,7 +139,7 @@ class InvoiceCandidateRecordServiceTest
 		assertThat(shippedData.getQtyCatch().getUomId()).isEqualTo(UomId.ofRepoId(icUomRecord.getC_UOM_ID()));
 		assertThat(shippedData.getQtyCatch().toBigDecimal()).isEqualByComparingTo("61"); // 42 + 19
 
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -225,9 +216,6 @@ class InvoiceCandidateRecordServiceTest
 		assertThat(pickedData.getQtyCatch().toBigDecimal()).isEqualByComparingTo(TWO);
 	}
 
-	/**
-	 * Very similar to {@link #ofRecord()}, but has an ic with {@code InvoicableQtyBasedOn = CatchWeight}, but no icIol catchWeigth-quantities
-	 */
 	@Test
 	void ofRecord_RevertInouts()
 	{
@@ -238,6 +226,7 @@ class InvoiceCandidateRecordServiceTest
 		final I_M_Product productRecord = newInstance(I_M_Product.class);
 		productRecord.setC_UOM_ID(stockUomRecord.getC_UOM_ID());
 		productRecord.setM_Product_ID(PRODUCT_ID.getRepoId());
+		productRecord.setProductType(PRODUCTTYPE_Item);
 		saveRecord(productRecord);
 
 		final I_C_UOM icUomRecord = uomConversionHelper.createUOM(2);
@@ -342,7 +331,7 @@ class InvoiceCandidateRecordServiceTest
 
 		assertThat(shippedData.getQtyCatch()).isNull();
 
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	/**
@@ -397,7 +386,7 @@ class InvoiceCandidateRecordServiceTest
 
 		assertThat(shippedData.getQtyCatch()).isNull();
 
-		expect(result).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(result);
 	}
 
 	@Test
@@ -439,6 +428,7 @@ class InvoiceCandidateRecordServiceTest
 	private I_M_Product createProductRecord(@NonNull final I_C_UOM uom)
 	{
 		final I_M_Product productRecord = newInstance(I_M_Product.class);
+		productRecord.setProductType(PRODUCTTYPE_Item);
 		productRecord.setC_UOM_ID(uom.getC_UOM_ID());
 		productRecord.setM_Product_ID(PRODUCT_ID.getRepoId());
 		saveRecord(productRecord);
@@ -466,7 +456,7 @@ class InvoiceCandidateRecordServiceTest
 		icRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		icRecord.setC_Currency_ID(currencyRecord.getC_Currency_ID());
 		icRecord.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_AfterDelivery);
-		icRecord.setInvoicableQtyBasedOn(X_C_Invoice_Candidate.INVOICABLEQTYBASEDON_CatchWeight);
+		icRecord.setInvoicableQtyBasedOn(InvoicableQtyBasedOn.CatchWeight.getCode());
 		icRecord.setQtyOrdered(TWENTY);
 		icRecord.setQtyEntered(EIGHTY);
 		icRecord.setC_UOM_ID(icUomRecord.getC_UOM_ID());

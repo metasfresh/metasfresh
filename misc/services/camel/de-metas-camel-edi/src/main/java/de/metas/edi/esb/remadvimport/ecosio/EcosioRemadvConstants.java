@@ -22,10 +22,6 @@
 
 package de.metas.edi.esb.remadvimport.ecosio;
 
-import com.google.common.collect.ImmutableSet;
-
-import java.util.Set;
-
 public interface EcosioRemadvConstants
 {
 	String REMADV_XML_TO_JSON_PROCESSOR = "remadv-xml-to-json-processor-id";
@@ -35,7 +31,7 @@ public interface EcosioRemadvConstants
 	String INPUT_REMADV_LOCAL = "edi.file.remadv.ecosio";
 
 	String ECOSIO_AUTH_TOKEN = "{{metasfresh.api.auth}}";
-	String CREATE_REMADV_MF_URL = "{{metasfresh.api.baseurl}}/payment/remittanceAdvice";
+	String CREATE_REMADV_MF_URL = "{{metasfresh.api.baseurl}}/payments/remittanceAdvice";
 
 	String NUMBER_OF_ITEMS = "NumberOfItems";
 	String AUTHORIZATION = "Authorization";

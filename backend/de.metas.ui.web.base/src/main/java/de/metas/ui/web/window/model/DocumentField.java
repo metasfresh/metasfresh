@@ -1,7 +1,6 @@
 package de.metas.ui.web.window.model;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.DataTypes;
@@ -16,7 +15,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotLookupException;
 import de.metas.ui.web.window.model.Document.CopyMode;
-import de.metas.ui.web.window.model.lookup.DocumentZoomIntoInfo;
+import de.metas.ui.web.window.model.lookup.zoom_into.DocumentZoomIntoInfo;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.util.NumberUtils;
 import de.metas.util.lang.RepoIdAware;
@@ -30,6 +29,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 /*
  * #%L
@@ -83,7 +83,7 @@ class DocumentField implements IDocumentField
 	private static final LogicExpressionResult DISPLAYED_InitialValue = LogicExpressionResult.namedConstant("displayed-initial", false);
 	private LogicExpressionResult _displayed = DISPLAYED_InitialValue;
 
-	private DocumentValidStatus _validStatus;
+	@NonNull private DocumentValidStatus _validStatus;
 
 	/* package */ DocumentField(final DocumentFieldDescriptor descriptor, final Document document)
 	{
@@ -310,10 +310,10 @@ class DocumentField implements IDocumentField
 		// Apply number precision
 		if (valueConv instanceof BigDecimal)
 		{
-			final Integer precision = getWidgetType().getStandardNumberPrecision();
-			if (precision != null)
+			final OptionalInt minPrecision = getDescriptor().getMinPrecision();
+			if (minPrecision.isPresent())
 			{
-				return NumberUtils.setMinimumScale((BigDecimal)valueConv, precision);
+				return NumberUtils.setMinimumScale((BigDecimal)valueConv, minPrecision.getAsInt());
 			}
 			else
 			{
@@ -466,7 +466,6 @@ class DocumentField implements IDocumentField
 
 	/**
 	 * Computes field's validStatus.
-	 *
 	 * IMPORTANT: this method is not updating the status, it's only computing it.
 	 */
 	private DocumentValidStatus computeValidStatus()

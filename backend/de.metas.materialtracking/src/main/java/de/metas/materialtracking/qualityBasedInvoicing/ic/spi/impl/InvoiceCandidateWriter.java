@@ -27,6 +27,7 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
@@ -76,7 +77,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * Takes {@link IQualityInvoiceLineGroup}s and creates {@link I_C_Invoice_Candidate}s.
@@ -93,6 +93,7 @@ public class InvoiceCandidateWriter
 	private final transient IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	// Parameters:
 	private final IContextAware _context;
 	private I_C_ILCandHandler _invoiceCandidateHandler;
@@ -461,6 +462,7 @@ public class InvoiceCandidateWriter
 
 		//
 		ic.setProcessed(false); // in the DB it's processed=false by default, but for decoupled AIts we need to set is explicitly, in order to select ICs by this flag
+		invoiceCandBL.setPaymentTermIfMissing(ic);
 
 		// NOTE: don't save it
 

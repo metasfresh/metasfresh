@@ -2,9 +2,11 @@ package de.metas.handlingunits.picking.job.model;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.quantity.Quantity;
 import de.metas.util.collections.CollectionUtils;
@@ -22,14 +24,11 @@ import java.util.function.UnaryOperator;
 @EqualsAndHashCode
 @ToString
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class PickingJobStepPickFromMap
 {
 	@NonNull private final ImmutableMap<PickingJobStepPickFromKey, PickingJobStepPickFrom> map;
 
-	@NonNull private final Optional<Quantity> qtyPickedSum;
-	@Getter
-	private final PickingJobProgress progress;
+	@NonNull @Getter private final PickingJobProgress progress;
 
 	public static PickingJobStepPickFromMap ofList(@NonNull final List<PickingJobStepPickFrom> pickFroms)
 	{
@@ -45,18 +44,7 @@ public class PickingJobStepPickFromMap
 
 		this.map = map;
 
-		this.qtyPickedSum = computeQtyPickedSum(map);
 		this.progress = computeProgress(map);
-	}
-
-	private static Optional<Quantity> computeQtyPickedSum(final @NonNull ImmutableMap<PickingJobStepPickFromKey, PickingJobStepPickFrom> map)
-	{
-		return map.values()
-				.stream()
-				.map(PickingJobStepPickFrom::getPickedTo)
-				.filter(Objects::nonNull)
-				.map(PickingJobStepPickedTo::getQtyPicked)
-				.reduce(Quantity::add);
 	}
 
 	private static PickingJobProgress computeProgress(final @NonNull ImmutableMap<PickingJobStepPickFromKey, PickingJobStepPickFrom> map)
@@ -69,6 +57,8 @@ public class PickingJobStepPickFromMap
 	{
 		return map.keySet();
 	}
+
+	public PickingJobStepPickFrom getMainPickFrom() {return getPickFrom(PickingJobStepPickFromKey.MAIN);}
 
 	public PickingJobStepPickFrom getPickFrom(final PickingJobStepPickFromKey key)
 	{
@@ -87,6 +77,11 @@ public class PickingJobStepPickFromMap
 				.filter(pickFrom -> HUQRCode.equals(pickFrom.getPickFromHU().getQrCode(), qrCode))
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No HU found for " + qrCode));
+	}
+
+	public boolean isNothingPicked()
+	{
+		return map.values().stream().allMatch(PickingJobStepPickFrom::isNotPicked);
 	}
 
 	public PickingJobStepPickFromMap reduceWithPickedEvent(
@@ -116,5 +111,33 @@ public class PickingJobStepPickFromMap
 		return !Objects.equals(this.map, newMap)
 				? new PickingJobStepPickFromMap(newMap)
 				: this;
+	}
+
+	public Optional<Quantity> getQtyPicked()
+	{
+		return map.values()
+				.stream()
+				.map(pickFrom -> pickFrom.getQtyPicked().orElse(null))
+				.filter(Objects::nonNull)
+				.reduce(Quantity::add);
+	}
+
+	public Optional<Quantity> getQtyRejected()
+	{
+		// returning only from mainPickFrom because I wanted to keep the same logic we already have in misc/services/mobile-webui/mobile-webui-frontend/src/utils/picking.js, getQtyPickedOrRejectedTotalForLine  
+		return getMainPickFrom().getQtyRejected();
+	}
+
+	@NonNull
+	public List<HuId> getPickedHUIds()
+	{
+		return map.values()
+				.stream()
+				.map(PickingJobStepPickFrom::getPickedTo)
+				.filter(Objects::nonNull)
+				.filter(pickedTo -> pickedTo.getQtyPicked().signum() > 0)
+				.map(PickingJobStepPickedTo::getPickedHuIds)
+				.flatMap(List::stream)
+				.collect(ImmutableList.toImmutableList());
 	}
 }

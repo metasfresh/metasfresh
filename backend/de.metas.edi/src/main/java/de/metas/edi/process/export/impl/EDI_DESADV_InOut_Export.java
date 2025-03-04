@@ -4,7 +4,7 @@ package de.metas.edi.process.export.impl;
  * #%L
  * de.metas.edi
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -71,15 +71,13 @@ public class EDI_DESADV_InOut_Export extends AbstractExport<I_EDI_Document>
 		InterfaceWrapperHelper.save(shipment);
 
 		final I_EDI_Desadv desadv = desadvDAO.retrieveById(EDIDesadvId.ofRepoId(shipment.getEDI_Desadv_ID()));
-		desadv.setEDI_ExportStatus(I_EDI_Document_Extension.EDI_EXPORTSTATUS_SendingStarted);
-		InterfaceWrapperHelper.save(desadv);
 
 		try
 		{
 			exportEDI(I_M_InOut_Desadv_V.class,
 					  EDI_DESADV_InOut_Export.CST_DESADV_EXP_FORMAT,
 					  I_M_InOut_Desadv_V.Table_Name,
-					  I_M_InOut_Desadv_V.COLUMNNAME_M_InOut_Desadv_ID,
+					  I_M_InOut_Desadv_V.COLUMNNAME_M_InOut_ID,
 					  CreateAttachmentRequest.builder()
 							  .target(TableRecordReference.of(I_EDI_Desadv.Table_Name, shipment.getEDI_Desadv_ID()))
 							  .attachmentName(EDI_DESADV_InOut_Export.CST_DESADV_EXP_FORMAT + "_" + shipment.getDocumentNo() + ".xml")

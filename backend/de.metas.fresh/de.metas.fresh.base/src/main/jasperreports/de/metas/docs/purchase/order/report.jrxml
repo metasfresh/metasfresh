@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/order/report" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.1000000000000003"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="240"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="releasetest.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="uat.xml"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -74,7 +74,7 @@
 				<subreportExpression><![CDATA["de/metas/docs/purchase/order/report_description.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-6" x="56" y="153" width="255" height="127" uuid="90035be5-1ca6-4838-a969-703d8045ded2">
+				<reportElement key="subreport-6" x="37" y="153" width="255" height="127" uuid="90035be5-1ca6-4838-a969-703d8045ded2">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -93,7 +93,7 @@
 				<subreportExpression><![CDATA["de/metas/docs/generics/report_bp_org_block_left.jasper"]]></subreportExpression>
 			</subreport>
 			<subreport isUsingCache="true">
-				<reportElement key="subreport-8" x="340" y="155" width="210" height="127" uuid="2b4ed47b-79b1-40ee-b9a8-6ec0db51364c">
+				<reportElement key="subreport-8" x="330" y="155" width="210" height="127" uuid="2b4ed47b-79b1-40ee-b9a8-6ec0db51364c">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>

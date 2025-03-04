@@ -7,6 +7,7 @@ import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReference;
+import de.metas.document.DocBaseType;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.DocumentHandler;
 import de.metas.document.engine.DocumentTableFields;
@@ -26,7 +27,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.MPeriod;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -171,13 +171,13 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		final I_C_BankStatement bankStatement = extractBankStatement(docFields);
 
 		// Std Period open?
-		MPeriod.testPeriodOpen(Env.getCtx(), bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
+		MPeriod.testPeriodOpen(Env.getCtx(), bankStatement.getStatementDate(), DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
 
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
 		final List<I_C_BankStatementLine> lines = services.getBankStatementLinesByBankStatementId(bankStatementId);
 		if (lines.isEmpty())
 		{
-			throw new AdempiereException("@NoLines@");
+			throw AdempiereException.noLines();
 		}
 		// Lines
 		BigDecimal total = BigDecimal.ZERO;
@@ -214,8 +214,8 @@ public class BankStatementDocumentHandler implements DocumentHandler
 
 		bankStatement.setStatementDifference(total);
 		bankStatement.setEndingBalance(bankStatement.getBeginningBalance().add(total));
-		MPeriod.testPeriodOpen(Env.getCtx(), minDate, X_C_DocType.DOCBASETYPE_BankStatement, 0);
-		MPeriod.testPeriodOpen(Env.getCtx(), maxDate, X_C_DocType.DOCBASETYPE_BankStatement, 0);
+		MPeriod.testPeriodOpen(Env.getCtx(), minDate, DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
+		MPeriod.testPeriodOpen(Env.getCtx(), maxDate, DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
 
 		bankStatement.setDocAction(IDocument.ACTION_Complete);
 		return IDocument.STATUS_InProgress;
@@ -361,7 +361,7 @@ public class BankStatementDocumentHandler implements DocumentHandler
 		}
 		else
 		{
-			MPeriod.testPeriodOpen(Env.getCtx(), bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
+			MPeriod.testPeriodOpen(Env.getCtx(), bankStatement.getStatementDate(), DocBaseType.BankStatement, bankStatement.getAD_Org_ID());
 			services.deleteFactsForBankStatement(bankStatement);
 		}
 

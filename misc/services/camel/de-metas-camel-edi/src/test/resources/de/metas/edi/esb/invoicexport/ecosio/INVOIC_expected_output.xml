@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?><EDI_cctop_invoic_v AD_Client_Value="Spavetti" ReplicationMode="1" ReplicationType="M" SequenceNo="1489023" TrxName="" Version="*">
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<EDI_cctop_invoic_v AD_Client_Value="AD_Client_Value" ReplicationMode="1" ReplicationType="M" SequenceNo="1489023" TrxName="" Version="*">
     <C_BPartner_Location_ID>2209104</C_BPartner_Location_ID>
     <C_Invoice_ID>1488989</C_Invoice_ID>
     <DateInvoiced>2021-02-05+01:00</DateInvoiced>
@@ -7,6 +8,8 @@
     <eancom_doctype>380</eancom_doctype>
     <EDI_cctop_invoic_v_ID>1488989</EDI_cctop_invoic_v_ID>
     <GrandTotal>120.70</GrandTotal>
+    <SurchargeAmt>-3.53</SurchargeAmt>
+    <TotalLinesWithSurchargeAmt>114.23</TotalLinesWithSurchargeAmt>
     <invoice_documentno>353226</invoice_documentno>
     <ISO_Code>CHF</ISO_Code>
     <MovementDate>2021-01-19+01:00</MovementDate>
@@ -15,8 +18,8 @@
     <sendergln>1234567890124</sendergln>
     <shipment_documentno>1171035</shipment_documentno>
     <TotalLines>117.76</TotalLines>
-    <totaltaxbaseamt>117.76</totaltaxbaseamt>
-    <totalvat>2.94</totalvat>
+    <TotalTaxBaseAmt>117.76</TotalTaxBaseAmt>
+    <TotalVat>2.94</TotalVat>
     <EDI_cctop_000_v>
         <C_BPartner_Location_ID>2209104</C_BPartner_Location_ID>
         <EDI_cctop_000_v_ID>2209104</EDI_cctop_000_v_ID>
@@ -209,9 +212,14 @@
         <TaxAmt>2.94</TaxAmt>
         <TaxBaseAmt>117.76</TaxBaseAmt>
         <TotalAmt>120.70</TotalAmt>
+        <SurchargeAmt>-3.53</SurchargeAmt>
+        <TaxBaseAmtWithSurchargeAmt>114.23</TaxBaseAmtWithSurchargeAmt>
+        <TaxAmtWithSurchargeAmt>8.00</TaxAmtWithSurchargeAmt>
     </EDI_cctop_901_991_v>
     <CountryCode>CH</CountryCode>
     <CountryCode_3digit>CHE</CountryCode_3digit>
     <VATaxID>VATaxID_1234</VATaxID>
     <InvoicableQtyBasedOn>Nominal</InvoicableQtyBasedOn>
+    <TotalVatWithSurchargeAmt>8.00</TotalVatWithSurchargeAmt>
+    <GrandTotalWithSurchargeAmt>122.23</GrandTotalWithSurchargeAmt>
 </EDI_cctop_invoic_v>

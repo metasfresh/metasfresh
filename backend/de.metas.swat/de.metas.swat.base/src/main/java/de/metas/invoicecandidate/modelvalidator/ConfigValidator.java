@@ -95,7 +95,7 @@ public class ConfigValidator extends AbstractModuleInterceptor
 		// ignoring C_Invoice_Candidate_Recompute from migration scripts; otherwise it might occur that the migration script contains
 		// are inserts into the table, if an embedded async processor is running somewhere in the background
 		final IMigrationLogger migrationLogger = Services.get(IMigrationLogger.class);
-		migrationLogger.addTableToIgnoreList(I_C_Invoice_Candidate_Recompute.Table_Name);
+		migrationLogger.addTablesToIgnoreList(I_C_Invoice_Candidate_Recompute.Table_Name);
 
 		//
 		// Setup event bus topics on which swing client notification listener shall subscribe

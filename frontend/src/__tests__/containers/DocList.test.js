@@ -27,6 +27,7 @@ import appHandler, {
   initialState as appHandlerState,
 } from '../../reducers/appHandler';
 import windowHandler, {
+  getIndicatorFromState,
   initialState as windowHandlerState,
 } from '../../reducers/windowHandler';
 import menuHandler, {
@@ -293,7 +294,7 @@ describe.skip('DocList', () => {
           expect(
             store.getState().actionsHandler[quickActionsId]
           ).toBeTruthy();
-          expect(store.getState().windowHandler.indicator).toEqual('saved');
+          expect(getIndicatorFromState({state: store.getState()})).toEqual('saved');
         });
       });   
 

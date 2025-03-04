@@ -22,6 +22,7 @@
 
 package org.eevolution.productioncandidate.model.interceptor;
 
+import de.metas.handlingunits.HuId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -29,17 +30,21 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.event.pporder.PPOrderCandidateCreatedEvent;
+import de.metas.material.event.pporder.PPOrderCandidateDeletedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateUpdatedEvent;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Order_Candidate;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.service.PPOrderCandidatePojoConverter;
 import org.eevolution.productioncandidate.service.PPOrderCandidateService;
 import org.springframework.stereotype.Component;
@@ -53,6 +58,7 @@ import static org.eevolution.productioncandidate.service.PPOrderCandidatePojoCon
 
 @Interceptor(I_PP_Order_Candidate.class)
 @Component
+@RequiredArgsConstructor
 public class PP_Order_Candidate
 {
 	private static final AdMessageKey MSG_QTY_ENTERED_LOWER_THAN_QTY_PROCESSED = AdMessageKey.of("org.eevolution.productioncandidate.model.interceptor.QtyEnteredLowerThanQtyProcessed");
@@ -63,16 +69,6 @@ public class PP_Order_Candidate
 	private final PPOrderCandidatePojoConverter ppOrderCandidateConverter;
 	private final PostMaterialEventService materialEventService;
 	private final PPOrderCandidateService ppOrderCandidateService;
-
-	public PP_Order_Candidate(
-			@NonNull final PPOrderCandidatePojoConverter ppOrderCandidateConverter,
-			@NonNull final PostMaterialEventService materialEventService,
-			@NonNull final PPOrderCandidateService ppOrderCandidateService)
-	{
-		this.ppOrderCandidateConverter = ppOrderCandidateConverter;
-		this.materialEventService = materialEventService;
-		this.ppOrderCandidateService = ppOrderCandidateService;
-	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
 	public void syncLinesAndPostPPOrderCreatedEvent(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
@@ -133,6 +129,38 @@ public class PP_Order_Candidate
 		ppOrderCandidateService.syncLines(ppOrderCandidateRecord);
 
 		fireMaterialUpdateEvent(ppOrderCandidateRecord);
+	}
+
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_PP_Order_Candidate.COLUMNNAME_IsMaturing, I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID })
+	public void checkMaturingCandidate(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	{
+		if (!ppOrderCandidateRecord.isMaturing())
+		{
+			return;
+		}
+
+		final HuId issueHuId = HuId.ofRepoIdOrNull(ppOrderCandidateRecord.getIssue_HU_ID());
+		if (issueHuId == null)
+		{
+			throw new FillMandatoryException(I_PP_Order_Candidate.COLUMNNAME_Issue_HU_ID);
+		}
+	}
+
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	public void onDelete(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	{
+		final PPOrderCandidate ppOrderCandidatePojo = ppOrderCandidateConverter.toPPOrderCandidate(ppOrderCandidateRecord);
+
+		final PPOrderCandidateDeletedEvent ppOrderCandidateDeletedEvent = PPOrderCandidateDeletedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrderCandidateRecord.getAD_Client_ID(), ppOrderCandidateRecord.getAD_Org_ID()))
+				.ppOrderCandidate(ppOrderCandidatePojo)
+				.build();
+
+		ppOrderCandidateService.deleteLines(PPOrderCandidateId.ofRepoId(ppOrderCandidateRecord.getPP_Order_Candidate_ID()));
+		materialEventService.enqueueEventAfterNextCommit(ppOrderCandidateDeletedEvent);
 	}
 
 	private void validateQuantities(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)

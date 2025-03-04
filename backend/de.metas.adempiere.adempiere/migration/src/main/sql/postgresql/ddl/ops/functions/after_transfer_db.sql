@@ -43,6 +43,9 @@ BEGIN
     THEN
         UPDATE ad_sysconfig SET value='http://reports:8080/adempiereJasper/ReportServlet' WHERE name ILIKE 'de.metas.adempiere.report.jasper.JRServerServlet';
         UPDATE ad_sysconfig SET value='http://reports:8080/adempiereJasper/BarcodeServlet' WHERE name ILIKE 'de.metas.adempiere.report.barcode.BarcodeServlet';
+    ELSE
+        PERFORM set_sysconfig_value('de.metas.adempiere.report.jasper.JRServerServlet','http://app:8282/adempiereJasper/ReportServlet');
+        PERFORM set_sysconfig_value('de.metas.adempiere.report.barcode.BarcodeServlet','http://app:8282/adempiereJasper/BarcodeServlet');
     END IF;
 
     UPDATE externalsystem_config SET isactive = 'N' WHERE TRUE;

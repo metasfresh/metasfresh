@@ -4,7 +4,7 @@ package de.metas.edi.process;
  * #%L
  * de.metas.edi
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2024 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -49,6 +49,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+/**
+ * This process is used if {@link EDIWorkpackageProcessor#SYS_CONFIG_OneDesadvPerShipment} is {@code Y}.
+ */
 public class EDI_Desadv_InOut_EnqueueForExport extends JavaProcess implements IProcessPrecondition
 {
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
@@ -87,7 +90,7 @@ public class EDI_Desadv_InOut_EnqueueForExport extends JavaProcess implements IP
 				.setProcessor(new TrxItemProcessorAdapter<I_EDI_Desadv, Void>()
 				{
 					@Override
-					public void process(final I_EDI_Desadv desadv)
+					public void process(@NonNull final I_EDI_Desadv desadv)
 					{
 						enqueueShipmentsForDesadv(queue, desadv);
 					}
@@ -98,16 +101,15 @@ public class EDI_Desadv_InOut_EnqueueForExport extends JavaProcess implements IP
 	}
 
 	private void enqueueShipmentsForDesadv(
-			final IWorkPackageQueue queue,
-			final I_EDI_Desadv desadv)
+			final @NonNull IWorkPackageQueue queue,
+			final @NonNull I_EDI_Desadv desadv)
 	{
 		final List<I_M_InOut> shipments = desadvDAO.retrieveShipmentsWithStatus(desadv, ImmutableSet.of(EDIExportStatus.Pending, EDIExportStatus.Error));
-
 		final String trxName = InterfaceWrapperHelper.getTrxName(desadv);
 
-		shipments.forEach(shipment -> {
-			queue
-					.newWorkPackage()
+		for (final I_M_InOut shipment : shipments)
+		{
+			queue.newWorkPackage()
 					.setAD_PInstance_ID(getPinstanceId())
 					.bindToTrxName(trxName)
 					.addElement(shipment)
@@ -115,8 +117,19 @@ public class EDI_Desadv_InOut_EnqueueForExport extends JavaProcess implements IP
 
 			shipment.setEDI_ExportStatus(I_M_InOut.EDI_EXPORTSTATUS_Enqueued);
 			InterfaceWrapperHelper.save(shipment);
-		});
 
+			addLog("Enqueued M_InOut_ID={} for EDI_Desadv_ID={}", shipment.getM_InOut_ID(), desadv.getEDI_Desadv_ID());
+		}
+		
+		if(shipments.isEmpty())
+		{
+			addLog("Found no M_InOuts to enqueue for EDI_Desadv_ID={}", desadv.getEDI_Desadv_ID());
+		}
+		else
+		{
+			desadv.setEDI_ExportStatus(I_M_InOut.EDI_EXPORTSTATUS_Enqueued);
+			InterfaceWrapperHelper.save(desadv);
+		}
 	}
 
 	@NonNull
@@ -130,8 +143,13 @@ public class EDI_Desadv_InOut_EnqueueForExport extends JavaProcess implements IP
 				.addColumn(I_EDI_Desadv.COLUMNNAME_POReference)
 				.addColumn(I_EDI_Desadv.COLUMNNAME_EDI_Desadv_ID);
 
-		return queryBuilder
+		final Iterator<I_EDI_Desadv> iterator = queryBuilder
 				.create()
 				.iterate(I_EDI_Desadv.class);
+		if(!iterator.hasNext())
+		{
+			addLog("Found no EDI_Desadvs to enqueue within the current selection");
+		}
+		return iterator;
 	}
 }

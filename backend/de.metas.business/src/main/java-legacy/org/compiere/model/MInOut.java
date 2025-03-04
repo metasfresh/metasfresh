@@ -29,6 +29,7 @@ import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.common.util.time.SystemTime;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
@@ -39,6 +40,7 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IMatchInvBL;
@@ -47,8 +49,8 @@ import de.metas.order.DeliveryRule;
 import de.metas.order.IMatchPOBL;
 import de.metas.order.IMatchPODAO;
 import de.metas.order.IOrderDAO;
-import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -755,6 +757,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			// Reset
 			if (!setOrder)
 			{
+				line.setC_Order_ID(0);
 				line.setC_OrderLine_ID(0);
 				line.setM_RMALine_ID(0); // Reset RMA Line
 			}
@@ -1201,8 +1204,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		final MInOutLine[] lines = getLines();
 		if (lines == null || lines.length == 0)
 		{
-			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			throw AdempiereException.noLines();
 		}
 		BigDecimal Volume = BigDecimal.ZERO;
 		BigDecimal Weight = BigDecimal.ZERO;
@@ -1475,7 +1477,7 @@ public class MInOut extends X_M_InOut implements IDocument
 						storageBL.addAsync(
 								getCtx(),
 								warehouseId.getRepoId(),
-								Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId).getRepoId(),
+								Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId).getRepoId(),
 								sLine.getM_Product_ID(),
 								sLine.getM_AttributeSetInstance_ID(), reservationAttributeSetInstance_ID,
 								BigDecimal.ZERO, QtySO.negate(), QtyPO.negate(), get_TrxName());
@@ -2272,7 +2274,7 @@ public class MInOut extends X_M_InOut implements IDocument
 			return; // nothing to do
 		}
 
-		for (final I_M_MatchPO matchPO : Services.get(IMatchPODAO.class).getByReceiptId(getM_InOut_ID()))
+		for (final I_M_MatchPO matchPO : Services.get(IMatchPODAO.class).getByReceiptId(InOutId.ofRepoIdOrNull(getM_InOut_ID())))
 		{
 			if (matchPO.getC_InvoiceLine_ID() <= 0)
 			{
@@ -2308,7 +2310,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		// Std Period open?
 		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
-		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), dt.getDocBaseType(), getAD_Org_ID());
+		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), DocBaseType.ofCode(dt.getDocBaseType()), getAD_Org_ID());
 
 		//
 		// Make sure it's not a reversal or reversed document.

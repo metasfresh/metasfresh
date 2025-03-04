@@ -27,12 +27,16 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
+import de.metas.common.util.pair.ImmutablePair;
+import de.metas.gs1.GTIN;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
 import de.metas.product.CreateProductRequest;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductMappingAware;
+import de.metas.product.IssuingToleranceSpec;
+import de.metas.product.IssuingToleranceValueType;
 import de.metas.product.ProductAndCategoryAndManufacturerId;
 import de.metas.product.ProductAndCategoryId;
 import de.metas.product.ProductCategoryId;
@@ -40,20 +44,25 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductPlanningSchemaSelector;
 import de.metas.product.ResourceId;
 import de.metas.product.UpdateProductRequest;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_InvoiceLine;
@@ -145,6 +154,17 @@ public class ProductDAO implements IProductDAO
 	public List<I_M_Product> getByIds(@NonNull final Set<ProductId> productIds)
 	{
 		return loadByRepoIdAwaresOutOfTrx(productIds, I_M_Product.class);
+	}
+
+	@Override
+	@NonNull
+	public ImmutableList<I_M_Product> getByIdsInTrx(@NonNull final Set<ProductId> productIds)
+	{
+		return queryBL.createQueryBuilder(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Product.COLUMNNAME_M_Product_ID, productIds)
+				.create()
+				.listImmutable(I_M_Product.class);
 	}
 
 	@Override
@@ -362,6 +382,15 @@ public class ProductDAO implements IProductDAO
 	{
 		final ProductCategoryId productCategoryId = retrieveProductCategoryByProductId(productId);
 		return productCategoryId != null ? ProductAndCategoryId.of(productId, productCategoryId) : null;
+	}
+
+	@Override
+	public ImmutableSet<ProductAndCategoryId> retrieveProductAndCategoryIdsByProductIds(@NonNull final Set<ProductId> productIds)
+	{
+		return getByIds(productIds)
+				.stream()
+				.map(product -> ProductAndCategoryId.of(product.getM_Product_ID(), product.getM_Product_Category_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Override
@@ -588,13 +617,40 @@ public class ProductDAO implements IProductDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
 				.filter(queryBL.createCompositeQueryFilter(I_M_Product.class)
-								.setJoinOr()
-								.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
-								.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
+						.setJoinOr()
+						.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
+						.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
 				.create()
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
 
 		return Optional.ofNullable(productId);
+	}
+
+	@Override
+	public Optional<ProductId> getProductIdByGTIN(@NonNull final GTIN gtin, @NonNull final ClientId clientId)
+	{
+		final ProductId productId = queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_GTIN, gtin.getAsString())
+				.create()
+				.firstIdOnly(ProductId::ofRepoIdOrNull);
+
+		return Optional.ofNullable(productId);
+	}
+
+	@Override
+	public Optional<ProductId> getProductIdByValueStartsWith(@NonNull final String valuePrefix, @NonNull final ClientId clientId)
+	{
+		final ImmutableSet<ProductId> productIds = queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
+				.addStringStartsWith(I_M_Product.COLUMNNAME_Value, valuePrefix)
+				.setLimit(QueryLimit.TWO)
+				.create()
+				.listIds(ProductId::ofRepoIdOrNull);
+
+		return productIds.size() == 1 ? Optional.of(productIds.iterator().next()) : Optional.empty();
 	}
 
 	@Override
@@ -659,6 +715,55 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
+	public ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull final ClientId clientId)
+	{
+		return queryBL
+				.createQueryBuilder(de.metas.adempiere.model.I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_IsStocked, true)
+				.orderBy(I_M_Product.COLUMNNAME_Value)
+				.create()
+				.listIds(ProductId::ofRepoId);
+	}
+
+	@Override
+	public Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		return extractIssuingToleranceSpec(product);
+	}
+
+	public static Optional<IssuingToleranceSpec> extractIssuingToleranceSpec(@NonNull final I_M_Product product)
+	{
+		if (!product.isEnforceIssuingTolerance())
+		{
+			return Optional.empty();
+		}
+
+		final IssuingToleranceValueType valueType = IssuingToleranceValueType.ofNullableCode(product.getIssuingTolerance_ValueType());
+		if (valueType == null)
+		{
+			throw new FillMandatoryException(I_M_Product.COLUMNNAME_IssuingTolerance_ValueType);
+		}
+		else if (valueType == IssuingToleranceValueType.PERCENTAGE)
+		{
+			final Percent percent = Percent.of(product.getIssuingTolerance_Perc());
+			return Optional.of(IssuingToleranceSpec.ofPercent(percent));
+		}
+		else if (valueType == IssuingToleranceValueType.QUANTITY)
+		{
+			final UomId uomId = UomId.ofRepoId(product.getIssuingTolerance_UOM_ID());
+			final Quantity qty = Quantitys.of(product.getIssuingTolerance_Qty(), uomId);
+			return Optional.of(IssuingToleranceSpec.ofQuantity(qty));
+		}
+		else
+		{
+			throw new AdempiereException("Unknown valueType: " + valueType);
+		}
+	}
+
+	@Override
 	public boolean isProductUsed(@NonNull final ProductId productId)
 	{
 		return queryBL
@@ -688,6 +793,31 @@ public class ProductDAO implements IProductDAO
 						.addOnlyActiveRecordsFilter()
 						.create()
 						.anyMatch();
+	}
+
+	@Override
+	public Set<ProductId> getProductIdsMatchingQueryString(
+			@NonNull final String queryString,
+			@NonNull final ClientId clientId,
+			@NonNull QueryLimit limit)
+	{
+		final IQueryBuilder<I_M_Product> queryBuilder = queryBL.createQueryBuilder(I_M_Product.class)
+				.setLimit(limit)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId);
+
+		queryBuilder.addCompositeQueryFilter()
+				.setJoinOr()
+				.addStringLikeFilter(I_M_Product.COLUMNNAME_Value, queryString, true)
+				.addStringLikeFilter(I_M_Product.COLUMNNAME_Name, queryString, true);
+
+		return queryBuilder.create().listIds(ProductId::ofRepoIdOrNull);
+	}
+
+	@Override
+	public void save(I_M_Product record)
+	{
+		InterfaceWrapperHelper.save(record);
 	}
 
 }

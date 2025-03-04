@@ -82,7 +82,7 @@ public class AbstractPurchaseOfferEventHandler
 			@NonNull final AbstractPurchaseOfferEvent purchaseOfferedEvent,
 			final boolean forNextDayQty)
 	{
-		final OrgId orgId = purchaseOfferedEvent.getEventDescriptor().getOrgId();
+		final OrgId orgId = purchaseOfferedEvent.getOrgId();
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
 		final Instant date = TimeUtil.getDay(purchaseOfferedEvent.getDate(), timeZone);

@@ -8,14 +8,22 @@ import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleRepository;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateService;
+import de.metas.event.IEventBusFactory;
+import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHURepository;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
@@ -29,11 +37,13 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_Test;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -42,15 +52,15 @@ import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class HUAssignmentBLTest
 {
-	private String trxName;
+	@Nullable private String trxName;
 	private IContextAware contextProvider;
 
-	private IHUAssignmentBL huAssignmentBL;
-	private IHUAssignmentDAO huAssignmentDAO;
+	private HUAssignmentBL huAssignmentBL;
+	private HUAssignmentDAO huAssignmentDAO;
 
 	private I_Test record;
 	private I_M_HU hu;
@@ -63,7 +73,8 @@ public class HUAssignmentBLTest
 
 		final ReceiptScheduleProducerFactory receiptScheduleProducerFactory = new ReceiptScheduleProducerFactory(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
 		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
-		
+		SpringContextHolder.registerJUnitBean(IEventBusFactory.class, PlainEventBusFactory.newInstance());
+
 		//
 		// Make sure Main handling units interceptor is registered
 		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
@@ -72,19 +83,27 @@ public class HUAssignmentBLTest
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
 				ADReferenceService.newMocked(),
-				huReservationService);
+				huReservationService,
+				new PPOrderSourceHUService(new PPOrderSourceHURepository(),
+										   new PPOrderIssueScheduleService(
+												   new PPOrderIssueScheduleRepository(),
+												   new HUQtyService(InventoryService.newInstanceForUnitTesting())
+										   )));
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new de.metas.handlingunits.model.validator.Main(
 				ddOrderMoveScheduleService,
 				ddOrderService,
 				new PickingBOMService()));
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new DD_Order(ddOrderMoveScheduleService, ddOrderService));
-		
+
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new DD_Order(ddOrderService, ddOrderMoveScheduleService, DDOrderCandidateService.newInstanceForUnitTesting()));
+
 		//
 		// BL under test
-		huAssignmentBL = Services.get(IHUAssignmentBL.class);
-		huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+		huAssignmentBL = new HUAssignmentBL();
+		Services.registerService(IHUAssignmentBL.class, huAssignmentBL);
+		huAssignmentDAO = new HUAssignmentDAO();
+		Services.registerService(IHUAssignmentDAO.class, huAssignmentDAO);
 
 		//
 		// Setup ctx and trxName

@@ -46,7 +46,6 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IAttributePricingBL;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
-import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -90,11 +89,13 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -145,6 +146,7 @@ class OLCandOrderFactory
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
@@ -221,9 +223,9 @@ class OLCandOrderFactory
 					.setFrom(billBPartner);
 		}
 
-		final Timestamp dateDoc = TimeUtil.asTimestamp(candidateOfGroup.getDateDoc());
-		order.setDateOrdered(dateDoc);
-		order.setDateAcct(dateDoc);
+		final Timestamp dateOrdered = TimeUtil.asTimestamp(candidateOfGroup.getDateOrdered());
+		order.setDateOrdered(dateOrdered);
+		order.setDateAcct(dateOrdered);
 
 		// task 06269 (see KurzBeschreibung)
 		// note that C_Order.DatePromised is propagated to C_OrderLine.DatePromised in MOrder.afterSave() and MOrderLine.setOrder()
@@ -380,8 +382,15 @@ class OLCandOrderFactory
 
 	private void validateAndCreateCompensationGroups()
 	{
-		groupsToOrderLines.keySet()
+		orderLines.values()
 				.stream()
+				//dev-note: make sure the compensation groups are created in the right order
+				.sorted(Comparator.comparing(I_C_OrderLine::getLine))
+				.map(I_C_OrderLine::getC_OrderLine_ID)
+				.map(OrderLineId::ofRepoId)
+				.map(primaryOrderLineToGroup::get)
+				.filter(Objects::nonNull)
+				.map(OrderLineGroup::getGroupKey)
 				.map(groupsToOrderLines::get)
 				.forEach(this::createCompensationGroup);
 	}
@@ -405,12 +414,11 @@ class OLCandOrderFactory
 
 		final GroupCompensationType groupCompensationType = getGroupCompensationType(productForMainLine);
 		final GroupCompensationAmtType groupCompensationAmtType = getGroupCompensationAmtType(productForMainLine);
+		final OrderLineGroup orderLineGroup = primaryOrderLineToGroup.get(OrderLineId.ofRepoId(mainOrderLineInGroup.getC_OrderLine_ID()));
 
 		if (groupCompensationType.equals(GroupCompensationType.Discount)
 				&& groupCompensationAmtType.equals(GroupCompensationAmtType.Percent))
 		{
-			final OrderLineGroup orderLineGroup = primaryOrderLineToGroup.get(OrderLineId.ofRepoId(mainOrderLineInGroup.getC_OrderLine_ID()));
-
 			Optional.ofNullable(orderLineGroup.getDiscount())
 					.map(Percent::toBigDecimal)
 					.ifPresent(mainOrderLineInGroup::setGroupCompensationPercentage);
@@ -424,7 +432,7 @@ class OLCandOrderFactory
 
 		orderGroupsRepository.retrieveOrCreateGroup(GroupRepository.RetrieveOrCreateGroupRequest.builder()
 															.orderLineIds(orderLineIds)
-															.newGroupTemplate(createNewGroupTemplate(productId, productDAO.retrieveProductCategoryByProductId(productId)))
+															.newGroupTemplate(createNewGroupTemplate(productId))
 															.build());
 	}
 
@@ -440,13 +448,13 @@ class OLCandOrderFactory
 		return GroupCompensationType.ofAD_Ref_List_Value(CoalesceUtil.coalesce(productForMainLine.getGroupCompensationType(), X_C_OrderLine.GROUPCOMPENSATIONTYPE_Discount));
 	}
 
-	private GroupTemplate createNewGroupTemplate(@NonNull final ProductId productId, @Nullable final ProductCategoryId productCategoryId)
+	private GroupTemplate createNewGroupTemplate(@NonNull final ProductId productId)
 	{
 		return GroupTemplate.builder()
 				.name(productBL.getProductName(productId))
 				.regularLinesToAdd(ImmutableList.of())
 				.compensationLines(ImmutableList.of())
-				.productCategoryId(productCategoryId)
+				.productCategoryId(productDAO.retrieveProductCategoryByProductId(productId))
 				.build();
 	}
 
@@ -481,9 +489,15 @@ class OLCandOrderFactory
 
 	private void addOLCand0(@NonNull final OLCand candidate)
 	{
+		final boolean isNewOrderLine;
 		if (currentOrderLine == null)
 		{
 			currentOrderLine = newOrderLine(candidate);
+			isNewOrderLine = true;
+		}
+		else
+		{
+			isNewOrderLine = false;
 		}
 
 		setExternalBPartnerInfo(currentOrderLine, candidate);
@@ -497,7 +511,7 @@ class OLCandOrderFactory
 		//
 		// Quantity
 		{
-			final Quantity currentQty = Quantitys.create(currentOrderLine.getQtyEntered(), UomId.ofRepoId(currentOrderLine.getC_UOM_ID()));
+			final Quantity currentQty = Quantitys.of(currentOrderLine.getQtyEntered(), UomId.ofRepoId(currentOrderLine.getC_UOM_ID()));
 			final Quantity newQtyEntered = Quantitys.add(UOMConversionContext.of(candidate.getM_Product_ID()), currentQty, candidate.getQty());
 			currentOrderLine.setQtyEntered(newQtyEntered.toBigDecimal());
 
@@ -507,10 +521,29 @@ class OLCandOrderFactory
 			currentOrderLine.setQtyOrdered(qtyOrdered);
 		}
 
+		// Quantity in price UOM
+		{
+			final boolean isManualQtyInPriceUOM = candidate.getManualQtyInPriceUOM() != null;
+
+			if (isNewOrderLine)
+			{
+				currentOrderLine.setIsManualQtyInPriceUOM(isManualQtyInPriceUOM);
+			}
+			else if (currentOrderLine.isManualQtyInPriceUOM() != isManualQtyInPriceUOM)
+			{
+				throw new AdempiereException("Aggregating with different IsManualQtyInPriceUOM is not allowed");
+			}
+
+			if (isManualQtyInPriceUOM)
+			{
+				currentOrderLine.setQtyEnteredInPriceUOM(currentOrderLine.getQtyEnteredInPriceUOM().add(candidate.getManualQtyInPriceUOM()));
+			}
+		}
+
 		//
 		// Prices
 		{
-			currentOrderLine.setInvoicableQtyBasedOn(candidate.getInvoicableQtyBasedOn().getRecordString());
+			currentOrderLine.setInvoicableQtyBasedOn(candidate.getInvoicableQtyBasedOn().getCode());
 
 			currentOrderLine.setIsManualPrice(candidate.isManualPrice());
 			if (candidate.isManualPrice())
@@ -701,7 +734,7 @@ class OLCandOrderFactory
 		}
 	}
 
-	private static void setExternalBPartnerInfo(@NonNull final I_C_OrderLine orderLine, @NonNull final OLCand candidate)
+	private void setExternalBPartnerInfo(@NonNull final I_C_OrderLine orderLine, @NonNull final OLCand candidate)
 	{
 		orderLine.setExternalSeqNo(candidate.getLine());
 
@@ -714,7 +747,7 @@ class OLCandOrderFactory
 		if (uomId != null)
 		{
 			orderLine.setC_UOM_BPartner_ID(uomId.getRepoId());
-			orderLine.setQtyEnteredInBPartnerUOM(olCand.getQtyEntered());
+			orderLine.setQtyEnteredInBPartnerUOM(olCandEffectiveValuesBL.getEffectiveQtyEntered(olCand));
 		}
 	}
 }

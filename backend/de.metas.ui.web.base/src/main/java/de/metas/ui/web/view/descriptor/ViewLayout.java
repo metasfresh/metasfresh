@@ -20,7 +20,6 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DetailId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
-import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.util.Check;
@@ -88,6 +87,7 @@ public class ViewLayout implements ETagAware
 
 	private final ITranslatableString emptyResultText;
 	private final ITranslatableString emptyResultHint;
+	@Getter private final int pageLength;
 
 	private final ImmutableList<DocumentFilterDescriptor> filters;
 
@@ -132,6 +132,7 @@ public class ViewLayout implements ETagAware
 		description = TranslatableStrings.nullToEmpty(builder.description);
 		emptyResultText = TranslatableStrings.copyOfNullable(builder.emptyResultText);
 		emptyResultHint = TranslatableStrings.copyOfNullable(builder.emptyResultHint);
+		pageLength = builder.pageLength;
 
 		elements = ImmutableList.copyOf(builder.buildElements());
 
@@ -164,17 +165,18 @@ public class ViewLayout implements ETagAware
 	/**
 	 * copy and override constructor
 	 */
-	private ViewLayout(final ViewLayout from,
-			final WindowId windowId,
-			final ViewProfileId profileId,
-			final ImmutableList<DocumentFilterDescriptor> filters,
-			@NonNull final DocumentQueryOrderByList defaultOrderBys,
-			final String allowNewCaption,
-			final boolean hasTreeSupport,
-			final boolean treeCollapsible,
-			final int treeExpandedDepth,
-			final boolean geoLocationSupport,
-			final ImmutableList<DocumentLayoutElementDescriptor> elements)
+	private ViewLayout(
+			@NonNull final ViewLayout from,
+					   final WindowId windowId,
+					   final ViewProfileId profileId,
+					   final ImmutableList<DocumentFilterDescriptor> filters,
+					   @NonNull final DocumentQueryOrderByList defaultOrderBys,
+					   final String allowNewCaption,
+					   final boolean hasTreeSupport,
+					   final boolean treeCollapsible,
+					   final int treeExpandedDepth,
+					   final boolean geoLocationSupport,
+					   final ImmutableList<DocumentLayoutElementDescriptor> elements)
 	{
 		Check.assumeNotEmpty(elements, "elements is not empty");
 
@@ -185,6 +187,7 @@ public class ViewLayout implements ETagAware
 		description = from.description;
 		emptyResultText = from.emptyResultText;
 		emptyResultHint = from.emptyResultHint;
+		pageLength = from.pageLength;
 
 		this.elements = elements;
 
@@ -427,16 +430,16 @@ public class ViewLayout implements ETagAware
 			}
 
 			return new ViewLayout(from,
-								  windowIdEffective,
-								  profileIdEffective,
-								  filtersEffective,
-								  defaultOrderBysEffective,
-								  allowNewCaptionEffective,
-								  hasTreeSupportEffective,
-								  treeCollapsibleEffective,
-								  treeExpandedDepthEffective,
-								  geoLocationSupportEffective,
-								  elementsEffective);
+					windowIdEffective,
+					profileIdEffective,
+					filtersEffective,
+					defaultOrderBysEffective,
+					allowNewCaptionEffective,
+					hasTreeSupportEffective,
+					treeCollapsibleEffective,
+					treeExpandedDepthEffective,
+					geoLocationSupportEffective,
+					elementsEffective);
 		}
 
 		public ChangeBuilder windowId(final WindowId windowId)
@@ -473,9 +476,9 @@ public class ViewLayout implements ETagAware
 			if (this.filters != null && !this.filters.isEmpty())
 			{
 				return filters(ImmutableList.<DocumentFilterDescriptor>builder()
-									   .addAll(this.filters)
-									   .add(filter)
-									   .build());
+						.addAll(this.filters)
+						.add(filter)
+						.build());
 			}
 			else
 			{
@@ -528,11 +531,11 @@ public class ViewLayout implements ETagAware
 				if (element == null)
 				{
 					logger.warn("Field {} was not found. Will be ignored."
-										+ "\n Available field names are: {}."
-										+ "\n If this is a standard view, pls check if the field added to window {}.",
-								fieldName,
-								elementsByFieldName.keySet(),
-								getWindowIdEffective());
+									+ "\n Available field names are: {}."
+									+ "\n If this is a standard view, pls check if the field added to window {}.",
+							fieldName,
+							elementsByFieldName.keySet(),
+							getWindowIdEffective());
 					continue;
 				}
 
@@ -577,12 +580,11 @@ public class ViewLayout implements ETagAware
 	{
 		private WindowId windowId;
 		private DetailId detailId;
-		@Nullable
-		private ITranslatableString caption;
-		@Nullable
-		private ITranslatableString description;
-		private ITranslatableString emptyResultText = LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT;
-		private ITranslatableString emptyResultHint = LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT;
+		@Nullable private ITranslatableString caption;
+		@Nullable private ITranslatableString description;
+		private ITranslatableString emptyResultText;
+		private ITranslatableString emptyResultHint;
+		private int pageLength = 0;
 
 		private Collection<DocumentFilterDescriptor> filters = null;
 		private DocumentQueryOrderByList defaultOrderBys = null;
@@ -674,6 +676,12 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
+		public Builder setPageLength(final int pageLength)
+		{
+			this.pageLength = Math.max(pageLength, 0);
+			return this;
+		}
+
 		public Builder clearElements()
 		{
 			elementBuilders.clear();
@@ -744,7 +752,7 @@ public class ViewLayout implements ETagAware
 			return this;
 		}
 
-		public <T extends IViewRow> Builder addElementsFromViewRowClassAndFieldNames(final Class<T> viewRowClass, final JSONViewDataType viewDataType, final ViewColumnHelper.ClassViewColumnOverrides... columns)
+		public <T extends IViewRow> Builder addElementsFromViewRowClassAndFieldNames(@NonNull final Class<T> viewRowClass, final JSONViewDataType viewDataType, final ViewColumnHelper.ClassViewColumnOverrides... columns)
 		{
 			final List<DocumentLayoutElementDescriptor.Builder> elements = ViewColumnHelper.createLayoutElementsForClassAndFieldNames(viewRowClass, viewDataType, columns);
 			Check.assumeNotEmpty(elements, "elements is not empty"); // shall never happen

@@ -24,12 +24,14 @@ import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
 import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
@@ -46,6 +48,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -619,5 +622,34 @@ public class ADProcessDAO implements IADProcessDAO
 				// Inline parameters because this sql will be logged into the migration script.
 				"UPDATE " + I_AD_Process_Para.Table_Name + " SET ColumnName=" + DB.TO_STRING(newColumnName) + " WHERE AD_Element_ID=" + adElementId.getRepoId(),
 				ITrx.TRXNAME_ThreadInherited);
+	}
+
+
+	@Override
+	public ProcessType retrieveProcessType(@NonNull final AdProcessId processId)
+	{
+		final I_AD_Process process =  InterfaceWrapperHelper.loadOutOfTrx(processId, I_AD_Process.class);
+		return ProcessType.ofCode(process.getType());
+	}
+
+	@Override
+	public ImmutableSet<AdProcessId> retrieveAllActiveAdProcesIds()
+	{
+		return queryBL.createQueryBuilderOutOfTrx(I_AD_Process.class)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_AD_Process.COLUMNNAME_AD_Process_ID)
+				.create()
+				.listIds(AdProcessId::ofRepoId);
+	}
+
+	@NonNull
+	@Override
+	public List<I_AD_Process> retrieveProcessRecordsByValRule(@NonNull final AdValRuleId valRuleId)
+	{
+		return queryBL.createQueryBuilder(I_AD_Process.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(new ValidationRuleQueryFilter<>(I_AD_Process.Table_Name, valRuleId))
+				.create()
+				.list();
 	}
 }

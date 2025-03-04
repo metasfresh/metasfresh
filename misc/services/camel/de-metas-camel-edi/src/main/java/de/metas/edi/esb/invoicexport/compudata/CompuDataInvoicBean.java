@@ -125,8 +125,8 @@ public class CompuDataInvoicBean
 		invoice.setShipmentDocumentno(xmlCctopInvoice.getShipmentDocumentno());
 		invoice.setVataxID(xmlCctopInvoice.getVATaxID());
 		// invoice.setTotalLines(formatNumber(xmlCctopInvoice.getTotalLines(), decimalFormat)); // not used
-		invoice.setTotaltaxbaseamt(formatNumber(xmlCctopInvoice.getTotaltaxbaseamt(), decimalFormat));
-		invoice.setTotalvat(formatNumber(xmlCctopInvoice.getTotalvat(), decimalFormat));
+		invoice.setTotaltaxbaseamt(formatNumber(xmlCctopInvoice.getTotalTaxBaseAmt(), decimalFormat));
+		invoice.setTotalvat(formatNumber(xmlCctopInvoice.getTotalVat(), decimalFormat));
 		invoice.setCountryCode(xmlCctopInvoice.getCountryCode());
 		invoice.setCountryCode3Digit(xmlCctopInvoice.getCountryCode3Digit());
 

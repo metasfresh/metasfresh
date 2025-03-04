@@ -89,8 +89,8 @@ public class PickingHURowsRepository
 			@NonNull final DefaultHUEditorViewFactory huEditorViewFactory,
 			@NonNull final PickingCandidateRepository pickingCandidatesRepo,
 			@NonNull final HUReservationService huReservationService,
-			@NonNull final PickingCandidateService pickingCandidateService,
-			@NonNull final ADReferenceService adReferenceService)
+			@NonNull final ADReferenceService adReferenceService,
+			@NonNull final PickingCandidateService pickingCandidateService)
 	{
 		this(
 				() -> createDefaultHUEditorViewRepository(huEditorViewFactory, huReservationService, adReferenceService),

@@ -22,6 +22,7 @@ package de.metas.invoice.service;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
@@ -30,9 +31,12 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceQuery;
+import de.metas.invoice.InvoiceTax;
+import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
@@ -72,7 +76,7 @@ public interface IInvoiceDAO extends ISingletonService
 	 */
 	I_C_InvoiceLine createInvoiceLine(org.compiere.model.I_C_Invoice invoice);
 
-	I_C_InvoiceLine retrieveLineById(InvoiceLineId invoiceLineId);
+	I_C_InvoiceLine retrieveLineById(InvoiceAndLineId invoiceAndLineId);
 
 	List<I_C_InvoiceLine> retrieveLines(org.compiere.model.I_C_Invoice invoice);
 
@@ -91,9 +95,9 @@ public interface IInvoiceDAO extends ISingletonService
 
 	I_C_InvoiceLine createInvoiceLine(String trxName);
 
-	ImmutableSet<InvoiceId> retainReferencingCompletedInvoices(Collection<InvoiceId> invoiceIds,DocBaseAndSubType targetDocType);
+	ImmutableSet<InvoiceId> retainReferencingCompletedInvoices(Collection<InvoiceId> invoiceIds, DocBaseAndSubType targetDocType);
 
-	List<I_C_InvoiceLine> retrieveReferringLines(@NonNull InvoiceLineId invoiceLineId);
+	List<I_C_InvoiceLine> retrieveReferringLines(@NonNull InvoiceAndLineId invoiceAndLineId);
 
 	/**
 	 * Search by the invoice when the document number and the bpartner id are known.
@@ -143,6 +147,10 @@ public interface IInvoiceDAO extends ISingletonService
 	 */
 	I_C_InvoiceLine retrieveReversalLine(I_C_InvoiceLine line, int reversalInvoiceId);
 
+	List<InvoiceTax> retrieveTaxes(@NonNull InvoiceId invoiceId);
+
+	List<I_C_InvoiceTax> retrieveTaxRecords(@NonNull InvoiceId invoiceId);
+
 	/**
 	 * Retrieve all the Invoices that are marked as posted but do not actually have fact accounts.
 	 * Exclude the entries that don't have either GrandTotal or TotalLines. These entries will produce 0 in posting
@@ -171,18 +179,20 @@ public interface IInvoiceDAO extends ISingletonService
 
 	org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(InvoiceLineId invoiceLineId);
 
-	List<I_C_Invoice> retrieveBySalesrepPartnerId(BPartnerId salesRepBPartnerId,InstantInterval invoicedDateInterval);
+	List<I_C_Invoice> retrieveBySalesrepPartnerId(BPartnerId salesRepBPartnerId, InstantInterval invoicedDateInterval);
 
-	List<I_C_Invoice> retrieveSalesInvoiceByPartnerId(BPartnerId salesRepBPartnerId,InstantInterval invoicedDateInterval);
+	List<I_C_Invoice> retrieveSalesInvoiceByPartnerId(BPartnerId salesRepBPartnerId, InstantInterval invoicedDateInterval);
 
 	Optional<InvoiceId> retrieveIdByInvoiceQuery(InvoiceQuery query);
 
 	<T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNo(String documentNo, OrgId orgId, Class<T> modelClass);
 
-	Collection<InvoiceLineId> getInvoiceLineIds(final InvoiceId id);
+	ImmutableList<I_C_Invoice> retrieveUnpaid(UnpaidInvoiceQuery query);
+
+	Collection<InvoiceAndLineId> getInvoiceLineIds(final InvoiceId id);
 
 	/**
-	 * Be sure to check the code! The method might return {@code true} at unexpected times! 
+	 * Be sure to check the code! The method might return {@code true} at unexpected times!
 	 * E.g. if {@code invoice} references no invoice at all, then this method also returns true!
 	 */
 	boolean isReferencedInvoiceReversed(@NonNull I_C_Invoice invoice);

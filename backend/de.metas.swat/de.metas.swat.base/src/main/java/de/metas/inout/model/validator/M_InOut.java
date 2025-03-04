@@ -14,6 +14,7 @@ import de.metas.inout.event.ReturnInOutUserNotificationsProducer;
 import de.metas.inout.location.InOutLocationsUpdater;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.inout.model.I_M_QualityNote;
 import de.metas.logging.TableRecordMDC;
 import de.metas.request.service.async.spi.impl.C_Request_CreateFromInout_Async;
 import de.metas.util.Services;
@@ -37,6 +38,7 @@ public class M_InOut
 	private static final String SYSCONFIG_PreventReversingShipmentsWhenInvoiceExists = "PreventReversingShipmentsWhenInvoiceExists";
 	private static final AdMessageKey ERR_PreventReversingShipmentsWhenInvoiceExists = AdMessageKey.of("de.metas.inout.model.validator.M_InOut.PreventReversingShipmentsWhenInvoiceExists");
 
+	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
@@ -83,7 +85,7 @@ public class M_InOut
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
-			Services.get(IInOutBL.class).deleteMatchInvs(inoutRecord); // task 08531
+			inoutBL.deleteMatchInvs(inoutRecord); // task 08531
 		}
 	}
 
@@ -92,7 +94,7 @@ public class M_InOut
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
-			final boolean isReversal = Services.get(IInOutBL.class).isReversal(inoutRecord);
+			final boolean isReversal = inoutBL.isReversal(inoutRecord);
 
 			// do nothing in case of reversal
 			if (!isReversal)
@@ -148,8 +150,15 @@ public class M_InOut
 	{
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inoutRecord))
 		{
-			Services.get(IInOutBL.class).invalidateStatistics(inoutRecord);
+			inoutBL.invalidateStatistics(inoutRecord);
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_M_InOut.COLUMNNAME_C_DocType_ID})
+	public void beforeSave_updateDescriptionAndDescriptionBottom(final I_M_InOut inoutRecord)
+	{
+		inoutBL.updateDescriptionAndDescriptionBottomFromDocType(inoutRecord);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_VOID, ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL })

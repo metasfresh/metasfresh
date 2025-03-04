@@ -24,13 +24,16 @@ package de.metas.cucumber.stepdefs.externalsystem;
 
 import de.metas.cucumber.stepdefs.AD_UserGroup_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.leichmehl.PLUType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.process.AdProcessId;
@@ -60,13 +63,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.externalsystem.ExternalSystemType.LeichUndMehl;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum.COLUMNNAME_IsSyncHUsOnMaterialReceipt;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum.COLUMNNAME_IsSyncHUsOnProductionReceipt;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_IsAutoSendWhenCreatedByUserGroup;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_IsSyncBPartnersToRabbitMQ;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_IsSyncExternalReferencesToRabbitMQ;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ExternalSystem_Config_StepDef
 {
@@ -76,16 +80,19 @@ public class ExternalSystem_Config_StepDef
 	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
 
 	private final ExternalSystem_Config_StepDefData configTable;
+	private final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable;
 	private final AD_UserGroup_StepDefData userGroupTable;
 
 	private final TestContext testContext;
 
 	public ExternalSystem_Config_StepDef(
 			@NonNull final ExternalSystem_Config_StepDefData configTable,
+			@NonNull final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable,
 			@NonNull final AD_UserGroup_StepDefData userGroupTable,
-			@NonNull final TestContext testContext)
+			final TestContext testContext)
 	{
 		this.configTable = configTable;
+		this.leichMehlConfigTable = leichMehlConfigTable;
 		this.userGroupTable = userGroupTable;
 		this.testContext = testContext;
 	}
@@ -205,6 +212,14 @@ public class ExternalSystem_Config_StepDef
 			final I_ExternalSystem_Config externalSystemParentConfigEntity = InterfaceWrapperHelper.load(externalSystemParentConfig.get().getId().getRepoId(), I_ExternalSystem_Config.class);
 			configTable.put(configIdentifier, externalSystemParentConfigEntity);
 
+			if (externalSystemType.equals(LeichUndMehl))
+			{
+				final I_ExternalSystem_Config_LeichMehl leichMehlConfig = InterfaceWrapperHelper.load(externalSystemParentConfig.get().getChildConfig().getId(), I_ExternalSystem_Config_LeichMehl.class);
+
+				final String leichMehlConfigIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_ExternalSystem_Config_LeichMehl_ID
+						+ "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+				leichMehlConfigTable.putOrReplace(leichMehlConfigIdentifier, leichMehlConfig);
+			}
 			return;
 		}
 
@@ -280,6 +295,30 @@ public class ExternalSystem_Config_StepDef
 				externalSystemConfigGrsSignum.setIsSyncHUsOnMaterialReceipt(isSyncHUsOnMaterialReceipt);
 				externalSystemConfigGrsSignum.setIsSyncHUsOnProductionReceipt(isSyncHUsOnProductionReceipt);
 				InterfaceWrapperHelper.save(externalSystemConfigGrsSignum);
+				break;
+
+			case LeichUndMehl:
+				final int portNumber = DataTableUtil.extractIntForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_TCP_PortNumber);
+				final String host = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_TCP_Host);
+				final String pluTemplateFile_BaseFolderName = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_Product_BaseFolderName);
+
+				final PLUType pluType = PLUType.ofCodeOptional(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ExternalSystem_Config_LeichMehl.COLUMNNAME_CU_TU_PLU))
+						.orElse(PLUType.CU);
+
+				final I_ExternalSystem_Config_LeichMehl leichMehlConfig = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config_LeichMehl.class);
+				leichMehlConfig.setTCP_PortNumber(portNumber);
+				leichMehlConfig.setTCP_Host(host);
+				leichMehlConfig.setProduct_BaseFolderName(pluTemplateFile_BaseFolderName);
+				leichMehlConfig.setExternalSystemValue(externalSystemChildValue);
+				leichMehlConfig.setIsActive(true);
+				leichMehlConfig.setExternalSystem_Config_ID(externalSystemParentConfigEntity.getExternalSystem_Config_ID());
+				leichMehlConfig.setCU_TU_PLU(pluType.getCode());
+				InterfaceWrapperHelper.saveRecord(leichMehlConfig);
+
+				final String leichMehlConfigIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_ExternalSystem_Config_LeichMehl.COLUMNNAME_ExternalSystem_Config_LeichMehl_ID
+						+ "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+				leichMehlConfigTable.putOrReplace(leichMehlConfigIdentifier, leichMehlConfig);
+
 				break;
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);

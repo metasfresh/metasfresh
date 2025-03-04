@@ -23,6 +23,7 @@ package org.eevolution.api;
  */
 
 import de.metas.material.event.commons.ProductDescriptor;
+import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
@@ -97,6 +98,8 @@ public interface IProductBOMBL extends ISingletonService
 	QtyCalculationsBOMLine toQtyCalculationsBOMLine(
 			@NonNull I_PP_Product_BOMLine productBOMLine,
 			@NonNull I_PP_Product_BOM bom);
+
+	Optional<IssuingToleranceSpec> getEffectiveIssuingToleranceSpec(@NonNull I_PP_Product_BOMLine bomLine);
 
 	Optional<ProductBOM> retrieveValidProductBOM(@NonNull ProductBOMRequest request);
 

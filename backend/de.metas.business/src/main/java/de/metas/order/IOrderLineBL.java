@@ -22,6 +22,7 @@ package de.metas.order;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -34,6 +35,7 @@ import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.Percent;
+import lombok.NonNull;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_PriceList_Version;
 
@@ -42,6 +44,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public interface IOrderLineBL extends ISingletonService
@@ -50,6 +53,8 @@ public interface IOrderLineBL extends ISingletonService
 	String DYNATTR_DoNotRecalculatePrices = IOrderLineBL.class.getName() + "#DoNotRecalcualtePrices";
 
 	List<I_C_OrderLine> getByOrderIds(final Set<OrderId> orderIds);
+
+	I_C_OrderLine getOrderLineById(@NonNull OrderLineId orderLineId);
 
 	Quantity getQtyEntered(org.compiere.model.I_C_OrderLine orderLine);
 
@@ -90,8 +95,8 @@ public interface IOrderLineBL extends ISingletonService
 	/**
 	 * Utility method to subtract the given <code>discount</code> (in percent!) from the given <code>priceEntered</code> and return the result.
 	 *
-	 * @param discount   the discount to subtract in percent (between 0 and 100). Example: 10
-	 * @param precision  the precision of the expected result (relevant for rounding)
+	 * @param discount  the discount to subtract in percent (between 0 and 100). Example: 10
+	 * @param precision the precision of the expected result (relevant for rounding)
 	 * @deprecated Use {@link Percent#subtractFromBase(BigDecimal, int)}
 	 */
 	@Deprecated
@@ -150,7 +155,7 @@ public interface IOrderLineBL extends ISingletonService
 	/**
 	 * Update the given <code>ol</code>'s {@link org.compiere.model.I_C_OrderLine#COLUMNNAME_QtyReserved QtyReserved}<br>
 	 * Do <b>not</b> save the order line.
-	 *
+	 * <p>
 	 * Task http://dewiki908/mediawiki/index.php/09358_OrderLine-QtyReserved_sometimes_not_updated_%28108061810375%29
 	 */
 	void updateQtyReserved(I_C_OrderLine ol);
@@ -179,10 +184,7 @@ public interface IOrderLineBL extends ISingletonService
 	Quantity convertQtyEnteredToStockUOM(org.compiere.model.I_C_OrderLine orderLine);
 
 	/**
-	 * Is Tax Included in Amount. Calls {@link IOrderBL#isTaxIncluded(org.compiere.model.I_C_Order, org.compiere.model.I_C_Tax)} for the given <code>orderLine</code>'s <code>C_Tax</code> and
-	 * <code>C_Order</code>.
-	 *
-	 * @return true if tax calculated
+	 * @return true if tax is included in amount
 	 */
 	boolean isTaxIncluded(org.compiere.model.I_C_OrderLine orderLine);
 
@@ -226,4 +228,10 @@ public interface IOrderLineBL extends ISingletonService
 	CurrencyPrecision extractPricePrecision(org.compiere.model.I_C_OrderLine olRecord);
 
 	void setBPLocation(I_C_OrderLine orderLine);
+
+	boolean isCatchWeight(@NonNull org.compiere.model.I_C_OrderLine orderLine);
+
+	Optional<BPartnerId> getBPartnerId(OrderLineId orderLineId);
+
+	Optional<BPartnerId> getBPartnerId(@NonNull OrderAndLineId orderLineId);
 }

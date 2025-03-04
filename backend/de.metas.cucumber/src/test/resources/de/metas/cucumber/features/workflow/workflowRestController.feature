@@ -29,6 +29,10 @@ Feature: workflow rest controller tests
       | S_Resource_ID.Identifier | S_Resource_ID |
       | testResource             | 540011        |
 
+    And set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy |
+      | N                   | DO_NOT_CREATE        |
+
   @Id:S0179_100
   @from:cucumber
   Scenario: create and start picking workflow
@@ -60,6 +64,10 @@ Feature: workflow rest controller tests
 
     And the order identified by pickingOrder is completed
 
+    And reserve HU to order
+      | M_HU_ID.Identifier | C_OrderLine_ID.Identifier |
+      | workflowProductHU  | pickingOrderLine          |
+
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier              | C_OrderLine_ID.Identifier | IsToRecompute |
       | pickingShipmentSchedule | pickingOrderLine          | N             |
@@ -68,16 +76,23 @@ Feature: workflow rest controller tests
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
       | pickingOrder          | pickingCustomer          | pickingCustomerLocation           |
 
+    And metasfresh contains M_PickingSlot:
+      | Identifier | PickingSlot | IsDynamic |
+      | PS_S0179   | 063.4       | Y         |
+
     And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
 
     And process response and extract picking step and main HU picking candidate:
-      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowStep.Identifier | WorkflowStepQRCode.Identifier |
-      | pickingWorkflow            | workflowPickingActivity     | workflowPickingStep     | workflowPickingQRCode         |
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier |
+      | wf1                        | a1                          | line1                  | step1                  | QR                           |
+    And scan M_PickingSlot for PickingJob
+      | WorkflowProcess.Identifier | M_PickingSlot_ID.Identifier |
+      | wf1                        | PS_S0179                    |
     And create JsonPickingEventsList and store it in context as request payload:
-      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowStep.Identifier | WorkflowStepQRCode.Identifier | QtyPicked |
-      | pickingWorkflow            | workflowPickingActivity     | workflowPickingStep     | workflowPickingQRCode         | 1         |
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier | PickingStep.Identifier | PickingStepQRCode.Identifier | QtyPicked |
+      | wf1                        | a1                          | line1                  | step1                  | QR                           | 1         |
 
-    And the metasfresh REST-API endpoint path 'api/v2/picking/events' receives a 'POST' request with the payload from context and responds with '200' status code
+    And the metasfresh REST-API endpoint path 'api/v2/picking/event' receives a 'POST' request with the payload from context and responds with '200' status code
 
     And validate picking candidate for shipment schedule:
       | M_ShipmentSchedule_ID.Identifier | QtyPicked | PickStatus |

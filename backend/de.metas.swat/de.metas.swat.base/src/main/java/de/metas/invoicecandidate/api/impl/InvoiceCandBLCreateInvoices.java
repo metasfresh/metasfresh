@@ -14,7 +14,6 @@ import de.metas.document.engine.IDocumentBL;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
 import de.metas.i18n.AdMessageId;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.impex.InputDataSourceId;
@@ -65,7 +64,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -144,7 +143,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private final transient IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IWFExecutionFactory wfExecutionFactory = Services.get(IWFExecutionFactory.class);
-	private final transient IADMessageDAO msgDAO = Services.get(IADMessageDAO.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IMatchInvBL matchInvBL = Services.get(IMatchInvBL.class);
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -789,6 +787,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		{
 			final I_C_Invoice_Candidate icRecord = invoiceCandDAO.getByIdOutOfTrx(invoiceCandidateId);
 			icRecord.setQtyToInvoice_Override(null);
+			icRecord.setQtyToInvoiceInUOM_Override(null);
 			icRecord.setPriceEntered_Override(null);
 			invoiceCandDAO.save(icRecord);
 		}
@@ -803,7 +802,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			// Create ASI
 			final I_M_AttributeSetInstance asi = create(getCtx(), I_M_AttributeSetInstance.class, getTrxName());
-			asi.setM_AttributeSet_ID(AttributeConstants.M_AttributeSet_ID_None);
+			asi.setM_AttributeSet_ID(AttributeSetId.NONE.getRepoId());
 			attributesRepo.save(asi);
 
 			// Create one Attribute Instance for each invoice line attribute
@@ -1040,7 +1039,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				if (userId != USERINCHARGE_NA)
 				{
 					note = create(ctx, I_AD_Note.class, ITrx.TRXNAME_None);
-					note.setAD_Message_ID(msgDAO.retrieveIdByValue(ctx, MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P)
+					note.setAD_Message_ID(msgBL.getIdByAdMessage(MSG_INVOICE_CAND_BL_PROCESSING_ERROR_0P)
 												  .map(AdMessageId::getRepoId)
 												  .orElse(-1));
 

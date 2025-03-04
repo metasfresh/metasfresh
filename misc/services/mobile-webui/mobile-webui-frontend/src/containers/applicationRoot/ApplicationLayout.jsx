@@ -1,51 +1,64 @@
-import { useHistory, useRouteMatch } from 'react-router-dom';
+import { useRouteMatch } from 'react-router-dom';
 import { ViewHeader } from '../ViewHeader';
 import ScreenToaster from '../../components/ScreenToaster';
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { getApplicationInfoById } from '../../reducers/applications';
 import PropTypes from 'prop-types';
-import { getCaptionFromHeaders } from '../../reducers/headers';
+import { useNavigationInfoFromHeaders } from '../../reducers/headers';
 import { isWfProcessLoaded } from '../../reducers/wfProcesses';
 import { trl } from '../../utils/translations';
+import { useApplicationInfo } from '../../reducers/applications';
+import { isApplicationFullScreen } from '../../apps';
+import { useUITraceLocationChange } from '../../utils/ui_trace/useUITraceLocationChange';
+import * as uiTrace from '../../utils/ui_trace';
+import { useMobileNavigation } from '../../hooks/useMobileNavigation';
 
 export const ApplicationLayout = ({ applicationId, Component }) => {
-  const history = useHistory();
+  const history = useMobileNavigation();
 
   //
-  // If the required process was not loaded,
-  // then redirect to home
+  // If the required process was not loaded, then redirect to home
   const redirectToHome = isWFProcessRequiredButNotLoaded();
-  if (redirectToHome) {
-    useEffect(() => {
-      if (redirectToHome) {
-        history.push('/');
-      }
-    }, [redirectToHome]);
+  useEffect(() => {
+    if (redirectToHome) {
+      history.goHome();
+    }
+  }, [redirectToHome]);
 
+  const applicationInfo = useApplicationInfo({ applicationId });
+  const { caption, homeLocation } = useNavigationInfoFromHeaders();
+  const captionEffective = caption ? caption : applicationInfo.caption;
+
+  useEffect(() => {
+    document.title = captionEffective;
+  }, [captionEffective]);
+
+  useUITraceLocationChange();
+
+  if (redirectToHome) {
     return null;
   }
 
-  const applicationInfo = getApplicationInfo(applicationId) ?? {};
-
-  const captionFromHeaders = useSelector((state) => getCaptionFromHeaders(state));
-  const caption = captionFromHeaders ? captionFromHeaders : applicationInfo.caption;
-
-  useEffect(() => {
-    document.title = caption;
-  }, [caption]);
+  if (isApplicationFullScreen(applicationId)) {
+    return (
+      <div className="app-container app-container-fullscreen">
+        <Component />
+        <ScreenToaster />
+      </div>
+    );
+  }
 
   return (
     <div className="app-container">
       <div className="app-header">
-        <div className="columns is-mobile is-size-3">
+        <div className="columns is-mobile">
           <div className="column is-2 app-icon">
             <span className="icon">
               <i className={applicationInfo.iconClassNames} />
             </span>
           </div>
           <div className="column is-10 app-caption">
-            <span>{caption}</span>
+            <span>{captionEffective}</span>
           </div>
         </div>
       </div>
@@ -57,20 +70,14 @@ export const ApplicationLayout = ({ applicationId, Component }) => {
       <div className="app-footer">
         <div className="columns is-mobile">
           <div className="column is-half">
-            <button className="button is-fullwidth is-size-4" onClick={() => history.goBack()}>
-              <span className="icon">
-                <i className="fas fa-chevron-left" />
-              </span>
-              <span>{trl('general.Back')}</span>
-            </button>
+            <BottomButton captionKey="general.Back" icon="fas fa-chevron-left" onClick={() => history.goBack()} />
           </div>
           <div className="column is-half">
-            <button className="button is-fullwidth is-size-4" onClick={() => history.push('/')}>
-              <span className="icon">
-                <i className="fas fa-home" />
-              </span>
-              <span>{trl('general.Home')}</span>
-            </button>
+            <BottomButton
+              captionKey="general.Home"
+              icon={homeLocation.iconClassName}
+              onClick={() => history.push(homeLocation.location)}
+            />
           </div>
         </div>
       </div>
@@ -83,16 +90,23 @@ ApplicationLayout.propTypes = {
   Component: PropTypes.any.isRequired,
 };
 
-const getApplicationInfo = (knownApplicationId) => {
-  let applicationId;
-  if (knownApplicationId) {
-    applicationId = knownApplicationId;
-  } else {
-    const routerMatch = useRouteMatch();
-    applicationId = routerMatch.params.applicationId;
-  }
+const BottomButton = ({ captionKey, icon, onClick: onClickParam }) => {
+  const caption = trl(captionKey);
+  const onClick = uiTrace.traceFunction(onClickParam, { eventName: 'buttonClick', captionKey, caption, icon });
 
-  return useSelector((state) => getApplicationInfoById({ state, applicationId }));
+  return (
+    <button className="button is-fullwidth" onClick={onClick}>
+      <span className="icon">
+        <i className={icon} />
+      </span>
+      <span>{caption}</span>
+    </button>
+  );
+};
+BottomButton.propTypes = {
+  captionKey: PropTypes.string.isRequired,
+  icon: PropTypes.string.isRequired,
+  onClick: PropTypes.func.isRequired,
 };
 
 const isWFProcessRequiredButNotLoaded = () => {

@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
+import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../utils/translations';
@@ -10,32 +9,22 @@ import {
   getStepByIdFromActivity,
 } from '../../../reducers/wfProcesses';
 import { postDistributionPickFrom } from '../../../api/distribution';
-import { updateDistributionPickFrom } from '../../../actions/DistributionActions';
-import { pushHeaderEntry } from '../../../actions/HeaderActions';
 
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
-import { toQRCodeString } from '../../../utils/huQRCodes';
+import { toQRCodeString } from '../../../utils/qrCode/hu';
+import { updateWFProcess } from '../../../actions/WorkflowActions';
+import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
+import { distributionLineScreenLocation, distributionStepScreenLocation } from '../../../routes/distribution';
 
 const DistributionStepPickFromScreen = () => {
-  const {
-    url,
-    params: { workflowId: wfProcessId, activityId, lineId, stepId },
-  } = useRouteMatch();
+  const { history, wfProcessId, activityId, lineId, stepId } = useScreenDefinition({
+    captionKey: 'activities.distribution.scanHU',
+    back: distributionStepScreenLocation,
+  });
 
-  const { huQRCode, qtyToMove } = useSelector((state) =>
-    getPropsFromState({ state, wfProcessId, activityId, lineId, stepId })
-  );
+  const { huQRCode } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId, stepId }));
 
-  const history = useHistory();
   const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(
-      pushHeaderEntry({
-        location: url,
-        caption: trl('activities.distribution.scanHU'),
-      })
-    );
-  }, []);
 
   const onResult = ({ scannedBarcode }) => {
     postDistributionPickFrom({
@@ -46,19 +35,9 @@ const DistributionStepPickFromScreen = () => {
         qrCode: toQRCodeString(scannedBarcode),
       },
     })
-      .then(() => {
-        dispatch(
-          updateDistributionPickFrom({
-            wfProcessId,
-            activityId,
-            lineId,
-            stepId,
-            qtyPicked: qtyToMove,
-            qtyRejectedReasonCode: null,
-          })
-        );
-
-        history.go(-2);
+      .then((wfProcess) => {
+        dispatch(updateWFProcess({ wfProcess }));
+        history.goTo(distributionLineScreenLocation);
       })
       .catch((axiosError) => toastError({ axiosError }));
   };
@@ -66,7 +45,7 @@ const DistributionStepPickFromScreen = () => {
   return (
     <ScanHUAndGetQtyComponent
       eligibleBarcode={toQRCodeString(huQRCode)}
-      qtyCaption={trl('general.QtyToMove')}
+      qtyTargetCaption={trl('general.QtyToMove')}
       onResult={onResult}
     />
   );

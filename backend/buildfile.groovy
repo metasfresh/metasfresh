@@ -108,7 +108,7 @@ final DockerConf appDockerConf = reportDockerConf
 				<li><code>${publishedMsv3ServerImageName}</code></li>
 				<li><code>${publishedWebuiApiImageName}</code></li>
 				<li><code>${publishedReportDockerImageName}</code> that can be used as <b>base image</b> for custom metasfresh-report docker images</li>
-				<li><code>${publishedAppImageName}</code></li>
+                <li><code>${publishedAppImageName}</code></li>
 				<!-- <li><code>${publishedDBInitDockerImageName}</code></li> -->
 				</ul>
 				"""

@@ -139,6 +139,8 @@ public class ModelInterfaceGenerator
 			//
 			.add("org.compiere.model.I_C_Element")
 			//
+			.add("org.eevolution.model.I_PP_Product_Planning")
+			//
 			.build();
 
 	private final TableAndColumnInfoRepository repository;
@@ -719,6 +721,8 @@ public class ModelInterfaceGenerator
 		{
 			reflections = new Reflections(new ConfigurationBuilder()
 					.setScanners(new ClassnameScanner())
+					//thx to https://github.com/ronmamo/reflections/issues/373#issue-1080637248
+					.forPackages("de")
 					.addUrls(ClasspathHelper.forClassLoader()));
 		}
 		return reflections;

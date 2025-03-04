@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.core.to_mf.v2;
 
+import com.google.common.base.Charsets;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
@@ -57,6 +58,7 @@ public class OrderRouteBuilder extends RouteBuilder
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonOrderPaymentCreateRequest.class))
 				.removeHeaders("CamelHttp*")
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
+				.setHeader(Exchange.HTTP_CHARACTER_ENCODING, constant(Charsets.UTF_8))
 				.toD("{{metasfresh.salesorder.v2.api.uri}}/payment")
 
 				.to(direct(UNPACK_V2_API_RESPONSE));

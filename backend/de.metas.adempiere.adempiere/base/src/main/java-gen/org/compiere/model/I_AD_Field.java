@@ -628,6 +628,29 @@ public interface I_AD_Field
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Always Updateable.
+	 * The column's field is always updateable, even if the record is not active or processed
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsAlwaysUpdateable (@Nullable java.lang.String IsAlwaysUpdateable);
+
+	/**
+	 * Get Always Updateable.
+	 * The column's field is always updateable, even if the record is not active or processed
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsAlwaysUpdateable();
+
+	ModelColumn<I_AD_Field, Object> COLUMN_IsAlwaysUpdateable = new ModelColumn<>(I_AD_Field.class, "IsAlwaysUpdateable", null);
+	String COLUMNNAME_IsAlwaysUpdateable = "IsAlwaysUpdateable";
+
+	/**
 	 * Set Displayed.
 	 * Determines, if this field is displayed
 	 *
@@ -806,6 +829,27 @@ public interface I_AD_Field
 
 	ModelColumn<I_AD_Field, Object> COLUMN_IsHeading = new ModelColumn<>(I_AD_Field.class, "IsHeading", null);
 	String COLUMNNAME_IsHeading = "IsHeading";
+
+	/**
+	 * Set Hide Grid Column If Empty.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsHideGridColumnIfEmpty (boolean IsHideGridColumnIfEmpty);
+
+	/**
+	 * Get Hide Grid Column If Empty.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isHideGridColumnIfEmpty();
+
+	ModelColumn<I_AD_Field, Object> COLUMN_IsHideGridColumnIfEmpty = new ModelColumn<>(I_AD_Field.class, "IsHideGridColumnIfEmpty", null);
+	String COLUMNNAME_IsHideGridColumnIfEmpty = "IsHideGridColumnIfEmpty";
 
 	/**
 	 * Set mandatory.

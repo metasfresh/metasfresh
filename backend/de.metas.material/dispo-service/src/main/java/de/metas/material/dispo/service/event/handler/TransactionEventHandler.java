@@ -35,9 +35,12 @@ import de.metas.material.event.transactions.AbstractTransactionEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
 import de.metas.util.Check;
+import de.metas.util.InSetPredicate;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -202,22 +205,27 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 	@NonNull
 	private Flag extractPickDirectlyIfFeasible(@NonNull final Candidate candidate)
 	{
+		if (candidate.getBusinessCase() == null)
+		{
+			throw new AdempiereException("Unsupported null business case; candidate=" + candidate);
+		}
+
 		final Flag pickDirectlyIfFeasible;
 		switch (candidate.getBusinessCase())
 		{
 			case PRODUCTION:
 				pickDirectlyIfFeasible = ProductionDetail
-						.cast(candidate.getBusinessCaseDetail())
+						.cast(candidate.getBusinessCaseDetailNotNull())
 						.getPickDirectlyIfFeasible();
 				break;
 			case DISTRIBUTION:
 				pickDirectlyIfFeasible = DistributionDetail
-						.cast(candidate.getBusinessCaseDetail())
+						.cast(candidate.getBusinessCaseDetailNotNull())
 						.getPickDirectlyIfFeasible();
 				break;
 			default:
 				throw Check.fail("Unsupported business case {}; candidate={}",
-								 candidate.getBusinessCase(), candidate);
+						candidate.getBusinessCase(), candidate);
 		}
 		return pickDirectlyIfFeasible;
 	}
@@ -263,7 +271,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 					event.getShipmentId().getInOutLineId().getRepoId(),
 					changedTransactionDetail.getQuantity());
 
-			final Candidate candidate = Candidate.builderForEventDescr(event.getEventDescriptor())
+			return Candidate.builderForEventDescriptor(event.getEventDescriptor())
 					.type(CandidateType.UNEXPECTED_DECREASE)
 					.businessCase(CandidateBusinessCase.SHIPMENT)
 					.materialDescriptor(event.getMaterialDescriptor().withQuantity(changedTransactionDetail.getQuantity()))
@@ -271,8 +279,6 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 					.businessCaseDetail(demandDetail)
 					.transactionDetail(changedTransactionDetail)
 					.build();
-
-			return candidate;
 		}
 		else
 		{
@@ -353,13 +359,9 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final List<Candidate> candidates;
 		final TransactionDetail transactionDetailOfEvent = createTransactionDetail(event);
 
-		final int ppOrderLineIdForQuery = event.getPpOrderLineId() > 0
-				? event.getPpOrderLineId()
-				: ProductionDetailsQuery.NO_PP_ORDER_LINE_ID;
-
 		final ProductionDetailsQuery productionDetailsQuery = ProductionDetailsQuery.builder()
-				.ppOrderId(event.getPpOrderId())
-				.ppOrderLineId(ppOrderLineIdForQuery)
+				.ppOrderId(PPOrderId.ofRepoIdOrNull(event.getPpOrderId()))
+				.ppOrderLineIds(InSetPredicate.onlyOrNone(PPOrderBOMLineId.ofRepoIdOrNull(event.getPpOrderLineId())))
 				.build();
 
 		final CandidatesQuery query = CandidatesQuery.builder()
@@ -458,6 +460,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		final MaterialDescriptorQuery materialDescriptorQuery = MaterialDescriptorQuery
 				.builder()
 				.storageAttributesKey(transactionEvent.getMaterialDescriptor().getStorageAttributesKey())
+				.warehouseId(transactionEvent.getMaterialDescriptor().getWarehouseId())
 				.build();
 
 		final CandidatesQuery queryWithAttributesKey = queryWithoutAttributesKey
@@ -635,7 +638,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 		return transactionDetailsSet
 				.stream()
 				.min(Comparator.comparing(TransactionDetail::getTransactionDate))
-				.get() // we know there is at least changedTransactionDetail, so we can call get() witch confidence
+				.orElseThrow(() -> new AdempiereException("Expected at least one transaction detail"))
 				.getTransactionDate();
 	}
 
@@ -663,7 +666,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 			@NonNull final TransactionCreatedEvent transactionCreatedEvent,
 			@NonNull final BigDecimal quantity)
 	{
-		final CandidateBuilder builder = Candidate.builderForEventDescr(transactionCreatedEvent.getEventDescriptor());
+		final CandidateBuilder builder = Candidate.builderForEventDescriptor(transactionCreatedEvent.getEventDescriptor());
 
 		// TODO INVENTORY_UP/DOWN are not CandidateTypes, but business-cases!
 		if (quantity.signum() <= 0)

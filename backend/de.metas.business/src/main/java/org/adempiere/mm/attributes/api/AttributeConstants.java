@@ -34,11 +34,6 @@ public class AttributeConstants
 	 */
 	public final int M_AttributeSetInstance_ID_None = AttributeSetInstanceId.NONE.getRepoId();
 
-	/**
-	 * No Attribute Set (record which actually exists in M_AttributeSet table)
-	 */
-	public final int M_AttributeSet_ID_None = 0;
-
 	public final AttributeCode ATTR_TE = AttributeCode.ofString("HU_TE");
 	public final AttributeCode ATTR_DateReceived = AttributeCode.ofString("HU_DateReceived");
 	public final AttributeCode ATTR_SecurPharmScannedStatus = AttributeCode.ofString("HU_Scanned");
@@ -64,6 +59,13 @@ public class AttributeConstants
 	public static final AttributeCode ATTR_RepackNumber = AttributeCode.ofString(ATTR_RepackNumber_String);
 
 	public static final AttributeCode RouterPassword = AttributeCode.ofString("RouterPassword");
+	public static final AttributeCode RouterPassword2 = AttributeCode.ofString("RouterPassword2");
+	public static final AttributeCode RouterPassword3 = AttributeCode.ofString("RouterPassword3");
+	public static final AttributeCode RouterPassword4 = AttributeCode.ofString("RouterPassword4");
+	public static final AttributeCode RouterPassword5 = AttributeCode.ofString("RouterPassword5");
+	public static final AttributeCode RouterPassword6 = AttributeCode.ofString("RouterPassword6");
+	public static final AttributeCode RouterPassword7 = AttributeCode.ofString("RouterPassword7");
+	public static final AttributeCode RouterPassword8 = AttributeCode.ofString("RouterPassword8");
 	public static final AttributeCode RouterMAC1 = AttributeCode.ofString("RouterMAC1");
 	public static final AttributeCode RouterMAC2 = AttributeCode.ofString("RouterMAC2");
 	public static final AttributeCode RouterMAC3 = AttributeCode.ofString("RouterMAC3");
@@ -72,4 +74,8 @@ public class AttributeConstants
 	public static final AttributeCode RouterMAC6 = AttributeCode.ofString("RouterMAC6");
 
 	public static final AttributeCode WarrantyStartDate = AttributeCode.ofString("WarrantyStartDate");
+
+	public static final AttributeCode HU_ExternalLotNumber = AttributeCode.ofString("ExternalLotNumber");
+
+	public static final AttributeCode ProductionDate = AttributeCode.ofString("ProductionDate");
 }

@@ -1,11 +1,11 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
 import * as CompleteStatus from '../../../../constants/CompleteStatus';
 import { manufacturingReceiptScreenLocation } from '../../../../routes/manufacturing_receipt';
 import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../../components/buttons/ButtonQuantityProp';
+import { useMobileNavigation } from '../../../../hooks/useMobileNavigation';
 
 const MaterialReceiptActivity = (props) => {
   const {
@@ -17,38 +17,43 @@ const MaterialReceiptActivity = (props) => {
     },
   } = props;
 
-  const history = useHistory();
+  const history = useMobileNavigation();
 
   const onButtonClick = ({ lineId }) => {
-    const location = manufacturingReceiptScreenLocation({ applicationId, wfProcessId, activityId, lineId });
-    history.push(location);
+    history.goTo(manufacturingReceiptScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
   };
+
+  const linesArray = lines ? Object.values(lines) : [];
+  const showHazardsAndAllergens = linesArray.some(
+    (lineItem) => lineItem?.hazardSymbols?.length > 0 || lineItem?.allergens?.length > 0
+  );
 
   return (
     <div className="mt-5">
-      {lines
-        ? Object.values(lines).map((lineItem) => {
-            const lineId = lineItem.id;
+      {linesArray.map((lineItem) => {
+        const lineId = lineItem.id;
 
-            return (
-              <ButtonWithIndicator
-                key={lineId}
-                caption={lineItem.productName}
-                completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
-                disabled={!isUserEditable}
-                onClick={() => onButtonClick({ lineId })}
-              >
-                <ButtonQuantityProp
-                  qtyCurrent={lineItem.qtyReceived}
-                  qtyTarget={lineItem.qtyToReceive}
-                  uom={lineItem.uom}
-                  applicationId={applicationId}
-                  subtypeId="receipts"
-                />
-              </ButtonWithIndicator>
-            );
-          })
-        : null}
+        return (
+          <ButtonWithIndicator
+            key={lineId}
+            caption={lineItem.productName}
+            typeFASIconName={lineItem.coproduct ? 'fa-retweet' : 'fa-arrow-right-from-bracket'}
+            hazardSymbols={showHazardsAndAllergens ? lineItem.hazardSymbols : null}
+            allergens={showHazardsAndAllergens ? lineItem.allergens : null}
+            completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
+            disabled={!isUserEditable}
+            onClick={() => onButtonClick({ lineId })}
+          >
+            <ButtonQuantityProp
+              qtyCurrent={Number(lineItem.qtyReceived)}
+              qtyTarget={Number(lineItem.qtyToReceive)}
+              uom={lineItem.uom}
+              applicationId={applicationId}
+              subtypeId="receipts"
+            />
+          </ButtonWithIndicator>
+        );
+      })}
     </div>
   );
 };

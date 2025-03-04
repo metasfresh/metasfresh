@@ -1,7 +1,7 @@
 package de.metas.material.cockpit.availableforsales;
 
 import de.metas.material.cockpit.model.I_MD_Available_For_Sales_QueryResult;
-import de.metas.material.commons.attributes.AttributesKeyPattern;
+import org.adempiere.mm.attributes.keys.AttributesKeyPattern;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -11,6 +11,7 @@ import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.compiere.Adempiere;
 import org.compiere.db.Database;
 import org.compiere.model.IQuery;
+import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 
 import java.util.List;
@@ -50,6 +51,7 @@ public class AvailableForSalesSqlHelper
 				"The given multiQuery may not be empty; multiQuery={}", multiQuery);
 
 		final IQuery<I_MD_Available_For_Sales_QueryResult> dbQuery = createDBQueryForAvailableForSalesQuery(0, availableForSalesQueries.get(0));
+
 		for (int i = 1; i < availableForSalesQueries.size(); i++)
 		{
 			dbQuery.addUnion(createDBQueryForAvailableForSalesQuery(i, availableForSalesQueries.get(i)), false/* distinct */);
@@ -80,7 +82,7 @@ public class AvailableForSalesSqlHelper
 
 		final TypedSqlQuery<I_MD_Available_For_Sales_QueryResult> sqlDbQuery = (TypedSqlQuery<I_MD_Available_For_Sales_QueryResult>)dbQuery;
 
-		final String dateString = Database.TO_DATE(TimeUtil.asTimestamp(availableForSalesQuery.getDateOfInterest()), false/* dayOnly */);
+		final String dateString = Database.TO_DATE(TimeUtil.asTimestamp(availableForSalesQuery.getDateOfInterest()), DisplayType.DateTime);
 
 		final AttributesKeyPattern storageAttributesKey = availableForSalesQuery.getStorageAttributesKeyPattern();
 

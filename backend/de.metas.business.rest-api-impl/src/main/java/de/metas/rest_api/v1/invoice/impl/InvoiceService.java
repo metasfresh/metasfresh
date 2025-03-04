@@ -75,7 +75,7 @@ public class InvoiceService
 
 	private Optional<I_AD_Archive> getLastArchive(@NonNull final InvoiceId invoiceId)
 	{
-		return archiveBL.getLastArchive(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId));
+		return archiveBL.getLastArchiveRecord(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId));
 	}
 
 	@NonNull

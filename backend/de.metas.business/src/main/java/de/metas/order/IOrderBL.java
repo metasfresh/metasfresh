@@ -25,14 +25,22 @@ package de.metas.order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
+import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.request.RequestTypeId;
 import de.metas.tax.api.Tax;
+import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_AD_User;
@@ -41,17 +49,24 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_PriceList_Version;
+import org.eevolution.api.PPCostCollectorId;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public interface IOrderBL extends ISingletonService
 {
 	I_C_Order getById(OrderId orderId);
 
 	/**
-	 * Sets price list if there is a price list for the given location and pricing system.
+	 * Sets price list if there is a price list for the given order's location and pricing system.
+	 * <p>
+	 * ! If {@link I_C_Order#COLUMNNAME_C_BPartner_Location_Value_ID} is set, its country takes precendence over the country of {@link I_C_Order#COLUMNNAME_C_BPartner_Location_ID}.
 	 * <p>
 	 * This method does nothing if:
 	 * <ul>
@@ -93,7 +108,8 @@ public interface IOrderBL extends ISingletonService
 	 * @return the order's bill contact <b>but</b> falls back to the "general" contact ({@code C_Order.AD_User_ID}) if possible.
 	 * Be sure to first check with {@link #hasBillToContactId(I_C_Order)}.
 	 */
-	@NonNull BPartnerContactId getBillToContactId(I_C_Order order);
+	@NonNull
+	BPartnerContactId getBillToContactId(I_C_Order order);
 
 	/**
 	 * Check if there is a price list for the given location and pricing system.
@@ -110,6 +126,12 @@ public interface IOrderBL extends ISingletonService
 	 * @return true if set
 	 */
 	boolean setBill_User_ID(I_C_Order order);
+
+	List<de.metas.interfaces.I_C_OrderLine> getLinesByOrderIds(@NonNull Set<OrderId> orderIds);
+
+	Map<OrderAndLineId, de.metas.interfaces.I_C_OrderLine> getLinesByIds(@NonNull Set<OrderAndLineId> orderAndLineIds);
+
+	de.metas.interfaces.I_C_OrderLine getLineById(@NonNull OrderAndLineId orderAndLineId);
 
 	/**
 	 * Set the given order's pricing system and price list from the given <code>oder</code>'s
@@ -272,4 +294,42 @@ public interface IOrderBL extends ISingletonService
 	String getDocumentNoById(OrderId orderId);
 
 	String getLocationEmail(OrderId ofRepoId);
+
+	@NonNull
+	List<I_C_Order> getByIds(Collection<OrderId> orderIds);
+
+	Optional<PPCostCollectorId> getPPCostCollectorId(@NonNull OrderLineId orderLineId);
+
+	Map<OrderId, String> getDocumentNosByIds(@NonNull Collection<OrderId> orderIds);
+
+	void setWeightFromLines(@NonNull I_C_Order order);
+
+	@NonNull
+	List<OrderId> getUnprocessedIdsBy(@NonNull ProductId productId);
+
+	static Money extractLineNetAmt(final I_C_OrderLine orderLine)
+	{
+		return Money.of(orderLine.getLineNetAmt(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
+	}
+
+	static Quantity extractQtyEntered(final I_C_OrderLine orderLine)
+	{
+		final UomId uomId = UomId.ofRepoId(orderLine.getC_UOM_ID());
+		return Quantitys.of(orderLine.getQtyEntered(), uomId);
+	}
+
+	DocStatus getDocStatus(OrderId orderId);
+
+	void save(I_C_OrderLine orderLine);
+
+	de.metas.interfaces.I_C_OrderLine createOrderLine(I_C_Order order);
+
+	void setProductId(
+			@NonNull I_C_OrderLine orderLine,
+			@NonNull ProductId productId,
+			boolean setUOM);
+
+	CurrencyConversionContext getCurrencyConversionContext(I_C_Order order);
+
+	void deleteLineById(final OrderAndLineId orderAndLineId);
 }

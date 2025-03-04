@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_AcctSchema_Element
  *  @author metasfresh (generated) 
@@ -230,6 +230,33 @@ public class X_C_AcctSchema_Element extends org.compiere.model.PO implements I_C
 	}
 
 	@Override
+	public org.compiere.model.I_C_Order getC_OrderSO()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_OrderSO(final org.compiere.model.I_C_Order C_OrderSO)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class, C_OrderSO);
+	}
+
+	@Override
+	public void setC_OrderSO_ID (final int C_OrderSO_ID)
+	{
+		if (C_OrderSO_ID < 1)
+			set_Value (COLUMNNAME_C_OrderSO_ID, null);
+		else
+			set_Value (COLUMNNAME_C_OrderSO_ID, C_OrderSO_ID);
+	}
+
+	@Override
+	public int getC_OrderSO_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_OrderSO_ID);
+	}
+
+	@Override
 	public void setC_Project_ID (final int C_Project_ID)
 	{
 		if (C_Project_ID < 1) 
@@ -322,6 +349,8 @@ public class X_C_AcctSchema_Element extends org.compiere.model.PO implements I_C
 	public static final String ELEMENTTYPE_UserElementString6 = "S6";
 	/** UserElementString7 = S7 */
 	public static final String ELEMENTTYPE_UserElementString7 = "S7";
+	/** SalesOrder = OR */
+	public static final String ELEMENTTYPE_SalesOrder = "OR";
 	@Override
 	public void setElementType (final java.lang.String ElementType)
 	{

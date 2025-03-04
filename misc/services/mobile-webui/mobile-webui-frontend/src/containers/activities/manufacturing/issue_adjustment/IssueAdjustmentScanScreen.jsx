@@ -1,5 +1,4 @@
 import React from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 import { trl } from '../../../../utils/translations';
@@ -11,17 +10,18 @@ import {
 } from '../../../../reducers/wfProcesses';
 
 import ScanHUAndGetQtyComponent from '../../../../components/ScanHUAndGetQtyComponent';
+import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
+import { issueAdjustmentLineScreenLocation } from '../../../../routes/manufacturing_issue_adjustment';
 
 const IssueAdjustmentScanScreen = () => {
-  const {
-    params: { workflowId: wfProcessId, activityId, lineId, stepId },
-  } = useRouteMatch();
+  const { history, wfProcessId, activityId, lineId, stepId } = useScreenDefinition({
+    back: issueAdjustmentLineScreenLocation,
+  });
 
   const { uom, qtyRejectedReasons, scaleDevice } = useSelector((state) =>
     getPropsFromState({ state, wfProcessId, activityId, lineId, stepId })
   );
 
-  const history = useHistory();
   const onResult = ({ qty = 0, reason = null }) => {
     console.log('onResult', { qty, reason });
     history.goBack();
@@ -29,7 +29,7 @@ const IssueAdjustmentScanScreen = () => {
 
   return (
     <ScanHUAndGetQtyComponent
-      qtyCaption={trl('general.QtyToPick')}
+      qtyTargetCaption={trl('general.QtyToPick')}
       uom={uom}
       qtyRejectedReasons={qtyRejectedReasons}
       scaleDevice={scaleDevice}

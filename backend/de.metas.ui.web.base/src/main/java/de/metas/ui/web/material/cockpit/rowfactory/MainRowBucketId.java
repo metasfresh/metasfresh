@@ -1,8 +1,8 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
+import de.metas.material.cockpit.ProductWithDemandSupply;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
-import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 import lombok.Value;
@@ -65,12 +65,10 @@ public class MainRowBucketId
 
 	@NonNull
 	public static MainRowBucketId createInstanceForQuantitiesRecord(
-			@NonNull final I_QtyDemand_QtySupply_V qtyRecord,
+			@NonNull final ProductWithDemandSupply qtyRecord,
 			@NonNull final LocalDate date)
 	{
-		return new MainRowBucketId(
-				ProductId.ofRepoId(qtyRecord.getM_Product_ID()),
-				date);
+		return new MainRowBucketId(qtyRecord.getProductId(), date);
 	}
 
 	public static MainRowBucketId createPlainInstance(@NonNull final ProductId productId, @NonNull final LocalDate date)

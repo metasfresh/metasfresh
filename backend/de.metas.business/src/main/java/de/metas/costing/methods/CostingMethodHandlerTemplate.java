@@ -1,20 +1,24 @@
 package de.metas.costing.methods;
 
-import java.util.Optional;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
+import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
-import de.metas.costing.CostSegment;
+import de.metas.costing.CostDetailCreateResultsList;
+import de.metas.costing.CostDetailPreviousAmounts;
+import de.metas.costing.CostElement;
 import de.metas.costing.CostingDocumentRef;
-import de.metas.order.OrderLineId;
+import de.metas.costing.CurrentCost;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.i18n.AdMessageKey;
+import de.metas.quantity.Quantity;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.List;
+import java.util.Set;
 
 /*
  * #%L
@@ -40,15 +44,17 @@ import lombok.NonNull;
 
 public abstract class CostingMethodHandlerTemplate implements CostingMethodHandler
 {
+	private static final AdMessageKey MSG_RevaluatingAnotherRevaluationIsNotSupported = AdMessageKey.of("CostingMethodHandler.RevaluatingAnotherRevaluationIsNotSupported");
 	protected final CostingMethodHandlerUtils utils;
 
-	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String> builder()
+	private static final ImmutableSet<String> HANDLED_TABLE_NAMES = ImmutableSet.<String>builder()
 			.add(CostingDocumentRef.TABLE_NAME_M_MatchInv)
 			.add(CostingDocumentRef.TABLE_NAME_M_MatchPO)
 			.add(CostingDocumentRef.TABLE_NAME_M_InOutLine)
 			.add(CostingDocumentRef.TABLE_NAME_M_InventoryLine)
 			.add(CostingDocumentRef.TABLE_NAME_M_MovementLine)
 			.add(CostingDocumentRef.TABLE_NAME_C_ProjectIssue)
+			.add(CostingDocumentRef.TABLE_NAME_M_CostRevaluationLine)
 			.build();
 
 	protected CostingMethodHandlerTemplate(@NonNull final CostingMethodHandlerUtils utils)
@@ -63,37 +69,42 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 	}
 
 	@Override
-	public Optional<CostAmount> calculateSeedCosts(final CostSegment costSegment, final OrderLineId orderLineId)
+	public final CostDetailCreateResultsList createOrUpdateCost(final CostDetailCreateRequest request)
 	{
-		return Optional.empty();
-	}
-
-	@Override
-	public final Optional<CostDetailCreateResult> createOrUpdateCost(final CostDetailCreateRequest request)
-	{
-		final CostDetail existingCostDetail = utils.getExistingCostDetail(request).orElse(null);
-		if (existingCostDetail != null)
+		final List<CostDetail> existingCostDetails = utils.getExistingCostDetails(request);
+		if (!existingCostDetails.isEmpty())
 		{
-			return Optional.of(utils.toCostDetailCreateResult(existingCostDetail));
+			// make sure DateAcct is up-to-date
+			final List<CostDetail> existingCostDetailsUpdated = utils.updateDateAcct(existingCostDetails, request.getDate());
+			return utils.toCostDetailCreateResultsList(existingCostDetailsUpdated);
 		}
+
 		else
 		{
-			return Optional.ofNullable(createCostOrNull(request));
+			return createCost(request);
 		}
 	}
 
-	private final CostDetailCreateResult createCostOrNull(final CostDetailCreateRequest request)
+	private CostDetailCreateResultsList createCost(final CostDetailCreateRequest request)
 	{
 		//
 		// Create new cost detail
 		final CostingDocumentRef documentRef = request.getDocumentRef();
 		if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_MatchPO))
 		{
-			return createCostForMatchPO(request);
+			return CostDetailCreateResultsList.ofNullable(createCostForMatchPO(request));
 		}
 		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_MatchInv))
 		{
-			return createCostForMatchInvoice(request);
+			final CostElement costElement = request.getCostElement();
+			if (costElement == null || costElement.isMaterial())
+			{
+				return CostDetailCreateResultsList.ofNullable(createCostForMatchInvoice_MaterialCosts(request));
+			}
+			else
+			{
+				return CostDetailCreateResultsList.ofNullable(createCostForMatchInvoice_NonMaterialCosts(request));
+			}
 		}
 		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_InOutLine))
 		{
@@ -104,20 +115,32 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 			}
 			else
 			{
-				return createCostForMaterialReceipt(request);
+				final CostElement costElement = request.getCostElement();
+				if (costElement == null || costElement.isMaterial())
+				{
+					return CostDetailCreateResultsList.ofNullable(createCostForMaterialReceipt(request));
+				}
+				else
+				{
+					return CostDetailCreateResultsList.ofNullable(createCostForMaterialReceipt_NonMaterialCosts(request));
+				}
 			}
 		}
 		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_MovementLine))
 		{
-			return createCostForMovementLine(request);
+			return CostDetailCreateResultsList.ofNullable(createCostForMovementLine(request));
 		}
 		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_InventoryLine))
 		{
-			return createCostForInventoryLine(request);
+			return CostDetailCreateResultsList.ofNullable(createCostForInventoryLine(request));
 		}
 		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_C_ProjectIssue))
 		{
-			return createCostForProjectIssue(request);
+			return CostDetailCreateResultsList.ofNullable(createCostForProjectIssue(request));
+		}
+		else if (documentRef.isTableName(CostingDocumentRef.TABLE_NAME_M_CostRevaluationLine))
+		{
+			return CostDetailCreateResultsList.ofNullable(createCostRevaluationLine(request));
 		}
 		else
 		{
@@ -131,7 +154,13 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		return null;
 	}
 
-	protected CostDetailCreateResult createCostForMatchInvoice(final CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForMatchInvoice_MaterialCosts(final CostDetailCreateRequest request)
+	{
+		// nothing on this level
+		return null;
+	}
+
+	protected CostDetailCreateResult createCostForMatchInvoice_NonMaterialCosts(final CostDetailCreateRequest request)
 	{
 		// nothing on this level
 		return null;
@@ -143,9 +172,14 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		return null;
 	}
 
-	protected CostDetailCreateResult createCostForMaterialShipment(final CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForShippingNotification(final CostDetailCreateRequest request)
 	{
 		return createOutboundCostDefaultImpl(request);
+	}
+
+	protected CostDetailCreateResultsList createCostForMaterialShipment(final CostDetailCreateRequest request)
+	{
+		return CostDetailCreateResultsList.ofNullable(createOutboundCostDefaultImpl(request));
 	}
 
 	protected CostDetailCreateResult createCostForMovementLine(final CostDetailCreateRequest request)
@@ -158,10 +192,91 @@ public abstract class CostingMethodHandlerTemplate implements CostingMethodHandl
 		return createOutboundCostDefaultImpl(request);
 	}
 
-	protected CostDetailCreateResult createCostForProjectIssue(final CostDetailCreateRequest request)
+	protected CostDetailCreateResult createCostForProjectIssue(
+			@SuppressWarnings("unused") final CostDetailCreateRequest request)
 	{
 		throw new UnsupportedOperationException();
 	}
 
+	protected CostDetailCreateResult createCostRevaluationLine(
+			@NonNull final CostDetailCreateRequest request)
+	{
+		if (!request.getQty().isZero())
+		{
+			throw new AdempiereException("Cost revaluation requests shall have Qty=0");
+		}
+
+		final CostAmount explicitCostPrice = request.getExplicitCostPrice();
+		if (explicitCostPrice == null)
+		{
+			throw new AdempiereException("Cost revaluation requests shall have explicit cost price set");
+		}
+
+		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
+
+		currentCosts.setOwnCostPrice(explicitCostPrice);
+		currentCosts.addCumulatedAmt(request.getAmt());
+
+		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(
+				request,
+				previousCosts);
+
+		utils.saveCurrentCost(currentCosts);
+
+		return result;
+	}
+
+	protected CostDetailCreateResult createCostForMaterialReceipt_NonMaterialCosts(CostDetailCreateRequest request)
+	{
+		throw new AdempiereException("Costing method " + getCostingMethod() + " does not support non material costs receipt")
+				.setParameter("request", request)
+				.appendParametersToMessage();
+	}
+
 	protected abstract CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request);
+
+	@Override
+	public CostDetailAdjustment recalculateCostDetailAmountAndUpdateCurrentCost(
+			@NonNull final CostDetail costDetail,
+			@NonNull final CurrentCost currentCost)
+	{
+		if (costDetail.getDocumentRef().isCostRevaluationLine())
+		{
+			throw new AdempiereException(MSG_RevaluatingAnotherRevaluationIsNotSupported)
+					.setParameter("costDetail", costDetail);
+		}
+
+		final CurrencyPrecision precision = currentCost.getPrecision();
+
+		final Quantity qty = costDetail.getQty();
+		final CostAmount oldCostAmount = costDetail.getAmt();
+		final CostAmount oldCostPrice = qty.signum() != 0
+				? oldCostAmount.divide(qty, precision)
+				: oldCostAmount;
+
+		final CostAmount newCostPrice = currentCost.getCostPrice().toCostAmount();
+		final CostAmount newCostAmount = qty.signum() != 0
+				? newCostPrice.multiply(qty).roundToPrecisionIfNeeded(precision)
+				: newCostPrice.roundToPrecisionIfNeeded(precision);
+
+		if (costDetail.isInboundTrx())
+		{
+			currentCost.addWeightedAverage(newCostAmount, qty, utils.getQuantityUOMConverter());
+		}
+		else
+		{
+			currentCost.addToCurrentQtyAndCumulate(qty, newCostAmount, utils.getQuantityUOMConverter());
+		}
+
+		//
+		return CostDetailAdjustment.builder()
+				.costDetailId(costDetail.getId())
+				.qty(qty)
+				.oldCostPrice(oldCostPrice)
+				.oldCostAmount(oldCostAmount)
+				.newCostPrice(newCostPrice)
+				.newCostAmount(newCostAmount)
+				.build();
+	}
 }

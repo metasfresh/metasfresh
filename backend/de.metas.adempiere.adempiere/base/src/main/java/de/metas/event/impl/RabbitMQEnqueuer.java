@@ -22,6 +22,7 @@
 
 package de.metas.event.impl;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.event.Event;
 import de.metas.event.EventBusConfig;
 import de.metas.event.EventEnqueuer;
@@ -43,7 +44,7 @@ import static de.metas.event.remote.RabbitMQEventBusRemoteEndpoint.HEADER_TopicT
 @Component
 public class RabbitMQEnqueuer implements EventEnqueuer
 {
-	private static final transient Logger logger = EventBusConfig.getLogger(RabbitMQEnqueuer.class);
+	private static final Logger logger = EventBusConfig.getLogger(RabbitMQEnqueuer.class);
 
 	private final AmqpTemplate amqpTemplate;
 	private final RabbitMQDestinationResolver rabbitMQDestinationResolver;
@@ -60,14 +61,14 @@ public class RabbitMQEnqueuer implements EventEnqueuer
 	public void enqueueDistributedEvent(final Event event, final Topic topic)
 	{
 		final String amqpExchangeName = rabbitMQDestinationResolver.getAMQPExchangeNameByTopicName(topic.getName());
-		final String routingKey = ""; // ignored for fan-out exchanges
+		final String routingKey = amqpExchangeName; // this corresponds to the way we bound our queues to the exchanges in RabbitMQEventBusConfiguration
 		amqpTemplate.convertAndSend(
 				amqpExchangeName,
 				routingKey,
 				event,
 				getMessagePostProcessor(topic));
 
-		logger.debug("Send event; topicName={}; event={}; type={}", topic.getName(), event, topic.getType());
+		logger.debug("Send event; topicName={}; event={}; type={}; timestamp={}, ThreadId={}", topic.getName(), event, topic.getType(), SystemTime.asTimestamp(), Thread.currentThread().getId());
 	}
 
 	@Override

@@ -38,7 +38,9 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.stockcandidate.MaterialCandidateChangedEvent;
 import de.metas.material.event.stockcandidate.StockCandidateChangedEvent;
+import de.metas.material.planning.event.SupplyRequiredHandlerUtils;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -56,17 +58,42 @@ import static de.metas.material.dispo.model.X_MD_Candidate.MD_CANDIDATE_STATUS_S
 
 @Interceptor(I_MD_Candidate.class)
 @Component
+@RequiredArgsConstructor
 public class MD_Candidate
 {
-	private final PostMaterialEventService materialEventService;
-	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+	@NonNull private final PostMaterialEventService materialEventService;
+	@NonNull private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
-	public MD_Candidate(
-			@NonNull final PostMaterialEventService materialEventService,
-			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_DELETE },
+			ifColumnsChanged = { I_MD_Candidate.COLUMNNAME_Qty })
+	public void fire_UpdateMainDataRequest_qtySupplyRequired(@NonNull final I_MD_Candidate candidate,
+															 @NonNull final ModelChangeType timingType)
 	{
-		this.materialEventService = materialEventService;
-		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
+		if (!CandidateType.ofCode(candidate.getMD_Candidate_Type()).isSupply()
+				|| isSimulated(candidate))
+		{
+			return;
+		}
+
+		if (timingType.isNew())
+		{
+			SupplyRequiredHandlerUtils.updateQtySupplyRequired(toMaterialDescriptor(candidate), toEventDescriptor(candidate), candidate.getQty());
+		}
+		else if (timingType.isChange())
+		{
+			final I_MD_Candidate candidateOld = InterfaceWrapperHelper.createOld(candidate, I_MD_Candidate.class);
+			SupplyRequiredHandlerUtils.updateQtySupplyRequired(toMaterialDescriptor(candidateOld), toEventDescriptor(candidateOld), candidateOld.getQty().negate());
+			SupplyRequiredHandlerUtils.updateQtySupplyRequired(toMaterialDescriptor(candidate), toEventDescriptor(candidate), candidate.getQty());
+		}
+		else if (timingType.isDelete())
+		{
+			SupplyRequiredHandlerUtils.updateQtySupplyRequired(toMaterialDescriptor(candidate), toEventDescriptor(candidate), candidate.getQty().negate());
+		}
+	}
+
+	private static boolean isSimulated(final @NonNull I_MD_Candidate candidate)
+	{
+		return MD_CANDIDATE_STATUS_Simulated.equals(candidate.getMD_Candidate_Status());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_DELETE })
@@ -74,7 +101,8 @@ public class MD_Candidate
 			@NonNull final I_MD_Candidate candidate,
 			@NonNull final ModelChangeType timingType)
 	{
-		if (!CandidateType.STOCK.getCode().equals(candidate.getMD_Candidate_Type()))
+		if (!CandidateType.ofCode(candidate.getMD_Candidate_Type()).isStock()
+				|| isSimulated(candidate))
 		{
 			return;
 		}
@@ -87,9 +115,9 @@ public class MD_Candidate
 
 			final Candidate lastMatchingStockForOldMaterialDescriptor = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(findPreviousStockQuery);
 
-			final EventDescriptor eventDescriptor = EventDescriptor.ofClientAndOrg(oldCandidateRecord.getAD_Client_ID(), oldCandidateRecord.getAD_Org_ID());
+			final EventDescriptor eventDescriptor = toEventDescriptor(oldCandidateRecord);
 
-			final MaterialDescriptor materialDescriptor = getMaterialDescriptorBuilder(oldCandidateRecord)
+			final MaterialDescriptor materialDescriptor = toMaterialDescriptorBuilder(oldCandidateRecord)
 					.quantity(lastMatchingStockForOldMaterialDescriptor != null ? lastMatchingStockForOldMaterialDescriptor.getQuantity() : BigDecimal.ZERO)
 					.build();
 
@@ -103,21 +131,26 @@ public class MD_Candidate
 
 		if (isUpdateCurrentStockRequired(timingType))
 		{
-			final EventDescriptor eventDescriptor = EventDescriptor.ofClientAndOrg(candidate.getAD_Client_ID(), candidate.getAD_Org_ID());
+			final EventDescriptor eventDescriptor = toEventDescriptor(candidate);
 
 			final StockCandidateChangedEvent stockCandidateChangedEvent = StockCandidateChangedEvent.builder()
 					.eventDescriptor(eventDescriptor)
-					.materialDescriptor(getMaterialDescriptor(candidate))
+					.materialDescriptor(toMaterialDescriptor(candidate))
 					.build();
 
 			materialEventService.enqueueEventAfterNextCommit(stockCandidateChangedEvent);
 		}
 	}
 
+	private static EventDescriptor toEventDescriptor(final I_MD_Candidate oldCandidateRecord)
+	{
+		return EventDescriptor.ofClientAndOrg(oldCandidateRecord.getAD_Client_ID(), oldCandidateRecord.getAD_Org_ID());
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW }, ifColumnsChanged = I_MD_Candidate.COLUMNNAME_QtyFulfilled)
 	public void fireQtyRequiredFulfilled(@NonNull final I_MD_Candidate candidate)
 	{
-		if (MD_CANDIDATE_STATUS_Simulated.equals(candidate.getMD_Candidate_Status()))
+		if (isSimulated(candidate))
 		{
 			return;
 		}
@@ -129,7 +162,7 @@ public class MD_Candidate
 			return;
 		}
 
-		final EventDescriptor eventDescriptor = EventDescriptor.ofClientAndOrg(candidate.getAD_Client_ID(), candidate.getAD_Org_ID());
+		final EventDescriptor eventDescriptor = toEventDescriptor(candidate);
 
 		final boolean isNew = InterfaceWrapperHelper.isNew(candidate);
 
@@ -154,7 +187,7 @@ public class MD_Candidate
 
 		final MaterialCandidateChangedEvent materialCandidateChangedEvent = MaterialCandidateChangedEvent.builder()
 				.eventDescriptor(eventDescriptor)
-				.materialDescriptor(getMaterialDescriptor(candidate))
+				.materialDescriptor(toMaterialDescriptor(candidate))
 				.qtyFulfilledDelta(qtyFulfilledDelta)
 				.build();
 
@@ -162,18 +195,18 @@ public class MD_Candidate
 	}
 
 	@NonNull
-	private static MaterialDescriptor getMaterialDescriptor(@NonNull final I_MD_Candidate candidate)
+	private static MaterialDescriptor toMaterialDescriptor(@NonNull final I_MD_Candidate candidate)
 	{
-		return getMaterialDescriptorBuilder(candidate)
+		return toMaterialDescriptorBuilder(candidate)
 				.quantity(candidate.getQty())
 				.build();
 	}
 
 	@NonNull
-	private static MaterialDescriptor.MaterialDescriptorBuilder getMaterialDescriptorBuilder(@NonNull final I_MD_Candidate candidate)
+	private static MaterialDescriptor.MaterialDescriptorBuilder toMaterialDescriptorBuilder(@NonNull final I_MD_Candidate candidate)
 	{
 		final ProductDescriptor productDescriptor = ProductDescriptor.forProductAndAttributes(candidate.getM_Product_ID(),
-																							  AttributesKey.ofString(candidate.getStorageAttributesKey()));
+				AttributesKey.ofString(candidate.getStorageAttributesKey()));
 
 		return MaterialDescriptor.builder()
 				.date(TimeUtil.asInstant(candidate.getDateProjected()))
@@ -207,9 +240,9 @@ public class MD_Candidate
 				.customer(BPartnerClassifier.specificOrAny(BPartnerId.ofRepoIdOrNull(oldCandidateRecord.getC_BPartner_Customer_ID())))
 				.customerIdOperator(MaterialDescriptorQuery.CustomerIdOperator.GIVEN_ID_ONLY)
 				.timeRangeEnd(DateAndSeqNo.builder()
-									  .date(endOfTheDay)
-									  .operator(DateAndSeqNo.Operator.EXCLUSIVE)
-									  .build())
+						.date(endOfTheDay)
+						.operator(DateAndSeqNo.Operator.EXCLUSIVE)
+						.build())
 				.build();
 	}
 

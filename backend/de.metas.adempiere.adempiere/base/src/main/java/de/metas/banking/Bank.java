@@ -56,4 +56,6 @@ public class Bank
 	//
 	// ESR specific settings:
 	boolean esrPostBank;
+
+	boolean importAsSingleSummaryLine;
 }

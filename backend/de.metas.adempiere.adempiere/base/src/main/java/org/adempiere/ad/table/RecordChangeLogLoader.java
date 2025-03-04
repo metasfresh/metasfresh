@@ -1,19 +1,17 @@
 package org.adempiere.ad.table;
 
-import java.util.List;
-
-import org.adempiere.ad.table.LogEntriesRepository.LogEntriesQuery;
-import org.adempiere.ad.table.RecordChangeLog.RecordChangeLogBuilder;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.POInfo;
-import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.ad.table.LogEntriesRepository.LogEntriesQuery;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.POInfo;
+import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
+
+import java.util.List;
 
 /*
  * #%L
@@ -57,7 +55,7 @@ final class RecordChangeLogLoader
 
 	public RecordChangeLog getByRecordId(@NonNull final ComposedRecordId recordId)
 	{
-		final RecordChangeLogBuilder changeLogsBuilder = RecordChangeLog.builder()
+		final RecordChangeLog.RecordChangeLogBuilder changeLogsBuilder = RecordChangeLog.builder()
 				.tableName(poInfo.getTableName())
 				.recordId(recordId);
 
@@ -71,7 +69,7 @@ final class RecordChangeLogLoader
 
 	public RecordChangeLog getSummaryByRecordId(@NonNull final ComposedRecordId recordId)
 	{
-		final RecordChangeLogBuilder changeLogsBuilder = RecordChangeLog.builder()
+		final RecordChangeLog.RecordChangeLogBuilder changeLogsBuilder = RecordChangeLog.builder()
 				.tableName(poInfo.getTableName())
 				.recordId(recordId);
 
@@ -80,23 +78,15 @@ final class RecordChangeLogLoader
 		return changeLogsBuilder.build();
 	}
 
-	private void loadRecordSummary(final RecordChangeLogBuilder changeLogsBuilder, final ComposedRecordId recordId)
+	private void loadRecordSummary(final RecordChangeLog.RecordChangeLogBuilder changeLogsBuilder, final ComposedRecordId recordId)
 	{
-		final String sql = new StringBuilder()
-				.append("SELECT Created, CreatedBy, Updated, UpdatedBy FROM ").append(poInfo.getTableName())
-				.append(" WHERE ").append(poInfo.getSqlWhereClauseByKeys())
-				.toString();
-
-		final List<Object> sqlParams = recordId.getKeysAsList(poInfo.getKeyColumnNames());
-
-		DB.retrieveFirstRowOrNull(sql, sqlParams, rs -> {
-			changeLogsBuilder
-					.createdByUserId(UserId.ofRepoIdOrNull(rs.getInt("CreatedBy")))
-					.createdTimestamp(TimeUtil.asInstant(rs.getTimestamp("Created")))
-					.lastChangedByUserId(UserId.ofRepoIdOrNull(rs.getInt("UpdatedBy")))
-					.lastChangedTimestamp(TimeUtil.asInstant(rs.getTimestamp("Updated")));
-			return null;
-		});
+		DB.forFirstRowIfAny(
+				"SELECT Created, CreatedBy, Updated, UpdatedBy FROM " + poInfo.getTableName() + " WHERE " + poInfo.getSqlWhereClauseByKeys(),
+				recordId.getKeysAsList(poInfo.getKeyColumnNames()),
+				rs -> changeLogsBuilder.createdByUserId(UserId.ofRepoIdOrNull(rs.getInt("CreatedBy")))
+						.createdTimestamp(rs.getTimestamp("Created").toInstant())
+						.lastChangedByUserId(UserId.ofRepoIdOrNull(rs.getInt("UpdatedBy")))
+						.lastChangedTimestamp(rs.getTimestamp("Updated").toInstant()));
 	}
 
 	private List<RecordChangeLogEntry> retrieveLogEntries(@NonNull final ComposedRecordId recordId)
@@ -111,7 +101,7 @@ final class RecordChangeLogLoader
 		final TableRecordReference recordRef = TableRecordReference.of(poInfo.getAD_Table_ID(), singleRecordId);
 
 		final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> //
-		logEntries = RecordChangeLogEntryLoader.retrieveLogEntries(LogEntriesQuery.of(recordRef));
+				logEntries = RecordChangeLogEntryLoader.retrieveLogEntries(LogEntriesQuery.of(recordRef));
 
 		return (logEntries.get(recordRef));
 	}

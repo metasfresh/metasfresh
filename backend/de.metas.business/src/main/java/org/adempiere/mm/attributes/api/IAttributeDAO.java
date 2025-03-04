@@ -1,5 +1,6 @@
 package org.adempiere.mm.attributes.api;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.util.ISingletonService;
@@ -11,6 +12,7 @@ import org.adempiere.mm.attributes.AttributeSetAttribute;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
+import org.adempiere.mm.attributes.MultiAttributeSetAttributeIdsList;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSet;
@@ -36,6 +38,8 @@ public interface IAttributeDAO extends ISingletonService
 
 	I_M_AttributeSet getAttributeSetById(AttributeSetId attributeSetId);
 
+	MultiAttributeSetAttributeIdsList getAttributeIdsByAttributeSetIds(@NonNull Set<AttributeSetId> attributeSetIds);
+
 	I_M_Attribute getAttributeById(int attributeId);
 
 	I_M_Attribute getAttributeById(AttributeId attributeId);
@@ -44,18 +48,25 @@ public interface IAttributeDAO extends ISingletonService
 
 	List<I_M_Attribute> getAttributesByIds(Collection<AttributeId> attributeIds);
 
-	/** @return attributeIds ordered by M_AttributeUse.SeqNo */
+	/**
+	 * @return attributeIds ordered by M_AttributeUse.SeqNo
+	 */
 	Set<AttributeId> getAttributeIdsByAttributeSetInstanceId(AttributeSetInstanceId attributeSetInstanceId);
 
-	/** @return attributes, ordered by M_AttributeUse.SeqNo */
+	/**
+	 * @return attributes, ordered by M_AttributeUse.SeqNo
+	 */
 	List<I_M_Attribute> getAttributesByAttributeSetId(AttributeSetId attributeSetId);
 
 	List<I_M_Attribute> getAllAttributes();
 
 	String getAttributeCodeById(AttributeId attributeId);
 
+	@NonNull
+	ImmutableList<AttributeCode> getOrderedAttributeCodesByIds(@NonNull final List<AttributeId> orderedAttributeIds);
+
 	/**
-	 * Retrieves the "No Attribute Set" (i.e. M_AttributeSet_ID = {@link AttributeConstants#M_AttributeSet_ID_None}).
+	 * Retrieves the "No Attribute Set" (i.e. M_AttributeSet_ID = {@link AttributeSetId#NONE}).
 	 */
 	I_M_AttributeSet retrieveNoAttributeSet();
 
@@ -82,7 +93,6 @@ public interface IAttributeDAO extends ISingletonService
 
 	/**
 	 * @param attributeSetInstanceId may be {@code null} or "none". In that case, always {@code null} is returned.
-	 *
 	 * @return the attribute instance with the given {@code attributeSetInstanceId} and {@code attributeId}, or {@code null}.
 	 */
 	I_M_AttributeInstance retrieveAttributeInstance(AttributeSetInstanceId attributeSetInstanceId, AttributeId attributeId);
@@ -118,7 +128,6 @@ public interface IAttributeDAO extends ISingletonService
 
 	/**
 	 * Retrieves substitutes (M_AttributeValue.Value) for given value.
-	 *
 	 * Example use case:
 	 *
 	 * <pre>
@@ -148,11 +157,14 @@ public interface IAttributeDAO extends ISingletonService
 
 	AttributeListValue changeAttributeValue(AttributeListValueChangeRequest request);
 
-	boolean deleteAttributeValueByCode(AttributeId attributeId, String value);
+	void deleteAttributeValueByCode(AttributeId attributeId, String value);
+
+	Optional<ITranslatableString> getAttributeDisplayNameByValue(@NonNull AttributeCode attributeCode);
 
 	Optional<ITranslatableString> getAttributeDescriptionByValue(@NonNull String value);
 
-	AttributeId retrieveAttributeIdByValue(AttributeCode attributeCode);
+	@NonNull
+	AttributeId getAttributeIdByCode(AttributeCode attributeCode);
 
 	AttributeId retrieveAttributeIdByValueOrNull(AttributeCode attributeCode);
 
@@ -167,6 +179,11 @@ public interface IAttributeDAO extends ISingletonService
 	 * @return attribute; never return null
 	 */
 	default I_M_Attribute retrieveAttributeByValue(@NonNull final AttributeCode attributeCode)
+	{
+		return retrieveAttributeByValue(attributeCode, I_M_Attribute.class);
+	}
+
+	default I_M_Attribute getAttributeByCode(@NonNull final AttributeCode attributeCode)
 	{
 		return retrieveAttributeByValue(attributeCode, I_M_Attribute.class);
 	}
@@ -190,7 +207,6 @@ public interface IAttributeDAO extends ISingletonService
 
 	/**
 	 * Creates a new {@link I_M_AttributeInstance}.
-	 *
 	 * NOTE: it is not saving it
 	 */
 	I_M_AttributeInstance createNewAttributeInstance(Properties ctx, final I_M_AttributeSetInstance asi, final AttributeId attributeId, final String trxName);
@@ -220,8 +236,6 @@ public interface IAttributeDAO extends ISingletonService
 	Map<AttributeSetInstanceId, ImmutableAttributeSet> getAttributesForASIs(Set<AttributeSetInstanceId> asiIds);
 
 	Optional<ITranslatableString> getAttributeDisplayNameByValue(String value);
-
-	boolean areAttributeSetsEqual(AttributeSetInstanceId firstASIId, AttributeSetInstanceId secondASIId);
 
 	I_M_AttributeSetInstance getAttributeSetInstanceById(AttributeSetInstanceId attributeSetInstanceId);
 

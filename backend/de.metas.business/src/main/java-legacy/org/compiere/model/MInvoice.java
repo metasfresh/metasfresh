@@ -36,6 +36,7 @@ import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.Msg;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoicePaymentStatus;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IMatchInvBL;
@@ -190,7 +191,8 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			setDocAction(DOCACTION_Complete);
 			//
 			// FRESH-488: Get the default payment rule form the system configuration
-			setPaymentRule(Services.get(IInvoiceBL.class).getDefaultPaymentRule().getCode());
+			final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+			setPaymentRule(invoiceBL.getDefaultPaymentRule().getCode());
 
 			setDateInvoiced(new Timestamp(System.currentTimeMillis()));
 			setDateAcct(new Timestamp(System.currentTimeMillis()));
@@ -198,12 +200,12 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			setChargeAmt(BigDecimal.ZERO);
 			setTotalLines(BigDecimal.ZERO);
 			setGrandTotal(BigDecimal.ZERO);
+			invoiceBL.setPaymentStatus(this, BigDecimal.ZERO, InvoicePaymentStatus.NOT_PAID);
 			//
 			setIsSOTrx(true);
 			setIsTaxIncluded(false);
 			setIsApproved(false);
 			setIsDiscountPrinted(false);
-			setIsPaid(false);
 			setSendEMail(false);
 			setIsPrinted(false);
 			setIsTransferred(false);
@@ -530,23 +532,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		m_lines = null;
 	}    // renumberLines
 
-	/**
-	 * Copy Lines From other Invoice.
-	 *
-	 * @param otherInvoice invoice
-	 * @param counter      create counter links
-	 * @param setOrder     set order links
-	 * @return number of lines copied
-	 * @deprecated pls use {@link IInvoiceBL#copyLinesFrom(I_C_Invoice, I_C_Invoice, boolean, boolean, boolean)}
-	 */
-	@Deprecated
-	public int copyLinesFrom(final MInvoice otherInvoice, final boolean counter, final boolean setOrder)
-	{
-		// ts: 04054: moving copyLinesFrom business logic to the implementors of IInvoiceBL
-		return Services.get(IInvoiceBL.class).copyLinesFrom(otherInvoice, this, counter, setOrder,
-															false); // setInvoiceRef == false
-	}    // copyLinesFrom
-
 	private void setReversal(final boolean reversal)
 	{
 		m_reversal = reversal;
@@ -853,7 +838,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		final MInvoiceLine[] lines = getLines(true);
 		if (lines.length == 0)
 		{
-			throw new AdempiereException("@NoLines@");
+			throw AdempiereException.noLines();
 		}
 
 		// No Cash Book
@@ -985,7 +970,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 				{
 					final boolean taxIncluded = Services.get(IInvoiceBL.class).isTaxIncluded(this, TaxUtils.from(cTax));
 					final BigDecimal taxBaseAmt = iTax.getTaxBaseAmt();
-					final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTax(cTax, taxBaseAmt, taxIncluded, taxPrecision.toInt());
+					final BigDecimal taxAmt = Services.get(ITaxBL.class).calculateTaxAmt(cTax, taxBaseAmt, taxIncluded, taxPrecision.toInt());
 					//
 					final MInvoiceTax newITax = new MInvoiceTax(getCtx(), 0, trxName);
 					newITax.setClientOrg(this);
@@ -1017,6 +1002,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		//
 		setTotalLines(totalLines);
 		setGrandTotal(grandTotal);
+		setOpenAmt(grandTotal);
 		return true;
 	}    // calculateTaxTotal
 
@@ -1069,52 +1055,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		{
 			approveIt();
 		}
-
-		// POS supports multiple payments
-		boolean fromPOS = false;
-		if (getC_Order_ID() > 0)
-		{
-			fromPOS = getC_Order().getC_POS_ID() > 0;
-		}
-
-		// Create Cash
-		final PaymentRule paymentRule = PaymentRule.ofCode(getPaymentRule());
-		if (paymentRule.isCash() && 
-				!fromPOS &&
-				!Services.get(ISysConfigBL.class).getBooleanValue("CASH_AS_PAYMENT", true, getAD_Client_ID()))
-		{
-			// Modifications for POSterita
-			//
-			// MCash cash = MCash.get (getCtx(), getAD_Org_ID(),
-			// getDateInvoiced(), getC_Currency_ID(), get_TrxName());
-
-			MCash cash;
-
-			final int posId = Env.getContextAsInt(getCtx(), Env.POS_ID);
-
-			if (posId != 0)
-			{
-				final MPOS pos = new MPOS(getCtx(), posId, get_TrxName());
-				final int cashBookId = pos.getC_CashBook_ID();
-				cash = MCash.get(getCtx(), cashBookId, getDateInvoiced(), get_TrxName());
-			}
-			else
-			{
-				cash = MCash.get(getCtx(), getAD_Org_ID(),
-								 getDateInvoiced(), getC_Currency_ID(), get_TrxName());
-			}
-
-			// End Posterita Modifications
-
-			if (cash == null || cash.get_ID() <= 0)
-			{
-				throw new AdempiereException("@NoCashBook@");
-			}
-			final MCashLine cl = new MCashLine(cash);
-			cl.setInvoice(this);
-			cl.saveEx(get_TrxName());
-			setC_CashLine_ID(cl.getC_CashLine_ID());
-		}    // CashBook
 
 		// Update Order & Match
 		int matchInv = 0;
@@ -1200,7 +1140,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 						amt,
 						CurrencyId.ofRepoId(getC_Currency_ID()),
 						CurrencyId.ofRepoId(C_CurrencyTo_ID),
-						TimeUtil.asLocalDate(getDateAcct()),
+						getDateAcct().toInstant(),
 						(CurrencyConversionTypeId)null,
 						ClientId.ofRepoId(getAD_Client_ID()),
 						OrgId.ofRepoId(getAD_Org_ID()));
@@ -1411,7 +1351,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 				}
 			}
 			addDescription(Msg.getMsg(getCtx(), "Voided"));
-			setIsPaid(true);
+			Services.get(IInvoiceBL.class).setPaymentStatus(this, BigDecimal.ZERO, InvoicePaymentStatus.FULLY_PAID);
 			setC_Payment_ID(0);
 		}
 		else
@@ -1525,7 +1465,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			throw new AdempiereException("Reversal ERROR: " + reversal.getProcessMsg());
 		}
 		reversal.setC_Payment_ID(0);
-		reversal.setIsPaid(true);
+		Services.get(IInvoiceBL.class).setPaymentStatus(reversal, BigDecimal.ZERO, InvoicePaymentStatus.FULLY_PAID);
 		reversal.closeIt();
 		reversal.setProcessing(false);
 		reversal.setDocStatus(DocStatus.Reversed.getCode());
@@ -1565,7 +1505,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		setDocStatus(DocStatus.Reversed.getCode());    // may come from void
 		setDocAction(DOCACTION_None);
 		setC_Payment_ID(0);
-		setIsPaid(true);
+		Services.get(IInvoiceBL.class).setPaymentStatus(this, BigDecimal.ZERO, InvoicePaymentStatus.FULLY_PAID);
 
 		//
 		// Create Allocation: allocate the reversal invoice against the original invoice
@@ -1680,6 +1620,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		setSalesRep_ID(rma.getSalesRep_ID());
 
 		setGrandTotal(rma.getAmt());
+		setOpenAmt(rma.getAmt());
 		setIsSOTrx(rma.isSOTrx());
 		setTotalLines(rma.getAmt());
 

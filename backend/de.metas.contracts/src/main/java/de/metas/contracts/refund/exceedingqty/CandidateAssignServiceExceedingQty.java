@@ -1,17 +1,9 @@
 package de.metas.contracts.refund.exceedingqty;
 
-import static de.metas.util.collections.CollectionUtils.singleElement;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-
-import org.adempiere.util.lang.IPair;
-import org.adempiere.util.lang.ImmutablePair;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-
+import de.metas.common.util.pair.IPair;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.contracts.refund.AssignCandidatesRequest;
 import de.metas.contracts.refund.AssignCandidatesRequest.AssignCandidatesRequestBuilder;
 import de.metas.contracts.refund.AssignableInvoiceCandidate;
@@ -21,16 +13,22 @@ import de.metas.contracts.refund.AssignmentToRefundCandidateRepository;
 import de.metas.contracts.refund.CandidateAssignmentService.UpdateAssignmentResult;
 import de.metas.contracts.refund.RefundConfig;
 import de.metas.contracts.refund.RefundConfig.RefundMode;
-import de.metas.currency.CurrencyRepository;
 import de.metas.contracts.refund.RefundContract;
 import de.metas.contracts.refund.RefundInvoiceCandidate;
 import de.metas.contracts.refund.RefundInvoiceCandidateRepository;
 import de.metas.contracts.refund.RefundInvoiceCandidateService;
+import de.metas.currency.CurrencyRepository;
 import de.metas.money.MoneyService;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+import static de.metas.util.collections.CollectionUtils.singleElement;
 
 /*
  * #%L

@@ -163,9 +163,9 @@ public class DeliveredDataLoader
 					.build();
 		}
 
-		Quantity qtyInStockUom = Quantitys.createZero(stockUomId);
-		Quantity qtyNominal = Quantitys.createZero(icUomId);
-		Quantity qtyCatch = Quantitys.createZero(icUomId);
+		Quantity qtyInStockUom = Quantitys.zero(stockUomId);
+		Quantity qtyNominal = Quantitys.zero(icUomId);
+		Quantity qtyCatch = Quantitys.zero(icUomId);
 
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
 
@@ -221,20 +221,20 @@ public class DeliveredDataLoader
 					.productId(productId)
 					.qtyTotalInStockUom(deliveredQty.getStockQty())
 					.qtyTotalNominal(deliveredQty.getUOMQtyNotNull())
-					.qtyWithIssuesInStockUom(Quantitys.createZero(productId))
-					.qtyWithIssuesNominal(Quantitys.createZero(icUomId))
+					.qtyWithIssuesInStockUom(Quantitys.zero(productId))
+					.qtyWithIssuesNominal(Quantitys.zero(icUomId))
 					.build();
 		}
 
 		final ImmutableList<DeliveredQtyItem> shippedQtyItems = loadDeliveredQtyItems(validICIOLRecords);
 
-		Quantity qtyTotalInStockUom = Quantitys.createZero(stockUomId);
-		Quantity qtyTotalNominal = Quantitys.createZero(icUomId);
-		Quantity qtyTotalCatch = Quantitys.createZero(icUomId);
+		Quantity qtyTotalInStockUom = Quantitys.zero(stockUomId);
+		Quantity qtyTotalNominal = Quantitys.zero(icUomId);
+		Quantity qtyTotalCatch = Quantitys.zero(icUomId);
 
-		Quantity qtyWithIssuesInStockUom = Quantitys.createZero(stockUomId);
-		Quantity qtyWithIssuesNominal = Quantitys.createZero(icUomId);
-		Quantity qtyWithIssuesCatch = Quantitys.createZero(icUomId);
+		Quantity qtyWithIssuesInStockUom = Quantitys.zero(stockUomId);
+		Quantity qtyWithIssuesNominal = Quantitys.zero(icUomId);
+		Quantity qtyWithIssuesCatch = Quantitys.zero(icUomId);
 
 		final ArrayList<DeliveredQtyItem> deliveredQtyItemsWithCatch = new ArrayList<>();
 		final ArrayList<DeliveredQtyItem> deliveredQtyItemsWithoutCatch = new ArrayList<>();
@@ -311,7 +311,7 @@ public class DeliveredDataLoader
 					.completedOrClosed(inoutCompletedOrClosed);
 
 			final Quantity qtyInStockUom = Quantitys
-					.create(
+					.of(
 							icIolAssociationRecord.getQtyDelivered(),
 							stockUomId)
 					.negateIf(negateQtys);
@@ -319,7 +319,7 @@ public class DeliveredDataLoader
 
 			final UomId deliveryUomId = UomId.optionalOfRepoId(icIolAssociationRecord.getC_UOM_ID()).orElse(stockUomId);
 			final Quantity qtyNominal = Quantitys
-					.create(
+					.of(
 							icIolAssociationRecord.getQtyDeliveredInUOM_Nominal(),
 							deliveryUomId)
 					.negateIf(negateQtys);
@@ -328,7 +328,7 @@ public class DeliveredDataLoader
 			if (!isNull(icIolAssociationRecord, I_C_InvoiceCandidate_InOutLine.COLUMNNAME_QtyDeliveredInUOM_Catch))
 			{
 				final Quantity qtyCatch = Quantitys
-						.create(
+						.of(
 								icIolAssociationRecord.getQtyDeliveredInUOM_Catch(),
 								deliveryUomId)
 						.negateIf(negateQtys);
@@ -338,7 +338,7 @@ public class DeliveredDataLoader
 			if (!isNull(icIolAssociationRecord, I_C_InvoiceCandidate_InOutLine.COLUMNNAME_QtyDeliveredInUOM_Override))
 			{
 				final Quantity qtyOverride = Quantitys
-						.create(
+						.of(
 								icIolAssociationRecord.getQtyDeliveredInUOM_Override(),
 								deliveryUomId)
 						.negateIf(negateQtys);
@@ -361,8 +361,8 @@ public class DeliveredDataLoader
 
 			return StockQtyAndUOMQty.builder()
 					.productId(productId)
-					.uomQty(Quantitys.createZero(icUomId))
-					.stockQty(Quantitys.createZero(productId))
+					.uomQty(Quantitys.zero(icUomId))
+					.stockQty(Quantitys.zero(productId))
 					.build();
 		}
 		else

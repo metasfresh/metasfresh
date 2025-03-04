@@ -2,13 +2,13 @@ package de.metas.edi.process;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.edi.api.EDIDesadvLinePackId;
 import de.metas.edi.api.IDesadvBL;
+import de.metas.edi.api.impl.pack.EDIDesadvPackId;
+import de.metas.edi.api.impl.pack.EDIDesadvPackService;
 import de.metas.edi.sscc18.DesadvLineSSCC18Generator;
 import de.metas.edi.sscc18.PrintableDesadvLineSSCC18Labels;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.handlingunits.attributes.sscc18.impl.SSCC18CodeBL;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Creates as many {@link I_EDI_DesadvLine_Pack} records as asked and then print them
+ * Creates as many {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack} records as asked and then print them
  *
  * @author tsa
  * Task 08910
@@ -43,6 +43,7 @@ public class EDI_Desadv_GenerateSSCCLabels extends JavaProcess implements IProce
 {
 	private final IDesadvBL desadvBL = SpringContextHolder.instance.getBean(IDesadvBL.class);
 	private final SSCC18CodeBL sscc18CodeService = SpringContextHolder.instance.getBean(SSCC18CodeBL.class);
+	private final EDIDesadvPackService ediDesadvPackService = SpringContextHolder.instance.getBean(EDIDesadvPackService.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private static final String PARAM_IsDefault = "IsDefault";
@@ -87,7 +88,7 @@ public class EDI_Desadv_GenerateSSCCLabels extends JavaProcess implements IProce
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final Set<EDIDesadvLinePackId> lineSSCCIdsToPrint = generateLabels();
+		final Set<EDIDesadvPackId> lineSSCCIdsToPrint = generateLabels();
 
 		if (!lineSSCCIdsToPrint.isEmpty())
 		{
@@ -98,12 +99,12 @@ public class EDI_Desadv_GenerateSSCCLabels extends JavaProcess implements IProce
 		return MSG_OK;
 	}
 
-	private Set<EDIDesadvLinePackId> generateLabels()
+	private Set<EDIDesadvPackId> generateLabels()
 	{
 		return trxManager.callInThreadInheritedTrx(this::generateLabelsInTrx);
 	}
 
-	private Set<EDIDesadvLinePackId> generateLabelsInTrx()
+	private Set<EDIDesadvPackId> generateLabelsInTrx()
 	{
 		if(!p_IsDefault && p_Counter <= 0)
 		{
@@ -119,11 +120,12 @@ public class EDI_Desadv_GenerateSSCCLabels extends JavaProcess implements IProce
 		final DesadvLineSSCC18Generator desadvLineLabelsGenerator = DesadvLineSSCC18Generator.builder()
 				.sscc18CodeService(sscc18CodeService)
 				.desadvBL(desadvBL)
+				.ediDesadvPackService(ediDesadvPackService)
 				.printExistingLabels(true)
 				.bpartnerId(extractBPartnerId(desadvLines))
 				.build();
 
-		final LinkedHashSet<EDIDesadvLinePackId> lineSSCCIdsToPrint = new LinkedHashSet<>();
+		final LinkedHashSet<EDIDesadvPackId> lineSSCCIdsToPrint = new LinkedHashSet<>();
 
 		for (final I_EDI_DesadvLine desadvLine : desadvLines)
 		{
@@ -143,11 +145,11 @@ public class EDI_Desadv_GenerateSSCCLabels extends JavaProcess implements IProce
 	private static BPartnerId extractBPartnerId(@NonNull final List<I_EDI_DesadvLine> desadvLines)
 	{
 		final I_EDI_Desadv ediDesadvRecord = desadvLines.get(0).getEDI_Desadv();
-		
+
 		final int bpartnerRepoId = CoalesceUtil.firstGreaterThanZero(
-				ediDesadvRecord.getDropShip_BPartner_ID(), 
+				ediDesadvRecord.getDropShip_BPartner_ID(),
 				ediDesadvRecord.getC_BPartner_ID());
-		
+
 		return BPartnerId.ofRepoId(bpartnerRepoId);
 	}
 

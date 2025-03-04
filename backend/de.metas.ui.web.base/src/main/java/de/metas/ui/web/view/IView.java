@@ -8,6 +8,7 @@ import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.process.ProcessHandlerType;
 import de.metas.ui.web.process.view.ViewActionDescriptorsList;
 import de.metas.ui.web.view.descriptor.SqlViewRowsWhereClause;
 import de.metas.ui.web.view.json.JSONViewDataType;
@@ -21,7 +22,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.util.Evaluatee;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -102,6 +102,7 @@ public interface IView
 
 	long size();
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	default boolean isAllowClosingPerUserRequest()
 	{
 		return true;
@@ -120,6 +121,8 @@ public interface IView
 	int getQueryLimit();
 
 	boolean isQueryLimitHit();
+
+	@Nullable default EmptyReason getEmptyReason() {return null;}
 
 	/**
 	 * Invalidate ALL view rows.
@@ -160,9 +163,9 @@ public interface IView
 
 	IViewRow getById(DocumentId rowId) throws EntityNotFoundException;
 
-	LookupValuesPage getFilterParameterDropdown(String filterId, String filterParameterName, Evaluatee ctx);
+	LookupValuesPage getFilterParameterDropdown(String filterId, String filterParameterName, ViewFilterParameterLookupEvaluationCtx ctx);
 
-	LookupValuesPage getFilterParameterTypeahead(String filterId, String filterParameterName, String query, Evaluatee ctx);
+	LookupValuesPage getFilterParameterTypeahead(String filterId, String filterParameterName, String query, ViewFilterParameterLookupEvaluationCtx ctx);
 
 	/**
 	 * Gets the stick filters.
@@ -208,6 +211,12 @@ public interface IView
 
 	<T> List<T> retrieveModelsByIds(DocumentIdsSelection rowIds, Class<T> modelClass);
 
+	@NonNull
+	default <T> Stream<T> streamModelsByIds(@NonNull final DocumentIdsSelection rowIds, @NonNull final Class<T> modelClass)
+	{
+		return retrieveModelsByIds(rowIds, modelClass).stream();
+	}
+
 	/**
 	 * @return a stream which contains only the {@link IViewRow}s which given <code>rowId</code>s.
 	 * If a {@link IViewRow} was not found for given ID, this method simply ignores it.
@@ -215,6 +224,11 @@ public interface IView
 	Stream<? extends IViewRow> streamByIds(DocumentIdsSelection rowIds);
 
 	default Stream<? extends IViewRow> streamByIds(DocumentIdsSelection rowIds, QueryLimit suggestedLimit)
+	{
+		return streamByIds(rowIds);
+	}
+	
+	default Stream<? extends IViewRow> streamByIds(DocumentIdsSelection rowIds, DocumentQueryOrderByList orderBys, QueryLimit suggestedLimit)
 	{
 		return streamByIds(rowIds);
 	}
@@ -232,7 +246,7 @@ public interface IView
 		return ViewActionDescriptorsList.EMPTY;
 	}
 
-	default boolean isConsiderTableRelatedProcessDescriptors(@NonNull final DocumentIdsSelection selectedRowIds)
+	default boolean isConsiderTableRelatedProcessDescriptors(@NonNull final ProcessHandlerType processHandlerType, @NonNull final DocumentIdsSelection selectedRowIds)
 	{
 		return true;
 	}

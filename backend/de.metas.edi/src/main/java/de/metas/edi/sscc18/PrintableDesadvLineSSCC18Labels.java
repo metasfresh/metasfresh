@@ -2,9 +2,11 @@ package de.metas.edi.sscc18;
 
 import com.google.common.base.Suppliers;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.edi.api.EDIDesadvLineId;
 import de.metas.edi.api.IDesadvDAO;
+import de.metas.edi.api.impl.pack.EDIDesadvPack;
+import de.metas.edi.api.impl.pack.EDIDesadvPackRepository;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
@@ -18,6 +20,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
 
@@ -40,13 +43,13 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 
 	@Getter
 	private final I_M_HU_PI_Item_Product tuPIItemProduct;
-	
+
 	private final int lineNo;
 	private final String productValue;
 	private final String productName;
 
 	private final int existingSSCC18sCount;
-	private final Supplier<List<I_EDI_DesadvLine_Pack>> existingSSCC18s;
+	private final Supplier<List<EDIDesadvPack>> existingSSCC18s;
 	private BigDecimal requiredSSCC18sCount;
 
 	private final TotalQtyCUBreakdownCalculator huQtysCalculator;
@@ -60,8 +63,8 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 		this.productValue = builder.getProductValue();
 		this.productName = builder.getProductName();
 
-		this.existingSSCC18sCount = builder.getExistingSSCC18sCount();
 		this.existingSSCC18s = builder.getExistingSSCC18s();
+		this.existingSSCC18sCount = this.existingSSCC18s.get().size();
 		this.requiredSSCC18sCount = BigDecimal.valueOf(builder.getRequiredSSCC18Count());
 
 		this.huQtysCalculator = builder.getHUQtysCalculator();
@@ -99,7 +102,7 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 	}
 
 	@Override
-	public List<I_EDI_DesadvLine_Pack> getExistingSSCC18s()
+	public List<EDIDesadvPack> getExistingSSCC18s()
 	{
 		return existingSSCC18s.get();
 	}
@@ -129,6 +132,8 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 		private final transient IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 		private final transient IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 		private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+
+		private final transient EDIDesadvPackRepository EDIDesadvPackRepository = SpringContextHolder.instance.getBean(EDIDesadvPackRepository.class);
 
 		private I_EDI_DesadvLine _desadvLine;
 		private Integer requiredSSCC18Count;
@@ -180,14 +185,9 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 			return _desadvLine.getProductDescription();
 		}
 
-		int getExistingSSCC18sCount()
+		Supplier<List<EDIDesadvPack>> getExistingSSCC18s()
 		{
-			return desadvDAO.retrieveDesadvLinePackRecordsCount(_desadvLine);
-		}
-
-		Supplier<List<I_EDI_DesadvLine_Pack>> getExistingSSCC18s()
-		{
-			return Suppliers.memoize(() -> desadvDAO.retrieveDesadvLinePacks(_desadvLine, null/*withInOutLine*/));
+			return Suppliers.memoize(() -> EDIDesadvPackRepository.getPacksByEDIDesadvLineId(EDIDesadvLineId.ofRepoId(_desadvLine.getEDI_DesadvLine_ID())));
 		}
 
 		public Builder setRequiredSSCC18Count(final Integer requiredSSCC18Count)
@@ -263,7 +263,7 @@ public class PrintableDesadvLineSSCC18Labels implements IPrintableDesadvLineSSCC
 			}
 			else
 			{
-				builder.setStandardQtyCUsPerTU(lutuConfiguration.getQtyCU());
+				builder.setStandardQtyCUsPerTU(lutuConfiguration.getQtyCUsPerTU());
 				builder.setStandardQtyTUsPerLU(lutuConfiguration.getQtyTU());
 			}
 

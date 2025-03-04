@@ -12,6 +12,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import javax.annotation.Nullable;
 
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
+import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IRangeAwareParams;
@@ -81,7 +82,7 @@ import lombok.NonNull;
  */
 /* package */final class ADProcessInstanceController implements IProcessInstanceController
 {
-	private static final transient Logger logger = LogManager.getLogger(ADProcessInstanceController.class);
+	private static final Logger logger = LogManager.getLogger(ADProcessInstanceController.class);
 
 	@Getter
 	private final DocumentId instanceId;
@@ -273,12 +274,11 @@ import lombok.NonNull;
 			valueNorm = value;
 		}
 
-		final boolean ignoreReadonlyFlag = true;
 		parameters.processValueChange(
 				parameterName,
 				valueNorm,
 				() -> "update from java process annotated fields",
-				ignoreReadonlyFlag);
+				DocumentFieldLogicExpressionResultRevaluator.ALWAYS_RETURN_FALSE);
 	}
 
 	@Override

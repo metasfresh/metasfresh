@@ -4,6 +4,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.common.util.pair.IPair;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.impl.AccessSqlStringExpression;
 import de.metas.security.permissions.Access;
@@ -25,7 +26,6 @@ import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.CompositeStringExpression;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.IPair;
 import org.compiere.model.POInfo;
 
 import javax.annotation.Nullable;

@@ -14,7 +14,12 @@
 package org.adempiere.exceptions;
 
 import de.metas.ad_reference.ADReferenceService;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStringBuilder;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.compiere.model.X_C_DocType;
@@ -31,65 +36,64 @@ public class DocTypeNotFoundException extends AdempiereException
 	 *
 	 */
 	private static final long serialVersionUID = -1269337075319916877L;
-	/** Doc Base Type */
-	private String docBaseType = null;
 
-	/**
-	 * @param docBaseType Document Base Type (see MDocType.DOCBASETYPE_*)
-	 * @param additionalInfo optional if there is some additional info
-	 */
-	public DocTypeNotFoundException(final String docBaseType, final String additionalInfo)
+	public DocTypeNotFoundException(final DocBaseType docBaseType, final String additionalInfo)
 	{
 		super(buildMsg(docBaseType, additionalInfo));
-		this.docBaseType = docBaseType;
 	}
 
 	public DocTypeNotFoundException(@NonNull final DocTypeQuery query)
 	{
 		super(buildMsg(query));
-		this.docBaseType = query.getDocBaseType();
 	}
 
-	private static String buildMsg(final String docBaseType, final String additionalInfo)
+	private static ITranslatableString buildMsg(final DocBaseType docBaseType, final String additionalInfo)
 	{
-		final ADReferenceService adReferenceService = ADReferenceService.get();
+		final TranslatableStringBuilder builder = TranslatableStrings.builder();
+		builder.appendADMessage(AdMessageKey.of("NotFound")).append(" ").appendADElement("C_DocType_ID");
 
-		final String docBaseTypeName = adReferenceService.retrieveListNameTrl(Env.getCtx(), X_C_DocType.DOCBASETYPE_AD_Reference_ID, docBaseType);
-
-		final StringBuilder sb = new StringBuilder("@NotFound@ @C_DocType_ID@");
-		sb.append(" - @DocBaseType@ : " + docBaseTypeName);
-		if (!Check.isEmpty(additionalInfo, true))
+		if (docBaseType != null)
 		{
-			sb.append(" (").append(additionalInfo).append(")");
-		}
-		return sb.toString();
-	}
-
-	private static String buildMsg(final DocTypeQuery query)
-	{
 		final ADReferenceService adReferenceService = ADReferenceService.get();
 
-		final String docBaseTypeName = adReferenceService.retrieveListNameTrl(Env.getCtx(), X_C_DocType.DOCBASETYPE_AD_Reference_ID, query.getDocBaseType());
+		final String docBaseTypeName = adReferenceService.retrieveListNameTrl(Env.getCtx(), X_C_DocType.DOCBASETYPE_AD_Reference_ID, docBaseType.getCode());
+			builder.append(" - ")
+					.appendADElement("DocBaseType")
+					.append(": ")
+					.append(docBaseTypeName);
+		}
 
-		final StringBuilder sb = new StringBuilder("@NotFound@ @C_DocType_ID@");
-		sb.append(" - @DocBaseType@ : " + docBaseTypeName);
-		sb.append(", @DocSubType@: " + query.getDocSubType());
-		sb.append(", @AD_Client_ID@: " + query.getAdClientId());
-		sb.append(", @AD_Org_ID@: " + query.getAdOrgId());
+		if (!Check.isBlank(additionalInfo))
+		{
+			builder.append(" (").append(additionalInfo).append(")");
+		}
+
+		return builder.build();
+	}
+
+	private static ITranslatableString buildMsg(final DocTypeQuery query)
+	{
+		final TranslatableStringBuilder builder = TranslatableStrings.builder();
+		builder.appendADMessage(AdMessageKey.of("NotFound")).append(" ").appendADElement("C_DocType_ID");
+		final ADReferenceService adReferenceService = ADReferenceService.get();
+
+		final String docBaseTypeName = adReferenceService.retrieveListNameTrl(Env.getCtx(), X_C_DocType.DOCBASETYPE_AD_Reference_ID, query.getDocBaseType().getCode());
+
+
+		builder.append(" - ").appendADElement("DocBaseType").append(": ").append(docBaseTypeName);
+		builder.append(", ").appendADElement("DocSubType").append(": ").append(query.getDocSubType().getCode());
+		builder.append(", ").appendADElement("AD_Client_ID").append(": ").append(query.getAdClientId());
+		builder.append(", ").appendADElement("AD_Org_ID").append(": ").append(query.getAdOrgId());
+
 		if (query.getIsSOTrx() != null)
 		{
-			sb.append(", @IsSOTrx@: " + query.getIsSOTrx());
+			builder.append(", ").appendADElement("IsSOTrx").append(": ").append(query.getIsSOTrx());
 		}
-		if (!Check.isEmpty(query.getName(), true))
+		if (!Check.isBlank(query.getName()))
 		{
-			sb.append(", @Name@: ").append(query.getName());
+			builder.append(", ").appendADElement("Name").append(": ").append(query.getName());
 		}
 
-		return sb.toString();
-	}
-
-	public String getDocBaseType()
-	{
-		return docBaseType;
+		return builder.build();
 	}
 }

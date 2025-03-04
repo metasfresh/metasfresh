@@ -23,10 +23,7 @@
 
 package de.metas.ui.web.pickingV2.packageable;
 
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.money.MoneyService;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -46,17 +43,21 @@ import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 @ViewFactory(windowId = PickingConstantsV2.WINDOWID_PackageableView_String, viewTypes = { JSONViewDataType.grid, JSONViewDataType.includedView })
 public class PackageableViewFactoryV2 implements IViewFactory
 {
 	private final PackageableRowsRepository rowsRepo;
 
-	public PackageableViewFactoryV2(@NonNull final MoneyService moneyService)
+	public PackageableViewFactoryV2(
+			final @NonNull MoneyService moneyService,
+			final @NonNull LookupDataSourceFactory lookupDataSourceFactory)
 	{
-		rowsRepo = new PackageableRowsRepository(moneyService);
+		rowsRepo = new PackageableRowsRepository(moneyService, lookupDataSourceFactory);
 	}
 
 	@Override
@@ -106,7 +107,7 @@ public class PackageableViewFactoryV2 implements IViewFactory
 				createProcessDescriptor(PackageablesView_PrintPicklist.class));
 	}
 
-	private final RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
+	private RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
 	{
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(processClass);

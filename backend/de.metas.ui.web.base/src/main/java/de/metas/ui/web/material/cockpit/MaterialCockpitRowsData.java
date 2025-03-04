@@ -25,12 +25,14 @@ package de.metas.ui.web.material.cockpit;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
+import de.metas.material.cockpit.ProductWithDemandSupply;
+import de.metas.material.cockpit.ProductWithDemandSupplyCollection;
+import de.metas.material.cockpit.QtyDemandSupplyRepository;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
-import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.product.ProductId;
-import de.metas.ui.web.material.cockpit.filters.QtyDemandSupplyFilters;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest.CreateRowsRequestBuilder;
 import de.metas.ui.web.view.template.IRowsData;
@@ -45,9 +47,11 @@ import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -57,8 +61,9 @@ import java.util.Set;
 public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 {
 	@NonNull private final MaterialCockpitRowFactory materialCockpitRowFactory;
+	@NonNull private final QtyDemandSupplyRepository qtyDemandSupplyRepository;
 
-	private final boolean includePerPlantDetailRows;
+	private final MaterialCockpitDetailsRowAggregation detailsRowAggregation;
 	@NonNull private final SynchronizedRowsIndexHolder<MaterialCockpitRow> rowsHolder;
 	@NonNull private DocumentIdsSelection invalidRowIds = DocumentIdsSelection.EMPTY;
 
@@ -68,19 +73,21 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	private final Multimap<ProductId, DocumentId> productId2DocumentIds;
 
 	public MaterialCockpitRowsData(
-			final boolean includePerPlantDetailRows,
+			@NonNull final MaterialCockpitDetailsRowAggregation detailsRowAggregation,
 			@NonNull final MaterialCockpitRowFactory materialCockpitRowFactory,
+			@NonNull final QtyDemandSupplyRepository qtyDemandSupplyRepository,
 			@NonNull final List<MaterialCockpitRow> rows)
 	{
-		this.includePerPlantDetailRows = includePerPlantDetailRows;
+		this.detailsRowAggregation = detailsRowAggregation;
 		this.materialCockpitRowFactory = materialCockpitRowFactory;
 
 		this.rowsHolder = SynchronizedRowsIndexHolder.of(rows);
+		this.qtyDemandSupplyRepository = qtyDemandSupplyRepository;
 		final ImmutableMultimap.Builder<ProductId, DocumentId> productIdDocumentIdBuilder = new ImmutableMultimap.Builder<>();
 
 		for (final MaterialCockpitRow row : rows)
 		{
-			productIdDocumentIdBuilder.put(ProductId.ofRepoId(row.getProductId()), row.getId());
+			productIdDocumentIdBuilder.put(row.getProductId(), row.getId());
 		}
 		this.productId2DocumentIds = productIdDocumentIdBuilder.build();
 	}
@@ -142,6 +149,10 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 
 		final Map<LocalDate, CreateRowsRequestBuilder> builders = new HashMap<>();
 
+		final ProductWithDemandSupplyCollection productWithDemandSupplyCollection = MaterialCockpitUtil.isI_QtyDemand_QtySupply_VActive()
+				? loadQuantitiesRecords(rowsToInvalidate)
+				: ProductWithDemandSupplyCollection.of(ImmutableMap.of());
+
 		for (final MaterialCockpitRow row : rowsToInvalidate)
 		{
 			final CreateRowsRequestBuilder builder = builders.computeIfAbsent(row.getDate(), this::createNewBuilder);
@@ -152,12 +163,12 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 			final List<I_MD_Stock> stockRecords = loadStockRecords(row.getAllIncludedStockRecordIds());
 			builder.stockRecords(stockRecords);
 
-			final ProductId productId = ProductId.ofRepoId(row.getProductId());
+			final ProductId productId = row.getProductId();
 
-			final List<I_QtyDemand_QtySupply_V> quantitiesRecords;
+			final List<ProductWithDemandSupply> quantitiesRecords;
 			if (MaterialCockpitUtil.isI_QtyDemand_QtySupply_VActive())
 			{
-				quantitiesRecords = loadQuantitiesRecords(productId);
+				quantitiesRecords = productWithDemandSupplyCollection.getByProductId(productId);
 			}
 			else
 			{
@@ -214,14 +225,17 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	{
 		return MaterialCockpitRowFactory.CreateRowsRequest.builder()
 				.date(localDate)
-				.includePerPlantDetailRows(includePerPlantDetailRows);
+				.detailsRowAggregation(detailsRowAggregation);
 	}
 
 	@NonNull
-	private List<I_QtyDemand_QtySupply_V> loadQuantitiesRecords(@NonNull final ProductId productId)
+	private ProductWithDemandSupplyCollection loadQuantitiesRecords(@NonNull final Collection<MaterialCockpitRow> rows)
 	{
-		return QtyDemandSupplyFilters
-				.createQuantitiesQueryFor(productId)
-				.list();
+		final ImmutableSet<ProductId> productIds = rows.stream()
+				.map(MaterialCockpitRow::getProductId)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return qtyDemandSupplyRepository.getByProductIds(productIds);
 	}
 }

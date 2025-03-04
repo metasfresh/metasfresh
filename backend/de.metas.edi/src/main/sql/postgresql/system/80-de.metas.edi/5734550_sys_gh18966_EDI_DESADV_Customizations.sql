@@ -18,7 +18,7 @@ UPDATE AD_Element_Trl SET Name='Shipments not sent', PrintName='Shipments not se
 ;
 
 -- 2024-09-24T15:58:20.118Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583285,'en_US') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583285,'en_US')
 ;
 
 -- Column: EDI_Desadv.IsShipmentsNotSent
@@ -33,7 +33,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- 2024-09-24T16:08:46.068Z
-/* DDL */  select update_Column_Translation_From_AD_Element(583285) 
+/* DDL */  select update_Column_Translation_From_AD_Element(583285)
 ;
 
 -- Column: EDI_Desadv.IsShipmentsNotSent

@@ -9,10 +9,9 @@ import {
   GEO_PANEL_STATES,
   NO_VIEW,
   PANEL_WIDTHS,
-  renderHeaderProperties,
 } from '../../utils/documentListHelper';
 import Spinner from './SpinnerOverlay';
-import BlankPage from '../BlankPage';
+import { BlankPage } from '../BlankPage';
 import SelectionAttributes from './SelectionAttributes';
 import Filters from '../filters/Filters';
 import FiltersStatic from '../filters/FiltersStatic';
@@ -23,13 +22,35 @@ import {
   INVOICE_TO_ALLOCATE_WINDOW_ID,
   InvoiceToAllocateViewHeader,
 } from '../paymentAllocation/InvoiceToAllocateViewHeader';
+import {
+  PP_ORDER_CANDIDATE_WINDOW_ID,
+  PPOrderCandidateViewHeader,
+} from '../ppOrderCandidate/PPOrderCandidateViewHeader';
+import { connect } from 'react-redux';
+import {
+  getSettingFromStateAsBoolean,
+  getSettingFromStateAsPositiveInt,
+} from '../../utils/settings';
+import {
+  DeliveryPlanningViewHeader,
+  getDeliveryPlanningViewHeaderWindowId,
+} from '../deliveryPlanning/DeliveryPlanningViewHeader';
+import {
+  OIViewHeader,
+  OIViewHeader_WINDOW_ID,
+} from '../acctOpenItems/OIViewHeader';
+import { DocumentListHeaderProperties } from './DocumentListHeaderProperties';
+import {
+  AcctSimulationViewHeader,
+  AcctSimulationViewHeader_WINDOW_ID,
+} from '../acctSimulation/AcctSimulationViewHeader';
 
 /**
  * @file Class based component.
  * @module DocumentList
  * @extends Component
  */
-export default class DocumentList extends Component {
+class DocumentList extends Component {
   constructor(props) {
     super(props);
 
@@ -125,6 +146,9 @@ export default class DocumentList extends Component {
       parentSelected,
       filterId,
       featureType,
+      isPPOrderCandidateViewHeaderEnabled,
+      deliveryPlanningViewHeaderWindowId,
+      defaultQtyPrecision,
     } = this.props;
     const {
       staticFilters,
@@ -163,7 +187,7 @@ export default class DocumentList extends Component {
       layout && isModal && hasIncluded && hasShowIncluded;
     const showGeoResizeBtn =
       layout && layout.supportGeoLocations && locationData;
-    const viewGroups = !isModal && headerProperties && headerProperties.groups;
+    const isRenderHeaderProperties = !isModal;
 
     return (
       <div
@@ -174,14 +198,38 @@ export default class DocumentList extends Component {
         })}
         style={styleObject}
       >
-        {!!(viewGroups && viewGroups.length) && (
-          <div className="panel panel-primary">
-            <div className="panel-groups-header">
-              <div className="optional">
-                {renderHeaderProperties(viewGroups)}
-              </div>
-            </div>
-          </div>
+        {isRenderHeaderProperties && (
+          <DocumentListHeaderProperties headerProperties={headerProperties} />
+        )}
+
+        {isPPOrderCandidateViewHeaderEnabled &&
+          String(windowId) === PP_ORDER_CANDIDATE_WINDOW_ID &&
+          viewId && (
+            <PPOrderCandidateViewHeader
+              windowId={windowId}
+              viewId={viewId}
+              selectedRowIds={selected}
+              pageLength={pageLength}
+            />
+          )}
+
+        {deliveryPlanningViewHeaderWindowId &&
+          String(windowId) === deliveryPlanningViewHeaderWindowId &&
+          viewId && (
+            <DeliveryPlanningViewHeader
+              windowId={windowId}
+              viewId={viewId}
+              selectedRowIds={selected}
+              pageLength={pageLength}
+              precision={defaultQtyPrecision}
+            />
+          )}
+
+        {String(windowId) === OIViewHeader_WINDOW_ID && viewId && (
+          <OIViewHeader headerProperties={headerProperties} />
+        )}
+        {String(windowId) === AcctSimulationViewHeader_WINDOW_ID && viewId && (
+          <AcctSimulationViewHeader headerProperties={headerProperties} />
         )}
 
         {showModalResizeBtn && (
@@ -404,3 +452,22 @@ DocumentList.propTypes = {
   onUpdateQuickActions: PropTypes.func,
   setQuickActionsComponentRef: PropTypes.func,
 };
+
+const mapStateToProps = (state) => {
+  return {
+    isPPOrderCandidateViewHeaderEnabled: getSettingFromStateAsBoolean(
+      state,
+      'PPOrderCandidateViewHeader.enabled',
+      true
+    ),
+    defaultQtyPrecision: getSettingFromStateAsPositiveInt(
+      state,
+      'widget.Quantity.defaultPrecision',
+      2
+    ),
+    deliveryPlanningViewHeaderWindowId:
+      getDeliveryPlanningViewHeaderWindowId(state),
+  };
+};
+
+export default connect(mapStateToProps, null)(DocumentList);

@@ -1,6 +1,8 @@
 package de.metas.email.mailboxes;
 
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.email.EMailCustomType;
 import de.metas.organization.OrgId;
 import de.metas.process.AdProcessId;
@@ -24,6 +26,6 @@ class MailboxRouting
 	@Nullable AdProcessId adProcessId;
 	@Nullable EMailCustomType emailCustomType;
 
-	public String getDocBaseType() { return docBaseAndSubType != null ? docBaseAndSubType.getDocBaseType() : null; }
-	public String getDocSubType() { return docBaseAndSubType != null ? docBaseAndSubType.getDocSubType() : null; }
+	public DocBaseType getDocBaseType() { return docBaseAndSubType != null ? docBaseAndSubType.getDocBaseType() : null; }
+	public DocSubType getDocSubType() { return docBaseAndSubType != null ? docBaseAndSubType.getDocSubType() : null; }
 }

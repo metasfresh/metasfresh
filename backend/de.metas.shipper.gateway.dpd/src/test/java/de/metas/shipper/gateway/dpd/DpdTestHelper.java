@@ -53,6 +53,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Location;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -289,7 +290,7 @@ class DpdTestHelper
 			final DeliveryOrderLine deliveryOrderLine = DeliveryOrderLine.builder()
 					// .repoId()
 					.content("the epic package " + packageId + " description")
-					.grossWeightKg(1) // same as in de.metas.shipper.gateway.commons.ShipperGatewayFacade.computeGrossWeightInKg: we assume it's in Kg
+					.grossWeightKg(BigDecimal.ONE) // same as in de.metas.shipper.gateway.commons.ShipperGatewayFacade.computeGrossWeightInKg: we assume it's in Kg
 					.packageDimensions(PackageDimensions.builder()
 							.heightInCM(10)
 							.lengthInCM(10)

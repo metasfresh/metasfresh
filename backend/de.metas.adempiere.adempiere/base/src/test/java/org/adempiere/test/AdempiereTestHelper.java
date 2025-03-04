@@ -22,10 +22,6 @@ import de.metas.util.Services;
 import de.metas.util.Services.IServiceImplProvider;
 import de.metas.util.UnitTestServiceNamePolicy;
 import de.metas.util.lang.UIDStringUtil;
-import io.github.jsonSnapshot.SnapshotConfig;
-import io.github.jsonSnapshot.SnapshotMatcher;
-import io.github.jsonSnapshot.SnapshotMatchingStrategy;
-import io.github.jsonSnapshot.matchingstrategy.JSONAssertMatchingStrategy;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
@@ -100,24 +96,6 @@ public class AdempiereTestHelper
 	private static final AdempiereTestHelper instance = new AdempiereTestHelper();
 
 	public static final String AD_LANGUAGE = "de_DE";
-
-	/**
-	 * This config makes sure that the snapshot files end up in {@code src/test/resource/} so they make it into the test jars
-	 */
-	public static final SnapshotConfig SNAPSHOT_CONFIG = new SnapshotConfig()
-	{
-		@Override
-		public String getFilePath()
-		{
-			return "src/test/resources/";
-		}
-
-		@Override
-		public SnapshotMatchingStrategy getSnapshotMatchingStrategy()
-		{
-			return JSONAssertMatchingStrategy.INSTANCE_STRICT;
-		}
-	};
 
 	public static AdempiereTestHelper get()
 	{
@@ -214,7 +192,8 @@ public class AdempiereTestHelper
 
 		// Logging
 		LogManager.setLevel(Level.WARN);
-		Loggables.temporarySetLoggable(Loggables.nop());
+		//noinspection resource
+		Loggables.temporarySetLoggable(Loggables.console(">>> "));
 
 		// JSON
 		JsonObjectMapperHolder.resetSharedJsonObjectMapper();
@@ -226,7 +205,7 @@ public class AdempiereTestHelper
 
 	private static void log(final String methodName, final String message)
 	{
-		System.out.println("" + AdempiereTestHelper.class.getSimpleName() + "." + methodName + ": " + message);
+		System.out.println(AdempiereTestHelper.class.getSimpleName() + "." + methodName + ": " + message);
 	}
 
 	private static Properties setupContext()
@@ -332,28 +311,34 @@ public class AdempiereTestHelper
 		return OrgId.ofRepoId(orgRecord.getAD_Org_ID());
 	}
 
-	/**
-	 * Create JSON serialization function to be used by {@link SnapshotMatcher#start(SnapshotConfig, Function)}.
-	 * <p>
-	 * The function is using our {@link JsonObjectMapperHolder#newJsonObjectMapper()} with a pretty printer.
-	 *
-	 * @deprecated  Consider using de.metas.test.SnapshotFunctionFactory
-	 */
-	@Deprecated
-	public static Function<Object, String> createSnapshotJsonFunction()
+	public void onCleanup(@NonNull String name, @NonNull Runnable runnable)
 	{
-		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
-		final ObjectWriter writerWithDefaultPrettyPrinter = jsonObjectMapper.writerWithDefaultPrettyPrinter();
-		return object -> {
-			try
-			{
-				return writerWithDefaultPrettyPrinter.writeValueAsString(object);
-			}
-			catch (final JsonProcessingException e)
-			{
-				throw AdempiereException.wrapIfNeeded(e);
-			}
-		};
+		final CleanupTask task = new CleanupTask(name, runnable);
+		cleanupTasks.add(task);
+		log("onCleanup", "Scheduled task: " + task.getName());
+	}
+
+	private void runCleanupTasks()
+	{
+		for (final Iterator<CleanupTask> it = cleanupTasks.iterator(); it.hasNext(); )
+		{
+			final CleanupTask task = it.next();
+
+			task.run();
+			log("runCleanupTasks", "Executed task: " + task.getName());
+
+			it.remove();
+		}
+	}
+
+	@AllArgsConstructor
+	@ToString(of = "name")
+	private static class CleanupTask
+	{
+		@Getter @NonNull private final String name;
+		@NonNull private final Runnable runnable;
+
+		public void run() {runnable.run();}
 	}
 
 	private void staticInit0()
@@ -384,35 +369,5 @@ public class AdempiereTestHelper
 		CacheMgt.get().reset();
 
 		staticInitialized = true;
-	}
-
-	public void onCleanup(@NonNull String name, @NonNull Runnable runnable)
-	{
-		final CleanupTask task = new CleanupTask(name, runnable);
-		cleanupTasks.add(task);
-		log("onCleanup", "Scheduled task: " + task.getName());
-	}
-
-	private void runCleanupTasks()
-	{
-		for (final Iterator<CleanupTask> it = cleanupTasks.iterator(); it.hasNext(); )
-		{
-			final CleanupTask task = it.next();
-
-			task.run();
-			log("runCleanupTasks", "Executed task: " + task.getName());
-
-			it.remove();
-		}
-	}
-
-	@AllArgsConstructor
-	@ToString(of = "name")
-	private static class CleanupTask
-	{
-		@Getter @NonNull private final String name;
-		@NonNull private final Runnable runnable;
-
-		public void run() {runnable.run();}
 	}
 }

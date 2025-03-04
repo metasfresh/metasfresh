@@ -22,10 +22,13 @@ package de.metas.edi.sscc18;
  * #L%
  */
 
+import de.metas.edi.api.impl.pack.EDIDesadvPack;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -51,7 +54,7 @@ public interface IPrintableDesadvLineSSCC18Labels
 	 * Needed because when creating a DESADV-Pack, we also need to set the pack's packing-Codes and packaging-GTINs
 	 */
 	I_M_HU_PI_Item_Product getTuPIItemProduct();
-	
+
 	Integer getLineNo();
 
 	String getProductValue();
@@ -60,7 +63,7 @@ public interface IPrintableDesadvLineSSCC18Labels
 
 	Integer getExistingSSCC18sCount();
 
-	List<I_EDI_DesadvLine_Pack> getExistingSSCC18s();
+	List<EDIDesadvPack> getExistingSSCC18s();
 
 	BigDecimal getRequiredSSCC18sCount();
 

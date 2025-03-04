@@ -364,7 +364,7 @@ public class CalloutInOut extends CalloutEngine
 
 		inout.setAD_Org_ID(warehouse.getAD_Org_ID());
 
-		final I_M_Locator locator = Services.get(IWarehouseBL.class).getDefaultLocator(warehouse);
+		final I_M_Locator locator = Services.get(IWarehouseBL.class).getOrCreateDefaultLocator(warehouse);
 		calloutField.putContext(CTXNAME_M_Locator_ID, locator == null ? -1 : locator.getM_Locator_ID());
 
 		return NO_ERROR;
@@ -467,6 +467,7 @@ public class CalloutInOut extends CalloutEngine
 			//
 			// Dimensions
 			inoutLine.setC_Activity_ID(originalInOutLine == null ? -1 : originalInOutLine.getC_Activity_ID());
+			inoutLine.setC_Order_ID(originalInOutLine == null ? -1 : originalInOutLine.getC_Order_ID());
 			inoutLine.setC_Campaign_ID(originalInOutLine == null ? -1 : originalInOutLine.getC_Campaign_ID());
 			inoutLine.setC_Project_ID(originalInOutLine == null ? -1 : originalInOutLine.getC_Project_ID());
 			inoutLine.setC_ProjectPhase_ID(originalInOutLine == null ? -1 : originalInOutLine.getC_ProjectPhase_ID());
@@ -597,7 +598,7 @@ public class CalloutInOut extends CalloutEngine
 		final WarehouseId allowedWarehouseId = WarehouseId.ofRepoIdOrNull(inout.getM_Warehouse_ID());
 		if (allowedWarehouseId != null)  // shall never be null
 		{
-			final LocatorId defaultLocatorId = Services.get(IWarehouseBL.class).getDefaultLocatorId(allowedWarehouseId);
+			final LocatorId defaultLocatorId = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(allowedWarehouseId);
 			inoutLine.setM_Locator_ID(defaultLocatorId.getRepoId());
 		}
 

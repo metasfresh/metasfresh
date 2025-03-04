@@ -1,11 +1,9 @@
 package de.metas.ui.web.pickingslotsClearing;
 
-import de.metas.picking.qrcode.PickingSlotQRCode;
-import org.compiere.util.DisplayType;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.i18n.IMsgBL;
+import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
@@ -14,9 +12,10 @@ import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescripto
 import de.metas.ui.web.picking.pickingslot.PickingSlotViewFilters;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.util.Services;
 import lombok.experimental.UtilityClass;
+import org.compiere.util.DisplayType;
 
 /*
  * #%L
@@ -55,7 +54,7 @@ public class PickingSlotsClearingViewFilters
 
 	private static DocumentFilterDescriptor createBPartnerFilter()
 	{
-		final LookupDescriptor bpartnerLookupDescriptor = SqlLookupDescriptor.builder()
+		final LookupDescriptor bpartnerLookupDescriptor = LookupDescriptorProviders.sharedInstance().sql()
 				.setCtxColumnName(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
 				.setDisplayType(DisplayType.Search)
 				.buildForDefaultScope();

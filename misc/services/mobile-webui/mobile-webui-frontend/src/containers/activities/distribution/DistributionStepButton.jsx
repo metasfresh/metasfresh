@@ -1,12 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useHistory } from 'react-router-dom';
 
 import { distributionStepScreenLocation } from '../../../routes/distribution';
 
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
-import { toQRCodeDisplayable } from '../../../utils/huQRCodes';
+import { toQRCodeDisplayable } from '../../../utils/qrCode/hu';
+import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 
 const DistributionStepButton = ({
   applicationId,
@@ -20,7 +20,7 @@ const DistributionStepButton = ({
   completeStatus,
   qtyToMove,
 }) => {
-  const history = useHistory();
+  const history = useMobileNavigation();
   const handleClick = () => {
     history.push(distributionStepScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId }));
   };

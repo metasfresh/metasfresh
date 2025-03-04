@@ -2,14 +2,19 @@ package de.metas.ui.web.pporder;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.order.OrderLineId;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
+import de.metas.ui.web.handlingunits.report.HUReportAwareView;
+import de.metas.ui.web.handlingunits.report.HUReportProcessInstancesRepository;
+import de.metas.ui.web.process.ProcessHandlerType;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.view.IViewRow;
+import de.metas.ui.web.view.ViewFilterParameterLookupEvaluationCtx;
 import de.metas.ui.web.view.ViewHeaderProperties;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.ViewResult;
@@ -30,7 +35,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.util.Evaluatee;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.PPOrderId;
@@ -44,8 +48,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -69,7 +71,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
  * #L%
  */
 
-public class PPOrderLinesView implements IView
+public class PPOrderLinesView implements IView, HUReportAwareView
 {
 	@Getter
 	private final ViewId parentViewId;
@@ -83,14 +85,14 @@ public class PPOrderLinesView implements IView
 	@Getter
 	private final ImmutableSet<DocumentPath> referencingDocumentPaths;
 
-	private final PPOrderId ppOrderId;
-	@Getter
-	private final PPOrderDocBaseType docBaseType;
-	private final OrderLineId salesOrderLineId;
+	@Getter private final PPOrderId ppOrderId;
+	@Getter private final PPOrderDocBaseType docBaseType;
+	@Getter private final DocStatus docStatus;
+	@Getter private final OrderLineId salesOrderLineId;
 
 	private final PPOrderLinesViewDataSupplier dataSupplier;
 
-	final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
+	final ImmutableList<RelatedProcessDescriptor> additionalRelatedProcessDescriptors;
 
 	public static PPOrderLinesView cast(final IView view)
 	{
@@ -106,6 +108,8 @@ public class PPOrderLinesView implements IView
 			@Nullable final Set<DocumentPath> referencingDocumentPaths,
 			@NonNull final PPOrderId ppOrderId,
 			@NonNull final PPOrderDocBaseType docBaseType,
+			@NonNull final DocStatus docStatus,
+			@Nullable final OrderLineId salesOrderLineId,
 			@NonNull final PPOrderLinesViewDataSupplier dataSupplier,
 			@NonNull final List<RelatedProcessDescriptor> additionalRelatedProcessDescriptors)
 	{
@@ -119,8 +123,8 @@ public class PPOrderLinesView implements IView
 
 		this.ppOrderId = ppOrderId;
 		this.docBaseType = docBaseType;
-		final I_PP_Order ppOrder = load(ppOrderId, I_PP_Order.class);
-		this.salesOrderLineId = OrderLineId.ofRepoIdOrNull(ppOrder.getC_OrderLine_ID());
+		this.docStatus = docStatus;
+		this.salesOrderLineId = salesOrderLineId;
 
 		this.dataSupplier = dataSupplier;
 	}
@@ -147,7 +151,7 @@ public class PPOrderLinesView implements IView
 	}
 
 	@Override
-	public ViewHeaderProperties getHeaderProperties() { return getData().getHeaderProperties(); }
+	public ViewHeaderProperties getHeaderProperties() {return getData().getHeaderProperties();}
 
 	/**
 	 * @param documentId may be {@code null}; in that case, the method also returns {@code null}
@@ -166,16 +170,6 @@ public class PPOrderLinesView implements IView
 			return null; // just be sure to avoid an NPE in here
 		}
 		return ppOrderLine.getType().getTableName();
-	}
-
-	public PPOrderId getPpOrderId()
-	{
-		return ppOrderId;
-	}
-
-	public OrderLineId getSalesOrderLineId()
-	{
-		return salesOrderLineId;
 	}
 
 	@Override
@@ -225,13 +219,13 @@ public class PPOrderLinesView implements IView
 	}
 
 	@Override
-	public LookupValuesPage getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
+	public LookupValuesPage getFilterParameterDropdown(final String filterId, final String filterParameterName, final ViewFilterParameterLookupEvaluationCtx ctx)
 	{
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public LookupValuesPage getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
+	public LookupValuesPage getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final ViewFilterParameterLookupEvaluationCtx ctx)
 	{
 		throw new UnsupportedOperationException();
 	}
@@ -332,7 +326,14 @@ public class PPOrderLinesView implements IView
 	@Override
 	public List<RelatedProcessDescriptor> getAdditionalRelatedProcessDescriptors()
 	{
-		return additionalRelatedProcessDescriptors;
+		if (docStatus.isCompleted())
+		{
+			return additionalRelatedProcessDescriptors;
+		}
+		else
+		{
+			return ImmutableList.of();
+		}
 	}
 
 	@Override
@@ -355,8 +356,8 @@ public class PPOrderLinesView implements IView
 	}
 
 	@Override
-	public boolean isConsiderTableRelatedProcessDescriptors(final @NonNull DocumentIdsSelection selectedRowIds)
+	public boolean isConsiderTableRelatedProcessDescriptors(@NonNull final ProcessHandlerType processHandlerType, final @NonNull DocumentIdsSelection selectedRowIds)
 	{
-		return false;
+		return ProcessHandlerType.equals(processHandlerType, HUReportProcessInstancesRepository.PROCESS_HANDLER_TYPE);
 	}
 }

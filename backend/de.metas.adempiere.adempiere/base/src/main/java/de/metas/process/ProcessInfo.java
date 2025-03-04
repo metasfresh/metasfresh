@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.process;
 
 import com.google.common.base.MoreObjects;
@@ -8,6 +30,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ILanguageBL;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
@@ -22,6 +45,7 @@ import de.metas.security.RoleId;
 import de.metas.security.permissions.Access;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.workflow.WorkflowId;
@@ -54,6 +78,8 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
+import org.compiere.util.Util;
+import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -81,6 +107,8 @@ import java.util.Set;
 public final class ProcessInfo implements Serializable
 {
 	private static final transient Logger logger = LogManager.getLogger(ProcessInfo.class);
+
+	private static final AdMessageKey MSG_NO_TABLE_RECORD_REFERENCE_FOUND = AdMessageKey.of("de.metas.process.NoTableRecordReferenceFound");
 
 	public static ProcessInfoBuilder builder()
 	{
@@ -155,7 +183,7 @@ public final class ProcessInfo implements Serializable
 		result.setRefreshAllAfterExecution(builder.isRefreshAllAfterExecution());
 	}
 
-	private final Properties ctx;
+	private Properties ctx;
 
 	/**
 	 * Title of the Process/Report
@@ -282,6 +310,11 @@ public final class ProcessInfo implements Serializable
 		return Env.coalesce(ctx);
 	}
 
+	public void snapshotCtx()
+	{
+		this.ctx = Env.copyCtx(getCtx());
+	}
+
 	/**
 	 * Advise if we want business logic to be executed asynchronously further down the road, or not.
 	 *
@@ -321,16 +354,9 @@ public final class ProcessInfo implements Serializable
 			throw new AdempiereException("ClassName may not be blank").appendParametersToMessage().setParameter("processInfo", this);
 		}
 
-		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-		if (classLoader == null)
-		{
-			classLoader = getClass().getClassLoader();
-		}
-
 		try
 		{
-			final Class<?> processClass = classLoader.loadClass(classname);
-			final JavaProcess processClassInstance = (JavaProcess)processClass.newInstance();
+			final JavaProcess processClassInstance = newProcessClassInstance(classname);
 			processClassInstance.init(this);
 
 			return processClassInstance;
@@ -339,6 +365,19 @@ public final class ProcessInfo implements Serializable
 		{
 			throw AdempiereException.wrapIfNeeded(e).appendParametersToMessage().setParameter("processInfo", this);
 		}
+	}
+
+	@NonNull
+	public static JavaProcess newProcessClassInstance(@NonNull final String classname) throws ClassNotFoundException
+	{
+		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		if (classLoader == null)
+		{
+			classLoader = ProcessInfo.class.getClassLoader();
+		}
+
+		final Class<?> processClass = classLoader.loadClass(classname);
+		return Util.newInstance(JavaProcess.class, processClass);
 	}
 
 	/**
@@ -409,6 +448,13 @@ public final class ProcessInfo implements Serializable
 			return null;
 		}
 		return TableRecordReference.of(adTableId, recordId);
+	}
+
+	@NonNull
+	public TableRecordReference getRecordRefNotNull()
+	{
+		return Optional.ofNullable(getRecordRefOrNull())
+				.orElseThrow(() -> new AdempiereException(MSG_NO_TABLE_RECORD_REFERENCE_FOUND, getPinstanceId()));
 	}
 
 	public boolean isRecordSet()
@@ -631,7 +677,7 @@ public final class ProcessInfo implements Serializable
 	 * task 03685
 	 * @see JavaProcess#retrieveSelectedRecordsQueryBuilder(Class)
 	 */
-	@Nullable
+	@NonNull
 	public <T> IQueryFilter<T> getQueryFilterOrElseTrue()
 	{
 		// default: use a "neutral" filter that does not exclude anything
@@ -652,6 +698,7 @@ public final class ProcessInfo implements Serializable
 	 * @param defaultQueryFilter filter to be returned if this process info does not have a whereClause set.
 	 * @return a query filter for the current m_whereClause or if there is none, return <code>defaultQueryFilter</code>
 	 */
+	@Contract("!null -> !null")
 	@Nullable
 	public <T> IQueryFilter<T> getQueryFilterOrElse(@Nullable final IQueryFilter<T> defaultQueryFilter)
 	{
@@ -660,7 +707,7 @@ public final class ProcessInfo implements Serializable
 		{
 			whereFilter = defaultQueryFilter;
 
-			// In case te default filter is null, return null
+			// In case the default filter is null, return null
 			if (whereFilter == null)
 			{
 				return null;
@@ -772,7 +819,7 @@ public final class ProcessInfo implements Serializable
 		private int tabNo = Env.TAB_None;
 
 		private Language reportLanguage;
-		private Boolean printPreview;
+		@NonNull private OptionalBoolean printPreview = OptionalBoolean.UNKNOWN;
 		private Boolean archiveReportData;
 
 		private OutputType jrDesiredOutputType = null;
@@ -1462,12 +1509,12 @@ public final class ProcessInfo implements Serializable
 			return null;
 		}
 
-		/**
-		 * Only really matters when forking with the swing client.
-		 * {@code true} means that the system shall just if the report data shall just be returned.
-		 * If not set, then the system will look at {@link Ini#P_PRINTPREVIEW} and {@code AD_Process.IsDirectPrint}.
-		 */
 		public ProcessInfoBuilder setPrintPreview(final Boolean printPreview)
+		{
+			return setPrintPreview(OptionalBoolean.ofNullableBoolean(printPreview));
+		}
+
+		public ProcessInfoBuilder setPrintPreview(@NonNull final OptionalBoolean printPreview)
 		{
 			this.printPreview = printPreview;
 			return this;
@@ -1479,9 +1526,9 @@ public final class ProcessInfo implements Serializable
 		 */
 		private boolean isPrintPreview()
 		{
-			if (this.printPreview != null)
+			if (this.printPreview.isPresent())
 			{
-				return this.printPreview;
+				return this.printPreview.isTrue();
 			}
 
 			if (Ini.isSwingClient() && Ini.isPropertyBool(Ini.P_PRINTPREVIEW))
@@ -1490,12 +1537,7 @@ public final class ProcessInfo implements Serializable
 			}
 
 			final I_AD_Process adProcess = getAD_ProcessOrNull();
-			if (adProcess != null && !adProcess.isDirectPrint())
-			{
-				return true;
-			}
-
-			return false;
+			return adProcess != null && !adProcess.isDirectPrint();
 		}
 
 		/**

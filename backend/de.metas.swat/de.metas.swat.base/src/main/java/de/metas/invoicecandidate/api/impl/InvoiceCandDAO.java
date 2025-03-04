@@ -10,7 +10,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
-import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
@@ -99,6 +99,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -821,7 +822,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.execute()
 				.getRowsInserted();
 
-		logger.info("Invalidated {} invoice candidates with chunkUUID={}, trxName={} and query={}", count, chunkUUID, icQuery.getTrxName(), icQuery);
+		logger.debug("Invalidated {} invoice candidates with chunkUUID={}, trxName={} and query={}", count, chunkUUID, icQuery.getTrxName(), icQuery);
 
 		// collect the different C_Async_Batch_IDs (including null) of the ICs that we just created recompute-records for
 		final List<Integer> asyncBatchIDs = queryBL.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class)
@@ -841,11 +842,11 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 						icQuery.getCtx(),
 						icQuery.getTrxName(),
 						AsyncBatchId.toAsyncBatchIdOrNull(asyncBatchId));
-				logger.info("Scheduling ICs with AsyncBatchId={} for update.", asyncBatchIdInt);
+				logger.debug("Scheduling ICs with AsyncBatchId={} for update.", asyncBatchIdInt);
 				invoiceCandScheduler.scheduleForUpdate(request);
 			}
 		}
-		
+
 		return count;
 	}
 
@@ -1202,8 +1203,8 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 			multiRequest = CacheInvalidateMultiRequest.fromTableNameAndRecordIds(I_C_Invoice_Candidate.Table_Name, onlyInvoiceCandidateIds);
 		}
 
-		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
-		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.CHANGE);
+		final ModelCacheInvalidationService modelCacheInvalidationService = ModelCacheInvalidationService.get();
+		modelCacheInvalidationService.invalidate(multiRequest, ModelCacheInvalidationTiming.AFTER_CHANGE);
 	}
 
 	protected final int untag(@NonNull final InvoiceCandRecomputeTagger tagger)
@@ -1229,16 +1230,10 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public final boolean hasInvalidInvoiceCandidatesForTag(final InvoiceCandRecomputeTag tag)
+	public final boolean hasInvalidInvoiceCandidates(@NonNull final Collection<InvoiceCandidateId> invoiceCandidateIds)
 	{
-		final Properties ctx = Env.getCtx();
-		final String trxName = ITrx.TRXNAME_ThreadInherited;
-
-		final PInstanceId pinstanceId = InvoiceCandRecomputeTag.getPinstanceIdOrNull(tag);
-
-		return queryBL
-				.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class, ctx, trxName)
-				.addEqualsFilter(I_C_Invoice_Candidate_Recompute.COLUMN_AD_PInstance_ID, pinstanceId)
+		return queryBL.createQueryBuilder(I_C_Invoice_Candidate_Recompute.class)
+				.addInArrayFilter(I_C_Invoice_Candidate_Recompute.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateIds)
 				.create()
 				.anyMatch();
 	}
@@ -1636,7 +1631,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		}
 
 		// Conversion date to be used on currency conversion
-		final LocalDate dateConv = SystemTime.asLocalDate();
+		final Instant dateConv = SystemTime.asInstant();
 
 		BigDecimal result = BigDecimal.ZERO;
 		for (final CurrencyId currencyId : currencyId2conversion2Amt.keySet())

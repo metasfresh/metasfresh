@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.edi
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 -- Table: EDI_DesadvLine_InOutLine
 -- Table: EDI_DesadvLine_InOutLine
 -- 2024-06-14T06:04:03.165Z
@@ -9,7 +31,10 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 ;
 
 -- 2024-06-14T06:04:03.307Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556348,TO_TIMESTAMP('2024-06-14 06:04:03.213000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000000,50000,'Table EDI_DesadvLine_InOutLine',1,'Y','N','Y','Y','EDI_DesadvLine_InOutLine','N',1000000,TO_TIMESTAMP('2024-06-14 06:04:03.213000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,
+                         StartNo,Updated,UpdatedBy) 
+VALUES (0,0,556348,TO_TIMESTAMP('2024-06-14 06:04:03.213000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,1000000,50000,'Table EDI_DesadvLine_InOutLine',1,'Y','N','Y','Y','EDI_DesadvLine_InOutLine',
+        1000000,TO_TIMESTAMP('2024-06-14 06:04:03.213000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2024-06-14T06:04:03.322Z

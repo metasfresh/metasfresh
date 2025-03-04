@@ -1,5 +1,6 @@
 package de.metas.contracts.impl;
 
+import de.metas.acct.GLCategoryRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.interceptor.C_Flatrate_Term;
@@ -50,7 +51,7 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 	@BeforeEach
 	public void before()
 	{
-		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, new NoopPerformanceMonitoringService());
+		SpringContextHolder.registerJUnitBean(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
 		SpringContextHolder.registerJUnitBean(IDocumentLocationBL.class, new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())));
 
 
@@ -61,7 +62,7 @@ public class ContractChangePriceQtyTest extends AbstractFlatrateTermTest
 		final IDocumentLocationBL documentLocationBL = new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()));
 
 		final IModelInterceptorRegistry interceptorRegistry = Services.get(IModelInterceptorRegistry.class);
-		interceptorRegistry.addModelInterceptor(new C_Flatrate_Term(contractOrderService,documentLocationBL));
+		interceptorRegistry.addModelInterceptor(new C_Flatrate_Term(contractOrderService,documentLocationBL, new GLCategoryRepository()));
 		interceptorRegistry.addModelInterceptor(M_ShipmentSchedule.INSTANCE);
 
 		final I_C_Tax taxNotFoundRecord = newInstance(I_C_Tax.class);

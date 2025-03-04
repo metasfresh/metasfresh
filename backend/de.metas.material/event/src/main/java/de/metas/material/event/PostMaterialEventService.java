@@ -57,6 +57,7 @@ public class PostMaterialEventService
 
 	/**
 	 * Fires the given event using our (distributed) event framework.
+	 * <b>Important:</b> Please make sure to only use this method if you know that all the data which this event refers to is already committed to database!
 	 */
 	public void enqueueEventNow(final MaterialEvent event)
 	{

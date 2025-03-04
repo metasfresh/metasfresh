@@ -1,16 +1,5 @@
 package de.metas.material.cockpit.stock.process;
 
-import static java.math.BigDecimal.ZERO;
-
-import java.util.List;
-
-import de.metas.quantity.Quantitys;
-import de.metas.uom.UomId;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.service.ClientId;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
-
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.cockpit.model.I_MD_Stock_From_HUs_V;
 import de.metas.material.cockpit.stock.StockChangeSourceInfo;
@@ -24,9 +13,19 @@ import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+
+import java.util.List;
+
+import static java.math.BigDecimal.ZERO;
 
 /*
  * #%L
@@ -110,7 +109,7 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 		final StockDataRecordIdentifier recordIdentifier = toStockDataRecordIdentifier(huBasedDataRecord);
 
 		final ProductId productId = ProductId.ofRepoId(huBasedDataRecord.getM_Product_ID());
-		final Quantity qtyInStorageUOM = Quantitys.create(huBasedDataRecord.getQtyOnHandChange(), UomId.ofRepoId(huBasedDataRecord.getC_UOM_ID()));
+		final Quantity qtyInStorageUOM = Quantitys.of(huBasedDataRecord.getQtyOnHandChange(), UomId.ofRepoId(huBasedDataRecord.getC_UOM_ID()));
 		final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(qtyInStorageUOM, productId);
 
 		return StockDataUpdateRequest.builder()

@@ -2,10 +2,12 @@ package de.metas.inout;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.DocTypeId;
 import de.metas.lang.SOTrx;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -17,6 +19,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
@@ -70,7 +73,11 @@ public interface IInOutDAO extends ISingletonService
 	 */
 	<T extends I_M_InOutLine> List<T> retrieveLines(I_M_InOut inOut, Class<T> inoutLineClass);
 
+	ImmutableSet<InOutLineId> retrieveActiveLineIdsByInOutIds(Set<InOutId> inoutIds);
+
 	List<I_M_InOutLine> retrieveLinesForInOuts(Collection<? extends I_M_InOut> inouts);
+
+	Set<InOutAndLineId> retrieveLineIdsByOrderLineIds(Set<OrderLineId> orderLineIds);
 
 	/**
 	 * For the given <code>inOut</code> the method returns those inout lines that don't reference an order line.
@@ -134,4 +141,8 @@ public interface IInOutDAO extends ISingletonService
 	<T extends I_M_InOut> Map<InOutId, T> getShipmentsByIds(Set<InOutId> inOutIds, Class<T> modelClass);
 
 	Optional<I_M_InOutLine> getReversalLineForLineId(@NonNull final InOutLineId inoutLineId);
+
+	ImmutableList<InOutId> retrieveShipmentsWithoutShipperTransportation(@NonNull Timestamp date);
+
+	Stream<I_M_InOut> retrieveByQuery(@NonNull de.metas.inout.InOutQuery query);
 }

@@ -8,6 +8,7 @@ Feature: Packing material invoice candidates: receipts
     And metasfresh has date and time 2022-07-26T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
+    And set sys config boolean value true for sys config de.metas.handlingunits.model.validator.M_InOut.allowReactivateOfReceiptWithHUAssigned
 
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
@@ -70,7 +71,7 @@ Feature: Packing material invoice candidates: receipts
 
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -78,15 +79,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -122,7 +123,7 @@ Feature: Packing material invoice candidates: receipts
 
     Then metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -130,15 +131,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -174,7 +175,7 @@ Feature: Packing material invoice candidates: receipts
 
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -182,15 +183,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -241,7 +242,7 @@ Feature: Packing material invoice candidates: receipts
       | huPiItemPurchaseProduct_130        | huPiItemTU_130             | purchaseProduct         | 10  | 2022-07-01 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct_130            | 10               |
@@ -249,15 +250,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | 10                     |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | 10                     |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -322,8 +323,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | 101                                | huPackingLU_140              |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | 101                                | huPackingLU_140              |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -382,7 +383,7 @@ Feature: Packing material invoice candidates: receipts
       | huPiItemPurchaseProduct_150        | huPiItemTU_150             | purchaseProduct         | 10  | 2022-07-01 |
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -390,15 +391,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5     | huPiItemPurchaseProduct_150        | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5           | huPiItemPurchaseProduct_150        | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -435,7 +436,7 @@ Feature: Packing material invoice candidates: receipts
 
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 10000      | huPiItemPurchaseProduct                | 1000             |
@@ -443,8 +444,8 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 1000       | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 1000       | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
@@ -453,8 +454,8 @@ Feature: Packing material invoice candidates: receipts
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_HU_PI_Item_Product_ID.TU.Identifier | M_HU_PI_ID.LU.Identifier |
       | huLuTuConfig                          | receiptSchedule_PO              | huPiItemPurchaseProduct               | huPackingLU              |
     Then validate M_HU_LUTU_Configuration:
-      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCU |
-      | huLuTuConfig                          | 14    | 76    | 10    |
+      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCUsPerTU |
+      | huLuTuConfig                          | 14    | 76    | 10          |
     And receive HUs with M_HU_LUTU_Configuration:
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | OPT.HUList.Identifier | OPT.numberHUsGenerated |
       | huLuTuConfig                          | receiptSchedule_PO              | processedHUs          | 14                     |
@@ -496,7 +497,7 @@ Feature: Packing material invoice candidates: receipts
 
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -504,15 +505,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -563,7 +564,7 @@ Feature: Packing material invoice candidates: receipts
 
     Then metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -571,15 +572,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -629,7 +630,7 @@ Feature: Packing material invoice candidates: receipts
 
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -637,15 +638,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -711,7 +712,7 @@ Feature: Packing material invoice candidates: receipts
       | huPiItemPurchaseProduct_130        | huPiItemTU_130             | purchaseProduct         | 10  | 2022-07-01 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct_130            | 10               |
@@ -719,15 +720,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | 10                     |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | 10                     |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -794,7 +795,7 @@ Feature: Packing material invoice candidates: receipts
       | huPiItemLU_PM_140          | packingVersionLU_140          | 1   | PM       | huLoadingMaterial_140                  |                                  |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-17  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -805,8 +806,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | 101                                | huPackingLU_140              |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | 101                                | huPackingLU_140              |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -878,7 +879,7 @@ Feature: Packing material invoice candidates: receipts
       | huPiItemPurchaseProduct_150        | huPiItemTU_150             | purchaseProduct         | 10  | 2022-07-01 |
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -886,15 +887,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5     | huPiItemPurchaseProduct_150        | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5           | huPiItemPurchaseProduct_150        | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -929,6 +930,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 0                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 0                |
 
+  @flaky
   @Id:S0160_230
   @from:cucumber
   Scenario: Reactivate receipt similar with case 160
@@ -945,7 +947,7 @@ Feature: Packing material invoice candidates: receipts
 
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 10000      | huPiItemPurchaseProduct                | 1000             |
@@ -953,8 +955,8 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 1000       | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 1000       | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
@@ -963,8 +965,8 @@ Feature: Packing material invoice candidates: receipts
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_HU_PI_Item_Product_ID.TU.Identifier | M_HU_PI_ID.LU.Identifier |
       | huLuTuConfig                          | receiptSchedule_PO              | huPiItemPurchaseProduct               | huPackingLU              |
     Then validate M_HU_LUTU_Configuration:
-      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCU |
-      | huLuTuConfig                          | 14    | 76    | 10    |
+      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCUsPerTU |
+      | huLuTuConfig                          | 14    | 76    | 10          |
     And receive HUs with M_HU_LUTU_Configuration:
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | OPT.HUList.Identifier | OPT.numberHUsGenerated |
       | huLuTuConfig                          | receiptSchedule_PO              | processedHUs          | 14                     |
@@ -1020,7 +1022,7 @@ Feature: Packing material invoice candidates: receipts
 
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -1028,15 +1030,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -1096,7 +1098,7 @@ Feature: Packing material invoice candidates: receipts
 
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -1104,15 +1106,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -1177,7 +1179,7 @@ Feature: Packing material invoice candidates: receipts
 
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -1185,15 +1187,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -1257,7 +1259,7 @@ Feature: Packing material invoice candidates: receipts
 
     Then metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -1265,15 +1267,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -1342,7 +1344,7 @@ Feature: Packing material invoice candidates: receipts
 
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -1350,15 +1352,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -1409,6 +1411,7 @@ Feature: Packing material invoice candidates: receipts
       | invoiceCandReceiptLine_1                   | invoiceCand_1                         | receiptLine_1                 | 5                |
       | invoiceCandReceiptLine_2                   | invoiceCand_2                         | receiptLine_2                 | 1                |
 
+  @flaky
   @Id:S0160_270
   @from:cucumber
   Scenario: Complete receipt similar with case 200
@@ -1443,7 +1446,7 @@ Feature: Packing material invoice candidates: receipts
       | huPiItemPurchaseProduct_130        | huPiItemTU_130             | purchaseProduct         | 10  | 2022-07-01 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct_130            | 10               |
@@ -1451,15 +1454,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | 10                     |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | 10                     |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -1554,8 +1557,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | 101                                | huPackingLU_140              |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | 101                                | huPackingLU_140              |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -1644,7 +1647,7 @@ Feature: Packing material invoice candidates: receipts
       | huPiItemPurchaseProduct_150        | huPiItemTU_150             | purchaseProduct         | 10  | 2022-07-01 |
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -1652,15 +1655,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5     | huPiItemPurchaseProduct_150        | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5           | huPiItemPurchaseProduct_150        | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -1730,7 +1733,7 @@ Feature: Packing material invoice candidates: receipts
 
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 10000      | huPiItemPurchaseProduct                | 1000             |
@@ -1738,8 +1741,8 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 1000       | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 1000       | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
@@ -1748,8 +1751,8 @@ Feature: Packing material invoice candidates: receipts
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_HU_PI_Item_Product_ID.TU.Identifier | M_HU_PI_ID.LU.Identifier |
       | huLuTuConfig                          | receiptSchedule_PO              | huPiItemPurchaseProduct               | huPackingLU              |
     Then validate M_HU_LUTU_Configuration:
-      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCU |
-      | huLuTuConfig                          | 14    | 76    | 10    |
+      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCUsPerTU |
+      | huLuTuConfig                          | 14    | 76    | 10          |
     And receive HUs with M_HU_LUTU_Configuration:
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | OPT.HUList.Identifier | OPT.numberHUsGenerated |
       | huLuTuConfig                          | receiptSchedule_PO              | processedHUs          | 14                     |
@@ -1818,7 +1821,7 @@ Feature: Packing material invoice candidates: receipts
 
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -1826,15 +1829,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -1884,7 +1887,7 @@ Feature: Packing material invoice candidates: receipts
 
     Then metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -1892,15 +1895,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -1950,7 +1953,7 @@ Feature: Packing material invoice candidates: receipts
 
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -1958,15 +1961,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -2032,7 +2035,7 @@ Feature: Packing material invoice candidates: receipts
       | huPiItemPurchaseProduct_130        | huPiItemTU_130             | purchaseProduct         | 10  | 2022-07-01 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct_130            | 10               |
@@ -2040,15 +2043,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | 10                     |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | 10                     |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -2126,8 +2129,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | 101                                | huPackingLU_140              |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | 101                                | huPackingLU_140              |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -2199,7 +2202,7 @@ Feature: Packing material invoice candidates: receipts
       | huPiItemPurchaseProduct_150        | huPiItemTU_150             | purchaseProduct         | 10  | 2022-07-01 |
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -2207,15 +2210,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5     | huPiItemPurchaseProduct_150        | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5           | huPiItemPurchaseProduct_150        | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -2266,7 +2269,7 @@ Feature: Packing material invoice candidates: receipts
 
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 10000      | huPiItemPurchaseProduct                | 1000             |
@@ -2274,8 +2277,8 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 1000       | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 1000       | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
@@ -2284,8 +2287,8 @@ Feature: Packing material invoice candidates: receipts
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_HU_PI_Item_Product_ID.TU.Identifier | M_HU_PI_ID.LU.Identifier |
       | huLuTuConfig                          | receiptSchedule_PO              | huPiItemPurchaseProduct               | huPackingLU              |
     Then validate M_HU_LUTU_Configuration:
-      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCU |
-      | huLuTuConfig                          | 14    | 76    | 10    |
+      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCUsPerTU |
+      | huLuTuConfig                          | 14    | 76    | 10          |
     And receive HUs with M_HU_LUTU_Configuration:
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | OPT.HUList.Identifier | OPT.numberHUsGenerated |
       | huLuTuConfig                          | receiptSchedule_PO              | processedHUs          | 14                     |
@@ -2338,7 +2341,7 @@ Feature: Packing material invoice candidates: receipts
 
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -2346,15 +2349,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -2404,7 +2407,7 @@ Feature: Packing material invoice candidates: receipts
 
     Then metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -2412,15 +2415,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -2470,7 +2473,7 @@ Feature: Packing material invoice candidates: receipts
 
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -2478,15 +2481,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -2552,7 +2555,7 @@ Feature: Packing material invoice candidates: receipts
       | huPiItemPurchaseProduct_130        | huPiItemTU_130             | purchaseProduct         | 10  | 2022-07-01 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct_130            | 10               |
@@ -2560,15 +2563,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | 10                     |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | 10                     |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -2646,8 +2649,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | 101                                | huPackingLU_140              |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | 101                                | huPackingLU_140              |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -2719,7 +2722,7 @@ Feature: Packing material invoice candidates: receipts
       | huPiItemPurchaseProduct_150        | huPiItemTU_150             | purchaseProduct         | 10  | 2022-07-01 |
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -2727,15 +2730,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5     | huPiItemPurchaseProduct_150        | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5           | huPiItemPurchaseProduct_150        | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -2786,7 +2789,7 @@ Feature: Packing material invoice candidates: receipts
 
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 10000      | huPiItemPurchaseProduct                | 1000             |
@@ -2794,8 +2797,8 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 1000       | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 1000       | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
@@ -2804,8 +2807,8 @@ Feature: Packing material invoice candidates: receipts
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_HU_PI_Item_Product_ID.TU.Identifier | M_HU_PI_ID.LU.Identifier |
       | huLuTuConfig                          | receiptSchedule_PO              | huPiItemPurchaseProduct               | huPackingLU              |
     Then validate M_HU_LUTU_Configuration:
-      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCU |
-      | huLuTuConfig                          | 14    | 76    | 10    |
+      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCUsPerTU |
+      | huLuTuConfig                          | 14    | 76    | 10          |
     And receive HUs with M_HU_LUTU_Configuration:
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | OPT.HUList.Identifier | OPT.numberHUsGenerated |
       | huLuTuConfig                          | receiptSchedule_PO              | processedHUs          | 14                     |
@@ -2859,7 +2862,7 @@ Feature: Packing material invoice candidates: receipts
 
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -2867,15 +2870,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -2928,7 +2931,7 @@ Feature: Packing material invoice candidates: receipts
 
     Then metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -2936,15 +2939,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 2     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  | 2                      |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -2997,7 +3000,7 @@ Feature: Packing material invoice candidates: receipts
 
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -3005,15 +3008,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10    | huPiItemPurchaseProduct            | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 5     | N               | 10          | huPiItemPurchaseProduct            | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -3082,7 +3085,7 @@ Feature: Packing material invoice candidates: receipts
       | huPiItemPurchaseProduct_130        | huPiItemTU_130             | purchaseProduct         | 10  | 2022-07-01 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct_130            | 10               |
@@ -3090,15 +3093,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
-      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10    | huPiItemPurchaseProduct            | 10                     |
+      | M_HU_LUTU_Configuration_ID.Identifier | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.numberHUsGenerated |
+      | huLuTuConfig                          | processedHUs          | receiptSchedule_PO              | N               | 0     | N               | 10    | N               | 10          | huPiItemPurchaseProduct            | 10                     |
     And create material receipt
       | OPT.HUList.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedHUs          | receiptSchedule_PO              | material_receipt_1    |
@@ -3168,7 +3171,7 @@ Feature: Packing material invoice candidates: receipts
       | huPiItemLU_PM_140          | packingVersionLU_140          | 1   | PM       | huLoadingMaterial_140                  |                                  |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-07-17  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -3179,8 +3182,8 @@ Feature: Packing material invoice candidates: receipts
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10    | 101                                | huPackingLU_140              |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 10          | 101                                | huPackingLU_140              |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -3255,7 +3258,7 @@ Feature: Packing material invoice candidates: receipts
       | huPiItemPurchaseProduct_150        | huPiItemTU_150             | purchaseProduct         | 10  | 2022-07-01 |
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 100        | huPiItemPurchaseProduct                | 10               |
@@ -3263,15 +3266,15 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2021-07-26      | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
-      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5     | huPiItemPurchaseProduct_150        | huPackingLU                  |
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 10    | N               | 5           | huPiItemPurchaseProduct_150        | huPackingLU                  |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | material_receipt_1    |
@@ -3325,7 +3328,7 @@ Feature: Packing material invoice candidates: receipts
 
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | OPT.POReference | OPT.DocBaseType | DateOrdered |
-      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2021-04-17  |
+      | o_1        | false   | bpartner_1               | po_ref_mock     | POO             | 2022-07-26  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.QtyEnteredTU |
       | ol_1       | o_1                   | purchaseProduct         | 10000      | huPiItemPurchaseProduct                | 1000             |
@@ -3333,8 +3336,8 @@ Feature: Packing material invoice candidates: receipts
     When the order identified by o_1 is completed
 
     Then validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 1000       | 0           | 1     | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 1000       | 0           | 1     | 0        | EUR          | true      |
 
     And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
@@ -3343,8 +3346,8 @@ Feature: Packing material invoice candidates: receipts
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_HU_PI_Item_Product_ID.TU.Identifier | M_HU_PI_ID.LU.Identifier |
       | huLuTuConfig                          | receiptSchedule_PO              | huPiItemPurchaseProduct               | huPackingLU              |
     Then validate M_HU_LUTU_Configuration:
-      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCU |
-      | huLuTuConfig                          | 14    | 76    | 10    |
+      | M_HU_LUTU_Configuration_ID.Identifier | QtyLU | QtyTU | QtyCUsPerTU |
+      | huLuTuConfig                          | 14    | 76    | 10          |
     And receive HUs with M_HU_LUTU_Configuration:
       | M_HU_LUTU_Configuration_ID.Identifier | M_ReceiptSchedule_ID.Identifier | OPT.HUList.Identifier | OPT.numberHUsGenerated |
       | huLuTuConfig                          | receiptSchedule_PO              | processedHUs          | 14                     |

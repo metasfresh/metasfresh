@@ -1,114 +1,195 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
-
-import { trl } from '../utils/translations';
-import { extractUserFriendlyErrorMessageFromAxiosError } from '../utils/toast';
-import { useAuth } from '../hooks/useAuth';
+import React, { useCallback, useEffect, useState } from 'react';
 
 import ScreenToaster from '../components/ScreenToaster';
 import LogoHeader from '../components/LogoHeader';
+import { useMobileConfiguration } from '../api/configuration';
+import ButtonWithIndicator from '../components/buttons/ButtonWithIndicator';
+import UserAndPassAuth from './authMethods/UserAndPassAuth';
+import QrCodeAuth from './authMethods/QrCodeAuth';
+import { trl } from '../utils/translations';
+import { useAuth } from '../hooks/useAuth';
+import { useUITraceLocationChange } from '../utils/ui_trace/useUITraceLocationChange';
+import { useMobileNavigation } from '../hooks/useMobileNavigation';
+import PropTypes from 'prop-types';
+
+const KNOWN_AUTH_METHODS = {
+  QR_CODE: 'qrCode',
+  USER_PASS: 'userAndPass',
+};
+
+const VIEW = {
+  LOGIN: 'login',
+  ALTERNATIVE_METHODS: 'alternativeMethods',
+};
 
 const LoginScreen = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [loginPending, setLoginPending] = useState(false);
+  const history = useMobileNavigation();
+  const [currentView, setCurrentView] = useState(VIEW.LOGIN);
+  const { currentAuthMethod, setCurrentAuthMethod, availableAuthMethods } = useAuthenticationMethods();
+  const auth = useAuth();
+
+  useEffect(() => {
+    if (auth.isLoggedIn()) {
+      console.log(`LoginScreen: ALREADY LOGGED IN. Forwarding back to from location`);
+      history.goToFromLocation();
+    }
+  }, []);
 
   useEffect(() => {
     document.title = 'mobile UI';
   }, []);
 
-  const history = useHistory();
-  const auth = useAuth();
-  const location = useLocation();
-  const { from } = location.state || { from: { pathname: '/' } };
-  const usernameFieldRef = useRef(null);
-  useEffect(() => {
-    if (auth.isLoggedIn()) {
-      console.log(`LoginScreen: ALREADY LOGGED IN. Forwarding to `, from);
-      history.replace(from);
-    } else {
-      usernameFieldRef.current.focus();
-      usernameFieldRef.current.select();
-    }
-  }, []);
+  useUITraceLocationChange();
 
-  const submitForm = (e) => {
-    e.preventDefault();
-
-    setLoginPending(true);
-    auth
-      .login(username, password)
-      .then(() => history.replace(from))
-      .catch((axiosError) => {
-        setLoginPending(false);
-        setErrorMessage(extractUserFriendlyErrorMessageFromAxiosError({ axiosError }));
-      });
-    // .finally(() => setLoginPending(false)); // don't set it here because at this point the component is already unmounted
-  };
-
-  // Already logged in, no point to render this screen
-  if (auth.isLoggedIn()) {
-    console.log(`Already logged in, no point to render this screen`);
-    return null;
-  }
+  const handleSetAuthMethod = useCallback(
+    (method) => {
+      setCurrentAuthMethod(method);
+      setCurrentView(VIEW.LOGIN);
+    },
+    [setCurrentAuthMethod, setCurrentView]
+  );
 
   return (
     <div className="login-view">
       <LogoHeader />
-      <div className="section is-size-5">
-        <div className="container px-6">
-          <form>
-            <p className="help is-danger is-size-6 login-error">{errorMessage}</p>
-            <div className="field">
-              <p className="control has-icons-left">
-                <input
-                  className="input is-medium"
-                  type="text"
-                  id={username}
-                  name="username"
-                  value={username}
-                  autoComplete="username"
-                  ref={usernameFieldRef}
-                  disabled={loginPending}
-                  onInput={(e) => setUsername(e.target.value)}
-                />
-                <span className="icon is-small is-left">
-                  <i className="fas fa-user" />
-                </span>
-              </p>
-            </div>
-            <div className="field">
-              <p className="control has-icons-left">
-                <input
-                  className="input is-medium"
-                  id="current-password"
-                  type="password"
-                  name="password"
-                  value={password}
-                  autoComplete="current-password"
-                  disabled={loginPending}
-                  onInput={(e) => setPassword(e.target.value)}
-                />
-                <span className="icon is-small is-left">
-                  <i className="fas fa-lock" />
-                </span>
-              </p>
-            </div>
-            <div className="field">
-              <div className="control">
-                <button type="submit" className="button is-medium" disabled={loginPending} onClick={submitForm}>
-                  {/* eslint-disable-next-line no-undef */}
-                  {trl('login.submitButton')}
-                </button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
+      {currentView === VIEW.LOGIN && (
+        <LoginView
+          currentAuthMethod={currentAuthMethod}
+          availableAuthMethods={availableAuthMethods}
+          onSetAuthMethodClicked={handleSetAuthMethod}
+          onAlternativeAuthMethodClicked={() => setCurrentView(VIEW.ALTERNATIVE_METHODS)}
+        />
+      )}
+      {currentView === VIEW.ALTERNATIVE_METHODS && (
+        <SelectAuthMethodView
+          availableAuthMethods={availableAuthMethods}
+          onSetAuthMethodClicked={handleSetAuthMethod}
+        />
+      )}
       <ScreenToaster />
     </div>
   );
 };
+
+//
+//
+//
+//
+//
+
+const LoginView = ({
+  currentAuthMethod,
+  availableAuthMethods,
+  onSetAuthMethodClicked,
+  onAlternativeAuthMethodClicked,
+}) => {
+  return (
+    <>
+      <LoginMethodPanel authMethod={currentAuthMethod} />
+      {availableAuthMethods && availableAuthMethods.length === 2 && (
+        <div className="section is-size-5" style={{ paddingTop: 0 }}>
+          <div className="container px-6">
+            <ButtonWithIndicator
+              caption={trl('login.alternativeMethods')}
+              onClick={() =>
+                onSetAuthMethodClicked(availableAuthMethods.find((method) => method !== currentAuthMethod))
+              }
+              additionalCssClass={'alternative-button'}
+            />
+          </div>
+        </div>
+      )}
+      {availableAuthMethods && availableAuthMethods.length > 2 && (
+        <div className="section is-size-5" style={{ paddingTop: 0 }}>
+          <div className="container px-6">
+            <ButtonWithIndicator
+              caption={trl('login.alternativeMethods')}
+              onClick={onAlternativeAuthMethodClicked}
+              additionalCssClass={'alternative-button'}
+            />
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+LoginView.propTypes = {
+  currentAuthMethod: PropTypes.string.isRequired,
+  availableAuthMethods: PropTypes.array.isRequired,
+  onSetAuthMethodClicked: PropTypes.func.isRequired,
+  onAlternativeAuthMethodClicked: PropTypes.func.isRequired,
+};
+
+//
+//
+//
+//
+//
+
+const LoginMethodPanel = ({ authMethod }) => {
+  if (authMethod === KNOWN_AUTH_METHODS.USER_PASS) {
+    return <UserAndPassAuth />;
+  } else if (authMethod === KNOWN_AUTH_METHODS.QR_CODE) {
+    return <QrCodeAuth />;
+  } else {
+    console.warn(`Unknown auth method "${authMethod}". Falling back to "${KNOWN_AUTH_METHODS.USER_PASS}"`);
+    return <UserAndPassAuth />;
+  }
+};
+LoginMethodPanel.propTypes = {
+  authMethod: PropTypes.string.isRequired,
+};
+
+//
+//
+//
+//
+//
+
+const SelectAuthMethodView = ({ availableAuthMethods, onSetAuthMethodClicked }) => {
+  return (
+    <div className="pt-3 section">
+      {availableAuthMethods.map((method) => (
+        <ButtonWithIndicator
+          key={method}
+          caption={trl(`login.authMethod.${method}`)}
+          onClick={() => onSetAuthMethodClicked(method)}
+        />
+      ))}
+    </div>
+  );
+};
+SelectAuthMethodView.propTypes = {
+  availableAuthMethods: PropTypes.array.isRequired,
+  onSetAuthMethodClicked: PropTypes.func.isRequired,
+};
+
+//
+//
+//
+//
+//
+
+const useAuthenticationMethods = () => {
+  const [currentAuthMethod, setCurrentAuthMethod] = useState(KNOWN_AUTH_METHODS.USER_PASS);
+  const [availableAuthMethods, setAvailableAuthMethods] = useState([]);
+
+  useMobileConfiguration({
+    onSuccess: (config) => {
+      setAvailableAuthMethods(
+        config.availableAuthMethods.map((method) => KNOWN_AUTH_METHODS[method]).filter((method) => !!method)
+      );
+      setCurrentAuthMethod(KNOWN_AUTH_METHODS[config.defaultAuthMethod] || KNOWN_AUTH_METHODS.USER_PASS);
+    },
+  });
+
+  return { currentAuthMethod, setCurrentAuthMethod, availableAuthMethods };
+};
+
+//
+//
+//
+//
+//
 
 export default LoginScreen;

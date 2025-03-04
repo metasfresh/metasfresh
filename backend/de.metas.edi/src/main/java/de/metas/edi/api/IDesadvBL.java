@@ -23,15 +23,13 @@ package de.metas.edi.api;
  */
 
 import com.google.common.collect.ImmutableList;
-import de.metas.bpartner.BPartnerId;
+import de.metas.edi.api.impl.pack.EDIDesadvPackId;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.report.ReportResultData;
@@ -79,20 +77,6 @@ public interface IDesadvBL extends ISingletonService
 	I_EDI_Desadv addToDesadvCreateForInOutIfNotExist(I_M_InOut inOut);
 
 	/**
-	 * Set for the given {@code packRecord}:
-	 * <ul>
-	 *     <li>GTIN_TU_PackingMaterial</li>
-	 *     <li>M_HU_PackagingCode_TU_ID</li>
-	 *     <li>GTIN_LU_PackingMaterial</li>
-	 *     <li>M_HU_PackagingCode_LU_ID</li>
-	 * </ul>
-	 */
-	void setPackRecordPackagingCodeAndGTIN(
-			@NonNull I_EDI_DesadvLine_Pack packRecord,
-			@NonNull I_M_HU_PI_Item_Product tuPIItemProduct,
-			@NonNull BPartnerId bpartnerId);
-
-	/**
 	 * Removes the given <code>inOut</code> from its desadv (if any) and also removes its inOut lines from the desadv lines.
 	 * <p>
 	 * Note: the inout and its lines are modified, but only the lines are saved! This is because we call this method from an M_InOut modelvalidator.
@@ -105,9 +89,9 @@ public interface IDesadvBL extends ISingletonService
 	void removeInOutLineFromDesadv(I_M_InOutLine inOutLine);
 
 	/**
-	 * Print SSCC18 labels for given {@link I_EDI_DesadvLine_Pack} IDs by invoking a jasper-process, and forwarding its binary report data.
+	 * Print SSCC18 labels for given {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack} IDs by invoking a jasper-process, and forwarding its binary report data.
 	 */
-	ReportResultData printSSCC18_Labels(Properties ctx, Collection<EDIDesadvLinePackId> desadvLineSSCC_IDs_ToPrint);
+	ReportResultData printSSCC18_Labels(Properties ctx, Collection<EDIDesadvPackId> desadvPack_IDs_ToPrint);
 
 	/**
 	 * Set the current minimum sum percentage taken from the sys config 'de.metas.esb.edi.DefaultMinimumPercentage'
@@ -118,6 +102,11 @@ public interface IDesadvBL extends ISingletonService
 	 * Iterate the given list and create user-friendly messages for all desadvs whose delivered quantity (fulfillment) is below their respective treshold.
 	 */
 	ImmutableList<ITranslatableString> createMsgsForDesadvsBelowMinimumFulfilment(ImmutableList<I_EDI_Desadv> desadvRecords);
+
+	/**
+	 * @return all <code>M_InOutLine</code>s (incl inactive ones) that reference the given <code>desadvLine</code>.
+	 */
+	List<I_M_InOutLine> retrieveAllInOutLines(I_EDI_DesadvLine desadvLine);
 
 	void updateQtyOrdered_OverrideFromShipSchedAndSave(@NonNull I_M_ShipmentSchedule schedule);
 

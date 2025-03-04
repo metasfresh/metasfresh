@@ -22,6 +22,8 @@
 
 package de.metas.rest_api.v2.product;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.product.v2.response.JsonGetProductsResponse;
@@ -48,7 +50,6 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.vertical.healthcare.alberta.dao.AlbertaProductDAO;
 import de.metas.vertical.healthcare.alberta.service.AlbertaProductService;
-import io.github.jsonSnapshot.SnapshotMatcher;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -57,18 +58,19 @@ import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
+@ExtendWith(SnapshotExtension.class)
 public class ProductsRestControllerTest
 {
 	private ProductsRestController restController;
@@ -76,20 +78,12 @@ public class ProductsRestControllerTest
 	private UomId eachUomId;
 	private UomId kgUomId;
 
+	private Expect expect;
+
 	@BeforeAll
 	static void initStatic()
 	{
-		SnapshotMatcher.start(
-				AdempiereTestHelper.SNAPSHOT_CONFIG,
-				AdempiereTestHelper.createSnapshotJsonFunction());
-
 		LogManager.setLoggerLevel(de.metas.rest_api.v2.product.ProductsRestController.class, Level.ALL);
-	}
-
-	@AfterAll
-	static void afterAll()
-	{
-		SnapshotMatcher.validateSnapshots();
 	}
 
 	@BeforeEach
@@ -232,7 +226,7 @@ public class ProductsRestControllerTest
 								   .build());
 
 		//
-		SnapshotMatcher.expect(responseBody).toMatchSnapshot();
+		expect.serializer("orderedJson").toMatchSnapshot(responseBody);
 	}
 
 	private UomId createUOM(@NonNull final String uomSymbol)

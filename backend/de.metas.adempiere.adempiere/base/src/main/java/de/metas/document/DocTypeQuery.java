@@ -1,9 +1,12 @@
 package de.metas.document;
 
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
@@ -34,15 +37,15 @@ import javax.annotation.Nullable;
 @Builder
 public class DocTypeQuery
 {
-	public static final String DOCSUBTYPE_Any = "DOCSUBTYPE_Any";
-	public static final String DOCSUBTYPE_NONE = null;
+	public static final DocSubType DOCSUBTYPE_Any = DocSubType.ANY;
+	public static final DocSubType DOCSUBTYPE_NONE = DocSubType.NONE;
 
 	@NonNull
-	String docBaseType;
+	DocBaseType docBaseType;
 
-	@Nullable
+	@NonNull
 	@Default
-	String docSubType = DOCSUBTYPE_Any;
+	DocSubType docSubType = DOCSUBTYPE_Any;
 
 	@NonNull
 	Integer adClientId;
@@ -68,8 +71,20 @@ public class DocTypeQuery
 
 	public static class DocTypeQueryBuilder
 	{
+		public DocTypeQueryBuilder docBaseType(@NonNull final String docBaseType)
+		{
+			return docBaseType(DocBaseType.ofCode(docBaseType));
+		}
+
+		public DocTypeQueryBuilder docBaseType(@NonNull final DocBaseType docBaseType)
+		{
+			this.docBaseType = docBaseType;
+			return this;
+		}
+
 		public DocTypeQueryBuilder docSubTypeAny()
 		{
+
 			return docSubType(DOCSUBTYPE_Any);
 		}
 
@@ -77,6 +92,17 @@ public class DocTypeQuery
 		{
 			return docSubType(DOCSUBTYPE_NONE);
 		}
-	}
 
+		public DocTypeQueryBuilder clientAndOrgId(@NonNull final ClientAndOrgId clientAndOrgId)
+		{
+			return clientAndOrgId(clientAndOrgId.getClientId(), clientAndOrgId.getOrgId());
+		}
+
+		public DocTypeQueryBuilder clientAndOrgId(@NonNull final ClientId clientId, @NonNull OrgId orgId)
+		{
+			adClientId(clientId.getRepoId());
+			adOrgId(orgId.getRepoId());
+			return this;
+		}
+	}
 }

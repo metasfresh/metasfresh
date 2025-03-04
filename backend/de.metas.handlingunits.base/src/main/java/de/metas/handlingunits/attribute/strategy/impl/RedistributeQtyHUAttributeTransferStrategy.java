@@ -22,22 +22,21 @@ package de.metas.handlingunits.attribute.strategy.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
-
-import org.adempiere.mm.attributes.api.CurrentAttributeValueContextProvider;
-import org.adempiere.mm.attributes.api.IAttributesBL;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Attribute;
-
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
 import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferStrategy;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import org.adempiere.mm.attributes.api.CurrentAttributeValueContextProvider;
+import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Attribute;
+
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 
 public class RedistributeQtyHUAttributeTransferStrategy implements IHUAttributeTransferStrategy
 {
@@ -53,7 +52,7 @@ public class RedistributeQtyHUAttributeTransferStrategy implements IHUAttributeT
 	{
 		CurrentAttributeValueContextProvider.assertNoCurrentContext();
 
-		final IAttributeStorage attributesFrom = request.getAttributesFrom();
+		final IAttributeSet attributesFrom = request.getAttributesFrom();
 
 		//
 		// Transfer ratio is used to proportionally distribute qty

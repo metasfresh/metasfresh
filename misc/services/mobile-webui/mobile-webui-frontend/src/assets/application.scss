@@ -1,4 +1,6 @@
 .app-container {
+  height: 100vh;
+  
   .app-header {
     top: 0;
     width: 100%;
@@ -10,6 +12,8 @@
 
     color: $white;
     background: $base-mf-green;
+
+    font-size: 2rem;
 
     .app-icon {
       text-align: right;
@@ -25,10 +29,17 @@
       text-overflow: ellipsis;
     }
   }
+  @media only screen and (max-width: $small-screen-width) {
+    .app-header {
+      font-size: 1.5rem;
+    }
+  }
 
   .app-content {
+    max-height: 100vh;
     padding-top: 4rem;
     padding-bottom: 6rem;
+    overflow-y: auto;
   }
 
   .app-footer {
@@ -36,10 +47,9 @@
     width: 100%;
     position: fixed;
     z-index: 1000;
-
     box-shadow: rgba(0, 0, 0, 0.133) 0 -0.15em 0.35em 0;
-
     background: $white;
+    font-size: 1.5rem;
 
     .columns {
       margin: 0;
@@ -48,9 +58,26 @@
         padding: 0;
       }
     }
+
+    .button {
+      font-size: 1.5rem !important;
+    }
+  }
+  @media only screen and (max-width: $small-screen-width) {
+    .app-footer {
+      font-size: 1rem;
+
+      .button {
+        font-size: 1rem !important;
+      }
+    }
   }
 
   .app-toaster {
     bottom: 4rem !important;
   }
+}
+
+.app-container-fullscreen {
+  overflow: hidden !important;
 }

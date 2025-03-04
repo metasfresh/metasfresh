@@ -1,5 +1,7 @@
 package de.metas.handlingunits.picking.plan.generator;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
@@ -20,32 +22,28 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.Packageable;
+import de.metas.picking.api.PackageableList;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.test.SnapshotFunctionFactory;
 import de.metas.user.UserRepository;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.ad.wrapper.POJONextIdSuppliers;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Warehouse;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.Optional;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-
-@ExtendWith(AdempiereTestWatcher.class)
+@ExtendWith({ AdempiereTestWatcher.class, SnapshotExtension.class })
 class CreatePickingPlanCommand_UsingCUs_Test
 {
 	//
@@ -64,13 +62,13 @@ class CreatePickingPlanCommand_UsingCUs_Test
 	private final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(2);
 	private final OrderAndLineId salesOrderAndLineId = OrderAndLineId.ofRepoIds(300, 301);
 
-	@BeforeAll
-	static void beforeAll() {start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());}
+	@SuppressWarnings("unused") private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		helper = HUTestHelper.newInstanceOutOfTrx();
+		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
 		bpartnersService = new BPartnerBL(new UserRepository());
 		huReservationService = new HUReservationService(new HUReservationRepository());
 		pickingCandidateRepository = new PickingCandidateRepository();
@@ -125,6 +123,7 @@ class CreatePickingPlanCommand_UsingCUs_Test
 				.qtyPickedPlanned(zero)
 				.customerId(customerLocationId.getBpartnerId())
 				.customerLocationId(customerLocationId)
+				.handoverLocationId(customerLocationId)
 				.warehouseId(warehouseId)
 				.bestBeforePolicy(Optional.of(ShipmentAllocationBestBeforePolicy.Expiring_First))
 				.productId(productId)
@@ -139,7 +138,7 @@ class CreatePickingPlanCommand_UsingCUs_Test
 				.huReservationService(huReservationService)
 				.pickingCandidateRepository(pickingCandidateRepository)
 				.request(CreatePickingPlanRequest.builder()
-						.packageables(ImmutableList.copyOf(packageables))
+						.packageables(PackageableList.ofCollection(ImmutableList.copyOf(packageables)))
 						.build())
 				.fallbackLotNumberToHUValue(false) // keep lotNumbers null, just to keep our test assertions short
 				.build().execute();
@@ -161,6 +160,6 @@ class CreatePickingPlanCommand_UsingCUs_Test
 		System.out.println("PLAN:\n" + Joiner.on("\n").join(plan.getLines()));
 		POJOLookupMap.get().dumpStatus("After run", "M_HU", "M_HU_Storage", "M_HU_Reservation");
 
-		expect(plan).toMatchSnapshot();
+		expect.toMatchSnapshot(plan);
 	}
 }

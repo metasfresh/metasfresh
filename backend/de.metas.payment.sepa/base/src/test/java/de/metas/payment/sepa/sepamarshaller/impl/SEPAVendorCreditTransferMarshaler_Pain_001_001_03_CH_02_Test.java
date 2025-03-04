@@ -30,7 +30,7 @@ import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 {
@@ -91,17 +91,48 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getCtrlSum()).isEqualByComparingTo("170");
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getNbOfTxs()).isEqualTo("3"); // needs to be 3, no matter wheter we do batch or not.
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getInitgPty().getNm()).isEqualTo(sepaExport.getSEPA_CreditorName());
-		final Set<String> endToEndIds = xmlDocument.getCstmrCdtTrfInitn().getPmtInf()
-				.stream()
-				.flatMap(pmtInf -> pmtInf.getCdtTrfTxInf().stream())
-				.map(CreditTransferTransactionInformation10CH::getPmtId)
-				.map(PaymentIdentification1::getEndToEndId)
-				.collect(Collectors.toSet());
-		assertThat(endToEndIds).containsExactlyInAnyOrder("ENDTOENDID-1", "ENDTOENDID-2", "ENDTOENDID-3");
+
+		// if no batch, it would be 3..
+		// assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(3);
 
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(2);
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.isBtchBookg()).isTrue());
 	}
+
+	@Test
+	public void createDocument_batch_with_QR_IBAN() throws Exception
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport(
+				"org", // SEPA_CreditorName
+				"12345", // SEPA_CreditorIdentifier
+				"INGBNL2A" // bic
+		);
+		createSEPAExportLineQRVersion(sepaExport,
+									  "001",// SEPA_MandateRefNo
+									  "NL31INGB0000000044",// IBAN
+									  "INGBNL2A", // BIC
+									  new BigDecimal("100"), // amount
+									  eur,
+				"210000000003139471430009017");
+
+		createSEPAExportLineQRVersion(sepaExport,
+									  "002", // SEPA_MandateRefNo
+									  "NL31INGB0000000044", // IBAN
+									  "INGBNL2A",// BIC
+									  new BigDecimal("40"), // amount
+									  chf, "210000000003139471430009017");
+
+		// invoke the method under test
+		xmlDocument = xmlGenerator.createDocument(sepaExport);
+
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getCtrlSum()).isEqualByComparingTo("140");
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getNbOfTxs()).isEqualTo("2");
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getInitgPty().getNm()).isEqualTo(sepaExport.getSEPA_CreditorName());
+
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(2);
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.isBtchBookg()).isTrue());
+	}
+
 
 	@Test
 	public void createDocument_batch_noCollectiveTransfer_noRef() throws Exception
@@ -204,39 +235,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
 		assertThat(endToEndIds).containsExactlyInAnyOrder("Ref123", "Ref456", "Ref789");
-
-		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(2);
-		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.isBtchBookg()).isTrue());
-	}
-
-	@Test
-	public void createDocument_batch_with_QR_IBAN() throws Exception
-	{
-		final I_SEPA_Export sepaExport = createSEPAExport(
-				"org", // SEPA_CreditorName
-				"12345", // SEPA_CreditorIdentifier
-				"INGBNL2A" // bic
-		);
-		createSEPAExportLineQRVersion(sepaExport,
-				"001",// SEPA_MandateRefNo
-				"NL31INGB0000000044",// IBAN
-				"INGBNL2A", // BIC
-				new BigDecimal("100"), // amount
-				eur, "210000000003139471430009017");
-
-		createSEPAExportLineQRVersion(sepaExport,
-				"002", // SEPA_MandateRefNo
-				"NL31INGB0000000044", // IBAN
-				"INGBNL2A",// BIC
-				new BigDecimal("40"), // amount
-				chf, "210000000003139471430009017");
-
-		// invoke the method under test
-		xmlDocument = xmlGenerator.createDocument(sepaExport);
-
-		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getCtrlSum()).isEqualByComparingTo("140");
-		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getNbOfTxs()).isEqualTo("2");
-		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getInitgPty().getNm()).isEqualTo(sepaExport.getSEPA_CreditorName());
 
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(2);
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.isBtchBookg()).isTrue());
@@ -363,9 +361,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 			final String reference)
 	{
 		final Bank bank = bankRepository.createBank(BankCreateRequest.builder()
-				.bankName("myBank")
-				.routingNo("routingNo")
-				.build());
+															.bankName("myBank")
+															.routingNo("routingNo")
+															.build());
 
 		final I_C_BP_BankAccount bankAccount = newInstance(I_C_BP_BankAccount.class);
 		bankAccount.setC_Bank_ID(bank.getBankId().getRepoId());
@@ -391,6 +389,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 
 		return line;
 	}
+
 	@Test
 	public void testReplaceForbiddenChars()
 	{

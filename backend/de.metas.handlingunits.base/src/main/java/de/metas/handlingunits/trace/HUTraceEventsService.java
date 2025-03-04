@@ -3,6 +3,7 @@ package de.metas.handlingunits.trace;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.pair.IPair;
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
@@ -24,7 +25,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.util.lang.IPair;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Movement;
@@ -190,13 +190,13 @@ public class HUTraceEventsService
 		}
 		else
 		{
-			logger.info("Given shipmentScheduleQtyPicked has none of its 3 HU fields set; returning; shipmentScheduleQtyPicked={}", shipmentScheduleQtyPicked);
+			logger.debug("Given shipmentScheduleQtyPicked has none of its 3 HU fields set; returning; shipmentScheduleQtyPicked={}", shipmentScheduleQtyPicked);
 			return;
 		}
 
 		if (topLevelHuId <= 0)
 		{
-			logger.info("Given shipmentScheduleQtyPicked has HUs, but they are not \"physical\"; returning; shipmentScheduleQtyPicked={}", shipmentScheduleQtyPicked);
+			logger.debug("Given shipmentScheduleQtyPicked has HUs, but they are not \"physical\"; returning; shipmentScheduleQtyPicked={}", shipmentScheduleQtyPicked);
 			return; // there is no top level HU with the correct status; this means that the HU is still in the planning status.
 		}
 		builder.topLevelHuId(HuId.ofRepoId(topLevelHuId));
@@ -321,14 +321,14 @@ public class HUTraceEventsService
 			{
 				if (!huStatusBL.isPhysicalHU(vhu))
 				{
-					logger.info("vhu of the current trxLine has status={}; nothing to do with that trxLine; vhu={}; trxLine={}", vhu.getHUStatus(), vhu, trxLine);
+					logger.debug("vhu of the current trxLine has status={}; nothing to do with that trxLine; vhu={}; trxLine={}", vhu.getHUStatus(), vhu, trxLine);
 					continue;
 				}
 
 				final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
 				if (!productAndQty.isPresent())
 				{
-					logger.info("vhu of the current trxLine has no product and quantity; nothing to do with that trxLine; vhu={}; trxLine={}", vhu, trxLine);
+					logger.debug("vhu of the current trxLine has no product and quantity; nothing to do with that trxLine; vhu={}; trxLine={}", vhu, trxLine);
 					continue;
 				}
 
@@ -348,7 +348,7 @@ public class HUTraceEventsService
 				{
 					if (!huStatusBL.isPhysicalHU(sourceVhu))
 					{
-						logger.info("sourceVhu of the current trxLine's sourceTrxLine (Parent_HU_Trx_Line) has status={}; nothing to do with that sourceVhu; sourceVhu={}; sourceTrxLine={}; trxLine={}",
+						logger.debug("sourceVhu of the current trxLine's sourceTrxLine (Parent_HU_Trx_Line) has status={}; nothing to do with that sourceVhu; sourceVhu={}; sourceTrxLine={}; trxLine={}",
 								sourceVhu.getHUStatus(), sourceVhu, sourceTrxLine, trxLine);
 						continue;
 					}
@@ -357,7 +357,7 @@ public class HUTraceEventsService
 
 					if (sourceVhu.getM_HU_ID() == vhu.getM_HU_ID())
 					{
-						logger.info("sourceVhu of the current trxLine's sourceTrxLine (Parent_HU_Trx_Line) is the same as vhu of the current trxLine itself; nothing to do with that sourceVhu; vhu/sourceVhu={}; sourceTrxLine={}; trxLine={}",
+						logger.debug("sourceVhu of the current trxLine's sourceTrxLine (Parent_HU_Trx_Line) is the same as vhu of the current trxLine itself; nothing to do with that sourceVhu; vhu/sourceVhu={}; sourceTrxLine={}; trxLine={}",
 								sourceVhu, sourceTrxLine, trxLine);
 						continue; // the source-HU might be the same if e.g. only the status was changed
 					}
@@ -437,7 +437,7 @@ public class HUTraceEventsService
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		if (!huStatusBL.isPhysicalHU(hu))
 		{
-			logger.info("Param hu has status={}; nothing to do; hu={}", hu.getHUStatus(), hu);
+			logger.debug("Param hu has status={}; nothing to do; hu={}", hu.getHUStatus(), hu);
 			return;
 		}
 
@@ -462,7 +462,7 @@ public class HUTraceEventsService
 			if (oldTopLevelHuId == null)
 			{
 				// this might happen if the HU is in the process of being destructed
-				logger.info("parentHUItemOld={} has M_HU_ID={} whichout a top-levelHU; -> nothing to do", parentHUItemOld, parentHUItemOld.getM_HU_ID());
+				logger.debug("parentHUItemOld={} has M_HU_ID={} whichout a top-levelHU; -> nothing to do", parentHUItemOld, parentHUItemOld.getM_HU_ID());
 				return;
 			}
 		}
@@ -472,7 +472,7 @@ public class HUTraceEventsService
 			final Optional<IPair<ProductId, Quantity>> productAndQty = huAccessService.retrieveProductAndQty(vhu);
 			if (!productAndQty.isPresent())
 			{
-				logger.info("vhu has no product and quantity (yet), so skipping it; vhu={}", vhu);
+				logger.debug("vhu has no product and quantity (yet), so skipping it; vhu={}", vhu);
 				continue;
 			}
 

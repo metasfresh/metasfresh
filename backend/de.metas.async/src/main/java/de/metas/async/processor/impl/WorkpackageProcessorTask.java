@@ -54,9 +54,7 @@ import de.metas.lock.api.ILockManager;
 import de.metas.lock.exceptions.LockFailedException;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
-import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.UserNotificationRequest;
@@ -80,12 +78,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.logging.LoggingHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
@@ -133,16 +131,24 @@ class WorkpackageProcessorTask implements Runnable
 	// task 09933 just adding this member for now, because it's unclear if in future we want to or have to extend on it or not.
 	private final boolean retryOnDeadLock = true;
 
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final PerformanceMonitoringService perfMonService;
+	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.asyncWorkpackage.enable";
+	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
+
 	public WorkpackageProcessorTask(
 			final IQueueProcessor queueProcessor,
 			final IWorkpackageProcessor workPackageProcessor,
 			@NonNull final I_C_Queue_WorkPackage workPackage,
-			@NonNull final IWorkpackageLogsRepository logsRepository)
+			@NonNull final IWorkpackageLogsRepository logsRepository,
+			@NonNull final PerformanceMonitoringService perfMonService)
 	{
 		this.logsRepository = logsRepository;
 
 		this.queueProcessor = queueProcessor;
 		this.workPackage = workPackage;
+
+		this.perfMonService = perfMonService;
 
 		workPackageProcessorOriginal = workPackageProcessor;
 		workPackageProcessorWrapped = WorkpackageProcessor2Wrapper.wrapIfNeeded(workPackageProcessor);
@@ -163,18 +169,22 @@ class WorkpackageProcessorTask implements Runnable
 	@Override
 	public void run()
 	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-
-		service.monitorTransaction(
-				this::run0,
-				TransactionMetadata.builder()
-						.type(Type.ASYNC_WORKPACKAGE)
-						.name("Workpackage-Processor - " + queueProcessor.getName())
-						.label("de.metas.async.queueProcessor.name", queueProcessor.getName())
-						.label(PerformanceMonitoringService.LABEL_WORKPACKAGE_ID, Integer.toString(workPackage.getC_Queue_WorkPackage_ID()))
-						.build());
+		final boolean perfMonIsActive = sysConfigBL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+		if(!perfMonIsActive){
+			run0();
+		}
+		else
+		{
+			perfMonService.monitor(
+					this::run0,
+					PerformanceMonitoringService.Metadata.builder()
+							.type(Type.ASYNC_WORKPACKAGE)
+							.className("WorkpackageProcessorTask")
+							.functionName("run")
+							.label("de.metas.async.queueProcessor.name", queueProcessor.getName())
+							.label(PerformanceMonitoringService.LABEL_WORKPACKAGE_ID, Integer.toString(workPackage.getC_Queue_WorkPackage_ID()))
+							.build());
+		}
 	}
 
 	private void run0()
@@ -578,7 +588,15 @@ class WorkpackageProcessorTask implements Runnable
 
 	private void markError(final I_C_Queue_WorkPackage workPackage, final AdempiereException ex)
 	{
-		final AdIssueId issueId = Services.get(IErrorManager.class).createIssue(ex);
+		final AdIssueId issueId;
+		if(ex instanceof WorkpackageSkipRequestException)
+		{ // don't clutter the database with AD_Issue records for this type of exception
+			issueId = null;
+		}
+		else
+		{ // ordinary issue => create AD_Issue record
+			issueId = Services.get(IErrorManager.class).createIssue(ex);
+		}
 
 		//
 		// Allow retry processing this workpackage?
@@ -597,7 +615,7 @@ class WorkpackageProcessorTask implements Runnable
 
 		workPackage.setIsError(true);
 		workPackage.setErrorMsg(ex.getLocalizedMessage());
-		workPackage.setAD_Issue_ID(issueId.getRepoId());
+		workPackage.setAD_Issue_ID(AdIssueId.toRepoId(issueId));
 
 		setLastEndTime(workPackage); // update statistics
 

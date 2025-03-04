@@ -49,13 +49,15 @@ import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
+import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
 final class EventBus implements IEventBus
 {
-	private static final transient Logger logger = EventBusConfig.getLogger(EventBus.class);
+	private static final Logger logger = EventBusConfig.getLogger(EventBus.class);
 
 	/**
 	 * Log all event bus exceptions
@@ -225,6 +227,17 @@ final class EventBus implements IEventBus
 	}
 
 	@Override
+	public void enqueueObjectsCollection(@NonNull final Collection<?> objs)
+	{
+		if (objs.isEmpty())
+		{
+			return;
+		}
+
+		objs.forEach(this::enqueueObject);
+	}
+
+	@Override
 	public void processEvent(@NonNull final Event event)
 	{
 		try (final MDCCloseable ignored = EventMDC.putEvent(event))
@@ -236,7 +249,7 @@ final class EventBus implements IEventBus
 				return;
 			}
 
-			logger.debug("{} - Posting event: {}", this, event);
+			logger.debug("{} - Posting event: {}, Timestamp={}, ThreadId={}", this, event, Instant.now(), Thread.currentThread().getId());
 			eventBus.post(event);
 
 			micrometerEventBusStatsCollector.incrementEventsEnqueued();

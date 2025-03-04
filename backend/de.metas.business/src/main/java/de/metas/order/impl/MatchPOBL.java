@@ -1,14 +1,15 @@
 package de.metas.order.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
+import de.metas.acct.api.IPostingService;
+import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceAndLineId;
+import de.metas.invoice.InvoiceId;
+import de.metas.order.IMatchPOBL;
+import de.metas.order.IMatchPODAO;
+import de.metas.order.OrderLineId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -18,13 +19,14 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchPO;
 import org.compiere.util.Env;
 
-import de.metas.acct.api.IPostingRequestBuilder.PostImmediate;
-import de.metas.acct.api.IPostingService;
-import de.metas.order.IMatchPOBL;
-import de.metas.order.IMatchPODAO;
-import de.metas.order.OrderLineId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -50,6 +52,8 @@ import lombok.NonNull;
 
 public class MatchPOBL implements IMatchPOBL
 {
+	private final IMatchPODAO matchPODAO = Services.get(IMatchPODAO.class);
+
 	@Override
 	public I_M_MatchPO create(
 			final I_C_InvoiceLine iLine,
@@ -250,5 +254,59 @@ public class MatchPOBL implements IMatchPOBL
 				.setPostImmediate(PostImmediate.No) // no, just enqueue it
 				.setForce(false) // don't force it
 				.postIt());
+	}
+
+	@Override
+	public void unlink(@NonNull final OrderLineId orderLineId, @NonNull final InvoiceAndLineId invoiceAndLineId)
+	{
+		for (final I_M_MatchPO matchPO : matchPODAO.getByOrderLineAndInvoiceLine(orderLineId, invoiceAndLineId))
+		{
+			if (matchPO.getM_InOutLine_ID() <= 0)
+			{
+				matchPO.setProcessed(false);
+				InterfaceWrapperHelper.delete(matchPO);
+			}
+			else
+			{
+				matchPO.setC_InvoiceLine_ID(-1);
+				InterfaceWrapperHelper.save(matchPO);
+			}
+		}
+	}
+
+	@Override
+	public void unlink(@NonNull final InOutId inoutId)
+	{
+		for (final I_M_MatchPO matchPO : matchPODAO.getByReceiptId(inoutId))
+		{
+			if (matchPO.getC_InvoiceLine_ID() <= 0)
+			{
+				matchPO.setProcessed(false);
+				InterfaceWrapperHelper.delete(matchPO);
+			}
+			else
+			{
+				matchPO.setM_InOutLine_ID(-1);
+				InterfaceWrapperHelper.save(matchPO);
+			}
+		}
+	}
+
+	@Override
+	public void unlink(@NonNull final InvoiceId invoiceId)
+	{
+		for (final I_M_MatchPO matchPO : matchPODAO.getByInvoiceId(invoiceId))
+		{
+			if (matchPO.getM_InOutLine_ID() <= 0)
+			{
+				matchPO.setProcessed(false);
+				InterfaceWrapperHelper.delete(matchPO);
+			}
+			else
+			{
+				matchPO.setC_InvoiceLine_ID(-1);
+				InterfaceWrapperHelper.save(matchPO);
+			}
+		}
 	}
 }

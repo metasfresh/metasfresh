@@ -118,6 +118,28 @@ UPDATE AD_Column SET EntityType='de.metas.esb.edi',Updated=TO_TIMESTAMP('2024-06
 UPDATE AD_Column SET EntityType='de.metas.esb.edi',Updated=TO_TIMESTAMP('2024-06-17 08:41:34.387000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=588390
 ;
 
+/*
+ * #%L
+ * de.metas.edi
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 -- Column: M_InOut_Desadv_V.POReference
 -- Column: M_InOut_Desadv_V.POReference
 -- 2024-06-17T08:41:38.125Z

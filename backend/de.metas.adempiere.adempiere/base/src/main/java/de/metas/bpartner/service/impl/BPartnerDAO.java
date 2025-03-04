@@ -62,6 +62,7 @@ import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.pricing.PricingSystemId;
 import de.metas.report.PrintFormatId;
+import de.metas.sales_region.SalesRegionId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
@@ -96,7 +97,6 @@ import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.X_C_BP_Relation;
 import org.compiere.model.X_C_Location;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -200,6 +200,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		return load(bpartnerId.getRepoId(), modelClass);
 	}
 
+	@Override
 	public List<I_C_BPartner> getByIds(@NonNull final Collection<BPartnerId> bpartnerIds)
 	{
 		if (bpartnerIds.isEmpty())
@@ -593,6 +594,17 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	public List<I_C_BPartner_Location> retrieveBPartnerLocationsByIds(final Set<BPartnerLocationId> ids)
+	{
+		if (ids.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return InterfaceWrapperHelper.loadByRepoIdAwares(ids, I_C_BPartner_Location.class);
+	}
+
+	@Override
 	public I_C_BPartner_Location getDefaultShipToLocation(@NonNull final BPartnerId bpartnerId)
 	{
 		final List<I_C_BPartner_Location> bpLocations = retrieveBPartnerLocations(bpartnerId);
@@ -633,6 +645,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	@NonNull
 	public CountryId getCountryId(@NonNull final BPartnerLocationId bpLocationId)
 	{
 		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpLocationId);
@@ -644,6 +657,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		return getCountryId(bpLocation);
 	}
 
+	@NonNull
 	private CountryId getCountryId(@NonNull final I_C_BPartner_Location bpLocation)
 	{
 		final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
@@ -866,7 +880,7 @@ public class BPartnerDAO implements IBPartnerDAO
 			}
 		}
 
-		logger.warn("bPartner={} has no pricing system id (soTrx={}); returning null", bPartner, soTrx);
+		logger.debug("bPartner={} has no pricing system id (soTrx={}); returning null", bPartner, soTrx);
 		return null;
 	}
 
@@ -935,8 +949,8 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	@Override
 	public I_C_BPartner retrieveBPartnerByValueOrSuffix(final Properties ctx,
-			final String bpValue,
-			final String bpValueSuffixToFallback)
+														final String bpValue,
+														final String bpValueSuffixToFallback)
 	{
 		//
 		// try exact match
@@ -1026,7 +1040,7 @@ public class BPartnerDAO implements IBPartnerDAO
 
 		return query.first(I_C_BP_Relation.class);
 	}
-	
+
 	@Nullable
 	@Override
 	@Cached(cacheName = I_C_BPartner_Location.Table_Name + "#by#" + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID + "#" + I_C_BPartner_Location.COLUMNNAME_IsBillToDefault)
@@ -1919,7 +1933,7 @@ public class BPartnerDAO implements IBPartnerDAO
 				previousLocationId = currentLocationId;
 			}
 		}
-		return BPartnerLocationId.ofRepoId(locationId.getBpartnerId(),previousLocationId);
+		return BPartnerLocationId.ofRepoId(locationId.getBpartnerId(), previousLocationId);
 	}
 
 	@Override
@@ -1933,5 +1947,12 @@ public class BPartnerDAO implements IBPartnerDAO
 				.setLimit(limit)
 				.create()
 				.listImmutable(I_C_BPartner.class);
+	}
+
+	@Override
+	public Optional<SalesRegionId> getSalesRegionIdByBPLocationId(@NonNull final BPartnerLocationId bpartnerLocationId)
+	{
+		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpartnerLocationId);
+		return bpLocation != null ? SalesRegionId.optionalOfRepoId(bpLocation.getC_SalesRegion_ID()) : Optional.empty();
 	}
 }

@@ -1,55 +1,8 @@
-package de.metas.ui.web.material.cockpit.rowfactory;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
-import com.google.common.collect.ImmutableSet;
-import de.metas.ad_reference.ADRefListItem;
-import de.metas.ad_reference.ADReferenceService;
-import de.metas.ad_reference.ReferenceId;
-import de.metas.currency.CurrencyRepository;
-import de.metas.dimension.DimensionSpec;
-import de.metas.dimension.DimensionSpecGroup;
-import de.metas.material.cockpit.model.I_MD_Cockpit;
-import de.metas.material.cockpit.model.I_MD_Stock;
-import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
-import de.metas.material.planning.IResourceDAO;
-import de.metas.money.Money;
-import de.metas.money.MoneyService;
-import de.metas.order.stats.purchase_max_price.PurchaseLastMaxPriceProvider;
-import de.metas.order.stats.purchase_max_price.PurchaseLastMaxPriceRequest;
-import de.metas.order.stats.purchase_max_price.PurchaseLastMaxPriceService;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.product.ResourceId;
-import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
-import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
-import de.metas.util.IColorRepository;
-import de.metas.util.MFColor;
-import de.metas.util.Services;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.Singular;
-import lombok.Value;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.Adempiere;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.X_M_Product;
-import org.springframework.stereotype.Service;
-
-import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
 /*
  * #%L
- * metasfresh-webui-api
+ * de.metas.ui.web.base
  * %%
- * Copyright (C) 2017 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -67,24 +20,82 @@ import java.util.Set;
  * #L%
  */
 
+package de.metas.ui.web.material.cockpit.rowfactory;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADRefListItem;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
+import de.metas.currency.CurrencyRepository;
+import de.metas.dimension.DimensionSpec;
+import de.metas.dimension.DimensionSpecGroup;
+import de.metas.material.cockpit.ProductWithDemandSupply;
+import de.metas.material.cockpit.model.I_MD_Cockpit;
+import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.money.Money;
+import de.metas.money.MoneyService;
+import de.metas.order.stats.purchase_max_price.PurchaseLastMaxPriceProvider;
+import de.metas.order.stats.purchase_max_price.PurchaseLastMaxPriceRequest;
+import de.metas.order.stats.purchase_max_price.PurchaseLastMaxPriceService;
+import de.metas.product.ProductId;
+import de.metas.product.ProductRepository;
+import de.metas.product.ResourceId;
+import de.metas.resource.ResourceService;
+import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregation;
+import de.metas.ui.web.material.cockpit.MaterialCockpitDetailsRowAggregationIdentifier;
+import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
+import de.metas.ui.web.material.cockpit.MaterialCockpitRowCache;
+import de.metas.ui.web.material.cockpit.MaterialCockpitRowLookups;
+import de.metas.ui.web.material.cockpit.MaterialCockpitUtil;
+import de.metas.uom.IUOMDAO;
+import de.metas.util.IColorRepository;
+import de.metas.util.MFColor;
+import de.metas.util.Services;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.Singular;
+import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.WarehouseRepository;
+import org.compiere.Adempiere;
+import org.compiere.model.X_M_Product;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 public class MaterialCockpitRowFactory
 {
-	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
-	@NonNull private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
-	@NonNull private final IColorRepository colorRepository = Services.get(IColorRepository.class);
-	@NonNull private final ADReferenceService adReferenceService;
-	@NonNull private final PurchaseLastMaxPriceService purchaseLastMaxPriceService;
+	@NonNull private final MaterialCockpitRowLookups rowLookups;
+	@NonNull private final ResourceService resourceService;
+	@NonNull private final ProductRepository productRepository;
+	@NonNull private final WarehouseRepository warehouseRepository;
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+    @NonNull private final IColorRepository colorRepository = Services.get(IColorRepository.class);
+    @NonNull private final ADReferenceService adReferenceService;
+    @NonNull private final PurchaseLastMaxPriceService purchaseLastMaxPriceService;
 
 	@VisibleForTesting
-	public static MaterialCockpitRowFactory newInstanceForUnitTesting()
+	public static MaterialCockpitRowFactory newInstanceForUnitTesting(final MaterialCockpitRowLookups rowLookups)
 	{
 		Adempiere.assertUnitTestMode();
 		return new MaterialCockpitRowFactory(
-				ADReferenceService.get(),
-				new PurchaseLastMaxPriceService(new MoneyService(new CurrencyRepository()))
+				rowLookups,
+				ResourceService.newInstanceForJUnitTesting(),
+				ProductRepository.newInstanceForUnitTesting(),
+				WarehouseRepository.newInstanceForUnitTesting(),
+                ADReferenceService.get(),
+                new PurchaseLastMaxPriceService(new MoneyService(new CurrencyRepository()))
 		);
 	}
 
@@ -96,8 +107,8 @@ public class MaterialCockpitRowFactory
 		@NonNull @Singular("productIdToListEvenIfEmpty") ImmutableSet<ProductId> productIdsToListEvenIfEmpty;
 		@NonNull @Singular List<I_MD_Cockpit> cockpitRecords;
 		@NonNull @Singular List<I_MD_Stock> stockRecords;
-		@NonNull @Singular List<I_QtyDemand_QtySupply_V> quantitiesRecords;
-		boolean includePerPlantDetailRows;
+		@NonNull @Singular List<ProductWithDemandSupply> quantitiesRecords;
+		@NonNull MaterialCockpitDetailsRowAggregation detailsRowAggregation;
 	}
 
 	public List<MaterialCockpitRow> createRows(@NonNull final CreateRowsRequest request)
@@ -108,13 +119,19 @@ public class MaterialCockpitRowFactory
 	@VisibleForTesting
 	CreateRowsCommand newCreateRowsCommand(final @NonNull CreateRowsRequest request)
 	{
+		final MaterialCockpitRowCache cache = MaterialCockpitRowCache.builder()
+				.productRepository(productRepository)
+				.warehouseRepository(warehouseRepository)
+				.uomDAO(uomDAO)
+				.build();
+
 		return CreateRowsCommand.builder()
-				.warehouseDAO(warehouseDAO)
-				.productBL(productBL)
-				.resourceDAO(resourceDAO)
-				.colorRepository(colorRepository)
-				.adReferenceService(adReferenceService)
-				.purchaseLastMaxPriceProvider(purchaseLastMaxPriceService.newProvider())
+				.rowLookups(rowLookups)
+				.resourceService(resourceService)
+				.cache(cache)
+                .colorRepository(colorRepository)
+                .adReferenceService(adReferenceService)
+                .purchaseLastMaxPriceProvider(purchaseLastMaxPriceService.newProvider())
 				//
 				.request(request)
 				//
@@ -125,25 +142,25 @@ public class MaterialCockpitRowFactory
 	@lombok.Builder
 	static class CreateRowsCommand
 	{
-		@NonNull private final IWarehouseDAO warehouseDAO;
-		@NonNull private final IProductBL productBL;
-		@NonNull private final IResourceDAO resourceDAO;
-		@NonNull private final IColorRepository colorRepository;
-		@NonNull private final ADReferenceService adReferenceService;
-		@NonNull private final PurchaseLastMaxPriceProvider purchaseLastMaxPriceProvider;
+		@NonNull private final MaterialCockpitRowLookups rowLookups;
+		@NonNull private final ResourceService resourceService;
+		@NonNull private MaterialCockpitRowCache cache;
+        @NonNull private final IColorRepository colorRepository;
+        @NonNull private final ADReferenceService adReferenceService;
+        @NonNull private final PurchaseLastMaxPriceProvider purchaseLastMaxPriceProvider;
 
 		@NonNull private final CreateRowsRequest request;
 
-		private static final ReferenceId PROCUREMENTSTATUS_Reference_ID = ReferenceId.ofRepoId(X_M_Product.PROCUREMENTSTATUS_AD_Reference_ID);
+        private static final ReferenceId PROCUREMENTSTATUS_Reference_ID = ReferenceId.ofRepoId(X_M_Product.PROCUREMENTSTATUS_AD_Reference_ID);
 
 		public List<MaterialCockpitRow> execute()
 		{
-			purchaseLastMaxPriceProvider.warmUp(request.getProductIdsToListEvenIfEmpty(), request.getDate());
+			cache.warmUpProducts(request.getProductIdsToListEvenIfEmpty());
 
 			final Map<MainRowBucketId, MainRowWithSubRows> emptyRowBuckets = createEmptyRowBuckets(
 					request.getProductIdsToListEvenIfEmpty(),
 					request.getDate(),
-					request.isIncludePerPlantDetailRows());
+					request.getDetailsRowAggregation());
 
 			final DimensionSpec dimensionSpec = MaterialCockpitUtil.retrieveDimensionSpec();
 
@@ -160,15 +177,18 @@ public class MaterialCockpitRowFactory
 		}
 
 		@VisibleForTesting
-		Map<MainRowBucketId, MainRowWithSubRows> createEmptyRowBuckets(
+		protected Map<MainRowBucketId, MainRowWithSubRows> createEmptyRowBuckets(
 				@NonNull final ImmutableSet<ProductId> productIds,
 				@NonNull final LocalDate timestamp,
-				final boolean includePerPlantDetailRows)
+				@NonNull final MaterialCockpitDetailsRowAggregation detailsRowAggregation)
 		{
 			final DimensionSpec dimensionSpec = MaterialCockpitUtil.retrieveDimensionSpec();
 
 			final List<DimensionSpecGroup> groups = dimensionSpec.retrieveGroups();
-			final Set<ResourceId> plantIds = retrieveCountingPlants(includePerPlantDetailRows);
+
+			final Set<ResourceId> plantIds = retrieveCountingPlants();
+
+			final ImmutableSet<WarehouseId> warehouseIds = cache.getAllActiveWarehouseIds();
 
 			final Builder<MainRowBucketId, MainRowWithSubRows> result = ImmutableMap.builder();
 			for (final ProductId productId : productIds)
@@ -176,9 +196,27 @@ public class MaterialCockpitRowFactory
 				final MainRowBucketId key = MainRowBucketId.createPlainInstance(productId, timestamp);
 				final MainRowWithSubRows mainRowBucket = newMainRowWithSubRows(key);
 
-				for (final ResourceId plantId : plantIds)
+				if (detailsRowAggregation.isPlant())
 				{
-					mainRowBucket.addEmptyCountingSubrowBucket(plantId);
+					for (final ResourceId plantId : plantIds)
+					{
+						final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder()
+								.detailsRowAggregation(detailsRowAggregation)
+								.aggregationId(plantId.getRepoId())
+								.build();
+						mainRowBucket.addEmptyCountingSubRowBucket(detailsRowAggregationIdentifier);
+					}
+				}
+				else if (detailsRowAggregation.isWarehouse())
+				{
+					for (final WarehouseId warehouseId : warehouseIds)
+					{
+						final MaterialCockpitDetailsRowAggregationIdentifier detailsRowAggregationIdentifier = MaterialCockpitDetailsRowAggregationIdentifier.builder()
+								.detailsRowAggregation(detailsRowAggregation)
+								.aggregationId(WarehouseId.toRepoId(warehouseId))
+								.build();
+						mainRowBucket.addEmptyCountingSubRowBucket(detailsRowAggregationIdentifier);
+					}
 				}
 
 				for (final DimensionSpecGroup group : groups)
@@ -191,9 +229,9 @@ public class MaterialCockpitRowFactory
 			return result.build();
 		}
 
-		private ImmutableSet<ResourceId> retrieveCountingPlants(final boolean includePerPlantDetailRows)
+		private Set<ResourceId> retrieveCountingPlants()
 		{
-			return includePerPlantDetailRows ? resourceDAO.getActivePlantIds() : ImmutableSet.of();
+			return resourceService.getActivePlantIds();
 		}
 
 		private void addCockpitRowsToResult(
@@ -205,7 +243,7 @@ public class MaterialCockpitRowFactory
 				final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForCockpitRecord(cockpitRecord);
 
 				final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, this::newMainRowWithSubRows);
-				mainRowBucket.addCockpitRecord(cockpitRecord, dimensionSpec, request.isIncludePerPlantDetailRows());
+				mainRowBucket.addCockpitRecord(cockpitRecord, dimensionSpec, request.getDetailsRowAggregation());
 			}
 		}
 
@@ -218,7 +256,7 @@ public class MaterialCockpitRowFactory
 				final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForStockRecord(stockRecord, request.getDate());
 
 				final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, this::newMainRowWithSubRows);
-				mainRowBucket.addStockRecord(stockRecord, dimensionSpec, request.isIncludePerPlantDetailRows());
+				mainRowBucket.addStockRecord(stockRecord, dimensionSpec, request.getDetailsRowAggregation());
 			}
 		}
 
@@ -226,12 +264,12 @@ public class MaterialCockpitRowFactory
 				@NonNull final DimensionSpec dimensionSpec,
 				@NonNull final Map<MainRowBucketId, MainRowWithSubRows> result)
 		{
-			for (final I_QtyDemand_QtySupply_V qtyRecord : request.getQuantitiesRecords())
+			for (final ProductWithDemandSupply qtyRecord : request.getQuantitiesRecords())
 			{
 				final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForQuantitiesRecord(qtyRecord, request.getDate());
 
 				final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, this::newMainRowWithSubRows);
-				mainRowBucket.addQuantitiesRecord(qtyRecord, dimensionSpec, request.isIncludePerPlantDetailRows());
+				mainRowBucket.addQuantitiesRecord(qtyRecord, dimensionSpec, request.getDetailsRowAggregation());
 			}
 		}
 
@@ -247,7 +285,8 @@ public class MaterialCockpitRowFactory
 			final MFColor procurementStatusColor = getProcurementStatusColor(mainRowBucketId.getProductId()).orElse(null);
 
 			return MainRowWithSubRows.builder()
-					.warehouseDAO(warehouseDAO)
+                    .cache(cache)
+					.rowLookups(rowLookups)
 					.productIdAndDate(mainRowBucketId)
 					.procurementStatusColor(procurementStatusColor)
 					.maxPurchasePrice(maxPurchasePrice)
@@ -256,10 +295,8 @@ public class MaterialCockpitRowFactory
 
 		private Optional<MFColor> getProcurementStatusColor(@NonNull final ProductId productId)
 		{
-			final I_M_Product product = productBL.getById(productId);
-
 			return adReferenceService.getRefListById(PROCUREMENTSTATUS_Reference_ID)
-					.getItemByValue(product.getProcurementStatus())
+					.getItemByValue(cache.getProductById(productId).getProcurementStatus())
 					.map(ADRefListItem::getColorId)
 					.map(colorRepository::getColorById);
 		}

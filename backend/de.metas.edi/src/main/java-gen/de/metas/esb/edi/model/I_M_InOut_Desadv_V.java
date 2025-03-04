@@ -190,7 +190,7 @@ public interface I_M_InOut_Desadv_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDeliveryViaRule (@Nullable String DeliveryViaRule);
+	void setDeliveryViaRule (@Nullable java.lang.String DeliveryViaRule);
 
 	/**
 	 * Get Delivery Via.
@@ -200,7 +200,7 @@ public interface I_M_InOut_Desadv_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDeliveryViaRule();
+	@Nullable java.lang.String getDeliveryViaRule();
 
 	ModelColumn<I_M_InOut_Desadv_V, Object> COLUMN_DeliveryViaRule = new ModelColumn<>(I_M_InOut_Desadv_V.class, "DeliveryViaRule", null);
 	String COLUMNNAME_DeliveryViaRule = "DeliveryViaRule";
@@ -213,7 +213,7 @@ public interface I_M_InOut_Desadv_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDocumentNo (@Nullable String DocumentNo);
+	void setDocumentNo (@Nullable java.lang.String DocumentNo);
 
 	/**
 	 * Get Document No.
@@ -223,7 +223,7 @@ public interface I_M_InOut_Desadv_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDocumentNo();
+	@Nullable java.lang.String getDocumentNo();
 
 	ModelColumn<I_M_InOut_Desadv_V, Object> COLUMN_DocumentNo = new ModelColumn<>(I_M_InOut_Desadv_V.class, "DocumentNo", null);
 	String COLUMNNAME_DocumentNo = "DocumentNo";
@@ -269,25 +269,29 @@ public interface I_M_InOut_Desadv_V
 	String COLUMNNAME_DropShip_Location_ID = "DropShip_Location_ID";
 
 	/**
-	 * Set EDI export status.
+	 * Set DESADV.
 	 *
-	 * <br>Type: String
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setEDI_ExportStatus (@Nullable String EDI_ExportStatus);
+	void setEDI_Desadv_ID (int EDI_Desadv_ID);
 
 	/**
-	 * Get EDI export status.
+	 * Get DESADV.
 	 *
-	 * <br>Type: String
+	 * <br>Type: TableDir
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getEDI_ExportStatus();
+	int getEDI_Desadv_ID();
 
-	ModelColumn<I_M_InOut_Desadv_V, Object> COLUMN_EDI_ExportStatus = new ModelColumn<>(I_M_InOut_Desadv_V.class, "EDI_ExportStatus", null);
-	String COLUMNNAME_EDI_ExportStatus = "EDI_ExportStatus";
+	@Nullable de.metas.esb.edi.model.I_EDI_Desadv getEDI_Desadv();
+
+	void setEDI_Desadv(@Nullable de.metas.esb.edi.model.I_EDI_Desadv EDI_Desadv);
+
+	ModelColumn<I_M_InOut_Desadv_V, de.metas.esb.edi.model.I_EDI_Desadv> COLUMN_EDI_Desadv_ID = new ModelColumn<>(I_M_InOut_Desadv_V.class, "EDI_Desadv_ID", de.metas.esb.edi.model.I_EDI_Desadv.class);
+	String COLUMNNAME_EDI_Desadv_ID = "EDI_Desadv_ID";
 
 	/**
 	 * Set EDI Error Message.
@@ -296,7 +300,7 @@ public interface I_M_InOut_Desadv_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setEDIErrorMsg (@Nullable String EDIErrorMsg);
+	void setEDIErrorMsg (@Nullable java.lang.String EDIErrorMsg);
 
 	/**
 	 * Get EDI Error Message.
@@ -305,10 +309,31 @@ public interface I_M_InOut_Desadv_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getEDIErrorMsg();
+	@Nullable java.lang.String getEDIErrorMsg();
 
 	ModelColumn<I_M_InOut_Desadv_V, Object> COLUMN_EDIErrorMsg = new ModelColumn<>(I_M_InOut_Desadv_V.class, "EDIErrorMsg", null);
 	String COLUMNNAME_EDIErrorMsg = "EDIErrorMsg";
+
+	/**
+	 * Set EDI export status.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEDI_ExportStatus (@Nullable java.lang.String EDI_ExportStatus);
+
+	/**
+	 * Get EDI export status.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEDI_ExportStatus();
+
+	ModelColumn<I_M_InOut_Desadv_V, Object> COLUMN_EDI_ExportStatus = new ModelColumn<>(I_M_InOut_Desadv_V.class, "EDI_ExportStatus", null);
+	String COLUMNNAME_EDI_ExportStatus = "EDI_ExportStatus";
 
 	/**
 	 * Set Delivered %.
@@ -399,7 +424,7 @@ public interface I_M_InOut_Desadv_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setInvoicableQtyBasedOn (@Nullable String InvoicableQtyBasedOn);
+	void setInvoicableQtyBasedOn (@Nullable java.lang.String InvoicableQtyBasedOn);
 
 	/**
 	 * Get Invoicable Quantity per.
@@ -408,7 +433,7 @@ public interface I_M_InOut_Desadv_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getInvoicableQtyBasedOn();
+	@Nullable java.lang.String getInvoicableQtyBasedOn();
 
 	ModelColumn<I_M_InOut_Desadv_V, Object> COLUMN_InvoicableQtyBasedOn = new ModelColumn<>(I_M_InOut_Desadv_V.class, "InvoicableQtyBasedOn", null);
 	String COLUMNNAME_InvoicableQtyBasedOn = "InvoicableQtyBasedOn";
@@ -437,32 +462,11 @@ public interface I_M_InOut_Desadv_V
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set M_InOut_Desadv_ID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setM_InOut_Desadv_ID (String M_InOut_Desadv_ID);
-
-	/**
-	 * Get M_InOut_Desadv_ID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	String getM_InOut_Desadv_ID();
-
-	ModelColumn<I_M_InOut_Desadv_V, Object> COLUMN_M_InOut_Desadv_ID = new ModelColumn<>(I_M_InOut_Desadv_V.class, "M_InOut_Desadv_ID", null);
-	String COLUMNNAME_M_InOut_Desadv_ID = "M_InOut_Desadv_ID";
-
-	/**
 	 * Set Shipment/ Receipt.
 	 * Material Shipment Document
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setM_InOut_ID (int M_InOut_ID);
@@ -472,14 +476,10 @@ public interface I_M_InOut_Desadv_V
 	 * Material Shipment Document
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getM_InOut_ID();
-
-	@Nullable org.compiere.model.I_M_InOut getM_InOut();
-
-	void setM_InOut(@Nullable org.compiere.model.I_M_InOut M_InOut);
 
 	ModelColumn<I_M_InOut_Desadv_V, org.compiere.model.I_M_InOut> COLUMN_M_InOut_ID = new ModelColumn<>(I_M_InOut_Desadv_V.class, "M_InOut_ID", org.compiere.model.I_M_InOut.class);
 	String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
@@ -515,7 +515,7 @@ public interface I_M_InOut_Desadv_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPOReference (@Nullable String POReference);
+	void setPOReference (@Nullable java.lang.String POReference);
 
 	/**
 	 * Get Order Reference.
@@ -525,7 +525,7 @@ public interface I_M_InOut_Desadv_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getPOReference();
+	@Nullable java.lang.String getPOReference();
 
 	ModelColumn<I_M_InOut_Desadv_V, Object> COLUMN_POReference = new ModelColumn<>(I_M_InOut_Desadv_V.class, "POReference", null);
 	String COLUMNNAME_POReference = "POReference";
@@ -646,7 +646,7 @@ public interface I_M_InOut_Desadv_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserFlag (@Nullable String UserFlag);
+	void setUserFlag (@Nullable java.lang.String UserFlag);
 
 	/**
 	 * Get User 1.
@@ -655,7 +655,7 @@ public interface I_M_InOut_Desadv_V
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getUserFlag();
+	@Nullable java.lang.String getUserFlag();
 
 	ModelColumn<I_M_InOut_Desadv_V, Object> COLUMN_UserFlag = new ModelColumn<>(I_M_InOut_Desadv_V.class, "UserFlag", null);
 	String COLUMNNAME_UserFlag = "UserFlag";

@@ -141,7 +141,7 @@ public abstract class AbstractNewAggregationEngineTests extends AbstractAggregat
 	 * Does nothing; override if you need to do something with the ICs after the inoutLines were created. Afterward, the ICs will be updated/revalidated once again.
 	 */
 	protected void step_updateInvoiceCandidates(
-			@NonNull final List<I_C_Invoice_Candidate> invoiceCandidates, 
+			@NonNull final List<I_C_Invoice_Candidate> invoiceCandidates,
 			@NonNull final List<I_M_InOutLine> inOutLines)
 	{
 		// nothing; override if you need to do something with the ICs after the inoutLines were created

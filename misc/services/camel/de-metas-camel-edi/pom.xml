@@ -21,17 +21,18 @@
         <smooks-cartridge.version>2.0.0-M3</smooks-cartridge.version>
         <jackson.version>2.13.1</jackson.version>
         <lombok.version>1.18.22</lombok.version>
-        <org.apache.poi.version>3.15</org.apache.poi.version>
+        <org.apache.poi.version>4.1.2</org.apache.poi.version>
         <jaxb.packageName>de.metas.edi.esb.jaxb.metasfresh</jaxb.packageName>
         <jaxb.orders.packageName>de.metas.edi.esb.jaxb.stepcom.orders</jaxb.orders.packageName>
         <jaxb.invoic.packageName>de.metas.edi.esb.jaxb.stepcom.invoic</jaxb.invoic.packageName>
         <jaxb.desadv.packageName>de.metas.edi.esb.jaxb.stepcom.desadv</jaxb.desadv.packageName>
         <metasfresh-common.version>10.0.0</metasfresh-common.version>
         <!--
-            3.8.0 is currently the latest and greatest. Spring boot declares some 2.x version that
+            3.27.2 is currently the latest and greatest. Spring boot declares some 2.x version that
             see http://docs.spring.io/spring-boot/docs/1.2.3.RELEASE/reference/htmlsingle/#howto-customize-dependency-versions-with-maven
         -->
-        <assertj.version>3.19.0</assertj.version>
+        <assertj.version>3.27.2</assertj.version>
+        <xmlunit-assertj3.version>2.10.0</xmlunit-assertj3.version>
 
         <!-- https://github.com/codecentric/spring-boot-admin -->
         <spring-boot-admin.version>2.1.5</spring-boot-admin.version>
@@ -69,6 +70,13 @@
                 <artifactId>assertj-core</artifactId>
                 <scope>test</scope>
                 <version>${assertj.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.xmlunit</groupId>
+                <artifactId>xmlunit-assertj3</artifactId>
+                <version>${xmlunit-assertj3.version}</version>
+                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -259,9 +267,15 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>${assertj.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.xmlunit</groupId>
+            <artifactId>xmlunit-assertj3</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -413,7 +427,7 @@
                     </execution>
                 </executions>
             </plugin>
-            
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

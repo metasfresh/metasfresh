@@ -26,15 +26,17 @@ import lombok.EqualsAndHashCode;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.X_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
+import de.metas.util.Services;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
+import org.compiere.util.Env;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * TODO: check if we can do this better (using enum??)
- * 
+ *
  * @author ts
  *
  */

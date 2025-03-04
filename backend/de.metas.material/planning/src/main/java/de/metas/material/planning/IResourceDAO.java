@@ -30,7 +30,16 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 
 import de.metas.product.ResourceId;
+import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.compiere.model.I_S_Resource;
+import org.compiere.model.I_S_ResourceType;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 public interface IResourceDAO extends ISingletonService
 {
@@ -38,7 +47,11 @@ public interface IResourceDAO extends ISingletonService
 
 	ResourceType getResourceTypeByResourceId(ResourceId resourceId);
 
+	ResourceTypeId getResourceTypeIdByResourceId(ResourceId resourceId);
+
 	I_S_Resource getById(ResourceId resourceId);
+
+	List<I_S_Resource> getByIds(@NonNull Set<ResourceId> resourceIds);
 
 	List<I_S_Resource> retrievePlants(Properties ctx);
 
@@ -48,5 +61,8 @@ public interface IResourceDAO extends ISingletonService
 
 	void onResourceTypeChanged(I_S_ResourceType resourceType);
 
+	ImmutableSet<ResourceId> getResourceIdsByUserId(@NonNull UserId userId);
+
+	ImmutableSet<ResourceId> getResourceIdsByResourceTypeIds(@NonNull Collection<ResourceTypeId> resourceTypeIds);
 	ImmutableSet<ResourceId> getActivePlantIds();
 }

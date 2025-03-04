@@ -7,7 +7,6 @@ import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.security.Role;
-import de.metas.security.RoleId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Services;
@@ -28,7 +27,6 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
-import org.compiere.util.KeyNamePair;
 import org.compiere.util.Login;
 import org.compiere.util.Splash;
 import org.slf4j.Logger;
@@ -118,6 +116,10 @@ public abstract class SwingUIApplicationTemplate
 			DB.setDBTarget(cc); // set the connection to DB to have early access to it (for messages, languages etc)
 			Ini.setProperty(Ini.P_CONNECTION, CConnection.get().toStringLong());
 
+			Ini.setProperty(Ini.P_SHOW_TRL, true);
+			Ini.setProperty(Ini.P_SHOW_ADVANCED, true);
+			Ini.setProperty(Ini.P_CACHE_WINDOW, false);
+
 			final Properties ctx = Env.getCtx();
 			Env.setClientId(ctx, ClientId.SYSTEM);
 			Env.setAD_Language(ctx, Language.AD_Language_en_US);
@@ -136,14 +138,13 @@ public abstract class SwingUIApplicationTemplate
 					.orElseThrow(() -> new AdempiereException("User `" + username + "` has no System role assigned"));
 			login.setRoleAndGetClients(systemRole.getId());
 
-			final OrgId orgAny = OrgId.ANY;
 			String error = login.validateLogin(OrgId.ANY);
 			if (error != null && !error.isEmpty())
 			{
 				throw new AdempiereException(error);
 			}
 
-			login.loadPreferences(orgAny, null);
+			login.loadPreferences(OrgId.ANY, null);
 		}
 	}
 

@@ -7,6 +7,7 @@ import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.order.model.I_C_OrderLine;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.DocBaseType;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
@@ -56,7 +57,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -73,7 +73,7 @@ import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShipping
 import static de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule.NONE;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -346,7 +346,7 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 			Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH); // needed for notifications
 
 			huContext = huContextFactory.createMutableHUContext();
-			createDocType(DocBaseAndSubType.of(X_C_DocType.DOCBASETYPE_MaterialDelivery));
+			createDocType(DocBaseAndSubType.of(DocBaseType.Shipment));
 			bpartnerAndLocationId = bpartnerAndLocation("BP");
 			warehouseId = warehouse("WH");
 
@@ -423,8 +423,8 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		private void createDocType(final DocBaseAndSubType docBaseAndSubType)
 		{
 			final I_C_DocType docTypeRecord = newInstance(I_C_DocType.class);
-			docTypeRecord.setDocBaseType(docBaseAndSubType.getDocBaseType());
-			docTypeRecord.setDocSubType(docBaseAndSubType.getDocSubType());
+			docTypeRecord.setDocBaseType(docBaseAndSubType.getDocBaseType().getCode());
+			docTypeRecord.setDocSubType(docBaseAndSubType.getDocSubType().getCode());
 			saveRecord(docTypeRecord);
 		}
 

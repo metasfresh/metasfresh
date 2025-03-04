@@ -276,8 +276,7 @@ public class ProductPrices
 		logger.info("Cleared all main product matchers");
 	}
 
-	@Nullable
-	public static <T extends I_M_ProductPrice> T iterateAllPriceListVersionsAndFindProductPrice(
+	@Nullable public static <T extends I_M_ProductPrice> T iterateAllPriceListVersionsAndFindProductPrice(
 			@Nullable final I_M_PriceList_Version startPriceListVersion,
 			@NonNull final Function<I_M_PriceList_Version, T> productPriceMapper,
 			@NonNull final ZonedDateTime priceDate)

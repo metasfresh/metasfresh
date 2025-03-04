@@ -6,7 +6,8 @@ import { computePickFromStatus } from '../../../reducers/wfProcesses/picking';
 import PickAlternatives from './PickAlternatives';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
-import { useHistory } from 'react-router-dom';
+import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
+import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 
 const PickStepButton = ({
   applicationId,
@@ -19,21 +20,30 @@ const PickStepButton = ({
   uom,
   qtyToPick,
   pickFrom,
+  catchWeightUOM,
+  disabled,
 }) => {
-  const history = useHistory();
+  const history = useMobileNavigation();
   const handleClick = () => {
     history.push(pickingStepScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId, altStepId }));
   };
 
   const isAlternative = !!altStepId;
   const completeStatus = computePickFromStatus(pickFrom);
+  const catchWeight =
+    catchWeightUOM != null && catchWeightUOM === pickFrom.pickedCatchWeight?.uomSymbol
+      ? pickFrom.pickedCatchWeight.qty
+      : undefined;
+  const catchWeightCaption = catchWeight && formatQtyToHumanReadableStr({ qty: catchWeight, uom: catchWeightUOM });
+  const captionToUse = catchWeightCaption || pickFrom.locatorName;
 
   return (
     <>
       <ButtonWithIndicator
-        caption={(isAlternative ? 'ALT:' : '') + pickFrom.locatorName}
+        caption={(isAlternative ? 'ALT:' : '') + captionToUse}
         completeStatus={completeStatus}
         onClick={handleClick}
+        disabled={disabled}
       >
         <ButtonQuantityProp
           qtyCurrent={pickFrom.qtyPicked}
@@ -51,6 +61,7 @@ const PickStepButton = ({
           stepId={stepId}
           pickFromAlternatives={pickFromAlternatives}
           uom={uom}
+          disabled={disabled}
         />
       )}
     </>
@@ -66,8 +77,10 @@ PickStepButton.propTypes = {
   pickFrom: PropTypes.object.isRequired,
   qtyToPick: PropTypes.number.isRequired,
   altStepId: PropTypes.string,
-  pickFromAlternatives: PropTypes.object,
+  pickFromAlternatives: PropTypes.array,
   uom: PropTypes.string.isRequired,
+  catchWeightUOM: PropTypes.string,
+  disabled: PropTypes.bool,
 };
 
 export default PickStepButton;

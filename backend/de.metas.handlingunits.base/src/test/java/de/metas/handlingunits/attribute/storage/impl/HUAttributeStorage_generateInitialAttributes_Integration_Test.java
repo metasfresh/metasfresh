@@ -100,7 +100,8 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 	{
 		nextSSCC18SerialNumber = 0;
 
-		final SSCC18CodeBL sscc18CodeService = new SSCC18CodeBL(orgId -> ++nextSSCC18SerialNumber);
+		final SSCC18CodeBL sscc18CodeService = new SSCC18CodeBL();
+		sscc18CodeService.setOverrideNextSerialNumberProvider(orgId -> ++nextSSCC18SerialNumber);
 		Services.registerService(ISSCC18CodeBL.class, sscc18CodeService);
 
 		SSCC18CodeBLTests.setManufacturerCode("0001");
@@ -188,6 +189,8 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final Reflections reflections = new Reflections(new ConfigurationBuilder()
 				.addUrls(ClasspathHelper.forClassLoader())
+				//thx to https://github.com/ronmamo/reflections/issues/373#issue-1080637248
+				.forPackages("de")
 				.setScanners(new SubTypesScanner()));
 
 		final Set<Class<? extends IAttributeValueGenerator>> attributeValueGeneratorClassnames = reflections.getSubTypesOf(IAttributeValueGenerator.class);
@@ -197,7 +200,7 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 					+ "\n See https://github.com/metasfresh/metasfresh/issues/4773.");
 		}
 
-		System.out.println("Found " + attributeValueGeneratorClassnames.size() + " classes in " + stopwatch.toString());
+		System.out.println("Found " + attributeValueGeneratorClassnames.size() + " classes in " + stopwatch);
 
 		return attributeValueGeneratorClassnames;
 	}
@@ -224,7 +227,7 @@ public class HUAttributeStorage_generateInitialAttributes_Integration_Test exten
 
 	/**
 	 * Create a new {@link I_M_HU_PI_Attribute} configuration for given <code>attributeValueGeneratorClass</code>.
-	 *
+	 * <br>
 	 * The create a new {@link HUAttributeStorage} instance and invoke {@link HUAttributeStorage#generateInitialAttributes(Map)}.
 	 */
 	public void test(final Class<? extends IAttributeValueGenerator> attributeValueGeneratorClass)

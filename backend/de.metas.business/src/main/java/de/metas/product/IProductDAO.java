@@ -1,6 +1,9 @@
 package de.metas.product;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.pair.ImmutablePair;
+import de.metas.gs1.GTIN;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
@@ -9,8 +12,8 @@ import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 
@@ -107,13 +110,29 @@ public interface IProductDAO extends ISingletonService
 	
 	void clearIndividualMasterDataFromProduct(ProductId productId);
 
+	Optional<ProductId> getProductIdByGTIN(@NonNull GTIN gtin, @NonNull ClientId clientId);
+
+	Optional<ProductId> getProductIdByValueStartsWith(@NonNull String valuePrefix, @NonNull ClientId clientId);
+
 	Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull ProductId productId);
 
 	Optional<de.metas.product.model.I_M_Product> getProductOfGroupCategory(
 			@NonNull GroupCategoryId groupCategoryId,
 			@NonNull OrgId targetOrgId);
 
+	@Nullable
 	ProductCategoryId retrieveProductCategoryForGroupTemplateId(@NonNull GroupTemplateId groupTemplateId);
+
+	Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull ProductId productId);
+
+	Set<ProductId> getProductIdsMatchingQueryString(
+			@NonNull String queryString,
+			@NonNull ClientId clientId,
+			@NonNull QueryLimit limit);
+
+	void save(I_M_Product record);
+
+	ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull final ClientId clientId);
 
 	@Value
 	class ProductQuery
@@ -164,6 +183,8 @@ public interface IProductDAO extends ISingletonService
 	@Nullable
 	ProductAndCategoryId retrieveProductAndCategoryIdByProductId(ProductId productId);
 
+	ImmutableSet<ProductAndCategoryId> retrieveProductAndCategoryIdsByProductIds(@NonNull Set<ProductId> productIds);
+
 	ProductAndCategoryAndManufacturerId retrieveProductAndCategoryAndManufacturerByProductId(ProductId productId);
 
 	Set<ProductAndCategoryAndManufacturerId> retrieveProductAndCategoryAndManufacturersByProductIds(Set<ProductId> productIds);
@@ -200,4 +221,7 @@ public interface IProductDAO extends ISingletonService
 	 * @return {@code true} if product is used in orders, invoices, shipments or cost-details.
 	 */
 	boolean isProductUsed(ProductId productId);
+
+	@NonNull
+	ImmutableList<I_M_Product> getByIdsInTrx(@NonNull Set<ProductId> productIds);
 }

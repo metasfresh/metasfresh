@@ -169,6 +169,8 @@ public class PPOrderCostsTestHelper
 			ppOrderNode.setValue("activity1");
 			ppOrderNode.setS_Resource_ID(BusinessTestHelper.createManufacturingResource("workstation1", uomSeconds).getRepoId());
 			ppOrderNode.setC_UOM_ID(uomSeconds.getC_UOM_ID());
+			ppOrderNode.setPP_Activity_Type(PPRoutingActivityType.WorkReport.getCode());
+			ppOrderNode.setName("Name");
 			ppOrderNode.setDocStatus(PPOrderRoutingActivityStatus.NOT_STARTED.getDocStatus());
 			ppOrderNode.setPP_Activity_Type(PPRoutingActivityType.WorkReport.getCode());
 			ppOrderNode.setName("Name");

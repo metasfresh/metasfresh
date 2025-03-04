@@ -1,5 +1,6 @@
 package de.metas.product;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
@@ -14,6 +15,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
@@ -57,11 +59,18 @@ public class ProductRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+
+	@VisibleForTesting
+	public static ProductRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new ProductRepository();
+	}
 
 	@NonNull
 	public ImmutableList<BPartnerProduct> getByProductId(@NonNull final ProductId productId)
 	{
-
 		return queryBL.createQueryBuilder(I_C_BPartner_Product.class)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
 				.addOnlyActiveRecordsFilter()
@@ -257,6 +266,30 @@ public class ProductRepository
 	}
 
 	@NonNull
+	public static BPartnerProduct ofBPartnerProductRecord(@NonNull final I_C_BPartner_Product record)
+	{
+
+		return BPartnerProduct.builder()
+				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.bPartnerId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
+				.active(record.isActive())
+				.seqNo(record.getSeqNo())
+				.productNo(record.getProductNo())
+				.description(record.getDescription())
+				.cuEAN(record.getEAN_CU())
+				.customerLabelName(record.getCustomerLabelName())
+				.gtin(record.getGTIN())
+				.ingredients(record.getIngredients())
+				.currentVendor(record.isCurrentVendor())
+				.isExcludedFromSales(record.isExcludedFromSale())
+				.exclusionFromSalesReason(record.getExclusionFromSaleReason())
+				.isExcludedFromPurchase(record.isExcludedFromPurchase())
+				.exclusionFromPurchaseReason(record.getExclusionFromPurchaseReason())
+				.dropShip(record.isDropShip())
+				.usedForVendor(record.isUsedForVendor())
+				.build();
+	}
+	@NonNull
 	private I_M_Product getRecordById(@NonNull final ProductId id)
 	{
 		return queryBL.createQueryBuilder(I_M_Product.class)
@@ -284,17 +317,21 @@ public class ProductRepository
 
 		final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(productRecord.getAD_Org_ID()));
 
+		final ProductCategoryId productCategoryId = ProductCategoryId.ofRepoId(productRecord.getM_Product_Category_ID());
+
 		return Product.builder()
 				.id(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.productNo(productRecord.getValue())
 				.name(modelTranslationMap.getColumnTrl(I_M_Product.COLUMNNAME_Name, productRecord.getName()))
+				.value(productRecord.getValue())
 				.description(modelTranslationMap.getColumnTrl(I_M_Product.COLUMNNAME_Description, productRecord.getDescription()))
 				.documentNote(modelTranslationMap.getColumnTrl(I_M_Product.COLUMNNAME_DocumentNote, productRecord.getDocumentNote()))
-				.productCategoryId(ProductCategoryId.ofRepoIdOrNull(productRecord.getM_Product_Category_ID()))
+				.productCategoryId(productCategoryId)
+				.productCategoryName(productDAO.getProductCategoryById(productCategoryId).getName())
 				.uomId(UomId.ofRepoId(productRecord.getC_UOM_ID()))
 				.discontinued(productRecord.isDiscontinued())
 				.discontinuedFrom(TimeUtil.asLocalDate(productRecord.getDiscontinuedFrom(), zoneId))
-				.manufacturerId(manufacturerId > 0 ? BPartnerId.ofRepoId(manufacturerId) : null)
+				.manufacturerId(BPartnerId.ofRepoIdOrNull(manufacturerId))
 				.packageSize(productRecord.getPackageSize())
 				.weight(productRecord.getWeight())
 				.stocked(productRecord.isStocked())
@@ -304,6 +341,7 @@ public class ProductRepository
 				.gtin(productRecord.getGTIN())
 				.ean(productRecord.getUPC())
 				.orgId(OrgId.ofRepoId(productRecord.getAD_Org_ID()))
+				.procurementStatus(productRecord.getProcurementStatus())
 				.build();
 	}
 
@@ -319,8 +357,8 @@ public class ProductRepository
 			final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(record.getAD_Org_ID()));
 
 			record.setDiscontinuedFrom(product.getDiscontinuedFrom() != null
-											   ? TimeUtil.asTimestamp(product.getDiscontinuedFrom(), zoneId)
-											   : TimeUtil.asTimestamp(Instant.now()));
+					? TimeUtil.asTimestamp(product.getDiscontinuedFrom(), zoneId)
+					: TimeUtil.asTimestamp(Instant.now()));
 		}
 		else
 		{
@@ -352,7 +390,7 @@ public class ProductRepository
 	{
 		final I_C_BPartner_Product record = getRecordById(bPartnerProduct.getProductId(), bPartnerProduct.getBPartnerId())
 				.orElseThrow(() -> new AdempiereException("No BPartner product record found for "
-																  + bPartnerProduct.getProductId() + " " + bPartnerProduct.getBPartnerId()));
+						+ bPartnerProduct.getProductId() + " " + bPartnerProduct.getBPartnerId()));
 
 		record.setC_BPartner_ID(bPartnerProduct.getBPartnerId().getRepoId());
 		record.setIsActive(bPartnerProduct.getActive() != null ? bPartnerProduct.getActive() : record.isActive());
@@ -377,30 +415,5 @@ public class ProductRepository
 		record.setExclusionFromPurchaseReason(bPartnerProduct.getExclusionFromPurchaseReason());
 
 		return record;
-	}
-
-	@NonNull
-	private static BPartnerProduct ofBPartnerProductRecord(@NonNull final I_C_BPartner_Product record)
-	{
-
-		return BPartnerProduct.builder()
-				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
-				.bPartnerId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
-				.active(record.isActive())
-				.seqNo(record.getSeqNo())
-				.productNo(record.getProductNo())
-				.description(record.getDescription())
-				.cuEAN(record.getEAN_CU())
-				.customerLabelName(record.getCustomerLabelName())
-				.gtin(record.getGTIN())
-				.ingredients(record.getIngredients())
-				.currentVendor(record.isCurrentVendor())
-				.isExcludedFromSales(record.isExcludedFromSale())
-				.exclusionFromSalesReason(record.getExclusionFromSaleReason())
-				.isExcludedFromPurchase(record.isExcludedFromPurchase())
-				.exclusionFromPurchaseReason(record.getExclusionFromPurchaseReason())
-				.dropShip(record.isDropShip())
-				.usedForVendor(record.isUsedForVendor())
-				.build();
 	}
 }

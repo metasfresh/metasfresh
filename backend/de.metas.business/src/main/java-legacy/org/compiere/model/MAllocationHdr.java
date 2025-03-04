@@ -16,6 +16,24 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import de.metas.acct.api.IFactAcctDAO;
+import de.metas.allocation.api.IAllocationDAO;
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
+import de.metas.document.DocBaseType;
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.IMsgBL;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.LegacyAdapters;
+import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -29,24 +47,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.LegacyAdapters;
-import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
-import de.metas.acct.api.IFactAcctDAO;
-import de.metas.allocation.api.IAllocationDAO;
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
-import de.metas.document.engine.DocStatus;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.IMsgBL;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
 
 /**
  * Payment Allocation Model.
@@ -365,7 +365,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		}
 		if (isPosted())
 		{
-			MPeriod.testPeriodOpen(getCtx(), getDateTrx(), X_C_DocType.DOCBASETYPE_PaymentAllocation, getAD_Org_ID());
+			MPeriod.testPeriodOpen(getCtx(), getDateTrx(), DocBaseType.PaymentAllocation, getAD_Org_ID());
 			setPosted(false);
 			Services.get(IFactAcctDAO.class).deleteForDocument(this);
 		}
@@ -442,12 +442,11 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		}
 
 		// Std Period open?
-		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), X_C_DocType.DOCBASETYPE_PaymentAllocation, getAD_Org_ID());
+		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), DocBaseType.PaymentAllocation, getAD_Org_ID());
 		MAllocationLine[] lines = getLines(false);
 		if (lines.length == 0)
 		{
-			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			throw AdempiereException.noLines();
 		}
 
 		// Stop the Document Workflow if invoice to allocate is as paid
@@ -614,7 +613,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		final DocStatus docStatus = DocStatus.ofCode(getDocStatus());
 		if(docStatus.isCompletedOrClosedReversedOrVoided())
 		{
-			throw new AdempiereException("Document Closed: " + docStatus);
+			throw AdempiereException.newWithPlainMessage("Document Closed: " + docStatus);
 		}
 		// Not Processed
 		else if(docStatus.isNotProcessed())
@@ -796,7 +795,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		}
 		catch (final Exception e)
 		{
-			log.error("Could not create PDF - " + e.getMessage());
+			log.error("Could not create PDF", e);
 		}
 		return null;
 	}	// getPDF
@@ -882,7 +881,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		}
 
 		// Can we delete posting
-		MPeriod.testPeriodOpen(getCtx(), getDateTrx(), X_C_DocType.DOCBASETYPE_PaymentAllocation, getAD_Org_ID());
+		MPeriod.testPeriodOpen(getCtx(), getDateTrx(), DocBaseType.PaymentAllocation, getAD_Org_ID());
 
 		// Set Inactive
 		setIsActive(false);
@@ -953,8 +952,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 	{
 		final MAllocationHdr reversal = new MAllocationHdr(getCtx(), 0, get_TrxName());
 
-		final boolean copyHonorIsCalculated = true;
-		copyValues(this, reversal, copyHonorIsCalculated);
+		copyValues(this, reversal, true);
 
 		//
 		// 07570: Keep AD_Org of original document
@@ -979,7 +977,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 		for (final MAllocationLine line : getLines(true))
 		{
 			final MAllocationLine reversalLine = new MAllocationLine(reversal);
-			PO.copyValues(line, reversalLine, copyHonorIsCalculated);
+			PO.copyValues(line, reversalLine, true);
 
 			//
 			// 07570: Keep AD_Org of original document
@@ -1020,7 +1018,7 @@ public final class MAllocationHdr extends X_C_AllocationHdr implements IDocument
 
 		if (!reversal.processIt(DOCACTION_Complete))
 		{
-			throw new AdempiereException(reversal.getProcessMsg());
+			throw AdempiereException.newWithTranslatableMessage(reversal.getProcessMsg());
 		}
 		reversal.setDocStatus(DocStatus.Reversed.getCode());
 		reversal.setDocAction(DOCACTION_None);

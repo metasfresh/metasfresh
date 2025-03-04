@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_InOut_Desadv_V extends org.compiere.model.PO implements I_M_InOut_Desadv_V, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 645343878L;
+	private static final long serialVersionUID = -610049738L;
 
     /** Standard Constructor */
     public X_M_InOut_Desadv_V (final Properties ctx, final int M_InOut_Desadv_V_ID, @Nullable final String trxName)
@@ -108,25 +108,25 @@ public class X_M_InOut_Desadv_V extends org.compiere.model.PO implements I_M_InO
 	}
 
 	@Override
-	public void setDeliveryViaRule (final @Nullable String DeliveryViaRule)
+	public void setDeliveryViaRule (final @Nullable java.lang.String DeliveryViaRule)
 	{
 		set_ValueNoCheck (COLUMNNAME_DeliveryViaRule, DeliveryViaRule);
 	}
 
 	@Override
-	public String getDeliveryViaRule()
+	public java.lang.String getDeliveryViaRule() 
 	{
 		return get_ValueAsString(COLUMNNAME_DeliveryViaRule);
 	}
 
 	@Override
-	public void setDocumentNo (final @Nullable String DocumentNo)
+	public void setDocumentNo (final @Nullable java.lang.String DocumentNo)
 	{
 		set_ValueNoCheck (COLUMNNAME_DocumentNo, DocumentNo);
 	}
 
 	@Override
-	public String getDocumentNo()
+	public java.lang.String getDocumentNo() 
 	{
 		return get_ValueAsString(COLUMNNAME_DocumentNo);
 	}
@@ -162,27 +162,54 @@ public class X_M_InOut_Desadv_V extends org.compiere.model.PO implements I_M_InO
 	}
 
 	@Override
-	public void setEDI_ExportStatus (final @Nullable String EDI_ExportStatus)
+	public de.metas.esb.edi.model.I_EDI_Desadv getEDI_Desadv()
 	{
-		set_ValueNoCheck (COLUMNNAME_EDI_ExportStatus, EDI_ExportStatus);
+		return get_ValueAsPO(COLUMNNAME_EDI_Desadv_ID, de.metas.esb.edi.model.I_EDI_Desadv.class);
 	}
 
 	@Override
-	public String getEDI_ExportStatus()
+	public void setEDI_Desadv(final de.metas.esb.edi.model.I_EDI_Desadv EDI_Desadv)
 	{
-		return get_ValueAsString(COLUMNNAME_EDI_ExportStatus);
+		set_ValueFromPO(COLUMNNAME_EDI_Desadv_ID, de.metas.esb.edi.model.I_EDI_Desadv.class, EDI_Desadv);
 	}
 
 	@Override
-	public void setEDIErrorMsg (final @Nullable String EDIErrorMsg)
+	public void setEDI_Desadv_ID (final int EDI_Desadv_ID)
+	{
+		if (EDI_Desadv_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_EDI_Desadv_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_EDI_Desadv_ID, EDI_Desadv_ID);
+	}
+
+	@Override
+	public int getEDI_Desadv_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_EDI_Desadv_ID);
+	}
+
+	@Override
+	public void setEDIErrorMsg (final @Nullable java.lang.String EDIErrorMsg)
 	{
 		set_ValueNoCheck (COLUMNNAME_EDIErrorMsg, EDIErrorMsg);
 	}
 
 	@Override
-	public String getEDIErrorMsg()
+	public java.lang.String getEDIErrorMsg() 
 	{
 		return get_ValueAsString(COLUMNNAME_EDIErrorMsg);
+	}
+
+	@Override
+	public void setEDI_ExportStatus (final @Nullable java.lang.String EDI_ExportStatus)
+	{
+		set_ValueNoCheck (COLUMNNAME_EDI_ExportStatus, EDI_ExportStatus);
+	}
+
+	@Override
+	public java.lang.String getEDI_ExportStatus() 
+	{
+		return get_ValueAsString(COLUMNNAME_EDI_ExportStatus);
 	}
 
 	@Override
@@ -242,39 +269,15 @@ public class X_M_InOut_Desadv_V extends org.compiere.model.PO implements I_M_InO
 	}
 
 	@Override
-	public void setInvoicableQtyBasedOn (final @Nullable String InvoicableQtyBasedOn)
+	public void setInvoicableQtyBasedOn (final @Nullable java.lang.String InvoicableQtyBasedOn)
 	{
 		set_ValueNoCheck (COLUMNNAME_InvoicableQtyBasedOn, InvoicableQtyBasedOn);
 	}
 
 	@Override
-	public String getInvoicableQtyBasedOn()
+	public java.lang.String getInvoicableQtyBasedOn() 
 	{
 		return get_ValueAsString(COLUMNNAME_InvoicableQtyBasedOn);
-	}
-
-	@Override
-	public void setM_InOut_Desadv_ID (final String M_InOut_Desadv_ID)
-	{
-		set_ValueNoCheck (COLUMNNAME_M_InOut_Desadv_ID, M_InOut_Desadv_ID);
-	}
-
-	@Override
-	public String getM_InOut_Desadv_ID()
-	{
-		return get_ValueAsString(COLUMNNAME_M_InOut_Desadv_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_M_InOut getM_InOut()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class);
-	}
-
-	@Override
-	public void setM_InOut(final org.compiere.model.I_M_InOut M_InOut)
-	{
-		set_ValueFromPO(COLUMNNAME_M_InOut_ID, org.compiere.model.I_M_InOut.class, M_InOut);
 	}
 
 	@Override
@@ -305,13 +308,13 @@ public class X_M_InOut_Desadv_V extends org.compiere.model.PO implements I_M_InO
 	}
 
 	@Override
-	public void setPOReference (final @Nullable String POReference)
+	public void setPOReference (final @Nullable java.lang.String POReference)
 	{
 		set_ValueNoCheck (COLUMNNAME_POReference, POReference);
 	}
 
 	@Override
-	public String getPOReference()
+	public java.lang.String getPOReference() 
 	{
 		return get_ValueAsString(COLUMNNAME_POReference);
 	}
@@ -367,13 +370,13 @@ public class X_M_InOut_Desadv_V extends org.compiere.model.PO implements I_M_InO
 	}
 
 	@Override
-	public void setUserFlag (final @Nullable String UserFlag)
+	public void setUserFlag (final @Nullable java.lang.String UserFlag)
 	{
 		set_ValueNoCheck (COLUMNNAME_UserFlag, UserFlag);
 	}
 
 	@Override
-	public String getUserFlag()
+	public java.lang.String getUserFlag() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserFlag);
 	}

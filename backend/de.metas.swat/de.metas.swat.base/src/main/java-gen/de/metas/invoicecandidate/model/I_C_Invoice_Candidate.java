@@ -839,6 +839,31 @@ public interface I_C_Invoice_Candidate
 	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
 
+
+	/**
+	 * Set Sales Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_OrderSO_ID (int C_OrderSO_ID);
+
+	/**
+	 * Get Sales Order.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_OrderSO_ID();
+
+	@Nullable org.compiere.model.I_C_Order getC_OrderSO();
+
+	void setC_OrderSO(@Nullable org.compiere.model.I_C_Order C_OrderSO);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
 	/**
 	 * Set Zahlungsbedingung eff..
 	 *
@@ -866,7 +891,7 @@ public interface I_C_Invoice_Candidate
 	 * The terms of Payment (timing, discount)
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
@@ -876,7 +901,7 @@ public interface I_C_Invoice_Candidate
 	 * The terms of Payment (timing, discount)
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_PaymentTerm_ID();
@@ -3224,6 +3249,27 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoiceInUOM_Calc = new ModelColumn<>(I_C_Invoice_Candidate.class, "QtyToInvoiceInUOM_Calc", null);
 	String COLUMNNAME_QtyToInvoiceInUOM_Calc = "QtyToInvoiceInUOM_Calc";
+
+	/**
+	 * Set To invoice Override.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyToInvoiceInUOM_Override (@Nullable BigDecimal QtyToInvoiceInUOM_Override);
+
+	/**
+	 * Get To invoice Override.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyToInvoiceInUOM_Override();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyToInvoiceInUOM_Override = new ModelColumn<>(I_C_Invoice_Candidate.class, "QtyToInvoiceInUOM_Override", null);
+	String COLUMNNAME_QtyToInvoiceInUOM_Override = "QtyToInvoiceInUOM_Override";
 
 	/**
 	 * Set Zu berechn. Menge abw..

@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_Warehouse
  *  @author metasfresh (generated) 
@@ -408,4 +408,20 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
 	}
+
+	@Override
+	public void setAD_User_ID (final int AD_User_ID)
+	{
+		if (AD_User_ID < 0)
+			set_Value (COLUMNNAME_AD_User_ID, null);
+		else
+			set_Value (COLUMNNAME_AD_User_ID, AD_User_ID);
+	}
+
+	@Override
+	public int getAD_User_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
+	}
+
 }

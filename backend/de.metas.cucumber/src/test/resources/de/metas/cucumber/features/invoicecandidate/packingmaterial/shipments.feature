@@ -10,11 +10,11 @@ Feature: Packing material invoice candidates: shipments
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
 
     And metasfresh contains M_Products:
-      | Identifier     | Name                          |
-      | salesProduct   | salesProduct_S0160_26072022   |
-      | packingProduct | packingProduct_S0160_26072022 |
+      | Identifier     | Name                        |
+      | salesProduct   | salesProduct_S0160_@Date@   |
+      | packingProduct | packingProduct_S0160_@Date@ |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                | Value          |
+      | Identifier | Name                               | Value          |
       | ps_1       | pricing_system_name_S0160_26072022 | S0160_26072022 |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name               | SOTrx | IsTaxIncluded | PricePrecision |
@@ -27,8 +27,8 @@ Feature: Packing material invoice candidates: shipments
       | pp_1       | plv_SO                            | salesProduct            | 10.0     | PCE               | Normal                        |
       | pp_2       | plv_SO                            | packingProduct          | 2.0      | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier | Name               | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
-      | bpartner_1 | BPartnerName_S0160 | Y              | ps_1                          | D               |
+      | Identifier | Name            | IsCustomer | M_PricingSystem_ID | InvoiceRule |
+      | bpartner_1 | BP_S0160_@Date@ | Y          | ps_1               | D           |
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID.Identifier | Name              |
       | huPackingTU           | huPackingTU_S0160 |
@@ -60,8 +60,8 @@ Feature: Packing material invoice candidates: shipments
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
+      | ol_1                      | o_1                   | 2022-07-26      | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -69,7 +69,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
       | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -111,8 +111,8 @@ Feature: Packing material invoice candidates: shipments
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
+      | ol_1                      | o_1                   | 2022-07-26      | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -120,7 +120,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
       | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -168,8 +168,8 @@ Feature: Packing material invoice candidates: shipments
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
+      | ol_1                      | o_1                   | 2022-07-26      | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -177,7 +177,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
       | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -224,8 +224,8 @@ Feature: Packing material invoice candidates: shipments
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
+      | ol_1                      | o_1                   | 2022-07-26      | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -233,7 +233,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
       | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -292,8 +292,8 @@ Feature: Packing material invoice candidates: shipments
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
+      | ol_1                      | o_1                   | 2022-07-26      | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -301,7 +301,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
       | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -363,8 +363,8 @@ Feature: Packing material invoice candidates: shipments
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
+      | ol_1                      | o_1                   | 2022-07-26      | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -372,7 +372,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.rocessed |
       | s_s_1                            | 100              | 0                | 100            | 10                | false        |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -434,8 +434,8 @@ Feature: Packing material invoice candidates: shipments
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
+      | ol_1                      | o_1                   | 2022-07-26      | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -443,7 +443,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
       | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -517,8 +517,8 @@ Feature: Packing material invoice candidates: shipments
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
+      | ol_1                      | o_1                   | 2022-07-26      | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -526,7 +526,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
       | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -603,8 +603,8 @@ Feature: Packing material invoice candidates: shipments
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
+      | ol_1                      | o_1                   | 2022-07-26      | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -612,7 +612,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
       | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -690,8 +690,8 @@ Feature: Packing material invoice candidates: shipments
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
+      | ol_1                      | o_1                   | 2022-07-26      | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -699,7 +699,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
       | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -784,8 +784,8 @@ Feature: Packing material invoice candidates: shipments
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
+      | ol_1                      | o_1                   | 2022-07-26      | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -793,7 +793,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
       | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -870,8 +870,8 @@ Feature: Packing material invoice candidates: shipments
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
+      | ol_1                      | o_1                   | 2022-07-26      | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -879,7 +879,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
       | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -956,8 +956,8 @@ Feature: Packing material invoice candidates: shipments
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
+      | ol_1                      | o_1                   | 2022-07-26      | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -965,7 +965,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
       | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -1039,8 +1039,8 @@ Feature: Packing material invoice candidates: shipments
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
+      | ol_1                      | o_1                   | 2022-07-26      | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -1048,7 +1048,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
       | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -1124,8 +1124,8 @@ Feature: Packing material invoice candidates: shipments
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
+      | ol_1                      | o_1                   | 2022-07-26      | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -1133,7 +1133,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
       | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -1210,8 +1210,8 @@ Feature: Packing material invoice candidates: shipments
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
+      | ol_1                      | o_1                   | 2022-07-26      | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -1219,7 +1219,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
       | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -1278,8 +1278,8 @@ Feature: Packing material invoice candidates: shipments
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
+      | ol_1                      | o_1                   | 2022-07-26      | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -1287,7 +1287,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
       | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -1349,8 +1349,8 @@ Feature: Packing material invoice candidates: shipments
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
+      | ol_1                      | o_1                   | 2022-07-26      | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -1358,7 +1358,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
       | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -1391,7 +1391,7 @@ Feature: Packing material invoice candidates: shipments
       | invoiceCandShipmentLine_2                  | invoiceCand_2                         | shipmentLine_2                | 15               |
 
     When the shipment identified by shipment_1 is reversed
-    
+
     Then validate M_In_Out status
       | M_InOut_ID.Identifier | DocStatus |
       | shipment_1            | RE        |
@@ -1419,8 +1419,8 @@ Feature: Packing material invoice candidates: shipments
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
+      | ol_1                      | o_1                   | 2022-07-26      | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -1428,7 +1428,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
       | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -1487,8 +1487,8 @@ Feature: Packing material invoice candidates: shipments
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
+      | ol_1                      | o_1                   | 2022-07-26      | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -1496,7 +1496,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
       | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 
@@ -1558,8 +1558,8 @@ Feature: Packing material invoice candidates: shipments
 
     Then validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | ol_1                      | o_1                   | 2022-07-26  | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
-      | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
+      | ol_1                      | o_1                   | 2022-07-26      | salesProduct            | 0            | 100        | 0           | 10    | 0        | EUR          | true      |
+      | ol_2                      | o_1                   | 2022-07-26      | packingProduct          | 0            | 10         | 0           | 2     | 0        | EUR          | true      |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
@@ -1567,7 +1567,7 @@ Feature: Packing material invoice candidates: shipments
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver | OPT.QtyDelivered | OPT.QtyOrdered | OPT.QtyOrdered_TU | OPT.Processed |
       | s_s_1                            | 100              | 0                | 100            | 10                | false         |
 
-    When 'generate shipments' process is invoked
+    When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | false               | false       |
 

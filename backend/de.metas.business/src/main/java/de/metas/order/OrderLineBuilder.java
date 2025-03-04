@@ -73,10 +73,14 @@ public class OrderLineBuilder
 	private AttributeSetInstanceId asiId = AttributeSetInstanceId.NONE;
 	private Quantity qty;
 
-	@Nullable private BigDecimal manualPrice;
+	@Nullable
+	private BigDecimal manualPrice;
+	@Nullable
+	private UomId manualPriceUomId;
 	private BigDecimal manualDiscount;
 
-	@Nullable private String description;
+	@Nullable
+	private String description;
 
 	private boolean hideWhenPrinting;
 
@@ -127,6 +131,11 @@ public class OrderLineBuilder
 			dimensionService.updateRecord(orderLine, dimension);
 		}
 
+		if (manualPriceUomId != null)
+		{
+			orderLine.setPrice_UOM_ID(manualPriceUomId.getRepoId());
+		}
+
 		orderLineBL.updatePrices(orderLine);
 
 		if (!Check.isBlank(description))
@@ -166,11 +175,11 @@ public class OrderLineBuilder
 		}
 	}
 
-	private OrderFactory getParent() { return parent; }
+	private OrderFactory getParent() {return parent;}
 
-	public OrderFactory endOrderLine() { return getParent(); }
+	public OrderFactory endOrderLine() {return getParent();}
 
-	public OrderAndLineId getCreatedOrderAndLineId() { return OrderAndLineId.ofRepoIds(createdOrderLine.getC_Order_ID(), createdOrderLine.getC_OrderLine_ID()); }
+	public OrderAndLineId getCreatedOrderAndLineId() {return OrderAndLineId.ofRepoIds(createdOrderLine.getC_Order_ID(), createdOrderLine.getC_OrderLine_ID());}
 
 	public OrderLineBuilder productId(final ProductId productId)
 	{
@@ -226,6 +235,13 @@ public class OrderLineBuilder
 	{
 		assertNotBuilt();
 		this.manualPrice = manualPrice;
+		return this;
+	}
+
+	public OrderLineBuilder manualPriceUomId(@Nullable final UomId manualPriceUomId)
+	{
+		assertNotBuilt();
+		this.manualPriceUomId = manualPriceUomId;
 		return this;
 	}
 

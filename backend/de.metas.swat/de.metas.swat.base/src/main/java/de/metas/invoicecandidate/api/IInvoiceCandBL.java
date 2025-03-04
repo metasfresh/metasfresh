@@ -25,7 +25,6 @@ package de.metas.invoicecandidate.api;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.CurrencyPrecision;
@@ -41,6 +40,7 @@ import de.metas.money.Money;
 import de.metas.order.InvoiceRule;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -128,6 +128,10 @@ public interface IInvoiceCandBL extends ISingletonService
 	boolean isSkipCandidateFromInvoicing(I_C_Invoice_Candidate ic, boolean ignoreInvoiceSchedule);
 
 	IInvoiceGenerateResult generateInvoicesFromQueue(Properties ctx);
+
+	void setPaymentTermIfMissing(@NonNull I_C_Invoice_Candidate icRecord);
+
+	PaymentTermId getPaymentTermId(@NonNull I_C_Invoice_Candidate ic);
 
 	void setNetAmtToInvoice(I_C_Invoice_Candidate ic);
 

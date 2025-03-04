@@ -5,6 +5,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.allocation.transfer.LUTUResult;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
@@ -12,17 +13,17 @@ import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
+import de.metas.i18n.AdMessageKey;
 import de.metas.manufacturing.job.model.ReceivingTarget;
 import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaver;
 import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaverSupportingServices;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonHUQRCodeTarget;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewLUTarget;
-import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonReceivingTarget;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewTUTarget;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
-import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -40,6 +41,8 @@ import java.util.Objects;
 
 public class ReceiveGoodsCommand
 {
+	private static final AdMessageKey ONLY_RECEIVE_TO_EXISTING_LU_IS_SUPPORTED = AdMessageKey.of("de.metas.manufacturing.job.service.commands.ONLY_RECEIVE_TO_EXISTING_LU_IS_SUPPORTED");
+
 	//
 	// Services
 	private final IHandlingUnitsBL handlingUnitsBL;
@@ -51,7 +54,7 @@ public class ReceiveGoodsCommand
 	// Parameters
 	final @NonNull PPOrderId ppOrderId;
 	final @Nullable PPOrderBOMLineId coProductBOMLineId;
-	final @NonNull JsonReceivingTarget receivingTarget;
+	final @NonNull SelectedReceivingTarget receivingTarget;
 	final @NonNull BigDecimal qtyToReceiveBD;
 	final @NonNull ZonedDateTime date;
 
@@ -69,7 +72,7 @@ public class ReceiveGoodsCommand
 			//
 			@NonNull final PPOrderId ppOrderId,
 			@Nullable final PPOrderBOMLineId coProductBOMLineId,
-			@NonNull final JsonReceivingTarget receivingTarget,
+			@NonNull final SelectedReceivingTarget receivingTarget,
 			@NonNull final BigDecimal qtyToReceiveBD,
 			@NonNull final ZonedDateTime date)
 	{
@@ -88,14 +91,19 @@ public class ReceiveGoodsCommand
 	@Nullable
 	public ReceivingTarget execute()
 	{
-		@Nullable ReceivingTarget receivingTarget;
-		if (this.receivingTarget.getNewLU() != null)
+		@Nullable final ReceivingTarget receivingTarget;
+		if (this.receivingTarget.getReceiveToNewLU() != null)
 		{
-			receivingTarget = receiveToNewLU(this.receivingTarget.getNewLU());
+			receivingTarget = receiveToNewLU(this.receivingTarget.getReceiveToNewLU());
 		}
-		else if (this.receivingTarget.getExistingLU() != null)
+		else if (this.receivingTarget.getReceiveToQRCode() != null)
 		{
-			receivingTarget = receiveByQRCode(this.receivingTarget.getExistingLU());
+			receivingTarget = receiveByQRCode(this.receivingTarget.getReceiveToQRCode());
+		}
+		else if (this.receivingTarget.getReceiveToNewTU() != null)
+		{
+			receiveToNewTU(this.receivingTarget.getReceiveToNewTU());
+			receivingTarget = null;
 		}
 		else
 		{
@@ -142,7 +150,7 @@ public class ReceiveGoodsCommand
 			}
 			else
 			{
-				throw new AdempiereException("Receiving to existing HUs which are not LU is not supported");
+				throw new AdempiereException(ONLY_RECEIVE_TO_EXISTING_LU_IS_SUPPORTED);
 			}
 		}
 	}
@@ -152,7 +160,7 @@ public class ReceiveGoodsCommand
 		final I_M_HU_PI_Item newLUPIItem = handlingUnitsBL.getPackingInstructionItemById(newLUTarget.getLuPIItemId());
 
 		final HUPIItemProductId tuPIItemProductId = newLUTarget.getTuPIItemProductId();
-		final List<I_M_HU> tusOrVhus = createHUProducer().receiveTUs(getQtyToReceive(), tuPIItemProductId);
+		final List<I_M_HU> tusOrVhus = receiveTUs(tuPIItemProductId);
 		final HuId luId = addTUsToLU(tusOrVhus, null, newLUPIItem);
 
 		return ReceivingTarget.builder()
@@ -176,7 +184,7 @@ public class ReceiveGoodsCommand
 			throw new AdempiereException("No CU-TU association defined");
 		}
 
-		final List<I_M_HU> tusOrVhus = createHUProducer().receiveTUs(getQtyToReceive(), tuPIItemProductId);
+		final List<I_M_HU> tusOrVhus = receiveTUs(tuPIItemProductId);
 		final HuId luId = addTUsToLU(tusOrVhus, existingLU, null);
 		return ReceivingTarget.builder()
 				.luId(luId)
@@ -242,13 +250,13 @@ public class ReceiveGoodsCommand
 		if (coProductLine != null)
 		{
 			final UomId uomId = UomId.ofRepoId(coProductLine.getC_UOM_ID());
-			return Quantitys.create(qtyToReceiveBD, uomId);
+			return Quantitys.of(qtyToReceiveBD, uomId);
 		}
 		else
 		{
 			final I_PP_Order ppOrder = getPPOrder();
 			final UomId uomId = UomId.ofRepoId(ppOrder.getC_UOM_ID());
-			return Quantitys.create(qtyToReceiveBD, uomId);
+			return Quantitys.of(qtyToReceiveBD, uomId);
 		}
 	}
 
@@ -287,17 +295,17 @@ public class ReceiveGoodsCommand
 		{
 			if (lu == null)
 			{
-				final List<I_M_HU> createdLUs = HUTransformService.newInstance()
+				final LUTUResult createdLUs = HUTransformService.newInstance()
 						.tuToNewLUs(
 								tu,
-								QtyTU.ONE.toBigDecimal(),
+								QtyTU.ONE,
 								Objects.requireNonNull(newLUPIItem),
 								false);
-				lu = CollectionUtils.singleElement(createdLUs);
+				lu = createdLUs.getSingleLURecord();
 			}
 			else
 			{
-				HUTransformService.newInstance().tuToExistingLU(tu, QtyTU.ONE.toBigDecimal(), lu);
+				HUTransformService.newInstance().tuToExistingLU(tu, QtyTU.ONE, lu);
 			}
 		}
 
@@ -310,4 +318,14 @@ public class ReceiveGoodsCommand
 		return HuId.ofRepoId(lu.getM_HU_ID());
 	}
 
+	private void receiveToNewTU(@NonNull final JsonNewTUTarget newTUTarget)
+	{
+		receiveTUs(newTUTarget.getTuPIItemProductId());
+	}
+
+	@NonNull
+	private List<I_M_HU> receiveTUs(@NonNull final HUPIItemProductId tuPIItemProductId)
+	{
+		return createHUProducer().receiveTUs(getQtyToReceive(), tuPIItemProductId);
+	}
 }

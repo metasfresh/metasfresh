@@ -47,6 +47,7 @@ public interface IUOMDAO extends ISingletonService
 
 	List<I_C_UOM> getByIds(Collection<UomId> uomIds);
 
+	@NonNull
 	UomId getUomIdByX12DE355(X12DE355 x12de355);
 
 	X12DE355 getX12DE355ById(UomId uomId);
@@ -78,4 +79,12 @@ public interface IUOMDAO extends ISingletonService
 
 	@NonNull
 	UOMType getUOMTypeById(UomId uomId);
+
+	/**
+	 * Returns a I_C_UOM only if there is just 1 active record matching the input uomSymbol.
+	 */
+	@NonNull
+	Optional<I_C_UOM> getBySymbol(@NonNull String uomSymbol);
+
+	ITranslatableString getUOMSymbolById(@NonNull UomId uomId);
 }

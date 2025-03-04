@@ -8,6 +8,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
@@ -63,7 +64,6 @@ import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
 import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -110,7 +110,6 @@ import java.util.stream.Stream;
 @Service
 public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 {
-
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@VisibleForTesting
@@ -270,6 +269,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			{
 				final I_M_ShipmentSchedule sched = olAndSched.getSched();
 
+				shipmentScheduleHandlerBL.updateShipmentScheduleFromReferencedRecord(sched);
+
 				updateCatchUomId(sched);
 
 				updateWarehouseId(sched);
@@ -340,7 +341,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			// task 09869: don't rely on ol anyways
 			final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(schedRecord);
 			schedRecord.setQtyDelivered(qtyDelivered);
-			schedRecord.setQtyReserved(getQtyReserved(schedRecord, olAndSched));
+			// takes into consideration isClosed flag 
+			schedRecord.setQtyReserved(BigDecimal.ZERO.max(shipmentScheduleEffectiveBL.computeQtyOrdered(olAndSched.getSched()).subtract(schedRecord.getQtyDelivered())));
 
 			updateLineNetAmt(olAndSched);
 
@@ -549,7 +551,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				else
 				{
 					logger.debug("No qtyOnHand to deliver[SKIP] - OnHand={}, ToDeliver={}, FullLine={}",
-								 qtyOnHandBeforeAllocation, qtyToDeliver, completeStatus);
+							qtyOnHandBeforeAllocation, qtyToDeliver, completeStatus);
 				}
 			}
 			//
@@ -585,7 +587,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
 				qtyRequired = olAndSched.getQtyOrdered().subtract(qtyDelivered);
 				logger.debug("QtyOverride={} is less than QtyToDeliverOverrideFulFilled={}; => use QtyRequired={} as QtyOrdered={} minus QtyDelivered={}",
-							 olAndSched.getQtyOverride(), qtyToDeliverOverrideFulFilled, qtyRequired, olAndSched.getQtyOrdered(), qtyDelivered);
+						olAndSched.getQtyOverride(), qtyToDeliverOverrideFulFilled, qtyRequired, olAndSched.getQtyOrdered(), qtyDelivered);
 			}
 		}
 		else if (deliveryRule.isManual())
@@ -599,7 +601,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
 			qtyRequired = olAndSched.getQtyOrdered().subtract(qtyDelivered);
 			logger.debug("DeliveryRule={}; => use QtyRequired={} as QtyOrdered={} minus QtyDelivered={}",
-						 deliveryRule, qtyRequired, olAndSched.getQtyOrdered(), qtyDelivered);
+					deliveryRule, qtyRequired, olAndSched.getQtyOrdered(), qtyDelivered);
 		}
 		return qtyRequired;
 	}
@@ -820,7 +822,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	 * Try to get the given <code>ol</code>'s <code>qtyReservedInPriceUOM</code> and update the given <code>sched</code>'s <code>LineNetAmt</code>.
 	 *
 	 * @throws AdempiereException in developer mode, if there the <code>qtyReservedInPriceUOM</code> can't be obtained.
-	 *                            task https://github.com/metasfresh/metasfresh/issues/298
+	 * @implSpec <a href="https://github.com/metasfresh/metasfresh/issues/298">issue 298</a>
 	 */
 	private BigDecimal computeLineNetAmt(final OlAndSched olAndSched)
 	{
@@ -841,6 +843,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			final String msg = "IUOMConversionBL.convertFromProductUOM() failed for " + olAndSched + "; \n"
 					+ "Therefore we can't set LineNetAmt for M_ShipmentSchedule; \n"
 					+ "Note: if this exception was thrown and not just logged, then check for stale M_ShipmentSchedule_Recompute records";
+			//noinspection ThrowableNotThrown
 			new AdempiereException(msg).throwIfDeveloperModeOrLogWarningElse(logger);
 			return BigDecimal.ONE.negate();
 		}
@@ -869,17 +872,11 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 	private void updateCatchUomId(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final boolean isCatchWeight = shipmentScheduleBL.isCatchWeight(sched);
-		if (!isCatchWeight)
-		{
-			sched.setCatch_UOM_ID(-1);
-			return;
-		}
+		final UomId catchUOMId = sched.isCatchWeight()
+				? productsService.getCatchUOMId(ProductId.ofRepoId(sched.getM_Product_ID())).orElse(null)
+				: null;
 
-		final Optional<UomId> catchUOMId = productsService.getCatchUOMId(ProductId.ofRepoId(sched.getM_Product_ID()));
-		final Integer catchUomRepoId = catchUOMId.map(UomId::getRepoId).orElse(0);
-
-		sched.setCatch_UOM_ID(catchUomRepoId);
+		sched.setCatch_UOM_ID(UomId.toRepoId(catchUOMId));
 	}
 
 	private void invalidatePickingBOMProducts(@NonNull final List<OlAndSched> olsAndScheds, final PInstanceId addToSelectionId)
@@ -935,19 +932,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				}
 			}
 			return segments.stream();
-		}
-	}
-
-	@NonNull
-	private static BigDecimal getQtyReserved(@NonNull final I_M_ShipmentSchedule schedRecord, @NonNull final OlAndSched olAndSched)
-	{
-		if (schedRecord.isClosed())
-		{
-			return BigDecimal.ZERO;
-		}
-		else
-		{
-			return BigDecimal.ZERO.max(olAndSched.getQtyOrdered().subtract(schedRecord.getQtyDelivered()));
 		}
 	}
 }

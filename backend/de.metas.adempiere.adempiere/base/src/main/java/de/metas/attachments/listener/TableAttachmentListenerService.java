@@ -22,6 +22,20 @@
 
 package de.metas.attachments.listener;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.listener.AttachmentListenerConstants.ListenerWorkStatus;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.javaclasses.IJavaClassBL;
+import de.metas.logging.LogManager;
+import de.metas.logging.TableRecordMDC;
+import de.metas.notification.INotificationBL;
+import de.metas.notification.UserNotificationRequest;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Table_AttachmentListener;
 import org.compiere.util.Env;
@@ -30,29 +44,16 @@ import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Service;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.attachments.AttachmentEntry;
-import de.metas.attachments.listener.AttachmentListenerConstants.ListenerWorkStatus;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IADMessageDAO;
-import de.metas.javaclasses.IJavaClassBL;
-import de.metas.logging.LogManager;
-import de.metas.logging.TableRecordMDC;
-import de.metas.notification.INotificationBL;
-import de.metas.notification.UserNotificationRequest;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 @Service
 public class TableAttachmentListenerService
 {
 	private static final Logger logger = LogManager.getLogger(TableAttachmentListenerService.class);
 
+	private static final AdMessageKey Msg_AttachmentNotImportedFAILURE = AdMessageKey.of("AttachmentNotImportedFAILURE");
+
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 	private final IJavaClassBL javaClassBL = Services.get(IJavaClassBL.class);
-	private final IADMessageDAO adMessageDAO = Services.get(IADMessageDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final TableAttachmentListenerRepository tableAttachmentListenerRepository;
 
 	public TableAttachmentListenerService(@NonNull final TableAttachmentListenerRepository tableAttachmentListenerRepository)
@@ -69,8 +70,8 @@ public class TableAttachmentListenerService
 			final ImmutableList<AttachmentListenerSettings> settings = tableAttachmentListenerRepository.getById(tableRecordReference.getAdTableId());
 			logger.debug("There are {} AttachmentListenerSettings for AD_Table_ID={}", settings.size(), tableRecordReference.getAD_Table_ID());
 
-			ImmutableList.Builder<AttachmentListenerActionResult> results=ImmutableList.builder();
-			for(final AttachmentListenerSettings setting : settings)
+			ImmutableList.Builder<AttachmentListenerActionResult> results = ImmutableList.builder();
+			for (final AttachmentListenerSettings setting : settings)
 			{
 				final AttachmentListenerActionResult result = invokeListener(setting, tableRecordReference, attachmentEntry);
 				results.add(result);
@@ -80,6 +81,21 @@ public class TableAttachmentListenerService
 		}
 	}
 
+	public void fireBeforeRecordLinked(@NonNull final AttachmentEntry attachmentEntry)
+	{
+		for (final TableRecordReference recordReference : attachmentEntry.getLinkedRecords())
+		{
+			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(recordReference))
+			{
+				final ImmutableList<AttachmentListenerSettings> settings = tableAttachmentListenerRepository.getById(recordReference.getAdTableId());
+				logger.debug("There are {} AttachmentListenerSettings for AD_Table_ID={}", settings.size(), recordReference.getAD_Table_ID());
+
+				settings.forEach(setting -> invokeBeforeRecordLinked(setting, recordReference, attachmentEntry));
+			}
+		}
+	}
+
+	@NonNull
 	private AttachmentListenerActionResult invokeListener(
 			@NonNull final AttachmentListenerSettings listenerSettings,
 			@NonNull final TableRecordReference tableRecordReference,
@@ -103,7 +119,7 @@ public class TableAttachmentListenerService
 	 * Notifies the user about the process finalizing work if {@link AttachmentListenerSettings#isSendNotification()}
 	 *
 	 * @param attachmentListenerSettings data from {@link I_AD_Table_AttachmentListener}
-	 * @param tableRecordReference reference of the table
+	 * @param tableRecordReference       reference of the table
 	 */
 	@VisibleForTesting
 	void notifyUser(
@@ -113,7 +129,7 @@ public class TableAttachmentListenerService
 	{
 		if (attachmentListenerSettings.isSendNotification())
 		{
-			final AdMessageKey adMessageContent = adMessageDAO.retrieveValueById(attachmentListenerSettings.getAdMessageId()).orElse(null);
+			final AdMessageKey adMessageContent = msgBL.getAdMessageKeyById(attachmentListenerSettings.getAdMessageId()).orElse(null);
 
 			final UserNotificationRequest userNotificationRequest = UserNotificationRequest.builder()
 					.contentADMessage(adMessageContent != null ? adMessageContent : null)
@@ -123,5 +139,31 @@ public class TableAttachmentListenerService
 					.build();
 			notificationBL.send(userNotificationRequest);
 		}
+	}
+
+	private void invokeBeforeRecordLinked(
+			@NonNull final AttachmentListenerSettings listenerSettings,
+			@NonNull final TableRecordReference tableRecordReference,
+			@NonNull final AttachmentEntry attachmentEntry)
+	{
+		final AttachmentListener attachmentListener = javaClassBL.newInstance(listenerSettings.getListenerJavaClassId());
+
+		try (final MDCCloseable mdc = MDC.putCloseable("attachmentListener", attachmentListener.getClass().getSimpleName()))
+		{
+			final ListenerWorkStatus status = attachmentListener.beforeRecordLinked(attachmentEntry, tableRecordReference);
+			logger.debug("attachmentListener returned status={}", status);
+
+			if (status.equals(ListenerWorkStatus.FAILURE))
+			{
+				throw new AdempiereException(retrieveFailureMessage(listenerSettings))
+						.markAsUserValidationError();
+			}
+		}
+	}
+
+	@NonNull
+	private AdMessageKey retrieveFailureMessage(@NonNull final AttachmentListenerSettings listenerSettings)
+	{
+		return msgBL.getAdMessageKeyById(listenerSettings.getAdMessageId()).orElse(Msg_AttachmentNotImportedFAILURE);
 	}
 }

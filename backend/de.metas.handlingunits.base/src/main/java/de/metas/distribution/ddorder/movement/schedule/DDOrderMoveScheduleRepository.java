@@ -120,7 +120,7 @@ public class DDOrderMoveScheduleRepository
 				.pickFromLocatorId(LocatorId.ofRepoId(record.getPickFrom_Warehouse_ID(), record.getPickFrom_Locator_ID()))
 				.pickFromHUId(HuId.ofRepoId(record.getPickFrom_HU_ID()))
 				//				.actualHUIdPicked(HuId.ofRepoIdOrNull(record.getM_HU_ID()))
-				.qtyToPick(Quantitys.create(record.getQtyToPick(), uomId))
+				.qtyToPick(Quantitys.of(record.getQtyToPick(), uomId))
 				.isPickWholeHU(record.isPickWholeHU())
 				//
 				// Drop To
@@ -154,7 +154,7 @@ public class DDOrderMoveScheduleRepository
 				//
 				// Pick From
 				.actualHUIdPicked(HuId.ofRepoIdOrNull(record.getM_HU_ID()))
-				.qtyPicked(Quantitys.create(record.getQtyPicked(), uomId))
+				.qtyPicked(Quantitys.of(record.getQtyPicked(), uomId))
 				.pickFromMovementId(MovementId.ofRepoId(record.getPickFrom_Movement_ID()))
 				.inTransitLocatorId(LocatorId.ofRepoIdOrNull(record.getInTransit_Warehouse_ID(), record.getInTransit_Locator_ID()))
 				//
@@ -248,7 +248,7 @@ public class DDOrderMoveScheduleRepository
 				.addNotNull(I_DD_OrderLine_HU_Candidate.COLUMNNAME_M_HU_ID)
 				.addEqualsFilter(I_DD_OrderLine_HU_Candidate.COLUMNNAME_DD_OrderLine_ID, ddOrderLineId)
 				.addEqualsFilter(I_DD_OrderLine_HU_Candidate.COLUMNNAME_Status, DDOrderMoveScheduleStatus.NOT_STARTED)
-				.orderBy(I_DD_OrderLine_HU_Candidate.COLUMNNAME_DD_OrderLine_HU_Candidate_ID)
+				.orderBy(I_DD_OrderLine_HU_Candidate.COLUMNNAME_M_HU_ID)
 				.create()
 				.listDistinct(I_DD_OrderLine_HU_Candidate.COLUMNNAME_M_HU_ID, HuId.class);
 	}

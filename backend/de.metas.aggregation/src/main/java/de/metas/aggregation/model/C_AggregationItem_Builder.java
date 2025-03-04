@@ -1,40 +1,17 @@
 package de.metas.aggregation.model;
 
-import static de.metas.util.Check.isEmpty;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.table.api.AdTableId;
-
-/*
- * #%L
- * de.metas.aggregation
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
-import org.compiere.model.I_AD_Column;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.column.AdColumnId;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.ObjectUtils;
+
+import javax.annotation.Nullable;
+
+import static de.metas.util.Check.isBlank;
 
 /**
  * Builder class for {@link I_C_AggregationItem}
@@ -49,7 +26,7 @@ public class C_AggregationItem_Builder
 
 	private I_C_Aggregation aggregation;
 	private String type;
-	private I_AD_Column adColumn;
+	private AdColumnId adColumnId;
 	private I_C_Aggregation includedAggregation;
 	private I_C_Aggregation_Attribute attribute;
 	private String includeLogic;
@@ -68,7 +45,7 @@ public class C_AggregationItem_Builder
 		final I_C_AggregationItem aggregationItem = InterfaceWrapperHelper.newInstance(I_C_AggregationItem.class, aggregation);
 		aggregationItem.setC_Aggregation(aggregation);
 		aggregationItem.setType(getType());
-		aggregationItem.setAD_Column(getAD_Column());
+		aggregationItem.setAD_Column_ID(AdColumnId.toRepoId(getAD_Column_ID()));
 		aggregationItem.setIncluded_Aggregation(getIncluded_Aggregation());
 		aggregationItem.setC_Aggregation_Attribute(getC_Aggregation_Attribute());
 		aggregationItem.setIncludeLogic(getIncludeLogic());
@@ -113,21 +90,20 @@ public class C_AggregationItem_Builder
 
 	public C_AggregationItem_Builder setAD_Column(@Nullable final String columnName)
 	{
-		if (isEmpty(columnName, true))
+		if (isBlank(columnName))
 		{
-			this.adColumn = null;
+			this.adColumnId = null;
 		}
 		else
 		{
-
-			this.adColumn = Services.get(IADTableDAO.class).retrieveColumn(adTableId, columnName);
+			this.adColumnId = Services.get(IADTableDAO.class).retrieveColumnId(adTableId, columnName);
 		}
 		return this;
 	}
 
-	private I_AD_Column getAD_Column()
+	private AdColumnId getAD_Column_ID()
 	{
-		return adColumn;
+		return adColumnId;
 	}
 
 	public C_AggregationItem_Builder setIncluded_Aggregation(final I_C_Aggregation includedAggregation)

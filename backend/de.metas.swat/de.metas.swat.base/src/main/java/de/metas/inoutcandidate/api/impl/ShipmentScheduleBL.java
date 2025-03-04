@@ -21,7 +21,6 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ApplyShipmentScheduleChangesRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.api.ShipmentScheduleAllowConsolidatePredicateComposite;
@@ -29,6 +28,7 @@ import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequestsList;
 import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.location.ShipmentScheduleLocationsUpdater;
 import de.metas.inoutcandidate.location.adapter.ShipmentScheduleDocumentLocationAdapterFactory;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -37,7 +37,6 @@ import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.IOrderBL;
-import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
@@ -82,7 +81,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -174,7 +172,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	// services
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IShipmentScheduleEffectiveBL scheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
@@ -232,7 +229,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public void updateQtyOrdered(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final BigDecimal newQtyOrdered = scheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
+		final BigDecimal newQtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule);
 		shipmentSchedule.setQtyOrdered(newQtyOrdered);
 	}
 
@@ -263,7 +260,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		// task 08756: we don't really care for the ol's partner, but for the partner who will actually receive the shipment.
 		final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 
-		final boolean bpAllowsConsolidate = bPartnerBL.isAllowConsolidateInOutEffective(scheduleEffectiveBL.getBPartner(sched), SOTrx.SALES);
+		final boolean bpAllowsConsolidate = bPartnerBL.isAllowConsolidateInOutEffective(shipmentScheduleEffectiveBL.getBPartner(sched), SOTrx.SALES);
 		if (!bpAllowsConsolidate)
 		{
 			logger.debug("According to the effective C_BPartner of shipment candidate '" + sched + "', consolidation into one shipment is not allowed");
@@ -347,11 +344,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		Check.errorUnless(shipmentScheduleRecord.isClosed(), "The given shipmentSchedule is not closed; shipmentSchedule={}", shipmentScheduleRecord);
 
 		shipmentScheduleRecord.setIsClosed(false);
-
-		Services.get(IShipmentScheduleHandlerBL.class).updateShipmentScheduleFromReferencedRecord(shipmentScheduleRecord);
-		updateQtyOrdered(shipmentScheduleRecord);
-
 		save(shipmentScheduleRecord);
+
+		final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
+		invalidSchedulesService.flagForRecompute(ShipmentScheduleId.ofRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID()));
 	}
 
 	@Override
@@ -363,6 +359,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return false;
 		}
 
+		//noinspection UnnecessaryLocalVariable
 		final boolean wasClosed = createOld(shipmentScheduleRecord, I_M_ShipmentSchedule.class).isClosed();
 		return wasClosed;// was closed, but is now open
 	}
@@ -376,9 +373,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 		// Create storage query
-		final BPartnerId bpartnerId = scheduleEffectiveBL.getBPartnerId(sched);
+		final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(sched);
 
-		final WarehouseId warehouseId = scheduleEffectiveBL.getWarehouseId(sched);
+		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(sched);
 		final Set<WarehouseId> warehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(warehouseId);
 
 		final IStorageEngineService storageEngineProvider = Services.get(IStorageEngineService.class);
@@ -386,6 +383,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		final IStorageQuery storageQuery = storageEngine
 				.newStorageQuery()
+				.addBPartnerId(null)
 				.addBPartnerId(bpartnerId)
 				.addWarehouseIds(warehouseIds)
 				.addProductId(ProductId.ofRepoId(sched.getM_Product_ID()));
@@ -415,7 +413,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public Quantity getQtyToDeliver(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
-		final BigDecimal qtyToDeliverBD = scheduleEffectiveBL.getQtyToDeliverBD(shipmentScheduleRecord);
+		final BigDecimal qtyToDeliverBD = shipmentScheduleEffectiveBL.getQtyToDeliverBD(shipmentScheduleRecord);
 		final I_C_UOM uom = getUomOfProduct(shipmentScheduleRecord);
 		return Quantity.of(qtyToDeliverBD, uom);
 	}
@@ -435,7 +433,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return Optional.empty();
 		}
 
-		final Quantity result = Quantitys.create(
+		final Quantity result = Quantitys.of(
 				shipmentScheduleRecord.getQtyToDeliverCatch_Override(),
 				UomId.ofRepoId(shipmentScheduleRecord.getCatch_UOM_ID()));
 		return Optional.of(result);
@@ -548,13 +546,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	@Override
 	public WarehouseId getWarehouseId(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		return scheduleEffectiveBL.getWarehouseId(schedule);
+		return shipmentScheduleEffectiveBL.getWarehouseId(schedule);
 	}
 
 	@Override
 	public ZonedDateTime getPreparationDate(@NonNull final I_M_ShipmentSchedule schedule)
 	{
-		return scheduleEffectiveBL.getPreparationDate(schedule);
+		return shipmentScheduleEffectiveBL.getPreparationDate(schedule);
 	}
 
 	@Override
@@ -639,25 +637,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 			addAttributes(record, ImmutableList.of(attributeInstanceBasicInfo));
 		}
-	}
-
-	@Override
-	public boolean isCatchWeight(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
-	{
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-
-		final int orderLineId = shipmentScheduleRecord.getC_OrderLine_ID();
-		if (orderLineId <= 0)
-		{
-			// returning true to keep the old behavior for shipment schedules that are not for sales orders.
-			return true;
-		}
-
-		final I_C_OrderLine orderLineRecord = orderDAO.getOrderLineById(orderLineId);
-
-		final String invoicableQtyBasedOn = orderLineRecord.getInvoicableQtyBasedOn();
-
-		return X_C_OrderLine.INVOICABLEQTYBASEDON_CatchWeight.equals(invoicableQtyBasedOn);
 	}
 
 	@Override

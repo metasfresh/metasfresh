@@ -106,7 +106,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	IInvoiceCandRecomputeTagger tagToRecompute();
 
-	boolean hasInvalidInvoiceCandidatesForTag(InvoiceCandRecomputeTag tag);
+	boolean hasInvalidInvoiceCandidates(@NonNull Collection<InvoiceCandidateId> invoiceCandidateIds);
 
 	boolean hasInvalidInvoiceCandidatesForSelection(@NonNull InvoiceCandidateIdsSelection selectionId);
 

@@ -116,6 +116,13 @@ public class AttributesBL implements IAttributesBL
 	}
 
 	@Override
+	public IAttributeValuesProvider createAttributeValuesProvider(final AttributeId attributeId)
+	{
+		final I_M_Attribute attribute = attributesRepo.getAttributeById(attributeId);
+		return createAttributeValuesProvider(attribute);
+	}
+
+	@Override
 	public IAttributeValuesProvider createAttributeValuesProvider(final org.compiere.model.I_M_Attribute attribute)
 	{
 		final IAttributeValueHandler attributeHandler = getAttributeValueHandlerOrNull(attribute);
@@ -250,7 +257,7 @@ public class AttributesBL implements IAttributesBL
 		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
 		final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
 				.filter(attribute -> isMandatoryOnPicking(productId,
-														  AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
+						AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
 				.collect(ImmutableList.toImmutableList());
 
 		return attributesMandatoryOnPicking;
@@ -263,7 +270,7 @@ public class AttributesBL implements IAttributesBL
 
 		final ImmutableList<I_M_Attribute> attributesMandatoryOnShipment = attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
 				.filter(attribute -> isMandatoryOnShipment(productId,
-														   AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
+						AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
 				.collect(ImmutableList.toImmutableList());
 
 		return attributesMandatoryOnShipment;
@@ -339,9 +346,14 @@ public class AttributesBL implements IAttributesBL
 	@Override
 	public int getNumberDisplayType(@NonNull final I_M_Attribute attribute)
 	{
-		return attribute.getC_UOM_ID() == UomId.EACH.getRepoId()
+		return isInteger(UomId.ofRepoIdOrNull(attribute.getC_UOM_ID()))
 				? DisplayType.Integer
 				: DisplayType.Number;
+	}
+
+	public static boolean isInteger(@Nullable final UomId uomId)
+	{
+		return uomId != null && UomId.equals(uomId, UomId.EACH);
 	}
 
 	@Override

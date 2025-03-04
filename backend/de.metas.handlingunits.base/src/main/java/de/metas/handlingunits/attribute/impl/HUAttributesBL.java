@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.handlingunits.attribute.impl;
 
 import com.google.common.collect.ImmutableList;
@@ -8,13 +30,20 @@ import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.allocation.IHUContextProcessorExecutor;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
+import de.metas.handlingunits.attribute.strategy.IHUAttributeTransferRequest;
+import de.metas.handlingunits.attribute.strategy.impl.HUAttributeTransferRequestBuilder;
+import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
@@ -55,6 +84,7 @@ public class HUAttributesBL implements IHUAttributesBL
 	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 
 	private final AdMessageKey MSG_MandatoryOnPicking = AdMessageKey.of("M_AttributeUse_MandatoryOnPicking");
 	private final AdMessageKey MSG_MandatoryOnShipment = AdMessageKey.of("M_AttributeUse_MandatoryOnShipment");
@@ -87,6 +117,49 @@ public class HUAttributesBL implements IHUAttributesBL
 	}
 
 	@Override
+	public void updateHUAttribute(@NonNull final I_M_HU destHU, @NonNull final I_M_HU sourceHU, @NonNull final AttributeCode attributeCode)
+	{
+		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
+		final IAttributeStorageFactory huAttributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory(storageFactory);
+
+		updateHUAttribute(huAttributeStorageFactory, destHU, sourceHU, attributeCode);
+	}
+
+	@Override
+	public void updateHUAttribute(
+			@NonNull final IHUContext huContext,
+			@NonNull final I_M_HU destHU,
+			@NonNull final I_M_HU sourceHU,
+			@NonNull final AttributeCode attributeCode)
+	{
+		final IAttributeStorageFactory attributesStorageFactory = huContext.getHUAttributeStorageFactory();
+		updateHUAttribute(attributesStorageFactory, destHU, sourceHU, attributeCode);
+	}
+
+	private void updateHUAttribute(
+			@NonNull final IAttributeStorageFactory huAttributeStorageFactory,
+			@NonNull final I_M_HU destHU,
+			@NonNull final I_M_HU sourceHU,
+			@NonNull final AttributeCode attributeCode)
+	{
+		final ILoggable loggable = Loggables.get();
+
+		final IAttributeStorage sourceHUAttrStorage = huAttributeStorageFactory.getAttributeStorage(sourceHU);
+		if (sourceHUAttrStorage.hasAttribute(attributeCode))
+		{
+			final Object attributeValue = sourceHUAttrStorage.getValue(attributeCode);
+			final IAttributeStorage destHUAttrStorage = huAttributeStorageFactory.getAttributeStorage(destHU);
+			if (destHUAttrStorage.hasAttribute(attributeCode))
+			{
+				final Object existingAttributeValue = sourceHUAttrStorage.getValue(attributeCode);
+				loggable.addLog("for HUID={} overwriting attribute={} from {} to {}", destHU.getM_HU_ID(), attributeCode, attributeValue, existingAttributeValue);
+			}
+			destHUAttrStorage.setValue(attributeCode, attributeValue);
+			destHUAttrStorage.saveChangesIfNeeded();
+		}
+	}
+
+	@Override
 	public void updateHUAttributeRecursive(@NonNull final HuId huId, @NonNull final AttributeCode attributeCode, @Nullable final Object attributeValue, @Nullable final String onlyHUStatus)
 	{
 		final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValueOrNull(attributeCode);
@@ -102,9 +175,9 @@ public class HUAttributesBL implements IHUAttributesBL
 	@Override
 	@Deprecated
 	public void updateHUAttributeRecursive(final I_M_HU hu,
-			final I_M_Attribute attribute,
-			final Object attributeValue,
-			final String onlyHUStatus)
+										   final I_M_Attribute attribute,
+										   final Object attributeValue,
+										   final String onlyHUStatus)
 	{
 		final ILoggable loggable = Loggables.get();
 
@@ -192,7 +265,7 @@ public class HUAttributesBL implements IHUAttributesBL
 		final ImmutableList<I_M_Attribute> attributesMandatoryOnShipment = attributeDAO.getAttributesByAttributeSetId(attributeSetId).stream()
 				.filter(attribute -> attributesBL
 						.isMandatoryOnShipment(productId,
-											   AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
+								AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
 				.collect(ImmutableList.toImmutableList());
 
 		validateMandatoryAttributes(huId, productId, attributesMandatoryOnShipment, MSG_MandatoryOnShipment);
@@ -208,9 +281,9 @@ public class HUAttributesBL implements IHUAttributesBL
 	}
 
 	private void validateMandatoryAttributes(@NonNull final HuId huId,
-			@NonNull final ProductId productId,
-			@NonNull final ImmutableList<I_M_Attribute> mandatoryAttributes,
-			@NonNull final AdMessageKey messageKey)
+											 @NonNull final ProductId productId,
+											 @NonNull final ImmutableList<I_M_Attribute> mandatoryAttributes,
+											 @NonNull final AdMessageKey messageKey)
 	{
 		final I_M_HU huRecord = handlingUnitsDAO.getById(huId);
 
@@ -257,4 +330,60 @@ public class HUAttributesBL implements IHUAttributesBL
 		return true;
 	}
 
+	public void transferAttributesForSingleProductHUs(
+			@NonNull final I_M_HU huFrom,
+			@NonNull final I_M_HU huTo)
+	{
+		final IHUContextProcessorExecutor executor = huTrxBL.createHUContextProcessorExecutor();
+
+		executor.run(huContext -> {
+
+			final IHUTransactionAttributeBuilder trxAttributesBuilder = executor.getTrxAttributesBuilder();
+
+			final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
+			final IAttributeStorage huAttributeStorageFrom = attributeStorageFactory.getAttributeStorage(huFrom);
+			final IAttributeStorage huAttributeStorageTo = attributeStorageFactory.getAttributeStorage(huTo);
+
+			final IHUStorageFactory storageFactory = huContext.getHUStorageFactory();
+			final IHUStorage huStorageFrom = storageFactory.getStorage(huTo);
+
+			final IHUProductStorage productStorage = handlingUnitsBL.getSingleHUProductStorage(huTo);
+
+			final IHUAttributeTransferRequest request = new HUAttributeTransferRequestBuilder(huContext)
+					.setProductId(productStorage.getProductId())
+					.setQuantity(productStorage.getQty())
+					.setAttributeStorageFrom(huAttributeStorageFrom)
+					.setAttributeStorageTo(huAttributeStorageTo)
+					.setHUStorageFrom(huStorageFrom)
+					.create();
+
+			trxAttributesBuilder.transferAttributes(request);
+		});
+	}
+
+	@Override
+	public void updateHUAttribute(@NonNull final HuId huId, @NonNull final AttributeCode attributeCode, @Nullable final Object attributeValue)
+	{
+		final I_M_Attribute attribute = attributeDAO.retrieveAttributeByValueOrNull(attributeCode);
+		if (attribute == null)
+		{
+			logger.debug("M_Attribute with Value={} does not exist or it is inactive; -> do nothing", attributeCode.getCode());
+			return;
+		}
+
+		final I_M_HU hu = handlingUnitsDAO.getById(huId);
+
+		huTrxBL.createHUContextProcessorExecutor().run(huContext -> {
+
+			final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
+			final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
+
+			if (attributeStorage.hasAttribute(attribute))
+			{
+				attributeStorage.setValue(attribute, attributeValue);
+			}
+
+			attributeStorage.saveChangesIfNeeded();
+		});
+	}
 }

@@ -3,7 +3,8 @@ package de.metas.manufacturing.workflows_api.rest_api.json;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
-import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonReceivingTarget;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonLUReceivingTarget;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonTUReceivingTarget;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -28,6 +29,7 @@ public class JsonManufacturingOrderEvent
 	{
 		@NonNull String issueStepId;
 		@NonNull String huQRCode;
+		@Nullable BigDecimal huWeightGrossBeforeIssue;
 		@NonNull BigDecimal qtyIssued;
 		@Nullable BigDecimal qtyRejected;
 		@Nullable String qtyRejectedReasonCode;
@@ -42,7 +44,8 @@ public class JsonManufacturingOrderEvent
 	{
 		@NonNull String lineId;
 		@NonNull BigDecimal qtyReceived;
-		@NonNull JsonReceivingTarget aggregateToLU;
+		@Nullable JsonLUReceivingTarget aggregateToLU;
+		@Nullable JsonTUReceivingTarget aggregateToTU;
 
 		@JsonIgnore
 		public FinishedGoodsReceiveLineId getFinishedGoodsReceiveLineId() {return FinishedGoodsReceiveLineId.ofString(lineId);}

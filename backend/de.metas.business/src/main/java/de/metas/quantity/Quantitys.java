@@ -14,6 +14,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UOMConversionContext.Rounding;
 import de.metas.uom.UomId;
+import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -48,12 +49,18 @@ import java.math.BigDecimal;
 @UtilityClass
 public class Quantitys
 {
-	public Quantity create(@NonNull final String qty, @NonNull final UomId uomId)
+	public Quantity of(@NonNull final BigDecimal qty, @NonNull final X12DE355 x12DE355)
 	{
-		return create(new BigDecimal(qty), uomId);
+		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+		return Quantity.of(qty, uomDao.getByX12DE355(x12DE355));
 	}
 
-	public Quantity create(@NonNull final BigDecimal qty, @NonNull final UomId uomId)
+	public Quantity of(@NonNull final String qty, @NonNull final UomId uomId)
+	{
+		return of(new BigDecimal(qty), uomId);
+	}
+
+	public Quantity of(@NonNull final BigDecimal qty, @NonNull final UomId uomId)
 	{
 		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 		final I_C_UOM uomRecord = uomDao.getById(uomId);
@@ -61,16 +68,16 @@ public class Quantitys
 		return Quantity.of(qty, uomRecord);
 	}
 
-	public Quantity create(
+	public Quantity of(
 			@NonNull final String qty, @NonNull final UomId uomId,
 			@NonNull final String sourceQty, @NonNull final UomId sourceUomId)
 	{
-		return create(
+		return of(
 				new BigDecimal(qty), uomId,
 				new BigDecimal(sourceQty), sourceUomId);
 	}
 
-	public Quantity create(
+	public Quantity of(
 			@NonNull final BigDecimal qty, @NonNull final UomId uomId,
 			@NonNull final BigDecimal sourceQty, @NonNull final UomId sourceUomId)
 	{
@@ -81,7 +88,7 @@ public class Quantitys
 		return new Quantity(qty, uomRecord, sourceQty, sourceUomRecord);
 	}
 
-	public Quantity createZero(@NonNull final UomId uomId)
+	public Quantity zero(@NonNull final UomId uomId)
 	{
 		final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 		final I_C_UOM uomRecord = uomDao.getById(uomId);
@@ -97,7 +104,7 @@ public class Quantitys
 		return Quantity.of(1, uomRecord);
 	}
 
-	public Quantity createZero(@NonNull final ProductId productId)
+	public Quantity zero(@NonNull final ProductId productId)
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
 		final I_C_UOM stockUomRecord = productBL.getStockUOM(productId);
@@ -105,15 +112,15 @@ public class Quantitys
 		return Quantity.zero(stockUomRecord);
 	}
 
-	public Quantity create(@NonNull final BigDecimal qtyInStockUOM, @NonNull final ProductId productId)
+	public Quantity of(@NonNull final BigDecimal qtyInStockUOM, @NonNull final ProductId productId)
 	{
-		return create(qtyInStockUOM, null/* nonStockUomId */, productId);
+		return of(qtyInStockUOM, null/* nonStockUomId */, productId);
 	}
 
 	/**
 	 * @param nonStockUomId optional; if not {@code null}, then {@code qtyInUOM} is also converted to the product's stock UOM.
 	 */
-	public Quantity create(
+	public Quantity of(
 			@NonNull final BigDecimal qty,
 			@Nullable final UomId nonStockUomId,
 			@NonNull final ProductId productId)
@@ -156,7 +163,7 @@ public class Quantitys
 
 	/**
 	 * @param conversionCtx may be {@code null}, *if* the parameters are such that no real conversion has to be done.
-	 * @return the sum of the given quantities; the result has the first augent's UOM; conversion is done as required.
+	 * @return the sum of the given quantities; the result has the UOM of the first augent; conversion of the second augent is done as required.
 	 */
 	public Quantity add(
 			@Nullable final UOMConversionContext conversionCtx,
@@ -175,12 +182,12 @@ public class Quantitys
 			@NonNull final Quantity minuend,
 			@NonNull final Quantity subtrahend)
 	{
-		final Quantity subtrahendConverted = create(subtrahend, conversionCtx, minuend.getUomId());
+		final Quantity subtrahendConverted = of(subtrahend, conversionCtx, minuend.getUomId());
 
 		return minuend.subtract(subtrahendConverted);
 	}
 
-	public Quantity create(
+	public Quantity of(
 			@NonNull final Quantity qty,
 			@NonNull final UOMConversionContext conversionCtx,
 			@NonNull final UomId targetUomId)
@@ -190,9 +197,9 @@ public class Quantitys
 		return uomConversionBL.convertQuantityTo(qty, conversionCtx, targetUomId);
 	}
 
-	public Quantity create(final int qty, @NonNull final UomId repoId)
+	public Quantity of(final int qty, @NonNull final UomId repoId)
 	{
-		return create(BigDecimal.valueOf(qty), repoId);
+		return of(BigDecimal.valueOf(qty), repoId);
 	}
 
 	@Nullable
@@ -233,7 +240,7 @@ public class Quantitys
 				sourceQtyStr = qtyStr;
 				sourceUomRepoId = uomRepoId;
 			}
-			return Quantitys.create(
+			return Quantitys.of(
 					new BigDecimal(qtyStr), UomId.ofRepoId(uomRepoId),
 					new BigDecimal(sourceQtyStr), UomId.ofRepoId(sourceUomRepoId));
 		}

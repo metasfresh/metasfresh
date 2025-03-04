@@ -151,10 +151,7 @@ class CreateSEPAExportFromPaySelectionCommand
 
 		// Set corresponding data
 		header.setAD_Org_ID(paySelectionHeader.getAD_Org_ID());
-		final String iban = bpBankAccount.getIBAN();
-
 		header.setIBAN(selectIBANOrNull(bpBankAccount));
-
 		header.setPaymentDate(paySelectionHeader.getPayDate());
 		header.setProcessed(false);
 		header.setSEPA_CreditorName(orgBP.getName());

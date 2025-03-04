@@ -5,10 +5,14 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocRepository;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateRepository;
+import de.metas.document.DocSubType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
+import de.metas.event.IEventBusFactory;
 import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEventObserver;
@@ -17,7 +21,7 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.eventbus.MaterialEventConverter;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.material.planning.ErrorCodes;
-import de.metas.material.planning.IMaterialPlanningContext;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import de.metas.material.planning.pporder.PPRoutingType;
 import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
@@ -42,6 +46,7 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_AD_Org;
@@ -71,15 +76,12 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.util.DDNetworkBuilder;
-import org.eevolution.util.PPProductPlanningBuilder;
 import org.eevolution.util.ProductBOMBuilder;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 import java.util.Properties;
@@ -88,7 +90,7 @@ public class MRPTestHelper
 {
 	//
 	// Context
-	private ZonedDateTime _today = ZonedDateTime.now();
+	private final ZonedDateTime _today = ZonedDateTime.now();
 	public Properties ctx;
 	@Nullable private String trxName;
 	public final IContextAware contextProvider = new IContextAware()
@@ -128,7 +130,6 @@ public class MRPTestHelper
 	//
 	public I_S_ResourceType resourceType_Plants;
 	public I_S_ResourceType resourceType_Workcenters;
-	public final I_S_Resource plant_any = null;
 	//
 	public I_AD_Workflow workflow_Standard;
 	//
@@ -268,12 +269,13 @@ public class MRPTestHelper
 		// FIXME: workaround to bypass org.adempiere.document.service.impl.PlainDocActionBL.isDocumentTable(String) failure
 		PlainDocumentBL.isDocumentTableResponse = false;
 
-		final I_AD_Client client = null;
+		SpringContextHolder.registerJUnitBean(IEventBusFactory.class, PlainEventBusFactory.newInstance());
+
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
 
-		modelInterceptorRegistry.addModelInterceptor(new AD_Workflow(), client);
+		modelInterceptorRegistry.addModelInterceptor(new AD_Workflow(), null);
 
-		modelInterceptorRegistry.addModelInterceptor(createLiberoValidator(), client);
+		modelInterceptorRegistry.addModelInterceptor(createLiberoValidator(), null);
 	}
 
 	private org.eevolution.model.LiberoValidator createLiberoValidator()
@@ -295,22 +297,16 @@ public class MRPTestHelper
 				new PPOrderBOMBL(),
 				new DDOrderLowLevelService(new DDOrderLowLevelDAO()),
 				new ProductBOMVersionsDAO(),
-				new ProductBOMService(new ProductBOMVersionsDAO()));
+				new ProductBOMService(new ProductBOMVersionsDAO()),
+				new DDOrderCandidateRepository(),
+				new DDOrderCandidateAllocRepository(),
+				new DistributionNetworkRepository(),
+				new ReplenishInfoRepository());
 	}
 
 	public Timestamp getToday()
 	{
 		return TimeUtil.asTimestamp(_today);
-	}
-
-	public void setToday(
-			final int year,
-			final int month,
-			final int day)
-	{
-		this._today = LocalDate.of(year, month, day)
-				.atStartOfDay()
-				.atZone(ZoneId.systemDefault());
 	}
 
 	public I_AD_Org createOrg(final String name)
@@ -378,8 +374,7 @@ public class MRPTestHelper
 			final String name,
 			final I_AD_Org org)
 	{
-		final I_S_Resource plant = null;
-		return createWarehouse(name, org, plant);
+		return createWarehouse(name, org, null);
 	}
 
 	public I_M_Warehouse createWarehouse(
@@ -400,7 +395,7 @@ public class MRPTestHelper
 
 	private static LocatorId getDefaultLocatorId(final I_M_Warehouse warehouse)
 	{
-		return Services.get(IWarehouseBL.class).getDefaultLocatorId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
+		return Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
 	}
 
 	public I_C_UOM createUOM(final String name)
@@ -466,12 +461,6 @@ public class MRPTestHelper
 		message.setValue(code);
 		message.setMsgText(code);
 		InterfaceWrapperHelper.save(message);
-	}
-
-	public PPProductPlanningBuilder newProductPlanning()
-	{
-		return new PPProductPlanningBuilder()
-				.setContext(contextProvider);
 	}
 
 	public I_M_Shipper createShipper(final String name)
@@ -587,7 +576,7 @@ public class MRPTestHelper
 
 	public final Logger getMRPLogger()
 	{
-		return LogManager.getLogger(IMaterialPlanningContext.LOGGERNAME);
+		return LogManager.getLogger("org.eevolution.mrp.MRP");
 	}
 
 	public I_PP_Order createPP_Order(
@@ -626,7 +615,7 @@ public class MRPTestHelper
 
 	private void setCommonProperties(final I_PP_Order ppOrder)
 	{
-		Services.get(IPPOrderBL.class).setDocType(ppOrder, PPOrderDocBaseType.MANUFACTURING_ORDER, null);
+		Services.get(IPPOrderBL.class).setDocType(ppOrder, PPOrderDocBaseType.MANUFACTURING_ORDER, DocSubType.NONE);
 
 		// required to avoid an NPE when building the lightweight PPOrder pojo
 		final Timestamp t1 = SystemTime.asTimestamp();

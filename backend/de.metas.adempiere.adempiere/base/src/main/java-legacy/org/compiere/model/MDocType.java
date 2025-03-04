@@ -16,17 +16,17 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.ResultSet;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.document.DocBaseType;
+import de.metas.document.IDocTypeBL;
+import de.metas.document.IDocTypeDAO;
+import de.metas.util.Services;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.document.IDocTypeBL;
-import de.metas.document.IDocTypeDAO;
-import de.metas.util.Services;
+import java.sql.ResultSet;
+import java.util.List;
+import java.util.Properties;
 
 /**
  *	Document Type Model
@@ -53,7 +53,7 @@ public class MDocType extends X_C_DocType
 	 *	@return array of doc types
 	 */
 	@Deprecated
-	static public MDocType[] getOfDocBaseType (Properties ctx, String DocBaseType)
+	static public MDocType[] getOfDocBaseType (Properties ctx, DocBaseType DocBaseType)
 	{
 		String whereClause  = "AD_Client_ID=? AND DocBaseType=?";
 		List<MDocType> list = new Query(ctx, Table_Name, whereClause, null)

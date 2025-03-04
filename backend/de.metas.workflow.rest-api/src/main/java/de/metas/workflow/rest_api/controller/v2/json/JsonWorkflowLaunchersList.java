@@ -25,12 +25,15 @@ package de.metas.workflow.rest_api.controller.v2.json;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
+import de.metas.global_qrcodes.JsonDisplayableQRCode;
+import de.metas.workflow.rest_api.model.WorkflowLauncher;
+import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.Comparator;
 
@@ -39,22 +42,40 @@ import java.util.Comparator;
 @Builder
 public class JsonWorkflowLaunchersList
 {
-	@Singular
-	@NonNull ImmutableList<JsonWorkflowLauncher> launchers;
-	boolean scanBarcodeToStartJobSupport;
+	int count;
+	@Nullable ImmutableList<JsonWorkflowLauncher> launchers;
+	@Nullable JsonDisplayableQRCode filterByQRCode;
 	@NonNull Instant computedTime;
 
 	public static JsonWorkflowLaunchersList of(
-			@NonNull final WorkflowLaunchersList list,
+			@NonNull final WorkflowLaunchersList result,
+			@NonNull final JsonLaunchersQuery query,
 			@NonNull final JsonOpts jsonOpts)
 	{
-		return builder()
-				.scanBarcodeToStartJobSupport(list.isScanBarcodeToStartJobSupport())
-				.launchers(list.stream()
-						.map(launcher -> JsonWorkflowLauncher.of(launcher, jsonOpts))
-						.sorted(Comparator.comparing(JsonWorkflowLauncher::getCaption))
-						.collect(ImmutableList.toImmutableList()))
-				.computedTime(list.getTimestamp())
-				.build();
+		return of(result, query.isCountOnly(), jsonOpts);
+	}
+
+	public static JsonWorkflowLaunchersList of(
+			@NonNull final WorkflowLaunchersList result,
+			final boolean countOnly,
+			@NonNull final JsonOpts jsonOpts)
+	{
+		final JsonWorkflowLaunchersListBuilder builder = builder()
+				.count(result.size())
+				.filterByQRCode(result.getFilterByQRCode() != null ? result.getFilterByQRCode().toJsonDisplayableQRCode() : null)
+				.computedTime(result.getTimestamp());
+
+		if (!countOnly)
+		{
+			final String adLanguage = jsonOpts.getAdLanguage();
+			builder.launchers(result.stream()
+					.sorted(Comparator.comparing(
+							WorkflowLauncher::getCaption,
+							WorkflowLauncherCaption.orderBy(adLanguage, result.getOrderByFields())))
+					.map(launcher -> JsonWorkflowLauncher.of(launcher, jsonOpts))
+					.collect(ImmutableList.toImmutableList()));
+		}
+
+		return builder.build();
 	}
 }

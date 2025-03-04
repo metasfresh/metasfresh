@@ -64,7 +64,6 @@ public class EDIWorkpackageProcessor implements IWorkpackageProcessor
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-
 		final List<Exception> feedback = new ArrayList<Exception>();
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);

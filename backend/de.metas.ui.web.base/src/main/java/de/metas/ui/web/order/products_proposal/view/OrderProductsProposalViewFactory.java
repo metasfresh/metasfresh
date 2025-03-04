@@ -26,6 +26,7 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColumnOverrides;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -66,17 +67,20 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 	private final OrderProductProposalsService orderProductProposalsService;
 	private final BPartnerProductStatsService bpartnerProductStatsService;
 	private final CampaignPriceService campaignPriceService;
+	private final LookupDataSourceFactory lookupDataSourceFactory;
 
 	public OrderProductsProposalViewFactory(
 			@NonNull final OrderProductProposalsService orderProductProposalsService,
 			@NonNull final BPartnerProductStatsService bpartnerProductStatsService,
-			@NonNull final CampaignPriceService campaignPriceService)
+			@NonNull final CampaignPriceService campaignPriceService,
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		super(WINDOW_ID);
 
 		this.orderProductProposalsService = orderProductProposalsService;
 		this.bpartnerProductStatsService = bpartnerProductStatsService;
 		this.campaignPriceService = campaignPriceService;
+		this.lookupDataSourceFactory = lookupDataSourceFactory;
 	}
 
 	@Override
@@ -124,8 +128,10 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 		final CampaignPriceProvider campaignPriceProvider = createCampaignPriceProvider(order);
 
 		return ProductsProposalRowsLoader.builder()
+				.lookupDataSourceFactory(lookupDataSourceFactory)
 				.bpartnerProductStatsService(bpartnerProductStatsService)
 				.campaignPriceProvider(campaignPriceProvider)
+				.orderProductProposalsService(orderProductProposalsService)
 				//
 				.priceListVersionId(order.getPriceListVersionId())
 				.order(order)

@@ -22,22 +22,48 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.audit.apirequest.request.ApiRequestAuditId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
+import java.util.function.UnaryOperator;
 
 @Value
 @Builder(toBuilder = true)
 public class APIResponse
 {
-	@Nullable
-	String content;
+	@Nullable Integer statusCode;
+	@Nullable String content;
+	@Nullable String contentType;
+	@Nullable ApiRequestAuditId requestId;
 
-	@Nullable
-	String contentType;
+	public <T> T getContentAs(@NonNull final Class<T> type) throws JsonProcessingException
+	{
+		final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+		return mapper.readValue(content, type);
+	}
 
-	@Nullable
-	JsonMetasfreshId requestId;
+	public int getByJsonPathAsInt(@NonNull final String jsonPath) throws JsonProcessingException
+	{
+		final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+		final JsonNode rootNode = mapper.readTree(content);
+		final JsonNode node = rootNode.at(jsonPath);
+		return node.asInt();
+	}
+
+	public APIResponse withContent(@NonNull final UnaryOperator<String> mapper)
+	{
+		final String contentChanged = mapper.apply(content);
+		return !Objects.equals(this.content, contentChanged)
+				? toBuilder().content(contentChanged).build()
+				: this;
+	}
 }

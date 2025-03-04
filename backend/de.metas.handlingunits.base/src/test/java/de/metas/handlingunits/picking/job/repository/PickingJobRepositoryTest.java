@@ -1,5 +1,7 @@
 package de.metas.handlingunits.picking.job.repository;
 
+import au.com.origin.snapshots.Expect;
+import au.com.origin.snapshots.junit5.SnapshotExtension;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
@@ -21,7 +23,6 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.test.SnapshotFunctionFactory;
 import de.metas.user.UserId;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJONextIdSuppliers;
@@ -29,16 +30,14 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.assertj.core.api.Assertions;
 import org.compiere.model.I_C_UOM;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.time.Instant;
 import java.util.UUID;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-
+@ExtendWith(SnapshotExtension.class)
 class PickingJobRepositoryTest
 {
 	// Services
@@ -50,8 +49,7 @@ class PickingJobRepositoryTest
 	private final OrderId salesOrderId = OrderId.ofRepoId(2);
 	private I_C_UOM uomEach;
 
-	@BeforeAll
-	static void beforeAll() {start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());}
+	@SuppressWarnings("unused") private Expect expect;
 
 	@BeforeEach
 	void beforeEach()
@@ -95,16 +93,24 @@ class PickingJobRepositoryTest
 		loadingSupportServices.mockQRCode(HuId.ofRepoId(11), dummyQRCode("7a71c408-e7fb-4b5d-a0b8-814896b31659"));
 		loadingSupportServices.mockQRCode(HuId.ofRepoId(1001), dummyQRCode("f18c53be-1341-4203-b0f4-fb25fb33a5fa"));
 
+		final OrderAndLineId salesOrderLineId = OrderAndLineId.ofRepoIds(salesOrderId, 8);
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(7);
 		final PickingJob jobCreated = pickingJobRepository.createNewAndGet(
 				PickingJobCreateRepoRequest.builder()
 						.orgId(orgId)
 						.salesOrderId(salesOrderId)
 						.preparationDate(instantAndOrgId("2021-11-02T07:39:16Z"))
+						.deliveryDate(instantAndOrgId("2021-11-02T07:39:16Z"))
 						.deliveryBPLocationId(BPartnerLocationId.ofRepoId(3, 4))
+						.handoverLocationId(BPartnerLocationId.ofRepoId(3, 4))
 						.deliveryRenderedAddress("deliveryRenderedAddress")
 						.pickerId(UserId.ofRepoId(5))
 						.line(PickingJobCreateRepoRequest.Line.builder()
+								.salesOrderAndLineId(salesOrderLineId)
+								.shipmentScheduleId(shipmentScheduleId)
 								.productId(ProductId.ofRepoId(6))
+								.huPIItemProductId(HUPIItemProductId.ofRepoId(6789))
+								.qtyToPick(Quantity.of(100, uomEach))
 								.pickFromAlternatives(ImmutableSet.of(
 										PickingJobCreateRepoRequest.PickFromAlternative.of(
 												LocatorId.ofRepoId(21, 22),
@@ -112,8 +118,8 @@ class PickingJobRepositoryTest
 												Quantity.of(999, uomEach))
 								))
 								.step(PickingJobCreateRepoRequest.Step.builder()
-										.shipmentScheduleId(ShipmentScheduleId.ofRepoId(7))
-										.salesOrderLineId(OrderAndLineId.ofRepoIds(salesOrderId, 8))
+										.salesOrderLineId(salesOrderLineId)
+										.shipmentScheduleId(shipmentScheduleId)
 										.productId(ProductId.ofRepoId(6))
 										.qtyToPick(Quantity.of(100, uomEach))
 										.mainPickFrom(PickingJobCreateRepoRequest.StepPickFrom.builder()
@@ -131,7 +137,7 @@ class PickingJobRepositoryTest
 								.build())
 						.build(),
 				loadingSupportServices);
-		expect(jobCreated).toMatchSnapshot();
+		expect.toMatchSnapshot(jobCreated);
 
 		final PickingJob jobLoaded = pickingJobRepository.getById(jobCreated.getId(), loadingSupportServices);
 		Assertions.assertThat(jobLoaded)

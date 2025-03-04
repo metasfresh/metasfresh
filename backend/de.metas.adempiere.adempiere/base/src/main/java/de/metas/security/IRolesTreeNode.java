@@ -46,7 +46,6 @@ public interface IRolesTreeNode
 	/**
 	 * Iterate role notes bottom up and aggregate some informations using then given aggregator.
 	 * 
-	 * @param aggregator
 	 * @return final aggregation result
 	 */
 	<ValueType, AggregatedValueType> ValueType aggregateBottomUp(final BottomUpAggregator<ValueType, AggregatedValueType> aggregator);

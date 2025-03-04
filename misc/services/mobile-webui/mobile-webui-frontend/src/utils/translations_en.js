@@ -5,25 +5,58 @@ const translations = {
     network: {
       noResponse: 'Connection error',
     },
+    qrCode: {
+      invalid: 'Invalid QR Code',
+    },
+  },
+  errorScreen: {
+    retryButton: 'Retry...',
   },
   general: {
+    Yes: 'Yes',
+    No: 'No',
+    OK: 'OK',
+    DocumentNo: 'Document No',
     Product: 'Product',
+    ProductValue: 'Product Value',
     Locator: 'Locator',
     QRCode: 'QR Code',
     QtyToPick: 'Qty to pick',
+    QtyToPick_Total: 'Qty to pick (total)',
     QtyPicked: 'Qty picked',
     QtyMoved: 'Qty moved',
     QtyToMove: 'Qty to move',
     QtyRejected: 'Qty Rejected',
+    Qty: 'Qty',
+    QtyTU: 'TUs',
+    CatchWeight: 'Weight',
+    PackingItemName: 'Packing',
+    BestBeforeDate: 'Best Before',
+    LotNo: 'Lot',
     DropToLocator: 'Drop to locator',
     cancelText: 'Cancel',
+    closeText: 'Close',
+    clearText: 'Clear',
+    reOpenText: 'Re-open',
     scanQRCode: 'Scan QR',
     Back: 'Back',
     Home: 'Home',
+    filter: {
+      showResults: 'Show results (%(count)s)',
+      clearFilters: 'Clear filters',
+    },
+    workplace: 'Workplace',
+    workstation: 'Workstation',
   },
   login: {
     submitButton: 'Login',
+    alternativeMethods: 'Switch to...',
+    authMethod: {
+      qrCode: 'QR Code',
+      userAndPass: 'Password',
+    },
   },
+  logout: 'Logout',
   mobileui: {
     manufacturing: {
       appName: 'Production',
@@ -38,6 +71,8 @@ const translations = {
   components: {
     BarcodeScannerComponent: {
       scanTextPlaceholder: 'scan...',
+      scanWorkplacePlaceholder: 'Scan workplace...',
+      scanWorkstationPlaceholder: 'Scan workstation...',
     },
   },
   activities: {
@@ -50,12 +85,38 @@ const translations = {
       PickHU: 'Pick HU',
       scanQRCode: 'Scan QR',
       notEligibleHUBarcode: 'HU barcode not matching',
-      invalidQtyPicked: 'Invalid qty picked',
+      qtyAboveMax: '%(qtyDiff)s above max',
+      notPositiveQtyNotAllowed: 'Zero or negative qty not allowed',
       confirmDone: 'Done',
+      confirmDoneAndCloseTarget: 'Done and close target LU',
       rejectedPrompt: 'There are %(qtyRejected)s %(uom)s not picked. Why ?',
       unPickBtn: 'Unpick',
       target: 'To Pick',
       picked: 'Picked',
+      switchToManualInput: 'Manually',
+      switchToQrCodeInput: 'Scan QR',
+      skip: 'Skip',
+      scanTargetHU: 'Scan target HU',
+      qtyRejectedIgnoreReason: 'Do not record a reason',
+      qrcode: {
+        missingQty: 'The scanned QR, has no qty information!',
+        differentUOM: 'The scanned QR UOM does not match the target!',
+        differentProduct: 'The scanned QR Product does not match',
+      },
+      pickingTarget: {
+        New: 'New LU',
+        Select: 'Select Target',
+        Current: 'Current',
+        CloseTarget: 'Close',
+      },
+      tuPickingTarget: {
+        New: 'New TU',
+        Select: 'Select Target',
+        Current: 'Current',
+        CloseTarget: 'Close',
+      },
+      overPickConfirmationPrompt: 'Do you really want to pick more than was ordered?',
+      reopenLU: 'Reopen LU',
     },
     distribution: {
       DistributionLine: 'Distribution Line',
@@ -65,6 +126,9 @@ const translations = {
       scanLocator: 'Scan drop to Locator',
       invalidLocatorQRCode: 'Invalid locator QR code',
       invalidQtyToMove: 'Invalid qty to move',
+      qrcode: {
+        differentProduct: 'The scanned QR Product does not match',
+      },
     },
     confirmButton: {
       default: {
@@ -84,6 +148,8 @@ const translations = {
         packing: 'Packing',
         qtyTUs: 'TUs',
         print: 'Print',
+        numberOfHUs: 'HUs',
+        numberOfCopies: 'Copies',
       },
       issues: {
         target: 'To issue',
@@ -106,6 +172,11 @@ const translations = {
         newHU: 'New HU',
         target: 'To receive',
         picked: 'Received',
+      },
+      validateSourceLocator: {
+        noValidOption: 'No valid option available',
+        qrMatches: `OK!`,
+        qrDoesNotMatch: `Scanned QR doesn't match the source Locator!`,
       },
     },
   },

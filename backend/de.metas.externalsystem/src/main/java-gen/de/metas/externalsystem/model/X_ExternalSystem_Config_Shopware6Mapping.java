@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config_Shopware6Mapping
  *  @author metasfresh (generated) 
@@ -250,6 +250,10 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 	public static final String PAYMENTRULE_KreditkarteExtern = "CE";
 	/** Sofortüberweisung = BE */
 	public static final String PAYMENTRULE_Sofortueberweisung = "BE";
+	/** Rückerstattung = E */
+	public static final String PAYMENTRULE_Reimbursement = "E";
+	/** Verrechnung = F */
+	public static final String PAYMENTRULE_Settlement = "F";
 	@Override
 	public void setPaymentRule (final @Nullable java.lang.String PaymentRule)
 	{

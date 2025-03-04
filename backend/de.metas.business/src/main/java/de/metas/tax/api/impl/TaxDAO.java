@@ -67,7 +67,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class TaxDAO implements ITaxDAO
 {
-	private final static transient Logger logger = LogManager.getLogger(TaxDAO.class);
+	private final static Logger logger = LogManager.getLogger(TaxDAO.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -245,6 +245,12 @@ public class TaxDAO implements ITaxDAO
 	{
 		final Tax tax = getTaxById(taxId);
 		return Percent.of(tax.getRate());
+	}
+
+	@Override
+	public @NonNull Optional<Tax> getByIfPresent(@NonNull final TaxQuery taxQuery)
+	{
+		return Optional.ofNullable(getBy(taxQuery));
 	}
 
 	@Override
@@ -439,9 +445,9 @@ public class TaxDAO implements ITaxDAO
 		{
 			final String countryCode = countryDAO.retrieveCountryCode2ByCountryId(toCountryId);
 			final boolean isEULocation = countryAreaBL.isMemberOf(Env.getCtx(),
-																  ICountryAreaBL.COUNTRYAREAKEY_EU,
-																  countryCode,
-																  Env.getDate());
+					ICountryAreaBL.COUNTRYAREAKEY_EU,
+					countryCode,
+					Env.getDate());
 			typeOfDestCountry = isEULocation ? WITHIN_COUNTRY_AREA : OUTSIDE_COUNTRY_AREA;
 		}
 		return typeOfDestCountry;

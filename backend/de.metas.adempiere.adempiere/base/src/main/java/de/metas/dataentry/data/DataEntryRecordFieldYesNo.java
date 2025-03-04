@@ -1,13 +1,13 @@
 package de.metas.dataentry.data;
 
-import javax.annotation.Nullable;
-
 import de.metas.CreatedUpdatedInfo;
 import de.metas.dataentry.DataEntryFieldId;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L

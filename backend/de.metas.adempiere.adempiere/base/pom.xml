@@ -193,10 +193,10 @@
             <artifactId>barbecue</artifactId>
             <version>1.5-beta1</version>
         </dependency>
-        <!-- itext is required by org.adempiere.pdf.Document.java-->
+        <!-- itextpdf is required by org.adempiere.pdf.Document.java-->
         <dependency>
-            <groupId>com.lowagie</groupId>
-            <artifactId>itext</artifactId>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>itextpdf</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>bouncycastle</groupId>
@@ -292,6 +292,12 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        
     </dependencies>
 
     <build>

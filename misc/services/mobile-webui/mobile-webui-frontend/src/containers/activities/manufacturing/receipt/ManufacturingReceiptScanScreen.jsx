@@ -1,29 +1,22 @@
-import React, { useEffect } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
+import React from 'react';
 import { useDispatch } from 'react-redux';
-
-import { pushHeaderEntry } from '../../../../actions/HeaderActions';
-import { updateManufacturingReceiptTarget } from '../../../../actions/ManufacturingActions';
+import { updateManufacturingLUReceiptTarget } from '../../../../actions/ManufacturingActions';
 
 import BarcodeScannerComponent from '../../../../components/BarcodeScannerComponent';
-import { parseQRCodeString } from '../../../../utils/huQRCodes';
-import { trl } from '../../../../utils/translations';
+import { parseQRCodeString } from '../../../../utils/qrCode/hu';
+import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
+import {
+  manufacturingReceiptReceiveTargetScreen,
+  manufacturingReceiptScreenLocation,
+} from '../../../../routes/manufacturing_receipt';
 
 const ManufacturingReceiptScanScreen = () => {
-  const {
-    url,
-    params: { workflowId: wfProcessId, activityId, lineId },
-  } = useRouteMatch();
+  const { history, wfProcessId, activityId, lineId } = useScreenDefinition({
+    captionKey: 'activities.mfg.receipts.existingLU',
+    back: manufacturingReceiptReceiveTargetScreen,
+  });
 
   const dispatch = useDispatch();
-  useEffect(() => {
-    dispatch(
-      pushHeaderEntry({
-        location: url,
-        caption: trl('activities.mfg.receipts.existingLU'),
-      })
-    );
-  }, []);
 
   const resolveScannedBarcode = ({ scannedBarcode }) => {
     return {
@@ -31,10 +24,9 @@ const ManufacturingReceiptScanScreen = () => {
     };
   };
 
-  const history = useHistory();
   const onBarcodeScanned = ({ huQRCode }) => {
     dispatch(
-      updateManufacturingReceiptTarget({
+      updateManufacturingLUReceiptTarget({
         wfProcessId,
         activityId,
         lineId,
@@ -42,7 +34,7 @@ const ManufacturingReceiptScanScreen = () => {
       })
     );
 
-    history.go(-2);
+    history.goTo(manufacturingReceiptScreenLocation);
   };
 
   return (

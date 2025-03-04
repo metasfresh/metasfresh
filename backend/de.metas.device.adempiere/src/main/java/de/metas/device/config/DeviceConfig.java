@@ -1,14 +1,18 @@
 package de.metas.device.config;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 /*
@@ -51,12 +55,26 @@ public final class DeviceConfig
 	private final String deviceClassname;
 	private final IDeviceParameterValueSupplier parameterValueSupplier;
 	private final IDeviceRequestClassnamesSupplier requestClassnamesSupplier;
+	
+	@Getter
+	@NonNull
+	private final ImmutableList<String> beforeHooksClassname;
+	
+	@Getter
+	@NonNull
+	private final ImmutableMap<String, String> deviceConfigParams;
 
 	/**
 	 * warehouse IDs where this device is available; empty means that it's available to any warehouse
 	 */
 	@Getter
 	private final ImmutableSet<WarehouseId> assignedWarehouseIds;
+
+	/**
+	 * locator IDs where this device is available; empty means that it's available to any locator
+	 */
+	@Getter
+	private final ImmutableSet<LocatorId> assignedLocatorIds;
 
 	private DeviceConfig(final DeviceConfig.Builder builder)
 	{
@@ -66,6 +84,9 @@ public final class DeviceConfig
 		parameterValueSupplier = builder.getParameterValueSupplier();
 		requestClassnamesSupplier = builder.getRequestClassnamesSupplier();
 		assignedWarehouseIds = builder.getAssignedWarehouseIds();
+		beforeHooksClassname = builder.getBeforeHooksClassname();
+		deviceConfigParams = builder.getDeviceConfigParams();
+		assignedLocatorIds = builder.getAssignedLocatorIds();
 	}
 
 	public String getParameterValue(final String parameterName, final String defaultValue)
@@ -78,6 +99,15 @@ public final class DeviceConfig
 		return requestClassnamesSupplier.getDeviceRequestClassnames(deviceName, attributeCode);
 	}
 
+	public Optional<String> getDeviceConfigParamValue(@NonNull final String parameterName)
+	{
+		return deviceConfigParams.keySet()
+				.stream()
+				.filter(paramKey -> paramKey.contains(parameterName))
+				.findFirst()
+				.map(deviceConfigParams::get);
+	}
+
 	public static final class Builder
 	{
 		private final String deviceName;
@@ -86,6 +116,9 @@ public final class DeviceConfig
 		private IDeviceParameterValueSupplier parameterValueSupplier;
 		private IDeviceRequestClassnamesSupplier requestClassnamesSupplier;
 		private Set<WarehouseId> assignedWareouseIds = null;
+		private Set<LocatorId> assignedLocatorIds = null;
+		private ImmutableList<String> beforeHooksClassname;
+		private ImmutableMap<String, String> deviceConfigParams;
 
 		private Builder(@NonNull final String deviceName)
 		{
@@ -160,6 +193,45 @@ public final class DeviceConfig
 		private ImmutableSet<WarehouseId> getAssignedWarehouseIds()
 		{
 			return assignedWareouseIds == null ? ImmutableSet.of() : ImmutableSet.copyOf(assignedWareouseIds);
+		}
+
+		@NonNull
+		private ImmutableSet<LocatorId> getAssignedLocatorIds()
+		{
+			return assignedLocatorIds == null ? ImmutableSet.of() : ImmutableSet.copyOf(assignedLocatorIds);
+		}
+
+		@NonNull
+		public DeviceConfig.Builder setAssignedLocatorIds(final Set<LocatorId> assignedLocatorIds)
+		{
+			this.assignedLocatorIds = assignedLocatorIds;
+			return this;
+		}
+		
+		@NonNull
+		public DeviceConfig.Builder setBeforeHooksClassname(@NonNull final ImmutableList<String> beforeHooksClassname)
+		{
+			this.beforeHooksClassname = beforeHooksClassname;
+			return this;
+		}
+		
+		@NonNull
+		private ImmutableList<String> getBeforeHooksClassname()
+		{
+			return Optional.ofNullable(beforeHooksClassname).orElseGet(ImmutableList::of);
+		}
+
+		@NonNull
+		public DeviceConfig.Builder setDeviceConfigParams(@NonNull final ImmutableMap<String, String> deviceConfigParams)
+		{
+			this.deviceConfigParams = deviceConfigParams;
+			return this;
+		}
+
+		@NonNull
+		private ImmutableMap<String, String> getDeviceConfigParams()
+		{
+			return deviceConfigParams == null ? ImmutableMap.of() : deviceConfigParams;
 		}
 	}
 

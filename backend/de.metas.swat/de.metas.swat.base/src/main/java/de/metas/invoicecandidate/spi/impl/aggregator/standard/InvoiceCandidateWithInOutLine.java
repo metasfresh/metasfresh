@@ -39,17 +39,17 @@ public final class InvoiceCandidateWithInOutLine
 
 	private final I_C_Invoice_Candidate ic;
 	private final I_C_InvoiceCandidate_InOutLine iciol;
-	
+
 	@Getter
 	private final Set<IInvoiceLineAttribute> invoiceLineAttributes;
-	
+
 	/**
 	 * -- GETTER --
-	 *  Specify if, when the aggregation is done and if 
+	 *  Specify if, when the aggregation is done and if
 	 *  is not <code>null</code> the full remaining <code>QtyToInvoice</code> of the invoice candidate shall
 	 *  be allocated to the <code>icIol</code>'s invoice line, or not. If <code>false</code>, then the maximum qty to be allocated is the delivered qty.
 	 *  <p>
-	 *  Note that in each aggregation, we assume that there is exactly one request with 
+	 *  Note that in each aggregation, we assume that there is exactly one request with
 	 *  = <code>true</code>, in order to make sure that the invoice candidate's
 	 *  qtyToInvoice is actually invoiced.
 	 */
@@ -124,7 +124,7 @@ public final class InvoiceCandidateWithInOutLine
 			return StockQtyAndUOMQtys.createZero(productId, icUomId);
 		}
 
-		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(ic.getInvoicableQtyBasedOn());
+		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.ofNullableCodeOrNominal(ic.getInvoicableQtyBasedOn());
 		final BigDecimal uomQty;
 
 		if (!isNull(iciol, I_C_InvoiceCandidate_InOutLine.COLUMNNAME_QtyDeliveredInUOM_Override))
@@ -146,16 +146,16 @@ public final class InvoiceCandidateWithInOutLine
 			}
 		}
 
-		final Quantity shippedUomQuantityInIcUOM = uomConversionBL.convertQuantityTo(Quantitys.create(uomQty, UomId.ofRepoId(iciol.getC_UOM_ID())),
+		final Quantity shippedUomQuantityInIcUOM = uomConversionBL.convertQuantityTo(Quantitys.of(uomQty, UomId.ofRepoId(iciol.getC_UOM_ID())),
 																					 productId,
 																					 icUomId);
 
 		final BigDecimal stockQty = inOutLine.getMovementQty();
 		final StockQtyAndUOMQty deliveredQty = StockQtyAndUOMQtys
 				.create(
-						stockQty, 
+						stockQty,
 						productId,
-						shippedUomQuantityInIcUOM.toBigDecimal(), 
+						shippedUomQuantityInIcUOM.toBigDecimal(),
 						shippedUomQuantityInIcUOM.getUomId());
 
 		if (inOutBL.isReturnMovementType(inOutLine.getM_InOut().getMovementType()))

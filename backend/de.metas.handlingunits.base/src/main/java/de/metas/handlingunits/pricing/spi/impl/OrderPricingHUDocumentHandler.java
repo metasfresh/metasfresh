@@ -38,7 +38,7 @@ public class OrderPricingHUDocumentHandler implements IHUDocumentHandler
 			final HUPIItemProductId packingMaterialId = HUPIItemProductId.ofRepoIdOrNull(productPrice.getM_HU_PI_Item_Product_ID());
 			if (packingMaterialId != null)
 			{
-				return Services.get(IHUPIItemProductDAO.class).getById(packingMaterialId);
+				return Services.get(IHUPIItemProductDAO.class).getRecordById(packingMaterialId);
 			}
 		}
 

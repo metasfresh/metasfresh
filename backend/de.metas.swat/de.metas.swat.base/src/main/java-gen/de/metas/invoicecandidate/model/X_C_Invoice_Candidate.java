@@ -691,6 +691,33 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public org.compiere.model.I_C_Order getC_OrderSO()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_OrderSO(final org.compiere.model.I_C_Order C_OrderSO)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OrderSO_ID, org.compiere.model.I_C_Order.class, C_OrderSO);
+	}
+
+	@Override
+	public void setC_OrderSO_ID (final int C_OrderSO_ID)
+	{
+		if (C_OrderSO_ID < 1)
+			set_Value (COLUMNNAME_C_OrderSO_ID, null);
+		else
+			set_Value (COLUMNNAME_C_OrderSO_ID, C_OrderSO_ID);
+	}
+
+	@Override
+	public int getC_OrderSO_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_OrderSO_ID);
+	}
+
+	@Override
 	public void setC_PaymentTerm_Effective_ID (final int C_PaymentTerm_Effective_ID)
 	{
 		throw new IllegalArgumentException ("C_PaymentTerm_Effective_ID is virtual column");	}
@@ -1774,6 +1801,10 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public static final String PAYMENTRULE_KreditkarteExtern = "U";
 	/** Sofortüberweisung = R */
 	public static final String PAYMENTRULE_Sofortueberweisung = "R";
+	/** Rückerstattung = E */
+	public static final String PAYMENTRULE_Reimbursement = "E";
+	/** Verrechnung = F */
+	public static final String PAYMENTRULE_Settlement = "F";
 	@Override
 	public void setPaymentRule (final @Nullable java.lang.String PaymentRule)
 	{
@@ -2195,6 +2226,19 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public BigDecimal getQtyToInvoiceInUOM_Calc()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToInvoiceInUOM_Calc);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyToInvoiceInUOM_Override (final @Nullable BigDecimal QtyToInvoiceInUOM_Override)
+	{
+		set_Value (COLUMNNAME_QtyToInvoiceInUOM_Override, QtyToInvoiceInUOM_Override);
+	}
+
+	@Override
+	public BigDecimal getQtyToInvoiceInUOM_Override()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToInvoiceInUOM_Override);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

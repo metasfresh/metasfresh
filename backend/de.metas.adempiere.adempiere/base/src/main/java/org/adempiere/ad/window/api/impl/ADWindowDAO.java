@@ -1,7 +1,9 @@
 package org.adempiere.ad.window.api.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
@@ -24,7 +26,6 @@ import org.adempiere.ad.window.api.WindowCopyRequest;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_AD_Tab_Callout;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_Field;
@@ -1236,5 +1237,24 @@ public class ADWindowDAO implements IADWindowDAO
 			default:
 				throw new AdempiereException("Param 'soTrx' has an unspupported value; soTrx=" + soTrx);
 		}
+	}
+
+	@Override
+	public ImmutableSet<AdWindowId> retrieveAllAdWindowIdsByTableId(final AdTableId adTableId)
+	{
+		final List<AdWindowId> adWindowIds = queryBL.createQueryBuilder(I_AD_Tab.class)
+				.addEqualsFilter(I_AD_Tab.COLUMNNAME_AD_Table_ID, adTableId)
+				.create()
+				.listDistinct(I_AD_Tab.COLUMNNAME_AD_Window_ID, AdWindowId.class);
+		return ImmutableSet.copyOf(adWindowIds);
+	}
+
+	@Override
+	public ImmutableSet<AdWindowId> retrieveAllActiveAdWindowIds()
+	{
+		return queryBL.createQueryBuilder(I_AD_Window.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listIds(AdWindowId::ofRepoId);
 	}
 }

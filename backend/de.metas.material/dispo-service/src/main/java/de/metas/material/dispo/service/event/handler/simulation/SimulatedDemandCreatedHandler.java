@@ -63,10 +63,10 @@ public class SimulatedDemandCreatedHandler implements MaterialEventHandler<Simul
 				UNSPECIFIED_REPO_ID,
 				event.getDocumentLineDescriptor(),
 				event.getMaterialDescriptor().getQuantity())
-				.withTraceId(event.getEventDescriptor().getTraceId());
+				.withTraceId(event.getTraceId());
 
 		final Candidate.CandidateBuilder candidateBuilder = Candidate
-				.builderForEventDescr(event.getEventDescriptor())
+				.builderForEventDescriptor(event.getEventDescriptor())
 				.materialDescriptor(event.getMaterialDescriptor())
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.SHIPMENT)

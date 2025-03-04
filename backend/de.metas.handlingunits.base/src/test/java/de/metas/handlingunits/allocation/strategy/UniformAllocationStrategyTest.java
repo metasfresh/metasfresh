@@ -11,6 +11,7 @@ import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.allocation.transfer.LUTUResult;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.expectations.HUExpectation;
 import de.metas.handlingunits.expectations.HUItemExpectation;
@@ -21,6 +22,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.util.TraceUtils;
+import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.QuantityTU;
@@ -29,6 +31,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.X_C_UOM;
@@ -42,6 +45,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 
+import static de.metas.handlingunits.QtyTU.ONE;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -335,20 +339,23 @@ public class UniformAllocationStrategyTest
 		@BeforeEach
 		public void beforeEach()
 		{
+			SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
+
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 			final HUTransformService huTransformService = HUTransformService.newInstance(lutuProducerDestinationTestSupport.helper.getHUContext());
 
 			final Quantity two = Quantity.of("2", helper.uomEach);
 			final I_M_HU firstTU = handlingUnitsDAO.retrieveParent(lutuProducerDestinationTestSupport.mkRealCUWithTUandQtyCU(two));
 			final List<I_M_HU> lus = huTransformService.tuToNewLUs(firstTU,
-					BigDecimal.ONE,
-					lutuProducerDestinationTestSupport.piLU_Item_IFCO,
-					true);
+							ONE,
+							lutuProducerDestinationTestSupport.piLU_Item_IFCO,
+							true)
+					.getLURecords();
 			lu = lus.get(0);
 			for (int i = 0; i < 51; i++)
 			{
 				final I_M_HU tu = handlingUnitsDAO.retrieveParent(lutuProducerDestinationTestSupport.mkRealCUWithTUandQtyCU(two));
-				huTransformService.tuToExistingLU(tu, BigDecimal.ONE, lu);
+				huTransformService.tuToExistingLU(tu, ONE, lu);
 			}
 			//helper.commitAndDumpHU(lu);
 
@@ -378,20 +385,21 @@ public class UniformAllocationStrategyTest
 		@BeforeEach
 		public void beforeEach()
 		{
+			SpringContextHolder.registerJUnitBean(new DistributionNetworkRepository());
 			final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 			final HUTransformService huTransformService = HUTransformService.newInstance(lutuProducerDestinationTestSupport.helper.getHUContext());
 
 			final Quantity ten = Quantity.of("10", helper.uomEach);
 			final I_M_HU firstTU = handlingUnitsDAO.retrieveParent(lutuProducerDestinationTestSupport.mkRealCUWithTUandQtyCU(ten));
-			final List<I_M_HU> lus = huTransformService.tuToNewLUs(firstTU,
-					BigDecimal.ONE,
+			final LUTUResult lus = huTransformService.tuToNewLUs(firstTU,
+					ONE,
 					lutuProducerDestinationTestSupport.piLU_Item_IFCO,
 					true);
-			lu = lus.get(0);
+			lu = lus.getSingleLURecord();
 			for (int i = 0; i < 49; i++)
 			{
 				final I_M_HU tu = handlingUnitsDAO.retrieveParent(lutuProducerDestinationTestSupport.mkRealCUWithTUandQtyCU(ten));
-				huTransformService.tuToExistingLU(tu, BigDecimal.ONE, lu);
+				huTransformService.tuToExistingLU(tu, ONE, lu);
 			}
 
 			// dumpHU("initial", lu);

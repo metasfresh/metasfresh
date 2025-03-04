@@ -86,6 +86,10 @@ public abstract class AbstractHUTest
 	protected I_M_Attribute attr_Volume;
 	protected I_M_Attribute attr_FragileSticker;
 
+	protected I_M_Attribute attr_Age;
+
+	protected I_M_Attribute attr_AgeOffset;
+
 	/**
 	 * See {@link de.metas.handlingunits.HUTestHelper#attr_WeightGross}
 	 */
@@ -186,6 +190,9 @@ public abstract class AbstractHUTest
 		attr_WeightNet = helper.attr_WeightNet;
 		attr_WeightTare = helper.attr_WeightTare;
 		attr_WeightTareAdjust = helper.attr_WeightTareAdjust;
+
+		attr_Age = helper.attr_Age;
+		attr_AgeOffset = helper.attr_AgeOffset;
 
 		attr_QualityDiscountPercent = helper.attr_QualityDiscountPercent;
 		attr_QualityNotice = helper.attr_QualityNotice;

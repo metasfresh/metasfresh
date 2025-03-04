@@ -22,15 +22,18 @@ package de.metas.distribution.ddorder.lowlevel.interceptor;
  * #L%
  */
 
+import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
+import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocRepository;
+import de.metas.distribution.ddordercandidate.DeleteDDOrderCandidateAllocQuery;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.product.ResourceId;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.CopyRecordFactory;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_S_Resource;
 import org.compiere.model.ModelValidator;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.I_DD_OrderLine_Alternative;
@@ -44,8 +47,15 @@ class DD_OrderLine
 {
 	private final transient Logger logger = LogManager.getLogger(getClass());
 	private final DDOrderLowLevelService ddOrderLowLevelService;
+	private final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository;
 
-	DD_OrderLine(final DDOrderLowLevelService ddOrderLowLevelService) {this.ddOrderLowLevelService = ddOrderLowLevelService;}
+	DD_OrderLine(
+			final DDOrderLowLevelService ddOrderLowLevelService,
+			final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository)
+	{
+		this.ddOrderLowLevelService = ddOrderLowLevelService;
+		this.ddOrderCandidateAllocRepository = ddOrderCandidateAllocRepository;
+	}
 
 	@Init
 	public void init()
@@ -70,7 +80,7 @@ class DD_OrderLine
 	})
 	public void setPP_Plant_From_ID(final I_DD_OrderLine ddOrderLine)
 	{
-		I_S_Resource plantFrom = ddOrderLowLevelService.findPlantFromOrNull(ddOrderLine);
+		ResourceId plantFromId = ddOrderLowLevelService.findPlantFromOrNull(ddOrderLine);
 
 		//
 		// If no plant was found for "Warehouse From" we shall use the Destination Plant.
@@ -78,22 +88,25 @@ class DD_OrderLine
 		// Example when applies: MRP generated a DD order to move materials from a Raw materials warehouse to Plant warehouse.
 		// The raw materials warehouse is not assigned to a Plant so no further planning will be calculated.
 		// I see it as perfectly normal to use the Destination Plant in this case.
-		if (plantFrom == null)
+		if (plantFromId == null)
 		{
-			final I_S_Resource plantTo = ddOrderLine.getDD_Order().getPP_Plant();
-			plantFrom = plantTo;
+			final ResourceId plantToId = ResourceId.ofRepoIdOrNull(ddOrderLine.getDD_Order().getPP_Plant_ID());
+			plantFromId = plantToId;
 		}
 
-		if (plantFrom == null)
+		if (plantFromId == null)
 		{
 			final LiberoException ex = new LiberoException("@NotFound@ @PP_Plant_ID@"
-					+ "\n @M_Marehouse_ID@: " + ddOrderLine.getM_Locator_ID()
+					+ "\n @M_Locator_ID@: " + ddOrderLine.getM_Locator_ID()
 					+ "\n @M_Product_ID@: " + ddOrderLine.getM_Product_ID()
 					+ "\n @DD_OrderLine_ID@: " + ddOrderLine
 			);
 			logger.warn(ex.getLocalizedMessage(), ex);
 		}
-		ddOrderLine.setPP_Plant_From(plantFrom);
+		else
+		{
+			ddOrderLine.setPP_Plant_From_ID(plantFromId.getRepoId());
+		}
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
@@ -116,5 +129,13 @@ class DD_OrderLine
 	public void setUOMInDDOrderLine(final I_DD_OrderLine ddOrderLine)
 	{
 		ddOrderLowLevelService.updateUomFromProduct(ddOrderLine);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	public void beforeDelete(final I_DD_OrderLine record)
+	{
+		ddOrderCandidateAllocRepository.deleteByQuery(DeleteDDOrderCandidateAllocQuery.builder()
+															  .ddOrderLineId(DDOrderLineId.ofRepoId(record.getDD_OrderLine_ID()))
+															  .build());
 	}
 }

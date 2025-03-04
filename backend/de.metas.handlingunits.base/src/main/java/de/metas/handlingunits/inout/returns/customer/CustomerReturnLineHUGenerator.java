@@ -76,7 +76,7 @@ import java.util.Set;
 /**
  * Generates HUs for given customer return line(s).
  */
-public class CustomerReturnLineHUGenerator
+class CustomerReturnLineHUGenerator
 {
 
 	/**
@@ -97,13 +97,6 @@ public class CustomerReturnLineHUGenerator
 		}
 		return new CustomerReturnLineHUGenerator()
 				.setContext(contextToUse);
-	}
-
-	public static List<I_M_HU> generateForReturnLine(@NonNull final I_M_InOutLine returnLine)
-	{
-		return newInstance(PlainContextAware.newWithThreadInheritedTrx())
-				.addM_InOutLine(returnLine)
-				.generate();
 	}
 
 	// services
@@ -282,9 +275,9 @@ public class CustomerReturnLineHUGenerator
 	private List<I_M_HU> generateLUTUHandlingUnitsForQtyToAllocate(final IAllocationRequest request)
 	{
 		// needs to be threadInherited because we run in our own little TrxRunnable and everything created from the request shall be committed when we commit that runnable's local transaction.
-		Check.errorUnless(ITrx.TRXNAME_ThreadInherited.equals(request.getHUContext().getTrxName()),
+		Check.errorUnless(ITrx.TRXNAME_ThreadInherited.equals(request.getHuContext().getTrxName()),
 				"The trxName of the given request's HUContext needs to be {} or 'null', but is {}",
-				ITrx.TRXNAME_ThreadInherited, request.getHUContext().getTrxName());
+				ITrx.TRXNAME_ThreadInherited, request.getHuContext().getTrxName());
 
 		final List<I_M_HU> result = new ArrayList<>();
 

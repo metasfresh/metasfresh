@@ -3,10 +3,12 @@ package de.metas.ui.web.document.filter.provider;
 import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
+import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 
 /*

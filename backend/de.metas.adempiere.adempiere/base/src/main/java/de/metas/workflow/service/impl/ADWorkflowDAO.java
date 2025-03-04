@@ -60,6 +60,7 @@ import de.metas.workflow.service.WFNodeCreateRequest;
 import de.metas.workflow.service.WFNodeLayoutChangeRequest;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
@@ -373,7 +374,7 @@ public class ADWorkflowDAO implements IADWorkflowDAO
 		try
 		{
 			return WFNodeTransitionCondition.builder()
-					.adColumnId(record.getAD_Column_ID())
+					.adColumnId(AdColumnId.ofRepoId(record.getAD_Column_ID()))
 					.andJoin(X_AD_WF_NextCondition.ANDOR_And.equals(record.getAndOr()))
 					.operation(record.getOperation())
 					.conditionValue1(record.getValue())

@@ -11,6 +11,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -25,8 +26,6 @@ import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseAndLocatorValue;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.groups.picking.WarehousePickingGroup;
-import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.adempiere.warehouse.WarehouseType;
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.adempiere.warehouse.api.CreateOrUpdateLocatorRequest;
@@ -36,6 +35,8 @@ import org.adempiere.warehouse.groups.WarehouseGroupAssignment;
 import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
 import org.adempiere.warehouse.groups.WarehouseGroupId;
 import org.adempiere.warehouse.groups.WarehouseGroupsIndex;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroup;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.adempiere.warehouse.groups.picking.WarehousePickingGroupsIndex;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Locator;
@@ -97,7 +98,7 @@ public class WarehouseDAO implements IWarehouseDAO
 			.initialCapacity(10)
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
 			.build();
-	
+
 	private final CCache<Integer, WarehouseRoutingsIndex> allWarehouseRoutings = CCache.<Integer, WarehouseRoutingsIndex>builder()
 			.tableName(I_M_Warehouse_Routing.Table_Name)
 			.initialCapacity(1)
@@ -225,6 +226,10 @@ public class WarehouseDAO implements IWarehouseDAO
 	{
 		final I_M_Warehouse warehouse = getById(warehouseId);
 		final I_M_Locator locatorNew = newInstance(I_M_Locator.class, warehouse);
+		
+		// for some reason, in case warehouse has trxName=null then locatorNew will use thread inherited?!
+		// so to avoid this case we are setting it the trxName again
+		InterfaceWrapperHelper.setTrxName(locatorNew, InterfaceWrapperHelper.getTrxName(warehouse));
 
 		locatorNew.setAD_Org_ID(warehouse.getAD_Org_ID());
 		locatorNew.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
@@ -295,6 +300,21 @@ public class WarehouseDAO implements IWarehouseDAO
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@Override
+	public ImmutableSet<LocatorId> getLocatorIdsByRepoIds(final Set<Integer> locatorRepoIds)
+	{
+		if (locatorRepoIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return getLocatorsByRepoIds(locatorRepoIds)
+				.stream()
+				.map(record -> LocatorId.ofRepoId(record.getM_Warehouse_ID(), record.getM_Locator_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
 	public List<I_M_Locator> getLocatorByIds(final Collection<LocatorId> locatorIds)
 	{
 		return getLocatorByIds(locatorIds, I_M_Locator.class);
@@ -801,5 +821,27 @@ public class WarehouseDAO implements IWarehouseDAO
 				.addEqualsFilter(I_M_Warehouse.COLUMN_C_Location_ID, locationId)
 				.create()
 				.listIds(WarehouseId::ofRepoId);
+	}
+
+	@Override
+	public ClientAndOrgId getClientAndOrgIdByLocatorId(@NonNull LocatorId locatorId)
+	{
+		return getClientAndOrgIdByLocatorId(locatorId.getWarehouseId());
+	}
+
+	public ClientAndOrgId getClientAndOrgIdByLocatorId(@NonNull WarehouseId warehouseId)
+	{
+		final I_M_Warehouse warehouse = getById(warehouseId);
+		return ClientAndOrgId.ofClientAndOrg(warehouse.getAD_Client_ID(), warehouse.getAD_Org_ID());
+	}
+
+	@Override
+	@NonNull
+	public ImmutableSet<LocatorId> getLocatorIdsByRepoId(@NonNull final Collection<Integer> locatorIds)
+	{
+		return getLocatorsByRepoIds(ImmutableSet.copyOf(locatorIds))
+				.stream()
+				.map(LocatorId::ofRecord)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

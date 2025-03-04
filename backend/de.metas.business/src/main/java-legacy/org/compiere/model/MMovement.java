@@ -1,5 +1,6 @@
 package org.compiere.model;
 
+import de.metas.document.DocBaseType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
@@ -147,7 +148,7 @@ public class MMovement extends X_M_Movement implements IDocument
 	{
 		if (getC_DocType_ID() == 0)
 		{
-			MDocType[] types = MDocType.getOfDocBaseType(getCtx(), MDocType.DOCBASETYPE_MaterialMovement);
+			MDocType[] types = MDocType.getOfDocBaseType(getCtx(), DocBaseType.MaterialMovement);
 			if (types.length > 0)
 			{
 				setC_DocType_ID(types[0].getC_DocType_ID());
@@ -242,7 +243,7 @@ public class MMovement extends X_M_Movement implements IDocument
 		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 
 		//	Std Period open?
-		if (!MPeriod.isOpen(getCtx(), getMovementDate(), dt.getDocBaseType(), getAD_Org_ID()))
+		if (!MPeriod.isOpen(getCtx(), getMovementDate(), DocBaseType.ofCode(dt.getDocBaseType()), getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return IDocument.STATUS_Invalid;
@@ -250,8 +251,7 @@ public class MMovement extends X_M_Movement implements IDocument
 		MMovementLine[] lines = getLines(true);
 		if (lines.length == 0)
 		{
-			m_processMsg = "@NoLines@";
-			return IDocument.STATUS_Invalid;
+			throw AdempiereException.noLines();
 		}
 
 		//	Confirmation
@@ -555,7 +555,7 @@ public class MMovement extends X_M_Movement implements IDocument
 		}
 
 		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
-		if (!MPeriod.isOpen(getCtx(), getMovementDate(), dt.getDocBaseType(), getAD_Org_ID()))
+		if (!MPeriod.isOpen(getCtx(), getMovementDate(), DocBaseType.ofCode(dt.getDocBaseType()), getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return false;

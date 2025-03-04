@@ -6,35 +6,44 @@ import { get } from 'lodash';
 
 import {
   ACTIVATE_TAB,
-  ALLOW_SHORTCUT,
   ALLOW_OUTSIDE_CLICK,
+  ALLOW_SHORTCUT,
   CHANGE_INDICATOR_STATE,
   CLEAR_MASTER_DATA,
+  CLOSE_FILTER_BOX,
   CLOSE_MODAL,
   CLOSE_PLUGIN_MODAL,
   CLOSE_PROCESS_MODAL,
   CLOSE_RAW_MODAL,
-  CLOSE_FILTER_BOX,
-  DELETE_TOP_ACTIONS,
-  DISABLE_SHORTCUT,
   DISABLE_OUTSIDE_CLICK,
-  FETCH_TOP_ACTIONS,
-  FETCH_TOP_ACTIONS_FAILURE,
-  FETCH_TOP_ACTIONS_SUCCESS,
+  DISABLE_SHORTCUT,
   INIT_DATA_SUCCESS,
   INIT_LAYOUT_SUCCESS,
+  OPEN_FILTER_BOX,
   OPEN_MODAL,
   OPEN_PLUGIN_MODAL,
   OPEN_RAW_MODAL,
-  OPEN_FILTER_BOX,
   PATCH_FAILURE,
   PATCH_REQUEST,
   PATCH_RESET,
   PATCH_SUCCESS,
+  RESET_PRINTING_OPTIONS,
+  SET_INLINE_TAB_ADD_NEW,
+  SET_INLINE_TAB_ITEM_PROP,
+  SET_INLINE_TAB_LAYOUT_AND_DATA,
+  SET_INLINE_TAB_SHOW_MORE,
+  SET_INLINE_TAB_WRAPPER_DATA,
+  SET_PRINTING_OPTIONS,
   SET_RAW_MODAL_DESCRIPTION,
   SET_RAW_MODAL_TITLE,
+  SET_SPINNER,
   SORT_TAB,
   TOGGLE_OVERLAY,
+  TOGGLE_PRINTING_OPTION,
+  TOP_ACTIONS_DELETE,
+  TOP_ACTIONS_FAILURE,
+  TOP_ACTIONS_LOADING,
+  TOP_ACTIONS_SUCCESS,
   UNSELECT_TAB,
   UPDATE_DATA_FIELD_PROPERTY,
   UPDATE_DATA_INCLUDED_TABS_INFO,
@@ -42,24 +51,17 @@ import {
   UPDATE_DATA_SAVE_STATUS,
   UPDATE_DATA_VALID_STATUS,
   UPDATE_INLINE_TAB_DATA,
+  UPDATE_INLINE_TAB_ITEM_FIELDS,
+  UPDATE_INLINE_TAB_WRAPPER_FIELDS,
   UPDATE_MASTER_DATA,
   UPDATE_MODAL,
   UPDATE_RAW_MODAL,
   UPDATE_TAB_LAYOUT,
-  SET_PRINTING_OPTIONS,
-  RESET_PRINTING_OPTIONS,
-  TOGGLE_PRINTING_OPTION,
-  SET_INLINE_TAB_LAYOUT_AND_DATA,
-  SET_INLINE_TAB_WRAPPER_DATA,
-  UPDATE_INLINE_TAB_WRAPPER_FIELDS,
-  UPDATE_INLINE_TAB_ITEM_FIELDS,
-  SET_INLINE_TAB_ADD_NEW,
-  SET_INLINE_TAB_SHOW_MORE,
-  SET_INLINE_TAB_ITEM_PROP,
-  SET_SPINNER,
 } from '../constants/ActionTypes';
 
 import { updateTab } from '../utils';
+import { shallowEqual, useSelector } from 'react-redux';
+import { getScope } from '../utils/documentListHelper';
 
 const initialMasterState = {
   layout: {
@@ -68,15 +70,12 @@ const initialMasterState = {
   data: [],
   saveStatus: {},
   validStatus: {},
+  indicator: 'saved',
   includedTabsInfo: {},
   hasComments: false,
   docId: undefined,
   websocket: null,
-  topActions: {
-    actions: [],
-    fetching: false,
-    error: false,
-  },
+  topActions: {},
 };
 const initialModalState = {
   visible: false,
@@ -97,6 +96,7 @@ const initialModalState = {
   triggerField: null,
   saveStatus: {},
   validStatus: {},
+  indicator: 'saved',
   includedTabsInfo: {},
   staticModalType: '',
 };
@@ -138,7 +138,6 @@ export const initialState = {
 
   // this only feeds data to details view now
   master: initialMasterState,
-  indicator: 'saved',
   allowShortcut: true,
   allowOutsideClick: true,
   viewId: null,
@@ -159,20 +158,22 @@ export const initialState = {
  * @param {boolean} isModal
  */
 export const getData = (state, isModal = false) => {
-  const selector = isModal ? 'modal' : 'master';
-
-  return state.windowHandler[selector].data;
+  return getLayoutAndData(state, isModal).data;
 };
 
 export const getElementLayout = (state, isModal, layoutPath) => {
-  const selector = isModal ? 'modal' : 'master';
-  const layout = state.windowHandler[selector].layout;
+  const layout = getLayoutAndData(state, isModal).layout;
   const [sectionIdx, columnIdx, elGroupIdx, elLineIdx, elIdx] =
     layoutPath.split('_');
 
   return layout.sections[sectionIdx].columns[columnIdx].elementGroups[
     elGroupIdx
   ].elementsLine[elLineIdx].elements[elIdx];
+};
+
+export const getLayoutAndData = (state, isModal = false) => {
+  const selector = getScope(isModal);
+  return state.windowHandler[selector] ?? {};
 };
 
 export const getInlineTabLayout = ({
@@ -221,7 +222,7 @@ const selectWidgetData = (data, layout) => {
     }, []);
   }
 
-  if (!widgetData.length) {
+  if (!widgetData || !widgetData.length) {
     widgetData = [{}];
   }
 
@@ -303,6 +304,56 @@ export const getMasterDocStatus = createSelector(getData, (data) => {
     },
   ];
 });
+
+export const useTopActions = ({ tabId }) => {
+  return useSelector(
+    (state) => selectTopActionsArray(state, tabId),
+    shallowEqual
+  );
+};
+
+const selectTopActionsArray = (state, tabId) => {
+  return state.windowHandler.master?.topActions?.[tabId]?.actions ?? [];
+};
+
+const mergeTopActions = (state, tabId, topActions) => {
+  if (topActions == null) {
+    return update(state, {
+      master: { topActions: { $unset: [tabId] } },
+    });
+  } else if (state.master.topActions[tabId]) {
+    return update(state, {
+      master: { topActions: { [tabId]: { $merge: topActions } } },
+    });
+  } else {
+    return update(state, {
+      master: { topActions: { [tabId]: { $set: topActions } } },
+    });
+  }
+};
+
+export const getIndicatorFromState = ({
+  state,
+  windowHandler,
+  isModal = false,
+}) => {
+  const windowHandlerEff = windowHandler ? windowHandler : state.windowHandler;
+  return windowHandlerEff[getScope(isModal)].indicator;
+};
+
+const updateIndicatorToState = ({ windowHandler, indicator, isModal }) => {
+  return update(windowHandler, {
+    [getScope(isModal)]: { indicator: { $set: indicator } },
+  });
+};
+
+//
+//
+//
+//
+//
+//
+//
 
 export default function windowHandler(state = initialState, action) {
   switch (action.type) {
@@ -424,23 +475,50 @@ export default function windowHandler(state = initialState, action) {
 
     // SCOPED ACTIONS
 
-    case INIT_LAYOUT_SUCCESS:
+    case INIT_LAYOUT_SUCCESS: {
       return {
         ...state,
         [action.scope]: {
           ...state[action.scope],
-          layout: action.layout,
+          layout: {
+            activeTab: state[action.scope].layout.activeTab, // preserve activeTab. In future consider extracting activeTab out of layout object
+            ...action.layout,
+          },
         },
       };
+    }
+    case INIT_DATA_SUCCESS: {
+      let layout = state[action.scope].layout ?? {};
 
-    case INIT_DATA_SUCCESS:
+      // If the action data is for another windowId then reset the layout.
+      // "INIT_LAYOUT_SUCCESS" action to come afterward and set the actual layout.
+      if (
+        action.windowId !== undefined &&
+        layout.windowId !== action.windowId
+      ) {
+        layout = {};
+      }
+
+      if (action.notFoundMessage !== undefined) {
+        layout = {
+          ...layout,
+          notFoundMessage: action.notFoundMessage,
+        };
+      }
+      if (action.notFoundMessageDetail !== undefined) {
+        layout = {
+          ...layout,
+          notFoundMessageDetail: action.notFoundMessageDetail,
+        };
+      }
+
       return {
         ...state,
         [action.scope]: {
           ...state[action.scope],
           data: action.data,
           docId: action.docId,
-          layout: {},
+          layout,
           saveStatus: action.saveStatus,
           standardActions: action.standardActions,
           validStatus: action.validStatus,
@@ -449,6 +527,7 @@ export default function windowHandler(state = initialState, action) {
           hasComments: action.hasComments,
         },
       };
+    }
     case UPDATE_MASTER_DATA:
       return {
         ...state,
@@ -684,59 +763,35 @@ export default function windowHandler(state = initialState, action) {
       };
     // INDICATOR ACTIONS
     case CHANGE_INDICATOR_STATE:
-      return {
-        ...state,
+      return updateIndicatorToState({
+        windowHandler: state,
         indicator: action.state,
-      };
+        isModal: action.isModal,
+      });
 
     // TOP ACTIONS
-    case FETCH_TOP_ACTIONS:
-      return {
-        ...state,
-        master: {
-          ...state.master,
-          topActions: {
-            ...state.master.topActions,
-            fetching: true,
-          },
-        },
-      };
-    case FETCH_TOP_ACTIONS_SUCCESS:
-      return {
-        ...state,
-        master: {
-          ...state.master,
-          topActions: {
-            ...state.master.topActions,
-            actions: action.payload,
-            fetching: false,
-          },
-        },
-      };
-    case FETCH_TOP_ACTIONS_FAILURE:
-      return {
-        ...state,
-        master: {
-          ...state.master,
-          topActions: {
-            ...state.master.topActions,
-            fetching: false,
-            error: true,
-          },
-        },
-      };
-    case DELETE_TOP_ACTIONS: {
-      return {
-        ...state,
-        master: {
-          ...state.master,
-          topActions: {
-            ...state.master.topActions,
-            actions: [],
-          },
-        },
-      };
+    case TOP_ACTIONS_LOADING: {
+      return mergeTopActions(state, action.payload.tabId, {
+        fetching: true,
+      });
     }
+    case TOP_ACTIONS_SUCCESS: {
+      return mergeTopActions(state, action.payload.tabId, {
+        fetching: false,
+        error: false,
+        actions: action.payload.actions,
+      });
+    }
+    case TOP_ACTIONS_FAILURE: {
+      return mergeTopActions(state, action.payload.tabId, {
+        fetching: false,
+        error: true,
+      });
+    }
+    case TOP_ACTIONS_DELETE: {
+      return mergeTopActions(state, action.payload.tabId, null);
+    }
+
     case SET_SPINNER: {
       return {
         ...state,

@@ -1,13 +1,14 @@
 import axios from 'axios';
 import { apiBasePath } from '../../constants';
 import { unboxAxiosResponse } from '../../utils';
-import { toQRCodeString } from '../../utils/huQRCodes';
+import { toQRCodeString } from '../../utils/qrCode/hu';
+import { toLocatorQRCodeString } from '../../utils/qrCode/locator';
 
 const huAPIBasePath = `${apiBasePath}/material/handlingunits`;
 
 export const getHUByQRCode = (qrCode) => {
   return axios
-    .post(`${huAPIBasePath}/byQRCode`, { qrCode })
+    .post(`${huAPIBasePath}/hu-manager/byQRCode`, { qrCode })
     .then(unboxAxiosResponse)
     .then((response) => response.result);
 };
@@ -49,10 +50,50 @@ export function getAllowedClearanceStatusesRequest({ huId }) {
 
 export function setClearanceStatusRequest({ huId, clearanceNote = null, clearanceStatus }) {
   return axios.put(`${huAPIBasePath}/clearance`, {
-    huIdentifier: {
-      metasfreshId: huId,
-    },
+    huIdentifier: { metasfreshId: huId },
     clearanceStatus,
     clearanceNote,
   });
 }
+
+export const changeQty = ({
+  huId,
+  huQRCode,
+  description,
+  qty,
+  locatorQRCode,
+  setBestBeforeDate,
+  bestBeforeDate,
+  setLotNo,
+  lotNo,
+}) => {
+  return axios
+    .post(`${huAPIBasePath}/qty`, {
+      huId,
+      huQRCode: toQRCodeString(huQRCode),
+      qty,
+      description,
+      locatorQRCode: locatorQRCode ? toLocatorQRCodeString(locatorQRCode) : null,
+      splitOneIfAggregated: true,
+      setBestBeforeDate,
+      bestBeforeDate: setBestBeforeDate ? bestBeforeDate : null,
+      setLotNo,
+      lotNo: setLotNo ? lotNo : null,
+    })
+    .then(unboxAxiosResponse)
+    .then((response) => response.result);
+};
+
+export const printHULabels = ({ huId, huLabelProcessId, nrOfCopies }) => {
+  return axios
+    .post(`${huAPIBasePath}/huLabels/print`, {
+      huId: huId,
+      huLabelProcessId: huLabelProcessId,
+      nrOfCopies: nrOfCopies,
+    })
+    .then(unboxAxiosResponse);
+};
+
+export const getPrintingOptions = () => {
+  return axios.get(`${huAPIBasePath}/huLabels/printingOptions`).then(unboxAxiosResponse);
+};

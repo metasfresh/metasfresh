@@ -39,11 +39,9 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.quantity.Quantity;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_UOM;
@@ -59,6 +57,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -158,9 +157,12 @@ public class PurchaseDemandWithCandidatesServiceTest
 		final I_M_DiscountSchema discountSchemaRecord = newInstance(I_M_DiscountSchema.class);
 		discountSchemaRecord.setDiscountType(X_M_DiscountSchema.DISCOUNTTYPE_Breaks);
 		discountSchemaRecord.setBreakValueType(BreakValueType.QUANTITY.getCode());
+		discountSchemaRecord.setValidFrom(Timestamp.valueOf("2017-01-01 10:10:10.0"));
 		saveRecord(discountSchemaRecord);
 
 		paymentTermRecord = newInstance(I_C_PaymentTerm.class);
+		paymentTermRecord.setValue("test payment term");
+		paymentTermRecord.setName("test payment term");
 		saveRecord(paymentTermRecord);
 
 		discountSchemaBreakRecord = newInstance(I_M_DiscountSchemaBreak.class);

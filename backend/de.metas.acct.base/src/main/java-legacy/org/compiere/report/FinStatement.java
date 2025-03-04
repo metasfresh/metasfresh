@@ -16,24 +16,23 @@
  *****************************************************************************/
 package org.compiere.report;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-
+import de.metas.acct.api.AcctSchemaElementType;
+import de.metas.i18n.Language;
+import de.metas.i18n.Msg;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
 import org.compiere.model.MElementValue;
 import org.compiere.model.MPeriod;
 import org.compiere.print.MPrintFormat;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.acct.api.AcctSchemaElementType;
-import de.metas.i18n.Language;
-import de.metas.i18n.Msg;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 /**
  *  Statement of Account
@@ -288,7 +287,7 @@ public class FinStatement extends JavaProcess
 			+ "DateAcct, Name, Description,"
 			+ "AmtAcctDr, AmtAcctCr, Balance, Qty) ");
 		sb.append("SELECT ").append(getPinstanceId().getRepoId()).append(",0,0,")
-			.append(DB.TO_DATE(p_DateAcct_From, true)).append(",")
+			.append(DB.TO_DATE(p_DateAcct_From)).append(",")
 			.append(DB.TO_STRING(Msg.getMsg(Env.getCtx(), "BeginningBalance"))).append(",NULL,"
 			+ "COALESCE(SUM(AmtAcctDr),0), COALESCE(SUM(AmtAcctCr),0), COALESCE(SUM(AmtAcctDr-AmtAcctCr),0), COALESCE(SUM(Qty),0) "
 			+ "FROM Fact_Acct "

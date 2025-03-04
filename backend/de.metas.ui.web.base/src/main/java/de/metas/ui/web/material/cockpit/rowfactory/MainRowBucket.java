@@ -1,14 +1,13 @@
 package de.metas.ui.web.material.cockpit.rowfactory;
 
+import de.metas.material.cockpit.ProductWithDemandSupply;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
-import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.money.Money;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -129,7 +128,6 @@ public class MainRowBucket
 	{
 		final IProductBL productBL = Services.get(IProductBL.class);
 
-
 		final ProductId productId = ProductId.ofRepoId(cockpitRecord.getM_Product_ID());
 		final I_C_UOM uom = productBL.getStockUOM(productId);
 
@@ -150,7 +148,7 @@ public class MainRowBucket
 
 		qtyStockEstimateCountAtDate = addToNullable(qtyStockEstimateCountAtDate, cockpitRecord.getQtyStockEstimateCount_AtDate(), uom);
 		qtyStockEstimateTimeAtDate = TimeUtil.max(qtyStockEstimateTimeAtDate, TimeUtil.asInstant(cockpitRecord.getQtyStockEstimateTime_AtDate()));
-		
+
 		// Take the minimum QtyStockEstimateSeqNo_AtDate of all MD_Cockpit records. But take 0 is equivalent to null
 		final Integer seqNoToUse = (cockpitRecord.getQtyStockEstimateSeqNo_AtDate() <= 0) ? null : cockpitRecord.getQtyStockEstimateSeqNo_AtDate();
 		if (qtyStockEstimateSeqNoAtDate != null && seqNoToUse != null)
@@ -192,9 +190,9 @@ public class MainRowBucket
 		stockRecordIds.add(stockRecord.getMD_Stock_ID());
 	}
 
-	public void addQuantitiesRecord(@NonNull final I_QtyDemand_QtySupply_V quantitiesRecord)
+	public void addQuantitiesRecord(@NonNull final ProductWithDemandSupply quantitiesRecord)
 	{
-		final I_C_UOM uom = uomDAO.getById(UomId.ofRepoId(quantitiesRecord.getC_UOM_ID()));
+		final I_C_UOM uom = uomDAO.getById(quantitiesRecord.getUomId());
 
 		qtyDemandSalesOrder = addToNullable(qtyDemandSalesOrder, quantitiesRecord.getQtyReserved(), uom);
 		qtySupplyPurchaseOrder = addToNullable(qtySupplyPurchaseOrder, quantitiesRecord.getQtyToMove(), uom);

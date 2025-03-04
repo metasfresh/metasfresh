@@ -1,22 +1,6 @@
 package de.metas.bpartner.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.junit.Before;
-import org.junit.Test;
-
 import com.google.common.base.Predicates;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -28,6 +12,19 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.junit.Before;
+import org.junit.Test;
+
+import javax.annotation.Nullable;
+import java.util.function.Predicate;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -187,9 +184,9 @@ public class BPartnerBL_RetrieveContactOrNullTests
 		assertThat(result.getName()).isEqualTo("C");
 	}
 
-	private de.metas.bpartner.service.impl.BPartnerBL_RetrieveContactOrNullTests.UserRecordCreator.UserRecordCreatorBuilder userRecordCreator()
+	private BPartnerBL_RetrieveContactOrNullTests.UserRecordCreator.UserRecordCreatorBuilder userRecordCreator()
 	{
-		final de.metas.bpartner.service.impl.BPartnerBL_RetrieveContactOrNullTests.UserRecordCreator.UserRecordCreatorBuilder builder = UserRecordCreator
+		final BPartnerBL_RetrieveContactOrNullTests.UserRecordCreator.UserRecordCreatorBuilder builder = UserRecordCreator
 				.builder()
 				.bpartnerId(bpartnerId);
 		return builder;

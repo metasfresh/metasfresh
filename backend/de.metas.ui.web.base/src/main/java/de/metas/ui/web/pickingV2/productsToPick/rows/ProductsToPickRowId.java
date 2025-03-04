@@ -1,7 +1,11 @@
 package de.metas.ui.web.pickingV2.productsToPick.rows;
 
+import javax.annotation.Nullable;
+
 import de.metas.handlingunits.HuId;
 import de.metas.inout.ShipmentScheduleId;
+import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.AccessLevel;
@@ -10,10 +14,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
-import org.eevolution.api.PPOrderBOMLineId;
-import org.eevolution.api.PPOrderId;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L

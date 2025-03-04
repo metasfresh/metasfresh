@@ -1,5 +1,5 @@
 import React from 'react';
-import { shallow, mount } from 'enzyme';
+import { mount, shallow } from 'enzyme';
 import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import { merge } from 'merge-anything';
@@ -7,7 +7,7 @@ import { merge } from 'merge-anything';
 import { initialState as appHandlerState } from '../../../reducers/appHandler';
 import { initialState as windowHandlerState } from '../../../reducers/windowHandler';
 import viewHandler from '../../../reducers/viewHandler';
-import tablesHandler, { initialTableState, getTableId } from '../../../reducers/tables';
+import tablesHandler, { getTableId, initialTableState } from '../../../reducers/tables';
 import { createTableData } from '../../../actions/TableActions';
 import propsData from '../../../../test_setup/fixtures/table/props.json';
 import tableData from '../../../../test_setup/fixtures/table/data.json';
@@ -65,12 +65,12 @@ const tableProps = {
 
 describe('Table component', () => {
   it('renders without errors with bare props', () => {
-    shallow(<Table {...tableProps} />);
+    shallow(<Provider store={store}><Table {...tableProps} /></Provider>);
   });
 
   it('props passed are correctly set within the wrapper', () => {
-    const wrapper = mount(<Table {...tableProps} />);
-    const wrapperProps = wrapper.props();
+    const wrapper = mount(<Provider store={store}><Table {...tableProps} /></Provider>);
+    const wrapperProps = wrapper.find(Table).props();
 
     expect(wrapperProps.entity).toEqual(tableProps.entity);
     expect(wrapperProps.windowId).toEqual(tableProps.windowId);
@@ -91,7 +91,7 @@ describe('Table component', () => {
       ...tableProps,
       rows: [],
     };
-    const wrapper = shallow(<Table {...localProps} />);
+    const wrapper = shallow(<Provider store={store}><Table {...localProps} /></Provider>);
 
     expect(wrapper.html()).toContain(tableData.emptyResultText);
   });
