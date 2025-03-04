@@ -24,6 +24,7 @@ package de.metas.ui.web.replenish.process;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.AdMessageKey;
 import de.metas.mforecast.ForecastRequest;
 import de.metas.mforecast.impl.ForecastId;
@@ -46,12 +47,10 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
 import java.time.DayOfWeek;
-import java.time.LocalDate;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
@@ -68,7 +67,7 @@ public class WEBUI_M_Replenish_Generate_Forecasts extends ViewBasedProcessTempla
 
 	private static final String PARAM_DatePromised = I_M_Forecast.COLUMNNAME_DatePromised;
 	@Param(parameterName = PARAM_DatePromised, mandatory = true)
-	private Timestamp p_DatePromised;
+	private Instant p_DatePromised;
 
 	@Override
 	public final ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -102,7 +101,7 @@ public class WEBUI_M_Replenish_Generate_Forecasts extends ViewBasedProcessTempla
 				.map(entry -> ForecastRequest.builder()
 						.name(warehouseBL.getWarehouseName(entry.getKey()) + "_" + p_DatePromised)
 						.warehouseId(entry.getKey())
-						.datePromised(TimeUtil.asInstant(p_DatePromised))
+						.datePromised(p_DatePromised)
 						.forecastLineRequests(entry.getValue().stream()
 								.map(this::toForecastLineRequest)
 								.collect(ImmutableList.toImmutableList()))
@@ -141,14 +140,14 @@ public class WEBUI_M_Replenish_Generate_Forecasts extends ViewBasedProcessTempla
 	}
 
 	@NonNull
-	private Timestamp getDefaultDatePromised()
+	private Instant getDefaultDatePromised()
 	{
 		final OrgId orgId = getOrgId() != null ? getOrgId() : Env.getOrgId();
 		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
 
-		return TimeUtil.asTimestamp(LocalDate.now()
+		return SystemTime.asLocalDate()
 				.with(TemporalAdjusters.next(DayOfWeek.MONDAY))
 				.atStartOfDay(timeZone)
-				.toInstant());
+				.toInstant();
 	}
 }

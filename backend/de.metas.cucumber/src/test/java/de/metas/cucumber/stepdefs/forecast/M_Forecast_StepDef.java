@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.forecast;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
+import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -68,11 +69,11 @@ public class M_Forecast_StepDef
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_Forecast_ID)
 				.forEach(tableRow -> {
-					final String name = tableRow.getAsString(I_M_Forecast.COLUMNNAME_Name);
+					final ValueAndName valueAndName = tableRow.suggestValueAndName();
 					final Timestamp datePromised = tableRow.getAsInstantTimestamp(I_M_Forecast.COLUMNNAME_DatePromised);
 					final I_M_Forecast forecastRecord = newInstance(I_M_Forecast.class);
 
-					forecastRecord.setName(name);
+					forecastRecord.setName(valueAndName.getName());
 					forecastRecord.setDatePromised(datePromised);
 
 					final StepDefDataIdentifier warehouseIdentifier = tableRow.getAsIdentifier(COLUMNNAME_M_Warehouse_ID);

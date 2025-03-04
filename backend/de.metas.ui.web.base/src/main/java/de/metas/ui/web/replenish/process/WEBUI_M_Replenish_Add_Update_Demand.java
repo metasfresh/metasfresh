@@ -109,23 +109,22 @@ public class WEBUI_M_Replenish_Add_Update_Demand extends ViewBasedProcessTemplat
 		{
 			return materialNeedsPlannerRow.getProductId();
 		}
-
-		if (PARAM_M_Warehouse_ID.equals(parameter.getColumnName()))
+		else if (PARAM_M_Warehouse_ID.equals(parameter.getColumnName()))
 		{
 			return materialNeedsPlannerRow.getWarehouseId();
 		}
-
-		if (PARAM_Level_Min.equals(parameter.getColumnName()))
+		else if (PARAM_Level_Min.equals(parameter.getColumnName()))
 		{
 			return materialNeedsPlannerRow.getLevelMin();
 		}
-
-		if (PARAM_Level_Max.equals(parameter.getColumnName()))
+		else if (PARAM_Level_Max.equals(parameter.getColumnName()))
 		{
 			return materialNeedsPlannerRow.getLevelMax();
 		}
-
-		return DEFAULT_VALUE_NOTAVAILABLE;
+		else
+		{
+			return DEFAULT_VALUE_NOTAVAILABLE;
+		}
 	}
 
 	@Override
