@@ -285,7 +285,7 @@ public class DesadvLineSSCC18Generator
 								invoiceUomId)
 						.toBigDecimal();
 			}
-			if (Services.get(IUOMDAO.class).isUOMForTUs(qtyCUsPerLU.getUomId()) && desadvLine.getQtyItemCapacity().signum() > 0)
+			if (uomDAO.isUOMForTUs(qtyCUsPerLU.getUomId()) && desadvLine.getQtyItemCapacity().signum() > 0)
 			{
 				qtyCUPerLUinInvoiceUOM = qtyCUsPerLU.toBigDecimal().multiply(desadvLine.getQtyItemCapacity());
 			}
