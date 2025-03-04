@@ -151,7 +151,7 @@ public final class Msg
 		{
 			if (adLanguage == null || adLanguage.length() == 0 || Env.isBaseLanguage(adLanguage, "AD_Language"))
 			{
-				pstmt = DB.prepareStatement("SELECT Value, MsgText, MsgTip FROM AD_Message", ITrx.TRXNAME_None);
+				pstmt = DB.prepareStatement("SELECT Value, MsgText, MsgTip, ErrorCode FROM AD_Message", ITrx.TRXNAME_None);
 			}
 			else
 			{
