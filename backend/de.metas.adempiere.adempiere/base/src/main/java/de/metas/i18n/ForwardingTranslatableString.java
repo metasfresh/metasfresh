@@ -66,6 +66,4 @@ final class ForwardingTranslatableString implements ITranslatableString
 		return getDelegate().getAD_Languages();
 	}
 
-	@Override
-	public String getErrorCode() {return getDelegate().getErrorCode();}
 }

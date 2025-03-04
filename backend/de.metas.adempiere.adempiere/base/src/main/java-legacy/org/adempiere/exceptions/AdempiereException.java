@@ -5,6 +5,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import de.metas.error.AdIssueId;
 import de.metas.error.IssueCategory;
+import de.metas.error.impl.ErrorManager;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -14,7 +15,6 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.logging.LoggingHelper;
@@ -243,7 +243,7 @@ public class AdempiereException extends RuntimeException
 	private final Map<String, String> mdcContextMap;
 
 	private boolean appendParametersToMessage = false;
-	@Nullable @Getter @Setter
+	@Nullable @Getter
 	private String errorCode = null;
 
 	public AdempiereException(final String message)
@@ -251,25 +251,29 @@ public class AdempiereException extends RuntimeException
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = TranslatableStrings.parse(message);
 		this.mdcContextMap = captureMDCContextMap();
-		this.errorCode = msgBL.getErrorCode(messageTrl);
 	}
 
-	public AdempiereException(@NonNull final ITranslatableString message)
+	public AdempiereException(@NonNull final ITranslatableString message, @Nullable final String errorCode)
 	{
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = message;
 		this.mdcContextMap = captureMDCContextMap();
-		this.errorCode = msgBL.getErrorCode(messageTrl);
+		this.errorCode = errorCode;
 		// when this constructor is called, usually we have nice error messages,
 		// so we can consider those user-friendly errors
 		this.userValidationError = true;
+	}
+
+	public AdempiereException(@NonNull final ITranslatableString message)
+	{
+		this(message, (String)null);
 	}
 
 	public AdempiereException(@NonNull final AdMessageKey messageKey)
 	{
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = msgBL.getTranslatableMsgText(messageKey);
-		this.errorCode = msgBL.getErrorCode(messageTrl);
+		this.errorCode = msgBL.getErrorCode(messageKey);
 		this.mdcContextMap = captureMDCContextMap();
 	}
 
@@ -278,7 +282,7 @@ public class AdempiereException extends RuntimeException
 		this.messageTrl = msgBL.getTranslatableMsgText(adMessage, params);
 		this.adLanguage = captureLanguageOnConstructionTime ? adLanguage : null;
 		this.mdcContextMap = captureMDCContextMap();
-		this.errorCode = msgBL.getErrorCode(messageTrl);
+		this.errorCode = msgBL.getErrorCode(adMessage);
 
 		setParameter("AD_Language", this.adLanguage);
 		setParameter("AD_Message", adMessage);
@@ -311,7 +315,7 @@ public class AdempiereException extends RuntimeException
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = message;
 		this.mdcContextMap = captureMDCContextMap();
-		this.errorCode = msgBL.getErrorCode(messageTrl);
+		this.errorCode = ErrorManager.getErrorCode(cause);
 	}
 
 	private static Map<String, String> captureMDCContextMap()
@@ -542,6 +546,12 @@ public class AdempiereException extends RuntimeException
 		return issueCategoryObj instanceof IssueCategory
 				? (IssueCategory)issueCategoryObj
 				: IssueCategory.OTHER;
+	}
+
+	public AdempiereException setErrorCode(@NonNull final String errorCode)
+	{
+		this.errorCode = errorCode;
+		return this;
 	}
 
 	/**

@@ -71,6 +71,4 @@ final class ADElementOrADMessageTranslatableString implements ITranslatableStrin
 		return Services.get(ILanguageBL.class).getAvailableLanguages().getAD_Languages();
 	}
 
-	@Override
-	public String getErrorCode() {return Msg.getErrorCode(text);}
 }

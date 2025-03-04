@@ -1,7 +1,12 @@
 package de.metas.phonecall.model.interceptor;
 
-import java.time.LocalDate;
-
+import de.metas.i18n.AdMessageKey;
+import de.metas.phonecall.PhonecallSchema;
+import de.metas.phonecall.PhonecallSchemaId;
+import de.metas.phonecall.PhonecallSchemaVersion;
+import de.metas.phonecall.PhonecallSchemaVersionId;
+import de.metas.phonecall.PhonecallSchemaVersionPOCopyRecordSupport;
+import de.metas.phonecall.service.PhonecallSchemaRepository;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -14,16 +19,7 @@ import org.compiere.util.TimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.phonecall.PhonecallSchema;
-import de.metas.phonecall.PhonecallSchemaId;
-import de.metas.phonecall.PhonecallSchemaVersion;
-import de.metas.phonecall.PhonecallSchemaVersionId;
-import de.metas.phonecall.PhonecallSchemaVersionPOCopyRecordSupport;
-import de.metas.phonecall.service.PhonecallSchemaRepository;
-import de.metas.util.Services;
+import java.time.LocalDate;
 
 /*
  * #%L
@@ -67,8 +63,6 @@ public class C_Phonecall_Schema_Version
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Phonecall_Schema_Version.COLUMNNAME_ValidFrom })
 	public void forbidNewVersionWithSameValidFromDate(final I_C_Phonecall_Schema_Version phonecallSchemaVersion)
 	{
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-
 		final PhonecallSchemaId schemaId = PhonecallSchemaId.ofRepoId(phonecallSchemaVersion.getC_Phonecall_Schema_ID());
 		final PhonecallSchemaVersionId versionId = PhonecallSchemaVersionId.ofRepoIdOrNull(schemaId, phonecallSchemaVersion.getC_Phonecall_Schema_Version_ID());
 		final LocalDate validFrom = TimeUtil.asLocalDate(phonecallSchemaVersion.getValidFrom());
@@ -79,11 +73,9 @@ public class C_Phonecall_Schema_Version
 		if (existingVersion != null
 				&& (versionId == null || !versionId.equals(existingVersion.getId())))
 		{
-			final ITranslatableString noPermissionMessage = msgBL.getTranslatableMsgText(MSG_Existing_Phonecall_Schema_Version_Same_ValidFrom,
+			throw new AdempiereException(MSG_Existing_Phonecall_Schema_Version_Same_ValidFrom,
 					phonecallSchemaVersion.getName(),
 					validFrom);
-
-			throw new AdempiereException(noPermissionMessage);
 		}
 	}
 

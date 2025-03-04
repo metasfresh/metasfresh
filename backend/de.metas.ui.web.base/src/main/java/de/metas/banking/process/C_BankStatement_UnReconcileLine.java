@@ -1,19 +1,17 @@
 package de.metas.banking.process;
 
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.banking.BankStatementLineId;
 import de.metas.document.engine.DocStatus;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+
+import java.util.Set;
 
 /*
  * #%L
@@ -73,7 +71,7 @@ public class C_BankStatement_UnReconcileLine extends BankStatementBasedProcess
 		final DocStatus docStatus = DocStatus.ofCode(bankStatement.getDocStatus());
 		if (!docStatus.isDraftedInProgressOrCompleted())
 		{
-			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_BankStatement_MustBe_Draft_InProgress_Or_Completed));
+			throw new AdempiereException(MSG_BankStatement_MustBe_Draft_InProgress_Or_Completed);
 		}
 
 		final I_C_BankStatementLine bankStatementLine = getSingleSelectedBankStatementLine();

@@ -1,6 +1,5 @@
 package de.metas.i18n;
 
-import javax.annotation.Nullable;
 import java.util.Set;
 
 
@@ -31,7 +30,6 @@ import java.util.Set;
  * For more helpers, check {@link TranslatableStrings}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public interface ITranslatableString
 {
@@ -45,6 +43,4 @@ public interface ITranslatableString
 	{
 		return getAD_Languages().contains(adLanguage);
 	}
-
-	default @Nullable String getErrorCode() {return null;}
 }

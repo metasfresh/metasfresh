@@ -159,10 +159,4 @@ public interface IMsgBL extends ISingletonService
 	@Nullable
 	String getErrorCode(@NonNull final AdMessageKey messageKey);
 
-	@Nullable
-	default String getErrorCode(@NonNull final ITranslatableString translatableString)
-	{
-		return translatableString.getErrorCode();
-	}
-
 }
