@@ -60,6 +60,6 @@ public class MaterialNeedsPlannerRow
 			return false;
 		}
 
-		return !BigDecimal.ZERO.equals(getLevelMin());
+		return getLevelMin().compareTo(BigDecimal.ZERO) > 0;
 	}
 }
