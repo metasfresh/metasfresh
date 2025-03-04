@@ -68,6 +68,7 @@ public class M_PriceList_Create extends JavaProcess implements IProcessPrecondit
 					, "select M_PriceList_Version_CopyFromBase(p_M_PriceList_Version_ID:=?, p_AD_User_ID:=?)" //
 					, new Object[] { getTargetPriceListVersion_ID(), getAD_User_ID() } //
 			);
+
 			cloneASIs();
 		}
 		finally
