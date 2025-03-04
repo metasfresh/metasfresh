@@ -153,7 +153,7 @@ public class HandlingUnitsService
 	{
 		return JsonHUList.builder()
 				.hus(huIds.stream()
-						.map(huId -> getFullHU(huId, null, Env.getADLanguageOrBaseLanguage(), false))
+						.map(huId -> getFullHU(huId, null, adLanguage, false))
 						.collect(ImmutableList.toImmutableList()))
 				.build();
 	}
