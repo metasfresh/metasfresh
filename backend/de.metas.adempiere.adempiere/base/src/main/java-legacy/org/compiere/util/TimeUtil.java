@@ -1686,7 +1686,8 @@ public class TimeUtil
 			return asLocalDateTime(obj, zoneId).toLocalDate();
 		}
 	}
-
+	
+	@Contract("!null, _ -> !null")
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final Timestamp timestamp, @NonNull final ZoneId zoneId)
 	{
@@ -1695,6 +1696,7 @@ public class TimeUtil
 				: null;
 	}
 
+	@Contract("!null, _ -> !null")
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final ZonedDateTime zonedDateTime, @NonNull final ZoneId zoneId)
 	{
@@ -1703,6 +1705,7 @@ public class TimeUtil
 				: null;
 	}
 
+	@Contract("!null, _ -> !null")
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final Instant instant, @NonNull final ZoneId zoneId)
 	{
@@ -1865,6 +1868,7 @@ public class TimeUtil
 		return asZonedDateTime(obj, SystemTime.zoneId());
 	}
 
+	@Contract("!null, _ -> !null")
 	@Nullable
 	public static ZonedDateTime asZonedDateTime(@Nullable final Object obj, @NonNull final ZoneId zoneId)
 	{
