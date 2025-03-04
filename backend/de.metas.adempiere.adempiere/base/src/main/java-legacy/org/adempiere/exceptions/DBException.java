@@ -26,7 +26,7 @@ import java.util.Objects;
 public class DBException extends AdempiereException
 {
 
-	public static final String DB_ERROR_CODE_PREFIX = "DB - ";
+	public static final String DB_ERROR_CODE_PREFIX = "DB-";
 
 	/**
 	 * Wraps given throwable to {@link DBException} if is not already an {@link DBException}.
