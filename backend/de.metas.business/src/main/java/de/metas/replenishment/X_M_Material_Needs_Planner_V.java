@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_Material_Needs_Planner_V extends org.compiere.model.PO implements I_M_Material_Needs_Planner_V, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1700304408L;
+	private static final long serialVersionUID = -949700364L;
 
     /** Standard Constructor */
     public X_M_Material_Needs_Planner_V (final Properties ctx, final int M_Material_Needs_Planner_V_ID, @Nullable final String trxName)
@@ -49,15 +49,28 @@ public class X_M_Material_Needs_Planner_V extends org.compiere.model.PO implemen
 	}
 
 	@Override
-	public void setDemand (final @Nullable BigDecimal Demand)
+	public void setLevel_Max (final @Nullable BigDecimal Level_Max)
 	{
-		set_ValueNoCheck (COLUMNNAME_Demand, Demand);
+		set_ValueNoCheck (COLUMNNAME_Level_Max, Level_Max);
 	}
 
 	@Override
-	public BigDecimal getDemand() 
+	public BigDecimal getLevel_Max() 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Demand);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Level_Max);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setLevel_Min (final BigDecimal Level_Min)
+	{
+		set_ValueNoCheck (COLUMNNAME_Level_Min, Level_Min);
+	}
+
+	@Override
+	public BigDecimal getLevel_Min() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Level_Min);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

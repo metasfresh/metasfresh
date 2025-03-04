@@ -1,10 +1,8 @@
-package de.metas.mforecast;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,25 +20,32 @@ package de.metas.mforecast;
  * #L%
  */
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.mforecast.impl.ForecastId;
-import de.metas.util.ISingletonService;
+package de.metas.mforecast;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import lombok.Builder;
 import lombok.NonNull;
-import org.compiere.model.I_M_Forecast;
-import org.compiere.model.I_M_ForecastLine;
+import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
 
-import java.util.List;
-import java.util.stream.Stream;
+import java.time.Instant;
 
-public interface IForecastDAO extends ISingletonService
+@Value
+@Builder
+public class ForecastRequest
 {
-	List<I_M_ForecastLine> retrieveLinesByForecastId(int forecastId);
+	@NonNull WarehouseId warehouseId;
+	@NonNull Instant datePromised;
+	@NonNull String name;
+	@NonNull ImmutableList<ForecastLineRequest> forecastLineRequests;
 
-	I_M_ForecastLine getForecastLineById(int forecastLineRecordId);
-
-	@NonNull
-	ForecastId createForecast(@NonNull ForecastRequest request);
-
-	@NonNull
-	Stream<I_M_Forecast> streamRecordsByIds(@NonNull ImmutableSet<ForecastId> ids);
+	@Value
+	@Builder
+	public static class ForecastLineRequest
+	{
+		@NonNull ProductId productId;
+		@NonNull Quantity quantity;
+	}
 }
