@@ -23,6 +23,7 @@ import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
+import de.metas.handlingunits.picking.job.model.CurrentPickingTarget;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.LocatorInfo;
@@ -60,6 +61,7 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.OptionalBoolean;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
@@ -238,9 +240,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.id(pickingJobId)
 				.header(pickingJobHeader)
 				.pickFromHU(extractPickFromHU(record))
-				.pickingSlot(extractPickingSlot(record))
-				.luPickTarget(extractLUPickingTarget(record))
-				.tuPickTarget(extractTUPickingTarget(record))
+				.currentPickingTarget(extractCurrentPickingTarget(record))
 				.docStatus(PickingJobDocStatus.ofCode(record.getDocStatus()))
 				.lines(pickingJobLines.get(pickingJobId)
 						.stream()
@@ -269,12 +269,6 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		);
 	}
 
-	private @NotNull Optional<PickingSlotIdAndCaption> extractPickingSlot(final I_M_Picking_Job record)
-	{
-		return Optional.ofNullable(PickingSlotId.ofRepoIdOrNull(record.getM_PickingSlot_ID()))
-				.map(loadingSupportingServices::getPickingSlotIdAndCaption);
-	}
-
 	private PickingJobHeader toPickingJobHeader(final I_M_Picking_Job record)
 	{
 		@NonNull final OrgId orgId = OrgId.ofRepoId(record.getAD_Org_ID());
@@ -297,8 +291,25 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.build();
 	}
 
-	@NonNull
-	private Optional<LUPickingTarget> extractLUPickingTarget(final I_M_Picking_Job record)
+	private CurrentPickingTarget extractCurrentPickingTarget(final I_M_Picking_Job record)
+	{
+		return CurrentPickingTarget.builder()
+				.pickingSlot(extractPickingSlot(record))
+				.luPickingTarget(extractLUPickingTarget(record))
+				.tuPickingTarget(extractTUPickingTarget(record))
+				.build();
+	}
+
+	@Nullable
+	private PickingSlotIdAndCaption extractPickingSlot(final I_M_Picking_Job record)
+	{
+		return PickingSlotId.optionalOfRepoId(record.getM_PickingSlot_ID())
+				.map(loadingSupportingServices::getPickingSlotIdAndCaption)
+				.orElse(null);
+	}
+
+	@Nullable
+	private LUPickingTarget extractLUPickingTarget(final I_M_Picking_Job record)
 	{
 		final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoIdOrNull(record.getM_LU_HU_PI_ID());
 		final HuId luId = HuId.ofRepoIdOrNull(record.getM_LU_HU_ID());
@@ -306,32 +317,32 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		if (luId != null)
 		{
 			final HUQRCode qrCode = loadingSupportingServices.getQRCodeByHUId(luId);
-			return Optional.of(LUPickingTarget.ofExistingHU(luId, qrCode));
+			return LUPickingTarget.ofExistingHU(luId, qrCode);
 		}
 		else if (luPIId != null)
 		{
 			final String caption = loadingSupportingServices.getPICaption(luPIId);
-			return Optional.of(LUPickingTarget.ofPackingInstructions(luPIId, caption));
+			return LUPickingTarget.ofPackingInstructions(luPIId, caption);
 		}
 		else
 		{
-			return Optional.empty();
+			return null;
 		}
 	}
 
-	@NonNull
-	private Optional<TUPickingTarget> extractTUPickingTarget(final I_M_Picking_Job record)
+	@Nullable
+	private TUPickingTarget extractTUPickingTarget(final I_M_Picking_Job record)
 	{
 		final HuPackingInstructionsId tuPIId = HuPackingInstructionsId.ofRepoIdOrNull(record.getM_TU_HU_PI_ID());
 
 		if (tuPIId != null)
 		{
 			final String caption = loadingSupportingServices.getPICaption(tuPIId);
-			return Optional.of(TUPickingTarget.ofPackingInstructions(tuPIId, caption));
+			return TUPickingTarget.ofPackingInstructions(tuPIId, caption);
 		}
 		else
 		{
-			return Optional.empty();
+			return null;
 		}
 	}
 
@@ -363,7 +374,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 
 		final String salesOrderDocumentNo = loadingSupportingServices.getSalesOrderDocumentNo(salesOrderAndLineId.getOrderId());
 		final ITranslatableString productName = loadingSupportingServices.getProductName(productId);
-		final Optional<PickingSlotIdAndCaption> pickingSlot = extractPickingSlot(record);
+		final CurrentPickingTarget currentPickingTarget = extractCurrentPickingTarget(record);
 
 		final ITranslatableString caption;
 		switch (aggregationType)
@@ -373,7 +384,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				break;
 			case PRODUCT:
 				caption = TranslatableStrings.builder()
-						.append(pickingSlot.map(PickingSlotIdAndCaption::getCaption).orElse(""))
+						.append(currentPickingTarget.getPickingSlotCaption().orElse(""))
 						.appendIfNotEmpty(", ")
 						.append(salesOrderDocumentNo)
 						.build();
@@ -403,14 +414,65 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 						.collect(ImmutableList.toImmutableList()))
 				.isManuallyClosed(record.isManuallyClosed())
 				.pickingUnit(computePickingUnit(UomId.ofRepoIdOrNull(record.getCatch_UOM_ID()), packingInfo, pickingJobOptions))
-				.pickingSlot(pickingSlot)
+				.currentPickingTarget(currentPickingTarget)
 				.build();
 	}
 
-	private @NotNull Optional<PickingSlotIdAndCaption> extractPickingSlot(final I_M_Picking_Job_Line record)
+	private CurrentPickingTarget extractCurrentPickingTarget(final I_M_Picking_Job_Line record)
 	{
-		return Optional.ofNullable(PickingSlotId.ofRepoIdOrNull(record.getM_PickingSlot_ID()))
-				.map(loadingSupportingServices::getPickingSlotIdAndCaption);
+		return CurrentPickingTarget.builder()
+				.pickingSlot(extractPickingSlot(record))
+				.luPickingTarget(extractLUPickingTarget(record))
+				.tuPickingTarget(extractTUPickingTarget(record))
+				.build();
+	}
+
+	@Nullable
+	private PickingSlotIdAndCaption extractPickingSlot(final I_M_Picking_Job_Line record)
+	{
+		return PickingSlotId.optionalOfRepoId(record.getM_PickingSlot_ID())
+				.map(loadingSupportingServices::getPickingSlotIdAndCaption)
+				.orElse(null);
+	}
+
+	@Nullable
+	private LUPickingTarget extractLUPickingTarget(final I_M_Picking_Job_Line record)
+	{
+		final HuPackingInstructionsId luPIId = HuPackingInstructionsId.ofRepoIdOrNull(record.getCurrent_PickTo_LU_PI_ID());
+		final HuId luId = HuId.ofRepoIdOrNull(record.getCurrent_PickTo_LU_ID());
+
+		if (luId != null)
+		{
+			final HUQRCode qrCode = StringUtils.trimBlankToOptional(record.getCurrent_PickTo_LU_QRCode())
+					.map(HUQRCode::fromGlobalQRCodeJsonString)
+					.orElseGet(() -> loadingSupportingServices.getQRCodeByHUId(luId));
+			return LUPickingTarget.ofExistingHU(luId, qrCode);
+		}
+		else if (luPIId != null)
+		{
+			final String caption = loadingSupportingServices.getPICaption(luPIId);
+			return LUPickingTarget.ofPackingInstructions(luPIId, caption);
+		}
+		else
+		{
+			return null;
+		}
+	}
+
+	@Nullable
+	private TUPickingTarget extractTUPickingTarget(final I_M_Picking_Job_Line record)
+	{
+		final HuPackingInstructionsId tuPIId = HuPackingInstructionsId.ofRepoIdOrNull(record.getCurrent_PickTo_TU_PI_ID());
+
+		if (tuPIId != null)
+		{
+			final String caption = loadingSupportingServices.getPICaption(tuPIId);
+			return TUPickingTarget.ofPackingInstructions(tuPIId, caption);
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	private static @NotNull BPartnerLocationId extractDeliveryBPLocationId(final @NotNull I_M_Picking_Job_Line record)

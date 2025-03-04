@@ -31,7 +31,6 @@ import de.metas.handlingunits.picking.candidate.commands.PackToHUsProducer;
 import de.metas.handlingunits.picking.candidate.commands.PackedHUWeightNetUpdater;
 import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
-import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
@@ -222,11 +221,13 @@ public class PickingJobPickCommand
 		this.pickingUnit = line.getPickingUnit();
 		if (this.pickingUnit.isTU())
 		{
-			if (pickingJob.getTuPickTarget().isPresent())
+			final TUPickingTarget tuPickingTarget = pickingJob.getTuPickingTargetEffective(this._lineId).orElse(null);
+			if (tuPickingTarget != null)
 			{
 				throw new AdempiereException(TU_CANNOT_BE_PICKED_ERROR_MSG)
 						.appendParametersToMessage()
-						.setParameter("PickingJobId", pickingJob.getId());
+						.setParameter("pickingJobId", pickingJob.getId())
+						.setParameter("pickingJobLineId", this._lineId);
 			}
 
 			this.qtyToPickTUs = QtyTU.ofBigDecimal(qtyToPickBD);
@@ -326,7 +327,7 @@ public class PickingJobPickCommand
 	{
 		_pickingJob.assertNotProcessed();
 
-		allocateLinePickingSlot();
+		checkOrAllocatePickingSlot();
 
 		validatePickFromHU();
 
@@ -363,6 +364,7 @@ public class PickingJobPickCommand
 		return getStepIdIfExists().map(_pickingJob::getStepById);
 	}
 
+	@NonNull
 	private PickingJobLineId getLineId() {return _lineId;}
 
 	private PickingJobLine getLine() {return _pickingJob.getLineById(getLineId());}
@@ -382,13 +384,12 @@ public class PickingJobPickCommand
 		_pickingJob = _pickingJob.withChangedStep(getStepId(), stepMapper);
 	}
 
-	private void allocateLinePickingSlot()
+	private void checkOrAllocatePickingSlot()
 	{
-		final PickingJobAggregationType aggregationType = getPickingJob().getAggregationType();
-		if (aggregationType.isLineLevelPickTargets())
+		if (isLineLevelPickTarget())
 		{
 			changeLine(line -> {
-				if (!line.getPickingSlot().isPresent())
+				if (!line.isPickingSlotSet())
 				{
 					return line.withPickingSlot(getPickingJob().getPickingSlotNotNull());
 				}
@@ -404,19 +405,28 @@ public class PickingJobPickCommand
 		}
 	}
 
+	private boolean isLineLevelPickTarget() {return getPickingJob().isLineLevelPickTarget();}
+
 	private Optional<LUPickingTarget> getLUPickingTarget()
 	{
-		return _pickingJob.getLuPickTarget();
+		return _pickingJob.getLuPickingTargetEffective(getLineId());
 	}
 
 	private Optional<TUPickingTarget> getTUPickingTarget()
 	{
-		return _pickingJob.getTuPickTarget();
+		return _pickingJob.getTuPickingTargetEffective(getLineId());
 	}
 
-	private void setPickingLUTarget(@NonNull final LUPickingTarget pickingLUTarget)
+	private void setPickingLUTarget(@NonNull final LUPickingTarget luPickingTarget)
 	{
-		_pickingJob = _pickingJob.withLuPickTarget(pickingLUTarget);
+		if (isLineLevelPickTarget())
+		{
+			_pickingJob = _pickingJob.withLuPickingTarget(getLineId(), luPickingTarget);
+		}
+		else
+		{
+			_pickingJob = _pickingJob.withLuPickingTarget(null, luPickingTarget);
+		}
 	}
 
 	private void setPickingLUTarget(@NonNull final LU lu)
@@ -440,7 +450,14 @@ public class PickingJobPickCommand
 
 	private void closePickingLUTarget()
 	{
-		this._pickingJob = pickingJobService.closeLUPickTarget(this._pickingJob);
+		if (isLineLevelPickTarget())
+		{
+			this._pickingJob = pickingJobService.closeLUPickingTarget(this._pickingJob, getLineId());
+		}
+		else
+		{
+			this._pickingJob = pickingJobService.closeLUPickingTarget(this._pickingJob, null);
+		}
 	}
 
 	private PickingJobStepId getStepId()
@@ -829,7 +846,7 @@ public class PickingJobPickCommand
 				public HUTransformService.TargetLU newLU(final HuPackingInstructionsId luPackingInstructionsId) {return HUTransformService.TargetLU.ofNewLU(handlingUnitsBL.getPI(luPackingInstructionsId));}
 
 				@Override
-				public HUTransformService.TargetLU existingLU(final HuId luId) {return HUTransformService.TargetLU.ofExistingLU(handlingUnitsBL.getById(luId));}
+				public HUTransformService.TargetLU existingLU(final HuId luId, final HUQRCode luQRCode) {return HUTransformService.TargetLU.ofExistingLU(handlingUnitsBL.getById(luId));}
 			});
 
 			result = huTransformService.luExtractTUs(LUExtractTUsRequest.builder()

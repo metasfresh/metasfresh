@@ -50,6 +50,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.Params;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -66,7 +67,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("picking.actualPicking");
 	public static final UIComponentType COMPONENTTYPE_PICK_PRODUCTS = UIComponentType.ofString("picking/pickProducts");
 
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final PickingJobRestService pickingJobRestService;
 
 	@Override
@@ -82,24 +83,10 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 			final @NonNull JsonOpts jsonOpts)
 	{
 		final PickingJob pickingJob = getPickingJob(wfProcess);
-		final PickingJobOptions pickingJobOptions = pickingJobRestService.getPickingJobOptions(pickingJob.getCustomerId());
-		final JsonPickingJob jsonPickingJob = JsonPickingJob.builderFrom(pickingJob)
-				.lines(toJsonPickingJobLines(pickingJob, pickingJobOptions, jsonOpts))
-				.build();
 
 		return UIComponent.builderFrom(COMPONENTTYPE_PICK_PRODUCTS, wfActivity)
 				.properties(Params.builder()
-						.valueObj("aggregationType", jsonPickingJob.getAggregationType())
-						.valueObj("pickFromHU", jsonPickingJob.getPickFromHU())
-						.valueObj("pickTarget", jsonPickingJob.getPickTarget())
-						.valueObj("tuPickTarget", jsonPickingJob.getTuPickTarget())
-						.valueObj("lines", jsonPickingJob.getLines())
-						.valueObj("pickFromAlternatives", jsonPickingJob.getPickFromAlternatives())
-						.valueObj("qtyRejectedReasons", JsonRejectReasonsList.of(pickingJobRestService.getQtyRejectedReasons(), jsonOpts))
-						.valueObj("isPickWithNewLU", pickingJobOptions.isPickWithNewLU())
-						.valueObj("isAllowSkippingRejectedReason", pickingJobOptions.isAllowSkippingRejectedReason())
-						.valueObj("isAllowNewTU", pickingJobOptions.isAllowNewTU())
-						.valueObj("isShowPromptWhenOverPicking", pickingJobOptions.isShowConfirmationPromptWhenOverPick())
+						.valueObj("pickingJob", toJsonPickingJob(pickingJob, jsonOpts))
 						.build())
 				.build();
 	}
@@ -135,6 +122,19 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 			default:
 				throw new AdempiereException("Unknown process status: " + progress);
 		}
+	}
+
+	private JsonPickingJob toJsonPickingJob(@NonNull final PickingJob pickingJob, final @NotNull JsonOpts jsonOpts)
+	{
+		final PickingJobOptions pickingJobOptions = pickingJobRestService.getPickingJobOptions(pickingJob.getCustomerId());
+		return JsonPickingJob.builderFrom(pickingJob)
+				.lines(toJsonPickingJobLines(pickingJob, pickingJobOptions, jsonOpts))
+				.qtyRejectedReasons(JsonRejectReasonsList.of(pickingJobRestService.getQtyRejectedReasons(), jsonOpts))
+				.isAllowSkippingRejectedReason(pickingJobOptions.isAllowSkippingRejectedReason())
+				.isPickWithNewLU(pickingJobOptions.isPickWithNewLU())
+				.isAllowNewTU(pickingJobOptions.isAllowNewTU())
+				.isShowPromptWhenOverPicking(pickingJobOptions.isShowConfirmationPromptWhenOverPick())
+				.build();
 	}
 
 	@NonNull

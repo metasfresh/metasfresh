@@ -25,6 +25,8 @@ package de.metas.picking.rest_api.json;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -41,6 +43,7 @@ public class JsonLUPickingTarget
 	@NonNull String caption;
 	@Nullable HuPackingInstructionsId luPIId;
 	@Nullable HuId luId;
+	@Nullable String luQRCode;
 
 	public static JsonLUPickingTarget of(@NonNull final LUPickingTarget target)
 	{
@@ -49,6 +52,7 @@ public class JsonLUPickingTarget
 				.caption(target.getCaption())
 				.luPIId(target.getLuPIId())
 				.luId(target.getLuId())
+				.luQRCode(target.getLuQRCode() != null ? target.getLuQRCode().toGlobalQRCodeString() : null)
 				.build();
 	}
 
@@ -58,6 +62,7 @@ public class JsonLUPickingTarget
 				.caption(caption)
 				.luPIId(luPIId)
 				.luId(luId)
+				.luQRCode(StringUtils.trimBlankToOptional(luQRCode).map(HUQRCode::fromGlobalQRCodeJsonString).orElse(null))
 				.build();
 	}
 }

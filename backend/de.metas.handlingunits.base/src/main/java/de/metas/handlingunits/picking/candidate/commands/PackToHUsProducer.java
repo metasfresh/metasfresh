@@ -25,6 +25,7 @@ import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
@@ -329,7 +330,7 @@ public class PackToHUsProducer
 				}
 
 				@Override
-				public IHUProducerAllocationDestination existingLU(final HuId luId)
+				public IHUProducerAllocationDestination existingLU(final HuId luId, final HUQRCode luQRCode)
 				{
 					final LUTUProducerDestination lutuProducer = new LUTUProducerDestination();
 					setupPackToDestinationCommonOptions(lutuProducer, packToInfo);
@@ -378,7 +379,7 @@ public class PackToHUsProducer
 				}
 
 				@Override
-				public void existingLU(final HuId luId)
+				public void existingLU(final HuId luId, final HUQRCode qrCode)
 				{
 					lutuProducer.setLU(luId);
 					lutuProducer.setMaxLUs(0);

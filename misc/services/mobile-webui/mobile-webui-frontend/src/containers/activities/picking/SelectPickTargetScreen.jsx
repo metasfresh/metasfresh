@@ -1,56 +1,30 @@
 import React, { useEffect } from 'react';
-import {
-  closePickTarget,
-  closeTUPickTarget,
-  setPickTarget,
-  setTUPickTarget,
-  usePickTargets,
-} from '../../../api/picking';
+import { closePickingTarget, useAvailablePickingTargets } from '../../../api/picking';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useDispatch } from 'react-redux';
 import Spinner from '../../../components/Spinner';
-import {
-  useCurrentPickTarget,
-  useCurrentTUPickTarget,
-} from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
+import { useCurrentPickingTargetInfo } from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
 import { updateHeaderEntry } from '../../../actions/HeaderActions';
 import { trl } from '../../../utils/translations';
 import PropTypes from 'prop-types';
-import { useLocation } from 'react-router';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
-import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
-
-const isItAboutTUs = (location) => {
-  const queryParams = new URLSearchParams(location.search);
-  return queryParams.get('tu') === 'true';
-};
+import { PickingTargetType } from '../../../constants/PickingTargetType';
+import { pickingJobOrLineLocation } from '../../../routes/picking';
 
 export const SelectPickTargetScreen = () => {
-  const { history, url, wfProcessId, activityId } = useScreenDefinition({
+  const { history, url, wfProcessId, activityId, lineId, type } = useScreenDefinition({
     screenId: 'SelectPickTargetScreen',
-    back: getWFProcessScreenLocation,
+    back: pickingJobOrLineLocation,
   });
 
-  const dispatch = useDispatch();
-
-  const location = useLocation();
-  const useTUFunctions = isItAboutTUs(location);
-  const pickTargetFunctions = {
-    closePickTargetFunc: useTUFunctions ? closeTUPickTarget : closePickTarget,
-    useCurrentPickTargetFunc: useTUFunctions ? useCurrentTUPickTarget : useCurrentPickTarget,
-  };
-
-  const currentTarget = pickTargetFunctions.useCurrentPickTargetFunc({ wfProcessId, activityId });
+  const { currentTarget, closePickingTarget } = useCurrentTarget({ wfProcessId, activityId, lineId, type });
 
   useHeaderUpdate({ url, currentTarget });
 
   const onCloseTargetClicked = async () => {
-    pickTargetFunctions
-      .closePickTargetFunc({ wfProcessId })
-      .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
-      .then(() => history.goBack()); // go back to Picking Job
+    closePickingTarget().then(() => history.goBack());
   };
 
   return (
@@ -58,7 +32,7 @@ export const SelectPickTargetScreen = () => {
       {currentTarget && (
         <ButtonWithIndicator captionKey="activities.picking.pickingTarget.CloseTarget" onClick={onCloseTargetClicked} />
       )}
-      {!currentTarget && <NewTargets wfProcessId={wfProcessId} />}
+      {!currentTarget && <NewTargets wfProcessId={wfProcessId} lineId={lineId} type={type} />}
     </div>
   );
 };
@@ -69,22 +43,14 @@ export const SelectPickTargetScreen = () => {
 //
 //
 
-const NewTargets = ({ wfProcessId }) => {
+const NewTargets = ({ wfProcessId, lineId, type }) => {
   const dispatch = useDispatch();
   const history = useMobileNavigation();
 
-  const { isTargetsLoading, targets, tuTargets } = usePickTargets({ wfProcessId });
-
-  const location = useLocation();
-  const useTUFunctions = isItAboutTUs(location);
-  const pickTargetHelper = {
-    setPickTarget: useTUFunctions ? setTUPickTarget : setPickTarget,
-    actualTargets: useTUFunctions ? tuTargets : targets,
-  };
+  const { isTargetsLoading, targets, setPickingTarget } = useAvailablePickingTargets({ wfProcessId, lineId, type });
 
   const onSelectTargetClicked = async (target) => {
-    pickTargetHelper
-      .setPickTarget({ wfProcessId, target })
+    setPickingTarget({ target })
       .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
       .then(() => history.goBack()); // go back to Picking Job
   };
@@ -92,22 +58,23 @@ const NewTargets = ({ wfProcessId }) => {
   return (
     <>
       {isTargetsLoading && <Spinner />}
-      {pickTargetHelper.actualTargets &&
-        pickTargetHelper.actualTargets.map((target, index) => {
-          return (
-            <ButtonWithIndicator
-              key={index}
-              caption={target.caption}
-              onClick={() => onSelectTargetClicked(target)}
-              additionalCssClass={target.default ? 'green-border-button' : undefined}
-            />
-          );
-        })}
+      {targets?.map((target, index) => {
+        return (
+          <ButtonWithIndicator
+            key={index}
+            caption={target.caption}
+            onClick={() => onSelectTargetClicked(target)}
+            additionalCssClass={target.default ? 'green-border-button' : undefined}
+          />
+        );
+      })}
     </>
   );
 };
 NewTargets.propTypes = {
-  wfProcessId: PropTypes.string,
+  wfProcessId: PropTypes.string.isRequired,
+  lineId: PropTypes.string,
+  type: PropTypes.string.isRequired,
 };
 
 //
@@ -136,4 +103,24 @@ const useHeaderUpdate = ({ url, currentTarget }) => {
       })
     );
   }, [url, currentTargetCaption]);
+};
+
+//
+//
+//--------------------------------------------------------------------------
+//
+//
+
+const useCurrentTarget = ({ wfProcessId, activityId, lineId, type }) => {
+  const dispatch = useDispatch();
+  const { luPickingTarget, tuPickingTarget } = useCurrentPickingTargetInfo({ wfProcessId, activityId, lineId });
+
+  return {
+    currentTarget: type === PickingTargetType.TU ? tuPickingTarget : luPickingTarget,
+    closePickingTarget: () => {
+      return closePickingTarget({ wfProcessId, lineId, type }).then((wfProcess) =>
+        dispatch(updateWFProcess({ wfProcess }))
+      );
+    },
+  };
 };

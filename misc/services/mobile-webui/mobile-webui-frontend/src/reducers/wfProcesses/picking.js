@@ -174,26 +174,28 @@ const normalizePickingSteps = (steps) => {
 };
 
 const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStored, fromActivity }) => {
-  draftActivityDataStored.aggregationType = fromActivity.componentProps.aggregationType;
-  draftActivityDataStored.pickFromHU = fromActivity.componentProps.pickFromHU;
-  draftActivityDataStored.pickTarget = fromActivity.componentProps.pickTarget;
-  draftActivityDataStored.tuPickTarget = fromActivity.componentProps.tuPickTarget;
-  draftActivityDataStored.isPickWithNewLU = fromActivity.componentProps.isPickWithNewLU;
-  draftActivityDataStored.isAllowNewTU = fromActivity.componentProps.isAllowNewTU;
+  const fromPickingJob = fromActivity.componentProps.pickingJob;
+  draftActivityDataStored.aggregationType = fromPickingJob.aggregationType;
+  draftActivityDataStored.pickFromHU = fromPickingJob.pickFromHU;
+  draftActivityDataStored.isLineLevelPickTarget = fromPickingJob.lineLevelPickTarget;
+  draftActivityDataStored.luPickingTarget = fromPickingJob.luPickingTarget;
+  draftActivityDataStored.tuPickingTarget = fromPickingJob.tuPickingTarget;
+  draftActivityDataStored.isPickWithNewLU = fromPickingJob.pickWithNewLU;
+  draftActivityDataStored.isAllowNewTU = fromPickingJob.allowNewTU;
+  draftActivityDataStored.isAllowSkippingRejectedReason = fromPickingJob.isAllowSkippingRejectedReason;
+  draftActivityDataStored.isShowPromptWhenOverPicking = fromPickingJob.isShowPromptWhenOverPicking;
   draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
-  draftActivityDataStored.isAllowSkippingRejectedReason = fromActivity.componentProps.isAllowSkippingRejectedReason;
-  draftActivityDataStored.isShowPromptWhenOverPicking = fromActivity.componentProps.isShowPromptWhenOverPicking;
 
   //
   // Copy lines
-  draftActivityDataStored.lines = normalizePickingLines(fromActivity.componentProps.lines);
-  draftActivityDataStored.qtyRejectedReasons = fromActivity.componentProps.qtyRejectedReasons;
+  draftActivityDataStored.lines = normalizePickingLines(fromPickingJob.lines);
+  draftActivityDataStored.qtyRejectedReasons = fromPickingJob.qtyRejectedReasons;
 
   //
   // Copy Pick From Alternatives Pool
   draftActivityDataStored.pickFromAlternatives = null;
   delete draftActivityDataStored.pickFromAlternatives;
-  draftActivityDataStored.pickFromAlternativesPool = fromActivity.componentProps.pickFromAlternatives.reduce(
+  draftActivityDataStored.pickFromAlternativesPool = fromPickingJob.pickFromAlternatives.reduce(
     (accum, pickFromAlternative) => {
       accum[pickFromAlternative.id] = pickFromAlternative;
       return accum;

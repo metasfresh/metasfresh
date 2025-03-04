@@ -57,7 +57,6 @@ import java.util.stream.Stream;
 
 @Value
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class PickingJobLine
 {
 	@NonNull PickingJobLineId id;
@@ -80,8 +79,11 @@ public class PickingJobLine
 
 	// computed values
 	@NonNull PickingJobProgress progress;
+
 	//
-	@NonNull @Getter Optional<PickingSlotIdAndCaption> pickingSlot;
+	// Pick Target
+	@NonNull @Getter CurrentPickingTarget currentPickingTarget;
+
 	@NonNull PickingUnit pickingUnit;
 	@NonNull Quantity qtyPicked;
 	@NonNull Quantity qtyRejected;
@@ -92,7 +94,6 @@ public class PickingJobLine
 	@Nullable QtyTU qtyRemainingToPickTUs;// not null if pickingUnit==TU
 
 	@Builder(toBuilder = true)
-	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	private PickingJobLine(
 			@NonNull final PickingJobLineId id,
 			@NonNull final ITranslatableString caption,
@@ -102,13 +103,14 @@ public class PickingJobLine
 			@NonNull final ITranslatableString productName,
 			@NonNull final HUPIItemProduct packingInfo,
 			@NonNull final Quantity qtyToPick,
-			@NonNull final OrderAndLineId salesOrderAndLineId, final @NonNull String salesOrderDocumentNo,
+			@NonNull final OrderAndLineId salesOrderAndLineId,
+			@NonNull final String salesOrderDocumentNo,
 			@NonNull final Integer orderLineSeqNo,
 			@NonNull final BPartnerLocationId deliveryBPLocationId,
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@Nullable final UomId catchUomId,
 			@NonNull final ImmutableList<PickingJobStep> steps,
-			@Nullable Optional<PickingSlotIdAndCaption> pickingSlot,
+			@Nullable final CurrentPickingTarget currentPickingTarget,
 			@NonNull final PickingUnit pickingUnit,
 			final boolean isManuallyClosed)
 	{
@@ -129,9 +131,9 @@ public class PickingJobLine
 		this.steps = steps;
 		this.isManuallyClosed = isManuallyClosed;
 
-		this.pickingSlot = pickingSlot != null ? pickingSlot : Optional.empty();
-		this.pickingUnit = pickingUnit;
+		this.currentPickingTarget = currentPickingTarget != null ? currentPickingTarget : CurrentPickingTarget.EMPTY;
 
+		this.pickingUnit = pickingUnit;
 		this.qtyPicked = steps.stream().map(PickingJobStep::getQtyPicked).reduce(Quantity::add).orElseGet(qtyToPick::toZero);
 		this.qtyRejected = steps.stream().map(PickingJobStep::getQtyRejected).reduce(Quantity::add).orElseGet(qtyToPick::toZero);
 		final Quantity qtyPickedOrRejected = qtyPicked.add(qtyRejected);
@@ -246,20 +248,35 @@ public class PickingJobLine
 	}
 
 	@NonNull
-	public List<HuId> getPickedHUIds()
+	public ImmutableSet<HuId> getPickedHUIds()
 	{
 		return steps.stream()
 				.map(PickingJobStep::getPickedHUIds)
 				.flatMap(List::stream)
-				.collect(ImmutableList.toImmutableList());
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public Optional<PickingSlotId> getPickingSlotId() {return pickingSlot.map(PickingSlotIdAndCaption::getPickingSlotId);}
+	PickingJobLine withCurrentPickingTarget(@NonNull final CurrentPickingTarget currentPickingTarget)
+	{
+		return !CurrentPickingTarget.equals(this.currentPickingTarget, currentPickingTarget)
+				? toBuilder().currentPickingTarget(currentPickingTarget).build()
+				: this;
+	}
+
+	PickingJobLine withCurrentPickingTarget(@NonNull final UnaryOperator<CurrentPickingTarget> currentPickingTargetMapper)
+	{
+		final CurrentPickingTarget changedCurrentPickingTarget = currentPickingTargetMapper.apply(this.currentPickingTarget);
+		return !CurrentPickingTarget.equals(this.currentPickingTarget, changedCurrentPickingTarget)
+				? toBuilder().currentPickingTarget(changedCurrentPickingTarget).build()
+				: this;
+	}
+
+	public boolean isPickingSlotSet() {return currentPickingTarget.isPickingSlotSet();}
+
+	public Optional<PickingSlotId> getPickingSlotId() {return currentPickingTarget.getPickingSlotId();}
 
 	public PickingJobLine withPickingSlot(@Nullable final PickingSlotIdAndCaption pickingSlot)
 	{
-		return PickingSlotIdAndCaption.equals(this.pickingSlot.orElse(null), pickingSlot)
-				? this
-				: toBuilder().pickingSlot(Optional.ofNullable(pickingSlot)).build();
+		return withCurrentPickingTarget(currentPickingTarget.withPickingSlot(pickingSlot));
 	}
 }

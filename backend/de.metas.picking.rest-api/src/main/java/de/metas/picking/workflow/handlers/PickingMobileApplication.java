@@ -514,7 +514,10 @@
 
 		}
 
-		public JsonPickingJobAvailableTargets getAvailableTargets(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+		public JsonPickingJobAvailableTargets getAvailableTargets(
+				@NonNull final WFProcessId wfProcessId,
+				@Nullable final PickingJobLineId lineId,
+				@NonNull final UserId callerId)
 		{
 			final WFProcess wfProcess = getWFProcessById(wfProcessId);
 			wfProcess.assertHasAccess(callerId);
@@ -522,66 +525,84 @@
 			final PickingJob pickingJob = getPickingJob(wfProcess);
 
 			return JsonPickingJobAvailableTargets.builder()
-					.targets(pickingJobRestService.getLUAvailableTargets(pickingJob)
+					.targets(pickingJobRestService.getLUAvailableTargets(pickingJob, lineId)
 							.stream()
 							.map(JsonLUPickingTarget::of)
 							.collect(ImmutableList.toImmutableList()))
-					.tuTargets(pickingJobRestService.getTUAvailableTargets(pickingJob)
+					.tuTargets(pickingJobRestService.getTUAvailableTargets(pickingJob, lineId)
 							.stream()
 							.map(JsonTUPickingTarget::of)
 							.collect(ImmutableList.toImmutableList()))
 					.build();
 		}
 
-		public WFProcess setPickTarget(@NonNull final WFProcessId wfProcessId, @Nullable final LUPickingTarget target, @NonNull final UserId callerId)
+		public WFProcess setLUPickingTarget(
+				@NonNull final WFProcessId wfProcessId,
+				@Nullable final PickingJobLineId lineId,
+				@Nullable final LUPickingTarget target,
+				@NonNull final UserId callerId)
 		{
 			return changeWFProcessById(
 					wfProcessId,
 					(wfProcess, pickingJob) -> {
 						wfProcess.assertHasAccess(callerId);
-						return pickingJobRestService.setPickTarget(pickingJob, target);
+						return pickingJobRestService.setLUPickingTarget(pickingJob, lineId, target);
 					});
 
 		}
 
-		public WFProcess setPickTarget(@NonNull final WFProcessId wfProcessId, @Nullable final TUPickingTarget target, @NonNull final UserId callerId)
+		public WFProcess setTUPickingTarget(
+				@NonNull final WFProcessId wfProcessId,
+				@Nullable final PickingJobLineId lineId,
+				@Nullable final TUPickingTarget target,
+				@NonNull final UserId callerId)
 		{
 			return changeWFProcessById(
 					wfProcessId,
 					(wfProcess, pickingJob) -> {
 						wfProcess.assertHasAccess(callerId);
-						return pickingJobRestService.setPickTarget(pickingJob, target);
+						return pickingJobRestService.setTUPickingTarget(pickingJob, lineId, target);
 					});
 
 		}
 
-		public WFProcess closeLUPickTarget(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+		public WFProcess closeLUPickingTarget(
+				@NonNull final WFProcessId wfProcessId,
+				@Nullable final PickingJobLineId lineId,
+				@NonNull final UserId callerId)
 		{
 			return changeWFProcessById(
 					wfProcessId,
 					(wfProcess, pickingJob) -> {
 						wfProcess.assertHasAccess(callerId);
-						return pickingJobRestService.closeLUPickTarget(pickingJob);
+						return pickingJobRestService.closeLUPickingTarget(pickingJob, lineId);
 					});
 
 		}
 
-		public WFProcess closeTUPickTarget(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+		public WFProcess closeTUPickingTarget(
+				@NonNull final WFProcessId wfProcessId,
+				@Nullable final PickingJobLineId lineId,
+				@NonNull final UserId callerId)
 		{
 			return changeWFProcessById(
 					wfProcessId,
 					(wfProcess, pickingJob) -> {
 						wfProcess.assertHasAccess(callerId);
-						return pickingJobRestService.closeTUPickTarget(pickingJob);
+						return pickingJobRestService.closeTUPickingTarget(pickingJob, lineId);
 					});
 
 		}
 
 		@NonNull
-		public List<HuId> getClosedLUs(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+		public List<HuId> getClosedLUs(
+				@NonNull final WFProcessId wfProcessId,
+				@Nullable final PickingJobLineId lineId,
+				@NonNull final UserId callerId)
 		{
 			final WFProcess wfProcess = getWFProcessById(wfProcessId);
 			wfProcess.assertHasAccess(callerId);
-			return pickingJobRestService.getClosedLUs(getPickingJob(wfProcess));
+			final PickingJob pickingJob = getPickingJob(wfProcess);
+			return pickingJobRestService.getClosedLUs(pickingJob, lineId);
 		}
 	}

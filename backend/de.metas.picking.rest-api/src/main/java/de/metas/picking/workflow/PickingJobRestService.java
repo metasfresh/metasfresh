@@ -111,7 +111,7 @@ public class PickingJobRestService
 				.shipmentScheduleIds(params.getShipmentScheduleIds())
 				.build());
 	}
-	
+
 	public PickingJob setPickFromHU(
 			@NonNull final PickingJob pickingJob,
 			@NonNull final HUInfo pickFromHU)
@@ -174,48 +174,64 @@ public class PickingJobRestService
 		return pickingJobService.getQtyRejectedReasons();
 	}
 
-	public List<LUPickingTarget> getLUAvailableTargets(@NonNull final PickingJob pickingJob)
+	public List<LUPickingTarget> getLUAvailableTargets(
+			@NonNull final PickingJob pickingJob,
+			@Nullable final PickingJobLineId lineId)
 	{
-		return pickingJobService.getLUAvailableTargets(pickingJob);
+		return pickingJobService.getLUAvailableTargets(pickingJob, lineId);
 	}
 
-	public List<TUPickingTarget> getTUAvailableTargets(@NonNull final PickingJob pickingJob)
+	public List<TUPickingTarget> getTUAvailableTargets(
+			@NonNull final PickingJob pickingJob,
+			@Nullable final PickingJobLineId lineId)
 	{
-		return pickingJobService.getTUAvailableTargets(pickingJob);
+		return pickingJobService.getTUAvailableTargets(pickingJob, lineId);
 	}
 
-	public PickingJob setPickTarget(@NonNull final PickingJob pickingJob, @Nullable final LUPickingTarget target)
+	public PickingJob setLUPickingTarget(
+			@NonNull final PickingJob pickingJob,
+			@Nullable final PickingJobLineId lineId,
+			@Nullable final LUPickingTarget target)
 	{
-		return pickingJobService.setPickTarget(pickingJob, target);
+		return pickingJobService.setLUPickingTarget(pickingJob, lineId, target);
 	}
 
-	public PickingJob setPickTarget(@NonNull final PickingJob pickingJob, @Nullable final TUPickingTarget target)
+	public PickingJob setTUPickingTarget(
+			@NonNull final PickingJob pickingJob,
+			@Nullable final PickingJobLineId lineId,
+			@Nullable final TUPickingTarget target)
 	{
-		return pickingJobService.setPickTarget(pickingJob, target);
+		return pickingJobService.setTUPickingTarget(pickingJob, lineId, target);
 	}
 
-	public PickingJob closeLUPickTarget(@NonNull final PickingJob pickingJob)
+	public PickingJob closeLUPickingTarget(
+			@NonNull final PickingJob pickingJob,
+			@Nullable final PickingJobLineId lineId)
 	{
-		return pickingJobService.closeLUPickTarget(pickingJob);
+		return pickingJobService.closeLUPickingTarget(pickingJob, lineId);
 	}
 
-	public PickingJob closeTUPickTarget(@NonNull final PickingJob pickingJob)
+	public PickingJob closeTUPickingTarget(
+			@NonNull final PickingJob pickingJob,
+			@Nullable final PickingJobLineId lineId)
 	{
-		return pickingJobService.closeTUPickTarget(pickingJob);
+		return pickingJobService.closeTUPickingTarget(pickingJob, lineId);
 	}
 
 	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId) {return mobileUIPickingUserProfileRepository.getPickingJobOptions(customerId);}
 
 	@NonNull
-	public List<HuId> getClosedLUs(@NonNull final PickingJob pickingJob)
+	public List<HuId> getClosedLUs(
+			@NonNull final PickingJob pickingJob,
+			@Nullable final PickingJobLineId lineId)
 	{
-		final Set<HuId> pickedHuIds = pickingJob.getPickedHuIds();
+		final Set<HuId> pickedHuIds = pickingJob.getPickedHuIds(lineId);
 		if (pickedHuIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}
 
-		final HuId currentlyOpenedLUId = pickingJob.getLuPickTarget()
+		final HuId currentlyOpenedLUId = pickingJob.getLuPickingTarget(lineId)
 				.map(LUPickingTarget::getLuId)
 				.orElse(null);
 

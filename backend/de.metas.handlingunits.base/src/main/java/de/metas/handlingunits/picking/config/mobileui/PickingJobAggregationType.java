@@ -38,5 +38,5 @@ public enum PickingJobAggregationType implements ReferenceListAwareEnum
 	@JsonValue
 	public String toJson() {return getCode();}
 
-	public boolean isLineLevelPickTargets() {return this == PRODUCT;}
+	public boolean isLineLevelPickTarget() {return this == PRODUCT;}
 }

@@ -23,6 +23,7 @@
 package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.picking.job.model.CurrentPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
 import de.metas.i18n.ITranslatableString;
@@ -51,7 +52,11 @@ public class JsonPickingJobLine
 	@NonNull String productId;
 	@NonNull String productNo;
 	@NonNull String caption;
+
 	@Nullable JsonQRCode pickingSlot;
+	@Nullable JsonLUPickingTarget luPickingTarget;
+	@Nullable JsonTUPickingTarget tuPickingTarget;
+
 	@NonNull PickingUnit pickingUnit;
 	@NonNull String packingItemName;
 	@NonNull String uom;
@@ -99,12 +104,16 @@ public class JsonPickingJobLine
 			qtyRemainingToPick = line.getQtyRemainingToPick().toBigDecimal();
 		}
 
+		final CurrentPickingTarget currentPickingTarget = line.getCurrentPickingTarget();
+
 		return builder()
 				.pickingLineId(line.getId().getAsString())
 				.productId(line.getProductId().getAsString())
 				.productNo(line.getProductNo())
 				.caption(line.getCaption().translate(adLanguage))
-				.pickingSlot(line.getPickingSlot().map(JsonPickingJobLine::toJsonQRCode).orElse(null))
+				.pickingSlot(currentPickingTarget.getPickingSlot().map(JsonPickingJobLine::toJsonQRCode).orElse(null))
+				.luPickingTarget(currentPickingTarget.getLuPickingTarget().map(JsonLUPickingTarget::of).orElse(null))
+				.tuPickingTarget(currentPickingTarget.getTuPickingTarget().map(JsonTUPickingTarget::of).orElse(null))
 				.pickingUnit(pickingUnit)
 				.packingItemName(line.getPackingInfo().getName().translate(adLanguage))
 				.uom(uom)

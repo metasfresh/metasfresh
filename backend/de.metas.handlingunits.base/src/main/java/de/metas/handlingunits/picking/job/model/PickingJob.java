@@ -42,6 +42,7 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
+import de.metas.util.Optionals;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.Getter;
@@ -53,15 +54,14 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-import static de.metas.handlingunits.picking.job.service.PickingJobService.MISSING_PICKING_SLOT_ID_ERROR_MSG;
 import static de.metas.handlingunits.picking.job.service.PickingJobService.PICKING_JOB_PROCESSED_ERROR_MSG;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
@@ -75,9 +75,7 @@ public final class PickingJob
 	@NonNull private final PickingJobHeader header;
 
 	@NonNull @Getter private final Optional<HUInfo> pickFromHU;
-	@NonNull @Getter private final Optional<PickingSlotIdAndCaption> pickingSlot;
-	@NonNull @Getter private final Optional<LUPickingTarget> luPickTarget;
-	@NonNull @Getter private final Optional<TUPickingTarget> tuPickTarget;
+	@NonNull @Getter private final CurrentPickingTarget currentPickingTarget;
 
 	@Getter
 	@NonNull private final ImmutableList<PickingJobLine> lines;
@@ -96,9 +94,7 @@ public final class PickingJob
 			final @NonNull PickingJobId id,
 			final @NonNull PickingJobHeader header,
 			final @Nullable Optional<HUInfo> pickFromHU,
-			final @Nullable Optional<PickingSlotIdAndCaption> pickingSlot,
-			final @Nullable Optional<LUPickingTarget> luPickTarget,
-			final @Nullable Optional<TUPickingTarget> tuPickTarget,
+			final @Nullable CurrentPickingTarget currentPickingTarget,
 			final @NonNull ImmutableList<PickingJobLine> lines,
 			final @NonNull ImmutableSet<PickingJobPickFromAlternative> pickFromAlternatives,
 			final @NonNull PickingJobDocStatus docStatus)
@@ -108,9 +104,7 @@ public final class PickingJob
 		this.id = id;
 		this.header = header;
 		this.pickFromHU = pickFromHU != null ? pickFromHU : Optional.empty();
-		this.pickingSlot = pickingSlot != null ? pickingSlot : Optional.empty();
-		this.luPickTarget = luPickTarget != null ? luPickTarget : Optional.empty();
-		this.tuPickTarget = tuPickTarget != null ? tuPickTarget : Optional.empty();
+		this.currentPickingTarget = currentPickingTarget != null ? currentPickingTarget : CurrentPickingTarget.EMPTY;
 		this.lines = lines;
 		this.pickFromAlternatives = pickFromAlternatives;
 		this.docStatus = docStatus;
@@ -168,17 +162,10 @@ public final class PickingJob
 		}
 	}
 
-	public void assertPickingSlotScanned()
-	{
-		//noinspection ResultOfMethodCallIgnored
-		getPickingSlotNotNull();
-	}
+	public void assertPickingSlotScanned() {currentPickingTarget.assertPickingSlotScanned();}
 
 	@NonNull
-	public PickingSlotIdAndCaption getPickingSlotNotNull()
-	{
-		return pickingSlot.orElseThrow(() -> new AdempiereException(MISSING_PICKING_SLOT_ID_ERROR_MSG));
-	}
+	public PickingSlotIdAndCaption getPickingSlotNotNull() {return currentPickingTarget.getPickingSlotNotNull();}
 
 	public boolean isProcessed()
 	{
@@ -189,41 +176,159 @@ public final class PickingJob
 
 	public boolean isNothingPicked() {return getProgress().isNotStarted();}
 
-	public Optional<PickingSlotId> getPickingSlotId() {return pickingSlot.map(PickingSlotIdAndCaption::getPickingSlotId);}
-
-	@NonNull
-	public PickingJob withLuPickTarget(@Nullable final LUPickingTarget pickTarget)
+	private CurrentPickingTarget getCurrentPickingTarget(@Nullable final PickingJobLineId lineId)
 	{
-		if (LUPickingTarget.equals(this.luPickTarget.orElse(null), pickTarget))
+		return lineId != null ? getLineById(lineId).getCurrentPickingTarget() : currentPickingTarget;
+	}
+
+	private <T> Optional<T> getCurrentPickingTargetEffectiveValue(
+			@Nullable final PickingJobLineId lineId,
+			@NonNull final Function<CurrentPickingTarget, Optional<T>> valueMapper)
+	{
+		return Optionals.firstPresentOfSuppliers(
+				() -> lineId != null ? valueMapper.apply(getLineById(lineId).getCurrentPickingTarget()) : Optional.empty(),
+				() -> valueMapper.apply(currentPickingTarget)
+		);
+	}
+
+	private PickingJob withCurrentPickingTarget(@NonNull final CurrentPickingTarget currentPickingTarget)
+	{
+		if (CurrentPickingTarget.equals(this.currentPickingTarget, currentPickingTarget))
 		{
 			return this;
 		}
 
-		final PickingJobAggregationType aggregationType = getAggregationType();
-		if (aggregationType.isLineLevelPickTargets() && pickTarget != null && pickTarget.isExistingLU())
+		assertCurrentPickingTargetAllowedOnHeader(currentPickingTarget);
+		return toBuilder().currentPickingTarget(currentPickingTarget).build();
+	}
+
+	private PickingJob withCurrentPickingTarget(
+			@Nullable final PickingJobLineId lineId,
+			@NonNull final UnaryOperator<CurrentPickingTarget> currentPickingTargetMapper)
+	{
+		if (lineId != null)
 		{
-			throw new AdempiereException("Setting existing HU as picking targets on job level is not allowed for " + aggregationType + " aggregation type.");
+			return withChangedLine(lineId, (line) -> {
+				final CurrentPickingTarget currentPickingTarget = line.getCurrentPickingTarget();
+				final CurrentPickingTarget currentPickingTargetNew = currentPickingTargetMapper.apply(currentPickingTarget);
+				return line.withCurrentPickingTarget(currentPickingTargetNew);
+			});
+		}
+		else
+		{
+			final CurrentPickingTarget currentPickingTargetNew = currentPickingTargetMapper.apply(this.currentPickingTarget);
+			return withCurrentPickingTarget(currentPickingTargetNew);
+		}
+	}
+
+	private void assertCurrentPickingTargetAllowedOnHeader(@NonNull final CurrentPickingTarget currentPickingTargetNew)
+	{
+		if (!isLineLevelPickTarget())
+		{
+			return;
 		}
 
-		return toBuilder()
-				.luPickTarget(Optional.ofNullable(pickTarget))
-				.tuPickTarget(pickTarget == null ? Optional.empty() : this.getTuPickTarget())
-				.build();
+		final LUPickingTarget luPickingTarget = currentPickingTargetNew.getLuPickingTarget().orElse(null);
+		if (luPickingTarget != null && luPickingTarget.isExistingLU())
+		{
+			throw new AdempiereException("Setting existing HU as picking targets on job level is not allowed");
+		}
 	}
 
-	@NonNull
-	public PickingJob withTuPickTarget(@Nullable final TUPickingTarget pickTarget)
-	{
-		return TUPickingTarget.equals(this.tuPickTarget.orElse(null), pickTarget)
-				? this
-				: toBuilder().tuPickTarget(Optional.ofNullable(pickTarget)).build();
-	}
+	public Optional<PickingSlotIdAndCaption> getPickingSlot() {return currentPickingTarget.getPickingSlot();}
+
+	public Optional<PickingSlotId> getPickingSlotId() {return currentPickingTarget.getPickingSlotId();}
 
 	public PickingJob withPickingSlot(@Nullable final PickingSlotIdAndCaption pickingSlot)
 	{
-		return PickingSlotIdAndCaption.equals(this.pickingSlot.orElse(null), pickingSlot)
-				? this
-				: toBuilder().pickingSlot(Optional.ofNullable(pickingSlot)).build();
+		return withCurrentPickingTarget(currentPickingTarget.withPickingSlot(pickingSlot));
+	}
+
+	public boolean isLineLevelPickTarget() {return getAggregationType().isLineLevelPickTarget();}
+
+	public Optional<LUPickingTarget> getLuPickingTarget(@Nullable final PickingJobLineId lineId)
+	{
+		return getCurrentPickingTarget(lineId).getLuPickingTarget();
+	}
+
+	public Optional<LUPickingTarget> getLuPickingTargetEffective(@Nullable final PickingJobLineId lineId)
+	{
+		return getCurrentPickingTargetEffectiveValue(lineId, CurrentPickingTarget::getLuPickingTarget);
+	}
+
+	@NonNull
+	public PickingJob withLuPickingTarget(
+			@Nullable final PickingJobLineId lineId,
+			@Nullable final LUPickingTarget luPickingTarget)
+	{
+		return withCurrentPickingTarget(lineId, currentPickingTarget -> currentPickingTarget.withLuPickingTarget(luPickingTarget));
+	}
+
+	@NonNull
+	public PickingJob withLuPickingTarget(
+			@Nullable final PickingJobLineId lineId,
+			@NonNull final UnaryOperator<LUPickingTarget> luPickingTargetMapper)
+	{
+		return withCurrentPickingTarget(lineId, currentPickingTarget -> currentPickingTarget.withLuPickingTarget(luPickingTargetMapper));
+	}
+
+	public PickingJob withClosedLuPickingTargets(
+			boolean isCloseOnHeader,
+			boolean isCloseOnLines,
+			@Nullable PickingJobLineId onlyLineId,
+			@Nullable final Consumer<HuId> closedLuIdCollector)
+	{
+		final PickingJobBuilder builder = toBuilder();
+		boolean hasChanges = false;
+
+		if (isCloseOnHeader)
+		{
+			final CurrentPickingTarget changedCurrentPickingTarget = currentPickingTarget.withClosedLuPickingTarget(closedLuIdCollector);
+			builder.currentPickingTarget(changedCurrentPickingTarget);
+			if (!CurrentPickingTarget.equals(changedCurrentPickingTarget, currentPickingTarget))
+			{
+				hasChanges = true;
+			}
+		}
+		if (isCloseOnLines)
+		{
+			final ImmutableList<PickingJobLine> changedLines = CollectionUtils.map(this.lines, line -> {
+				if (onlyLineId == null || PickingJobLineId.equals(line.getId(), onlyLineId))
+				{
+					return line.withCurrentPickingTarget(currentPickingTarget -> currentPickingTarget.withClosedLuPickingTarget(closedLuIdCollector));
+				}
+				else
+				{
+					return line;
+				}
+			});
+			builder.lines(changedLines);
+
+			if (!Objects.equals(this.lines, changedLines))
+			{
+				hasChanges = true;
+			}
+		}
+
+		return hasChanges ? builder.build() : this;
+	}
+
+	public Optional<TUPickingTarget> getTuPickingTarget(@Nullable final PickingJobLineId lineId)
+	{
+		return getCurrentPickingTarget(lineId).getTuPickingTarget();
+	}
+
+	public Optional<TUPickingTarget> getTuPickingTargetEffective(@Nullable final PickingJobLineId lineId)
+	{
+		return getCurrentPickingTargetEffectiveValue(lineId, CurrentPickingTarget::getTuPickingTarget);
+	}
+
+	@NonNull
+	public PickingJob withTuPickingTarget(
+			@Nullable final PickingJobLineId lineId,
+			@Nullable final TUPickingTarget tuPickingTarget)
+	{
+		return withCurrentPickingTarget(lineId, currentPickingTarget -> currentPickingTarget.withTuPickingTarget(tuPickingTarget));
 	}
 
 	public PickingJob withPickFromHU(@Nullable final HUInfo pickFromHU)
@@ -398,11 +503,18 @@ public final class PickingJob
 	}
 
 	@NonNull
-	public ImmutableSet<HuId> getPickedHuIds()
+	public ImmutableSet<HuId> getPickedHuIds(@Nullable final PickingJobLineId lineId)
+	{
+		return lineId != null
+				? getLineById(lineId).getPickedHUIds()
+				: getAllPickedHuIds();
+	}
+
+	public ImmutableSet<HuId> getAllPickedHuIds()
 	{
 		return lines.stream()
 				.map(PickingJobLine::getPickedHUIds)
-				.flatMap(List::stream)
+				.flatMap(Set::stream)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 }

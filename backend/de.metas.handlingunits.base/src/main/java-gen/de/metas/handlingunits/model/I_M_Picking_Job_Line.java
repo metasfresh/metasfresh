@@ -1,6 +1,7 @@
 package de.metas.handlingunits.model;
 
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Picking_Job_Line
@@ -212,6 +213,102 @@ public interface I_M_Picking_Job_Line
 	int getC_UOM_ID();
 
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Set Current Pick To LU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrent_PickTo_LU_ID (int Current_PickTo_LU_ID);
+
+	/**
+	 * Get Current Pick To LU.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCurrent_PickTo_LU_ID();
+
+	@Nullable de.metas.handlingunits.model.I_M_HU getCurrent_PickTo_LU();
+
+	void setCurrent_PickTo_LU(@Nullable de.metas.handlingunits.model.I_M_HU Current_PickTo_LU);
+
+	ModelColumn<I_M_Picking_Job_Line, de.metas.handlingunits.model.I_M_HU> COLUMN_Current_PickTo_LU_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "Current_PickTo_LU_ID", de.metas.handlingunits.model.I_M_HU.class);
+	String COLUMNNAME_Current_PickTo_LU_ID = "Current_PickTo_LU_ID";
+
+	/**
+	 * Set Current Pick To LU PI.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrent_PickTo_LU_PI_ID (int Current_PickTo_LU_PI_ID);
+
+	/**
+	 * Get Current Pick To LU PI.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCurrent_PickTo_LU_PI_ID();
+
+	@Nullable de.metas.handlingunits.model.I_M_HU_PI getCurrent_PickTo_LU_PI();
+
+	void setCurrent_PickTo_LU_PI(@Nullable de.metas.handlingunits.model.I_M_HU_PI Current_PickTo_LU_PI);
+
+	ModelColumn<I_M_Picking_Job_Line, de.metas.handlingunits.model.I_M_HU_PI> COLUMN_Current_PickTo_LU_PI_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "Current_PickTo_LU_PI_ID", de.metas.handlingunits.model.I_M_HU_PI.class);
+	String COLUMNNAME_Current_PickTo_LU_PI_ID = "Current_PickTo_LU_PI_ID";
+
+	/**
+	 * Set Current Pick To LU QR Code.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrent_PickTo_LU_QRCode (@Nullable java.lang.String Current_PickTo_LU_QRCode);
+
+	/**
+	 * Get Current Pick To LU QR Code.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCurrent_PickTo_LU_QRCode();
+
+	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_Current_PickTo_LU_QRCode = new ModelColumn<>(I_M_Picking_Job_Line.class, "Current_PickTo_LU_QRCode", null);
+	String COLUMNNAME_Current_PickTo_LU_QRCode = "Current_PickTo_LU_QRCode";
+
+	/**
+	 * Set Current Pick To TU PI.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrent_PickTo_TU_PI_ID (int Current_PickTo_TU_PI_ID);
+
+	/**
+	 * Get Current Pick To TU PI.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCurrent_PickTo_TU_PI_ID();
+
+	@Nullable de.metas.handlingunits.model.I_M_HU_PI getCurrent_PickTo_TU_PI();
+
+	void setCurrent_PickTo_TU_PI(@Nullable de.metas.handlingunits.model.I_M_HU_PI Current_PickTo_TU_PI);
+
+	ModelColumn<I_M_Picking_Job_Line, de.metas.handlingunits.model.I_M_HU_PI> COLUMN_Current_PickTo_TU_PI_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "Current_PickTo_TU_PI_ID", de.metas.handlingunits.model.I_M_HU_PI.class);
+	String COLUMNNAME_Current_PickTo_TU_PI_ID = "Current_PickTo_TU_PI_ID";
 
 	/**
 	 * Set Active.

@@ -20,6 +20,7 @@ import { closePickingJobLine, openPickingJobLine } from '../../../api/picking';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
+import SelectCurrentLUTUButtons from './SelectCurrentLUTUButtons';
 
 const PickLineScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
@@ -88,6 +89,14 @@ const PickLineScreen = () => {
   return (
     <div className="section pt-2">
       <div className="buttons">
+        <SelectCurrentLUTUButtons
+          applicationId={applicationId}
+          wfProcessId={wfProcessId}
+          activityId={activityId}
+          lineId={lineId}
+        />
+        <br />
+
         {isShowScanQRCodeButton && (
           <ButtonWithIndicator captionKey="activities.picking.scanQRCode" onClick={onScanButtonClick} />
         )}
