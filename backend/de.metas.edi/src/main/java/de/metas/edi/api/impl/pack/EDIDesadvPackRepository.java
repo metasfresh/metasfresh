@@ -29,6 +29,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDesadvLineId;
 import de.metas.edi.api.EDIDesadvPackItemId;
+import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
@@ -64,15 +65,23 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class EDIDesadvPackRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
 
 	@NonNull
 	public EDIDesadvPack createDesadvPack(@NonNull final CreateEDIDesadvPackRequest createEDIDesadvPackRequest)
 	{
 		final I_EDI_Desadv_Pack desadvPackRecord = newInstance(I_EDI_Desadv_Pack.class);
-		desadvPackRecord.setSeqNo(createEDIDesadvPackRequest.getSeqNo());
+		if (createEDIDesadvPackRequest.getSeqNo() > 0)
+		{
+			desadvPackRecord.setSeqNo(createEDIDesadvPackRequest.getSeqNo());
+		}
+		else
+		{
+			final int maxSeqNo = desadvDAO.retrieveMaxDesadvPackSeqNo(createEDIDesadvPackRequest.getEdiDesadvId());
+			desadvPackRecord.setSeqNo(maxSeqNo + 1);
+		}
 		desadvPackRecord.setAD_Org_ID(createEDIDesadvPackRequest.getOrgId().getRepoId());
 		desadvPackRecord.setEDI_Desadv_ID(EDIDesadvId.toRepoId(createEDIDesadvPackRequest.getEdiDesadvId()));
-		desadvPackRecord.setSeqNo(createEDIDesadvPackRequest.getSeqNo());
 		desadvPackRecord.setM_HU_ID(HuId.toRepoId(createEDIDesadvPackRequest.getHuId()));
 		desadvPackRecord.setIPA_SSCC18(createEDIDesadvPackRequest.getSscc18());
 		desadvPackRecord.setIsManual_IPA_SSCC18(createEDIDesadvPackRequest.getIsManualIpaSSCC());
@@ -84,7 +93,7 @@ public class EDIDesadvPackRepository
 
 		final ImmutableList.Builder<I_EDI_Desadv_Pack_Item> createdEDIDesadvPackItemRecordsBuilder = ImmutableList.builder();
 		for (final CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest : createEDIDesadvPackRequest.getCreateEDIDesadvPackItemRequests())
-	{
+		{
 			final I_EDI_Desadv_Pack_Item packItemRecord = upsertPackItemRecord(createEDIDesadvPackItemRequest, packId);
 			createdEDIDesadvPackItemRecordsBuilder.add(packItemRecord);
 		}
@@ -112,7 +121,7 @@ public class EDIDesadvPackRepository
 			@NonNull final EDIDesadvPackId packId)
 	{
 		final I_EDI_Desadv_Pack_Item packItemRecord = InterfaceWrapperHelper.loadOrNew(createPackItemRequest.getEdiDesadvPackItemId(),
-																					   I_EDI_Desadv_Pack_Item.class);
+				I_EDI_Desadv_Pack_Item.class);
 		packItemRecord.setEDI_Desadv_Pack_ID(packId.getRepoId());
 		packItemRecord.setEDI_DesadvLine_ID(EDIDesadvLineId.toRepoId(createPackItemRequest.getEdiDesadvLineId()));
 		packItemRecord.setM_InOut_ID(InOutId.toRepoId(createPackItemRequest.getInOutId()));
