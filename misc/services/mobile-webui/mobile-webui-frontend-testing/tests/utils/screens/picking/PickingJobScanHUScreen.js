@@ -12,6 +12,6 @@ export const PickingJobScanHUScreen = {
 
     typeQRCode: async (qrCode) => await test.step(`${NAME} - Type QR Code`, async () => {
         console.log('Scanning HU QR code:\n' + qrCode);
-        await page.type('#input-text', qrCode);
+        await page.fill('#input-text', qrCode);
     }),
 };

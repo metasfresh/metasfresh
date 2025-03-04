@@ -18,7 +18,7 @@ export const HUMoveScreen = {
 
     move: async ({ qrCode }) => await test.step(`${NAME} - Move HU`, async () => {
         await HUMoveScreen.expectVisible();
-        await page.type('#input-text', qrCode);
+        await page.fill('#input-text', qrCode);
         await HUManagerScreen.waitForScreen();
         await HUManagerScreen.expectVisible();
     }),

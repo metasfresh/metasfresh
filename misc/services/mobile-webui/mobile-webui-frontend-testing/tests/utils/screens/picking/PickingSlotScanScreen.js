@@ -11,6 +11,6 @@ export const PickingSlotScanScreen = {
     }),
 
     typeQRCode: async (qrCode) => await test.step(`${NAME} - Type QR Code`, async () => {
-        await page.type('#input-text', qrCode);
+        await page.fill('#input-text', qrCode);
     }),
 };

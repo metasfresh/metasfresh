@@ -18,6 +18,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.trace.HUAccessService;
+import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -30,6 +31,9 @@ import org.adempiere.util.lang.IAutoCloseable;
 
 class DistributionEventProcessCommand
 {
+	private static final AdMessageKey NOT_ENOUGH_QTY = AdMessageKey.of("de.metas.distribution.workflows_api.NotEnoughQty");
+	private static final AdMessageKey PRODUCT_DOES_NOT_MATCH = AdMessageKey.of("de.metas.distribution.workflows_api.ProductDoesNotMatch");
+
 	// Services
 	@NonNull private final ITrxManager trxManager;
 	@NonNull private final HUQRCodesService huQRCodesService;
@@ -195,7 +199,7 @@ class DistributionEventProcessCommand
 		final HuId sourceHuId = huQRCodesService.getHuIdByQRCode(huQRCode);
 
 		final Quantity sourceHUQty = huAccessService.retrieveProductQty(sourceHuId, line.getProductId())
-				.orElseThrow(() -> new AdempiereException("Scanned HU doesn't match the line's product!")); // TODO trl
+				.orElseThrow(() -> new AdempiereException(PRODUCT_DOES_NOT_MATCH));
 
 		final Quantity qtyToPick = pickFrom.getQtyPicked(line.getUOM()).orElse(null);
 		if (qtyToPick == null)
@@ -203,9 +207,9 @@ class DistributionEventProcessCommand
 			// no qty to pick specified by user => pick the whole HU
 			return sourceHuId;
 		}
-		else if (qtyToPick.compareTo(sourceHUQty) < 0)
+		else if (qtyToPick.compareTo(sourceHUQty) > 0)
 		{
-			throw new AdempiereException("Scanned HU has only " + sourceHUQty); // TODO trl
+			throw new AdempiereException(NOT_ENOUGH_QTY, sourceHUQty);
 		}
 		else if (qtyToPick.compareTo(sourceHUQty) == 0)
 		{
