@@ -104,6 +104,10 @@ public class MaterialDispoRecordRepository
 			{
 				return candidateRepositoryRetrieval.retrieveLatestMatch(CandidatesQuery.fromId(candidate.getParentId()));
 			}
+			/**
+			 * In case of STOCK_UP we do not have another Stock Candidate related to the STOCK_UP Candidate,
+			 * therefore we always want {@link de.metas.cucumber.stepdefs.material.dispo.MaterialDispoDataItem.MaterialDispoDataItemBuilder.atp} to be 0 when validating the STOCK_UP Candidate
+			 */
 			case STOCK_UP:
 				return Optional.of(candidate.withQuantity(BigDecimal.ZERO));
 			default:
