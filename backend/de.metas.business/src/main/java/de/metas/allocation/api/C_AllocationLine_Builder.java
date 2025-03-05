@@ -161,10 +161,8 @@ public class C_AllocationLine_Builder
 	 * @return created {@link I_C_AllocationLine} or <code>null</code> if it was not needed.
 	 */
 	@Nullable
-	final I_C_AllocationLine create(final Supplier<I_C_AllocationHdr> allocHdrSupplier)
+	final I_C_AllocationLine create(@NonNull final Supplier<I_C_AllocationHdr> allocHdrSupplier)
 	{
-		Check.assumeNotNull(allocHdrSupplier, "allocHdrSupplier not null");
-
 		if (isSkipBecauseAllAmountsAreZero())
 		{
 			return null;

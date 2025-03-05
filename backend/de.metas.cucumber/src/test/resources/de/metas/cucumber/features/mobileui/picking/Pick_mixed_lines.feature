@@ -97,6 +97,7 @@ Feature: mobileUI Picking - Pick mixed lines
 # ######################################################################################################################
 # ######################################################################################################################
 # ######################################################################################################################
+  @Id:S0398_10
   @from:cucumber
   Scenario: Pick multiple catch weight items and regular items
     When set sys config boolean value false for sys config PickingJobPickCommand.PickCUsFromCUs
@@ -164,9 +165,9 @@ Feature: mobileUI Picking - Pick mixed lines
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
-      | sched_CatchWeightProduct         | shipment              | CO            |
-      | sched_RegularTUProduct           | shipment              | CO            |
-      | sched_RegularCUProduct           | shipment              | CO            |
+      | sched_CatchWeightProduct         | shipment_20230422     | CO            |
+      | sched_RegularTUProduct           | shipment_20230422     | CO            |
+      | sched_RegularCUProduct           | shipment_20230422     | CO            |
 
     And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by sched_CatchWeightProduct
       | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed | M_InOutLine_ID |

@@ -356,7 +356,7 @@ public class M_InOut_StepDef
 
 			if (inOutIds.size() > 1)
 			{
-				throw new AdempiereException("More than one M_InOut found for shipmentSchedule=" + shipmentSchedule.getM_ShipmentSchedule_ID());
+				throw new AdempiereException("More than one M_InOut found for shipmentSchedule=" + shipmentSchedule.getM_ShipmentSchedule_ID() + "; M_ShipmentSchedule_ID.Identifier=" + shipmentScheduleIdentifier);
 			}
 
 			final IQueryBuilder<I_M_InOut> shipmentQueryBuilder = queryBL
@@ -380,13 +380,14 @@ public class M_InOut_StepDef
 				}
 				else
 				{
-					assertThat(prevShipment.getM_InOut_ID()).isEqualTo(shipment.getM_InOut_ID());
+					assertThat(prevShipment.getM_InOut_ID())
+							.as("We already registered shipment-M_InOut_ID=%s for M_InOut_ID.Identifier %s; ; M_ShipmentSchedule_ID.Identifier=%s",
+									prevShipment.getM_InOut_ID(), shipmentIdentifier, shipmentScheduleIdentifier)
+							.isEqualTo(shipment.getM_InOut_ID());
 					shipmentTable.putOrReplace(shipmentIdentifier, shipment);
 				}
-
 				return true;
 			}
-
 			return false;
 		};
 

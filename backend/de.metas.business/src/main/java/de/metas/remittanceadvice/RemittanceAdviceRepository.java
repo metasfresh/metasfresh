@@ -406,6 +406,7 @@ public class RemittanceAdviceRepository
 		return queryBL.createQueryBuilder(I_C_RemittanceAdvice_Line.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_RemittanceAdvice_Line.COLUMN_C_RemittanceAdvice_ID, remittanceAdviceId.getRepoId())
+				.orderBy(I_C_RemittanceAdvice_Line.COLUMN_C_RemittanceAdvice_Line_ID) // ordering them for reproducibility
 				.create()
 				.list()
 				.stream()

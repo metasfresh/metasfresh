@@ -125,7 +125,7 @@ Feature: mobileUI Picking - Pick TUs from CU
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
-      | shipmentSchedule                 | shipment              | CO            |
+      | shipmentSchedule                 | shipment_20240424     | CO            |
 
     And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule
       | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed | M_InOutLine_ID |

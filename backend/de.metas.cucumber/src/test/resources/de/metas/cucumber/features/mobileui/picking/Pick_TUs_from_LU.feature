@@ -125,7 +125,7 @@ Feature: mobileUI Picking - Pick TUs from LU
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
-      | shipmentSchedule                 | shipment              | CO            |
+      | shipmentSchedule                 | shipment_20240424_2   | CO            |
 
     And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule
       | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed | M_InOutLine_ID |
@@ -209,7 +209,7 @@ Feature: mobileUI Picking - Pick TUs from LU
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
-      | shipmentSchedule                 | shipment              | CO            |
+      | shipmentSchedule                 | shipment_20240709_3   | CO            |
 
     And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule
       | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID  | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed | M_InOutLine_ID |
@@ -259,7 +259,7 @@ Feature: mobileUI Picking - Pick TUs from LU
   @from:cucumber
   Scenario: Pick TUs from LU with TUs (not-aggregated)
     When transform CU to new TUs
-      | sourceCU   | cuQty | M_HU_PI_Item_Product_ID | OPT.resultedNewTUs                                              |
+      | sourceCU   | cuQty | M_HU_PI_Item_Product_ID | OPT.resultedNewTUs                                          |
       | pickFromCU | 20    | TUx4                    | pickFromTU1,pickFromTU2,pickFromTU3,pickFromTU4,pickFromTU5 |
     And aggregate TUs to new LU
       | sourceTUs                                                   | newLUs     |
@@ -300,7 +300,7 @@ Feature: mobileUI Picking - Pick TUs from LU
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
-      | shipmentSchedule                 | shipment              | CO            |
+      | shipmentSchedule                 | shipment_20240424_4   | CO            |
 
     And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule
       | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID | QtyTU | M_TU_HU_ID  | QtyLU | M_LU_HU_ID | Processed | M_InOutLine_ID |

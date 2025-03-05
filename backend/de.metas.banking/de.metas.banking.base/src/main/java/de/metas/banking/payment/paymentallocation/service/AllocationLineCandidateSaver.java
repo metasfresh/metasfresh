@@ -75,6 +75,7 @@ final class AllocationLineCandidateSaver
 		return candidatesByPaymentId.build();
 	}
 
+	@Nullable
 	private PaymentAllocationId saveCandidate(final AllocationLineCandidate candidate)
 	{
 		final AllocationLineCandidateType type = candidate.getType();
