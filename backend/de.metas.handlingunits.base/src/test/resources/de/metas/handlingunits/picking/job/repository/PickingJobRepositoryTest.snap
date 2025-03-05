@@ -1,5 +1,6 @@
 de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNewAndGet_then_getById=[
   {
+    "currentPickingTarget": { },
     "docStatus": "Drafted",
     "header": {
       "aggregationType": "sales_order",
@@ -24,6 +25,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
     "lines": [
       {
         "caption": "productName-6",
+        "currentPickingTarget": { },
         "deliveryBPLocationId": {
           "bpartnerId": 3,
           "repoId": 4
@@ -40,7 +42,6 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
           "name": "infinite-6789",
           "piItemId": 123
         },
-        "pickingSlot": null,
         "pickingUnit": "CU",
         "productCategoryId": 1,
         "productId": 6,
@@ -130,7 +131,6 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
         ]
       }
     ],
-    "luPickTarget": null,
     "pickFromAlternatives": [
       {
         "id": 1000000,
@@ -160,8 +160,6 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
       }
     ],
     "pickFromHU": null,
-    "pickingSlot": null,
-    "progress": "NOT_STARTED",
-    "tuPickTarget": null
+    "progress": "NOT_STARTED"
   }
 ]

@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.model;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import de.metas.handlingunits.HuId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.picking.api.PickingSlotId;
@@ -19,6 +20,7 @@ import java.util.function.UnaryOperator;
 @Builder(toBuilder = true)
 @EqualsAndHashCode(doNotUseGetters = true)
 @ToString(doNotUseGetters = true)
+@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 public class CurrentPickingTarget
 {
 	private final static AdMessageKey MISSING_PICKING_SLOT_ID_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.model.MISSING_PICKING_SLOT_ID_ERROR_MSG");
