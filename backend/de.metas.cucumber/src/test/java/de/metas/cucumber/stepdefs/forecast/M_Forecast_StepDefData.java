@@ -1,10 +1,8 @@
-package de.metas.mforecast;
-
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.cucumber
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,25 +20,27 @@ package de.metas.mforecast;
  * #L%
  */
 
-import com.google.common.collect.ImmutableSet;
+package de.metas.cucumber.stepdefs.forecast;
+
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
 import de.metas.mforecast.impl.ForecastId;
-import de.metas.util.ISingletonService;
-import lombok.NonNull;
 import org.compiere.model.I_M_Forecast;
-import org.compiere.model.I_M_ForecastLine;
 
-import java.util.List;
-import java.util.stream.Stream;
-
-public interface IForecastDAO extends ISingletonService
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
+public class M_Forecast_StepDefData extends StepDefData<I_M_Forecast>
+		implements StepDefDataGetIdAware<ForecastId, I_M_Forecast>
 {
-	List<I_M_ForecastLine> retrieveLinesByForecastId(int forecastId);
+	public M_Forecast_StepDefData()
+	{
+		super(I_M_Forecast.class);
+	}
 
-	I_M_ForecastLine getForecastLineById(int forecastLineRecordId);
-
-	@NonNull
-	ForecastId createForecast(@NonNull ForecastRequest request);
-
-	@NonNull
-	Stream<I_M_Forecast> streamRecordsByIds(@NonNull ImmutableSet<ForecastId> ids);
+	@Override
+	public ForecastId extractIdFromRecord(final I_M_Forecast record)
+	{
+		return ForecastId.ofRepoId(record.getM_Forecast_ID());
+	}
 }
