@@ -14,7 +14,9 @@ import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.Packageable;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
@@ -110,20 +112,24 @@ public class PickingJobCandidateRetrieveCommand
 	//
 
 	@Value
+	@EqualsAndHashCode(exclude = "uom")
 	@Builder
 	private static class ProductBasedAggregationKey
 	{
 		@NonNull OrgId orgId;
 		@NonNull ProductId productId;
+		@NonNull UomId uomId;
 		@NonNull I_C_UOM uom;
 		@Nullable WarehouseTypeId warehouseTypeId;
 
 		public static ProductBasedAggregationKey of(@NonNull final Packageable item)
 		{
+			final I_C_UOM uom = item.getUOM();
 			return builder()
 					.orgId(item.getOrgId())
 					.productId(item.getProductId())
-					.uom(item.getUOM())
+					.uomId(UomId.ofRepoId(uom.getC_UOM_ID()))
+					.uom(uom)
 					.warehouseTypeId(item.getWarehouseTypeId())
 					.build();
 		}
