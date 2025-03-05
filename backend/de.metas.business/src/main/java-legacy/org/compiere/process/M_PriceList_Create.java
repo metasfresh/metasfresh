@@ -38,11 +38,11 @@ public class M_PriceList_Create extends JavaProcess implements IProcessPrecondit
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
-		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoIdOrNull(context.getSingleSelectedRecordId());
-		if (priceListVersionId == null)
+		if (context.isMoreThanOneSelected())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection().toInternal();
 		}
+		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoIdOrNull(context.getSingleSelectedRecordId());
 
 		final I_M_PriceList_Version plv = priceListDAO.getPriceListVersionById(priceListVersionId);
 
