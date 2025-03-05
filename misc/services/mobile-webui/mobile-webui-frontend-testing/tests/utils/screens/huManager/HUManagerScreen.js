@@ -26,7 +26,7 @@ export const HUManagerScreen = {
         await HUManagerScreen.expectVisible();
 
         console.log('Scanning QR code:\n' + huQRCode);
-        await page.fill('#input-text', huQRCode);
+        await page.type('#input-text', huQRCode);
 
         await HUManagerScreen.waitForHUInfoPanel();
     }),

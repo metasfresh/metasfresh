@@ -22,7 +22,7 @@ export const GetQuantityDialog = {
     scanCatchWeightQRCode: async ({ qrCode, stepName }) => await test.step(`${NAME} - Scan ${stepName}: ${qrCode}`, async () => {
         const prevQtyTarget = await page.locator('[data-testid="qty-target"]').innerText();
 
-        await page.getByTestId('qrCode-input').fill(qrCode);
+        await page.getByTestId('qrCode-input').type(qrCode);
         await page.locator('[data-testid="qrCode-input"]').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
         await page.waitForFunction((prevQtyTarget) => {
