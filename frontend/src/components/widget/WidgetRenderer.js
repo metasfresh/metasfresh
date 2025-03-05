@@ -491,7 +491,9 @@ class WidgetRenderer extends PureComponent {
           return (
             <Amount
               widgetField={widgetField}
-              value={widgetData[0].value}
+              value={
+                widgetProperties.value /* the value up-to-date, even if was not already PATCHed */
+              }
               step={step}
               devices={devices}
               //
