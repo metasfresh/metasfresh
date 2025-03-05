@@ -130,10 +130,10 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 		return JsonPickingJob.builderFrom(pickingJob)
 				.lines(toJsonPickingJobLines(pickingJob, pickingJobOptions, jsonOpts))
 				.qtyRejectedReasons(JsonRejectReasonsList.of(pickingJobRestService.getQtyRejectedReasons(), jsonOpts))
-				.isAllowSkippingRejectedReason(pickingJobOptions.isAllowSkippingRejectedReason())
-				.isPickWithNewLU(pickingJobOptions.isPickWithNewLU())
-				.isAllowNewTU(pickingJobOptions.isAllowNewTU())
-				.isShowPromptWhenOverPicking(pickingJobOptions.isShowConfirmationPromptWhenOverPick())
+				.allowSkippingRejectedReason(pickingJobOptions.isAllowSkippingRejectedReason())
+				.pickWithNewLU(pickingJobOptions.isPickWithNewLU())
+				.allowNewTU(pickingJobOptions.isAllowNewTU())
+				.showPromptWhenOverPicking(pickingJobOptions.isShowConfirmationPromptWhenOverPick())
 				.build();
 	}
 

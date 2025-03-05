@@ -37,7 +37,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class JsonPickingJobTest
 {
@@ -79,6 +79,16 @@ class JsonPickingJobTest
 						randomJsonPickFromAlternative(),
 						randomJsonPickFromAlternative()
 				))
+				.qtyRejectedReasons(JsonRejectReasonsList.builder()
+						.reasons(ImmutableList.of(
+								JsonRejectReason.builder().key("key1").caption("reason1").build(),
+								JsonRejectReason.builder().key("key2").caption("reason2").build()
+						))
+						.build())
+				.allowSkippingRejectedReason(true)
+				.pickWithNewLU(true)
+				.allowNewTU(true)
+				.showPromptWhenOverPicking(true)
 				.build());
 	}
 

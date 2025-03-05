@@ -43,7 +43,7 @@ public class JsonPickingJob
 	@NonNull PickingJobAggregationType aggregationType;
 	@NonNull JsonCompleteStatus completeStatus;
 	@Nullable JsonDisplayableQRCode pickFromHU;
-	boolean isLineLevelPickTarget;
+	boolean lineLevelPickTarget;
 	@Nullable JsonLUPickingTarget luPickingTarget;
 	@Nullable JsonTUPickingTarget tuPickingTarget;
 	@NonNull List<JsonPickingJobLine> lines;
@@ -51,10 +51,10 @@ public class JsonPickingJob
 
 	@NonNull JsonRejectReasonsList qtyRejectedReasons;
 
-	boolean isAllowSkippingRejectedReason;
-	boolean isPickWithNewLU;
-	boolean isAllowNewTU;
-	boolean isShowPromptWhenOverPicking;
+	boolean allowSkippingRejectedReason;
+	boolean pickWithNewLU;
+	boolean allowNewTU;
+	boolean showPromptWhenOverPicking;
 
 	public static JsonPickingJobBuilder builderFrom(@NonNull final PickingJob pickingJob)
 	{
@@ -62,7 +62,7 @@ public class JsonPickingJob
 				.aggregationType(pickingJob.getAggregationType())
 				.completeStatus(JsonCompleteStatus.of(pickingJob.getProgress()))
 				.pickFromHU(pickingJob.getPickFromHU().map(HUInfo::toQRCodeRenderedJson).orElse(null))
-				.isLineLevelPickTarget(pickingJob.isLineLevelPickTarget())
+				.lineLevelPickTarget(pickingJob.isLineLevelPickTarget())
 				.luPickingTarget(pickingJob.getLuPickingTarget(null).map(JsonLUPickingTarget::of).orElse(null))
 				.tuPickingTarget(pickingJob.getTuPickingTarget(null).map(JsonTUPickingTarget::of).orElse(null))
 				.pickFromAlternatives(pickingJob.getPickFromAlternatives()

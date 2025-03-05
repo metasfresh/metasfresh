@@ -182,8 +182,8 @@ const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStore
   draftActivityDataStored.tuPickingTarget = fromPickingJob.tuPickingTarget;
   draftActivityDataStored.isPickWithNewLU = fromPickingJob.pickWithNewLU;
   draftActivityDataStored.isAllowNewTU = fromPickingJob.allowNewTU;
-  draftActivityDataStored.isAllowSkippingRejectedReason = fromPickingJob.isAllowSkippingRejectedReason;
-  draftActivityDataStored.isShowPromptWhenOverPicking = fromPickingJob.isShowPromptWhenOverPicking;
+  draftActivityDataStored.isAllowSkippingRejectedReason = fromPickingJob.allowSkippingRejectedReason;
+  draftActivityDataStored.isShowPromptWhenOverPicking = fromPickingJob.showPromptWhenOverPicking;
   draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
 
   //
