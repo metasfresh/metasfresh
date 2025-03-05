@@ -29,7 +29,7 @@ export const Backend = {
         return responseBody;
     }),
 
-    getFreePickingSlot: async ({ bpartnerCode }) => await test.step(`Backend: get free picking slot`, async () => {
+    getFreePickingSlot: async ({ bpartnerCode } = {}) => await test.step(`Backend: get free picking slot`, async () => {
         const backendBaseUrl = await getBackendBaseUrl();
         const response = await page.request.post(`${backendBaseUrl}/frontendTesting/getFreePickingSlot`, {
             data: { bpartnerCode },

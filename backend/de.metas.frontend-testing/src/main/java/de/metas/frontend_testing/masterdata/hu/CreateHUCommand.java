@@ -112,7 +112,7 @@ public class CreateHUCommand
 			{
 				throw new AdempiereException("qty shall not be set when packingInstructions are set");
 			}
-			final PackingInstructions packingInstructions = context.getObject(request.getPackingInstructions());
+			final PackingInstructions packingInstructions = context.getObjectNotNull(request.getPackingInstructions());
 			return packingInstructions.getQtyCUs();
 		}
 		else
@@ -125,7 +125,7 @@ public class CreateHUCommand
 	{
 		if (request.getPackingInstructions() != null)
 		{
-			final PackingInstructions packingInstructions = context.getObject(request.getPackingInstructions());
+			final PackingInstructions packingInstructions = context.getObjectNotNull(request.getPackingInstructions());
 			return transformCU(packingInstructions, cuId);
 		}
 		else
