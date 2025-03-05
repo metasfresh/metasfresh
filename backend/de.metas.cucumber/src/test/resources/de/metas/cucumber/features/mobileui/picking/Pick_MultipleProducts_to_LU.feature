@@ -133,8 +133,8 @@ Feature: mobileUI Picking - Pick multiple products to LU
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
-      | shipmentSchedule1                | shipment              | CO            |
-      | shipmentSchedule2                | shipment              | CO            |
+      | shipmentSchedule1                | shipment_20240711_1   | CO            |
+      | shipmentSchedule2                | shipment_20240711_1   | CO            |
 
     And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule1
       | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID   | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed | M_InOutLine_ID |
@@ -221,8 +221,8 @@ Feature: mobileUI Picking - Pick multiple products to LU
 
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
-      | shipmentSchedule1                | shipment              | CO            |
-      | shipmentSchedule2                | shipment              | CO            |
+      | shipmentSchedule1                | shipment_20240711_2   | CO            |
+      | shipmentSchedule2                | shipment_20240711_2   | CO            |
 
     And validate M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule identified by shipmentSchedule1
       | QtyDeliveredCatch | Catch_UOM_ID | QtyPicked | VHU_ID   | QtyTU | M_TU_HU_ID | QtyLU | M_LU_HU_ID | Processed | M_InOutLine_ID |
