@@ -32,45 +32,45 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report_Deta
                                                                                     IN p_switchDate            character varying)
 ;
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.OpenItems_Report_Details(p_ad_org_id             numeric,
-                                                                            p_c_bpartner_id         numeric,
-                                                                            p_issotrx               character varying,
-                                                                            p_daysdue               numeric,
-                                                                            p_invoicecollectiontype character varying,
-                                                                            p_startdate             date,
-                                                                            p_enddate               date,
-                                                                            p_reference_date        date,
-                                                                            p_passforpayment        character varying,
-                                                                            p_switchdate            character varying)
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.OpenItems_Report_Details(IN p_AD_Org_ID             numeric,
+                                                                                       IN p_C_BPartner_ID         numeric,
+                                                                                       IN p_IsSOTrx               character varying,
+                                                                                       IN p_DaysDue               numeric,
+                                                                                       IN p_InvoiceCollectionType character varying,
+                                                                                       IN p_StartDate             date,
+                                                                                       IN p_EndDate               date,
+                                                                                       IN p_Reference_Date        date,
+                                                                                       IN p_PassForPayment        character varying,
+                                                                                       IN p_switchDate            character varying)
     RETURNS TABLE
             (
-                iso_code          character,
-                documentno        character varying,
-                dateinvoiced      date,
-                dateacct          date,
-                netdays           numeric,
-                discountdays      numeric,
-                duedate           date,
-                daysdue           integer,
-                discountdate      date,
-                grandtotal        numeric,
-                paidamt           numeric,
-                openamt           numeric,
-                value             character varying,
+                iso_code          character(3),
+                DocumentNo        character varying(30),
+                POReference       character varying(30),
+                DateInvoiced      date,
+                DateAcct          date,
+                NetDays           numeric,
+                DiscountDays      numeric(10, 0),
+                DueDate           date,
+                DaysDue           integer,
+                DiscountDate      date,
+                GrandTotal        numeric,
+                PaidAmt           numeric,
+                OpenAmt           numeric,
+                Value             character varying(40),
                 ExternalID        character varying,
-                name              character varying,
-                passforpayment    boolean,
-                grandtotalconvert numeric,
-                openamtconvert    numeric,
-                main_currency     character
+                Name              character varying(60),
+                PassForPayment    boolean,
+                GrandTotalConvert numeric,
+                OpenAmtConvert    numeric,
+                main_currency     character(3)
             )
-    STABLE
-    LANGUAGE sql
 AS
 $$
 
 SELECT oi.CurrencyCode     AS iso_code,
        oi.DocumentNo,
+       oi.POReference,
        oi.DateInvoiced::date,
        oi.DateAcct::date,
        oi.NetDays,
@@ -112,4 +112,6 @@ WHERE oi.AD_Org_ID = (CASE WHEN p_AD_Org_ID IS NULL THEN oi.AD_Org_ID ELSE p_AD_
   -- 08394: If Flag is not set, only display invoices that are not part of a processed PaySelection
   AND (p_PassForPayment = 'Y' OR NOT oi.IsInPaySelection)
 $$
+    LANGUAGE sql STABLE
 ;
+
