@@ -44,6 +44,9 @@ public class CreateEDIDesadvPackRequest
 	@NonNull
 	EDIDesadvId ediDesadvId;
 
+	/**
+	 * A value <=0 means that the repo shall pick the proper seqNo
+	 */
 	@NonNull
 	Integer seqNo;
 	
