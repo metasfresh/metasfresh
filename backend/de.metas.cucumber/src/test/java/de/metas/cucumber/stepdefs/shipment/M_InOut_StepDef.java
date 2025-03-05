@@ -380,7 +380,9 @@ public class M_InOut_StepDef
 				}
 				else
 				{
-					assertThat(prevShipment.getM_InOut_ID()).isEqualTo(shipment.getM_InOut_ID());
+					assertThat(prevShipment.getM_InOut_ID())
+							.as("We already registered shipment-M_InOut_ID=%s for identifier %s", prevShipment.getM_InOut_ID(), shipmentIdentifier)
+							.isEqualTo(shipment.getM_InOut_ID());
 					shipmentTable.putOrReplace(shipmentIdentifier, shipment);
 				}
 
