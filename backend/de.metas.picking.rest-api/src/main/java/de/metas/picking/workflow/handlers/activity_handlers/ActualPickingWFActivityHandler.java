@@ -22,6 +22,7 @@
 
 package de.metas.picking.workflow.handlers.activity_handlers;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.config.mobileui.PickingLineGroupBy;
@@ -66,6 +67,8 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("picking.actualPicking");
 	public static final UIComponentType COMPONENTTYPE_PICK_PRODUCTS = UIComponentType.ofString("picking/pickProducts");
+	@VisibleForTesting
+	public static final String PROP_pickingJob = "pickingJob";
 
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final PickingJobRestService pickingJobRestService;
@@ -86,7 +89,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 
 		return UIComponent.builderFrom(COMPONENTTYPE_PICK_PRODUCTS, wfActivity)
 				.properties(Params.builder()
-						.valueObj("pickingJob", toJsonPickingJob(pickingJob, jsonOpts))
+						.valueObj(PROP_pickingJob, toJsonPickingJob(pickingJob, jsonOpts))
 						.build())
 				.build();
 	}

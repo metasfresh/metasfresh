@@ -18,9 +18,11 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.picking.rest_api.json.JsonPickingJob;
 import de.metas.picking.rest_api.json.JsonPickingJobLine;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
+import de.metas.picking.workflow.handlers.activity_handlers.ActualPickingWFActivityHandler;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -249,8 +251,8 @@ public class MobileUI_Picking_StepDef
 		{
 			final JsonWFProcess wfProcess = getWfProcessNotNull();
 			final JsonWFActivity activity = wfProcess.getActivityById(PickingMobileApplication.ACTIVITY_ID_PickLines.getAsString());
-			//noinspection unchecked
-			return (List<JsonPickingJobLine>)activity.getComponentProps().get("lines");
+			final JsonPickingJob pickingJob = (JsonPickingJob)activity.getComponentProps().get(ActualPickingWFActivityHandler.PROP_pickingJob);
+			return pickingJob.getLines();
 		}
 
 	}
