@@ -1461,6 +1461,12 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		}
 		reversal.setC_Payment_ID(0);
 		Services.get(IInvoiceBL.class).setPaymentStatus(reversal, BigDecimal.ZERO, InvoicePaymentStatus.FULLY_PAID);
+
+		// The reversal must have the same totals as the original invoice, only with the opposite sign!
+		reversal.setCashRoundingAmt(getCashRoundingAmt().negate());
+		reversal.setGrandTotal(getGrandTotal().negate());
+		reversal.setTotalLines(getTotalLines().negate());
+
 		reversal.closeIt();
 		reversal.setProcessing(false);
 		reversal.setDocStatus(DocStatus.Reversed.getCode());
