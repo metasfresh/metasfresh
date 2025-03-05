@@ -3,41 +3,19 @@
  */
 package org.adempiere.exceptions;
 
-import static de.metas.util.Check.isEmpty;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.sql.SQLException;
-
-import org.adempiere.ad.service.IDeveloperModeBL;
-import org.compiere.model.MIndexTable;
-import org.compiere.util.DB;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.service.IDeveloperModeBL;
+import org.compiere.model.MIndexTable;
+import org.compiere.util.DB;
+
+import javax.annotation.Nullable;
+import java.sql.SQLException;
+
+import static de.metas.util.Check.isEmpty;
 
 /**
  * Unique Constraint Exception
@@ -46,36 +24,37 @@ import de.metas.util.Services;
  */
 public class DBUniqueConstraintException extends DBException
 {
+	public static final String DB_UNIQUE_CONSTRAINT_ERROR_CODE_PREFIX = "DBUniqueConstraint-";
 	private static final long serialVersionUID = -1436774241410586947L;
 
 	private String constraintName = null;
 	private MIndexTable index = null;
 
-	public DBUniqueConstraintException(Throwable e)
+	public DBUniqueConstraintException(final Throwable e)
 	{
 		super("@SaveErrorNotUnique@:" + e.getLocalizedMessage(), e);
 		setConstraintInfo(e);
 	}
 
-	public DBUniqueConstraintException(MIndexTable index)
+	public DBUniqueConstraintException(final MIndexTable index)
 	{
 		super("@SaveErrorNotUnique@ @AD_Index_Table_ID@:" + index.getName());
 		this.constraintName = index.getName();
 		this.index = index;
 	}
 
-	public DBUniqueConstraintException(SQLException e, String sql, Object[] params)
+	public DBUniqueConstraintException(final SQLException e, final String sql, final Object[] params)
 	{
 		super(e, sql, params);
 		setConstraintInfo(e);
 	}
 
-	public static String getConstraintName(SQLException e)
+	public static String getConstraintName(final SQLException e)
 	{
 		return null;
 	}
 
-	private void setConstraintInfo(Throwable e)
+	private void setConstraintInfo(final Throwable e)
 	{
 		if (!isUniqueContraintError(e))
 		{
@@ -129,18 +108,25 @@ public class DBUniqueConstraintException extends DBException
 		}
 	}
 
-	private static String parseConstraintName(String sqlException, String quoteStart, String quoteEnd)
+	private static String parseConstraintName(final String sqlException, final String quoteStart, final String quoteEnd)
 	{
-		int i = sqlException.indexOf(quoteStart);
+		final int i = sqlException.indexOf(quoteStart);
 		if (i >= 0)
 		{
-			int i2 = sqlException.indexOf(quoteEnd, i + quoteStart.length());
+			final int i2 = sqlException.indexOf(quoteEnd, i + quoteStart.length());
 			if (i2 >= 0)
 			{
 				return sqlException.substring(i + quoteStart.length(), i2);
 			}
 		}
 		return null;
+	}
+
+	@Nullable
+	@Override
+	public String getErrorCode()
+	{
+		return DB_UNIQUE_CONSTRAINT_ERROR_CODE_PREFIX + constraintName;
 	}
 
 }

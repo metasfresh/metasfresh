@@ -194,10 +194,10 @@ public class DBException extends AdempiereException
 	 */
 	@Nullable
 	@Override
-	public  String getErrorCode()
+	public String getErrorCode()
 	{
 		final SQLException e = getSQLException();
-		return e != null ? DB_ERROR_CODE_PREFIX + e.getErrorCode() : null;
+		return DB_ERROR_CODE_PREFIX + (e != null ? e.getSQLState() : null);
 	}
 
 	/**

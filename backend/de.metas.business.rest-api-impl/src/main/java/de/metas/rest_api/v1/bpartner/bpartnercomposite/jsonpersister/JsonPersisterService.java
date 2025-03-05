@@ -107,6 +107,7 @@ import java.util.Optional;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.isBlank;
 
@@ -114,6 +115,7 @@ import static de.metas.util.Check.isBlank;
 public class JsonPersisterService
 {
 	private static final Logger logger = LogManager.getLogger(JsonPersisterService.class);
+	public static final String MISSING_BP_ERROR_CODE = "MissingBP";
 
 	private final transient JsonRetrieverService jsonRetrieverService;
 	private final transient JsonRequestConsolidateService jsonRequestConsolidateService;
@@ -187,6 +189,7 @@ public class JsonPersisterService
 						.resourceIdentifier(rawBpartnerIdentifier)
 						.parentResource(jsonRequestComposite)
 						.build()
+						.setErrorCode(MISSING_BP_ERROR_CODE)
 						.setParameter("effectiveSyncAdvise", effectiveSyncAdvise);
 			}
 			// create new aggregation root
@@ -1248,7 +1251,7 @@ public class JsonPersisterService
 
 		final JsonRequestLocationUpsert locations = jsonBPartnerComposite.getLocationsNotNull();
 
-		final SyncAdvise locationsSyncAdvise = coalesce(locations.getSyncAdvise(), jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
+		final SyncAdvise locationsSyncAdvise = coalesceNotNull(locations.getSyncAdvise(), jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
 
 		final ImmutableMap.Builder<String, JsonResponseUpsertItemBuilder> result = ImmutableMap.builder();
 		for (final JsonRequestLocationUpsertItem locationRequestItem : locations.getRequestItems())
@@ -1283,7 +1286,7 @@ public class JsonPersisterService
 		final ShortTermBankAccountIndex shortTermIndex = new ShortTermBankAccountIndex(bpartnerComposite);
 
 		final JsonRequestBankAccountsUpsert bankAccounts = jsonBPartnerComposite.getBankAccountsNotNull();
-		final SyncAdvise bankAccountsSyncAdvise = coalesce(bankAccounts.getSyncAdvise(), jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
+		final SyncAdvise bankAccountsSyncAdvise = coalesceNotNull(bankAccounts.getSyncAdvise(), jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
 
 		final ImmutableMap.Builder<String, JsonResponseUpsertItemBuilder> result = ImmutableMap.builder();
 		for (final JsonRequestBankAccountUpsertItem bankAccountRequestItem : bankAccounts.getRequestItems())
@@ -1430,7 +1433,7 @@ public class JsonPersisterService
 		if (existingLocation != null)
 		{
 			location = existingLocation;
-			syncOutcome = parentSyncAdvise.getIfExists().isUpdate() ? SyncOutcome.UPDATED : SyncOutcome.NOTHING_DONE;
+			syncOutcome = parentSyncAdvise.getIfExists().isAttemptUpdate() ? SyncOutcome.UPDATED : SyncOutcome.NOTHING_DONE;
 		}
 		else
 		{
@@ -1473,7 +1476,9 @@ public class JsonPersisterService
 			@NonNull final BPartnerLocation location,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		final SyncAdvise syncAdvise = coalesce(jsonBPartnerLocation.getSyncAdvise(), parentSyncAdvise);
+		final BPartnerLocation originalBPartnerLocation = location.toBuilder().build();
+
+		final SyncAdvise syncAdvise = coalesceNotNull(jsonBPartnerLocation.getSyncAdvise(), parentSyncAdvise);
 
 		// active
 		if (jsonBPartnerLocation.isActiveSet())
@@ -1489,6 +1494,7 @@ public class JsonPersisterService
 		}
 
 		final boolean isUpdateRemove = syncAdvise.getIfExists().isUpdateRemove();
+		final boolean isAssumeUnchanged = syncAdvise.getIfExists().isAssertUnchanged();
 
 		// name
 		if (jsonBPartnerLocation.isNameSet())
@@ -1514,6 +1520,7 @@ public class JsonPersisterService
 		if (jsonBPartnerLocation.isAddress1Set())
 		{
 			location.setAddress1(StringUtils.trim(jsonBPartnerLocation.getAddress1()));
+
 		}
 		else if (isUpdateRemove)
 		{
@@ -1632,6 +1639,12 @@ public class JsonPersisterService
 
 		final BPartnerLocationType locationType = syncJsonToLocationType(jsonBPartnerLocation);
 		location.setLocationType(locationType);
+
+		if (isAssumeUnchanged && !Objects.equals(location, originalBPartnerLocation))
+		{
+			throw new AdempiereException("The location was assumed unchanged, but it was changed: " + location)
+					.setErrorCode("JSONPersister-LocationChanged");
+		}
 	}
 
 	private BPartnerLocationType syncJsonToLocationType(@NonNull final JsonRequestLocation jsonBPartnerLocation)
