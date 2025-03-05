@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.fresh.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report_Details(IN p_AD_Org_ID             numeric,
                                                                                     IN p_C_BPartner_ID         numeric,
                                                                                     IN p_IsSOTrx               character varying,
@@ -10,45 +32,45 @@ DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report_Deta
                                                                                     IN p_switchDate            character varying)
 ;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.OpenItems_Report_Details(IN p_AD_Org_ID             numeric,
-                                                                                       IN p_C_BPartner_ID         numeric,
-                                                                                       IN p_IsSOTrx               character varying,
-                                                                                       IN p_DaysDue               numeric,
-                                                                                       IN p_InvoiceCollectionType character varying,
-                                                                                       IN p_StartDate             date,
-                                                                                       IN p_EndDate               date,
-                                                                                       IN p_Reference_Date        date,
-                                                                                       IN p_PassForPayment        character varying,
-                                                                                       IN p_switchDate            character varying)
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.OpenItems_Report_Details(p_ad_org_id             numeric,
+                                                                            p_c_bpartner_id         numeric,
+                                                                            p_issotrx               character varying,
+                                                                            p_daysdue               numeric,
+                                                                            p_invoicecollectiontype character varying,
+                                                                            p_startdate             date,
+                                                                            p_enddate               date,
+                                                                            p_reference_date        date,
+                                                                            p_passforpayment        character varying,
+                                                                            p_switchdate            character varying)
     RETURNS TABLE
             (
-                iso_code          character(3),
-                DocumentNo        character varying(30),
-                POReference       character varying(30),
-                DateInvoiced      date,
-                DateAcct          date,
-                NetDays           numeric,
-                DiscountDays      numeric(10, 0),
-                DueDate           date,
-                DaysDue           integer,
-                DiscountDate      date,
-                GrandTotal        numeric,
-                PaidAmt           numeric,
-                OpenAmt           numeric,
-                Value             character varying(40),
+                iso_code          character,
+                documentno        character varying,
+                dateinvoiced      date,
+                dateacct          date,
+                netdays           numeric,
+                discountdays      numeric,
+                duedate           date,
+                daysdue           integer,
+                discountdate      date,
+                grandtotal        numeric,
+                paidamt           numeric,
+                openamt           numeric,
+                value             character varying,
                 ExternalID        character varying,
-                Name              character varying(60),
-                PassForPayment    boolean,
-                GrandTotalConvert numeric,
-                OpenAmtConvert    numeric,
-                main_currency     character(3)
+                name              character varying,
+                passforpayment    boolean,
+                grandtotalconvert numeric,
+                openamtconvert    numeric,
+                main_currency     character
             )
+    STABLE
+    LANGUAGE sql
 AS
 $$
 
 SELECT oi.CurrencyCode     AS iso_code,
        oi.DocumentNo,
-       oi.POReference,
        oi.DateInvoiced::date,
        oi.DateAcct::date,
        oi.NetDays,
@@ -90,6 +112,4 @@ WHERE oi.AD_Org_ID = (CASE WHEN p_AD_Org_ID IS NULL THEN oi.AD_Org_ID ELSE p_AD_
   -- 08394: If Flag is not set, only display invoices that are not part of a processed PaySelection
   AND (p_PassForPayment = 'Y' OR NOT oi.IsInPaySelection)
 $$
-    LANGUAGE sql STABLE
 ;
-

@@ -1,58 +1,40 @@
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report
 (
-    date
-)
-;
-
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report
-(
-    Reference_Date date,
-    switchDate     character varying
-)
-;
-
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report
-(
     Reference_Date  date,
     switchDate      character varying,
     p_C_BPartner_ID numeric(10)
 )
 ;
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.OpenItems_Report(IN p_Reference_Date date DEFAULT NOW(),
-                                                                               IN p_SwitchDate     character varying DEFAULT 'N',
-                                                                               IN p_c_bpartner_id              numeric DEFAULT NULL::numeric)
-    RETURNS table
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.OpenItems_Report(p_reference_date date DEFAULT NOW(),
+                                                                    p_switchdate     character varying DEFAULT 'N'::character varying,
+                                                                    p_c_bpartner_id  numeric DEFAULT NULL::numeric)
+    RETURNS TABLE
             (
-                CurrencyCode          char(3),
-                DocumentNo            varchar,
-                POReference           varchar,
-                DateInvoiced          date,
-                DateAcct              date,
-                NetDays               numeric,
-                DiscountDays          numeric,
-                DueDate               date,
-                DaysDue               integer,
-                DiscountDate          date,
-                GrandTotal            numeric,
-                PaidAmt               numeric,
-                OpenAmt               numeric,
-                C_Currency_ID         numeric
-                --
-                ,
-                BPValue               varchar,
-                BPName                varchar,
+                currencycode          char(3),
+                documentno            varchar,
+                dateinvoiced          date,
+                dateacct              date,
+                netdays               numeric,
+                discountdays          numeric,
+                duedate               date,
+                daysdue               integer,
+                discountdate          date,
+                grandtotal            numeric,
+                paidamt               numeric,
+                openamt               numeric,
+                c_currency_id         numeric,
+                bpvalue               varchar,
+                bpname                varchar,
                 ExternalID            character varying,
-                C_BPartner_ID         numeric
-                --
-                ,
-                IsInPaySelection      boolean,
-                C_Invoice_ID          numeric,
-                IsSOTrx               char(1),
-                AD_Org_ID             numeric,
-                AD_Client_ID          numeric,
-                InvoiceCollectionType char(1),
-                Reference_Date        date,
+                c_bpartner_id         numeric,
+                isinpayselection      boolean,
+                c_invoice_id          numeric,
+                issotrx               char,
+                ad_org_id             numeric,
+                ad_client_id          numeric,
+                invoicecollectiontype char,
+                reference_date        date,
                 grandtotalconvert     numeric,
                 openamtconvert        numeric,
                 main_iso_code         char(3)
@@ -61,7 +43,6 @@ AS
 $$
 SELECT c.iso_code,
        oi.DocumentNo,
-       oi.poreference,
        oi.DateInvoiced::date,
        oi.DateAcct::date,
        oi.NetDays,
@@ -86,27 +67,26 @@ SELECT c.iso_code,
        oi.AD_Org_ID,
        oi.AD_Client_ID,
        oi.InvoiceCollectionType,
-       p_Reference_Date           AS Reference_Date,
+       p_reference_date                              AS Reference_Date,
        -- foreign currency
        (CASE
             WHEN oi.main_currency != oi.C_Currency_ID
                 THEN oi.GrandTotal *
                      (SELECT currencyrate FROM fact_acct WHERE record_id = oi.c_invoice_id AND ad_table_id = get_table_id('C_Invoice') LIMIT 1)
-        END)                      AS grandtotalconvert,
+        END)                                         AS grandtotalconvert,
        (CASE
             WHEN oi.main_currency != oi.C_Currency_ID
                 THEN oi.OpenAmt *
                      (SELECT currencyrate FROM fact_acct WHERE record_id = oi.c_invoice_id AND ad_table_id = get_table_id('C_Invoice') LIMIT 1)
-        END)                      AS openamtconvert,
+        END)                                         AS openamtconvert,
 
        (CASE
             WHEN oi.main_currency != oi.C_Currency_ID
                 THEN oi.main_iso_code
-        END)                      AS main_iso_code
+        END)                                         AS main_iso_code
 FROM (SELECT i.AD_Org_ID,
              i.AD_Client_ID,
              i.DocumentNo,
-             i.poreference,
              i.C_BPartner_ID,
              i.IsSOTrx,
              i.DateInvoiced,
@@ -120,8 +100,8 @@ FROM (SELECT i.AD_Org_ID,
              p.DiscountDays,
              i.DueDate                                                                                                       AS DueDate,
              COALESCE(
-                     EXTRACT(DAY FROM (TRUNC(p_Reference_Date) - i.DueDate)),
-                     DaysBetween(p_Reference_Date, ips.DueDate::timestamp with time zone)
+                     EXTRACT(DAY FROM (TRUNC(p_reference_date) - i.DueDate)),
+                     DaysBetween(p_reference_date, ips.DueDate::timestamp with time zone)
              )::integer                                                                                                      AS DaysDue,
              COALESCE(AddDays(i.DateInvoiced::timestamp with time zone, p.DiscountDays), ips.DiscountDate)                   AS DiscountDate,
              COALESCE(ROUND(i.GrandTotal * p.Discount / 100::numeric, 2), ips.DiscountAmt)                                   AS DiscountAmt,
@@ -131,16 +111,18 @@ FROM (SELECT i.AD_Org_ID,
               FROM invoiceOpenToDate(
                       i.C_Invoice_ID
                   , COALESCE(ips.C_InvoicePaySchedule_ID, 0::numeric)
-                  , (CASE WHEN p_switchDate = 'Y' THEN 'A' ELSE 'T' END)
-                  , p_Reference_Date))                                                                                       AS OpenAmt,
+                  , (CASE WHEN p_switchdate = 'Y' THEN 'A' ELSE 'T' END)
+                  , p_reference_date))                                                                                       AS OpenAmt,
              i.InvoiceCollectionType,
              i.C_Currency_ID,
              i.C_Invoice_ID,
-             c.C_Currency_ID                                                                                                   AS main_currency,
-             c.iso_code                                                                                                        AS main_iso_code
-      FROM C_Invoice i
+             i.MultiplierAP,
+             c.C_Currency_ID                                                                                                 AS main_currency,
+             c.iso_code                                                                                                      AS main_iso_code
+      FROM C_Invoice_v i
                LEFT OUTER JOIN C_PaymentTerm p ON i.C_PaymentTerm_ID = p.C_PaymentTerm_ID
                LEFT OUTER JOIN C_InvoicePaySchedule ips ON i.C_Invoice_ID = ips.C_Invoice_ID AND ips.isvalid = 'Y'
+
                LEFT OUTER JOIN AD_ClientInfo ci ON ci.AD_Client_ID = i.ad_client_id
                LEFT OUTER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = ci.C_AcctSchema1_ID
                LEFT OUTER JOIN C_Currency c ON acs.C_Currency_ID = c.C_Currency_ID
@@ -148,7 +130,9 @@ FROM (SELECT i.AD_Org_ID,
 
       WHERE TRUE
         AND i.DocStatus IN ('CO', 'CL', 'RE')
-        AND (p_C_BPartner_ID IS NULL OR i.c_bpartner_id = p_C_BPartner_ID)) AS oi
+        AND (p_c_bpartner_id IS NULL OR i.C_BPartner_ID = p_c_bpartner_id)
+         --
+     ) AS oi
          INNER JOIN C_BPartner bp ON oi.C_BPartner_ID = bp.C_BPartner_ID
          INNER JOIN C_Currency c ON oi.C_Currency_ID = c.C_Currency_ID
 WHERE TRUE
