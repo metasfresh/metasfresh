@@ -30,8 +30,10 @@ public class CucumberLifeCycleSupport_StepDef
 	@Given("infrastructure and metasfresh are running")
 	public void infrastructure()
 	{
+		CucumberLifeCycleSupport.beforeEach();
+		
 		// note: we can't use something like CucumberLifeCycleSupport_StepDefData,
-		// because the state needs to be shared not between StepDefs of the sae scenario, but between different Scenarios.
+		// because the state needs to be shared not between StepDefs of the same scenario, but between different Scenarios.
 		CucumberLifeCycleSupport.beforeAll();
 	}
 }

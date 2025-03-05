@@ -299,7 +299,7 @@ public class M_Product_StepDef
 				});
 	}
 
-	private void createM_Product(@NonNull DataTableRow tableRow)
+	private void createM_Product(@NonNull final DataTableRow tableRow)
 	{
 		final ValueAndName valueAndName = tableRow.suggestValueAndName();
 		final I_M_Product productRecord = CoalesceUtil.coalesceSuppliers(

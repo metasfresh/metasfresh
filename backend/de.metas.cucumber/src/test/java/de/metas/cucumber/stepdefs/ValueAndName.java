@@ -24,7 +24,7 @@ public class ValueAndName
 
 	public static ValueAndName unique(@Nullable final String prefix)
 	{
-		String prefixNorm = prefix != null ? prefix + "_" : "";
+		final String prefixNorm = prefix != null ? prefix + "_" : "";
 		final String name = prefixNorm + Instant.now().toString();
 		return ofName(name);
 	}

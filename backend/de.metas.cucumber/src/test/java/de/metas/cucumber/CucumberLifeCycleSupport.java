@@ -24,6 +24,7 @@ package de.metas.cucumber;
 
 import de.metas.CommandLineParser;
 import de.metas.ServerBoot;
+import de.metas.common.util.time.SystemTime;
 import de.metas.server.housekeep.SequenceCheckHouseKeepingTask;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
@@ -54,6 +55,14 @@ public class CucumberLifeCycleSupport
 
 	private static boolean beforeAllMethodDone;
 
+	public static void beforeEach()
+	{
+		synchronized (CucumberLifeCycleSupport.class)
+		{
+			SystemTime.resetTimeSource();
+		}
+	}
+	
 	public static void beforeAll()
 			{
 		synchronized (CucumberLifeCycleSupport.class)
