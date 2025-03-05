@@ -97,6 +97,7 @@ Feature: mobileUI Picking - Pick mixed lines
 # ######################################################################################################################
 # ######################################################################################################################
 # ######################################################################################################################
+  @Id:S0398_10
   @from:cucumber
   Scenario: Pick multiple catch weight items and regular items
     When set sys config boolean value false for sys config PickingJobPickCommand.PickCUsFromCUs
