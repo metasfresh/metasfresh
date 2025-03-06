@@ -62,27 +62,14 @@ class DDOrderReversePickCommand
 	{
 		trxManager.assertThreadInheritedTrxExists();
 
-		//
-		// Load
-		schedule = ddOrderMoveScheduleRepository.getById(scheduleId);
-		ddOrder = ddOrderLowLevelDAO.getById(schedule.getDdOrderId());
-		final WarehouseId warehouseInTransitId = WarehouseId.ofRepoId(ddOrder.getM_Warehouse_ID());
-		inTransitLocatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseInTransitId);
-
-		if (!schedule.isPickedFrom())
-		{
-			throw new AdempiereException("Not picked");
-		}
+		loadState();
+		validateState();
 
 		//
 		// generate movement InTransit -> Pick From Locator
 		createMovement(schedule.getPickFromHUId());
 
-		//
-		// remove the schedule
-		schedule.removePickedHUs();
-		ddOrderMoveScheduleRepository.save(schedule);
-		ddOrderMoveScheduleRepository.deleteNotStarted(schedule.getId());
+		deleteSchedule();
 	}
 
 	private void createMovement(@NonNull final HuId huId)
@@ -95,5 +82,33 @@ class DDOrderReversePickCommand
 				.build();
 
 		new HUMovementGenerator(request).createMovement();
+	}
+
+	private void loadState()
+	{
+		schedule = ddOrderMoveScheduleRepository.getById(scheduleId);
+		ddOrder = ddOrderLowLevelDAO.getById(schedule.getDdOrderId());
+		final WarehouseId warehouseInTransitId = WarehouseId.ofRepoId(ddOrder.getM_Warehouse_ID());
+		inTransitLocatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseInTransitId);
+	}
+
+	private void validateState()
+	{
+		if (!schedule.isPickedFrom())
+		{
+			throw new AdempiereException("Not picked");
+		}
+
+		if (schedule.isDropTo())
+		{
+			throw new AdempiereException("Already dropped!");
+		}
+	}
+
+	private void deleteSchedule()
+	{
+		schedule.removePickedHUs();
+		ddOrderMoveScheduleRepository.save(schedule);
+		ddOrderMoveScheduleRepository.deleteNotStarted(schedule.getId());
 	}
 }
