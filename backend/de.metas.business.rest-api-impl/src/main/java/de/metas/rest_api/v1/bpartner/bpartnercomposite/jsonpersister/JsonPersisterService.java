@@ -117,6 +117,8 @@ public class JsonPersisterService
 	private static final Logger logger = LogManager.getLogger(JsonPersisterService.class);
 	public static final String MISSING_BP_ERROR_CODE = "MissingBP";
 	public static final String LOCATION_CHANGED_ERROR_CODE = "JSONPersister-LocationChanged";
+	public static final String NO_LOCATION_FOUND_ERROR_CODE = "JsonPersisterService-NoLocationFound";
+	public static final String NO_LOCATION_FOUND_FOR_ID_ERROR_CODE = "JsonPersisterService-NoLocationFoundForId";
 
 	private final transient JsonRetrieverService jsonRetrieverService;
 	private final transient JsonRequestConsolidateService jsonRequestConsolidateService;
@@ -1444,8 +1446,9 @@ public class JsonPersisterService
 						.resourceName("location")
 						.resourceIdentifier(locationUpsertItem.getLocationIdentifier())
 						.parentResource(locationUpsertItem)
-						.detail(TranslatableStrings.constant("Type of locationlocationIdentifier=" + locationIdentifier.getType()))
+						.detail(TranslatableStrings.constant("Type of locationIdentifier=" + locationIdentifier.getType()))
 						.build()
+						.setErrorCode(NO_LOCATION_FOUND_ERROR_CODE)
 						.setParameter("effectiveSyncAdvise", parentSyncAdvise);
 			}
 			else if (Type.METASFRESH_ID.equals(locationIdentifier.getType()))
@@ -1454,8 +1457,9 @@ public class JsonPersisterService
 						.resourceName("location")
 						.resourceIdentifier(locationUpsertItem.getLocationIdentifier())
 						.parentResource(locationUpsertItem)
-						.detail(TranslatableStrings.constant("Type of locationlocationIdentifier=" + locationIdentifier.getType() + "; with this identifier-type, only updates are allowed."))
+						.detail(TranslatableStrings.constant("Type of locationIdentifier=" + locationIdentifier.getType() + "; with this identifier-type, only updates are allowed."))
 						.build()
+						.setErrorCode(NO_LOCATION_FOUND_FOR_ID_ERROR_CODE)
 						.setParameter("effectiveSyncAdvise", parentSyncAdvise);
 			}
 			location = shortTermIndex.newLocation(locationIdentifier);
@@ -1644,7 +1648,8 @@ public class JsonPersisterService
 		if (isAssumeUnchanged && !Objects.equals(location, originalBPartnerLocation))
 		{
 			throw new AdempiereException("The location was assumed unchanged, but it was changed: " + location)
-					.setErrorCode(LOCATION_CHANGED_ERROR_CODE);
+					.setErrorCode(LOCATION_CHANGED_ERROR_CODE)
+					.setParameter("effectiveSyncAdvise", syncAdvise);
 		}
 	}
 
