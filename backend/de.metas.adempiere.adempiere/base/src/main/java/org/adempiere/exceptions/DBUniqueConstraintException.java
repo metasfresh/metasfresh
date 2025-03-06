@@ -24,7 +24,7 @@ import static de.metas.util.Check.isEmpty;
  */
 public class DBUniqueConstraintException extends DBException
 {
-	public static final String DB_UNIQUE_CONSTRAINT_ERROR_CODE_PREFIX = "DBUniqueConstraint-";
+	public static final String DB_UNIQUE_CONSTRAINT_ERROR_CODE = "DBUniqueConstraint";
 	private static final long serialVersionUID = -1436774241410586947L;
 
 	private String constraintName = null;
@@ -126,7 +126,7 @@ public class DBUniqueConstraintException extends DBException
 	@Override
 	public String getErrorCode()
 	{
-		return DB_UNIQUE_CONSTRAINT_ERROR_CODE_PREFIX;
+		return DB_UNIQUE_CONSTRAINT_ERROR_CODE;
 	}
 
 }
