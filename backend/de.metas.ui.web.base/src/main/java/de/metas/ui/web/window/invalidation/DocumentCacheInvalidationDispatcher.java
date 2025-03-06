@@ -71,7 +71,7 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 		this.debouncer = Debouncer.<DocumentToInvalidateMap>builder()
 				.name(DocumentCacheInvalidationDispatcher.class.getSimpleName() + "-debouncer")
 				.bufferMaxSize(sysConfigBL.getIntValue("webui.DocumentCacheInvalidationDispatcher.debouncer.bufferMaxSize", 500))
-				.delayInMillis(sysConfigBL.getIntValue("webui.DocumentCacheInvalidationDispatcher.debouncer.delayInMillis", 100)) // With only 10ms it happened that a view update was reversed to old outdated value in the next one
+				.delayInMillis(sysConfigBL.getIntValue("webui.DocumentCacheInvalidationDispatcher.debouncer.delayInMillis", 100))
 				.consumer(this::resetNow)
 				.build();
 		logger.info("debouncer: {}", debouncer);

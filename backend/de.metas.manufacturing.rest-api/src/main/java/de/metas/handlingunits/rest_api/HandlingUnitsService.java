@@ -32,6 +32,7 @@ import de.metas.common.handlingunits.JsonHU;
 import de.metas.common.handlingunits.JsonHUAttribute;
 import de.metas.common.handlingunits.JsonHUAttributeCodeAndValues;
 import de.metas.common.handlingunits.JsonHUAttributes;
+import de.metas.common.handlingunits.JsonHUList;
 import de.metas.common.handlingunits.JsonHUProduct;
 import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.common.handlingunits.JsonHUType;
@@ -100,6 +101,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -143,6 +145,17 @@ public class HandlingUnitsService
 				.huQRCodesService(huQRCodeService)
 				.build();
 		this.inventoryCandidateService = inventoryCandidateService;
+	}
+
+	public JsonHUList getFullHUsList(
+			@NonNull final Collection<HuId> huIds,
+			@NonNull final String adLanguage)
+	{
+		return JsonHUList.builder()
+				.hus(huIds.stream()
+						.map(huId -> getFullHU(huId, null, adLanguage, false))
+						.collect(ImmutableList.toImmutableList()))
+				.build();
 	}
 
 	@NonNull
@@ -874,9 +887,9 @@ public class HandlingUnitsService
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 		return ResponseEntity.badRequest()
 				.body(JsonGetSingleHUResponse.builder()
-							  .error(JsonErrors.ofThrowable(e, adLanguage))
-							  .multipleHUsFound(wereMultipleHUsFound(e))
-							  .build());
+						.error(JsonErrors.ofThrowable(e, adLanguage))
+						.multipleHUsFound(wereMultipleHUsFound(e))
+						.build());
 	}
 
 	private static boolean wereMultipleHUsFound(final Exception e)

@@ -660,6 +660,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		return queryBL.createQueryBuilder(I_M_HU_PI.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_HU_PI.COLUMNNAME_IsDefaultForPicking, true)
+				.orderBy(I_M_HU_PI.COLUMNNAME_M_HU_PI_ID)
 				.create()
 				.first();
 	}

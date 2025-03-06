@@ -3,12 +3,13 @@ import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../utils/translations';
 import { updateHeaderEntry } from '../../../actions/HeaderActions';
-import { getLineById } from '../../../reducers/wfProcesses';
+import { getActivityById, getLineByIdFromActivity } from '../../../reducers/wfProcesses';
 
 import PickStepButton from './PickStepButton';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { pickingLineScanScreenLocation } from '../../../routes/picking';
 import {
+  getCurrentPickFromHUQRCode,
   getQtyPickedOrRejectedTotalForLine,
   getQtyToPickForLine,
   getQtyToPickRemainingForLine,
@@ -19,17 +20,21 @@ import { closePickingJobLine, openPickingJobLine } from '../../../api/picking';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
+import SelectCurrentLUTUButtons from './SelectCurrentLUTUButtons';
 
 const PickLineScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
     screenId: 'PickLineScreen',
     back: getWFProcessScreenLocation,
   });
+  const dispatch = useDispatch();
 
   const {
     caption,
+    pickFromHUQRCode,
     allowPickingAnyHU,
     steps,
+    pickingSlot,
     pickingUnit,
     packingItemName,
     catchWeightUOM,
@@ -40,7 +45,7 @@ const PickLineScreen = () => {
     manuallyClosed,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
-  useHeaderUpdate({ url, caption, uom, pickingUnit, packingItemName, qtyToPick, qtyPicked });
+  useHeaderUpdate({ url, caption, uom, pickingSlot, pickingUnit, packingItemName, qtyToPick, qtyPicked });
 
   const onScanButtonClick = () =>
     history.push(
@@ -52,7 +57,18 @@ const PickLineScreen = () => {
       })
     );
 
-  const dispatch = useDispatch();
+  const onPickButtonClick = () => {
+    history.push(
+      pickingLineScanScreenLocation({
+        applicationId,
+        wfProcessId,
+        activityId,
+        lineId,
+        qrCode: pickFromHUQRCode,
+      })
+    );
+  };
+
   const onClose = () => {
     closePickingJobLine({ wfProcessId, lineId })
       .then((wfProcess) => {
@@ -67,12 +83,24 @@ const PickLineScreen = () => {
     });
   };
 
+  const isShowScanQRCodeButton = !manuallyClosed && allowPickingAnyHU && pickFromHUQRCode == null;
+  const isShowPickButton = !manuallyClosed && pickFromHUQRCode != null;
+
   return (
     <div className="section pt-2">
       <div className="buttons">
-        {!manuallyClosed && allowPickingAnyHU && (
+        <SelectCurrentLUTUButtons
+          applicationId={applicationId}
+          wfProcessId={wfProcessId}
+          activityId={activityId}
+          lineId={lineId}
+        />
+        <br />
+
+        {isShowScanQRCodeButton && (
           <ButtonWithIndicator captionKey="activities.picking.scanQRCode" onClick={onScanButtonClick} />
         )}
+        {isShowPickButton && <ButtonWithIndicator captionKey="activities.picking.PickHU" onClick={onPickButtonClick} />}
         {steps.length > 0 &&
           steps.map((stepItem, idx) => {
             return (
@@ -104,13 +132,16 @@ const PickLineScreen = () => {
 };
 
 const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
-  const line = getLineById(state, wfProcessId, activityId, lineId);
-  const stepsById = line != null && line.steps ? line.steps : {};
+  const activity = getActivityById(state, wfProcessId, activityId);
+  const line = getLineByIdFromActivity(activity, lineId);
+  const stepsById = line?.steps ?? {};
 
   return {
     caption: line?.caption,
+    pickFromHUQRCode: getCurrentPickFromHUQRCode({ activity }),
     allowPickingAnyHU: isAllowPickingAnyHUForLine({ line }),
     steps: Object.values(stepsById),
+    pickingSlot: line?.pickingSlot,
     pickingUnit: line?.pickingUnit,
     packingItemName: line?.packingItemName,
     catchWeightUOM: line?.catchWeightUOM,
@@ -122,7 +153,16 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   };
 };
 
-export const useHeaderUpdate = ({ url, caption, pickingUnit, packingItemName, uom, qtyToPick, qtyPicked }) => {
+export const useHeaderUpdate = ({
+  url,
+  caption,
+  pickingSlot,
+  pickingUnit,
+  packingItemName,
+  uom,
+  qtyToPick,
+  qtyPicked,
+}) => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(
@@ -134,6 +174,11 @@ export const useHeaderUpdate = ({ url, caption, pickingUnit, packingItemName, uo
             caption: trl('activities.picking.PickingLine'),
             value: caption,
             bold: true,
+          },
+          {
+            caption: trl('activities.picking.pickingSlot'),
+            value: pickingSlot?.caption,
+            hidden: !pickingSlot?.caption,
           },
           {
             caption: trl('general.PackingItemName'),
