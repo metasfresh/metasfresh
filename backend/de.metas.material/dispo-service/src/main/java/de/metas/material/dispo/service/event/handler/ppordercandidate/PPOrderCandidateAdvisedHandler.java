@@ -346,13 +346,7 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 		retrieveStockCandidatesBetweenDates(supplyRequiredDescriptor, rangeStartTime, productionEarliestSupplyDate)
 				.forEach(stockCandidatesCollector::add);
 
-		final CandidateId unspecifiedSupplyCandidateId = CandidateId.ofRepoIdOrNull(supplyRequiredDescriptor.getSupplyCandidateId());
-		if (unspecifiedSupplyCandidateId == null)
-		{
-			return stockCandidatesCollector.build();
-		}
-
-		final Candidate unspecifiedSupplyCandidate = getUnspecifiedSupplyCandidate(unspecifiedSupplyCandidateId);
+		final Candidate unspecifiedSupplyCandidate = getUnspecifiedSupplyCandidate(supplyRequiredDescriptor);
 
 		return stockCandidatesCollector.build()
 				.stream()
@@ -463,10 +457,12 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 	}
 
 	@NonNull
-	private Candidate getUnspecifiedSupplyCandidate(@NonNull final CandidateId supplyCandidateId)
+	private Candidate getUnspecifiedSupplyCandidate(@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor)
 	{
+		final CandidateId supplyCandidateId = CandidateId.ofRepoId(supplyRequiredDescriptor.getSupplyCandidateId());
+
 		return candidateRepositoryRetrieval.retrieveLatestMatch(CandidatesQuery.fromId(supplyCandidateId))
-				.orElseThrow(() -> new AdempiereException("Missing Candidate for Id:" + supplyCandidateId));
+				.orElseThrow(() -> new AdempiereException("Missing Candidate for Id:" + supplyRequiredDescriptor.getSupplyCandidateId()));
 	}
 
 	@NonNull

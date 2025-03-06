@@ -11,8 +11,6 @@ import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
@@ -20,7 +18,6 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 /*
@@ -85,23 +82,6 @@ public interface IViewRow
 	default int getFieldValueAsInt(@NonNull final String fieldName, final int defaultValueIfNotFoundOrError)
 	{
 		return getFieldNameAndJsonValues().getAsInt(fieldName, defaultValueIfNotFoundOrError);
-	}
-
-	@Nullable
-	default <T extends RepoIdAware> T getFieldValueAsNullableRepoId(@NonNull final String fieldName, @NonNull final Function<Integer, T> idMapper)
-	{
-		final int id = getFieldNameAndJsonValues().getAsInt(fieldName, -1);
-
-		return id > 0 ? idMapper.apply(id) : null;
-	}
-
-	@NonNull
-	default <T extends RepoIdAware> T getFieldValueAsRepoId(@NonNull final String fieldName, @NonNull final Function<Integer, T> idMapper)
-	{
-		final int id = getFieldNameAndJsonValues().getAsInt(fieldName, -1);
-		Check.assumeGreaterThanZero(id, fieldName);
-
-		return idMapper.apply(id);
 	}
 
 	@SuppressWarnings("unused")

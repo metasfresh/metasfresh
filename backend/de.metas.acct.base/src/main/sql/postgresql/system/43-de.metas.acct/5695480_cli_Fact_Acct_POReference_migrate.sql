@@ -1,3 +1,5 @@
+ALTER TABLE fact_acct DISABLE TRIGGER ALL; -- POREference plays no role in the triggerfunction
+
 update fact_acct fa set POReference=(select POReference from C_Invoice d where d.c_invoice_id=fa.record_id) where fa.ad_table_id=get_table_id('C_Invoice');
 update fact_acct fa set POReference=(select POReference from C_Order d where d.c_order_id=fa.record_id) where fa.ad_table_id=get_table_id('C_Order');
 update fact_acct fa set POReference=(select POReference from DD_Order d where d.DD_Order_ID=fa.record_id) where fa.ad_table_id=get_table_id('DD_Order');
@@ -5,6 +7,7 @@ update fact_acct fa set POReference=(select POReference from M_InOut d where d.M
 update fact_acct fa set POReference=(select POReference from M_Inventory d where d.M_Inventory_ID=fa.record_id) where fa.ad_table_id=get_table_id('M_Inventory');
 update fact_acct fa set POReference=(select POReference from M_Movement d where d.M_Movement_ID=fa.record_id) where fa.ad_table_id=get_table_id('M_Movement');
 
+ALTER TABLE fact_acct ENABLE TRIGGER ALL;
 
 /*
  SELECT t.tablename, t.ad_table_id

@@ -68,11 +68,13 @@ public class M_ForecastEventCreator
 			forecastBuilder.forecastLine(createForecastLine(forecastLineRecord, forecastRecord));
 		}
 
-		return ForecastCreatedEvent
+		final ForecastCreatedEvent forecastCreatedEvent = ForecastCreatedEvent
 				.builder()
 				.forecast(forecastBuilder.build())
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(forecastRecord.getAD_Client_ID(), forecastRecord.getAD_Org_ID()))
 				.build();
+
+		return forecastCreatedEvent;
 	}
 
 	private ForecastLine createForecastLine(

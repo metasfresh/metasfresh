@@ -50,7 +50,7 @@ WITH qty_data AS (SELECT candidate.m_product_id,
                   GROUP BY candidate.m_product_id,
                            candidate.m_warehouse_id),
      stock_data AS (SELECT m_product_id, m_warehouse_id, SUM(qtyonhand) AS QuantityOnHand FROM md_stock GROUP BY m_product_id, m_warehouse_id),
-     replenish_data AS (SELECT m_product_id, m_warehouse_id, level_min, level_max
+     replenish_data AS (SELECT m_product_id, m_warehouse_id, level_min
                         FROM m_replenish
                         WHERE isactive = 'Y'),
      product_warehouse_combinations AS (SELECT DISTINCT m_product_id, m_warehouse_id
@@ -69,8 +69,7 @@ SELECT COALESCE(demand.Total_Qty_One_Week_Ago, 0)     AS Total_Qty_One_Week_Ago,
        COALESCE(demand.Total_Qty_Six_Weeks_Ago, 0)    AS Total_Qty_Six_Weeks_Ago,
        COALESCE(demand.Average_Qty_Last_Six_Weeks, 0) AS Average_Qty_Last_Six_Weeks,
        COALESCE(stock.QuantityOnHand, 0)              AS QuantityOnHand,
-       COALESCE(replenish.level_min, 0)               AS Level_Min,
-       COALESCE(replenish.level_max, 0)               AS Level_Max,
+       COALESCE(replenish.level_min, 0)               AS Demand,
        product.m_product_category_id                  AS M_Product_Category_ID,
        product.m_product_id                           AS M_Product_ID,
        wc.m_warehouse_id                              AS M_Warehouse_ID,
