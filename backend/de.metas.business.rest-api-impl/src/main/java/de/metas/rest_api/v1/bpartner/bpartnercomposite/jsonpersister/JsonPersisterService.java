@@ -116,6 +116,7 @@ public class JsonPersisterService
 {
 	private static final Logger logger = LogManager.getLogger(JsonPersisterService.class);
 	public static final String MISSING_BP_ERROR_CODE = "MissingBP";
+	public static final String LOCATION_CHANGED_ERROR_CODE = "JSONPersister-LocationChanged";
 
 	private final transient JsonRetrieverService jsonRetrieverService;
 	private final transient JsonRequestConsolidateService jsonRequestConsolidateService;
@@ -1643,7 +1644,7 @@ public class JsonPersisterService
 		if (isAssumeUnchanged && !Objects.equals(location, originalBPartnerLocation))
 		{
 			throw new AdempiereException("The location was assumed unchanged, but it was changed: " + location)
-					.setErrorCode("JSONPersister-LocationChanged");
+					.setErrorCode(LOCATION_CHANGED_ERROR_CODE);
 		}
 	}
 

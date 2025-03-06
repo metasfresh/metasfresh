@@ -48,3 +48,13 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('AD_Issue','ALTER TABLE public.AD_Issue ADD COLUMN ErrorCode VARCHAR(40)')
 ;
 
+-- Column: AD_Issue.ErrorCode
+-- 2025-03-06T07:16:36.981Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2025-03-06 09:16:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=589751
+;
+
+-- Column: AD_Message.ErrorCode
+-- 2025-03-06T07:39:17.224Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2025-03-06 09:39:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=589750
+;
+

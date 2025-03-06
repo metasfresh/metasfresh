@@ -46,7 +46,7 @@ public class SyncAdvise
 	public static final SyncAdvise READ_ONLY_UNCHANGED = SyncAdvise
 			.builder()
 			.ifNotExists(IfNotExists.FAIL)
-			.ifExists(IfExists.ASSUME_UNCHANGED)
+			.ifExists(IfExists.ASSERT_UNCHANGED)
 			.build();
 
 	public static final SyncAdvise CREATE_OR_MERGE = SyncAdvise
@@ -89,7 +89,7 @@ public class SyncAdvise
 		UPDATE_REMOVE(false/* updateMerge */, true/* updateRemove */, false /* assertUnchanged */),
 
 		@ApiEnum("Verify the data specified in this request entity is equal to the pre-existing data")
-		ASSUME_UNCHANGED(false/* updateMerge */, false/* updateRemove */, true /* assertUnchanged */),
+		ASSERT_UNCHANGED(false/* updateMerge */, false/* updateRemove */, true /* assertUnchanged */),
 
 		DONT_UPDATE(false/* updateMerge */, false/* updateRemove */, false /* assertUnchanged */);
 

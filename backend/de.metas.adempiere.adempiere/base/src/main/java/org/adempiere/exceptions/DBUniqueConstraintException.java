@@ -126,7 +126,7 @@ public class DBUniqueConstraintException extends DBException
 	@Override
 	public String getErrorCode()
 	{
-		return DB_UNIQUE_CONSTRAINT_ERROR_CODE_PREFIX + constraintName;
+		return DB_UNIQUE_CONSTRAINT_ERROR_CODE_PREFIX;
 	}
 
 }
