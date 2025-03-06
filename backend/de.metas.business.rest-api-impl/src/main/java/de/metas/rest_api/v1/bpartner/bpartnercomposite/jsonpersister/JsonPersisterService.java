@@ -1481,7 +1481,7 @@ public class JsonPersisterService
 			@NonNull final BPartnerLocation location,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		final BPartnerLocation originalBPartnerLocation = location.toBuilder().build();
+		final BPartnerLocation originalBPartnerLocation = location.deepCopy();
 
 		final SyncAdvise syncAdvise = coalesceNotNull(jsonBPartnerLocation.getSyncAdvise(), parentSyncAdvise);
 
