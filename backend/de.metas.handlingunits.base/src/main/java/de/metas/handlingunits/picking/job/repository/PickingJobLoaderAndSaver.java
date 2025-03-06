@@ -70,6 +70,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -245,6 +246,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.lines(pickingJobLines.get(pickingJobId)
 						.stream()
 						.map(lineRecord -> loadLine(lineRecord, pickingJobHeader.getAggregationType()))
+						.sorted(Comparator.comparing(PickingJobLine::getId)) // make sure we have a predictable order
 						.collect(ImmutableList.toImmutableList()))
 				.pickFromAlternatives(pickingJobHUAlternatives.get(pickingJobId)
 						.stream()
@@ -728,15 +730,18 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 
 		return PickingJobReference.builder()
 				.pickingJobId(pickingJobId)
+				.aggregationType(PickingJobAggregationType.ofCode(record.getPickingJobAggregationType()))
 				.salesOrderDocumentNo(header.getSalesOrderDocumentNo())
+				.salesOrderId(extractSalesOrderId(record))
 				.customerId(header.getCustomerId())
 				.customerName(header.getCustomerName())
+				.deliveryBPLocationId(header.getDeliveryBPLocationId())
 				.deliveryDate(header.getDeliveryDate())
 				.preparationDate(header.getPreparationDate())
 				.shipmentScheduleIds(getShipmentScheduleIds(pickingJobId))
 				.isShipmentSchedulesLocked(getShipmentSchedulesIsLocked(pickingJobId).isTrue())
-				.deliveryLocationId(header.getDeliveryBPLocationId())
 				.handoverLocationId(header.getHandoverLocationId())
+				.productId(extractSingleProductIdOrNull(pickingJobId))
 				.productName(extractSingleProductNameOrNull(pickingJobId))
 				.qtyToDeliver(extractQtyToPickOrNull(pickingJobId))
 				.build();

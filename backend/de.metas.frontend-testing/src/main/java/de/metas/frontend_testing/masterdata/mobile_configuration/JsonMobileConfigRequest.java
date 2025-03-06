@@ -1,13 +1,16 @@
 package de.metas.frontend_testing.masterdata.mobile_configuration;
 
+import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.mobile.MobileAuthMethod;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @Value
 @Builder
@@ -34,11 +37,21 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean alwaysSplitHUsEnabled;
 		@Nullable Boolean pickWithNewLU;
 		@Nullable Boolean allowNewTU;
+
+		@Nullable List<Customer> customers;
+
+		@Value
+		@Builder
+		@Jacksonized
+		public static class Customer
+		{
+			@NonNull Identifier customer;
+		}
 	}
-	
+
 	//
- 	//
- 	//
+	//
+	//
 
 	@Value
 	@Builder

@@ -92,7 +92,8 @@ test('Pick - unpick', async ({ page }) => {
     await PickingJobScreen.setTargetLU({ lu: luPIName });
     await PickingJobScreen.pickHU({ qrCode: huQRCode, expectQtyEntered: '3' });
 
-    await PickingJobScreen.clickLineButton({ index: 0 });
+    await PickingJobScreen.clickLineButton({ index: 1 });
+    await PickingJobLineScreen.waitForScreen();
     await PickingJobLineScreen.clickStepButton({ index: 0 });
     await PickingJobStepScreen.unpick();
     await PickingJobLineScreen.waitForScreen();
@@ -113,7 +114,7 @@ test('Scan invalid picking slot QR code', async ({ page }) => {
     await PickingJobsListScreen.waitForScreen();
     await PickingJobsListScreen.filterByDocumentNo(documentNo);
     await PickingJobsListScreen.startJob({ documentNo });
-    await expectErrorToast(async () => {
+    await expectErrorToast('Invalid QR code', async () => {
         await PickingJobScreen.scanPickingSlot({ qrCode: 'invalid QR code' });
     });
 });

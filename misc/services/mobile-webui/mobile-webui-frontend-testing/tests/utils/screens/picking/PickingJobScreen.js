@@ -7,16 +7,24 @@ import { GetQuantityDialog } from "./GetQuantityDialog";
 import { YesNoDialog } from "../../dialogs/YesNoDialog";
 import { PickingJobsListScreen } from "./PickingJobsListScreen";
 import { SelectPickTargetTUScreen } from './SelectPickTargetTUScreen';
+import { PickFromHUScanScreen } from './PickFromHUScanScreen';
 
 const NAME = 'PickingJobScreen';
 /** @returns {import('@playwright/test').Locator} */
 const containerElement = () => page.locator('#WFProcessScreen');
+const ACTIVITY_ID_ScanPickFromHU = 'scanPickFromHU'; // keep in sync with PickingMobileApplication.ACTIVITY_ID_ScanPickFromHU
 const ACTIVITY_ID_ScanPickingSlot = 'scanPickingSlot'; // keep in sync with PickingMobileApplication.ACTIVITY_ID_ScanPickingSlot
-
 
 export const PickingJobScreen = {
     waitForScreen: async () => await step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    scanPickFromHU: async ({ qrCode }) => await step(`${NAME} - Scan pick from HU ${qrCode}`, async () => {
+        await page.locator(`#scan-activity-${ACTIVITY_ID_ScanPickFromHU}-button`).tap();
+        await PickFromHUScanScreen.waitForScreen();
+        await PickFromHUScanScreen.typeQRCode(qrCode);
+        await PickingJobScreen.waitForScreen();
     }),
 
     scanPickingSlot: async ({ qrCode }) => await step(`${NAME} - Scan picking slot ${qrCode}`, async () => {
@@ -27,7 +35,7 @@ export const PickingJobScreen = {
     }),
 
     clickLUTargetButton: async () => await step(`${NAME} - Click LU target button`, async () => {
-        await page.locator('#targetLU-button').tap();
+        await page.getByTestId('targetLU-button').tap();
     }),
     setTargetLU: async ({ lu }) => await step(`${NAME} - Set target LU to ${lu}`, async () => {
         await PickingJobScreen.clickLUTargetButton();
@@ -42,7 +50,7 @@ export const PickingJobScreen = {
     }),
 
     clickTUTargetButton: async () => await step(`${NAME} - Click TU target button`, async () => {
-        await page.locator('#targetTU-button').tap();
+        await page.getByTestId('targetTU-button').tap();
     }),
     setTargetTU: async ({ tu }) => await step(`${NAME} - Set target TU to ${tu}`, async () => {
         await PickingJobScreen.clickTUTargetButton();
@@ -65,8 +73,8 @@ export const PickingJobScreen = {
     }),
 
     clickLineButton: async ({ index }) => await step(`${NAME} - Click line ${index}`, async () => {
-        await page.locator(`#line-0-${index}-button`).tap();
-        await PickingJobLineScreen.waitForScreen();
+        await page.locator(`#line-0-${index - 1}-button`).tap();
+        //await PickingJobLineScreen.waitForScreen();
     }),
 
     abort: async () => await step(`${NAME} - Abort`, async () => {

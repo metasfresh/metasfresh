@@ -38,7 +38,7 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
     <>
       {isAllowReopeningLU && (
         <ButtonWithIndicator
-          id="reopenLU-button"
+          testId="reopenLU-button"
           captionKey="activities.picking.reopenLU"
           disabled={!isUserEditable}
           onClick={onReopenClosedLUClicked}
@@ -46,7 +46,7 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
       )}
       {isPickWithNewLU && (
         <ButtonWithIndicator
-          id="targetLU-button"
+          testId="targetLU-button"
           caption={
             luPickingTarget?.caption
               ? trl('activities.picking.pickingTarget.Current') + ': ' + luPickingTarget?.caption
@@ -58,7 +58,7 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
       )}
       {isAllowNewTU && (
         <ButtonWithIndicator
-          id="targetTU-button"
+          testId="targetTU-button"
           caption={
             tuPickingTarget?.caption
               ? trl('activities.picking.tuPickingTarget.Current') + ': ' + tuPickingTarget?.caption

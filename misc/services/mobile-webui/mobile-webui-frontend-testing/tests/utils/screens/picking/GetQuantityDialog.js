@@ -6,17 +6,21 @@ const NAME = 'GetQuantityDialog';
 /** @returns {import('@playwright/test').Locator} */
 const containerElement = () => page.locator('.get-qty-dialog');
 
+export const QTY_NOT_FOUND_REASON_NOT_FOUND = 'N';
+// noinspection JSUnusedGlobalSymbols
+export const QTY_NOT_FOUND_REASON_DAMAGED = 'D';
+
 export const GetQuantityDialog = {
     waitForDialog: async () => await test.step(`${NAME} - Wait for dialog`, async () => {
         await containerElement().waitFor();
     }),
 
     expectQtyEntered: async (expected) => await test.step(`${NAME} - Expect QtyEntered to be '${expected}'`, async () => {
-        await expect(page.locator('#qty-input')).toHaveValue(expected);
+        await expect(page.locator('#qty-input')).toHaveValue(`${expected}`);
     }),
 
     typeQtyEntered: async (qty) => await test.step(`${NAME} - Type QtyEntered '${qty}'`, async () => {
-        await page.locator('#qty-input').type(qty);
+        await page.locator('#qty-input').type(`${qty}`);
     }),
 
     scanCatchWeightQRCode: async ({ qrCode, stepName }) => await test.step(`${NAME} - Scan ${stepName}: ${qrCode}`, async () => {
@@ -37,6 +41,10 @@ export const GetQuantityDialog = {
             });
     }),
 
+    clickQtyNotFoundReason: async ({ reason }) => await test.step(`${NAME} - Click qty not found reason '${reason}'`, async () => {
+        await page.getByTestId(`qty-reason-radio-${reason}`).tap();
+    }),
+
     clickDone: async () => await test.step(`${NAME} - Press OK`, async () => {
         await page.getByTestId('done-button').tap();
     }),
@@ -45,7 +53,7 @@ export const GetQuantityDialog = {
         await page.getByTestId('cancel-button').tap();
     }),
 
-    fillAndPressDone: async ({ expectQtyEntered, qtyEntered, catchWeightQRCode }) => await test.step(`${NAME} - Fill dialog`, async () => {
+    fillAndPressDone: async ({ expectQtyEntered, qtyEntered, catchWeightQRCode, qtyNotFoundReason }) => await test.step(`${NAME} - Fill dialog`, async () => {
         await GetQuantityDialog.waitForDialog();
 
         if (expectQtyEntered != null) {
@@ -61,6 +69,9 @@ export const GetQuantityDialog = {
                 const qrCode = qrCodesArray[idx];
                 await GetQuantityDialog.scanCatchWeightQRCode({ qrCode, stepName: `#${idx + 1}/${length}` });
             }
+        }
+        if (qtyNotFoundReason != null) {
+            await GetQuantityDialog.clickQtyNotFoundReason({ reason: qtyNotFoundReason });
         }
 
         await GetQuantityDialog.clickDone();

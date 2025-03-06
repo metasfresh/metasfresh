@@ -218,6 +218,7 @@
 							.caption(field.getCaption())
 							.value(displayValueProvider.getDisplayValue(field, pickingJob))
 							.build())
+					.filter(WFProcessHeaderProperty::isValueNotBlank)
 					.collect(ImmutableList.toImmutableList());
 
 			return WFProcessHeaderProperties.builder()

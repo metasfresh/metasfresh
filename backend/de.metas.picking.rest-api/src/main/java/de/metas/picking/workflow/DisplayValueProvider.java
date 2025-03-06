@@ -198,7 +198,7 @@ public class DisplayValueProvider
 	private static Context toContext(@NonNull final PickingJobReference pickingJobReference)
 	{
 		return Context.builder()
-				.deliveryLocationId(pickingJobReference.getDeliveryLocationId())
+				.deliveryLocationId(pickingJobReference.getDeliveryBPLocationId())
 				.salesOrderDocumentNo(pickingJobReference.getSalesOrderDocumentNo())
 				.customerName(pickingJobReference.getCustomerName())
 				.preparationDate(pickingJobReference.getPreparationDate())

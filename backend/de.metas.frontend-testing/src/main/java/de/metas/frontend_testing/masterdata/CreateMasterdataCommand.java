@@ -199,6 +199,7 @@ public class CreateMasterdataCommand
 				.mobilePickingConfigRepository(mobilePickingConfigRepository)
 				.mobileDistributionConfigRepository(mobileDistributionConfigRepository)
 				//
+				.context(context)
 				.request(request.getMobileConfig())
 				//
 				.build().execute();

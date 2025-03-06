@@ -27,9 +27,12 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
+import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.Builder;
@@ -40,6 +43,7 @@ import org.adempiere.util.api.Params;
 import org.adempiere.warehouse.WarehouseTypeId;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 @Value
 @Builder
@@ -50,7 +54,7 @@ public class PickingWFProcessStartParams
 	@Nullable BPartnerLocationId deliveryBPLocationId;
 	@Nullable WarehouseTypeId warehouseTypeId;
 	@Nullable ProductId productId;
-	@Nullable UomId uomId;
+	@Nullable Quantity qtyToDeliver;
 	@Nullable ImmutableSet<ShipmentScheduleId> shipmentScheduleIds;
 
 	public static PickingWFProcessStartParams of(@NonNull final PickingJobCandidate candidate)
@@ -61,10 +65,24 @@ public class PickingWFProcessStartParams
 				.deliveryBPLocationId(candidate.getDeliveryBPLocationId())
 				.warehouseTypeId(candidate.getWarehouseTypeId())
 				.productId(candidate.getProductId())
-				.uomId(candidate.getUomId())
+				.qtyToDeliver(candidate.getQtyToDeliver())
 				.shipmentScheduleIds(candidate.getShipmentScheduleIds())
 				.build();
 	}
+
+	public static PickingWFProcessStartParams of(@NonNull final PickingJobReference candidate)
+	{
+		return builder()
+				.aggregationType(candidate.getAggregationType())
+				.salesOrderId(candidate.getSalesOrderId())
+				.deliveryBPLocationId(candidate.getDeliveryBPLocationId())
+				//.warehouseTypeId(candidate.getWarehouseTypeId()) // N/A
+				.productId(candidate.getProductId())
+				.qtyToDeliver(candidate.getQtyToDeliver())
+				.shipmentScheduleIds(candidate.getShipmentScheduleIds())
+				.build();
+	}
+
 
 	/**
 	 * @implNote keep in sync with {@link #ofParams(Params)}
@@ -75,12 +93,13 @@ public class PickingWFProcessStartParams
 
 		return Params.builder()
 				.value("aggregationType", aggregationType.toJson())
-				.value("salesOrderId", salesOrderId != null ? salesOrderId.getRepoId() : 0)
-				.value("customerId", customerId != null ? customerId.getRepoId() : 0)
-				.value("customerLocationId", deliveryBPLocationId != null ? deliveryBPLocationId.getRepoId() : 0)
+				.value("salesOrderId", salesOrderId != null ? salesOrderId.getRepoId() : null)
+				.value("customerId", customerId != null ? customerId.getRepoId() : null)
+				.value("customerLocationId", deliveryBPLocationId != null ? deliveryBPLocationId.getRepoId() : null)
 				.value("warehouseTypeId", warehouseTypeId != null ? warehouseTypeId.getRepoId() : null)
 				.value("productId", productId != null ? productId.getRepoId() : null)
-				.value("uomId", uomId != null ? uomId.getRepoId() : null)
+				.value("qtyToDeliver", qtyToDeliver != null ? qtyToDeliver.toBigDecimal() : null)
+				.value("uomId", qtyToDeliver != null ? qtyToDeliver.getUomId().getRepoId() : null)
 				.value("shipmentScheduleIds", shipmentScheduleIds != null ? RepoIdAwares.toCommaSeparatedString(shipmentScheduleIds) : null)
 				.build();
 	}
@@ -104,7 +123,7 @@ public class PickingWFProcessStartParams
 									params.getParameterAsInt("customerLocationId", -1)))
 					.warehouseTypeId(params.getParameterAsId("warehouseTypeId", WarehouseTypeId.class))
 					.productId(params.getParameterAsId("productId", ProductId.class))
-					.uomId(params.getParameterAsId("uomId", UomId.class))
+					.qtyToDeliver(extractQtyToDeliver(params))
 					.shipmentScheduleIds(shipmentScheduleIds != null && !shipmentScheduleIds.isEmpty() ? shipmentScheduleIds : null)
 					.build();
 		}
@@ -112,6 +131,24 @@ public class PickingWFProcessStartParams
 		{
 			throw new AdempiereException("Invalid params: " + params, ex);
 		}
+	}
+
+	@Nullable
+	private static Quantity extractQtyToDeliver(@NonNull final Params params)
+	{
+		final BigDecimal qtyToDeliverBD = params.getParameterAsBigDecimal("qtyToDeliver");
+		if (qtyToDeliverBD == null)
+		{
+			return null;
+		}
+
+		final UomId uomId = params.getParameterAsId("uomId", UomId.class);
+		if (uomId == null)
+		{
+			return null;
+		}
+
+		return Quantitys.of(qtyToDeliverBD, uomId);
 	}
 
 	@Nullable

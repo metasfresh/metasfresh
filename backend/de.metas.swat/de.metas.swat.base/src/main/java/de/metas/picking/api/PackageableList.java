@@ -175,7 +175,8 @@ public final class PackageableList implements Iterable<Packageable>
 		}
 		else
 		{
-			throw new AdempiereException("More than one value were extracted (" + values + ") from " + list);
+			//throw new AdempiereException("More than one value were extracted (" + values + ") from " + list);
+			return Optional.empty();
 		}
 	}
 

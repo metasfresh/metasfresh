@@ -86,7 +86,7 @@ public class MobileUIPickingUserProfile
 
 	@NonNull String name;
 	boolean isAllowPickingAnyCustomer;
-	@Getter(AccessLevel.PACKAGE) @NonNull PickingCustomerConfigsCollection customerConfigs;
+	@Getter @NonNull PickingCustomerConfigsCollection customerConfigs;
 	@NonNull PickingJobOptions defaultPickingJobOptions;
 	@Getter(AccessLevel.NONE) @NonNull PickingFiltersList filters;
 	@Getter(AccessLevel.PACKAGE) @NonNull ImmutableList<PickingJobField> fields;

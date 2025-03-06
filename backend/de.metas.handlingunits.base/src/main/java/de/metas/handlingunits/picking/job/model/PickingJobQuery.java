@@ -227,7 +227,7 @@ public class PickingJobQuery
 
 		private boolean isDeliveryDateMatching(final LocalDate deliveryDay) {return deliveryDays.isEmpty() || deliveryDays.contains(deliveryDay);}
 
-		private boolean isHandoverLocationMatching(final PickingJobReference pickingJobReference) {return isHandoverLocationMatching(Optional.ofNullable(pickingJobReference.getHandoverLocationId()).orElse(pickingJobReference.getDeliveryLocationId()));}
+		private boolean isHandoverLocationMatching(final PickingJobReference pickingJobReference) {return isHandoverLocationMatching(Optional.ofNullable(pickingJobReference.getHandoverLocationId()).orElse(pickingJobReference.getDeliveryBPLocationId()));}
 
 		private boolean isHandoverLocationMatching(final BPartnerLocationId handoverLocationId) {return handoverLocationIds.isEmpty() || handoverLocationIds.contains(handoverLocationId);}
 
