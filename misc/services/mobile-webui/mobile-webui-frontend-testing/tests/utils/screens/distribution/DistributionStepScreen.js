@@ -25,6 +25,12 @@ export const DistributionStepScreen = {
         await DistributionStepScreen.waitForScreen();
     }),
 
+    unpick: async () => await test.step(`${NAME} - Unpick`, async () => {
+        await DistributionStepScreen.expectVisible();
+        await page.getByTestId('unpick-button').tap();
+        await DistributionLineScreen.waitForScreen();
+    }),
+
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {
         await DistributionStepScreen.expectVisible();
         await page.locator(ID_BACK_BUTTON).tap();

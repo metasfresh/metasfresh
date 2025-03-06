@@ -64,6 +64,12 @@ public class DDOrderMoveSchedule
 		if (!isPickedFrom()) {throw new AdempiereException("Pick from required first");}
 	}
 
+	public void removePickedHUs()
+	{
+		this.pickedHUs = null;
+		updateStatus();
+	}
+
 	public void markAsPickedFrom(
 			@Nullable final QtyRejectedReasonCode qtyNotPickedReason,
 			@NonNull final DDOrderMoveSchedulePickedHUs pickedHUs)

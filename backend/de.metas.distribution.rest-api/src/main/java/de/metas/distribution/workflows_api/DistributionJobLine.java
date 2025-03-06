@@ -114,6 +114,17 @@ public class DistributionJobLine
 				: toBuilder().steps(changedSteps).build();
 	}
 
+	public DistributionJobLine removeStep(@NonNull final DistributionJobStepId stepId)
+	{
+		final ImmutableList<DistributionJobStep> updatedStepCollection = steps.stream()
+				.filter(step ->  !step.getId().equals(stepId))
+				.collect(ImmutableList.toImmutableList());
+
+		return updatedStepCollection.equals(steps)
+				? this
+				: toBuilder().steps(updatedStepCollection).build();
+	}
+
 	@NonNull
 	public Optional<DistributionJobStep> getStepById(@NonNull final DistributionJobStepId stepId)
 	{

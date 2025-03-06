@@ -194,4 +194,13 @@ public class DDOrderMoveScheduleService
 				.execute();
 	}
 
+	public void reversePicking(@NonNull final DDOrderMoveScheduleId scheduleId)
+	{
+		DDOrderReversePickCommand.builder()
+				.ddOrderLowLevelDAO(ddOrderLowLevelDAO)
+				.ddOrderMoveScheduleRepository(ddOrderMoveScheduleRepository)
+				.scheduleId(scheduleId)
+				.build()
+				.execute();
+	}
 }

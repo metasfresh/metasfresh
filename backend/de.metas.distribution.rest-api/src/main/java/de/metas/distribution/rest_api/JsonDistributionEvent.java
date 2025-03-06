@@ -47,6 +47,13 @@ public class JsonDistributionEvent
 	@Value
 	@Builder
 	@Jacksonized
+	public static class ReversePicking {}
+
+	@Nullable ReversePicking reversePicking;
+
+	@Value
+	@Builder
+	@Jacksonized
 	public static class DropTo {}
 
 	@Nullable DropTo dropTo;
@@ -60,9 +67,10 @@ public class JsonDistributionEvent
 			@Nullable final DistributionJobStepId distributionStepId,
 			//
 			@Nullable final PickFrom pickFrom,
+			@Nullable final ReversePicking reversePicking,
 			@Nullable final DropTo dropTo)
 	{
-		if (CoalesceUtil.countNotNulls(pickFrom, dropTo) != 1)
+		if (CoalesceUtil.countNotNulls(pickFrom, dropTo, reversePicking) != 1)
 		{
 			throw new AdempiereException("One and only one action like pickFrom, dropTo etc shall be specified in an event.");
 		}
@@ -78,5 +86,6 @@ public class JsonDistributionEvent
 		//
 		this.pickFrom = pickFrom;
 		this.dropTo = dropTo;
+		this.reversePicking = reversePicking;
 	}
 }

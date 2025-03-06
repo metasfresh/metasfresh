@@ -15,6 +15,9 @@ import {
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { toQRCodeDisplayable } from '../../../utils/qrCode/hu';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
+import { postDistributionReversePicking } from '../../../api/distribution';
+import { updateWFProcess } from '../../../actions/WorkflowActions';
+import { toastError } from '../../../utils/toast';
 
 const HIDE_UNDO_BUTTONS = true; // hide them because they are not working
 
@@ -104,6 +107,20 @@ const DistributionStepScreen = () => {
     );
   };
 
+  const onUnpick = () => {
+    postDistributionReversePicking({
+      wfProcessId,
+      activityId,
+      lineId,
+      stepId,
+    })
+      .then((wfProcess) => {
+        history.goTo(distributionLineScreenLocation);
+        dispatch(updateWFProcess({ wfProcess }));
+      })
+      .catch((axiosError) => toastError({ axiosError }));
+  };
+
   const pickFromHUCaption = isPickedFrom
     ? toQRCodeDisplayable(pickFromHU.qrCode)
     : trl('activities.distribution.scanHU');
@@ -121,13 +138,12 @@ const DistributionStepScreen = () => {
         onClick={onScanPickFromHU}
       />
 
-      {!HIDE_UNDO_BUTTONS && (
-        <ButtonWithIndicator
-          captionKey="activities.picking.unPickBtn"
-          disabled={!(isPickedFrom && !isDroppedToLocator)}
-          onClick={() => console.warn('TODO: not implemented')} // TODO: implement
-        />
-      )}
+      <ButtonWithIndicator
+        testId="unpick-button"
+        captionKey="activities.picking.unPickBtn"
+        disabled={!(isPickedFrom && !isDroppedToLocator)}
+        onClick={onUnpick}
+      />
 
       <ButtonWithIndicator
         testId="scanDropToLocator-button"

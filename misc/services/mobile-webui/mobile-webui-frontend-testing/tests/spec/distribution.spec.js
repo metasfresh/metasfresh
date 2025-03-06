@@ -93,3 +93,20 @@ test('Distribution using 2 steps to pick the needed qty.', async ({ page }) => {
     await DistributionLineScreen.goBack();
     await DistributionJobScreen.complete();
 });
+
+// noinspection JSUnusedLocalSymbols
+test('Pick & Unpick in distribution step screen', async ({ page }) => {
+    const { login, warehouseFromFacetId, launcherTestId, huQRCode, dropToLocatorQRCode } = await createMasterdata({ qtyToMove: 100 });
+
+    await LoginScreen.login(login);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('distribution');
+    await DistributionJobsListScreen.waitForScreen();
+    await DistributionJobsListScreen.filterByFacetId({ facetId: warehouseFromFacetId, expectHitCount: 1 });
+    await DistributionJobsListScreen.startJob({ launcherTestId });
+    await DistributionJobScreen.clickLineButton({ index: 1 });
+    await DistributionLineScreen.scanHUToMove({ huQRCode, qtyToMove: '100', expectedQtyToMove: '100'});
+    await DistributionLineScreen.clickStepButton({ index: 1 });
+    await DistributionStepScreen.unpick();
+    await DistributionLineScreen.expectNoStepButton();
+});
