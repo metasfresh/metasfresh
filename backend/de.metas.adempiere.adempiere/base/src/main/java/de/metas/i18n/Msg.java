@@ -11,6 +11,7 @@ import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -89,6 +90,11 @@ public final class Msg
 	private final CCache<String, CCache<String, Message>> adLanguage2messages = CCache.newCache(I_AD_Message.Table_Name + "#by#ADLanguage", 10, CCache.EXPIREMINUTES_Never);
 	private final CCache<String, Element> elementsByElementName = CCache.newLRUCache(I_AD_Element.Table_Name, 500, CCache.EXPIREMINUTES_Never);
 
+	public static String getErrorCode(final @NonNull String message)
+	{
+		return getMessage(Language.getBaseAD_Language(), message).getErrorCode();
+	}
+
 	/**
 	 * Get Language specific Message Map
 	 *
@@ -145,14 +151,14 @@ public final class Msg
 		{
 			if (adLanguage == null || adLanguage.length() == 0 || Env.isBaseLanguage(adLanguage, "AD_Language"))
 			{
-				pstmt = DB.prepareStatement("SELECT Value, MsgText, MsgTip FROM AD_Message", ITrx.TRXNAME_None);
+				pstmt = DB.prepareStatement("SELECT Value, MsgText, MsgTip, ErrorCode FROM AD_Message", ITrx.TRXNAME_None);
 			}
 			else
 			{
-				pstmt = DB.prepareStatement("SELECT m.Value, t.MsgText, t.MsgTip "
-													+ "FROM AD_Message_Trl t, AD_Message m "
-													+ "WHERE m.AD_Message_ID=t.AD_Message_ID"
-													+ " AND t.AD_Language=?", ITrx.TRXNAME_None);
+				pstmt = DB.prepareStatement("SELECT m.Value, t.MsgText, t.MsgTip, m.ErrorCode "
+						+ "FROM AD_Message_Trl t, AD_Message m "
+						+ "WHERE m.AD_Message_ID=t.AD_Message_ID"
+						+ " AND t.AD_Language=?", ITrx.TRXNAME_None);
 				pstmt.setString(1, adLanguage);
 			}
 			rs = pstmt.executeQuery();
@@ -163,7 +169,8 @@ public final class Msg
 				final String adMessage = rs.getString(1);
 				final String msgText = rs.getString(2);
 				final String msgTip = rs.getString(3);
-				msg.put(adMessage, Message.ofTextAndTip(adMessage, msgText, msgTip));
+				final String errorCode = rs.getString(4);
+				msg.put(adMessage, Message.ofTextTipAndCode(adMessage, msgText, msgTip, errorCode));
 			}
 		}
 		catch (final SQLException e)
@@ -465,8 +472,7 @@ public final class Msg
 		}
 		else if (arg instanceof Iterable)
 		{
-			@SuppressWarnings("unchecked")
-			final Iterable<Object> iterable = (Iterable<Object>)arg;
+			@SuppressWarnings("unchecked") final Iterable<Object> iterable = (Iterable<Object>)arg;
 			return normalizeSingleArgumentBeforeFormat_Iterable(iterable, adLanguage);
 		}
 		else
@@ -508,7 +514,7 @@ public final class Msg
 				final Object itemNormObj = normalizeSingleArgumentBeforeFormat(item, adLanguage);
 				itemNormStr = itemNormObj != null ? itemNormObj.toString() : "-";
 			}
-			catch (Exception ex)
+			catch (final Exception ex)
 			{
 				s_log.warn("Failed normalizing argument `{}`. Using toString().", item, ex);
 				itemNormStr = item.toString();
@@ -525,7 +531,7 @@ public final class Msg
 
 	}
 
-	public static Map<String, String> getMsgMap(final String adLanguage, final String prefix, boolean removePrefix)
+	public static Map<String, String> getMsgMap(final String adLanguage, final String prefix, final boolean removePrefix)
 	{
 		final Function<Message, String> keyFunction;
 		if (removePrefix)
@@ -914,8 +920,8 @@ public final class Msg
 		int i = inStr.indexOf('@');
 		while (i != -1)
 		{
-			outStr.append(inStr.substring(0, i));            // up to @
-			inStr = inStr.substring(i + 1, inStr.length());    // from first @
+			outStr.append(inStr, 0, i);            // up to @
+			inStr = inStr.substring(i + 1);    // from first @
 
 			final int j = inStr.indexOf('@');                        // next @
 			if (j < 0)                                        // no second tag
@@ -936,7 +942,7 @@ public final class Msg
 				outStr.append(translate(adLanguage, token));            // replace context
 			}
 
-			inStr = inStr.substring(j + 1, inStr.length());    // from second @
+			inStr = inStr.substring(j + 1);    // from second @
 			i = inStr.indexOf('@');
 		}
 
@@ -957,10 +963,10 @@ public final class Msg
 		/**
 		 * @return instance for given message text and tip
 		 */
-		public static Message ofTextAndTip(final String adMessage, final String msgText, final String msgTip)
+		public static Message ofTextTipAndCode(final String adMessage, final String msgText, final String msgTip, @Nullable final String errorCode)
 		{
 			final boolean missing = false;
-			return new Message(adMessage, msgText, msgTip, missing);
+			return new Message(adMessage, msgText, msgTip, errorCode, missing);
 		}
 
 		/**
@@ -970,17 +976,20 @@ public final class Msg
 		{
 			final String msgText = adMessage;
 			final String msgTip = null; // no tip
+			final String errorCode = null; // no errorCode
 			final boolean missing = true;
-			return new Message(adMessage, msgText, msgTip, missing);
+			return new Message(adMessage, msgText, msgTip, errorCode, missing);
 		}
 
 		private final String adMessage;
 		private final String msgText;
 		private final String msgTip;
 		private final String msgTextAndTip;
+		@Getter
+		private final String errorCode;
 		private final boolean missing;
 
-		private Message(@NonNull final String adMessage, final String msgText, final String msgTip, final boolean missing)
+		private Message(@NonNull final String adMessage, @Nullable final String msgText, @Nullable final String msgTip, @Nullable final String errorCode, final boolean missing)
 		{
 			super();
 			this.adMessage = adMessage;
@@ -994,6 +1003,7 @@ public final class Msg
 				msgTextAndTip.append(" ").append(SEPARATOR).append(this.msgTip);
 			}
 			this.msgTextAndTip = msgTextAndTip.toString();
+			this.errorCode = errorCode;
 
 			this.missing = missing;
 		}
@@ -1005,6 +1015,7 @@ public final class Msg
 					.add("adMessage", adMessage)
 					.add("msgText", msgText)
 					.add("msgTip", msgTip)
+					.add("errorCode", errorCode)
 					.add("missing", missing)
 					.toString();
 		}

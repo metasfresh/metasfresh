@@ -29,7 +29,6 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.impl.PPOrderBOMLineProductStorage;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
@@ -119,7 +118,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	}
 
 	// services
-	private static final transient Logger logger = LogManager.getLogger(HUPPOrderIssueReceiptCandidatesProcessor.class);
+	private static final Logger logger = LogManager.getLogger(HUPPOrderIssueReceiptCandidatesProcessor.class);
 	private final transient ITrxItemProcessorExecutorService trxItemProcessorService = Services.get(ITrxItemProcessorExecutorService.class);
 	//
 	private final transient IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
@@ -127,7 +126,6 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	private final transient IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final transient IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private static final AdMessageKey MSG_ONLY_CLEARED_HUs_CAN_BE_ISSUED = AdMessageKey.of("OnlyClearedHUsCanBeIssued");
@@ -577,7 +575,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 
 		if (!handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(hu.getM_HU_ID())))
 		{
-			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_ONLY_CLEARED_HUs_CAN_BE_ISSUED));
+			throw new AdempiereException(MSG_ONLY_CLEARED_HUs_CAN_BE_ISSUED);
 		}
 	}
 

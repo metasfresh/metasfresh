@@ -4,10 +4,12 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.error.impl.ErrorManager;
 import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.util.Trace;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 /*
@@ -35,39 +37,39 @@ import java.util.Objects;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class DocumentValidStatus
 {
-	public static final DocumentValidStatus documentInitiallyInvalid()
+	public static DocumentValidStatus documentInitiallyInvalid()
 	{
 		return STATE_InitialInvalid;
 	}
 
-	public static final DocumentValidStatus fieldInitiallyInvalid()
+	public static DocumentValidStatus fieldInitiallyInvalid()
 	{
 		return STATE_InitialInvalid;
 	}
 
-	public static final DocumentValidStatus documentValid()
+	public static DocumentValidStatus documentValid()
 	{
 		return STATE_Valid;
 	}
 
-	public static final DocumentValidStatus validField(final String fieldName, final boolean isInitialValue)
+	public static DocumentValidStatus validField(final String fieldName, final boolean isInitialValue)
 	{
-		return new DocumentValidStatus(VALID_Yes, REASON_Null, STACKTRACE_Null, fieldName, isInitialValue);
+		return new DocumentValidStatus(VALID_Yes, REASON_Null, STACKTRACE_Null, fieldName, isInitialValue, ERRORCODE_Null);
 	}
 
-	public static final DocumentValidStatus invalidIncludedDocument()
+	public static DocumentValidStatus invalidIncludedDocument()
 	{
 		return STATE_InvalidIncludedDocument;
 	}
 
-	public static final DocumentValidStatus invalidFieldMandatoryNotFilled(final String fieldName, final boolean isInitialValue)
+	public static DocumentValidStatus invalidFieldMandatoryNotFilled(final String fieldName, final boolean isInitialValue)
 	{
-		return new DocumentValidStatus(VALID_No, "Mandatory field " + fieldName + " not filled", STACKTRACE_Null, fieldName, isInitialValue);
+		return new DocumentValidStatus(VALID_No, "Mandatory field " + fieldName + " not filled", STACKTRACE_Null, fieldName, isInitialValue, ERRORCODE_Null);
 	}
 
-	public static final DocumentValidStatus invalid(@NonNull final Throwable error)
+	public static DocumentValidStatus invalid(@NonNull final Throwable error)
 	{
-		return new DocumentValidStatus(VALID_No, error.getLocalizedMessage(), Trace.toOneLineStackTraceString(error.getStackTrace()), FIELDNAME_Null, INITIALVALUE_Unknown);
+		return new DocumentValidStatus(VALID_No, error.getLocalizedMessage(), Trace.toOneLineStackTraceString(error.getStackTrace()), FIELDNAME_Null, INITIALVALUE_Unknown, ErrorManager.getErrorCode(error));
 	}
 
 	private static final boolean VALID_Yes = true;
@@ -79,10 +81,11 @@ public final class DocumentValidStatus
 	private static final String REASON_Null = null;
 	private static final String STACKTRACE_Null = null;
 	private static final String FIELDNAME_Null = null;
+	private static final String ERRORCODE_Null = null;
 
-	private static final DocumentValidStatus STATE_InitialInvalid = new DocumentValidStatus(VALID_No, "not validated yet", STACKTRACE_Null, FIELDNAME_Null, INITIALVALUE_Yes);
-	private static final DocumentValidStatus STATE_Valid = new DocumentValidStatus(VALID_Yes, REASON_Null, STACKTRACE_Null, FIELDNAME_Null, INITIALVALUE_Unknown);
-	private static final DocumentValidStatus STATE_InvalidIncludedDocument = new DocumentValidStatus(VALID_No, "child invalid", STACKTRACE_Null, FIELDNAME_Null, INITIALVALUE_Unknown);
+	private static final DocumentValidStatus STATE_InitialInvalid = new DocumentValidStatus(VALID_No, "not validated yet", STACKTRACE_Null, FIELDNAME_Null, INITIALVALUE_Yes, ERRORCODE_Null);
+	private static final DocumentValidStatus STATE_Valid = new DocumentValidStatus(VALID_Yes, REASON_Null, STACKTRACE_Null, FIELDNAME_Null, INITIALVALUE_Unknown, ERRORCODE_Null);
+	private static final DocumentValidStatus STATE_InvalidIncludedDocument = new DocumentValidStatus(VALID_No, "child invalid", STACKTRACE_Null, FIELDNAME_Null, INITIALVALUE_Unknown, ERRORCODE_Null);
 
 	@JsonProperty("valid")
 	@Getter
@@ -106,20 +109,27 @@ public final class DocumentValidStatus
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private final String fieldName;
 
+	@JsonProperty("errorCode")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@Getter
+	private final String errorCode;
+
 	private transient Integer _hashcode;
 	private transient String _toString;
 
 	private DocumentValidStatus(final boolean valid,
-			final String reason,
-			final String notValidStackTrace,
-			final String fieldName,
-			final Boolean isInitialValue)
+								@Nullable final String reason,
+								@Nullable final String notValidStackTrace,
+								@Nullable final String fieldName,
+								@Nullable final Boolean isInitialValue,
+								@Nullable final String errorCode)
 	{
 		this.valid = valid;
 		this.initialValue = isInitialValue;
 		this.reason = reason;
 		this.notValidStackTrace = notValidStackTrace;
 		this.fieldName = fieldName;
+		this.errorCode = errorCode;
 	}
 
 	@Override
@@ -173,7 +183,8 @@ public final class DocumentValidStatus
 		return valid == other.valid
 				&& Objects.equals(initialValue, other.initialValue)
 				&& Objects.equals(reason, other.reason)
-				&& Objects.equals(fieldName, other.fieldName);
+				&& Objects.equals(fieldName, other.fieldName)
+				&& Objects.equals(errorCode, other.errorCode);
 	}
 
 	public boolean isInitialInvalid()
