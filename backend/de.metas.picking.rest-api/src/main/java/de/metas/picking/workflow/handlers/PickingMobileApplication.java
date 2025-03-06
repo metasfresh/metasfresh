@@ -109,6 +109,7 @@
 		public static final WFActivityId ACTIVITY_ID_ScanPickingSlot = WFActivityId.ofString("scanPickingSlot"); // keep in sync with javascript code
 		public static final WFActivityId ACTIVITY_ID_PickLines = WFActivityId.ofString("pickLines");
 		public static final WFActivityId ACTIVITY_ID_Complete = WFActivityId.ofString("complete");
+		public static final WFActivityId ACTIVITY_ID_RequestReview = WFActivityId.ofString("requestReview");
 		private static final AdMessageKey INVALID_QR_CODE_ERROR_MSG = AdMessageKey.of("mobileui.picking.INVALID_QR_CODE_ERROR_MSG");
 
 		private static final ImmutableTranslatableString captionScanPickingSlot = ImmutableTranslatableString.builder()
@@ -313,45 +314,6 @@
 					toWFActivity_PickLines(pickingJob),
 					toWFActivity_Complete(pickingJob)
 			);
-
-			final UserId responsibleId = pickingJob.getLockedBy();
-
-			final ImmutableList.Builder<WFActivity> activities = ImmutableList.builder();
-			activities.add(WFActivity.builder()
-					.id(ACTIVITY_ID_ScanPickingSlot)
-					.caption(ImmutableTranslatableString.builder()
-							.trl("de_DE", "Kommissionierplatz scannen")
-							.trl("de_CH", "Kommissionierplatz scannen")
-							.defaultValue("Scan picking slot")
-							.build())
-					.wfActivityType(SetPickingSlotWFActivityHandler.HANDLED_ACTIVITY_TYPE)
-					.status(SetPickingSlotWFActivityHandler.computeActivityState(pickingJob))
-					.build());
-			activities.add(WFActivity.builder()
-					.id(ACTIVITY_ID_PickLines)
-					.caption(TranslatableStrings.anyLanguage("Pick"))
-					.wfActivityType(ActualPickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
-					.status(ActualPickingWFActivityHandler.computeActivityState(pickingJob))
-					.build());
-
-			if (pickingJob.isPickingReviewRequired())
-			{
-				activities.add(WFActivity.builder()
-						.id(WFActivityId.ofString("A80"))
-						.caption(TranslatableStrings.adMessage(RequestReviewWFActivityHandler.MSG_Caption))
-						.wfActivityType(RequestReviewWFActivityHandler.HANDLED_ACTIVITY_TYPE)
-						.status(RequestReviewWFActivityHandler.computeActivityState(pickingJob))
-						.build());
-			}
-			else
-			{
-				activities.add(WFActivity.builder()
-						.id(ACTIVITY_ID_Complete)
-						.caption(TranslatableStrings.adRefList(IDocument.ACTION_AD_Reference_ID, IDocument.ACTION_Complete))
-						.wfActivityType(CompletePickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
-						.status(CompletePickingWFActivityHandler.computeActivityState(pickingJob))
-						.build());
-			}
 		}
 
 		private static ImmutableList<WFActivity> toWFActivities_ProductBasedAggregation(@NonNull final PickingJob pickingJob)
@@ -398,12 +360,24 @@
 
 		private static WFActivity toWFActivity_Complete(final @NotNull PickingJob pickingJob)
 		{
-			return WFActivity.builder()
+			if (pickingJob.isPickingReviewRequired())
+			{
+				return WFActivity.builder()
+						.id(ACTIVITY_ID_RequestReview)
+						.caption(TranslatableStrings.adMessage(RequestReviewWFActivityHandler.MSG_Caption))
+						.wfActivityType(RequestReviewWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+						.status(RequestReviewWFActivityHandler.computeActivityState(pickingJob))
+						.build();
+			}
+			else
+			{
+				return WFActivity.builder()
 						.id(ACTIVITY_ID_Complete)
 						.caption(TranslatableStrings.adRefList(IDocument.ACTION_AD_Reference_ID, IDocument.ACTION_Complete))
 						.wfActivityType(CompletePickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
 						.status(CompletePickingWFActivityHandler.computeActivityState(pickingJob))
-					.build();
+						.build();
+			}
 		}
 
 		public WFProcess processStepEvent(

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_Picking_Job_Step, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1243400153L;
+	private static final long serialVersionUID = 737997254L;
 
     /** Standard Constructor */
     public X_M_Picking_Job_Step (final Properties ctx, final int M_Picking_Job_Step_ID, @Nullable final String trxName)
@@ -369,7 +369,7 @@ public class X_M_Picking_Job_Step extends org.compiere.model.PO implements I_M_P
 
 	/** 
 	 * RejectReason AD_Reference_ID=541422
-	 * Reference name: QtyNotPicked RejectReason
+	 * Reference name: Nicht kommissionierte Menge Ablehnungsgrund
 	 */
 	public static final int REJECTREASON_AD_Reference_ID=541422;
 	/** NotFound = N */

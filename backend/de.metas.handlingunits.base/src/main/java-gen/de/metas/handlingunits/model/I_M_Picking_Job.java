@@ -20,7 +20,7 @@ public interface I_M_Picking_Job
 	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -206,18 +206,18 @@ public interface I_M_Picking_Job
 	String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
-	 * Set unloading address.
+	 * Set Unloading Address.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setHandOver_Location_ID (int HandOver_Location_ID);
 
 	/**
-	 * Get unloading address.
+	 * Get Unloading Address.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -228,7 +228,7 @@ public interface I_M_Picking_Job
 	/**
 	 * Set Handover partner.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -237,7 +237,7 @@ public interface I_M_Picking_Job
 	/**
 	 * Get Handover partner.
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
