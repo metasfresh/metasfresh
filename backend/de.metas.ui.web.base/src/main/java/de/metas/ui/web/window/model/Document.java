@@ -226,7 +226,7 @@ public final class Document
 					parentLinkField = field;
 				}
 
-				if(fieldName.equals(FIELDNAME_IsSOTrx) && !fieldDescriptor.isBooleanWidgetType())
+				if (fieldName.equals(FIELDNAME_IsSOTrx) && !fieldDescriptor.isBooleanWidgetType())
 				{
 					hasNonBooleanIsSOTrx = true;
 				}
@@ -1140,6 +1140,11 @@ public final class Document
 		return _saveStatus;
 	}
 
+	private DocumentSaveStatus setSaveStatusAndReturn(@NonNull final Exception exception)
+	{
+		return setSaveStatusAndReturn(DocumentSaveStatus.error(exception, this._saveStatus));
+	}
+
 	private DocumentSaveStatus setSaveStatusAndReturn(@NonNull final DocumentSaveStatus saveStatus)
 	{
 		_saveStatus = saveStatus;
@@ -1394,7 +1399,16 @@ public final class Document
 
 		if (isReadOnlyLogicTrue)
 		{
+<<<<<<< HEAD
 			return ReadOnlyInfo.of(BooleanWithReason.TRUE);
+=======
+			return ReadOnlyInfo.TRUE;
+		}
+
+		if (isFieldsReadOnlyInUI())
+		{
+			return ReadOnlyInfo.TRUE;
+>>>>>>> 69b00c68a9 (Fix webui broken save status (#20264))
 		}
 
 		final TableRecordReference recordReference = this.getTableRecordReference().orElse(null);
@@ -1722,9 +1736,12 @@ public final class Document
 	/**
 	 * Set Dynamic Attribute.
 	 * A dynamic attribute is an attribute that is not stored in database and is kept as long as this this instance is not destroyed.
+<<<<<<< HEAD
 	 *
 	 * @param name
 	 * @param value
+=======
+>>>>>>> 69b00c68a9 (Fix webui broken save status (#20264))
 	 */
 	public Object setDynAttribute(final String name, final Object value)
 	{
@@ -1974,7 +1991,11 @@ public final class Document
 			// NOTE: usually if we do the right checks we shall not get to this
 			logger.warn("Failed saving document, but IGNORED: {}", this, saveEx);
 			setValidStatusAndReturn(DocumentValidStatus.invalid(saveEx), OnValidStatusChanged.DO_NOTHING);
+<<<<<<< HEAD
 			return setSaveStatusAndReturn(DocumentSaveStatus.notSaved(saveEx));
+=======
+			return setSaveStatusAndReturn(saveEx);
+>>>>>>> 69b00c68a9 (Fix webui broken save status (#20264))
 		}
 	}
 
@@ -1993,8 +2014,18 @@ public final class Document
 				deleted = true;
 			}
 
+<<<<<<< HEAD
 			documentCallout.onSave(asCalloutRecord());
 			logger.debug("Document saved: {}", this);
+=======
+				documentCallout.onSave(asCalloutRecord());
+				logger.debug("Document saved: {}", this);
+			}
+			catch (Exception ex)
+			{
+				return setSaveStatusAndReturn(ex).throwIfError();
+			}
+>>>>>>> 69b00c68a9 (Fix webui broken save status (#20264))
 		}
 		else
 		{
@@ -2165,7 +2196,7 @@ public final class Document
 				.findFirst()
 				.orElse(BooleanWithReason.FALSE);
 	}
-	
+
 	public boolean containsField(@NonNull final String fieldName)
 	{
 		return fieldsByName.containsKey(fieldName);

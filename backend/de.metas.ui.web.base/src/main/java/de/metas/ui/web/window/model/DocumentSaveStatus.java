@@ -56,10 +56,16 @@ public final class DocumentSaveStatus
 		return builder().hasChangesToBeSaved(true).error(false).reason(reason).build();
 	}
 
+<<<<<<< HEAD
 	public static final DocumentSaveStatus notSaved(final Exception exception)
 	{
 		final String reason = exception.getLocalizedMessage();
 		return builder().hasChangesToBeSaved(true).error(true).reason(reason).build();
+=======
+	public static DocumentSaveStatus error(@NonNull final Exception exception, @NonNull final DocumentSaveStatus previousSaveStatus)
+	{
+		return builder().hasChangesToBeSaved(true).isPresentInDatabase(previousSaveStatus.isPresentInDatabase()).error(true).reason(AdempiereException.extractMessageTrl(exception)).exception(exception).build();
+>>>>>>> 69b00c68a9 (Fix webui broken save status (#20264))
 	}
 
 	public static final DocumentSaveStatus notSavedJustCreated()
