@@ -51,21 +51,21 @@ public final class DocumentValidStatus
 
 	public static DocumentValidStatus validField(final String fieldName, final boolean isInitialValue)
 	{
-		return new DocumentValidStatus(true, null, null, fieldName, isInitialValue);
+		return new DocumentValidStatus(true, null, null, fieldName, isInitialValue, null);
 	}
 
 	public static DocumentValidStatus invalidFieldMandatoryNotFilled(final String fieldName, final boolean isInitialValue)
 	{
-		return new DocumentValidStatus(false, FillMandatoryException.buildMessage(fieldName), null, fieldName, isInitialValue);
+		return new DocumentValidStatus(false, FillMandatoryException.buildMessage(fieldName), null, fieldName, isInitialValue, null);
 	}
 
 	public static DocumentValidStatus invalid(@NonNull final Exception error)
 	{
-		return new DocumentValidStatus(false, AdempiereException.extractMessageTrl(error), error, null, null);
+		return new DocumentValidStatus(false, AdempiereException.extractMessageTrl(error), error, null, null, AdempiereException.extractErrorCode(error));
 	}
 
-	private static final DocumentValidStatus STATE_InitialInvalid = new DocumentValidStatus(false, TranslatableStrings.anyLanguage("not validated yet"), null, null, Boolean.TRUE);
-	private static final DocumentValidStatus STATE_Valid = new DocumentValidStatus(true, null, null, null, null);
+	private static final DocumentValidStatus STATE_InitialInvalid = new DocumentValidStatus(false, TranslatableStrings.anyLanguage("not validated yet"), null, null, Boolean.TRUE, null);
+	private static final DocumentValidStatus STATE_Valid = new DocumentValidStatus(true, null, null, null, null, null);
 
 	@Getter private final boolean valid;
 	@Nullable @Getter private final Boolean initialValue;
@@ -75,19 +75,22 @@ public final class DocumentValidStatus
 
 	private transient Integer _hashcode; // lazy
 	private transient String _toString; // lazy
+	@Getter private final String errorCode;
 
 	private DocumentValidStatus(
 			final boolean valid,
 			@Nullable final ITranslatableString reason,
 			@Nullable final Exception exception,
 			@Nullable final String fieldName,
-			@Nullable final Boolean isInitialValue)
+			@Nullable final Boolean isInitialValue,
+			@Nullable final String errorCode)
 	{
 		this.valid = valid;
 		this.initialValue = isInitialValue;
 		this.reason = reason;
 		this.exception = exception;
 		this.fieldName = fieldName;
+		this.errorCode = errorCode;
 	}
 
 	@Override
@@ -143,7 +146,8 @@ public final class DocumentValidStatus
 		return valid == other.valid
 				&& Objects.equals(initialValue, other.initialValue)
 				&& Objects.equals(reason, other.reason)
-				&& Objects.equals(fieldName, other.fieldName);
+				&& Objects.equals(fieldName, other.fieldName)
+				&& Objects.equals(errorCode, other.errorCode);
 	}
 
 	public boolean isInitialInvalid()

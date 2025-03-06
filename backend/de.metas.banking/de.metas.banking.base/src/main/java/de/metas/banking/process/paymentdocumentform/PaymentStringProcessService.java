@@ -33,7 +33,6 @@ import de.metas.common.util.pair.IPair;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_BP_Relation;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
@@ -60,7 +59,7 @@ import java.util.Properties;
 @Service
 public class PaymentStringProcessService
 {
-	private static final transient Logger log = LogManager.getLogger(PaymentStringProcessService.class);
+	private static final Logger log = LogManager.getLogger(PaymentStringProcessService.class);
 	private static final AdMessageKey MSG_INVOICE_IS_NOT_COMPLETED = AdMessageKey.of("de.metas.banking.process.paymentdocumentform.AlmightyKeeperOfEverything.InvoiceIsNotCompleted");
 	private static final AdMessageKey MSG_NO_INVOICE_SELECTED = AdMessageKey.of("de.metas.banking.process.paymentdocumentform.AlmightyKeeperOfEverything.NoInvoiceSelected");
 	private static final AdMessageKey MSG_PAYMENT_REQUEST_FOR_INVOICE_ALREADY_EXISTS_EXCEPTION = AdMessageKey.of("PaymentAllocationForm.PaymentRequestForInvoiceAlreadyExistsException");
@@ -162,16 +161,14 @@ public class PaymentStringProcessService
 	{
 		if (template == null)
 		{
-			final ITranslatableString msg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_COULD_NOT_CREATE_PAYMENT_REQUEST);
-			throw new AdempiereException(msg).markAsUserValidationError();
+			throw new AdempiereException(MSG_COULD_NOT_CREATE_PAYMENT_REQUEST).markAsUserValidationError();
 		}
 
 		//
 		// Get the selected invoice
 		if (paymentRequestDAO.hasPaymentRequests(invoice))
 		{
-			final ITranslatableString msg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_PAYMENT_REQUEST_FOR_INVOICE_ALREADY_EXISTS_EXCEPTION);
-			throw new AdempiereException(msg).markAsUserValidationError();
+			throw new AdempiereException(MSG_PAYMENT_REQUEST_FOR_INVOICE_ALREADY_EXISTS_EXCEPTION).markAsUserValidationError();
 		}
 
 		paymentRequestBL.createPaymentRequest(invoice, template);

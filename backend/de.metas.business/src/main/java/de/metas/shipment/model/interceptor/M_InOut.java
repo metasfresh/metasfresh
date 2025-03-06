@@ -3,8 +3,6 @@ package de.metas.shipment.model.interceptor;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.logging.TableRecordMDC;
@@ -54,7 +52,7 @@ public class M_InOut
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 
 	public M_InOut(@NonNull final ShipmentDeclarationCreator shipmentDeclarationCreator,
-			@NonNull final ShipmentDeclarationRepository shipmentDeclarationRepo)
+				   @NonNull final ShipmentDeclarationRepository shipmentDeclarationRepo)
 	{
 		this.shipmentDeclarationCreator = shipmentDeclarationCreator;
 		this.shipmentDeclarationRepo = shipmentDeclarationRepo;
@@ -101,10 +99,7 @@ public class M_InOut
 
 			if (shipmentDeclarationRepo.existCompletedShipmentDeclarationsForShipmentId(shipmentId))
 			{
-				final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-				final ITranslatableString msg = msgBL.getTranslatableMsgText(ERR_ShipmentDeclaration);
-				throw new AdempiereException(msg).markAsUserValidationError();
+				throw new AdempiereException(ERR_ShipmentDeclaration).markAsUserValidationError();
 			}
 		}
 	}

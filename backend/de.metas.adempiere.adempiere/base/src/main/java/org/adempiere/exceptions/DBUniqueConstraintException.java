@@ -13,10 +13,12 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.compiere.model.I_AD_Index_Table;
+import javax.annotation.Nullable;
 import org.compiere.model.MIndexTable;
 import org.compiere.util.DB;
 
 import java.sql.SQLException;
+import static de.metas.util.Check.isEmpty;
 
 /**
  * Unique Constraint Exception
@@ -26,6 +28,8 @@ import java.sql.SQLException;
 public class DBUniqueConstraintException extends DBException
 {
 	private static final AdMessageKey MSG_SaveErrorNotUnique = AdMessageKey.of("SaveErrorNotUnique");
+	public static final String DB_UNIQUE_CONSTRAINT_ERROR_CODE = "DBUniqueConstraint";
+	private static final long serialVersionUID = -1436774241410586947L;
 
 	private String constraintName = null;
 	private MIndexTable index = null;
@@ -43,7 +47,7 @@ public class DBUniqueConstraintException extends DBException
 		this.index = index;
 	}
 
-	public DBUniqueConstraintException(@NonNull final SQLException e, String sql, Object[] params)
+	public DBUniqueConstraintException(@NonNull final SQLException e, final String sql, final Object[] params)
 	{
 		super(e, sql, params);
 		setConstraintInfo(e);
@@ -127,18 +131,25 @@ public class DBUniqueConstraintException extends DBException
 		}
 	}
 
-	private static String parseConstraintName(String sqlException, String quoteStart, String quoteEnd)
+	private static String parseConstraintName(final String sqlException, final String quoteStart, final String quoteEnd)
 	{
-		int i = sqlException.indexOf(quoteStart);
+		final int i = sqlException.indexOf(quoteStart);
 		if (i >= 0)
 		{
-			int i2 = sqlException.indexOf(quoteEnd, i + quoteStart.length());
+			final int i2 = sqlException.indexOf(quoteEnd, i + quoteStart.length());
 			if (i2 >= 0)
 			{
 				return sqlException.substring(i + quoteStart.length(), i2);
 			}
 		}
 		return null;
+	}
+
+	@Nullable
+	@Override
+	public String getErrorCode()
+	{
+		return DB_UNIQUE_CONSTRAINT_ERROR_CODE;
 	}
 
 }
