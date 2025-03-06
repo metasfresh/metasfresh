@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.movement.generate.DDOrderMovementHelper;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.movement.generate.HUMovementGenerateRequest;
 import de.metas.handlingunits.movement.generate.HUMovementGenerator;
 import de.metas.util.Services;
@@ -67,18 +66,18 @@ class DDOrderReversePickCommand
 
 		//
 		// generate movement InTransit -> Pick From Locator
-		createMovement(schedule.getPickFromHUId());
+		moveBackTheHU();
 
 		deleteSchedule();
 	}
 
-	private void createMovement(@NonNull final HuId huId)
+	private void moveBackTheHU()
 	{
 		final HUMovementGenerateRequest request = DDOrderMovementHelper.prepareMovementGenerateRequest(ddOrder, schedule.getDdOrderLineId())
 				.movementDate(movementDate)
 				.fromLocatorId(inTransitLocatorId)
 				.toLocatorId(schedule.getPickFromLocatorId())
-				.huIdsToMove(ImmutableSet.of(huId))
+				.huIdsToMove(ImmutableSet.of(schedule.getPickFromHUId()))
 				.build();
 
 		new HUMovementGenerator(request).createMovement();
