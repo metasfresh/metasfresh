@@ -77,4 +77,15 @@ final class UserNotificationDetailMessageFormat extends EventMessageFormatTempla
 		final String documentNo = Services.get(IDocumentBL.class).getDocumentNo(record);
 		return documentNo;
 	}
+
+	@Override
+	protected String formatText(final String text)
+	{
+		if (text == null || text.isEmpty())
+		{
+			return "";
+		}
+
+		return text;
+	}
 }
