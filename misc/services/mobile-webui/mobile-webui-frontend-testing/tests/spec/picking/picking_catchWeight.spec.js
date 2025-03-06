@@ -1,12 +1,9 @@
-import { test } from "../../playwright.config";
-import { ApplicationsListScreen } from "../utils/screens/ApplicationsListScreen";
-import { PickingJobsListScreen } from "../utils/screens/picking/PickingJobsListScreen";
-import { PickingJobLineScreen } from "../utils/screens/picking/PickingJobLineScreen";
-import { PickingJobStepScreen } from "../utils/screens/picking/PickingJobStepScreen";
-import { PickingJobScreen } from "../utils/screens/picking/PickingJobScreen";
-import { Backend } from "../utils/screens/Backend";
-import { LoginScreen } from "../utils/screens/LoginScreen";
-import { expectErrorToast } from '../utils/common';
+import { test } from "../../../playwright.config";
+import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
+import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
+import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
+import { Backend } from "../../utils/screens/Backend";
+import { LoginScreen } from "../../utils/screens/LoginScreen";
 
 const createMasterdata = async () => {
     const response = await Backend.createMasterdata({
@@ -22,7 +19,7 @@ const createMasterdata = async () => {
                     createShipmentPolicy: 'CL',
                     allowPickingAnyHU: true,
                     pickWithNewLU: true,
-                    allowNewTU: false,
+                    allowNewTU: true,
                 }
             },
             bpartners: { "BP1": {} },
@@ -30,13 +27,19 @@ const createMasterdata = async () => {
                 "wh": {},
             },
             products: {
-                "P1": { prices: [{ price: 1 }] },
+                "P1": {
+                    valuePrefix: '00027', // important for EAN13 barcodes
+                    gtin: '97311876341811',
+                    uom: 'PCE',
+                    uomConversions: [{ from: 'PCE', to: 'KGM', multiplyRate: 0.10, isCatchUOMForProduct: true }],
+                    prices: [{ price: 5, uom: 'KGM', invoicableQtyBasedOn: 'CatchWeight' }]
+                },
             },
             packingInstructions: {
                 "PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "P1", qtyCUsPerTU: 4 },
             },
             handlingUnits: {
-                "HU1": { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' }
+                "HU1": { product: 'P1', warehouse: 'wh', qty: 100 }
             },
             salesOrders: {
                 "SO1": {
@@ -59,12 +62,13 @@ const createMasterdata = async () => {
         documentNo: response.salesOrders.SO1.documentNo,
         huQRCode: response.handlingUnits.HU1.qrCode,
         luPIName: response.packingInstructions.PI.luName,
+        tuPIName: response.packingInstructions.PI.tuName,
     };
 }
 
 // noinspection JSUnusedLocalSymbols
-test('Simple picking test', async ({ page }) => {
-    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } = await createMasterdata();
+test('Leich+Mehl', async ({ page }) => {
+    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName, tuPIName } = await createMasterdata();
 
     await LoginScreen.login(login);
     await ApplicationsListScreen.expectVisible();
@@ -74,13 +78,23 @@ test('Simple picking test', async ({ page }) => {
     await PickingJobsListScreen.startJob({ documentNo });
     await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
     await PickingJobScreen.setTargetLU({ lu: luPIName });
-    await PickingJobScreen.pickHU({ qrCode: huQRCode, expectQtyEntered: '3' });
+    await PickingJobScreen.setTargetTU({ tu: tuPIName });
+    await PickingJobScreen.pickHU({
+        qrCode: huQRCode,
+        catchWeightQRCode: [
+            'LMQ#1#0.101#08.11.2025#500',
+            'LMQ#1#0.101#08.11.2025#500',
+            'LMQ#1#0.101#08.11.2025#500',
+            'LMQ#1#0.101#08.11.2025#500',
+            'LMQ#1#0.101#08.11.2025#500',
+        ],
+    });
     await PickingJobScreen.complete();
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Pick - unpick', async ({ page }) => {
-    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } = await createMasterdata();
+test('GS1', async ({ page }) => {
+    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName, tuPIName } = await createMasterdata();
 
     await LoginScreen.login(login);
     await ApplicationsListScreen.expectVisible();
@@ -90,23 +104,19 @@ test('Pick - unpick', async ({ page }) => {
     await PickingJobsListScreen.startJob({ documentNo });
     await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
     await PickingJobScreen.setTargetLU({ lu: luPIName });
-    await PickingJobScreen.pickHU({ qrCode: huQRCode, expectQtyEntered: '3' });
-
-    await PickingJobScreen.clickLineButton({ index: 1 });
-    await PickingJobLineScreen.waitForScreen();
-    await PickingJobLineScreen.clickStepButton({ index: 0 });
-    await PickingJobStepScreen.unpick();
-    await PickingJobLineScreen.waitForScreen();
-    await PickingJobLineScreen.goBack();
-
-    await PickingJobScreen.closeTargetLU();
-
-    await PickingJobScreen.abort();
+    await PickingJobScreen.setTargetTU({ tu: tuPIName });
+    await PickingJobScreen.pickHU({
+        qrCode: huQRCode,
+        catchWeightQRCode: [
+            '019731187634181131030075201527080910501',
+        ],
+    });
+    await PickingJobScreen.complete();
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Scan invalid picking slot QR code', async ({ page }) => {
-    const { login, documentNo } = await createMasterdata();
+test('EAN13', async ({ page }) => {
+    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName, tuPIName } = await createMasterdata();
 
     await LoginScreen.login(login);
     await ApplicationsListScreen.expectVisible();
@@ -114,7 +124,14 @@ test('Scan invalid picking slot QR code', async ({ page }) => {
     await PickingJobsListScreen.waitForScreen();
     await PickingJobsListScreen.filterByDocumentNo(documentNo);
     await PickingJobsListScreen.startJob({ documentNo });
-    await expectErrorToast('Invalid QR code', async () => {
-        await PickingJobScreen.scanPickingSlot({ qrCode: 'invalid QR code' });
+    await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
+    await PickingJobScreen.setTargetLU({ lu: luPIName });
+    await PickingJobScreen.setTargetTU({ tu: tuPIName });
+    await PickingJobScreen.pickHU({
+        qrCode: huQRCode,
+        catchWeightQRCode: [
+            '2800027002616',
+        ],
     });
+    await PickingJobScreen.complete();
 });
