@@ -239,12 +239,7 @@ public class HandlingUnitsRestController
 			@Parameter(required = true, description = HU_IDENTIFIER_DOC) //
 			@RequestParam(name = "M_HU_IDs") final List<Integer> huRepoIds)
 	{
-		return JsonHUList.builder()
-				.hus(huRepoIds.stream()
-						.map(HuId::ofRepoId)
-						.map(repoId -> handlingUnitsService.getFullHU(repoId, null, Env.getADLanguageOrBaseLanguage(), false))
-						.collect(ImmutableList.toImmutableList()))
-				.build();
+		return handlingUnitsService.getFullHUsList(HuId.ofRepoIds(huRepoIds), Env.getADLanguageOrBaseLanguage());
 	}
 
 	private ResponseEntity<JsonGetSingleHUResponse> toSingleHUResponseEntity(

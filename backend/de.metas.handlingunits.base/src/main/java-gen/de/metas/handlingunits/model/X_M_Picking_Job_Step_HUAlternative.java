@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Picking_Job_Step_HUAlternative
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_Picking_Job_Step_HUAlternative extends org.compiere.model.PO implements I_M_Picking_Job_Step_HUAlternative, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1141007509L;
+	private static final long serialVersionUID = -1201725772L;
 
     /** Standard Constructor */
     public X_M_Picking_Job_Step_HUAlternative (final Properties ctx, final int M_Picking_Job_Step_HUAlternative_ID, @Nullable final String trxName)
@@ -218,7 +218,7 @@ public class X_M_Picking_Job_Step_HUAlternative extends org.compiere.model.PO im
 
 	/** 
 	 * RejectReason AD_Reference_ID=541422
-	 * Reference name: QtyNotPicked RejectReason
+	 * Reference name: Nicht kommissionierte Menge Ablehnungsgrund
 	 */
 	public static final int REJECTREASON_AD_Reference_ID=541422;
 	/** NotFound = N */

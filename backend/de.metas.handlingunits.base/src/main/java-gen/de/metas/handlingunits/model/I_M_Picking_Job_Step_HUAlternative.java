@@ -1,9 +1,8 @@
 package de.metas.handlingunits.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Picking_Job_Step_HUAlternative
  *  @author metasfresh (generated) 
@@ -22,7 +21,7 @@ public interface I_M_Picking_Job_Step_HUAlternative
 	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -53,6 +52,31 @@ public interface I_M_Picking_Job_Step_HUAlternative
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_M_Picking_Job_Step_HUAlternative, Object> COLUMN_Created = new ModelColumn<>(I_M_Picking_Job_Step_HUAlternative.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
 	 * Set UOM.
 	 * Unit of Measure
 	 *
@@ -73,31 +97,6 @@ public interface I_M_Picking_Job_Step_HUAlternative
 	int getC_UOM_ID();
 
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_M_Picking_Job_Step_HUAlternative, Object> COLUMN_Created = new ModelColumn<>(I_M_Picking_Job_Step_HUAlternative.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Active.
@@ -342,7 +341,7 @@ public interface I_M_Picking_Job_Step_HUAlternative
 	 * Get Updated By.
 	 * User who updated this records
 	 *
-	 * <br>Type: Table
+	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */

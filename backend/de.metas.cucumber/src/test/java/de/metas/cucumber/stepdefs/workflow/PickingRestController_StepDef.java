@@ -90,7 +90,7 @@ public class PickingRestController_StepDef
 			final WFActivityId wfActivityId = WFActivityId.ofString(wfActivityNode.at("/activityId").asText());
 			row.getAsIdentifier("WorkflowActivity").put(workflowActivityTable, wfActivityId);
 
-			final JsonNode pickingLinesNodes = wfActivityNode.at("/componentProps/lines");
+			final JsonNode pickingLinesNodes = wfActivityNode.at("/componentProps/pickingJob/lines");
 			assertThat(pickingLinesNodes.size()).isOne();
 			final JsonPickingJobLine pickingLine = objectMapper.treeToValue(pickingLinesNodes.get(0), JsonPickingJobLine.class);
 			row.getAsIdentifier("PickingLine").put(workflowPickingLineTable, pickingLine);

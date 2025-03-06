@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.handlingunits.model.I_M_Picking_Job_Line;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
@@ -57,6 +58,13 @@ public class PickingJobLineId implements RepoIdAware
 		{
 			throw new AdempiereException("Invalid id string: `" + string + "`", ex);
 		}
+	}
+
+	@Nullable
+	public static PickingJobLineId ofNullableString(@Nullable final String string)
+	{
+		final String stringNorm = StringUtils.trimBlankToNull(string);
+		return stringNorm != null ? ofString(stringNorm) : null;
 	}
 
 	public String getAsString() {return String.valueOf(getRepoId());}

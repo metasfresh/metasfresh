@@ -33,6 +33,7 @@
 	import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 	import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 	import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+	import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 	import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 	import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 	import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -47,6 +48,7 @@
 	import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 	import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 	import de.metas.i18n.AdMessageKey;
+	import de.metas.i18n.ITranslatableString;
 	import de.metas.i18n.ImmutableTranslatableString;
 	import de.metas.i18n.TranslatableStrings;
 	import de.metas.mobile.application.MobileApplicationId;
@@ -65,10 +67,12 @@
 	import de.metas.picking.workflow.handlers.activity_handlers.ActualPickingWFActivityHandler;
 	import de.metas.picking.workflow.handlers.activity_handlers.CompletePickingWFActivityHandler;
 	import de.metas.picking.workflow.handlers.activity_handlers.RequestReviewWFActivityHandler;
+	import de.metas.picking.workflow.handlers.activity_handlers.SetPickFromHUWFActivityHandler;
 	import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
 	import de.metas.user.UserId;
 	import de.metas.util.StringUtils;
 	import de.metas.workflow.rest_api.model.WFActivity;
+	import de.metas.workflow.rest_api.model.WFActivityAlwaysAvailableToUser;
 	import de.metas.workflow.rest_api.model.WFActivityId;
 	import de.metas.workflow.rest_api.model.WFProcess;
 	import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
@@ -83,6 +87,7 @@
 	import de.metas.workplace.WorkplaceService;
 	import lombok.NonNull;
 	import org.adempiere.exceptions.AdempiereException;
+	import org.jetbrains.annotations.NotNull;
 	import org.springframework.stereotype.Component;
 
 	import javax.annotation.Nullable;
@@ -100,10 +105,19 @@
 		@VisibleForTesting
 		public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("picking");
 
-		public static final WFActivityId ACTIVITY_ID_ScanPickingSlot = WFActivityId.ofString("A10");
-		public static final WFActivityId ACTIVITY_ID_PickLines = WFActivityId.ofString("A20");
-		public static final WFActivityId ACTIVITY_ID_Complete = WFActivityId.ofString("A90");
+		public static final WFActivityId ACTIVITY_ID_ScanPickFromHU = WFActivityId.ofString("scanPickFromHU");
+		public static final WFActivityId ACTIVITY_ID_ScanPickingSlot = WFActivityId.ofString("scanPickingSlot"); // keep in sync with javascript code
+		public static final WFActivityId ACTIVITY_ID_PickLines = WFActivityId.ofString("pickLines");
+		public static final WFActivityId ACTIVITY_ID_Complete = WFActivityId.ofString("complete");
+		public static final WFActivityId ACTIVITY_ID_RequestReview = WFActivityId.ofString("requestReview");
 		private static final AdMessageKey INVALID_QR_CODE_ERROR_MSG = AdMessageKey.of("mobileui.picking.INVALID_QR_CODE_ERROR_MSG");
+
+		private static final ImmutableTranslatableString captionScanPickingSlot = ImmutableTranslatableString.builder()
+				.trl("de_DE", "Kommissionierplatz scannen")
+				.trl("de_CH", "Kommissionierplatz scannen")
+				.defaultValue("Scan picking slot")
+				.build();
+		private static final ITranslatableString captionPickLines = TranslatableStrings.anyLanguage("Pick");
 
 		private final PickingJobRestService pickingJobRestService;
 		private final PickingWorkflowLaunchersProvider wfLaunchersProvider;
@@ -206,6 +220,7 @@
 							.caption(field.getCaption())
 							.value(displayValueProvider.getDisplayValue(field, pickingJob))
 							.build())
+					.filter(WFProcessHeaderProperty::isValueNotBlank)
 					.collect(ImmutableList.toImmutableList());
 
 			return WFProcessHeaderProperties.builder()
@@ -269,50 +284,100 @@
 		{
 			final UserId responsibleId = pickingJob.getLockedBy();
 
-			final ImmutableList.Builder<WFActivity> activities = ImmutableList.builder();
-			activities.add(WFActivity.builder()
-					.id(ACTIVITY_ID_ScanPickingSlot)
-					.caption(ImmutableTranslatableString.builder()
-							.trl("de_DE", "Kommissionierplatz scannen")
-							.trl("de_CH", "Kommissionierplatz scannen")
-							.defaultValue("Scan picking slot")
-							.build())
-					.wfActivityType(SetPickingSlotWFActivityHandler.HANDLED_ACTIVITY_TYPE)
-					.status(SetPickingSlotWFActivityHandler.computeActivityState(pickingJob))
-					.build());
-			activities.add(WFActivity.builder()
-					.id(ACTIVITY_ID_PickLines)
-					.caption(TranslatableStrings.anyLanguage("Pick"))
-					.wfActivityType(ActualPickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
-					.status(ActualPickingWFActivityHandler.computeActivityState(pickingJob))
-					.build());
-
-			if (pickingJob.isPickingReviewRequired())
-			{
-				activities.add(WFActivity.builder()
-						.id(WFActivityId.ofString("A80"))
-						.caption(TranslatableStrings.adMessage(RequestReviewWFActivityHandler.MSG_Caption))
-						.wfActivityType(RequestReviewWFActivityHandler.HANDLED_ACTIVITY_TYPE)
-						.status(RequestReviewWFActivityHandler.computeActivityState(pickingJob))
-						.build());
-			}
-			else
-			{
-				activities.add(WFActivity.builder()
-						.id(ACTIVITY_ID_Complete)
-						.caption(TranslatableStrings.adRefList(IDocument.ACTION_AD_Reference_ID, IDocument.ACTION_Complete))
-						.wfActivityType(CompletePickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
-						.status(CompletePickingWFActivityHandler.computeActivityState(pickingJob))
-						.build());
-			}
-
 			return WFProcess.builder()
 					.id(WFProcessId.ofIdPart(APPLICATION_ID, pickingJob.getId()))
 					.responsibleId(responsibleId)
 					.document(pickingJob)
 					.isAllowAbort(pickingJob.isAllowAbort())
-					.activities(activities.build())
+					.activities(toWFActivities(pickingJob))
 					.build();
+		}
+
+		private static ImmutableList<WFActivity> toWFActivities(@NonNull final PickingJob pickingJob)
+		{
+			final PickingJobAggregationType aggregationType = pickingJob.getAggregationType();
+			switch (aggregationType)
+			{
+				case SALES_ORDER:
+					return toWFActivities_SalesOrderBasedAggregation(pickingJob);
+				case PRODUCT:
+					return toWFActivities_ProductBasedAggregation(pickingJob);
+				default:
+					throw new AdempiereException("Unknown aggregation type: " + aggregationType);
+			}
+		}
+
+		private static ImmutableList<WFActivity> toWFActivities_SalesOrderBasedAggregation(@NonNull final PickingJob pickingJob)
+		{
+			return ImmutableList.of(
+					toWActivity_ScanPickingSlot(pickingJob),
+					toWFActivity_PickLines(pickingJob),
+					toWFActivity_Complete(pickingJob)
+			);
+		}
+
+		private static ImmutableList<WFActivity> toWFActivities_ProductBasedAggregation(@NonNull final PickingJob pickingJob)
+		{
+			return ImmutableList.of(
+					toWActivity_PickFromHU(pickingJob),
+					toWActivity_ScanPickingSlot(pickingJob),
+					toWFActivity_PickLines(pickingJob),
+					toWFActivity_Complete(pickingJob)
+			);
+		}
+
+		private static WFActivity toWActivity_PickFromHU(final @NotNull PickingJob pickingJob)
+		{
+			return WFActivity.builder()
+					.id(ACTIVITY_ID_ScanPickFromHU)
+					.caption(TranslatableStrings.anyLanguage("Pick From"))
+					.wfActivityType(SetPickFromHUWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+					.status(SetPickFromHUWFActivityHandler.computeActivityState(pickingJob))
+					.alwaysAvailableToUser(WFActivityAlwaysAvailableToUser.YES)
+					.build();
+		}
+
+		private static WFActivity toWActivity_ScanPickingSlot(final @NotNull PickingJob pickingJob)
+		{
+			return WFActivity.builder()
+					.id(ACTIVITY_ID_ScanPickingSlot)
+					.caption(captionScanPickingSlot)
+					.wfActivityType(SetPickingSlotWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+					.status(SetPickingSlotWFActivityHandler.computeActivityState(pickingJob))
+					.alwaysAvailableToUser(WFActivityAlwaysAvailableToUser.YES)
+					.build();
+		}
+
+		private static WFActivity toWFActivity_PickLines(final @NotNull PickingJob pickingJob)
+		{
+			return WFActivity.builder()
+					.id(ACTIVITY_ID_PickLines)
+					.caption(captionPickLines)
+					.wfActivityType(ActualPickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+					.status(ActualPickingWFActivityHandler.computeActivityState(pickingJob))
+					.build();
+		}
+
+		private static WFActivity toWFActivity_Complete(final @NotNull PickingJob pickingJob)
+		{
+			if (pickingJob.isPickingReviewRequired())
+			{
+				return WFActivity.builder()
+						.id(ACTIVITY_ID_RequestReview)
+						.caption(TranslatableStrings.adMessage(RequestReviewWFActivityHandler.MSG_Caption))
+						.wfActivityType(RequestReviewWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+						.status(RequestReviewWFActivityHandler.computeActivityState(pickingJob))
+						.build();
+			}
+			else
+			{
+				return WFActivity.builder()
+						.id(ACTIVITY_ID_Complete)
+						.caption(TranslatableStrings.adRefList(IDocument.ACTION_AD_Reference_ID, IDocument.ACTION_Complete))
+						.wfActivityType(CompletePickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+						.status(CompletePickingWFActivityHandler.computeActivityState(pickingJob))
+						.build();
+			}
 		}
 
 		public WFProcess processStepEvent(
@@ -368,7 +433,7 @@
 		private PickingJob processStepEvents(@NonNull final PickingJob pickingJob, @NonNull final Collection<JsonPickingStepEvent> jsonEvents)
 		{
 			final PickingJobOptions pickingJobOptions = mobileUIPickingUserProfileRepository.getPickingJobOptions(pickingJob.getCustomerId());
-			
+
 			final ImmutableList<PickingJobStepEvent> events = jsonEvents.stream()
 					.map(json -> fromJson(json, pickingJob, pickingJobOptions))
 					.collect(ImmutableList.toImmutableList());
@@ -465,7 +530,10 @@
 
 		}
 
-		public JsonPickingJobAvailableTargets getAvailableTargets(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+		public JsonPickingJobAvailableTargets getAvailableTargets(
+				@NonNull final WFProcessId wfProcessId,
+				@Nullable final PickingJobLineId lineId,
+				@NonNull final UserId callerId)
 		{
 			final WFProcess wfProcess = getWFProcessById(wfProcessId);
 			wfProcess.assertHasAccess(callerId);
@@ -473,66 +541,84 @@
 			final PickingJob pickingJob = getPickingJob(wfProcess);
 
 			return JsonPickingJobAvailableTargets.builder()
-					.targets(pickingJobRestService.getLUAvailableTargets(pickingJob)
+					.targets(pickingJobRestService.getLUAvailableTargets(pickingJob, lineId)
 							.stream()
 							.map(JsonLUPickingTarget::of)
 							.collect(ImmutableList.toImmutableList()))
-					.tuTargets(pickingJobRestService.getTUAvailableTargets(pickingJob)
+					.tuTargets(pickingJobRestService.getTUAvailableTargets(pickingJob, lineId)
 							.stream()
 							.map(JsonTUPickingTarget::of)
 							.collect(ImmutableList.toImmutableList()))
 					.build();
 		}
 
-		public WFProcess setPickTarget(@NonNull final WFProcessId wfProcessId, @Nullable final LUPickingTarget target, @NonNull final UserId callerId)
+		public WFProcess setLUPickingTarget(
+				@NonNull final WFProcessId wfProcessId,
+				@Nullable final PickingJobLineId lineId,
+				@Nullable final LUPickingTarget target,
+				@NonNull final UserId callerId)
 		{
 			return changeWFProcessById(
 					wfProcessId,
 					(wfProcess, pickingJob) -> {
 						wfProcess.assertHasAccess(callerId);
-						return pickingJobRestService.setPickTarget(pickingJob, target);
+						return pickingJobRestService.setLUPickingTarget(pickingJob, lineId, target);
 					});
 
 		}
 
-		public WFProcess setPickTarget(@NonNull final WFProcessId wfProcessId, @Nullable final TUPickingTarget target, @NonNull final UserId callerId)
+		public WFProcess setTUPickingTarget(
+				@NonNull final WFProcessId wfProcessId,
+				@Nullable final PickingJobLineId lineId,
+				@Nullable final TUPickingTarget target,
+				@NonNull final UserId callerId)
 		{
 			return changeWFProcessById(
 					wfProcessId,
 					(wfProcess, pickingJob) -> {
 						wfProcess.assertHasAccess(callerId);
-						return pickingJobRestService.setPickTarget(pickingJob, target);
+						return pickingJobRestService.setTUPickingTarget(pickingJob, lineId, target);
 					});
 
 		}
 
-		public WFProcess closeLUPickTarget(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+		public WFProcess closeLUPickingTarget(
+				@NonNull final WFProcessId wfProcessId,
+				@Nullable final PickingJobLineId lineId,
+				@NonNull final UserId callerId)
 		{
 			return changeWFProcessById(
 					wfProcessId,
 					(wfProcess, pickingJob) -> {
 						wfProcess.assertHasAccess(callerId);
-						return pickingJobRestService.closeLUPickTarget(pickingJob);
+						return pickingJobRestService.closeLUPickingTarget(pickingJob, lineId);
 					});
 
 		}
 
-		public WFProcess closeTUPickTarget(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+		public WFProcess closeTUPickingTarget(
+				@NonNull final WFProcessId wfProcessId,
+				@Nullable final PickingJobLineId lineId,
+				@NonNull final UserId callerId)
 		{
 			return changeWFProcessById(
 					wfProcessId,
 					(wfProcess, pickingJob) -> {
 						wfProcess.assertHasAccess(callerId);
-						return pickingJobRestService.closeTUPickTarget(pickingJob);
+						return pickingJobRestService.closeTUPickingTarget(pickingJob, lineId);
 					});
 
 		}
 
 		@NonNull
-		public List<HuId> getClosedLUs(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+		public List<HuId> getClosedLUs(
+				@NonNull final WFProcessId wfProcessId,
+				@Nullable final PickingJobLineId lineId,
+				@NonNull final UserId callerId)
 		{
 			final WFProcess wfProcess = getWFProcessById(wfProcessId);
 			wfProcess.assertHasAccess(callerId);
-			return pickingJobRestService.getClosedLUs(getPickingJob(wfProcess));
+			final PickingJob pickingJob = getPickingJob(wfProcess);
+			return pickingJobRestService.getClosedLUs(pickingJob, lineId);
 		}
 	}

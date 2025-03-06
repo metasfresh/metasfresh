@@ -367,7 +367,7 @@
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField-6" x="37" y="148" width="117" height="13" forecolor="#000000" uuid="37fe7ba3-0da3-4bea-ba88-1d72b8b6606f">
-					<printWhenExpression><![CDATA[new Boolean ($F{billtoaddress} != null)]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean ($F{billtoaddress} != null && $R{ShowBillToAddress}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -381,7 +381,9 @@
 				<textFieldExpression><![CDATA[$R{BillToAddress}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement key="textField-1" x="154" y="148" width="386" height="13" forecolor="#000000" uuid="9c91d088-137a-42b7-b92e-07c8b0658c65"/>
+				<reportElement key="textField-1" x="154" y="148" width="386" height="13" forecolor="#000000" uuid="9c91d088-137a-42b7-b92e-07c8b0658c65">
+					<printWhenExpression><![CDATA[new Boolean ($F{billtoaddress} != null && $R{ShowBillToAddress}.equals( "Y" ))]]></printWhenExpression>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

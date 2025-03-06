@@ -1,4 +1,5 @@
 package de.metas.picking.api.impl;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
@@ -79,6 +80,13 @@ public class PackagingDAO implements IPackagingDAO
 	{
 		final IQueryBuilder<I_M_Packageable_V> queryBuilder = queryBL.createQueryBuilder(I_M_Packageable_V.class);
 		setQueryOrderBy(queryBuilder, query.getOrderBys());
+
+		//
+		// Filter: Product
+		if (query.getProductId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_M_Product_ID, query.getProductId());
+		}
 
 		//
 		// Filter: Customer
@@ -174,6 +182,13 @@ public class PackagingDAO implements IPackagingDAO
 			queryBuilder.filter(lockManager.getNotLockedFilter(
 					I_M_ShipmentSchedule.Table_Name,
 					I_M_Packageable_V.Table_Name + "." + I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID));
+		}
+
+		//
+		// Filter by onlyShipmentScheduleIds
+		if (query.getOnlyShipmentScheduleIds() != null && !query.getOnlyShipmentScheduleIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID, query.getOnlyShipmentScheduleIds());
 		}
 
 		//

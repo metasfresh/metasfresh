@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.picking.job.model.PickingJobFacetGroup;
+import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -35,6 +36,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Comparator;
+import java.util.function.Function;
 
 @Value
 public class MobileUIPickingUserProfile
@@ -43,10 +45,12 @@ public class MobileUIPickingUserProfile
 			.name("default")
 			.isAllowPickingAnyCustomer(true)
 			.defaultPickingJobOptions(PickingJobOptions.builder()
+					.aggregationType(PickingJobAggregationType.DEFAULT)
 					.isPickWithNewLU(true)
 					.isCatchWeightTUPickingEnabled(false)
 					.considerSalesOrderCapacity(false)
 					.isAllowSkippingRejectedReason(false)
+					.createShipmentPolicy(CreateShipmentPolicy.DO_NOT_CREATE)
 					.build())
 			.filters(PickingFiltersList.ofList(ImmutableList.of(
 					PickingFilter.of(PickingJobFacetGroup.CUSTOMER, 10),
@@ -64,13 +68,25 @@ public class MobileUIPickingUserProfile
 							.field(PickingJobFieldType.CUSTOMER)
 							.isShowInDetailed(true)
 							.isShowInSummary(true)
-							.build())
-			)
+							.build(),
+					PickingJobField.builder()
+							.seqNo(30)
+							.field(PickingJobFieldType.PRODUCT)
+							.isShowInDetailed(true)
+							.isShowInSummary(true)
+							.build(),
+					PickingJobField.builder()
+							.seqNo(40)
+							.field(PickingJobFieldType.QTY_TO_DELIVER)
+							.isShowInDetailed(true)
+							.isShowInSummary(true)
+							.build()
+			))
 			.build();
 
 	@NonNull String name;
 	boolean isAllowPickingAnyCustomer;
-	@Getter(AccessLevel.PACKAGE) @NonNull PickingCustomerConfigsCollection customerConfigs;
+	@Getter @NonNull PickingCustomerConfigsCollection customerConfigs;
 	@NonNull PickingJobOptions defaultPickingJobOptions;
 	@Getter(AccessLevel.NONE) @NonNull PickingFiltersList filters;
 	@Getter(AccessLevel.PACKAGE) @NonNull ImmutableList<PickingJobField> fields;
@@ -114,11 +130,47 @@ public class MobileUIPickingUserProfile
 		return launcherFieldsInOrder.stream().anyMatch(field -> PickingJobFieldType.equals(field.getField(), fieldType));
 	}
 
-	public PickingJobOptions getPickingJobOptions(@NonNull final BPartnerId customerId, @NonNull PickingJobOptionsCollection pickingJobOptionsCollection)
+	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId, @NonNull PickingJobOptionsCollection pickingJobOptionsCollection)
 	{
-		return customerConfigs.getPickingJobOptionsId(customerId)
-				.map(pickingJobOptionsCollection::getById)
-				.orElse(defaultPickingJobOptions);
+		return customerId != null
+				? customerConfigs.getPickingJobOptionsId(customerId).map(pickingJobOptionsCollection::getById).orElse(defaultPickingJobOptions)
+				: defaultPickingJobOptions;
+	}
+
+	public PickingJobAggregationType getAggregationType(@Nullable final BPartnerId customerId, @NonNull PickingJobOptionsCollection pickingJobOptionsCollection)
+	{
+		return getPickingJobOption(customerId, pickingJobOptionsCollection, PickingJobOptions::getAggregationType, PickingJobAggregationType.DEFAULT);
+	}
+
+	@SuppressWarnings("SameParameterValue")
+	private <T> T getPickingJobOption(
+			@Nullable final BPartnerId customerId,
+			@NonNull final PickingJobOptionsCollection pickingJobOptionsCollection,
+			@NonNull final Function<PickingJobOptions, T> extractOption,
+			@NonNull final T defaultValue)
+	{
+		if (customerId != null)
+		{
+			final PickingJobOptions pickingJobOptions = customerConfigs.getPickingJobOptionsId(customerId)
+					.map(pickingJobOptionsCollection::getById)
+					.orElse(null);
+			if (pickingJobOptions != null)
+			{
+				final T option = extractOption.apply(pickingJobOptions);
+				if (option != null)
+				{
+					return option;
+				}
+			}
+		}
+
+		final T option = extractOption.apply(defaultPickingJobOptions);
+		if (option != null)
+		{
+			return option;
+		}
+
+		return defaultValue;
 	}
 
 	@NonNull
@@ -128,7 +180,7 @@ public class MobileUIPickingUserProfile
 		{
 			return ImmutableSet.of();
 		}
-		
+
 		return customerConfigs.getCustomerIds();
 	}
 }

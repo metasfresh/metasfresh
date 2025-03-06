@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.picking.PackToSpec;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
@@ -27,15 +28,16 @@ import javax.annotation.Nullable;
 @Builder
 public class PickingJobCreateRepoRequest
 {
+	@NonNull PickingJobAggregationType aggregationType;
 	@NonNull OrgId orgId;
-	@NonNull OrderId salesOrderId;
-	@NonNull InstantAndOrgId preparationDate;
-	@NonNull InstantAndOrgId deliveryDate;
-	@NonNull BPartnerLocationId deliveryBPLocationId;
-	@NonNull String deliveryRenderedAddress;
+	@Nullable OrderId salesOrderId;
+	@Nullable InstantAndOrgId preparationDate;
+	@Nullable InstantAndOrgId deliveryDate;
+	@Nullable BPartnerLocationId deliveryBPLocationId;
+	@Nullable String deliveryRenderedAddress;
 	@NonNull UserId pickerId;
 	boolean isPickingReviewRequired;
-	@NonNull BPartnerLocationId handoverLocationId;
+	@Nullable BPartnerLocationId handoverLocationId;
 	boolean isAllowPickingAnyHU;
 
 	@Singular @NonNull ImmutableList<Line> lines;
@@ -52,6 +54,7 @@ public class PickingJobCreateRepoRequest
 		@NonNull HUPIItemProductId huPIItemProductId;
 		@NonNull Quantity qtyToPick;
 		@NonNull OrderAndLineId salesOrderAndLineId;
+		@NonNull BPartnerLocationId deliveryBPLocationId;
 		@Nullable ShipmentScheduleId shipmentScheduleId;
 		@Nullable UomId catchWeightUomId;
 		@Singular @NonNull ImmutableList<Step> steps;

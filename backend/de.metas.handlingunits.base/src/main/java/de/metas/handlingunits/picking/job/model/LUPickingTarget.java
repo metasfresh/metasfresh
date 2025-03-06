@@ -27,12 +27,14 @@ public class LUPickingTarget
 	//
 	// Existing LU
 	@Nullable HuId luId;
+	@Nullable HUQRCode luQRCode;
 
 	@Builder
 	private LUPickingTarget(
 			@NonNull final String caption,
 			@Nullable final HuPackingInstructionsId luPIId,
-			@Nullable final HuId luId)
+			@Nullable final HuId luId,
+			@Nullable final HUQRCode luQRCode)
 	{
 		this.caption = caption;
 
@@ -40,12 +42,14 @@ public class LUPickingTarget
 		{
 			this.luPIId = null;
 			this.luId = luId;
+			this.luQRCode = luQRCode;
 			this.id = "existing-" + luId.getRepoId();
 		}
 		else if (luPIId != null)
 		{
 			this.luPIId = luPIId;
 			this.luId = null;
+			this.luQRCode = null;
 			this.id = "new-" + luPIId.getRepoId();
 		}
 		else
@@ -66,7 +70,7 @@ public class LUPickingTarget
 
 	public static LUPickingTarget ofExistingHU(@NonNull final HuId luId, @NonNull final HUQRCode qrCode)
 	{
-		return builder().luId(luId).caption(qrCode.toDisplayableQRCode()).build();
+		return builder().luId(luId).luQRCode(qrCode).caption(qrCode.toDisplayableQRCode()).build();
 	}
 
 	public static boolean equals(@Nullable final LUPickingTarget o1, @Nullable final LUPickingTarget o2)
@@ -100,7 +104,7 @@ public class LUPickingTarget
 
 		void newLU(final HuPackingInstructionsId luPackingInstructionsId);
 
-		void existingLU(final HuId luId);
+		void existingLU(final HuId luId, final HUQRCode luQRCode);
 	}
 
 	public interface CaseMapper<T>
@@ -109,7 +113,7 @@ public class LUPickingTarget
 
 		T newLU(final HuPackingInstructionsId luPackingInstructionsId);
 
-		T existingLU(final HuId luId);
+		T existingLU(final HuId luId, final HUQRCode luQRCode);
 	}
 
 	public static void apply(@Nullable final LUPickingTarget target, @NonNull final CaseConsumer consumer)
@@ -124,7 +128,7 @@ public class LUPickingTarget
 		}
 		else if (target.isExistingLU())
 		{
-			consumer.existingLU(target.getLuIdNotNull());
+			consumer.existingLU(target.getLuIdNotNull(), target.getLuQRCode());
 		}
 		else
 		{
@@ -144,7 +148,7 @@ public class LUPickingTarget
 		}
 		else if (target.isExistingLU())
 		{
-			return mapper.existingLU(target.getLuIdNotNull());
+			return mapper.existingLU(target.getLuIdNotNull(), target.getLuQRCode());
 		}
 		else
 		{
