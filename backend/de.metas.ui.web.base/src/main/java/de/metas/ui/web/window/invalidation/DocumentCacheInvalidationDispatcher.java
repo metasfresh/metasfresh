@@ -71,7 +71,7 @@ public class DocumentCacheInvalidationDispatcher implements ICacheResetListener
 		this.debouncer = Debouncer.<DocumentToInvalidateMap>builder()
 				.name(DocumentCacheInvalidationDispatcher.class.getSimpleName() + "-debouncer")
 				.bufferMaxSize(sysConfigBL.getIntValue("webui.DocumentCacheInvalidationDispatcher.debouncer.bufferMaxSize", 500))
-				.delayInMillis(sysConfigBL.getIntValue("webui.DocumentCacheInvalidationDispatcher.debouncer.delayInMillis", 10))
+				.delayInMillis(sysConfigBL.getIntValue("webui.DocumentCacheInvalidationDispatcher.debouncer.delayInMillis", 100))
 				.consumer(this::resetNow)
 				.build();
 		logger.info("debouncer: {}", debouncer);
