@@ -18,7 +18,7 @@ import org.eevolution.model.I_DD_Order;
 
 import java.time.Instant;
 
-class DDOrderReversePickCommand
+class DDOrderUnpickCommand
 {
 	@NonNull
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
@@ -41,7 +41,7 @@ class DDOrderReversePickCommand
 	private LocatorId inTransitLocatorId;
 
 	@Builder
-	private DDOrderReversePickCommand(
+	private DDOrderUnpickCommand(
 			final @NonNull DDOrderLowLevelDAO ddOrderLowLevelDAO,
 			final @NonNull DDOrderMoveScheduleRepository ddOrderMoveScheduleRepository,
 			final @NonNull DDOrderMoveScheduleId scheduleId)

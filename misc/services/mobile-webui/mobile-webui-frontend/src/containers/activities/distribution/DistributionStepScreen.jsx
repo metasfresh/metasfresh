@@ -15,7 +15,7 @@ import {
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { toQRCodeDisplayable } from '../../../utils/qrCode/hu';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
-import { postDistributionReversePicking } from '../../../api/distribution';
+import { postDistributionUnpickEvent } from '../../../api/distribution';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { toastError } from '../../../utils/toast';
 
@@ -108,7 +108,7 @@ const DistributionStepScreen = () => {
   };
 
   const onUnpick = () => {
-    postDistributionReversePicking({
+    postDistributionUnpickEvent({
       wfProcessId,
       activityId,
       lineId,

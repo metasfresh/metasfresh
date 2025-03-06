@@ -67,6 +67,7 @@ public class DDOrderMoveSchedule
 	public void removePickedHUs()
 	{
 		this.pickedHUs = null;
+		this.qtyNotPickedReason = null;
 		updateStatus();
 	}
 

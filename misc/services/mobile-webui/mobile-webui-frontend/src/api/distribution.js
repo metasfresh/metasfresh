@@ -26,14 +26,14 @@ export function postDistributionDropTo({ wfProcessId, activityId, lineId, stepId
     .then((response) => unboxAxiosResponse(response));
 }
 
-export function postDistributionReversePicking({ wfProcessId, activityId, lineId, stepId }) {
+export function postDistributionUnpickEvent({ wfProcessId, activityId, lineId, stepId }) {
   return axios
     .post(`${apiBasePath}/distribution/event`, {
       wfProcessId,
       wfActivityId: activityId,
       lineId,
       distributionStepId: stepId,
-      reversePicking: {},
+      unpick: {},
     })
     .then((response) => unboxAxiosResponse(response));
 }

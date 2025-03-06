@@ -99,9 +99,9 @@ class DistributionEventProcessCommand
 			{
 				changedJob = processEvent_DropTo();
 			}
-			else if (event.getReversePicking() != null)
+			else if (event.getUnpick() != null)
 			{
-				changedJob = processEvent_ReversePicking();
+				changedJob = processEvent_Unpick();
 			}
 
 			return changedJob;
@@ -124,14 +124,14 @@ class DistributionEventProcessCommand
 		}
 	}
 
-	private DistributionJob processEvent_ReversePicking()
+	private DistributionJob processEvent_Unpick()
 	{
 		try (final IAutoCloseable ignored = HUContextHolder.temporarySet(handlingUnitsBL.createMutableHUContextForProcessing()))
 		{
 			final DistributionJobStepId stepId = event.getDistributionStepId();
-			Check.assumeNotNull(stepId, "stepId must be set when reversing");
+			Check.assumeNotNull(stepId, "stepId must be set when unpicking");
 
-			ddOrderMoveScheduleService.reversePicking(stepId.toScheduleId());
+			ddOrderMoveScheduleService.unpick(stepId.toScheduleId());
 
 			return changedJob.removeStep(stepId);
 		}
