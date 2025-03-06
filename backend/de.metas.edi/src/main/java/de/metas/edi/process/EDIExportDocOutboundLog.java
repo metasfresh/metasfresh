@@ -63,14 +63,14 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 {
 	private static final AdMessageKey MSG_No_DocOutboundLog_Selection = AdMessageKey.of("C_Doc_Outbound_Log.No_DocOutboundLog_Selection");
 
-	private static final transient Logger logger = LogManager.getLogger(EDIExportDocOutboundLog.class);
+	private static final Logger logger = LogManager.getLogger(EDIExportDocOutboundLog.class);
 
 	//
 	// Services
 	final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(IProcessPreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
 	{
 		final SelectionSize selectionSize = context.getSelectionSize();
 		if (selectionSize.isNoSelection())
@@ -119,8 +119,7 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 
 		if (selectionCount == 0)
 		{
-			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_No_DocOutboundLog_Selection);
-			throw new AdempiereException(msg).markAsUserValidationError();
+			throw new AdempiereException(MSG_No_DocOutboundLog_Selection).markAsUserValidationError();
 		}
 	}
 
@@ -142,7 +141,7 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 					.bindToThreadInheritedTrx()
 					.buildAndEnqueue();
 
-			Loggables.withLogger(logger, Level.INFO).addLog("Enqueued ediDocument {} into C_Queue_WorkPackage {}", new Object[] { ediDocument, workpackage });
+			Loggables.withLogger(logger, Level.INFO).addLog("Enqueued ediDocument {} into C_Queue_WorkPackage {}", ediDocument, workpackage);
 
 			// Mark the Document as: EDI enqueued (async) - before starting
 			ediDocument.setEDI_ExportStatus(I_EDI_Document.EDI_EXPORTSTATUS_Enqueued);
@@ -193,7 +192,7 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 			// note that there might be a problem with inouts, if we used this process: inOuts might be invalid, but still we want to aggregate them, and then fix stuff in the DESADV record itself
 			if (!I_EDI_Document.EDI_EXPORTSTATUS_Pending.equals(ediDocument.getEDI_ExportStatus()))
 			{
-				Loggables.withLogger(logger, Level.INFO).addLog("Skipping ediDocument={}, because EDI_ExportStatus={} is != Pending", new Object[] { ediDocument, ediDocument.getEDI_ExportStatus() });
+				Loggables.withLogger(logger, Level.INFO).addLog("Skipping ediDocument={}, because EDI_ExportStatus={} is != Pending", ediDocument, ediDocument.getEDI_ExportStatus());
 				continue;
 			}
 

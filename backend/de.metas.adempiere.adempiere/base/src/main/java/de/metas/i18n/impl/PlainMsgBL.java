@@ -22,19 +22,19 @@ package de.metas.i18n.impl;
  * #L%
  */
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 public class PlainMsgBL implements IMsgBL
 {
@@ -147,5 +147,12 @@ public class PlainMsgBL implements IMsgBL
 	public void cacheReset()
 	{
 		// nothing
+	}
+
+	@Nullable
+	@Override
+	public String getErrorCode(final @NonNull AdMessageKey messageKey)
+	{
+		return null;
 	}
 }

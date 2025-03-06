@@ -3,7 +3,8 @@
 Feature: Setting customColumns via SetCustomColumns method
 
   Background:
-    Given metasfresh has current date and time
+    Given infrastructure and metasfresh are running
+    And metasfresh has current date and time
     And metasfresh contains M_PricingSystems
       | Identifier | Name              | Value                     | OPT.IsActive |
       | ps_1       | PricingSystemName | PricingPricingSystemValue | true         |
