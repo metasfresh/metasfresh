@@ -217,7 +217,7 @@ public class EDIDesadvPackService
 					sequences);
 			remainingQtyToAdd = StockQtyAndUOMQtys.subtract(remainingQtyToAdd, addedPackQty);
 		}
-		
+
 		if (remainingQtyToAdd.getStockQty().signum() > 0)
 		{
 			createPackUsingJustInOutLine(
@@ -281,7 +281,7 @@ public class EDIDesadvPackService
 			// And in the case of catchweight, it's very important to *not* make metasfresh convert quantites using the UOM-conversion
 			requiredLUCount = lutuConfigurationFactory.calculateQtyLUForTotalQtyCUs(
 					lutuConfigurationInStockUOM,
-					qtyToAdd.getStockQty() 
+					qtyToAdd.getStockQty()
 			);
 		}
 
@@ -382,9 +382,9 @@ public class EDIDesadvPackService
 		{
 			final I_C_BPartner_Product bPartnerProductRecord = bPartnerProductDAO
 					.retrieveBPartnerProductAssociation(Env.getCtx(),
-														bPartnerId,
-														ProductId.ofRepoId(huPackingMaterials.get(0).getM_Product_ID()),
-														OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()));
+							bPartnerId,
+							ProductId.ofRepoId(huPackingMaterials.get(0).getM_Product_ID()),
+							OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()));
 			if (bPartnerProductRecord != null && isNotBlank(bPartnerProductRecord.getGTIN()))
 			{
 				createEDIDesadvPackItemRequestBuilder.gtinTUPackingMaterial(bPartnerProductRecord.getGTIN());
@@ -393,7 +393,7 @@ public class EDIDesadvPackService
 		else
 		{
 			logger.debug("M_HU_PI_Item_Product_ID={} has {} M_HU_PackingMaterials; -> skip setting GTIN_TU_PackingMaterial to EDI_Desadv_Pack_Item! EDI_DesadvLine_ID={} ",
-						 tuPIItemProduct.getM_HU_PI_Item_Product_ID(), huPackingMaterials.size(), desadvLineRecord.getEDI_DesadvLine_ID());
+					tuPIItemProduct.getM_HU_PI_Item_Product_ID(), huPackingMaterials.size(), desadvLineRecord.getEDI_DesadvLine_ID());
 		}
 	}
 
@@ -451,23 +451,24 @@ public class EDIDesadvPackService
 						.setParameter("M_InOutLine_ID", inOutLineRecord.getM_InOutLine_ID())
 						.setParameter("EDI_DesadvLin_ID", desadvLineRecord.getEDI_DesadvLine_ID()));
 
+		final StockQtyAndUOMQty inOutLineQty = inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn);
+
 		// topLevelHU's quantity can be bigger than the inOutLine's quantity,
 		// if there are multiple lines with the same product and if those lines were picked onto the same LU.
 		// That's why we need to invoke min(..)
-		final StockQtyAndUOMQty qtyCUsPerTopLevelHU = getQuantity(topLevelHU, productId)
-				.min(inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn));
+		final StockQtyAndUOMQty qtyCUsPerTopLevelHU = getQuantity(topLevelHU, inOutLineQty).min(inOutLineQty);
 
 		final RequestParameters parameters = new RequestParameters(topLevelHU,
-																   bPartnerId,
-																   qtyCUsPerTopLevelHU,
-																   productId,
-																   desadvLineRecord,
-																   inOutLineRecord,
-																   desadvLineWithPacks,
-																   invoicableQtyBasedOn,
-																   uomToStockRatio,
-																   sequences.getPackSeqNoSequence(),
-																   sequences.getPackItemLineSequence());
+				bPartnerId,
+				qtyCUsPerTopLevelHU,
+				productId,
+				desadvLineRecord,
+				inOutLineRecord,
+				desadvLineWithPacks,
+				invoicableQtyBasedOn,
+				uomToStockRatio,
+				sequences.getPackSeqNoSequence(),
+				sequences.getPackItemLineSequence());
 
 		final EDIDesadvPack packByHUId = ediDesadvPackRepository.getPackByDesadvLineAndHUId(topLevelHU.getId());
 
@@ -487,18 +488,28 @@ public class EDIDesadvPackService
 		return qtyCUsPerTopLevelHU;
 	}
 
+	/**
+	 * @param inOutLineQty used to make sure the returned qty is compatible with the inoutLine's qty.
+	 */
 	@NonNull
 	private StockQtyAndUOMQty getQuantity(
 			@NonNull final HU rootHU,
 			@NonNull final ProductId productId)
 	{
+
 		// note that rootHU only contains children, quantities and weights for productId
-		final Quantity qtyInStockUOM = rootHU.getProductQtysInStockUOM().get(productId);
+		final Quantity qtyInStockUOM = rootHU.getProductQtysInStockUOM().get(inOutLineQty.getProductId());
 		final Optional<Quantity> weight = rootHU.getWeightNet();
-		if (weight.isPresent())
+
+		// Even if the HU contains a weight, we will not use if, unless the inOutLineQty *also* contains a weight in the same UOM!
+		// That's because we are going to subtract the HU's qty from the inoutLine's Qty.
+		final boolean canUseWeight = weight.isPresent()
+				&& inOutLineQty.isUOMQtySet()
+				&& weight.get().getUomId().equals(inOutLineQty.getUOMQtyNotNull().getUomId());
+		if (canUseWeight)
 		{
 			return StockQtyAndUOMQty.builder()
-					.productId(productId)
+					.productId(inOutLineQty.getProductId())
 					.stockQty(qtyInStockUOM)
 					.uomQty(weight.get())
 					.build();
@@ -507,7 +518,7 @@ public class EDIDesadvPackService
 		{
 			return StockQtyAndUOMQtys.createConvert(
 					qtyInStockUOM,
-					productId,
+					inOutLineQty.getProductId(),
 					qtyInStockUOM.getUomId()); // don't try to convert to the pack's UOM! it might be a TU-uom
 		}
 	}
@@ -569,14 +580,14 @@ public class EDIDesadvPackService
 		parameters.desadvLineWithPacks.popFirstMatching(movementQty).ifPresent(createPackItemRequestBuilder::ediDesadvPackItemId);
 
 		setQty(createPackItemRequestBuilder,
-			   parameters.productId,
-			   qtyCUInStockUOM,
-			   parameters.quantity,
-			   stockUomId,
-			   invoiceUomId,
-			   movementQty,
-			   parameters.invoicableQtyBasedOn,
-			   parameters.uomToStockRatio);
+				parameters.productId,
+				qtyCUInStockUOM,
+				parameters.quantity,
+				stockUomId,
+				invoiceUomId,
+				movementQty,
+				parameters.invoicableQtyBasedOn,
+				parameters.uomToStockRatio);
 
 		setPackagingCodeToPackItem(parameters.topLevelHU.getChildHUs(), createPackItemRequestBuilder);
 		setPackagingGTINsToPackItem(parameters.topLevelHU.getChildHUs(), parameters.bPartnerId, createPackItemRequestBuilder);

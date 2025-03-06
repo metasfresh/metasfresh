@@ -107,15 +107,15 @@ public class MoveHUCommand
 
 		if (handlingUnitsBL.isLoadingUnit(targetHU))
 		{
-			return getMoveToLUConsumer(targetHU);
+			return getMoveToLUFunction(targetHU);
 		}
 		else if (handlingUnitsBL.isTransportUnit(targetHU))
 		{
-			return getMoveToTUConsumer(targetHU);
+			return getMoveToTUFunction(targetHU);
 		}
 		else if (handlingUnitsBL.isVirtual(targetHU))
 		{
-			return getMoveToCUConsumer(targetHU);
+			return getMoveToCUFunction(targetHU);
 		}
 		else
 		{
@@ -124,7 +124,7 @@ public class MoveHUCommand
 	}
 
 	@NonNull
-	private Function<List<HuId>, ImmutableSet<HuId>> getMoveToCUConsumer(final I_M_HU targetHU)
+	private Function<List<HuId>, ImmutableSet<HuId>> getMoveToCUFunction(final I_M_HU targetHU)
 	{
 		if (!handlingUnitsBL.isVirtual(targetHU))
 		{
@@ -151,7 +151,7 @@ public class MoveHUCommand
 	}
 
 	@NonNull
-	private Function<List<HuId>, ImmutableSet<HuId>> getMoveToLUConsumer(final I_M_HU targetHU)
+	private Function<List<HuId>, ImmutableSet<HuId>> getMoveToLUFunction(final I_M_HU targetHU)
 	{
 		if (!handlingUnitsBL.isLoadingUnit(targetHU))
 		{
@@ -177,7 +177,7 @@ public class MoveHUCommand
 	}
 
 	@NonNull
-	private Function<List<HuId>, ImmutableSet<HuId>> getMoveToTUConsumer(final I_M_HU targetHU)
+	private Function<List<HuId>, ImmutableSet<HuId>> getMoveToTUFunction(final I_M_HU targetHU)
 	{
 		if (!handlingUnitsBL.isTransportUnit(targetHU))
 		{

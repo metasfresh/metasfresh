@@ -2,16 +2,20 @@ package de.metas.distribution.workflows_api;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.distribution.ddorder.DDOrderLineId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.I_C_UOM;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 @Value
@@ -47,6 +51,16 @@ public class DistributionJobLine
 
 		status = computeStatusFromSteps(steps);
 	}
+
+	public DDOrderLineId getDDOrderLineId() {return id.toDDOrderLineId();}
+
+	public ProductId getProductId() {return product.getProductId();}
+
+	public LocatorId getPickFromLocatorId() {return pickFromLocator.getLocatorId();}
+
+	public LocatorId getDropToLocatorId() {return dropToLocator.getLocatorId();}
+
+	public I_C_UOM getUOM() {return qtyToMove.getUOM();}
 
 	private static WFActivityStatus computeStatusFromSteps(final @NonNull List<DistributionJobStep> steps)
 	{
@@ -98,5 +112,11 @@ public class DistributionJobLine
 		return changedSteps.equals(steps)
 				? this
 				: toBuilder().steps(changedSteps).build();
+	}
+
+	@NonNull
+	public Optional<DistributionJobStep> getStepById(@NonNull final DistributionJobStepId stepId)
+	{
+		return getSteps().stream().filter(step -> step.getId().equals(stepId)).findFirst();
 	}
 }

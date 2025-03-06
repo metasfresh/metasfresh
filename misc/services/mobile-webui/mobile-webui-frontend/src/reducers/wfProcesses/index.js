@@ -132,6 +132,12 @@ export const getQtyRejectedReasonsFromActivity = (activity) => {
   return reasons;
 };
 
+export const computeQtyToPickRemaining = ({ line }) => {
+  const stepsArray = getStepsArrayFromLine(line);
+  const qtyPicked = stepsArray.reduce((sum, step) => sum + (step.qtyPicked || 0), 0);
+  return Math.max(line.qtyToMove - qtyPicked, 0);
+};
+
 export const getScaleDeviceFromActivity = (activity) => {
   return activity?.dataStored?.scaleDevice;
 };

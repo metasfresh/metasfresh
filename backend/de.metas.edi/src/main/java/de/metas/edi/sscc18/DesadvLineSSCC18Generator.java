@@ -49,6 +49,7 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -101,6 +102,7 @@ public class DesadvLineSSCC18Generator
 	 * {@link de.metas.esb.edi.model.I_EDI_Desadv_Pack} IDs to print
 	 */
 	private final Set<EDIDesadvPackId> desadvLineSSCC_IDs_ToPrint = new LinkedHashSet<>();
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	@Builder
 	private DesadvLineSSCC18Generator(
@@ -229,7 +231,7 @@ public class DesadvLineSSCC18Generator
 
 		final CreateEDIDesadvPackRequest createEDIDesadvPackRequest = CreateEDIDesadvPackRequest.builder()
 				.orgId(OrgId.ofRepoId(desadvLine.getAD_Org_ID()))
-				.seqNo(1)
+				.seqNo(0) // let the repo fix the next free SeqNo on the fly 
 				.ediDesadvId(EDIDesadvId.ofRepoId(desadvLine.getEDI_Desadv_ID()))
 				.sscc18(ipaSSCC18)
 				.isManualIpaSSCC(true)
@@ -270,20 +272,32 @@ public class DesadvLineSSCC18Generator
 		}
 		else if (invoiceUomId != null)
 		{
-			final ProductId productId = ProductId.ofRepoId(desadvLine.getM_Product_ID());
-			final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
-
-			qtyCUPerTUinInvoiceUOM = uomConversionBL.convertQuantityTo(
-							qtyCUsPerTU,
-							conversionCtx,
-							invoiceUomId)
-					.toBigDecimal();
-
-			qtyCUPerLUinInvoiceUOM = uomConversionBL.convertQuantityTo(
-							qtyCUsPerLU,
-							conversionCtx,
-							invoiceUomId)
-					.toBigDecimal();
+			if (uomDAO.isUOMForTUs(qtyCUsPerTU.getUomId()) && desadvLine.getQtyItemCapacity().signum() > 0)
+			{
+				qtyCUPerTUinInvoiceUOM = qtyCUsPerTU.toBigDecimal().multiply(desadvLine.getQtyItemCapacity());
+			}
+			else
+			{
+				final UOMConversionContext conversionCtx = UOMConversionContext.of(ProductId.ofRepoId(desadvLine.getM_Product_ID()));
+				qtyCUPerTUinInvoiceUOM = uomConversionBL.convertQuantityTo(
+								qtyCUsPerTU,
+								conversionCtx,
+								invoiceUomId)
+						.toBigDecimal();
+			}
+			if (uomDAO.isUOMForTUs(qtyCUsPerLU.getUomId()) && desadvLine.getQtyItemCapacity().signum() > 0)
+			{
+				qtyCUPerLUinInvoiceUOM = qtyCUsPerLU.toBigDecimal().multiply(desadvLine.getQtyItemCapacity());
+			}
+			else
+			{
+				final UOMConversionContext conversionCtx = UOMConversionContext.of(ProductId.ofRepoId(desadvLine.getM_Product_ID()));
+				qtyCUPerLUinInvoiceUOM = uomConversionBL.convertQuantityTo(
+								qtyCUsPerLU,
+								conversionCtx,
+								invoiceUomId)
+						.toBigDecimal();
+			}
 		}
 		else
 		{

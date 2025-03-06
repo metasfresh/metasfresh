@@ -12,7 +12,8 @@ import { DistributionJobScreen } from '../utils/screens/distribution/Distributio
 import { DistributionLineScreen } from '../utils/screens/distribution/DistributionLineScreen';
 import { DistributionStepScreen } from '../utils/screens/distribution/DistributionStepScreen';
 
-const createMasterdata = async () => {
+const createMasterdata = async ({ comp1_qty, comp2_qty }) => {
+
     const response = await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -41,21 +42,21 @@ const createMasterdata = async () => {
                 "PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "BOM", qtyCUsPerTU: 4 },
             },
             handlingUnits: {
-                "HU_COMP1": { product: 'COMP1', warehouse: 'whSource', qty: 100 },
-                "HU_COMP2": { product: 'COMP2', warehouse: 'whSource', qty: 100 },
+                "HU_COMP1": { product: 'COMP1', warehouse: 'whSource', qty: comp1_qty },
+                "HU_COMP2": { product: 'COMP2', warehouse: 'whSource', qty: comp2_qty },
             },
             distributionOrders: {
                 "DD1": {
                     warehouseFrom: "whSource",
                     warehouseTo: "whTarget",
                     warehouseInTransit: "whInTransit",
-                    lines: [{ product: "COMP1", qtyEntered: 5 }],
+                    lines: [{ product: "COMP1", qtyEntered: comp1_qty }],
                 },
                 "DD2": {
                     warehouseFrom: "whSource",
                     warehouseTo: "whTarget",
                     warehouseInTransit: "whInTransit",
-                    lines: [{ product: "COMP2", qtyEntered: 10 }],
+                    lines: [{ product: "COMP2", qtyEntered: comp2_qty }],
                 }
             },
             manufacturingOrders: {
@@ -79,7 +80,6 @@ const createMasterdata = async () => {
         dropToLocatorQRCode: response.warehouses.whTarget.locatorQRCode,
         luPIItemTestId: response.packingInstructions.PI.luPIItemTestId,
         documentNo: response.manufacturingOrders.PP1.documentNo,
-
     };
 }
 
@@ -94,9 +94,8 @@ test('Distribution and manufacturing test', async ({ page }) => {
         comp2_huQRCode,
         dropToLocatorQRCode,
         luPIItemTestId,
-        documentNo
-
-    } = await createMasterdata();
+        documentNo,
+    } = await createMasterdata({ comp1_qty: 5, comp2_qty: 10 });
 
     await LoginScreen.login(login);
     await ApplicationsListScreen.expectVisible();
@@ -105,7 +104,7 @@ test('Distribution and manufacturing test', async ({ page }) => {
     await DistributionJobsListScreen.filterByFacetId({ facetId: warehouseFrom1FacetId, expectHitCount: 2 });
     await DistributionJobsListScreen.startJob({ launcherTestId: launcherTest1Id });
     await DistributionJobScreen.clickLineButton({ index: 1 });
-    await DistributionLineScreen.scanHUToMove({ huQRCode: comp1_huQRCode });
+    await DistributionLineScreen.scanHUToMove({ huQRCode: comp1_huQRCode, expectedQtyToMove: '5' });
     await DistributionLineScreen.clickStepButton({ index: 1 });
     await DistributionStepScreen.scanDropToLocator({ dropToLocatorQRCode: dropToLocatorQRCode });
     await DistributionStepScreen.expectVisible();
@@ -114,7 +113,7 @@ test('Distribution and manufacturing test', async ({ page }) => {
     await DistributionJobScreen.complete();
     await DistributionJobsListScreen.startJob({ launcherTestId: launcherTest2Id });
     await DistributionJobScreen.clickLineButton({ index: 1 });
-    await DistributionLineScreen.scanHUToMove({ huQRCode: comp2_huQRCode });
+    await DistributionLineScreen.scanHUToMove({ huQRCode: comp2_huQRCode, expectedQtyToMove: '10' });
     await DistributionLineScreen.clickStepButton({ index: 1 });
     await DistributionStepScreen.scanDropToLocator({ dropToLocatorQRCode: dropToLocatorQRCode });
     await DistributionStepScreen.expectVisible();

@@ -3,7 +3,7 @@ import { shallowEqual, useSelector } from 'react-redux';
 import { useRouteMatch } from 'react-router-dom';
 
 import { trl } from '../../../utils/translations';
-import { getLineById, getStepsArrayFromLine } from '../../../reducers/wfProcesses';
+import { getLineById, computeQtyToPickRemaining, getStepsArrayFromLine } from '../../../reducers/wfProcesses';
 
 import DistributionStepButton from './DistributionStepButton';
 import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
@@ -66,9 +66,11 @@ const DistributionLineScreen = () => {
 export const useDistributionLineProps = ({ wfProcessId, activityId, lineId }) => {
   return useSelector((state) => {
     const line = getLineById(state, wfProcessId, activityId, lineId);
+    const stepsArray = getStepsArrayFromLine(line);
     return {
       ...line,
-      steps: getStepsArrayFromLine(line),
+      qtyToPickRemaining: computeQtyToPickRemaining({ line }),
+      steps: stepsArray,
     };
   }, shallowEqual);
 };

@@ -10,6 +10,7 @@ import { toastError, toastErrorFromObj } from '../utils/toast';
 import { toQRCodeString } from '../utils/qrCode/hu';
 import HUScanner from './huSelector/HUScanner';
 import BarcodeScannerComponent from './BarcodeScannerComponent';
+import { toastErrorFromObj } from '../utils/toast';
 
 const STATUS_NOT_INITIALIZED = 'NOT_INITIALIZED';
 const STATUS_READ_BARCODE = 'READ_BARCODE';
@@ -196,20 +197,18 @@ const ScanHUAndGetQtyComponent = ({
       resolvedBarcodeData.scaleDevice
     );
 
-    // Qty shall be less than or equal to qtyMax
-    const { qtyEffective: diff, uomEffective: diffUom } =
-      adjustedQtyMax &&
-      adjustedQtyMax > 0 &&
-      formatQtyToHumanReadable({
-        qty: qtyEntered - adjustedQtyMax,
-        uom,
-      });
+      // Qty shall be less than or equal to qtyMax
+      if (resolvedBarcodeData.qtyMax && resolvedBarcodeData.qtyMax > 0) {
+          const { qtyEffective: diff, uomEffective: diffUom } = formatQtyToHumanReadable({
+              qty: qtyEntered - resolvedBarcodeData.qtyMax,
+              uom,
+          });
 
-    if (diff > 0) {
-      const qtyDiff = formatQtyToHumanReadableStr({ qty: diff, uom: diffUom });
-
-      return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, { qtyDiff: qtyDiff });
-    }
+          if (diff > 0) {
+              const qtyDiff = formatQtyToHumanReadableStr({ qty: diff, uom: diffUom });
+              return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, { qtyDiff: qtyDiff });
+          }
+      }
 
     // OK
     return null;
