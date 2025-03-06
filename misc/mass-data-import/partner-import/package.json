@@ -1,0 +1,12 @@
+{
+  "name": "partner-import",
+  "version": "1.0.0",
+  "description": "A Node.js project to read partner data from a file and send it to an API.",
+  "main": "importPartners_one_by_one.js",
+  "scripts": {
+    "start": "node importPartners_one_by_one.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}
