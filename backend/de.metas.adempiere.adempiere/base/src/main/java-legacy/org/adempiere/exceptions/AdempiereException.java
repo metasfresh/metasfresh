@@ -130,8 +130,13 @@ public class AdempiereException extends RuntimeException
 		return TranslatableStrings.constant(extractMessage(throwable));
 	}
 
-	public static String extractErrorCode(@NonNull final Throwable throwable)
+	@Nullable
+	public static String extractErrorCodeOrNull(@Nullable final Throwable throwable)
 	{
+		if (throwable == null)
+		{
+			return null;
+		}
 		if (throwable instanceof AdempiereException)
 		{
 			return ((AdempiereException)throwable).getErrorCode();
@@ -380,7 +385,7 @@ public class AdempiereException extends RuntimeException
 		this.messageTrl = message;
 		this.userValidationError = true;
 		this.mdcContextMap = captureMDCContextMap();
-		this.errorCode = extractErrorCode(cause);
+		this.errorCode = extractErrorCodeOrNull(cause);
 	}
 
 	public static AdempiereException noLines() {return new AdempiereException(MSG_NoLines);}

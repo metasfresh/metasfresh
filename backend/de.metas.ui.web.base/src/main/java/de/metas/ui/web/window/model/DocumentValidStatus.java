@@ -61,7 +61,7 @@ public final class DocumentValidStatus
 
 	public static DocumentValidStatus invalid(@NonNull final Exception error)
 	{
-		return new DocumentValidStatus(false, AdempiereException.extractMessageTrl(error), error, null, null, AdempiereException.extractErrorCode(error));
+		return new DocumentValidStatus(false, AdempiereException.extractMessageTrl(error), error, null, null, AdempiereException.extractErrorCodeOrNull(error));
 	}
 
 	private static final DocumentValidStatus STATE_InitialInvalid = new DocumentValidStatus(false, TranslatableStrings.anyLanguage("not validated yet"), null, null, Boolean.TRUE, null);

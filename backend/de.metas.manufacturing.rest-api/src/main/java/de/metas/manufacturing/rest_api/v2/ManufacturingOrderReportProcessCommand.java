@@ -529,10 +529,10 @@ class ManufacturingOrderReportProcessCommand
 
 		return JsonErrorItem.builder()
 				.message(ex.getLocalizedMessage())
-				.errorCode(AdempiereException.extractErrorCode(ex))
+				.errorCode(AdempiereException.extractErrorCodeOrNull(ex))
 				.stackTrace(Trace.toOneLineStackTraceString(ex.getStackTrace()))
 				.adIssueId(JsonMetasfreshId.of(adIssueId.getRepoId()))
-				.errorCode(AdempiereException.extractErrorCode(ex))
+				.errorCode(AdempiereException.extractErrorCodeOrNull(ex))
 				.throwable(ex)
 				.build();
 	}

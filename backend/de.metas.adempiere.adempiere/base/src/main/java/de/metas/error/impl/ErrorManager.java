@@ -114,7 +114,7 @@ public class ErrorManager implements IErrorManager
 			issue.setIssueSummary(buildIssueSummary(request));
 			issue.setLoggerName(request.getLoggerName());
 
-			final String errorCode = AdempiereException.extractErrorCode(throwable);
+			final String errorCode = AdempiereException.extractErrorCodeOrNull(throwable);
 			issue.setErrorCode(errorCode);
 
 			// Source class/method name

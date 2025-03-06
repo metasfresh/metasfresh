@@ -81,13 +81,13 @@ public class JsonErrors
 
 		final JsonErrorItemBuilder builder = JsonErrorItem.builder()
 				.message(AdempiereException.extractMessageTrl(cause).translate(adLanguage))
-				.errorCode(AdempiereException.extractErrorCode(cause))
+				.errorCode(AdempiereException.extractErrorCodeOrNull(cause))
 				.userFriendlyError(AdempiereException.isUserValidationError(cause))
 				.stackTrace(Trace.toOneLineStackTraceString(cause.getStackTrace()))
 				.adIssueId(adIssueId)
 				.issueCategory(issueCategory)
 				.parameters(extractParameters(throwable, adLanguage))
-				.errorCode(AdempiereException.extractErrorCode(throwable))
+				.errorCode(AdempiereException.extractErrorCodeOrNull(throwable))
 				.throwable(throwable);
 		if (detail != null)
 		{
