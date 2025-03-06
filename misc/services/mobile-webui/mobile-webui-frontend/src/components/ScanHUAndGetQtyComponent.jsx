@@ -4,12 +4,13 @@ import PropTypes from 'prop-types';
 import { trl } from '../utils/translations';
 import GetQuantityDialog from './dialogs/GetQuantityDialog';
 import Button from './buttons/Button';
-import { formatQtyToHumanReadable, formatQtyToHumanReadableStr, roundToQtyPrecision } from '../utils/qtys';
+import { formatQtyToHumanReadable, formatQtyToHumanReadableStr } from '../utils/qtys';
 import { useBooleanSetting } from '../reducers/settings';
-import { toastError, toastErrorFromObj } from '../utils/toast';
+import { toastError } from '../utils/toast';
 import { toQRCodeString } from '../utils/qrCode/hu';
 import HUScanner from './huSelector/HUScanner';
 import BarcodeScannerComponent from './BarcodeScannerComponent';
+import { toastErrorFromObj } from '../utils/toast';
 
 const STATUS_NOT_INITIALIZED = 'NOT_INITIALIZED';
 const STATUS_READ_BARCODE = 'READ_BARCODE';
@@ -190,42 +191,21 @@ const ScanHUAndGetQtyComponent = ({
       return trl(DEFAULT_MSG_notPositiveQtyNotAllowed);
     }
 
-    const adjustedQtyMax = roundQtyMaxToScalePrecision(
-      resolvedBarcodeData.qtyMax,
-      resolvedBarcodeData.uom,
-      resolvedBarcodeData.scaleDevice
-    );
+    // Qty shall be less than or equal to qtyMax
+    if (resolvedBarcodeData.qtyMax && resolvedBarcodeData.qtyMax > 0) {
+      const { qtyEffective: diff, uomEffective: diffUom } = formatQtyToHumanReadable({
+        qty: qtyEntered - resolvedBarcodeData.qtyMax,
+        uom,
+      });
 
-      // Qty shall be less than or equal to qtyMax
-      if (resolvedBarcodeData.qtyMax && resolvedBarcodeData.qtyMax > 0) {
-          const { qtyEffective: diff, uomEffective: diffUom } = formatQtyToHumanReadable({
-              qty: qtyEntered - resolvedBarcodeData.qtyMax,
-              uom,
-          });
-
-          if (diff > 0) {
-              const qtyDiff = formatQtyToHumanReadableStr({ qty: diff, uom: diffUom });
-              return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, { qtyDiff: qtyDiff });
-          }
+      if (diff > 0) {
+        const qtyDiff = formatQtyToHumanReadableStr({ qty: diff, uom: diffUom });
+        return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, { qtyDiff: qtyDiff });
       }
+    }
 
     // OK
     return null;
-  };
-
-  const roundQtyMaxToScalePrecision = (qtyMax, qtyMaxUOM, scaleDevice) => {
-    if (!scaleDevice || !scaleDevice.roundingToScale) {
-      return qtyMax;
-    }
-
-    try {
-      return roundToQtyPrecision(
-        { qty: qtyMax, uom: qtyMaxUOM },
-        { qty: scaleDevice.roundingToScale.qty, uom: scaleDevice.roundingToScale.uomSymbol }
-      );
-    } catch (e) {
-      toastError({ plainMessage: e.message });
-    }
   };
 
   const onQtyEntered = ({
