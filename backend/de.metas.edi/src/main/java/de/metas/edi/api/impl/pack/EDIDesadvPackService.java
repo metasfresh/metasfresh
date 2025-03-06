@@ -382,9 +382,9 @@ public class EDIDesadvPackService
 		{
 			final I_C_BPartner_Product bPartnerProductRecord = bPartnerProductDAO
 					.retrieveBPartnerProductAssociation(Env.getCtx(),
-							bPartnerId,
-							ProductId.ofRepoId(huPackingMaterials.get(0).getM_Product_ID()),
-							OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()));
+														bPartnerId,
+														ProductId.ofRepoId(huPackingMaterials.get(0).getM_Product_ID()),
+														OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()));
 			if (bPartnerProductRecord != null && isNotBlank(bPartnerProductRecord.getGTIN()))
 			{
 				createEDIDesadvPackItemRequestBuilder.gtinTUPackingMaterial(bPartnerProductRecord.getGTIN());
@@ -393,7 +393,7 @@ public class EDIDesadvPackService
 		else
 		{
 			logger.debug("M_HU_PI_Item_Product_ID={} has {} M_HU_PackingMaterials; -> skip setting GTIN_TU_PackingMaterial to EDI_Desadv_Pack_Item! EDI_DesadvLine_ID={} ",
-					tuPIItemProduct.getM_HU_PI_Item_Product_ID(), huPackingMaterials.size(), desadvLineRecord.getEDI_DesadvLine_ID());
+						 tuPIItemProduct.getM_HU_PI_Item_Product_ID(), huPackingMaterials.size(), desadvLineRecord.getEDI_DesadvLine_ID());
 		}
 	}
 
@@ -442,6 +442,7 @@ public class EDIDesadvPackService
 			@NonNull final Sequences sequences)
 	{
 		final ProductId productId = ProductId.ofRepoId(desadvLineRecord.getM_Product_ID());
+
 
 		final HU topLevelHU = huRepository
 				.getById(HuId.ofRepoId(topLevelHURecord.getM_HU_ID()))
@@ -494,7 +495,7 @@ public class EDIDesadvPackService
 	@NonNull
 	private StockQtyAndUOMQty getQuantity(
 			@NonNull final HU rootHU,
-			@NonNull final ProductId productId)
+			@NonNull final StockQtyAndUOMQty inOutLineQty)
 	{
 
 		// note that rootHU only contains children, quantities and weights for productId
