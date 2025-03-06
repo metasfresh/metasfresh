@@ -116,9 +116,9 @@ public class JsonPersisterService
 {
 	private static final Logger logger = LogManager.getLogger(JsonPersisterService.class);
 	public static final String MISSING_BP_ERROR_CODE = "MissingBP";
-	public static final String LOCATION_CHANGED_ERROR_CODE = "JSONPersister-LocationChanged";
-	public static final String NO_LOCATION_FOUND_ERROR_CODE = "JsonPersisterService-NoLocationFound";
-	public static final String NO_LOCATION_FOUND_FOR_ID_ERROR_CODE = "JsonPersisterService-NoLocationFoundForId";
+	public static final String LOCATION_CHANGED_ERROR_CODE = "LocationChanged";
+	public static final String NO_LOCATION_FOUND_ERROR_CODE = "NoLocationFound";
+	public static final String NO_LOCATION_FOUND_FOR_ID_ERROR_CODE = "NoLocationFoundForId";
 
 	private final transient JsonRetrieverService jsonRetrieverService;
 	private final transient JsonRequestConsolidateService jsonRequestConsolidateService;
