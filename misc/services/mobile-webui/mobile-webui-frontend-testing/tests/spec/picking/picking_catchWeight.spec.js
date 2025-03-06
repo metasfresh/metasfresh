@@ -1,9 +1,9 @@
-import { test } from "../../playwright.config";
-import { ApplicationsListScreen } from "../utils/screens/ApplicationsListScreen";
-import { PickingJobsListScreen } from "../utils/screens/picking/PickingJobsListScreen";
-import { PickingJobScreen } from "../utils/screens/picking/PickingJobScreen";
-import { Backend } from "../utils/screens/Backend";
-import { LoginScreen } from "../utils/screens/LoginScreen";
+import { test } from "../../../playwright.config";
+import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
+import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
+import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
+import { Backend } from "../../utils/screens/Backend";
+import { LoginScreen } from "../../utils/screens/LoginScreen";
 
 const createMasterdata = async () => {
     const response = await Backend.createMasterdata({
@@ -14,6 +14,7 @@ const createMasterdata = async () => {
             },
             mobileConfig: {
                 picking: {
+                    aggregationType: "sales_order",
                     allowPickingAnyCustomer: true,
                     createShipmentPolicy: 'CL',
                     allowPickingAnyHU: true,

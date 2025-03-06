@@ -7,21 +7,34 @@ import PickProductsScanScreen from '../containers/activities/picking/PickProduct
 import { toUrl } from '../utils';
 import { SelectPickTargetScreen } from '../containers/activities/picking/SelectPickTargetScreen';
 import { ReopenLUScreen } from '../containers/activities/picking/ReopenLUScreen';
+import { PickingTargetType } from '../constants/PickingTargetType';
 
-export const selectPickTargetScreenLocation = ({ applicationId, wfProcessId, activityId }) =>
-  getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/selectPickTarget/${activityId}`;
+const pickingJobLocation = ({ applicationId, wfProcessId }) =>
+  getWFProcessScreenLocation({ applicationId, wfProcessId });
 
-export const selectTUPickTargetScreenLocation = ({ applicationId, wfProcessId, activityId }) =>
-  getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/selectPickTarget/${activityId}?tu=true`;
+export const pickingJobOrLineLocation = ({ applicationId, wfProcessId, activityId, lineId }) =>
+  lineId
+    ? pickingLineScreenLocation({ applicationId, wfProcessId, activityId, lineId })
+    : pickingJobLocation({ applicationId, wfProcessId });
+
+export const reopenClosedLUScreenLocation = ({ applicationId, wfProcessId, activityId, lineId }) => {
+  const baseUrl = pickingJobLocation({ applicationId, wfProcessId });
+  return `${baseUrl}/reopen-lu/${activityId}${lineId ? `/${lineId}` : ''}`;
+};
+
+export const selectPickingTargetScreenLocation = ({ applicationId, wfProcessId, activityId, lineId, type }) => {
+  const baseUrl = pickingJobLocation({ applicationId, wfProcessId });
+  return `${baseUrl}/selectPickTarget/${activityId}${lineId ? `/${lineId}` : ''}/${type}`;
+};
 
 export const pickingScanScreenLocation = ({ applicationId, wfProcessId, activityId }) =>
-  getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/pick/A/${activityId}/scan`;
+  pickingJobLocation({ applicationId, wfProcessId }) + `/pick/A/${activityId}/scan`;
 
 export const pickingLineScreenLocation = ({ applicationId, wfProcessId, activityId, lineId }) =>
-  getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/pick/A/${activityId}/L/${lineId}`;
+  pickingJobLocation({ applicationId, wfProcessId }) + `/pick/A/${activityId}/L/${lineId}`;
 
 export const pickingLineScanScreenLocation = ({ applicationId, wfProcessId, activityId, lineId, qrCode, next }) =>
-  toUrl(getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/pick/A/${activityId}/L/${lineId}/scanner`, {
+  toUrl(pickingJobLocation({ applicationId, wfProcessId }) + `/pick/A/${activityId}/L/${lineId}/scanner`, {
     qrCode,
     next,
   });
@@ -41,15 +54,21 @@ export const pickingStepScanScreenLocation = ({
   return pickingStepScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId, altStepId }) + `/scanner`;
 };
 
-export const reopenClosedLUScreenLocation = ({ applicationId, wfProcessId }) =>
-  getWFProcessScreenLocation({ applicationId, wfProcessId }) + `/reopen-lu`;
-
 export const pickingRoutes = [
   {
-    path: selectPickTargetScreenLocation({
+    path: reopenClosedLUScreenLocation({
       applicationId: ':applicationId',
       wfProcessId: ':workflowId',
       activityId: ':activityId',
+    }),
+    Component: ReopenLUScreen,
+  },
+  {
+    path: selectPickingTargetScreenLocation({
+      applicationId: ':applicationId',
+      wfProcessId: ':workflowId',
+      activityId: ':activityId',
+      type: ':type',
     }),
     Component: SelectPickTargetScreen,
   },
@@ -69,6 +88,35 @@ export const pickingRoutes = [
       lineId: ':lineId',
     }),
     Component: PickLineScreen,
+  },
+  {
+    path: reopenClosedLUScreenLocation({
+      applicationId: ':applicationId',
+      wfProcessId: ':workflowId',
+      activityId: ':activityId',
+      lineId: ':lineId',
+    }),
+    Component: ReopenLUScreen,
+  },
+  {
+    path: selectPickingTargetScreenLocation({
+      applicationId: ':applicationId',
+      wfProcessId: ':workflowId',
+      activityId: ':activityId',
+      lineId: ':lineId',
+      type: ':type',
+    }),
+    Component: SelectPickTargetScreen,
+  },
+  {
+    path: selectPickingTargetScreenLocation({
+      applicationId: ':applicationId',
+      wfProcessId: ':workflowId',
+      activityId: ':activityId',
+      lineId: ':lineId',
+      type: PickingTargetType.TU,
+    }),
+    Component: SelectPickTargetScreen,
   },
   {
     path: pickingLineScanScreenLocation({
@@ -120,12 +168,5 @@ export const pickingRoutes = [
       altStepId: ':altStepId',
     }),
     Component: PickStepScanScreen,
-  },
-  {
-    path: reopenClosedLUScreenLocation({
-      applicationId: ':applicationId',
-      wfProcessId: ':workflowId',
-    }),
-    Component: ReopenLUScreen,
   },
 ];

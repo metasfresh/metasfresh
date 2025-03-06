@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.dao.ValueRestriction;
 import de.metas.document.DocumentNoFilter;
 import de.metas.handlingunits.model.I_M_Picking_Job;
+import de.metas.handlingunits.model.I_M_Picking_Job_Line;
 import de.metas.handlingunits.model.I_M_Picking_Job_Step;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
@@ -24,6 +25,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.DB;
 import org.springframework.stereotype.Repository;
@@ -103,25 +105,41 @@ public class PickingJobRepository
 		final Set<BPartnerId> onlyCustomerIds = query.getOnlyCustomerIds();
 		if (!onlyCustomerIds.isEmpty())
 		{
-			queryBuilder.addInArrayFilter(I_M_Picking_Job.COLUMNNAME_C_BPartner_ID, onlyCustomerIds);
+			final IQuery<I_M_Picking_Job_Line> linesQuery = queryBL.createQueryBuilder(I_M_Picking_Job_Line.class)
+					.addOnlyActiveRecordsFilter()
+					.addInArrayFilter(I_M_Picking_Job_Line.COLUMNNAME_C_BPartner_ID, onlyCustomerIds)
+					.create();
+
+			queryBuilder.addCompositeQueryFilter()
+					.setJoinOr()
+					.addInArrayFilter(I_M_Picking_Job.COLUMNNAME_C_BPartner_ID, onlyCustomerIds)
+					.addInSubQueryFilter(I_M_Picking_Job.COLUMNNAME_M_Picking_Job_ID, I_M_Picking_Job_Line.COLUMNNAME_M_Picking_Job_ID, linesQuery);
 		}
 
 		final WarehouseId warehouseId = query.getWarehouseId();
 		final DocumentNoFilter salesOrderDocumentNo = query.getSalesOrderDocumentNo();
 		if (warehouseId != null || salesOrderDocumentNo != null)
 		{
-			final IQueryBuilder<I_C_Order> salesOrderQuery = queryBL.createQueryBuilder(I_C_Order.class)
-					.addOnlyActiveRecordsFilter();
+			final IQueryBuilder<I_C_Order> salesOrderQueryBuilder = queryBL.createQueryBuilder(I_C_Order.class).addOnlyActiveRecordsFilter();
 			if (warehouseId != null)
 			{
-				salesOrderQuery.addEqualsFilter(I_C_Order.COLUMNNAME_M_Warehouse_ID, warehouseId);
+				salesOrderQueryBuilder.addEqualsFilter(I_C_Order.COLUMNNAME_M_Warehouse_ID, warehouseId);
 			}
 			if (salesOrderDocumentNo != null)
 			{
-				salesOrderQuery.filter(salesOrderDocumentNo.toSqlFilter(I_C_Order.COLUMN_DocumentNo));
+				salesOrderQueryBuilder.filter(salesOrderDocumentNo.toSqlFilter(I_C_Order.COLUMN_DocumentNo));
 			}
+			final IQuery<I_C_Order> salesOrderQuery = salesOrderQueryBuilder.create();
 
-			queryBuilder.addInSubQueryFilter(I_M_Picking_Job.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, salesOrderQuery.create());
+			final IQuery<I_M_Picking_Job_Line> linesQuery = queryBL.createQueryBuilder(I_M_Picking_Job_Line.class)
+					.addOnlyActiveRecordsFilter()
+					.addInSubQueryFilter(I_M_Picking_Job_Line.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, salesOrderQuery)
+					.create();
+
+			queryBuilder.addCompositeQueryFilter()
+					.setJoinOr()
+					.addInSubQueryFilter(I_M_Picking_Job.COLUMNNAME_C_Order_ID, I_C_Order.COLUMNNAME_C_Order_ID, salesOrderQuery)
+					.addInSubQueryFilter(I_M_Picking_Job.COLUMNNAME_M_Picking_Job_ID, I_M_Picking_Job_Line.COLUMNNAME_M_Picking_Job_ID, linesQuery);
 		}
 
 		final Set<PickingJobId> pickingJobIds = queryBuilder
@@ -177,7 +195,7 @@ public class PickingJobRepository
 				.collect(Collectors.groupingBy(
 						step -> ShipmentScheduleId.ofRepoId(step.getM_ShipmentSchedule_ID()),
 						Collectors.mapping(step -> PickingJobId.ofRepoId(step.getM_Picking_Job_ID()),
-										   Collectors.toList())));
+								Collectors.toList())));
 	}
 
 	@NonNull

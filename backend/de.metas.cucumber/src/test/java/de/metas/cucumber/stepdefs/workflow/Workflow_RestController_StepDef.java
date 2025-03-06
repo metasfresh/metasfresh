@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.workflow;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
@@ -38,10 +39,13 @@ import de.metas.cucumber.stepdefs.workflow.dto.JsonWFManufacturingReceivingTarge
 import de.metas.cucumber.stepdefs.workflow.dto.JsonWFManufacturingStep;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonLUReceivingTarget;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewLUTarget;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
+import de.metas.order.OrderId;
+import de.metas.picking.workflow.PickingWFProcessStartParams;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessStartRequest;
@@ -62,9 +66,10 @@ import org.compiere.model.I_C_Order;
 import org.eevolution.model.I_PP_Order;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class Workflow_RestController_StepDef
@@ -97,15 +102,17 @@ public class Workflow_RestController_StepDef
 	public void wf_picking_process_start_set_request_payload_in_context(@NonNull final DataTable dataTable) throws JsonProcessingException
 	{
 		final DataTableRow row = DataTableRow.singleRow(dataTable);
-		final I_C_BPartner bPartner = row.getAsIdentifier(I_C_BPartner.COLUMNNAME_C_BPartner_ID).lookupIn(bPartnerTable);
-		final I_C_BPartner_Location bPartnerLocation = row.getAsIdentifier(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID).lookupIn(bPartnerLocationTable);
 		final I_C_Order salesOrder = row.getAsIdentifier(I_C_Order.COLUMNNAME_C_Order_ID).lookupIn(orderTable);
+		assertThat(salesOrder).isNotNull();
 
-		final Map<String, Object> wfParams = new HashMap<>();
+		final LinkedHashMap<String, Object> wfParams = new LinkedHashMap<>(PickingWFProcessStartParams.builder()
+				.aggregationType(PickingJobAggregationType.SALES_ORDER)
+				.salesOrderId(OrderId.ofRepoId(salesOrder.getC_Order_ID()))
+				.deliveryBPLocationId(BPartnerLocationId.ofRepoId(salesOrder.getC_BPartner_ID(), salesOrder.getC_BPartner_Location_ID()))
+				.build()
+				.toParams()
+				.toJson());
 		wfParams.put("applicationId", PickingMobileApplication.APPLICATION_ID.getAsString());
-		wfParams.put("salesOrderId", salesOrder.getC_Order_ID());
-		wfParams.put("customerId", bPartner.getC_BPartner_ID());
-		wfParams.put("customerLocationId", bPartnerLocation.getC_BPartner_Location_ID());
 		final JsonWFProcessStartRequest request = JsonWFProcessStartRequest.builder().wfParameters(wfParams).build();
 
 		testContext.setRequestPayload(request);

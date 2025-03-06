@@ -79,7 +79,7 @@ public class CreatePackingInstructionsCommand
 
 	@Value
 	@Builder
-	private static class PIResult
+	static class PIResult
 	{
 		@NonNull I_M_HU_PI pi;
 		@NonNull HuPackingInstructionsId piId;
@@ -91,6 +91,12 @@ public class CreatePackingInstructionsCommand
 			@NonNull final Identifier identifier,
 			@NonNull final HuUnitType huUnitType)
 	{
+		final PIResult existingPI = context.<PIResult>getObject(identifier).orElse(null);
+		if (existingPI != null)
+		{
+			return existingPI;
+		}
+
 		final String piName = identifier.toUniqueString();
 
 		final I_M_HU_PI piRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_PI.class);
@@ -112,12 +118,15 @@ public class CreatePackingInstructionsCommand
 		InterfaceWrapperHelper.saveRecord(pivRecord);
 		final HuPackingInstructionsVersionId pivId = HuPackingInstructionsVersionId.ofRepoId(pivRecord.getM_HU_PI_Version_ID());
 
-		return PIResult.builder()
+		final PIResult newPI = PIResult.builder()
 				.pi(piRecord)
 				.piId(piId)
 				.piName(piName)
 				.pivId(pivId)
 				.build();
+		context.putObject(identifier, newPI);
+
+		return newPI;
 	}
 
 	private I_M_HU_PI_Item createPIItem_IncludedHU(final PIResult lu, final PIResult tu, final int qtyTUsPerLU)

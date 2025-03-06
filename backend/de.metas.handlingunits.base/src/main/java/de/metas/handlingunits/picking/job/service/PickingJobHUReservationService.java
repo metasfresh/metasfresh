@@ -22,13 +22,11 @@ public class PickingJobHUReservationService
 
 	public void reservePickFromHUs(final PickingJob pickingJob)
 	{
-		final BPartnerId customerId = pickingJob.getDeliveryBPLocationId().getBpartnerId();
-
 		for (final PickingJobLine line : pickingJob.getLines())
 		{
 			for (final PickingJobStep step : line.getSteps())
 			{
-				reservePickFromHU(step, customerId);
+				reservePickFromHU(step, pickingJob.getCustomerId());
 			}
 		}
 	}
