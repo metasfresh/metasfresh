@@ -7,7 +7,7 @@ const ATTRIBUTE_CODES_TO_MAX_LENGTH = {
   HU_BestBeforeDate: 10,
 };
 
-const HUButton = ({ handlingUnitInfo, onClick }) => {
+const HUButton = ({ handlingUnitInfo, disabled, onClick }) => {
   const getProductCaption = () => {
     const product = getSingleProduct();
 
@@ -70,7 +70,7 @@ const HUButton = ({ handlingUnitInfo, onClick }) => {
   };
 
   return (
-    <button className="hu-button is-outlined is-fullwidth complete-btn" onClick={onClick}>
+    <button className="hu-button is-outlined is-fullwidth complete-btn" disabled={disabled} onClick={onClick}>
       <div className="attribute-container">
         <div className="hu-row-value" style={{ flex: '30%' }}>
           <span>{handlingUnitInfo.id}</span>
@@ -103,6 +103,7 @@ const HUButton = ({ handlingUnitInfo, onClick }) => {
 
 HUButton.propTypes = {
   handlingUnitInfo: PropTypes.object.isRequired,
+  disabled: PropTypes.bool,
   onClick: PropTypes.func.isRequired,
 };
 

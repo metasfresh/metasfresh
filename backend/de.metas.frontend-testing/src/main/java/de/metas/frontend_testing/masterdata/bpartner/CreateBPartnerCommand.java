@@ -114,6 +114,12 @@ public class CreateBPartnerCommand
 
 	private PricingSystemId createPricingSystem()
 	{
+		final PricingSystemId existingPricingSystemId = context.getIdOfTypeIfUnique(PricingSystemId.class).orElse(null);
+		if (existingPricingSystemId != null)
+		{
+			return existingPricingSystemId;
+		}
+
 		final Identifier pricingSystemIdentifier = Identifier.unique("PS");
 		final String value = pricingSystemIdentifier.getAsString();
 
@@ -126,6 +132,7 @@ public class CreateBPartnerCommand
 		pricingSystem.setAD_Org_ID(orgId.getRepoId());
 		InterfaceWrapperHelper.saveRecord(pricingSystem);
 		PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID());
+		context.putIdentifier(pricingSystemIdentifier, pricingSystemId);
 
 		final I_M_PriceList priceList = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
 		priceList.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());

@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class MobileUIPickingClient
 {
@@ -94,7 +94,7 @@ public class MobileUIPickingClient
 
 	public JsonWFProcess setPickingTarget(@NonNull final String wfProcessId, LUPickingTarget pickingTarget)
 	{
-		return pickingRestController.setTarget(wfProcessId, JsonLUPickingTarget.of(pickingTarget));
+		return pickingRestController.setLUPickingTarget(wfProcessId, null, JsonLUPickingTarget.of(pickingTarget));
 	}
 
 	public Optional<LUPickingTarget> getPickingTarget(@NonNull final String wfProcessIdStr)
@@ -102,7 +102,7 @@ public class MobileUIPickingClient
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
 		final PickingJobId pickingJobId = wfProcessId.getRepoId(PickingJobId::ofRepoId);
 		final PickingJob pickingJob = pickingJobService.getById(pickingJobId);
-		return pickingJob.getLuPickTarget();
+		return pickingJob.getLuPickingTarget(null);
 
 	}
 

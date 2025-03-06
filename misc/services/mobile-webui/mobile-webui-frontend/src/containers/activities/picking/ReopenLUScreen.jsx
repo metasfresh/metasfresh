@@ -1,52 +1,63 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import Spinner from '../../../components/Spinner';
-import { getClosedLUs, getHUInfoForIds, setPickTarget } from '../../../api/picking';
+import { getClosedLUs, setLUPickingTarget } from '../../../api/picking';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import SelectHUIntermediateList from '../../../apps/huManager/containers/SelectHUIntermediateList';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
-import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
+import { useQuery } from '../../../hooks/useQuery';
+import { pickingJobOrLineLocation } from '../../../routes/picking';
+import { toQRCodeString } from '../../../utils/qrCode/hu';
 
 export const ReopenLUScreen = () => {
-  const { history, wfProcessId } = useScreenDefinition({
+  const { history, wfProcessId, lineId } = useScreenDefinition({
     captionKey: 'activities.picking.reopenLU',
-    back: getWFProcessScreenLocation,
+    back: pickingJobOrLineLocation,
   });
-  const dispatch = useDispatch();
-  const [loading, setLoading] = useState(false);
-  const [closedLUs, setClosedLUs] = useState([]);
-
-  useEffect(() => {
-    setLoading(true);
-    getClosedLUs({ wfProcessId })
-      .then((data) => {
-        if (data.huIds?.length > 0) {
-          return getHUInfoForIds({ huIds: data.huIds });
-        }
-        return Promise.resolve({ hus: [] });
-      })
-      .then((data) => setClosedLUs(data?.hus ?? []))
-      .finally(() => setLoading(false));
-  }, [wfProcessId]);
-
-  const onSelectedHU = (hu) => {
-    const pickTarget = {
-      id: hu.id,
-      caption: hu.displayName,
-      luId: hu.id,
-    };
-
-    setLoading(true);
-    setPickTarget({ wfProcessId, target: pickTarget })
-      .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
-      .then(() => history.goBack()) // go back to Picking Job
-      .finally(() => setLoading(false));
-  };
+  const { isWorking, closedLUs, reopenLU } = useClosedHUs({ wfProcessId, lineId });
 
   return (
     <>
-      {loading && <Spinner />}
-      <SelectHUIntermediateList huList={closedLUs} onHuSelected={onSelectedHU} />
+      {isWorking && <Spinner />}
+      <SelectHUIntermediateList
+        huList={closedLUs}
+        disabled={isWorking}
+        onHuSelected={(lu) => reopenLU(lu).then(() => history.goBack())}
+      />
     </>
   );
+};
+
+//
+//
+//
+
+const useClosedHUs = ({ wfProcessId, lineId }) => {
+  const dispatch = useDispatch();
+  const [isMutating, setIsMutating] = useState(false);
+
+  const { isPending: isLoading, data: closedLUs } = useQuery({
+    queryKey: [wfProcessId, lineId],
+    queryFn: () => getClosedLUs({ wfProcessId, lineId }).then(({ hus }) => hus),
+  });
+
+  const reopenLU = (hu) => {
+    if (isLoading) return;
+
+    setIsMutating(true);
+    return setLUPickingTarget({
+      wfProcessId,
+      lineId,
+      target: {
+        id: hu.id,
+        caption: hu.displayName,
+        luId: hu.id,
+        luQRCode: toQRCodeString(hu.qrCode),
+      },
+    })
+      .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
+      .finally(() => setIsMutating(false));
+  };
+
+  return { isWorking: isLoading || isMutating, closedLUs, reopenLU };
 };

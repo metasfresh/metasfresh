@@ -1,12 +1,12 @@
-import { test } from "../../playwright.config";
-import { ApplicationsListScreen } from "../utils/screens/ApplicationsListScreen";
-import { PickingJobsListScreen } from "../utils/screens/picking/PickingJobsListScreen";
-import { PickingJobLineScreen } from "../utils/screens/picking/PickingJobLineScreen";
-import { PickingJobStepScreen } from "../utils/screens/picking/PickingJobStepScreen";
-import { PickingJobScreen } from "../utils/screens/picking/PickingJobScreen";
-import { Backend } from "../utils/screens/Backend";
-import { LoginScreen } from "../utils/screens/LoginScreen";
-import { expectErrorToast } from '../utils/common';
+import { test } from "../../../playwright.config";
+import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
+import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
+import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
+import { PickingJobStepScreen } from "../../utils/screens/picking/PickingJobStepScreen";
+import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
+import { Backend } from "../../utils/screens/Backend";
+import { LoginScreen } from "../../utils/screens/LoginScreen";
+import { expectErrorToast } from '../../utils/common';
 
 const createMasterdata = async () => {
     const response = await Backend.createMasterdata({
@@ -17,6 +17,7 @@ const createMasterdata = async () => {
             },
             mobileConfig: {
                 picking: {
+                    aggregationType: "sales_order",
                     allowPickingAnyCustomer: true,
                     createShipmentPolicy: 'CL',
                     allowPickingAnyHU: true,
@@ -91,7 +92,8 @@ test('Pick - unpick', async ({ page }) => {
     await PickingJobScreen.setTargetLU({ lu: luPIName });
     await PickingJobScreen.pickHU({ qrCode: huQRCode, expectQtyEntered: '3' });
 
-    await PickingJobScreen.clickLineButton({ index: 0 });
+    await PickingJobScreen.clickLineButton({ index: 1 });
+    await PickingJobLineScreen.waitForScreen();
     await PickingJobLineScreen.clickStepButton({ index: 0 });
     await PickingJobStepScreen.unpick();
     await PickingJobLineScreen.waitForScreen();
@@ -112,7 +114,7 @@ test('Scan invalid picking slot QR code', async ({ page }) => {
     await PickingJobsListScreen.waitForScreen();
     await PickingJobsListScreen.filterByDocumentNo(documentNo);
     await PickingJobsListScreen.startJob({ documentNo });
-    await expectErrorToast(async () => {
+    await expectErrorToast('Invalid QR code', async () => {
         await PickingJobScreen.scanPickingSlot({ qrCode: 'invalid QR code' });
     });
 });

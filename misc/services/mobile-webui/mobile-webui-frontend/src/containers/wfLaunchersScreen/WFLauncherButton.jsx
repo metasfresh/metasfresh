@@ -11,6 +11,8 @@ import { getWFProcessScreenLocation } from '../../routes/workflow_locations';
 import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
 import { useMobileNavigation } from '../../hooks/useMobileNavigation';
 
+const TEST_PROPS = ['qtyToDeliver'];
+
 const WFLauncherButton = ({ applicationId, startedWFProcessId, wfParameters, caption, showWarningSign, testId }) => {
   const dispatch = useDispatch();
   const history = useMobileNavigation();
@@ -30,6 +32,7 @@ const WFLauncherButton = ({ applicationId, startedWFProcessId, wfParameters, cap
   return (
     <ButtonWithIndicator
       testId={testId}
+      {...toTestProps(wfParameters)}
       additionalCssClass="wflauncher-button"
       caption={caption}
       showWarningSign={showWarningSign}
@@ -50,3 +53,26 @@ WFLauncherButton.propTypes = {
 };
 
 export default WFLauncherButton;
+
+//
+//
+// ------------
+//
+//
+//
+
+const toTestProps = (wfParameters) => {
+  if (!wfParameters) {
+    return {};
+  }
+
+  return Object.keys(wfParameters)
+    .filter((key) => TEST_PROPS.includes(key))
+    .reduce((acc, key) => {
+      const value = wfParameters[key];
+      if (value != null) {
+        acc['data-' + key.toLowerCase()] = value;
+      }
+      return acc;
+    }, {});
+};
