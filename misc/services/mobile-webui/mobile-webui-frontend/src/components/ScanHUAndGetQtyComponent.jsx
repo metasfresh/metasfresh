@@ -10,7 +10,6 @@ import { toastError, toastErrorFromObj } from '../utils/toast';
 import { toQRCodeString } from '../utils/qrCode/hu';
 import HUScanner from './huSelector/HUScanner';
 import BarcodeScannerComponent from './BarcodeScannerComponent';
-import { toastErrorFromObj } from '../utils/toast';
 
 const STATUS_NOT_INITIALIZED = 'NOT_INITIALIZED';
 const STATUS_READ_BARCODE = 'READ_BARCODE';
