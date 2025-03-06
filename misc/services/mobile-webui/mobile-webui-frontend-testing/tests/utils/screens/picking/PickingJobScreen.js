@@ -1,6 +1,5 @@
-import { page, SLOW_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { FAST_ACTION_TIMEOUT, page, SLOW_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { SelectPickTargetLUScreen } from "./SelectPickTargetLUScreen";
-import { PickingJobLineScreen } from "./PickingJobLineScreen";
 import { PickingJobScanHUScreen } from "./PickingJobScanHUScreen";
 import { PickingSlotScanScreen } from "./PickingSlotScanScreen";
 import { GetQuantityDialog } from "./GetQuantityDialog";
@@ -8,6 +7,7 @@ import { YesNoDialog } from "../../dialogs/YesNoDialog";
 import { PickingJobsListScreen } from "./PickingJobsListScreen";
 import { SelectPickTargetTUScreen } from './SelectPickTargetTUScreen';
 import { PickFromHUScanScreen } from './PickFromHUScanScreen';
+import { expect } from '@playwright/test';
 
 const NAME = 'PickingJobScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -21,17 +21,26 @@ export const PickingJobScreen = {
     }),
 
     scanPickFromHU: async ({ qrCode }) => await step(`${NAME} - Scan pick from HU ${qrCode}`, async () => {
-        await page.locator(`#scan-activity-${ACTIVITY_ID_ScanPickFromHU}-button`).tap();
+        const button = page.getByTestId(`scan-activity-${ACTIVITY_ID_ScanPickFromHU}-button`);
+        await button.waitFor();
+        await expect(button).toBeEnabled();
+        await button.tap();
         await PickFromHUScanScreen.waitForScreen();
         await PickFromHUScanScreen.typeQRCode(qrCode);
         await PickingJobScreen.waitForScreen();
+        await button.locator('.indicator-green').waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
     }),
 
     scanPickingSlot: async ({ qrCode }) => await step(`${NAME} - Scan picking slot ${qrCode}`, async () => {
-        await page.locator(`#scan-activity-${ACTIVITY_ID_ScanPickingSlot}-button`).tap();
+        const button = page.locator(`#scan-activity-${ACTIVITY_ID_ScanPickingSlot}-button`);
+        await button.waitFor();
+        await expect(button).toBeEnabled();
+        await button.tap();
         await PickingSlotScanScreen.waitForScreen();
         await PickingSlotScanScreen.typeQRCode(qrCode);
         await PickingJobScreen.waitForScreen();
+        await button.waitFor();
+        await button.locator('.indicator-green').waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
     }),
 
     clickLUTargetButton: async () => await step(`${NAME} - Click LU target button`, async () => {

@@ -38,6 +38,11 @@ const createMasterdata = async () => {
             warehouses: {
                 "wh": {},
             },
+            pickingSlots: {
+                slot1: {},
+                slot2: {},
+                slot3: {},
+            },
             products: {
                 "P1": { prices: [{ price: 1 }] },
                 "P2": { prices: [{ price: 1 }] },
@@ -84,46 +89,41 @@ const createMasterdata = async () => {
         }
     })
 
-    const { pickingSlotQRCode } = await Backend.getFreePickingSlot();
-
-    return {
-        masterdata: response,
-        pickingSlotQRCode,
-        // login: response.login.user,
-        // documentNo: response.salesOrders.SO1.documentNo,user
-        // huQRCode: response.handlingUnits.HU1.qrCode,
-        // luPIName: response.packingInstructions.PI.luName,
-    };
+    return { masterdata: response };
 }
 
 // noinspection JSUnusedLocalSymbols
 test('Product based aggregation', async ({ page }) => {
-    const { masterdata, pickingSlotQRCode } = await createMasterdata();
+    const { masterdata } = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
 
-    await test.step('Pick P1', async () => {
+    await test.step('Picking job for P1', async () => {
         await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver: 72 });
         await PickingJobScreen.scanPickFromHU({ qrCode: masterdata.handlingUnits.P1_HU.qrCode });
-        await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
+        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
         await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.P1_20x4.luName });
 
         await test.step('Line 1 - Pick entirely', async () => {
             await PickingJobScreen.clickLineButton({ index: 1 })
             await GetQuantityDialog.waitForDialog();
             await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: 5 /*TU*/ });
+            await PickingJobScreen.waitForScreen();
         });
 
         await test.step('Line 2 - Pick entirely', async () => {
+            await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot2.qrCode });
             await PickingJobScreen.clickLineButton({ index: 2 })
             await GetQuantityDialog.waitForDialog();
             await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: 6 /*TU*/ });
+            await PickingJobScreen.waitForScreen();
         });
 
         await test.step('Line 3 - Pick entirely', async () => {
+            await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot3.qrCode });
             await PickingJobScreen.clickLineButton({ index: 3 })
             await GetQuantityDialog.waitForDialog();
             await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: 7 /*TU*/ });
@@ -133,10 +133,10 @@ test('Product based aggregation', async ({ page }) => {
         await PickingJobScreen.complete();
     });
 
-    await test.step('Pick P2', async () => {
+    await test.step('Picking job for P2', async () => {
         await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver: 54 });
         await PickingJobScreen.scanPickFromHU({ qrCode: masterdata.handlingUnits.P2_HU.qrCode });
-        await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
+        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
         await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.P2_7x3.luName });
 
         await test.step('Line 1 - Pick entirely', async () => {
@@ -146,6 +146,7 @@ test('Product based aggregation', async ({ page }) => {
         });
 
         await test.step('Line 2 - Pick entirely, but fail because not enough qty', async () => {
+            await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot2.qrCode });
             await PickingJobScreen.clickLineButton({ index: 2 })
             await expectErrorToast('Not enough TUs found', async () => {
                 await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: 6 /*TU*/ });
@@ -163,6 +164,7 @@ test('Product based aggregation', async ({ page }) => {
         });
 
         await test.step('Line 3 - partial pick the renaming qty from current pick from HU', async () => {
+            await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot3.qrCode });
             await PickingJobScreen.clickLineButton({ index: 3 })
             await GetQuantityDialog.waitForDialog();
             await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: 5/*TU*/, qtyEntered: 1/*TU*/, qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND });

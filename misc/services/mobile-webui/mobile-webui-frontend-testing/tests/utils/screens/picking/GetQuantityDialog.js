@@ -1,5 +1,5 @@
 import { test } from "../../../../playwright.config";
-import { page, SLOW_ACTION_TIMEOUT } from "../../common";
+import { page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { expect } from "@playwright/test";
 
 const NAME = 'GetQuantityDialog';
@@ -13,6 +13,10 @@ export const QTY_NOT_FOUND_REASON_DAMAGED = 'D';
 export const GetQuantityDialog = {
     waitForDialog: async () => await test.step(`${NAME} - Wait for dialog`, async () => {
         await containerElement().waitFor();
+    }),
+
+    waitToClose: async () => await test.step(`${NAME} - Wait to close`, async () => {
+        await containerElement().waitFor({ state: 'detached', timeout: VERY_SLOW_ACTION_TIMEOUT });
     }),
 
     expectQtyEntered: async (expected) => await test.step(`${NAME} - Expect QtyEntered to be '${expected}'`, async () => {
@@ -47,10 +51,12 @@ export const GetQuantityDialog = {
 
     clickDone: async () => await test.step(`${NAME} - Press OK`, async () => {
         await page.getByTestId('done-button').tap();
+        await GetQuantityDialog.waitToClose();
     }),
 
     clickCancel: async () => await test.step(`${NAME} - Press Cancel`, async () => {
         await page.getByTestId('cancel-button').tap();
+        await GetQuantityDialog.waitToClose();
     }),
 
     fillAndPressDone: async ({ expectQtyEntered, qtyEntered, catchWeightQRCode, qtyNotFoundReason }) => await test.step(`${NAME} - Fill dialog`, async () => {

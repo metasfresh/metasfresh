@@ -31,16 +31,19 @@ const runAndWatchForErrors = async (func) => {
     try {
         return await Promise.race([
             func(),
-            ErrorToast.waitToPopup(async (toastLocator) => {
-                if (currentErrorWatcherId !== watcherId) {
-                    // console.log(`Error toast detected, but the current watcher id (${currentErrorWatcherId}) does not match the current one (${watcherId})`);
-                    return;
-                }
+            ErrorToast.waitToPopup(
+                async (toastLocator) => {
+                    if (currentErrorWatcherId !== watcherId) {
+                        // console.log(`Error toast detected, but the current watcher id (${currentErrorWatcherId}) does not match the current one (${watcherId})`);
+                        return;
+                    }
 
-                const textContent = await toastLocator.textContent();
-                // console.log(`Error toast detected (watcherId=${watcherId}): ${textContent}. Throwing error.`)
-                throw new Error('Unexpected error toast detected: ' + textContent);
-            }),
+                    const textContent = await toastLocator.textContent();
+                    // console.log(`Error toast detected (watcherId=${watcherId}): ${textContent}. Throwing error.`)
+                    throw new Error('Unexpected error toast detected: ' + textContent);
+                },
+                999_000
+            ),
             ErrorScreen.watchForScreen(async () => {
                 throw new Error('Unexpected error screen detected. Usually this is an indicator of development errors. Check console for more info.');
             }),
