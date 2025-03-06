@@ -342,6 +342,7 @@
 					.caption(captionScanPickingSlot)
 					.wfActivityType(SetPickingSlotWFActivityHandler.HANDLED_ACTIVITY_TYPE)
 					.status(SetPickingSlotWFActivityHandler.computeActivityState(pickingJob))
+					.alwaysAvailableToUser(WFActivityAlwaysAvailableToUser.YES)
 					.build();
 		}
 
