@@ -135,7 +135,7 @@ export const toQRCodeObject = (qrCode) => {
 // de.metas.handlingunits.qrcodes.model.HUQRCode
 // de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter.fromGlobalQRCode
 export const parseQRCodeString = (string, returnFalseOnError) => {
-  console.trace('parseQRCodeString', { string, returnFalseOnError });
+  //console.trace('parseQRCodeString', { string, returnFalseOnError });
   const allResults = {};
 
   let result = parseGS1CodeString(string);

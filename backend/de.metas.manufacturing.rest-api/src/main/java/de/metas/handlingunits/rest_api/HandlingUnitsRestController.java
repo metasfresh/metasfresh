@@ -182,12 +182,7 @@ public class HandlingUnitsRestController
 			@ApiParam(required = true, value = HU_IDENTIFIER_DOC) //
 			@RequestParam(name = "M_HU_IDs") final List<Integer> huRepoIds)
 	{
-		return JsonHUList.builder()
-				.hus(huRepoIds.stream()
-							 .map(HuId::ofRepoId)
-							 .map(repoId -> handlingUnitsService.getFullHU(repoId, null, Env.getADLanguageOrBaseLanguage(), false))
-							 .collect(ImmutableList.toImmutableList()))
-				.build();
+		return handlingUnitsService.getFullHUsList(HuId.ofRepoIds(huRepoIds), Env.getADLanguageOrBaseLanguage());
 	}
 
 	private ResponseEntity<JsonGetSingleHUResponse> toSingleHUResponseEntity(@NonNull final Supplier<I_M_HU> huSupplier)
@@ -311,11 +306,11 @@ public class HandlingUnitsRestController
 		final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(request.getHuQRCode());
 
 		handlingUnitsService.move(MoveHURequest.builder()
-										  .huId(request.getHuId())
-										  .huQRCode(huQRCode)
-										  .numberOfTUs(request.getNumberOfTUs())
-										  .targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
-										  .build());
+				.huId(request.getHuId())
+				.huQRCode(huQRCode)
+				.numberOfTUs(request.getNumberOfTUs())
+				.targetQRCode(GlobalQRCode.ofString(request.getTargetQRCode()))
+				.build());
 	}
 
 	@PostMapping("/bulk/move")

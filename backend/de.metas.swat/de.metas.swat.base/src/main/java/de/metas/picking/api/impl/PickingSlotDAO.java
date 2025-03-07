@@ -8,6 +8,7 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
 import de.metas.picking.api.IPickingSlotBL;
 import de.metas.picking.api.IPickingSlotDAO;
+import de.metas.picking.api.PickingSlotCreateRequest;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.api.PickingSlotQuery;
@@ -163,5 +164,20 @@ public class PickingSlotDAO implements IPickingSlotDAO
 
 		//
 		return true;
+	}
+
+	@Override
+	public PickingSlotIdAndCaption createPickingSlot(@NonNull final PickingSlotCreateRequest request)
+	{
+		final I_M_PickingSlot record = InterfaceWrapperHelper.newInstance(I_M_PickingSlot.class);
+		record.setPickingSlot(request.getPickingSlotCode());
+		record.setM_Warehouse_ID(request.getLocatorId().getWarehouseId().getRepoId());
+		record.setM_Locator_ID(request.getLocatorId().getRepoId());
+		record.setIsDynamic(request.isDynamic());
+		record.setC_BPartner_ID(request.getBpartnerAndLocationId() != null ? request.getBpartnerAndLocationId().getBpartnerId().getRepoId() : -1);
+		record.setC_BPartner_Location_ID(request.getBpartnerAndLocationId() != null ? request.getBpartnerAndLocationId().getRepoId() : -1);
+		InterfaceWrapperHelper.save(record);
+
+		return toPickingSlotIdAndCaption(record);
 	}
 }

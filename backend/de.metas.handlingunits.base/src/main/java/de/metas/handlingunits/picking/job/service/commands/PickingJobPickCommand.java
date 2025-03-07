@@ -221,16 +221,18 @@ public class PickingJobPickCommand
 		this.pickingUnit = line.getPickingUnit();
 		if (this.pickingUnit.isTU())
 		{
-			if (pickingJob.getTuPickTarget().isPresent())
+			final TUPickingTarget tuPickingTarget = pickingJob.getTuPickingTargetEffective(this._lineId).orElse(null);
+			if (tuPickingTarget != null)
 			{
 				throw new AdempiereException(TU_CANNOT_BE_PICKED_ERROR_MSG)
 						.appendParametersToMessage()
-						.setParameter("PickingJobId", pickingJob.getId());
+						.setParameter("pickingJobId", pickingJob.getId())
+						.setParameter("pickingJobLineId", this._lineId);
 			}
 
 			this.qtyToPickTUs = QtyTU.ofBigDecimal(qtyToPickBD);
 
-			final PickingJobOptions pickingJobOptions = mobileUIPickingUserProfileRepository.getPickingJobOptions(pickingJob.getCustomerId());
+			final PickingJobOptions pickingJobOptions = mobileUIPickingUserProfileRepository.getPickingJobOptions(line.getCustomerId());
 			this.qtyToPickCUs = computeQtyToPickCUs(pickingJobOptions, line, qtyToPickTUs);
 
 			if (qtyRejectedReasonCode != null)
@@ -324,7 +326,8 @@ public class PickingJobPickCommand
 	private PickingJob executeInTrx()
 	{
 		_pickingJob.assertNotProcessed();
-		_pickingJob.assertPickingSlotScanned();
+
+		checkOrAllocatePickingSlot();
 
 		validatePickFromHU();
 
@@ -361,9 +364,15 @@ public class PickingJobPickCommand
 		return getStepIdIfExists().map(_pickingJob::getStepById);
 	}
 
+	@NonNull
 	private PickingJobLineId getLineId() {return _lineId;}
 
 	private PickingJobLine getLine() {return _pickingJob.getLineById(getLineId());}
+
+	private void changeLine(@NonNull final UnaryOperator<PickingJobLine> lineMapper)
+	{
+		_pickingJob = _pickingJob.withChangedLine(getLineId(), lineMapper);
+	}
 
 	private void addStep(@NonNull final PickingJob.AddStepRequest request)
 	{
@@ -375,19 +384,49 @@ public class PickingJobPickCommand
 		_pickingJob = _pickingJob.withChangedStep(getStepId(), stepMapper);
 	}
 
+	private void checkOrAllocatePickingSlot()
+	{
+		if (isLineLevelPickTarget())
+		{
+			changeLine(line -> {
+				if (!line.isPickingSlotSet())
+				{
+					return line.withPickingSlot(getPickingJob().getPickingSlotNotNull());
+				}
+				else
+				{
+					return line;
+				}
+			});
+		}
+		else
+		{
+			getPickingJob().assertPickingSlotScanned();
+		}
+	}
+
+	private boolean isLineLevelPickTarget() {return getPickingJob().isLineLevelPickTarget();}
+
 	private Optional<LUPickingTarget> getLUPickingTarget()
 	{
-		return _pickingJob.getLuPickTarget();
+		return _pickingJob.getLuPickingTargetEffective(getLineId());
 	}
 
 	private Optional<TUPickingTarget> getTUPickingTarget()
 	{
-		return _pickingJob.getTuPickTarget();
+		return _pickingJob.getTuPickingTargetEffective(getLineId());
 	}
 
-	private void setPickingLUTarget(@NonNull final LUPickingTarget pickingLUTarget)
+	private void setPickingLUTarget(@NonNull final LUPickingTarget luPickingTarget)
 	{
-		_pickingJob = _pickingJob.withLuPickTarget(pickingLUTarget);
+		if (isLineLevelPickTarget())
+		{
+			_pickingJob = _pickingJob.withLuPickingTarget(getLineId(), luPickingTarget);
+		}
+		else
+		{
+			_pickingJob = _pickingJob.withLuPickingTarget(null, luPickingTarget);
+		}
 	}
 
 	private void setPickingLUTarget(@NonNull final LU lu)
@@ -411,7 +450,14 @@ public class PickingJobPickCommand
 
 	private void closePickingLUTarget()
 	{
-		this._pickingJob = pickingJobService.closeLUPickTarget(this._pickingJob);
+		if (isLineLevelPickTarget())
+		{
+			this._pickingJob = pickingJobService.closeLUPickingTarget(this._pickingJob, getLineId());
+		}
+		else
+		{
+			this._pickingJob = pickingJobService.closeLUPickingTarget(this._pickingJob, null);
+		}
 	}
 
 	private PickingJobStepId getStepId()
@@ -517,7 +563,7 @@ public class PickingJobPickCommand
 				step.getPackToSpec(),
 				getLUPickingTarget().orElse(null),
 				getTUPickingTarget().orElse(null),
-				getPickingJob().getDeliveryBPLocationId(),
+				getLine().getDeliveryBPLocationId(),
 				pickFromLocatorId);
 
 		trxManager.assertThreadInheritedTrxExists();
@@ -554,6 +600,7 @@ public class PickingJobPickCommand
 		}
 
 		updatePickingTarget(packedHUs);
+		// TODO: add top level HUs from packedHUs (where isPreExistingLU=false) to picking slot queue?
 
 		if (packedHUs.isEmpty())
 		{
@@ -799,7 +846,7 @@ public class PickingJobPickCommand
 				public HUTransformService.TargetLU newLU(final HuPackingInstructionsId luPackingInstructionsId) {return HUTransformService.TargetLU.ofNewLU(handlingUnitsBL.getPI(luPackingInstructionsId));}
 
 				@Override
-				public HUTransformService.TargetLU existingLU(final HuId luId) {return HUTransformService.TargetLU.ofExistingLU(handlingUnitsBL.getById(luId));}
+				public HUTransformService.TargetLU existingLU(final HuId luId, final HUQRCode luQRCode) {return HUTransformService.TargetLU.ofExistingLU(handlingUnitsBL.getById(luId));}
 			});
 
 			result = huTransformService.luExtractTUs(LUExtractTUsRequest.builder()

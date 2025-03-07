@@ -30,6 +30,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
 
 @Value
 public class PickingSlotId implements RepoIdAware
@@ -44,6 +45,11 @@ public class PickingSlotId implements RepoIdAware
 	public static PickingSlotId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new PickingSlotId(repoId) : null;
+	}
+
+	public static Optional<PickingSlotId> optionalOfRepoId(final int repoId)
+	{
+		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	public static int toRepoId(@Nullable final PickingSlotId pickingSlotId)

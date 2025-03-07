@@ -29,10 +29,12 @@ export const Backend = {
         return responseBody;
     }),
 
-    getFreePickingSlot: async ({ bpartnerCode }) => await test.step(`Backend: get free picking slot`, async () => {
+    getFreePickingSlot: async ({ bpartnerCode } = {}) => await test.step(`Backend: get free picking slot`, async () => {
         const backendBaseUrl = await getBackendBaseUrl();
+        const request = { bpartnerCode };
+        console.log(`Sending request":\n` + JSON.stringify(request, null, 2));
         const response = await page.request.post(`${backendBaseUrl}/frontendTesting/getFreePickingSlot`, {
-            data: { bpartnerCode },
+            data: request,
             headers: {
                 'Content-Type': 'application/json',
             }

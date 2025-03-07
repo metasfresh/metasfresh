@@ -9,9 +9,20 @@ export const useScreenDefinition = ({ screenId, captionKey, values, isHomeStop, 
   const dispatch = useDispatch();
   const {
     url,
-    params: { applicationId, workflowId: wfProcessId, activityId, lineId, stepId, altStepId },
+    params: { applicationId, workflowId: wfProcessId, activityId, lineId, stepId, altStepId, ...otherParams },
   } = useRouteMatch();
-  const backLocation = computeBackLocation({ back, applicationId, wfProcessId, activityId, lineId, stepId, altStepId });
+
+  const backLocation = computeBackLocation({
+    back,
+    applicationId,
+    wfProcessId,
+    activityId,
+    lineId,
+    stepId,
+    altStepId,
+    ...otherParams,
+  });
+
   const history = useMobileNavigation({ backLocation });
 
   useEffect(() => {
@@ -28,8 +39,7 @@ export const useScreenDefinition = ({ screenId, captionKey, values, isHomeStop, 
   }, [url]);
 
   return {
-    history,
-    //
+    ...otherParams,
     url,
     applicationId,
     wfProcessId,
@@ -37,6 +47,8 @@ export const useScreenDefinition = ({ screenId, captionKey, values, isHomeStop, 
     lineId,
     stepId,
     altStepId,
+    //
+    history,
   };
 };
 
