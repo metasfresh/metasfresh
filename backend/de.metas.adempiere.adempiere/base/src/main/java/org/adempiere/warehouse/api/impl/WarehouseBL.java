@@ -51,6 +51,7 @@ import org.adempiere.warehouse.api.CreateWarehouseRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.api.Warehouse;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -269,7 +270,7 @@ public class WarehouseBL implements IWarehouseBL
 	{
 		return warehouseDAO.getLocatorIdsByRepoIds(locatorRepoIds);
 	}
-	
+
 	@Override
 	public I_M_Locator getLocatorByRepoId(final int locatorRepoId)
 	{
@@ -322,12 +323,12 @@ public class WarehouseBL implements IWarehouseBL
 		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 		final User warehouseContact = bpartnerBL.retrieveContactOrNull(IBPartnerBL.RetrieveContactRequest.builder()
-																					.onlyActive(true)
-																					.contactType(IBPartnerBL.RetrieveContactRequest.ContactType.BILL_TO_DEFAULT)
-																					.bpartnerId(billingLocationId.getBpartnerId())
-																					.bPartnerLocationId(billingLocationId)
-																					.ifNotFound(IBPartnerBL.RetrieveContactRequest.IfNotFound.RETURN_NULL)
-																					.build());
+				.onlyActive(true)
+				.contactType(IBPartnerBL.RetrieveContactRequest.ContactType.BILL_TO_DEFAULT)
+				.bpartnerId(billingLocationId.getBpartnerId())
+				.bPartnerLocationId(billingLocationId)
+				.ifNotFound(IBPartnerBL.RetrieveContactRequest.IfNotFound.RETURN_NULL)
+				.build());
 
 		final BPartnerContactId billContactId = Optional.ofNullable(warehouseContact)
 				.flatMap(User::getBPartnerContactId)
@@ -412,18 +413,25 @@ public class WarehouseBL implements IWarehouseBL
 		return warehouseDAO.createWarehouse(request);
 	}
 
-    @Override
-    @NonNull
-    public ImmutableSet<LocatorId> getLocatorIdsOfTheSamePickingGroup(@NonNull final WarehouseId warehouseId)
-    {
-        final Set<WarehouseId> pickFromWarehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(warehouseId);
-        return warehouseDAO.getLocatorIdsByWarehouseIds(pickFromWarehouseIds);
-    }
+	@Override
+	@NonNull
+	public ImmutableSet<LocatorId> getLocatorIdsOfTheSamePickingGroup(@NonNull final WarehouseId warehouseId)
+	{
+		final Set<WarehouseId> pickFromWarehouseIds = warehouseDAO.getWarehouseIdsOfSamePickingGroup(warehouseId);
+		return warehouseDAO.getLocatorIdsByWarehouseIds(pickFromWarehouseIds);
+	}
 
 	@Override
 	@NonNull
 	public ImmutableSet<LocatorId> getLocatorIdsByRepoId(@NonNull final Collection<Integer> locatorIds)
 	{
 		return warehouseDAO.getLocatorIdsByRepoId(locatorIds);
+	}
+
+	@Override
+	public LocatorQRCode getLocatorQRCode(@NonNull final LocatorId locatorId)
+	{
+		final I_M_Locator locator = warehouseDAO.getLocatorById(locatorId);
+		return LocatorQRCode.ofLocator(locator);
 	}
 }

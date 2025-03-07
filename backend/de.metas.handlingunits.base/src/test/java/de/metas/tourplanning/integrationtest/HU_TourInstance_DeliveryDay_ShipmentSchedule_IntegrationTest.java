@@ -63,6 +63,9 @@ public class HU_TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extend
 
 		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
 		final HUReservationService huReservationService = new HUReservationService(new HUReservationRepository());
+		final HUQRCodesService huqrCodesService = new HUQRCodesService(new HUQRCodesRepository(),
+																	   new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+																	   new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
 		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
@@ -72,7 +75,7 @@ public class HU_TourInstance_DeliveryDay_ShipmentSchedule_IntegrationTest extend
 										   new PPOrderIssueScheduleService(
 												   new PPOrderIssueScheduleRepository(),
 												   new HUQtyService(InventoryService.newInstanceForUnitTesting())
-										   )));
+										   )), huqrCodesService);
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO, ResourceService.newInstanceForJUnitTesting());
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
 		final HUUniqueAttributesService huUniqueAttributesService = new HUUniqueAttributesService(new HUUniqueAttributesRepository());

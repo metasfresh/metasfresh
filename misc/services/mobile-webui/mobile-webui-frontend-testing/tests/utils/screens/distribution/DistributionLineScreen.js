@@ -33,6 +33,11 @@ export const DistributionLineScreen = {
         await DistributionStepScreen.waitForScreen();
     }),
 
+    expectNoStepButton: async () => await test.step(`${NAME} - Expect no step buttons`, async () => {
+        await DistributionLineScreen.expectVisible();
+        await expect(page.getByTestId('step-0-button')).toHaveCount(0);
+    }),
+
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {
         await DistributionLineScreen.expectVisible();
         await page.locator(ID_BACK_BUTTON).tap();

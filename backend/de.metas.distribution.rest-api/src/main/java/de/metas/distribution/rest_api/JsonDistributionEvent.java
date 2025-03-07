@@ -47,6 +47,17 @@ public class JsonDistributionEvent
 	@Value
 	@Builder
 	@Jacksonized
+	public static class Unpick
+	{
+		@Nullable String unpickToTargetQRCode;
+	}
+
+	@Nullable
+	Unpick unpick;
+
+	@Value
+	@Builder
+	@Jacksonized
 	public static class DropTo {}
 
 	@Nullable DropTo dropTo;
@@ -60,9 +71,10 @@ public class JsonDistributionEvent
 			@Nullable final DistributionJobStepId distributionStepId,
 			//
 			@Nullable final PickFrom pickFrom,
+			@Nullable final Unpick unpick,
 			@Nullable final DropTo dropTo)
 	{
-		if (CoalesceUtil.countNotNulls(pickFrom, dropTo) != 1)
+		if (CoalesceUtil.countNotNulls(pickFrom, dropTo, unpick) != 1)
 		{
 			throw new AdempiereException("One and only one action like pickFrom, dropTo etc shall be specified in an event.");
 		}
@@ -78,5 +90,6 @@ public class JsonDistributionEvent
 		//
 		this.pickFrom = pickFrom;
 		this.dropTo = dropTo;
+		this.unpick = unpick;
 	}
 }
