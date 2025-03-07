@@ -1449,6 +1449,36 @@ public class JsonPersisterService
 		{
 			bankAccount.setCurrencyId(currencyId);
 		}
+
+		// Account Name
+		if (jsonBankAccount.isAccountNameSet())
+		{
+			bankAccount.setAccountName(StringUtils.trim(jsonBankAccount.getAccountName()));
+		}
+
+		// Account Street
+		if (jsonBankAccount.isAccountStreetSet())
+		{
+			bankAccount.setAccountStreet(StringUtils.trim(jsonBankAccount.getAccountStreet()));
+		}
+
+		// Account Zip
+		if (jsonBankAccount.isAccountZipSet())
+		{
+			bankAccount.setAccountZip(StringUtils.trim(jsonBankAccount.getAccountZip()));
+		}
+
+		// Account City
+		if (jsonBankAccount.isAccountCitySet())
+		{
+			bankAccount.setAccountCity(StringUtils.trim(jsonBankAccount.getAccountCity()));
+		}
+
+		// Account Country
+		if (jsonBankAccount.isAccountCountrySet())
+		{
+			bankAccount.setAccountCountry(StringUtils.trim(jsonBankAccount.getAccountCountry()));
+		}
 	}
 
 	@Nullable

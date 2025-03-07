@@ -55,6 +55,31 @@ public class JsonRequestBankAccountUpsertItem
 	@JsonProperty("active")
 	Boolean active;
 
+	@JsonProperty("accountName")
+	private String accountName;
+	@Schema(hidden = true)
+	private boolean accountNameSet;
+
+	@JsonProperty("accountStreet")
+	private String accountStreet;
+	@Schema(hidden = true)
+	private boolean accountStreetSet;
+
+	@JsonProperty("accountZip")
+	private String accountZip;
+	@Schema(hidden = true)
+	private boolean accountZipSet;
+
+	@JsonProperty("accountCity")
+	private String accountCity;
+	@Schema(hidden = true)
+	private boolean accountCitySet;
+
+	@JsonProperty("accountCountry")
+	private String accountCountry;
+	@Schema(hidden = true)
+	private boolean accountCountrySet;
+	
 	@ApiModelProperty(position = 40, required = false, value = "Sync advise about this contact's individual properties.\n" + PARENT_SYNC_ADVISE_DOC)
 	@JsonInclude(Include.NON_NULL)
 	SyncAdvise syncAdvise;
