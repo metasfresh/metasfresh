@@ -3,6 +3,7 @@ package de.metas.distribution.ddorder.movement.schedule;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.Check;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.handlingunits.HuId;
@@ -262,6 +263,15 @@ public class DDOrderMoveScheduleRepository
 				.listIds(DDOrderMoveScheduleId::ofRepoId);
 
 		deleteByScheduleIds(scheduleIds);
+	}
+
+	public void deleteNotStarted(@NonNull final DDOrderMoveScheduleId scheduleId)
+	{
+		final DDOrderMoveSchedule schedule = getById(scheduleId);
+
+		Check.assume(schedule.getStatus() == DDOrderMoveScheduleStatus.NOT_STARTED, "Already started schedules cannot be deleted!");
+
+		deleteByScheduleIds(ImmutableSet.of(scheduleId));
 	}
 
 	public void removeNotStarted(@NonNull final DDOrderId ddOrderId)
