@@ -129,7 +129,8 @@ public class AdempiereException extends RuntimeException
 		return TranslatableStrings.constant(extractMessage(throwable));
 	}
 
-	public static String extractErrorCode(@Nullable final Throwable throwable)
+	@Nullable
+	public static String extractErrorCodeOrNull(@Nullable final Throwable throwable)
 	{
 		if (throwable == null)
 		{
@@ -293,16 +294,25 @@ public class AdempiereException extends RuntimeException
 		this.errorCode = null;
 	}
 
-	public AdempiereException(@NonNull final ITranslatableString message, @Nullable final String errorCode)
+	public AdempiereException(@NonNull final ITranslatableString message)
 	{
 		// when this constructor is called, usually we have nice error messages,
 		// so we can consider those user-friendly errors
 		this(message, true, null);
 	}
 
-	protected AdempiereException(@NonNull final ITranslatableString message, final boolean userValidationError)
+	public AdempiereException(@NonNull final ITranslatableString message,final boolean userValidationError)
 	{
+		// when this constructor is called, usually we have nice error messages,
+		// so we can consider those user-friendly errors
 		this(message, userValidationError, null);
+	}
+
+	public AdempiereException(@NonNull final ITranslatableString message, @Nullable final String errorCode)
+	{
+		// when this constructor is called, usually we have nice error messages,
+		// so we can consider those user-friendly errors
+		this(message, true, errorCode);
 	}
 
 	private AdempiereException(
@@ -320,18 +330,14 @@ public class AdempiereException extends RuntimeException
 		this.userValidationError = true;
 	}
 
-	public AdempiereException(@NonNull final ITranslatableString message)
-	{
-		this(message, (String)null);
-	}
-
 	public AdempiereException(@NonNull final AdMessageKey messageKey)
 	{
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
-		this.messageTrl = TranslatableStrings.adMessage(messageKey);
+		this.messageTrl = msgBL.getTranslatableMsgText(messageKey);
 		this.userValidationError = true;
 		this.errorCode = coalesce(msgBL.getErrorCode(messageKey), messageKey.toAD_Message());
 		this.mdcContextMap = captureMDCContextMap();
+		this.errorCode = coalesce(msgBL.getErrorCode(messageKey), messageKey.toAD_Message());
 	}
 
 	public AdempiereException(final String adLanguage, @NonNull final AdMessageKey adMessage, final Object... params)
@@ -380,14 +386,14 @@ public class AdempiereException extends RuntimeException
 		this.messageTrl = message;
 		this.userValidationError = true;
 		this.mdcContextMap = captureMDCContextMap();
-		this.errorCode = extractErrorCode(cause);
+		this.errorCode = extractErrorCodeOrNull(cause);
 	}
 
 	public static AdempiereException noLines() {return new AdempiereException(MSG_NoLines);}
 
 	public static AdempiereException newWithTranslatableMessage(@Nullable final String translatableMessage) {return new AdempiereException(TranslatableStrings.parse(translatableMessage));}
 
-	public static AdempiereException newWithPlainMessage(@Nullable final String plainMessage) {return new AdempiereException(TranslatableStrings.constant(plainMessage), false);}
+	public static AdempiereException newWithPlainMessage(@Nullable final String plainMessage) {return new AdempiereException(TranslatableStrings.constant(plainMessage), false, null);}
 
 	private static Map<String, String> captureMDCContextMap()
 	{

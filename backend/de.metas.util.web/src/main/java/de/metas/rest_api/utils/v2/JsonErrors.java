@@ -56,11 +56,10 @@ public class JsonErrors
 
 		final JsonErrorItemBuilder builder = JsonErrorItem.builder()
 				.message(AdempiereException.extractMessageTrl(cause).translate(adLanguage))
-				.errorCode(AdempiereException.extractErrorCode(cause))
+				.errorCode(AdempiereException.extractErrorCodeOrNull(cause))
 				.userFriendlyError(AdempiereException.isUserValidationError(cause))
 				.stackTrace(Trace.toOneLineStackTraceString(cause.getStackTrace()))
 				.parameters(extractParameters(throwable, adLanguage))
-				.errorCode(AdempiereException.extractErrorCode(throwable))
 				.throwable(throwable);
 		if (detail != null)
 		{

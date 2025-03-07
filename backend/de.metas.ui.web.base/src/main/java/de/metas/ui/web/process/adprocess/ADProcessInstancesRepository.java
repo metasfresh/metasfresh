@@ -381,11 +381,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 				.setPInstanceId(pinstanceId)
 				.build();
 
-		final Object processClassInstance = processInfo.newProcessClassInstanceOrNull();
-		if (processClassInstance == null)
-		{
-			throw new AdempiereException("No processClassInstance found: " + processInfo);
-		}
+		final Object processClassInstance = processInfo.newProcessClassInstance();
 
 		try (final IAutoCloseable ignored = JavaProcess.temporaryChangeCurrentInstance(processClassInstance))
 		{

@@ -1,14 +1,11 @@
 package de.metas.ui.web.window.model;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.Adempiere;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -64,7 +61,7 @@ public final class DocumentValidStatus
 
 	public static DocumentValidStatus invalid(@NonNull final Exception error)
 	{
-		return new DocumentValidStatus(false, AdempiereException.extractMessageTrl(error), error, null, null, AdempiereException.extractErrorCode(error));
+		return new DocumentValidStatus(false, AdempiereException.extractMessageTrl(error), error, null, null, AdempiereException.extractErrorCodeOrNull(error));
 	}
 
 	private static final DocumentValidStatus STATE_InitialInvalid = new DocumentValidStatus(false, TranslatableStrings.anyLanguage("not validated yet"), null, null, Boolean.TRUE, null);
@@ -78,9 +75,8 @@ public final class DocumentValidStatus
 
 	private transient Integer _hashcode; // lazy
 	private transient String _toString; // lazy
+	@Getter private final String errorCode;
 
-	@Getter @Nullable
-	private final String errorCode;
 
 	private DocumentValidStatus(final boolean valid,
 								@Nullable final ITranslatableString reason,

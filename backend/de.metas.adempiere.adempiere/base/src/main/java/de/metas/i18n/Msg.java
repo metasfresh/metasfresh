@@ -563,7 +563,7 @@ public final class Msg
 		int i = inStr.indexOf('@');
 		while (i != -1)
 		{
-			outStr.append(inStr.substring(0, i));            // up to @
+			outStr.append(inStr, 0, i);            // up to @
 			inStr = inStr.substring(i + 1);    // from first @
 
 			final int j = inStr.indexOf('@');                        // next @

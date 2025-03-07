@@ -20,6 +20,7 @@ import java.util.Optional;
 public class EAN13HUQRCode implements IHUQRCode
 {
 	public static final String PREFIX_VariableWeight = "28";
+	public static final String PREFIX_InternalUseOrVariableMeasure = "29";
 
 	@NonNull @Getter private final String prefix;
 	@NonNull @Getter private final String productNo;
@@ -52,13 +53,14 @@ public class EAN13HUQRCode implements IHUQRCode
 		final String prefix = barcode.substring(0, 2);
 
 		//
-		// Variable-Weight barcodes
-		if (prefix.equals(PREFIX_VariableWeight))
+		// 28 - Variable-Weight barcodes
+		// 29 - Internal Use / Variable measure
+		if (prefix.equals(PREFIX_VariableWeight) || prefix.equals(PREFIX_InternalUseOrVariableMeasure))
 		{
 			final String productNo = barcode.substring(2, 7); // 5 digits for article code (AAAAA)
 			final String weightStr = barcode.substring(7, 12); // 5 digits for weight (GGGGG)
 
-			// Interpret the weight (assume it's in grams or kilograms)
+			// Interpret the weight/measure (assume it's in grams or kilograms)
 			final BigDecimal weightInKg = new BigDecimal(weightStr).divide(new BigDecimal(1000), 3, RoundingMode.HALF_UP);
 
 			return ExplainedOptional.of(
@@ -72,7 +74,7 @@ public class EAN13HUQRCode implements IHUQRCode
 		}
 		else
 		{
-			return ExplainedOptional.emptyBecause("Invalid barcode prefix.");
+		return ExplainedOptional.emptyBecause("Invalid barcode prefix.");
 		}
 	}
 

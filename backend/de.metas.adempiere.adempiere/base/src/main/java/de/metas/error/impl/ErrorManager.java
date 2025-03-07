@@ -86,6 +86,7 @@ public class ErrorManager implements IErrorManager
 		issue.setStackTrace(request.getStacktrace());
 		issue.setErrorCode(request.getErrorCode());
 		issue.setAD_PInstance_ID(PInstanceId.toRepoId(request.getPInstance_ID()));
+		issue.setErrorCode(request.getErrorCode());
 		issue.setAD_Org_ID(request.getOrgId().getRepoId());
 		issue.setFrontendURL(StringUtils.trimBlankToNull(request.getFrontendUrl()));
 		saveRecord(issue);
@@ -114,7 +115,7 @@ public class ErrorManager implements IErrorManager
 			issue.setIssueSummary(buildIssueSummary(request));
 			issue.setLoggerName(request.getLoggerName());
 
-			final String errorCode = AdempiereException.extractErrorCode(throwable);
+			final String errorCode = AdempiereException.extractErrorCodeOrNull(throwable);
 			issue.setErrorCode(errorCode);
 
 			// Source class/method name
