@@ -1,6 +1,6 @@
 import { test } from "../../../../playwright.config";
 import { page } from "../../common";
-import { UnpickDialog } from "./UnpickDialog";
+import { UnpickDialog } from "../../dialogs/UnpickDialog";
 import { PickingJobLineScreen } from "./PickingJobLineScreen";
 
 const NAME = 'PickingJobStepScreen';

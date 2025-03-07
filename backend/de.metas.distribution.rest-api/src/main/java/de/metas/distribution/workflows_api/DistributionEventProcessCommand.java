@@ -95,9 +95,13 @@ class DistributionEventProcessCommand
 			{
 				changedJob = processEvent_PickFrom();
 			}
-			if (event.getDropTo() != null)
+			else if (event.getDropTo() != null)
 			{
 				changedJob = processEvent_DropTo();
+			}
+			else if (event.getUnpick() != null)
+			{
+				changedJob = processEvent_Unpick();
 			}
 
 			return changedJob;
@@ -117,6 +121,21 @@ class DistributionEventProcessCommand
 
 			final DistributionJobStep changedStep = DistributionJobLoader.toDistributionJobStep(schedule, loadingSupportServices);
 			return changedJob.withChangedStep(stepId, changedStep);
+		}
+	}
+
+	private DistributionJob processEvent_Unpick()
+	{
+		try (final IAutoCloseable ignored = HUContextHolder.temporarySet(handlingUnitsBL.createMutableHUContextForProcessing()))
+		{
+			final DistributionJobStepId stepId = event.getDistributionStepId();
+			Check.assumeNotNull(stepId, "stepId must be set when unpicking");
+			Check.assumeNotNull(event.getUnpick(), "Unpick must be set when unpicking");
+
+			ddOrderMoveScheduleService.unpick(stepId.toScheduleId(),
+											  HUQRCode.fromNullableGlobalQRCodeJsonString(event.getUnpick().getUnpickToTargetQRCode()));
+
+			return changedJob.removeStep(stepId);
 		}
 	}
 

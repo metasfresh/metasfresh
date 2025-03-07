@@ -47,6 +47,11 @@ public class LocatorQRCode
 				.build();
 	}
 
+	public GlobalQRCode toGlobalQRCode()
+	{
+		return LocatorQRCodeJsonConverter.toGlobalQRCode(this);
+	}
+
 	public static boolean isTypeMatching(@NonNull final GlobalQRCode globalQRCode)
 	{
 		return LocatorQRCodeJsonConverter.isTypeMatching(globalQRCode);

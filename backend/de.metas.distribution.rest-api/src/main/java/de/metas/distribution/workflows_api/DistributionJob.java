@@ -83,6 +83,11 @@ public class DistributionJob
 		return withChangedStep(id, ignored -> changedStep);
 	}
 
+	public DistributionJob removeStep(@NonNull final DistributionJobStepId id)
+	{
+		return withChangedLines(line -> line.removeStep(id));
+	}
+
 	public DistributionJob withChangedStep(@NonNull final DistributionJobStepId id, @NonNull final UnaryOperator<DistributionJobStep> stepMapper)
 	{
 		return withChangedSteps(step -> DistributionJobStepId.equals(step.getId(), id) ? stepMapper.apply(step) : step);
