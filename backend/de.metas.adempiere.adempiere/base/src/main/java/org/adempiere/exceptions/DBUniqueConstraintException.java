@@ -13,11 +13,13 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.compiere.model.I_AD_Index_Table;
+import javax.annotation.Nullable;
 import org.compiere.model.MIndexTable;
 import org.compiere.util.DB;
 
 import javax.annotation.Nullable;
 import java.sql.SQLException;
+import static de.metas.util.Check.isEmpty;
 
 /**
  * Unique Constraint Exception
@@ -46,7 +48,7 @@ public class DBUniqueConstraintException extends DBException
 		this.index = index;
 	}
 
-	public DBUniqueConstraintException(@NonNull final SQLException e, String sql, Object[] params)
+	public DBUniqueConstraintException(@NonNull final SQLException e, final String sql, final Object[] params)
 	{
 		super(e, sql, params);
 		setConstraintInfo(e);

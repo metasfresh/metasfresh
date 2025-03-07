@@ -137,7 +137,7 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 							.bindToThreadInheritedTrx()
 							.buildAndEnqueue();
 
-			Loggables.withLogger(logger, Level.INFO).addLog("Enqueued ediDocument {} into C_Queue_WorkPackage {}", new Object[] { ediDocument, workpackage });
+			Loggables.withLogger(logger, Level.INFO).addLog("Enqueued ediDocument {} into C_Queue_WorkPackage {}", ediDocument, workpackage);
 
 					// Mark the Document as: EDI enqueued (async) - before starting
 					ediDocument.setEDI_ExportStatus(I_EDI_Document.EDI_EXPORTSTATUS_Enqueued);
