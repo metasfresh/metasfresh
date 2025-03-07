@@ -112,10 +112,7 @@ public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 
 			factLine.setLine_ID(line.getIdNotNull().getRepoId());
 
-			if (line.isTaxLine())
-			{
-				factLine.setC_Tax_ID(line.getTaxId());
-			}
+			factLine.setC_Tax_ID(line.getTaxId());
 
 			factLine.setAD_Org_ID(line.getOrgId());
 			factLine.setFromDimension(line.getDimension().fallbackTo(glJournal.getDimension()));
