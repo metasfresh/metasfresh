@@ -4,7 +4,6 @@ import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentTags;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice_gateway.spi.model.imp.ImportedInvoiceResponse;
@@ -107,14 +106,9 @@ public class InvoiceResponseRepo
 			return invoiceRecord;
 		}
 
-		final IMsgBL msgBL = Services.get(IMsgBL.class);
-
-		final ITranslatableString message = msgBL
-				.getTranslatableMsgText(MSG_INVOICE_NOT_FOUND_2P,
-						documentNo,
-						created.getEpochSecond());
-
-		throw new InvoiceResponseRepoException(message)
+		throw new InvoiceResponseRepoException(MSG_INVOICE_NOT_FOUND_2P,
+				documentNo,
+				created.getEpochSecond())
 				.markAsUserValidationError();
 	}
 
@@ -137,19 +131,14 @@ public class InvoiceResponseRepo
 		invoiceRecord = load(invoiceId, I_C_Invoice.class);
 		if (invoiceRecord == null)
 		{
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
-			final ITranslatableString message = msgBL
-					.getTranslatableMsgText(MSG_INVOICE_NOT_FOUND_BY_ID_1P,
-							invoiceId.getRepoId());
-
-			throw new InvoiceResponseRepoException(message)
+			throw new InvoiceResponseRepoException(MSG_INVOICE_NOT_FOUND_BY_ID_1P, invoiceId.getRepoId())
 					.markAsUserValidationError();
 		}
 		return invoiceRecord;
 	}
 
 	private void updateInvoiceRecord(@NonNull final ImportedInvoiceResponse response,
-			@NonNull final I_C_Invoice invoiceRecord)
+									 @NonNull final I_C_Invoice invoiceRecord)
 	{
 		invoiceRecord.setIsInDispute(ImportedInvoiceResponse.Status.REJECTED.equals(response.getStatus()));
 		saveRecord(invoiceRecord);
@@ -179,5 +168,11 @@ public class InvoiceResponseRepo
 		{
 			super(message);
 		}
+
+		public InvoiceResponseRepoException(@NonNull final AdMessageKey adMessage, final Object... params)
+		{
+			super(adMessage, params);
+		}
+
 	}
 }
