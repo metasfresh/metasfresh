@@ -138,10 +138,7 @@ public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 
 		updateFactLineFrom(factLine, line);
 
-		if (line.isTaxLine())
-		{
-			factLine.setTaxIdAndUpdateVatCode(line.getTaxId());
-		}
+		factLine.setTaxIdAndUpdateVatCode(line.getTaxId());
 	}
 
 	private void createFactsForLine_ExplodeGrossLineToNetAndTaxAmt(@NonNull final Fact fact, @NonNull final SAPGLJournalLine grossLine)
