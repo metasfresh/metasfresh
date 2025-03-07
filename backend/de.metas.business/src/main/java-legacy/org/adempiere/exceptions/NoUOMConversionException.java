@@ -1,6 +1,7 @@
 package org.adempiere.exceptions;
 
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.product.IProductBL;
@@ -26,7 +27,7 @@ public class NoUOMConversionException extends AdempiereException
 			@Nullable final UomId fromUomId,
 			@Nullable final UomId toUomId)
 	{
-		super(buildMessage(productId, fromUomId, toUomId));
+		super(buildMessage(productId, fromUomId, toUomId), Services.get(IMsgBL.class).getErrorCode(MSG));
 	}
 
 	private static ITranslatableString buildMessage(

@@ -202,7 +202,7 @@ public class CustomsInvoiceService {
 
 		Quantity qty = null;
 		Money lineNetAmt = Money.of(BigDecimal.ZERO, currencyId);
-		ArrayList<CustomsInvoiceLineAlloc> allocations = new ArrayList<>();
+		final ArrayList<CustomsInvoiceLineAlloc> allocations = new ArrayList<>();
 
 		for (final InOutAndLineId inoutAndLineId : shipmentLinesForProducts)
 		{
@@ -354,9 +354,7 @@ public class CustomsInvoiceService {
 
 		if (Check.isEmpty(linesToExport))
 		{
-			final ITranslatableString errorMessage = Services.get(IMsgBL.class).getTranslatableMsgText(ERR_NoValidLines);
-
-			throw new AdempiereException(errorMessage);
+			throw new AdempiereException(ERR_NoValidLines);
 		}
 
 		final ImmutableSetMultimap<ProductId, InOutAndLineId> linesToExportMap = linesToExport
@@ -410,7 +408,7 @@ public class CustomsInvoiceService {
 		return ProductId.ofRepoId(shipmentLineRecord.getM_Product_ID());
 	}
 
-	public List<InOutAndLineId> retrieveLinesToExport(IQueryFilter<I_M_InOut> queryFilter)
+	public List<InOutAndLineId> retrieveLinesToExport(final IQueryFilter<I_M_InOut> queryFilter)
 	{
 		final ImmutableList<InOutId> selectedShipments = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_InOut.class)
@@ -420,7 +418,7 @@ public class CustomsInvoiceService {
 				.stream()
 				.collect(ImmutableList.toImmutableList());
 
-		List<InOutAndLineId> shipmentLinesToExport = shipmentLinesForCustomsInvoiceRepo.retrieveValidLinesToExport(selectedShipments);
+		final List<InOutAndLineId> shipmentLinesToExport = shipmentLinesForCustomsInvoiceRepo.retrieveValidLinesToExport(selectedShipments);
 
 		return shipmentLinesToExport;
 
@@ -432,9 +430,7 @@ public class CustomsInvoiceService {
 
 		if (Check.isEmpty(linesToExport))
 		{
-			final ITranslatableString errorMessage = Services.get(IMsgBL.class).getTranslatableMsgText(ERR_NoValidLines);
-
-			throw new AdempiereException(errorMessage);
+			throw new AdempiereException(ERR_NoValidLines);
 		}
 
 		final ImmutableSetMultimap<ProductId, InOutAndLineId> linesToExportMap = linesToExport
@@ -454,7 +450,7 @@ public class CustomsInvoiceService {
 	}
 
 	@VisibleForTesting
-	void addShipmentLinesToCustomsInvoice(@NonNull ProductId productId, @NonNull final ImmutableSet<InOutAndLineId> shipmentLinesForProduct, @NonNull final CustomsInvoiceId customsInvoiceId)
+	void addShipmentLinesToCustomsInvoice(@NonNull final ProductId productId, @NonNull final ImmutableSet<InOutAndLineId> shipmentLinesForProduct, @NonNull final CustomsInvoiceId customsInvoiceId)
 	{
 		CustomsInvoice customsInvoice = customsInvoiceRepo.retrieveById(customsInvoiceId);
 
@@ -483,7 +479,7 @@ public class CustomsInvoiceService {
 		final List<CustomsInvoiceLine> newLines = new ArrayList<>();
 		{
 			boolean added = false;
-			for (CustomsInvoiceLine existingLine : existingLines)
+			for (final CustomsInvoiceLine existingLine : existingLines)
 			{
 				if (Util.same(customsInvoiceLineForProductFound, existingLine))
 				{

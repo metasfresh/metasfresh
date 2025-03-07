@@ -7,7 +7,6 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 import lombok.Singular;
-import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.Adempiere;
@@ -54,6 +53,12 @@ public final class Msg
 	}
 
 	private final CCache<String, Element> elementsByElementName = CCache.newLRUCache(I_AD_Element.Table_Name, 500, CCache.EXPIREMINUTES_Never);
+
+	@Nullable
+	public static String getErrorCode(final @NonNull String message)
+	{
+		return getMessage(message).getErrorCode();
+	}
 
 	/**
 	 * @return given adLanguage if not null or base language
@@ -247,7 +252,7 @@ public final class Msg
 		return MessageFormatter.format(adLanguageToUse, message, args);
 	}    // getMsg
 
-	public static Map<String, String> getMsgMap(final String adLanguage, final String prefix, boolean removePrefix)
+	public static Map<String, String> getMsgMap(final String adLanguage, final String prefix, final boolean removePrefix)
 	{
 		return get().getMessagesMap().toStringMap(adLanguage, prefix, removePrefix);
 	}
@@ -588,7 +593,7 @@ public final class Msg
 		return outStr.toString();
 	}   // parseTranslation
 
-	@Value
+	@lombok.Value
 	private static class Element
 	{
 		public static String DEFAULT_LANG = "";

@@ -149,4 +149,10 @@ public class MsgBL implements IMsgBL
 	{
 		return Msg.toMap().getAdMessageKeyById(adMessageId);
 	}
+
+	@Override
+	public String getErrorCode(final @NonNull AdMessageKey messageKey)
+	{
+		return Msg.getErrorCode(messageKey.toAD_Message());
+	}
 }

@@ -1,9 +1,14 @@
 package de.metas.invoice.order.restart;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.List;
-
+import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
+import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsHandler;
+import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsRequest;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import de.metas.common.util.pair.IPair;
 import org.adempiere.util.lang.ITableRecordReference;
@@ -11,14 +16,9 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.springframework.stereotype.Component;
 
-import de.metas.document.engine.DocStatus;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsHandler;
-import de.metas.order.voidorderandrelateddocs.VoidOrderAndRelatedDocsRequest;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -79,7 +79,7 @@ public class VoidInvoicesRelatedToOrderHandler implements VoidOrderAndRelatedDoc
 						I_C_Invoice.COLUMNNAME_C_Invoice_ID,
 						invoiceRecord.getDocumentNo(),
 						invoiceDocStatus);
-				throw new AdempiereException(errorMsg);
+				throw new AdempiereException(errorMsg,Services.get(IMsgBL.class).getErrorCode(VoidOrderAndRelatedDocsHandler.Msg_OrderDocumentCancelNotAllowed_4P) );
 			}
 		}
 	}

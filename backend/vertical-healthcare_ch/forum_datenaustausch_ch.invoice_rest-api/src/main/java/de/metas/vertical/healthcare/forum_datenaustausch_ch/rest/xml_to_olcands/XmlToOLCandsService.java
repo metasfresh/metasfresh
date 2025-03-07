@@ -692,6 +692,7 @@ public class XmlToOLCandsService
 		final JsonRequestLocation location = new JsonRequestLocation();
 		location.setGln(context.getInvoiceRecipientEAN());
 		location.setExternalId(createLocationExternalId(recipientExternalId));
+		location.setSyncAdvise(SyncAdvise.READ_ONLY);
 
 		return JsonRequestBPartnerLocationAndContact
 				.builder()
@@ -890,8 +891,7 @@ public class XmlToOLCandsService
 		final JsonExternalId billerExternalId = assumeNotNull(request.getOrg().getBpartner().getBpartner().getExternalId(), "request.org.bpartner.bpartner.externalId may not be null; request={}", request);
 		final JsonExternalId billRecipientExternalId = assumeNotNull(request.getBpartner().getBpartner().getExternalId(), "request.bpartner.bpartner.externalId may not be null; request={}", request);
 
-		return ""
-				+ poReference // probably the "diversest" property
+		return poReference // probably the "diversest" property
 				+ "_"
 				+ billerExternalId.getValue() // biller, might be the same for different bill receivers
 				+ "_"
