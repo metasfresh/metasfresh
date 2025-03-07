@@ -692,7 +692,7 @@ public class XmlToOLCandsService
 		final JsonRequestLocation location = new JsonRequestLocation();
 		location.setGln(context.getInvoiceRecipientEAN());
 		location.setExternalId(createLocationExternalId(recipientExternalId));
-		location.setSyncAdvise(SyncAdvise.READ_ONLY_UNCHANGED);
+		location.setSyncAdvise(SyncAdvise.READ_ONLY);
 
 		return JsonRequestBPartnerLocationAndContact
 				.builder()

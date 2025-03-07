@@ -93,7 +93,7 @@ public class HealthcareChInvoice440RestController
 
 		// wrt to the biller-bpartner's org, we use the same advise as with the biller itself
 		final SyncAdvise billerSyncAdvise = SyncAdvise.builder()
-				.ifExists(coalesce(ifBPartnersExist, IfExists.DONT_UPDATE))
+				.ifExists(coalesce(ifBPartnersExist, IfExists.ASSERT_UNCHANGED))
 				.ifNotExists(coalesce(ifBPartnersNotExist, IfNotExists.CREATE))
 				.build();
 
@@ -132,7 +132,7 @@ public class HealthcareChInvoice440RestController
 
 		// wrt to the biller-bpartner's org, we use the same advise as with the biller itself
 		final SyncAdvise billerSyncAdvise = SyncAdvise.builder()
-				.ifExists(coalesce(ifBPartnersExist, IfExists.DONT_UPDATE))
+				.ifExists(coalesce(ifBPartnersExist, IfExists.ASSERT_UNCHANGED))
 				.ifNotExists(coalesce(ifBPartnersNotExist, IfNotExists.CREATE))
 				.build();
 
@@ -171,7 +171,7 @@ public class HealthcareChInvoice440RestController
 
 		// wrt to the biller-bpartner's org, we use the same advise as with the biller itself
 		final SyncAdvise billerSyncAdvise = SyncAdvise.builder()
-				.ifExists(coalesce(ifBPartnersExist, IfExists.DONT_UPDATE))
+				.ifExists(coalesce(ifBPartnersExist, IfExists.ASSERT_UNCHANGED))
 				.ifNotExists(coalesce(ifBPartnersNotExist, IfNotExists.CREATE))
 				.build();
 
@@ -213,7 +213,7 @@ public class HealthcareChInvoice440RestController
 
 		// wrt to the biller-bpartner's org, we use the same advise as with the biller itself
 		final SyncAdvise billerSyncAdvise = SyncAdvise.builder()
-				.ifExists(coalesce(ifBPartnersExist, IfExists.DONT_UPDATE))
+				.ifExists(coalesce(ifBPartnersExist, IfExists.ASSERT_UNCHANGED))
 				.ifNotExists(coalesce(ifBPartnersNotExist, IfNotExists.CREATE))
 				.build();
 
