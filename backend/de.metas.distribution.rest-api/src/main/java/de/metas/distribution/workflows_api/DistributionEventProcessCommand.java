@@ -130,8 +130,10 @@ class DistributionEventProcessCommand
 		{
 			final DistributionJobStepId stepId = event.getDistributionStepId();
 			Check.assumeNotNull(stepId, "stepId must be set when unpicking");
+			Check.assumeNotNull(event.getUnpick(), "Unpick must be set when unpicking");
 
-			ddOrderMoveScheduleService.unpick(stepId.toScheduleId());
+			ddOrderMoveScheduleService.unpick(stepId.toScheduleId(),
+											  HUQRCode.fromNullableGlobalQRCodeJsonString(event.getUnpick().getUnpickToTargetQRCode()));
 
 			return changedJob.removeStep(stepId);
 		}

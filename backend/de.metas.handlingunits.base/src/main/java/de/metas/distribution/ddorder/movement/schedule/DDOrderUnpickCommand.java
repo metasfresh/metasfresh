@@ -4,8 +4,13 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.movement.generate.DDOrderMovementHelper;
+import de.metas.handlingunits.movement.HUIdAndQRCode;
+import de.metas.handlingunits.movement.MoveHUCommand;
+import de.metas.handlingunits.movement.MoveHURequestItem;
 import de.metas.handlingunits.movement.generate.HUMovementGenerateRequest;
 import de.metas.handlingunits.movement.generate.HUMovementGenerator;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -16,6 +21,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.eevolution.model.I_DD_Order;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 
 class DDOrderUnpickCommand
@@ -28,12 +34,16 @@ class DDOrderUnpickCommand
 	private final DDOrderLowLevelDAO ddOrderLowLevelDAO;
 	@NonNull
 	private final DDOrderMoveScheduleRepository ddOrderMoveScheduleRepository;
+	@NonNull
+	private final HUQRCodesService huqrCodesService;
 
 	// Params
 	@NonNull
 	private final Instant movementDate = SystemTime.asInstant();
 	@NonNull
 	private final DDOrderMoveScheduleId scheduleId;
+	@Nullable
+	private final HUQRCode unpickToTargetQRCode;
 
 	// State
 	private DDOrderMoveSchedule schedule;
@@ -44,12 +54,16 @@ class DDOrderUnpickCommand
 	private DDOrderUnpickCommand(
 			final @NonNull DDOrderLowLevelDAO ddOrderLowLevelDAO,
 			final @NonNull DDOrderMoveScheduleRepository ddOrderMoveScheduleRepository,
-			final @NonNull DDOrderMoveScheduleId scheduleId)
+			final @NonNull HUQRCodesService huqrCodesService,
+			final @NonNull DDOrderMoveScheduleId scheduleId,
+			final @Nullable HUQRCode unpickToTargetQRCode)
 	{
 		this.ddOrderLowLevelDAO = ddOrderLowLevelDAO;
 		this.ddOrderMoveScheduleRepository = ddOrderMoveScheduleRepository;
+		this.huqrCodesService = huqrCodesService;
 
 		this.scheduleId = scheduleId;
+		this.unpickToTargetQRCode = unpickToTargetQRCode;
 	}
 
 	public void execute()
@@ -81,6 +95,8 @@ class DDOrderUnpickCommand
 				.build();
 
 		new HUMovementGenerator(request).createMovement();
+
+		moveToTargetHUIfNeeded();
 	}
 
 	private void loadState()
@@ -109,5 +125,20 @@ class DDOrderUnpickCommand
 		schedule.removePickedHUs();
 		ddOrderMoveScheduleRepository.save(schedule);
 		ddOrderMoveScheduleRepository.deleteNotStarted(schedule.getId());
+	}
+
+	private void moveToTargetHUIfNeeded()
+	{
+		if ( unpickToTargetQRCode == null)
+		{
+			return;
+		}
+
+		MoveHUCommand.builder()
+				.huQRCodesService(huqrCodesService)
+				.requestItems(ImmutableSet.of(MoveHURequestItem.ofHUIdAndQRCode(HUIdAndQRCode.ofHuId(schedule.getPickFromHUId()))))
+				.targetQRCode(unpickToTargetQRCode.toGlobalQRCode())
+				.build()
+				.execute();
 	}
 }

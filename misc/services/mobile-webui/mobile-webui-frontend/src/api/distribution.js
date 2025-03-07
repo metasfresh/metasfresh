@@ -26,14 +26,14 @@ export function postDistributionDropTo({ wfProcessId, activityId, lineId, stepId
     .then((response) => unboxAxiosResponse(response));
 }
 
-export function postDistributionUnpickEvent({ wfProcessId, activityId, lineId, stepId }) {
+export function postDistributionUnpickEvent({ wfProcessId, activityId, lineId, stepId, unpickToTargetQRCode }) {
   return axios
     .post(`${apiBasePath}/distribution/event`, {
       wfProcessId,
       wfActivityId: activityId,
       lineId,
       distributionStepId: stepId,
-      unpick: {},
+      unpick: { unpickToTargetQRCode },
     })
     .then((response) => unboxAxiosResponse(response));
 }

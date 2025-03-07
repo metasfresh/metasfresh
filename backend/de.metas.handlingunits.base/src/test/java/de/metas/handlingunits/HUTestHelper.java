@@ -583,6 +583,9 @@ public class HUTestHelper
 	{
 		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
 		final HUReservationService huReservationService = new HUReservationService(new HUReservationRepository());
+		final HUQRCodesService huqrCodesService = new HUQRCodesService(new HUQRCodesRepository(),
+																	   new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+																	   new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
 		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
@@ -592,16 +595,14 @@ public class HUTestHelper
 										   new PPOrderIssueScheduleService(
 												   new PPOrderIssueScheduleRepository(),
 												   new HUQtyService(InventoryService.newInstanceForUnitTesting())
-				)));
+				)), huqrCodesService);
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
 		return new de.metas.handlingunits.model.validator.Main(
 				ddOrderMoveScheduleService,
 				ddOrderService,
 				new PickingBOMService(),
-				new HUQRCodesService(new HUQRCodesRepository(),
-									 new GlobalQRCodeService(DoNothingMassPrintingService.instance),
-									 new QRCodeConfigurationService(new QRCodeConfigurationRepository())));
+				huqrCodesService);
 	}
 
 	/**

@@ -47,7 +47,10 @@ public class JsonDistributionEvent
 	@Value
 	@Builder
 	@Jacksonized
-	public static class Unpick {}
+	public static class Unpick
+	{
+		@Nullable String unpickToTargetQRCode;
+	}
 
 	@Nullable
 	Unpick unpick;

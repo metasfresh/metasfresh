@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -18,6 +18,7 @@ import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { postDistributionUnpickEvent } from '../../../api/distribution';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { toastError } from '../../../utils/toast';
+import UnpickDialog from '../picking/UnpickDialog';
 
 const HIDE_UNDO_BUTTONS = true; // hide them because they are not working
 
@@ -68,6 +69,7 @@ const DistributionStepScreen = () => {
       },
     ],
   });
+  const [showTargetHUScanner, setShowTargetHUScanner] = useState(false);
 
   const onScanPickFromHU = () => {
     history.push(
@@ -107,12 +109,13 @@ const DistributionStepScreen = () => {
     );
   };
 
-  const onUnpick = () => {
+  const onUnpick = ({ unpickToTargetQRCode }) => {
     postDistributionUnpickEvent({
       wfProcessId,
       activityId,
       lineId,
       stepId,
+      unpickToTargetQRCode,
     })
       .then((wfProcess) => {
         history.goTo(distributionLineScreenLocation);
@@ -131,6 +134,7 @@ const DistributionStepScreen = () => {
 
   return (
     <div className="section pt-3">
+      {showTargetHUScanner && <UnpickDialog onSubmit={onUnpick} onCloseDialog={() => setShowTargetHUScanner(false)} />}
       <ButtonWithIndicator
         caption={pickFromHUCaption}
         completeStatus={pickFromHUStatus}
@@ -142,7 +146,7 @@ const DistributionStepScreen = () => {
         testId="unpick-button"
         captionKey="activities.picking.unPickBtn"
         disabled={!(isPickedFrom && !isDroppedToLocator)}
-        onClick={onUnpick}
+        onClick={() => setShowTargetHUScanner(true)}
       />
 
       <ButtonWithIndicator
