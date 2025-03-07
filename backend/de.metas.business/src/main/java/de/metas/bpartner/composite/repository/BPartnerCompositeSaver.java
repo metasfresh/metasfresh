@@ -702,6 +702,12 @@ final class BPartnerCompositeSaver
 
 			record.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(bankAccount.getOrgMappingId()));
 
+			record.setA_Name(bankAccount.getAccountName());
+			record.setA_Street(bankAccount.getAccountStreet());
+			record.setA_Zip(bankAccount.getAccountZip());
+			record.setA_City(bankAccount.getAccountCity());
+			record.setA_Country(bankAccount.getAccountCountry());
+
 			if (validatePermissions)
 			{
 				assertCanCreateOrUpdate(record);

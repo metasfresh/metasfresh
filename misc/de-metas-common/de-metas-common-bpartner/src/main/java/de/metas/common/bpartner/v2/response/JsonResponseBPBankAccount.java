@@ -44,6 +44,11 @@ public class JsonResponseBPBankAccount
 	public static final String NAME = "name";
 	public static final String SWIFT_CODE = "swiftCode";
 	public static final String IS_DEFAULT = "isDefault";
+	public static final String ACCOUNT_NAME = "accountName";
+	public static final String ACCOUNT_STREET = "accountStreet";
+	public static final String ACCOUNT_ZIP = "accountZip";
+	public static final String ACCOUNT_CITY = "accountCity";
+	public static final String ACCOUNT_COUNTRY = "accountCountry";
 
 	@NonNull
 	JsonMetasfreshId metasfreshId;
@@ -62,6 +67,16 @@ public class JsonResponseBPBankAccount
 	boolean active;
 	boolean isDefault;
 
+	@Nullable String accountName;
+
+	@Nullable String accountStreet;
+
+	@Nullable String accountZip;
+
+	@Nullable String accountCity;
+
+	@Nullable String accountCountry;
+	
 	@Nullable
 	JsonChangeInfo changeInfo;
 
@@ -77,6 +92,11 @@ public class JsonResponseBPBankAccount
 			@JsonProperty(NAME) @Nullable final String name,
 			@JsonProperty(ACTIVE) final boolean active,
 			@JsonProperty(IS_DEFAULT) final boolean isDefault,
+			@JsonProperty(ACCOUNT_NAME) @Nullable final String accountName,
+			@JsonProperty(ACCOUNT_STREET) @Nullable final String accountStreet,
+			@JsonProperty(ACCOUNT_ZIP) @Nullable final String accountZip,
+			@JsonProperty(ACCOUNT_CITY) @Nullable final String accountCity,
+			@JsonProperty(ACCOUNT_COUNTRY) @Nullable final String accountCountry,
 			@JsonProperty("changeInfo") final JsonChangeInfo changeInfo)
 	{
 		this.metasfreshId = metasfreshId;
@@ -88,6 +108,11 @@ public class JsonResponseBPBankAccount
 		this.name = name;
 		this.active = active;
 		this.isDefault = isDefault;
+		this.accountName = accountName;
+		this.accountStreet = accountStreet;
+		this.accountZip = accountZip;
+		this.accountCity = accountCity;
+		this.accountCountry = accountCountry;
 		this.changeInfo = changeInfo;
 	}
 }
