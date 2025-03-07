@@ -3,6 +3,8 @@
 -- Field: Geschäftspartner_OLD(123,D) -> Lieferant(224,D) -> Eigene-Kd. Nr.
 -- Column: C_BPartner.CustomerNoAtVendor
 -- 2025-03-07T09:30:13.715Z
+delete from ad_ui_element where ad_field_id in (select ad_field_id from ad_field where ad_tab_id=224 and ad_column_id=560221);
+delete from ad_field where ad_tab_id=224 and ad_column_id=560221;
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,560221,740365,0,224,0,TO_TIMESTAMP('2025-03-07 09:30:12.445000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'D',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,'Eigene-Kd. Nr. ',0,0,210,0,1,1,TO_TIMESTAMP('2025-03-07 09:30:12.445000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
