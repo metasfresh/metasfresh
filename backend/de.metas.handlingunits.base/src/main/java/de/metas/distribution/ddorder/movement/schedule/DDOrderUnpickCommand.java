@@ -13,8 +13,6 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.adempiere.warehouse.qrcode.LocatorQRCode;
-import org.compiere.model.I_M_Locator;
 
 import javax.annotation.Nullable;
 
@@ -112,8 +110,9 @@ class DDOrderUnpickCommand
 		{
 			return unpickToTargetQRCode.toGlobalQRCode();
 		}
-		final I_M_Locator locator = warehouseBL.getLocatorByRepoId(schedule.getPickFromLocatorId().getRepoId());
-
-		return LocatorQRCode.ofLocator(locator).toGlobalQRCode();
+		else
+		{
+			return warehouseBL.getLocatorQRCode(schedule.getPickFromLocatorId()).toGlobalQRCode();
+		}
 	}
 }
