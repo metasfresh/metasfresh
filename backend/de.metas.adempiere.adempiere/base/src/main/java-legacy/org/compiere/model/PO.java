@@ -4056,8 +4056,6 @@ public abstract class PO
 		return no > 0;
 	}    // insert_Accounting
 
-
-
 	public final boolean update_Accounting(
 			@NonNull final String acctTable,
 			@NonNull final String acctBaseTable,
