@@ -3,7 +3,7 @@ import { ID_BACK_BUTTON, page } from '../../common';
 import { expect } from '@playwright/test';
 import { DistributionStepDropToScreen } from './DistributionStepDropToScreen';
 import { DistributionLineScreen } from './DistributionLineScreen';
-import { UnpickDialog } from '../picking/UnpickDialog';
+import { UnpickDialog } from '../../dialogs/UnpickDialog';
 
 const NAME = 'DistributionStepScreen';
 /** @returns {import('@playwright/test').Locator} */
