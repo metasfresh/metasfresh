@@ -48,8 +48,6 @@
 	import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 	import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 	import de.metas.i18n.AdMessageKey;
-	import de.metas.i18n.ITranslatableString;
-	import de.metas.i18n.ImmutableTranslatableString;
 	import de.metas.i18n.TranslatableStrings;
 	import de.metas.mobile.application.MobileApplicationId;
 	import de.metas.mobile.application.MobileApplicationInfo;
@@ -108,14 +106,11 @@
 		public static final WFActivityId ACTIVITY_ID_ScanPickingSlot = WFActivityId.ofString("scanPickingSlot"); // keep in sync with javascript code
 		public static final WFActivityId ACTIVITY_ID_PickLines = WFActivityId.ofString("pickLines");
 		public static final WFActivityId ACTIVITY_ID_Complete = WFActivityId.ofString("complete");
-		private static final AdMessageKey INVALID_QR_CODE_ERROR_MSG = AdMessageKey.of("mobileui.picking.INVALID_QR_CODE_ERROR_MSG");
 
-		private static final ImmutableTranslatableString captionScanPickingSlot = ImmutableTranslatableString.builder()
-				.trl("de_DE", "Kommissionierplatz scannen")
-				.trl("de_CH", "Kommissionierplatz scannen")
-				.defaultValue("Scan picking slot")
-				.build();
-		private static final ITranslatableString captionPickLines = TranslatableStrings.anyLanguage("Pick");
+		private static final AdMessageKey INVALID_QR_CODE_ERROR_MSG = AdMessageKey.of("mobileui.picking.INVALID_QR_CODE_ERROR_MSG");
+		private static final AdMessageKey MSG_Caption_ScanPickFromHU = AdMessageKey.of("mobileui.picking.activity.scanPickFromHU");
+		private static final AdMessageKey MSG_Caption_ScanPickingSlot = AdMessageKey.of("mobileui.picking.activity.scanPickingSlot");
+		private static final AdMessageKey MSG_Caption_PickLines = AdMessageKey.of("mobileui.picking.activity.pickLines");
 
 		private final PickingJobRestService pickingJobRestService;
 		private final PickingWorkflowLaunchersProvider wfLaunchersProvider;
@@ -328,7 +323,7 @@
 		{
 			return WFActivity.builder()
 					.id(ACTIVITY_ID_ScanPickFromHU)
-					.caption(TranslatableStrings.anyLanguage("Pick From"))
+					.caption(TranslatableStrings.adMessage(MSG_Caption_ScanPickFromHU))
 					.wfActivityType(SetPickFromHUWFActivityHandler.HANDLED_ACTIVITY_TYPE)
 					.status(SetPickFromHUWFActivityHandler.computeActivityState(pickingJob))
 					.alwaysAvailableToUser(WFActivityAlwaysAvailableToUser.YES)
@@ -339,7 +334,7 @@
 		{
 			return WFActivity.builder()
 					.id(ACTIVITY_ID_ScanPickingSlot)
-					.caption(captionScanPickingSlot)
+					.caption(TranslatableStrings.adMessage(MSG_Caption_ScanPickingSlot))
 					.wfActivityType(SetPickingSlotWFActivityHandler.HANDLED_ACTIVITY_TYPE)
 					.status(SetPickingSlotWFActivityHandler.computeActivityState(pickingJob))
 					.alwaysAvailableToUser(WFActivityAlwaysAvailableToUser.YES)
@@ -350,7 +345,7 @@
 		{
 			return WFActivity.builder()
 					.id(ACTIVITY_ID_PickLines)
-					.caption(captionPickLines)
+					.caption(TranslatableStrings.adMessage(MSG_Caption_PickLines))
 					.wfActivityType(ActualPickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
 					.status(ActualPickingWFActivityHandler.computeActivityState(pickingJob))
 					.build();
