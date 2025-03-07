@@ -810,7 +810,12 @@ Feature: create or update BPartner v2
               "currencyCode": "EUR",
               "name": "bank_account_S0285_700_1",
               "isDefault": false,
-              "active": false
+              "active": false,
+              "accountName": "test-accountName_1",
+              "accountStreet": "test-accountStreet_1",
+              "accountZip": "test-accountZip_1",
+              "accountCity": "test-accountCity_1",
+              "accountCountry": "test-accountCountry_1" 
             },
             {
               "identifier": "iban-DE54500105178721351673",
@@ -819,7 +824,10 @@ Feature: create or update BPartner v2
               "currencyCode": "EUR",
               "name": "bank_account_S0285_700_2",
               "isDefault": false,
-              "active": false
+              "active": false,
+              "accountName": "test-accountName_2",
+              "accountStreet": "test-accountStreet_2",
+              "accountZip": "test-accountZip_2"
             },
             {
               "identifier": "qr_iban-DE91500105177122223557",
@@ -828,7 +836,9 @@ Feature: create or update BPartner v2
               "currencyCode": "EUR",
               "name": "bank_account_S0285_700_3",
               "isDefault": true,
-              "active": true
+              "active": true,
+              "accountCity": "test-accountCity_3",
+              "accountCountry": "test-accountCountry_3"
             }
           ]
         }
@@ -873,10 +883,10 @@ Feature: create or update BPartner v2
       | BPA_Via_IBAN_S0285_700         | iban-DE54500105178721351673    | ext-ALBERTA-001            |
       | BPA_Via_QR_IBAN_S0285_700      | qr_iban-DE91500105177122223557 | ext-ALBERTA-001            |
     And validate C_BP_BankAccount:
-      | C_BP_BankAccount_ID.Identifier | C_BPartner_ID.Identifier | OPT.Name                 | OPT.IBAN               | OPT.QR_IBAN            | OPT.ISO_Code | OPT.IsActive | OPT.IsDefault |
-      | BPA_Via_ExternalRef_S0285_700  | bpartner                 | bank_account_S0285_700_1 | DE15500105171114521777 | DE34500105173193385568 | EUR          | false        | false         |
-      | BPA_Via_IBAN_S0285_700         | bpartner                 | bank_account_S0285_700_2 | DE54500105178721351673 | DE96500105176155493434 | EUR          | false        | false         |
-      | BPA_Via_QR_IBAN_S0285_700      | bpartner                 | bank_account_S0285_700_3 | DE26500105174427157327 | DE91500105177122223557 | EUR          | true         | true          |
+      | C_BP_BankAccount_ID           | C_BPartner_ID | Name                     | IBAN                   | QR_IBAN                | ISO_Code | IsActive | IsDefault | A_Name             | A_Street             | A_Zip             | A_City             | A_Country             |
+      | BPA_Via_ExternalRef_S0285_700 | bpartner      | bank_account_S0285_700_1 | DE15500105171114521777 | DE34500105173193385568 | EUR      | false    | false     | test-accountName_1 | test-accountStreet_1 | test-accountZip_1 | test-accountCity_1 | test-accountCountry_1 |
+      | BPA_Via_IBAN_S0285_700        | bpartner      | bank_account_S0285_700_2 | DE54500105178721351673 | DE96500105176155493434 | EUR      | false    | false     | test-accountName_2 | test-accountStreet_2 | test-accountZip_2 | null               | null                  |
+      | BPA_Via_QR_IBAN_S0285_700     | bpartner      | bank_account_S0285_700_3 | DE26500105174427157327 | DE91500105177122223557 | EUR      | true     | true      | null               | null                 | null              | test-accountCity_3 | test-accountCountry_3 |
     And verify that S_ExternalReference was created
       | ExternalSystem | Type        | ExternalReference  |
       | ALBERTA        | BankAccount | BPACCT_S0285_700_1 |
@@ -898,7 +908,12 @@ Feature: create or update BPartner v2
               "currencyCode": "EUR",
               "name": "bank_account_S0285_700_1_updated",
               "isDefault": false,
-              "active": false
+              "active": false,
+              "accountName": "test-accountName_1_updated",
+              "accountStreet": "test-accountStreet_1_updated",
+              "accountZip": "test-accountZip_1_up",
+              "accountCity": "test-accountCity_1_updated",
+              "accountCountry": "test-accountCountry_1_updated" 
             },
             {
               "identifier": "iban-DE54500105178721351673",
@@ -907,7 +922,11 @@ Feature: create or update BPartner v2
               "currencyCode": "EUR",
               "name": "bank_account_S0285_700_2_updated",
               "isDefault": false,
-              "active": false
+              "active": false,
+              "accountName": "test-accountName_2_updated",
+              "accountStreet": "test-accountStreet_2_updated",
+              "accountZip": "test-accountZip_2_up",
+              "accountCity": "test-accountCity_2"
             },
             {
               "identifier": "qr_iban-DE91500105177122223557",
@@ -916,7 +935,10 @@ Feature: create or update BPartner v2
               "currencyCode": "EUR",
               "name": "bank_account_S0285_700_3_updated",
               "isDefault": true,
-              "active": true
+              "active": true,
+              "accountZip": "test-accountZip_3",
+              "accountCity": "test-accountCity_3_updated",
+              "accountCountry": "test-accountCountry_3_updated"
             }
           ]
         }
@@ -953,10 +975,10 @@ Feature: create or update BPartner v2
 }
     """
     And validate C_BP_BankAccount:
-      | C_BP_BankAccount_ID.Identifier | C_BPartner_ID.Identifier | OPT.Name                         | OPT.IBAN               | OPT.QR_IBAN            | OPT.ISO_Code | OPT.IsActive | OPT.IsDefault |
-      | BPA_Via_ExternalRef_S0285_700  | bpartner                 | bank_account_S0285_700_1_updated | DE15500105171114521777 | DE34500105173193385568 | EUR          | false        | false         |
-      | BPA_Via_IBAN_S0285_700         | bpartner                 | bank_account_S0285_700_2_updated | DE54500105178721351673 | DE96500105176155493434 | EUR          | false        | false         |
-      | BPA_Via_QR_IBAN_S0285_700      | bpartner                 | bank_account_S0285_700_3_updated | DE26500105174427157327 | DE91500105177122223557 | EUR          | true         | true          |
+      | C_BP_BankAccount_ID           | C_BPartner_ID | Name                             | IBAN                   | QR_IBAN                | ISO_Code | IsActive | IsDefault | A_Name                     | A_Street                     | A_Zip                | A_City                     | A_Country                     |
+      | BPA_Via_ExternalRef_S0285_700 | bpartner      | bank_account_S0285_700_1_updated | DE15500105171114521777 | DE34500105173193385568 | EUR      | false    | false     | test-accountName_1_updated | test-accountStreet_1_updated | test-accountZip_1_up | test-accountCity_1_updated | test-accountCountry_1_updated |
+      | BPA_Via_IBAN_S0285_700        | bpartner      | bank_account_S0285_700_2_updated | DE54500105178721351673 | DE96500105176155493434 | EUR      | false    | false     | test-accountName_2_updated | test-accountStreet_2_updated | test-accountZip_2_up | test-accountCity_2         | null                          |
+      | BPA_Via_QR_IBAN_S0285_700     | bpartner      | bank_account_S0285_700_3_updated | DE26500105174427157327 | DE91500105177122223557 | EUR      | true     | true      | null                       | null                         | test-accountZip_3    | test-accountCity_3_updated | test-accountCountry_3_updated |
 
 
     When the metasfresh REST-API endpoint path 'api/v2/bpartner/ext-ALBERTA-001' receives a 'GET' request with the headers from context, expecting status='200'
@@ -971,7 +993,12 @@ Feature: create or update BPartner v2
       "qrIban": "DE34500105173193385568",
       "name": "bank_account_S0285_700_1_updated",
       "active": false,
-      "default": false
+      "default": false,
+      "accountName": "test-accountName_1_updated",
+      "accountStreet": "test-accountStreet_1_updated",
+      "accountZip": "test-accountZip_1_up",
+      "accountCity": "test-accountCity_1_updated",
+      "accountCountry": "test-accountCountry_1_updated" 
     },
     {
       "currencyId": 102,
@@ -980,7 +1007,11 @@ Feature: create or update BPartner v2
       "qrIban": "DE96500105176155493434",
       "name": "bank_account_S0285_700_2_updated",
       "active": false,
-      "default": false
+      "default": false,
+      "accountName": "test-accountName_2_updated",
+      "accountStreet": "test-accountStreet_2_updated",
+      "accountZip": "test-accountZip_2_up",
+      "accountCity": "test-accountCity_2"
     },
     {
       "currencyId": 102,
@@ -989,7 +1020,10 @@ Feature: create or update BPartner v2
       "qrIban": "DE91500105177122223557",
       "name": "bank_account_S0285_700_3_updated",
       "active": true,
-      "default": true
+      "default": true,
+      "accountZip": "test-accountZip_3",
+      "accountCity": "test-accountCity_3_updated",
+      "accountCountry": "test-accountCountry_3_updated"
     }
   ]
 }
