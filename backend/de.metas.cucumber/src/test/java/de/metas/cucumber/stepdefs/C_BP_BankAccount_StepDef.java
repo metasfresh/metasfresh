@@ -42,7 +42,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Bank;
 import org.compiere.model.I_C_Currency;
-import org.compiere.model.I_M_Product;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -51,9 +50,12 @@ import java.util.Map;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.I_C_BP_BankAccount.COLUMNNAME_A_City;
+import static org.compiere.model.I_C_BP_BankAccount.COLUMNNAME_A_Country;
+import static org.compiere.model.I_C_BP_BankAccount.COLUMNNAME_A_Name;
+import static org.compiere.model.I_C_BP_BankAccount.COLUMNNAME_A_Street;
+import static org.compiere.model.I_C_BP_BankAccount.COLUMNNAME_A_Zip;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_BPartner_ID;
-import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 
 public class C_BP_BankAccount_StepDef
 {
@@ -301,6 +303,36 @@ public class C_BP_BankAccount_StepDef
 			if (isDefault != null)
 			{
 				softly.assertThat(bpBankAccount.isDefault()).as("isDefault").isEqualTo(isDefault);
+			}
+
+			final String accountName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_A_Name);
+			if (Check.isNotBlank(accountName))
+			{
+				softly.assertThat(bpBankAccount.getA_Name()).as(COLUMNNAME_A_Name).isEqualTo(DataTableUtil.nullToken2Null(accountName));
+			}
+
+			final String accountStreet = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_A_Street);
+			if (Check.isNotBlank(accountStreet))
+			{
+				softly.assertThat(bpBankAccount.getA_Street()).as(COLUMNNAME_A_Street).isEqualTo(DataTableUtil.nullToken2Null(accountStreet));
+			}
+
+			final String accountZip = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_A_Zip);
+			if (Check.isNotBlank(accountZip))
+			{
+				softly.assertThat(bpBankAccount.getA_Zip()).as(COLUMNNAME_A_Zip).isEqualTo(DataTableUtil.nullToken2Null(accountZip));
+			}
+
+			final String accountCity = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_A_City);
+			if (Check.isNotBlank(accountCity))
+			{
+				softly.assertThat(bpBankAccount.getA_City()).as(COLUMNNAME_A_City).isEqualTo(DataTableUtil.nullToken2Null(accountCity));
+			}
+
+			final String accountCountry = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_A_Country);
+			if (Check.isNotBlank(accountCountry))
+			{
+				softly.assertThat(bpBankAccount.getA_Country()).as(COLUMNNAME_A_Country).isEqualTo(DataTableUtil.nullToken2Null(accountCountry));
 			}
 		}
 

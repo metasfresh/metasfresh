@@ -77,6 +77,11 @@ public class BPartnerBankAccount
 	public static final String IS_DEFAULT = "isDefault";
 	public static final String NAME = "name";
 	public static final String SWIFT_CODE = "swiftCode";
+	public static final String ACCOUNT_NAME = "accountName";
+	public static final String ACCOUNT_STREET = "accountStreet";
+	public static final String ACCOUNT_ZIP = "accountZip";
+	public static final String ACCOUNT_CITY = "accountCity";
+	public static final String ACCOUNT_COUNTRY = "accountCountry";
 
 	@Nullable
 	private BPartnerBankAccountId id;
@@ -117,6 +122,21 @@ public class BPartnerBankAccount
 
 	@Nullable private BPBankAcctUse bpBankAcctUse;
 
+	@Nullable
+	private String accountName;
+
+	@Nullable
+	private String accountStreet;
+
+	@Nullable
+	private String accountZip;
+
+	@Nullable
+	private String accountCity;
+
+	@Nullable
+	private String accountCountry;
+
 
 	@Builder(toBuilder = true)
 	private BPartnerBankAccount(
@@ -131,7 +151,12 @@ public class BPartnerBankAccount
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final OrgMappingId orgMappingId,
 			@Nullable final BankId bankId,
-			@Nullable final BPBankAcctUse bpBankAcctUse)
+			@Nullable final BPBankAcctUse bpBankAcctUse,
+			@Nullable final String accountName,
+			@Nullable final String accountStreet,
+			@Nullable final String accountZip,
+			@Nullable final String accountCity,
+			@Nullable final String accountCountry)
 	{
 		setId(id);
 		this.iban = iban;
@@ -147,6 +172,11 @@ public class BPartnerBankAccount
 		this.orgMappingId = orgMappingId;
 		this.bankId = bankId;
 		this.bpBankAcctUse = bpBankAcctUse;
+		this.accountName = accountName;
+		this.accountStreet = accountStreet;
+		this.accountZip = accountZip;
+		this.accountCity = accountCity;
+		this.accountCountry = accountCountry;
 	}
 
 	public final void setId(@Nullable final BPartnerBankAccountId id)
