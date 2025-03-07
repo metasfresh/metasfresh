@@ -1642,8 +1642,8 @@ public class JsonPersisterService
 			location.setRegion(null);
 		}
 
-		final BPartnerLocationType locationType = syncJsonToLocationType(jsonBPartnerLocation);
-		location.setLocationType(locationType);
+		syncJsonToLocationType(jsonBPartnerLocation)
+				.ifPresent(location::setLocationType);
 
 		if (isAssumeUnchanged && !Objects.equals(location, originalBPartnerLocation))
 		{
@@ -1653,9 +1653,10 @@ public class JsonPersisterService
 		}
 	}
 
-	private BPartnerLocationType syncJsonToLocationType(@NonNull final JsonRequestLocation jsonBPartnerLocation)
+	private Optional<BPartnerLocationType> syncJsonToLocationType(@NonNull final JsonRequestLocation jsonBPartnerLocation)
 	{
 		final BPartnerLocationTypeBuilder locationType = BPartnerLocationType.builder();
+		boolean anythingChanged = false;
 
 		if (jsonBPartnerLocation.isBillToSet())
 		{
@@ -1666,6 +1667,7 @@ public class JsonPersisterService
 			else
 			{
 				locationType.billTo(jsonBPartnerLocation.getBillTo());
+				anythingChanged = true;
 			}
 		}
 		if (jsonBPartnerLocation.isBillToDefaultSet())
@@ -1677,6 +1679,7 @@ public class JsonPersisterService
 			else
 			{
 				locationType.billToDefault(jsonBPartnerLocation.getBillToDefault());
+				anythingChanged = true;
 			}
 		}
 		if (jsonBPartnerLocation.isShipToSet())
@@ -1688,6 +1691,7 @@ public class JsonPersisterService
 			else
 			{
 				locationType.shipTo(jsonBPartnerLocation.getShipTo());
+				anythingChanged = true;
 			}
 		}
 		if (jsonBPartnerLocation.isShipToDefaultSet())
@@ -1699,10 +1703,11 @@ public class JsonPersisterService
 			else
 			{
 				locationType.shipToDefault(jsonBPartnerLocation.getShipToDefault());
+				anythingChanged = true;
 			}
 		}
 
-		return locationType.build();
+		return anythingChanged ? Optional.of(locationType.build()) : Optional.empty();
 	}
 
 	private void handleExternalReferenceRecords(
