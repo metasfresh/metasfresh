@@ -16,12 +16,15 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -36,19 +39,22 @@ public class DDOrderMoveScheduleService
 
 	private final HUReservationService huReservationService;
 	private final PPOrderSourceHUService ppOrderSourceHUService;
+	private final HUQRCodesService huqrCodesService;
 
 	public DDOrderMoveScheduleService(
 			@NonNull final DDOrderLowLevelDAO ddOrderLowLevelDAO,
 			@NonNull final DDOrderMoveScheduleRepository ddOrderMoveScheduleRepository,
 			@NonNull final ADReferenceService adReferenceService,
 			@NonNull final HUReservationService huReservationService,
-			@NonNull final PPOrderSourceHUService ppOrderSourceHUService)
+			@NonNull final PPOrderSourceHUService ppOrderSourceHUService,
+			@NonNull final HUQRCodesService huqrCodesService)
 	{
 		this.ddOrderLowLevelDAO = ddOrderLowLevelDAO;
 		this.ddOrderMoveScheduleRepository = ddOrderMoveScheduleRepository;
 		this.adReferenceService = adReferenceService;
 		this.huReservationService = huReservationService;
 		this.ppOrderSourceHUService = ppOrderSourceHUService;
+		this.huqrCodesService = huqrCodesService;
 	}
 
 	public ADRefList getQtyRejectedReasons()
@@ -194,4 +200,15 @@ public class DDOrderMoveScheduleService
 				.execute();
 	}
 
+	public void unpick(@NonNull final DDOrderMoveScheduleId scheduleId, @Nullable final HUQRCode unpickToTargetQRCode)
+	{
+		DDOrderUnpickCommand.builder()
+				.ddOrderLowLevelDAO(ddOrderLowLevelDAO)
+				.ddOrderMoveScheduleRepository(ddOrderMoveScheduleRepository)
+				.huqrCodesService(huqrCodesService)
+				.scheduleId(scheduleId)
+				.unpickToTargetQRCode(unpickToTargetQRCode)
+				.build()
+				.execute();
+	}
 }
