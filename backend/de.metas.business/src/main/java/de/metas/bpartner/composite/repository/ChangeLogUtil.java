@@ -214,6 +214,11 @@ final class ChangeLogUtil
 			.put(I_C_BP_BankAccount.COLUMNNAME_QR_IBAN, BPartnerBankAccount.QR_IBAN)
 			.put(I_C_BP_BankAccount.COLUMNNAME_SwiftCode, BPartnerBankAccount.SWIFT_CODE)
 			.put(I_C_BP_BankAccount.COLUMNNAME_IsDefault, BPartnerBankAccount.IS_DEFAULT)
+			.put(I_C_BP_BankAccount.COLUMNNAME_A_Name, BPartnerBankAccount.ACCOUNT_NAME)
+			.put(I_C_BP_BankAccount.COLUMNNAME_A_Street, BPartnerBankAccount.ACCOUNT_STREET)
+			.put(I_C_BP_BankAccount.COLUMNNAME_A_Zip, BPartnerBankAccount.ACCOUNT_ZIP)
+			.put(I_C_BP_BankAccount.COLUMNNAME_A_City, BPartnerBankAccount.ACCOUNT_CITY)
+			.put(I_C_BP_BankAccount.COLUMNNAME_A_Country, BPartnerBankAccount.ACCOUNT_COUNTRY)
 			.build();
 
 	@VisibleForTesting

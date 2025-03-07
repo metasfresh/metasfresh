@@ -269,6 +269,11 @@ public class JsonRetrieverService
 			.put(BPartnerBankAccount.BPARTNER_ID, JsonResponseBPBankAccount.BPARTNER_ID)
 			.put(BPartnerBankAccount.SWIFT_CODE, JsonResponseBPBankAccount.SWIFT_CODE)
 			.put(BPartnerBankAccount.IS_DEFAULT, JsonResponseBPBankAccount.IS_DEFAULT)
+			.put(BPartnerBankAccount.ACCOUNT_NAME, JsonResponseBPBankAccount.ACCOUNT_NAME)
+			.put(BPartnerBankAccount.ACCOUNT_STREET, JsonResponseBPBankAccount.ACCOUNT_STREET)
+			.put(BPartnerBankAccount.ACCOUNT_ZIP, JsonResponseBPBankAccount.ACCOUNT_ZIP)
+			.put(BPartnerBankAccount.ACCOUNT_CITY, JsonResponseBPBankAccount.ACCOUNT_CITY)
+			.put(BPartnerBankAccount.ACCOUNT_COUNTRY, JsonResponseBPBankAccount.ACCOUNT_COUNTRY)
 			.build();
 
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
@@ -1074,6 +1079,11 @@ public class JsonRetrieverService
 				.swiftCode(bankAccount.getSwiftCode())
 				.isDefault(bankAccount.isDefault())
 				.active(bankAccount.isActive())
+				.accountName(bankAccount.getAccountName())
+				.accountStreet(bankAccount.getAccountStreet())
+				.accountZip(bankAccount.getAccountZip())
+				.accountCity(bankAccount.getAccountCity())
+				.accountCountry(bankAccount.getAccountCountry())
 				.changeInfo(jsonChangeInfo)
 				.build();
 	}
