@@ -118,7 +118,7 @@ const DistributionStepScreen = () => {
       unpickToTargetQRCode,
     })
       .then((wfProcess) => {
-        history.goTo(distributionLineScreenLocation);
+        history.goBack();
         dispatch(updateWFProcess({ wfProcess }));
       })
       .catch((axiosError) => toastError({ axiosError }));
