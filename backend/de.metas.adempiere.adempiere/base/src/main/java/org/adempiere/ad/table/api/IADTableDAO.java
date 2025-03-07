@@ -107,7 +107,7 @@ public interface IADTableDAO extends ISingletonService
 	 * @param tableName, can be case insensitive
 	 * @return AD_Table_ID or -1
 	 */
-	int retrieveTableId(String tableName);
+	int retrieveTableId(@Nullable String tableName);
 
 	AdTableId retrieveAdTableId(String tableName);
 
