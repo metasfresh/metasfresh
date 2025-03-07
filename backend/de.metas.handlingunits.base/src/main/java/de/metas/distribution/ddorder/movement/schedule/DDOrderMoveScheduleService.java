@@ -203,7 +203,6 @@ public class DDOrderMoveScheduleService
 	public void unpick(@NonNull final DDOrderMoveScheduleId scheduleId, @Nullable final HUQRCode unpickToTargetQRCode)
 	{
 		DDOrderUnpickCommand.builder()
-				.ddOrderLowLevelDAO(ddOrderLowLevelDAO)
 				.ddOrderMoveScheduleRepository(ddOrderMoveScheduleRepository)
 				.huqrCodesService(huqrCodesService)
 				.scheduleId(scheduleId)

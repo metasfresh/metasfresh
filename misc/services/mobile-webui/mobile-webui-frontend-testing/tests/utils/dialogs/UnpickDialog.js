@@ -1,5 +1,5 @@
-import { test } from "../../../../playwright.config";
-import { page } from "../../common";
+import { test } from "../../../playwright.config";
+import { page } from "../common";
 
 const NAME = 'UnpickDialog';
 /** @returns {import('@playwright/test').Locator} */
