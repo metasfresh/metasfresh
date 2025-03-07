@@ -87,6 +87,7 @@ public class JsonErrors
 				.adIssueId(adIssueId)
 				.issueCategory(issueCategory)
 				.parameters(extractParameters(throwable, adLanguage))
+				.errorCode(AdempiereException.extractErrorCode(throwable))
 				.throwable(throwable);
 		if (detail != null)
 		{

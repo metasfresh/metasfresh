@@ -531,6 +531,7 @@ class ManufacturingOrderReportProcessCommand
 				.message(ex.getLocalizedMessage())
 				.stackTrace(Trace.toOneLineStackTraceString(ex.getStackTrace()))
 				.adIssueId(JsonMetasfreshId.of(adIssueId.getRepoId()))
+				.errorCode(AdempiereException.extractErrorCode(ex))
 				.throwable(ex)
 				.build();
 	}

@@ -119,12 +119,12 @@ public class ExternalSystemService
 		final ExternalSystemParentConfig externalSystemParentConfig = getExternalSystemParentConfigFor(invokeExternalSystemProcessRequest);
 
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClassIfUnique(invokeExternalSystemProcessRequest
-																							.getExternalSystemType()
-																							.getExternalSystemProcessClassName());
+				.getExternalSystemType()
+				.getExternalSystemProcessClassName());
 
 		// note: when the AD_PInstance is created by the schedule, it's also stored as string
 		final String configIdAsString = Integer.toString(externalSystemParentConfig.getChildConfig().getId().getRepoId());
-		
+
 		final ProcessInfo.ProcessInfoBuilder processInfoBuilder = ProcessInfo.builder();
 		processInfoBuilder.setAD_Process_ID(processId.getRepoId());
 		processInfoBuilder.addParameter(PARAM_EXTERNAL_REQUEST, invokeExternalSystemProcessRequest.getRequest());
@@ -248,7 +248,8 @@ public class ExternalSystemService
 	}
 
 	@NonNull
-	public JsonExternalStatusResponse getStatusInfo(@NonNull final ExternalSystemType externalSystemType){
+	public JsonExternalStatusResponse getStatusInfo(@NonNull final ExternalSystemType externalSystemType)
+	{
 		return JsonExternalStatusResponse.builder()
 				.externalStatusResponses(externalServices.getStatusInfo(externalSystemType))
 				.build();
@@ -279,6 +280,7 @@ public class ExternalSystemService
 				.sourceClassName(jsonErrorItem.getSourceClassName())
 				.sourceMethodName(jsonErrorItem.getSourceMethodName())
 				.stacktrace(jsonErrorItem.getStackTrace())
+				.errorCode(jsonErrorItem.getErrorCode())
 				.pInstance_ID(pInstanceId)
 				.orgId(RestUtils.retrieveOrgIdOrDefault(jsonErrorItem.getOrgCode()))
 				.build();

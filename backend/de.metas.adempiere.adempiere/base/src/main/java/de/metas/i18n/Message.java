@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2024 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.i18n;
 
 import de.metas.util.StringUtils;
@@ -28,13 +50,14 @@ public final class Message
 	/**
 	 * @return instance for given message text and tip
 	 */
-	public static Message ofTextAndTip(
+	public static Message ofTextTipAndErrorCode(
 			@NonNull final AdMessageId adMessageId,
 			@NonNull final AdMessageKey adMessage,
 			@NonNull final ImmutableTranslatableString msgText,
-			@NonNull final ImmutableTranslatableString msgTip)
+			@NonNull final ImmutableTranslatableString msgTip,
+			@Nullable final String errorCode)
 	{
-		return new Message(adMessageId, adMessage, msgText, msgTip, false);
+		return new Message(adMessageId, adMessage, msgText, msgTip, false, errorCode);
 	}
 
 	public static Message ofMissingADMessage(@Nullable final String text)
@@ -50,7 +73,8 @@ public final class Message
 				AdMessageKey.of(textNorm),
 				ImmutableTranslatableString.ofDefaultValue(text),
 				null,
-				true);
+				true,
+				null);
 	}
 
 	@Nullable @Getter private final AdMessageId adMessageId;
@@ -59,13 +83,15 @@ public final class Message
 	@Nullable private final ITranslatableString msgTip;
 	@NonNull private final ITranslatableString msgTextAndTip;
 	@Getter private final boolean missing;
+	@Getter @Nullable private String errorCode;
 
 	private Message(
 			@Nullable final AdMessageId adMessageId,
 			@NonNull final AdMessageKey adMessage,
 			@NonNull final ImmutableTranslatableString msgText,
 			@Nullable final ImmutableTranslatableString msgTip,
-			final boolean missing)
+			final boolean missing,
+			@Nullable final String errorCode)
 	{
 		this.adMessageId = adMessageId;
 		this.adMessage = adMessage;
@@ -86,6 +112,7 @@ public final class Message
 		}
 
 		this.missing = missing;
+		this.errorCode = errorCode;
 	}
 
 	private Message()

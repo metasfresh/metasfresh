@@ -33,7 +33,6 @@ import de.metas.common.util.pair.IPair;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.interfaces.I_C_BP_Relation;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
@@ -163,16 +162,14 @@ public class PaymentStringProcessService
 	{
 		if (template == null)
 		{
-			final ITranslatableString msg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_COULD_NOT_CREATE_PAYMENT_REQUEST);
-			throw new AdempiereException(msg).markAsUserValidationError();
+			throw new AdempiereException(MSG_COULD_NOT_CREATE_PAYMENT_REQUEST).markAsUserValidationError();
 		}
 
 		//
 		// Get the selected invoice
 		if (paymentRequestDAO.hasPaymentRequests(InvoiceId.ofRepoId(invoice.getC_Invoice_ID())))
 		{
-			final ITranslatableString msg = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_PAYMENT_REQUEST_FOR_INVOICE_ALREADY_EXISTS_EXCEPTION);
-			throw new AdempiereException(msg).markAsUserValidationError();
+			throw new AdempiereException(MSG_PAYMENT_REQUEST_FOR_INVOICE_ALREADY_EXISTS_EXCEPTION).markAsUserValidationError();
 		}
 
 		paymentRequestBL.createPaymentRequest(invoice, template);

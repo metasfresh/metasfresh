@@ -35,7 +35,6 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 
-
 @Value
 public class SyncAdvise
 {
@@ -43,6 +42,11 @@ public class SyncAdvise
 			.builder()
 			.ifNotExists(IfNotExists.FAIL)
 			.ifExists(IfExists.DONT_UPDATE)
+			.build();
+	public static final SyncAdvise READ_ONLY_UNCHANGED = SyncAdvise
+			.builder()
+			.ifNotExists(IfNotExists.FAIL)
+			.ifExists(IfExists.ASSERT_UNCHANGED)
 			.build();
 
 	public static final SyncAdvise CREATE_OR_MERGE = SyncAdvise
@@ -57,19 +61,18 @@ public class SyncAdvise
 			.ifExists(IfExists.DONT_UPDATE)
 			.build();
 
+	@Getter
 	public enum IfNotExists
 	{
 		CREATE(false/* fail */, true/* create */),
 
 		FAIL(true/* fail */, false/* create */);
 
-		@Getter
 		private final boolean fail;
 
-		@Getter
 		private final boolean create;
 
-		private IfNotExists(boolean fail, boolean create)
+		IfNotExists(final boolean fail, final boolean create)
 		{
 			this.fail = fail;
 			this.create = create;
@@ -79,32 +82,42 @@ public class SyncAdvise
 	@Schema(enumAsRef = true, description = "IfExists: \n" +
 			"* `UPDATE_MERGE` - Insert/update data that is specified in this request entity, but leave *other* pre-existing data untouched\n" +
 			"* `UPDATE_REMOVE` - Insert/update data that is specified in this request entity, *and* unset or remove * other* pre-existing data\n" +
+			"* `ASSERT_UNCHANGED` - Verify the data specified in this request entity is equal to the pre-existing data\n" +
 			"* `DONT_UPDATE`\n" +
 			"")
 
+	@Getter
 	public enum IfExists
 	{
-		UPDATE_MERGE(true/* updateMerge */, false/* updateRemove */),
+		UPDATE_MERGE(true/* updateMerge */, false/* updateRemove */, false /* assertUnchanged */),
 
-		UPDATE_REMOVE(false/* updateMerge */, true/* updateRemove */),
+		UPDATE_REMOVE(false/* updateMerge */, true/* updateRemove */, false /* assertUnchanged */),
 
-		DONT_UPDATE(false/* updateMerge */, false/* updateRemove */);
+		ASSERT_UNCHANGED(false/* updateMerge */, false/* updateRemove */, true /* assertUnchanged */),
 
-		@Getter
+		DONT_UPDATE(false/* updateMerge */, false/* updateRemove */, false /* assertUnchanged */);
+
 		private final boolean updateMerge;
 
-		@Getter
 		private final boolean updateRemove;
 
-		private IfExists(boolean updateMerge, boolean updateRemove)
+		private final boolean assertUnchanged;
+
+		IfExists(final boolean updateMerge, final boolean updateRemove, final boolean assertUnchanged)
 		{
 			this.updateMerge = updateMerge;
 			this.updateRemove = updateRemove;
+			this.assertUnchanged = assertUnchanged;
 		}
 
 		public boolean isUpdate()
 		{
 			return updateMerge || updateRemove;
+		}
+
+		public boolean isAttemptUpdate()
+		{
+			return updateMerge || updateRemove || assertUnchanged;
 		}
 	}
 
@@ -130,10 +143,12 @@ public class SyncAdvise
 		return IfNotExists.FAIL.equals(ifNotExists);
 	}
 
-	/** If {@code true} then the sync code can attempt to lookup readonlydata. Maybe this info helps with caching. */
+	/**
+	 * If {@code true} then the sync code can attempt to lookup readonlydata. Maybe this info helps with caching.
+	 */
 	@JsonIgnore
 	public boolean isLoadReadOnly()
 	{
-		return READ_ONLY.equals(this);
+		return READ_ONLY.equals(this) || READ_ONLY_UNCHANGED.equals(this);
 	}
 }

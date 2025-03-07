@@ -3,7 +3,6 @@ package de.metas.pricing.service;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
@@ -155,9 +154,7 @@ public class ProductPrices
 
 		if (conversionsMap.getRateIfExists(UomId.ofRepoId(product.getC_UOM_ID()), UomId.ofRepoId(productPrice.getC_UOM_ID())).isEmpty())
 		{
-			final IMsgBL msgBL = Services.get(IMsgBL.class);
-			final ITranslatableString message = msgBL.getTranslatableMsgText(MSG_NO_UOM_CONVERSION_AVAILABLE);
-			throw new AdempiereException(message).markAsUserValidationError();
+			throw new AdempiereException(MSG_NO_UOM_CONVERSION_AVAILABLE).markAsUserValidationError();
 		}
 	}
 

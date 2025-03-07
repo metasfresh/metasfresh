@@ -60,6 +60,7 @@ public class JsonErrors
 				.userFriendlyError(AdempiereException.isUserValidationError(cause))
 				.stackTrace(Trace.toOneLineStackTraceString(cause.getStackTrace()))
 				.parameters(extractParameters(throwable, adLanguage))
+				.errorCode(AdempiereException.extractErrorCode(throwable))
 				.throwable(throwable);
 		if (detail != null)
 		{

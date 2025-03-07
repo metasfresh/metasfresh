@@ -63,7 +63,7 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 {
 	private static final AdMessageKey MSG_No_DocOutboundLog_Selection = AdMessageKey.of("C_Doc_Outbound_Log.No_DocOutboundLog_Selection");
 
-	private static final transient Logger logger = LogManager.getLogger(EDIExportDocOutboundLog.class);
+	private static final Logger logger = LogManager.getLogger(EDIExportDocOutboundLog.class);
 
 	//
 	// Services
@@ -116,8 +116,7 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 
 		if (selectionCount == 0)
 		{
-			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_No_DocOutboundLog_Selection);
-			throw new AdempiereException(msg).markAsUserValidationError();
+			throw new AdempiereException(MSG_No_DocOutboundLog_Selection).markAsUserValidationError();
 		}
 	}
 
@@ -138,7 +137,7 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 							.bindToThreadInheritedTrx()
 							.buildAndEnqueue();
 
-					Loggables.withLogger(logger, Level.INFO).addLog("Enqueued ediDocument {} into C_Queue_WorkPackage {}", new Object[] { ediDocument, workpackage });
+			Loggables.withLogger(logger, Level.INFO).addLog("Enqueued ediDocument {} into C_Queue_WorkPackage {}", new Object[] { ediDocument, workpackage });
 
 					// Mark the Document as: EDI enqueued (async) - before starting
 					ediDocument.setEDI_ExportStatus(I_EDI_Document.EDI_EXPORTSTATUS_Enqueued);
@@ -184,7 +183,7 @@ public class EDIExportDocOutboundLog extends JavaProcess implements IProcessPrec
 
 		return ediDocument;
 	}
-	
+
 	private boolean filterEligibleDocument(@NonNull final I_EDI_Document_Extension ediDocument)
 	{
 		// Only EDI-enabled documents
