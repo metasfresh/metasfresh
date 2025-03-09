@@ -20,22 +20,23 @@
  * #L%
  */
 
-CREATE VIEW "de.metas.edi".c_remittanceadvice_diag_problems_v AS
+CREATE OR REPLACE VIEW "de.metas.edi".c_remittanceadvice_diag_problems_v AS
 SELECT *
 FROM "de.metas.edi".c_remittanceadvice_diag_v
-WHERE inv_docstatus_ok = FALSE
-   OR sinv_ref_invoice_id_ok = FALSE
-   OR sinv_docstatus_ok = FALSE
-   OR i2p_c_payment_id_ok = FALSE
-   OR i2p_ra_p_docstatus_ok = FALSE
-   OR i2p_al_amount_ok = FALSE
-   OR i2p_al_discountamt_ok = FALSE
-   OR i2p_al_writeoffamt_ok = FALSE
-   OR i2p_al_overunderamt_ok = FALSE
-   OR i2si_al_amount_ok = FALSE
-   OR i2si_al_writeoffamt_ok = FALSE
-   OR i2si_al_discountamt_ok = FALSE
-   OR si2i_al_amount_ok = FALSE
-   OR si2i_al_writeoffamt_ok = FALSE
-   OR si2i_al_discountamt_ok = FALSE
+WHERE COALESCE(inv_docstatus_ok, FALSE) = FALSE
+   OR COALESCE(sinv_ref_invoice_id_ok, FALSE) = FALSE
+   OR COALESCE(sinv_docstatus_ok, FALSE) = FALSE
+   OR COALESCE(i2p_c_payment_id_ok, FALSE) = FALSE
+   OR COALESCE(i2p_ra_p_docstatus_ok, FALSE) = FALSE
+   OR COALESCE(i2p_al_amount_ok, FALSE) = FALSE
+   OR COALESCE(i2p_al_discountamt_ok, FALSE) = FALSE
+   OR COALESCE(i2p_al_writeoffamt_ok, FALSE) = FALSE
+   OR COALESCE(i2p_al_overunderamt_ok, FALSE) = FALSE
+   OR COALESCE(i2si_al_amount_ok, FALSE) = FALSE
+   OR COALESCE(i2si_al_writeoffamt_ok, FALSE) = FALSE
+   OR COALESCE(i2si_al_discountamt_ok, FALSE) = FALSE
+   OR COALESCE(si2i_al_amount_ok, FALSE) = FALSE
+   OR COALESCE(si2i_al_writeoffamt_ok, FALSE) = FALSE
+   OR COALESCE(si2i_al_discountamt_ok, FALSE) = FALSE
 ;
+
