@@ -7,6 +7,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
@@ -44,6 +45,7 @@ public class WarehouseCommand
 		locator.setValue(value + "_Locator");
 		saveRecord(locator);
 		final LocatorQRCode locatorQRCode = LocatorQRCode.ofLocator(locator);
+		context.putIdentifier(identifier, LocatorId.ofRecord(locator));
 
 		return JsonWarehouseResponse.builder()
 				.warehouseCode(warehouseRecord.getValue())

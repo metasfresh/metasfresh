@@ -19,6 +19,9 @@ import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.MobileConfigCommand;
+import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
+import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateResponse;
+import de.metas.frontend_testing.masterdata.picking_slot.PickingSlotCreateCommand;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderRequest;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderResponse;
 import de.metas.frontend_testing.masterdata.pp_order.PPOrderCommand;
@@ -81,6 +84,7 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonCreateProductResponse> products = createProducts();
 		final ImmutableMap<String, JsonWarehouseResponse> warehouses = createWarehouses();
 		final Map<String, JsonPackingInstructionsResponse> packingInstructions = createPackingInstructions();
+		final ImmutableMap<String, JsonPickingSlotCreateResponse> pickingSlots = createPickingSlots();
 		final JsonMobileConfigResponse mobileConfig = createMobileConfiguration();
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
 		final ImmutableMap<String, JsonSalesOrderCreateResponse> salesOrders = createSalesOrders();
@@ -92,6 +96,7 @@ public class CreateMasterdataCommand
 				.login(login)
 				.bpartners(bpartners)
 				.products(products)
+				.pickingSlots(pickingSlots)
 				.warehouses(warehouses)
 				.packingInstructions(packingInstructions)
 				.handlingUnits(hus)
@@ -158,6 +163,21 @@ public class CreateMasterdataCommand
 				.execute();
 	}
 
+	private ImmutableMap<String, JsonPickingSlotCreateResponse> createPickingSlots()
+	{
+		return process(request.getPickingSlots(), this::createPickingSlot);
+	}
+
+	private JsonPickingSlotCreateResponse createPickingSlot(String identifier, JsonPickingSlotCreateRequest request)
+	{
+		return PickingSlotCreateCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build().execute();
+	}
+
+
 	private ImmutableMap<String, JsonWarehouseResponse> createWarehouses()
 	{
 		return process(request.getWarehouses(), this::createWarehouse);
@@ -199,6 +219,7 @@ public class CreateMasterdataCommand
 				.mobilePickingConfigRepository(mobilePickingConfigRepository)
 				.mobileDistributionConfigRepository(mobileDistributionConfigRepository)
 				//
+				.context(context)
 				.request(request.getMobileConfig())
 				//
 				.build().execute();

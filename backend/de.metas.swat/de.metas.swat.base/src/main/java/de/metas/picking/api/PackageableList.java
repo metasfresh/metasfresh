@@ -25,9 +25,13 @@ package de.metas.picking.api;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderAndLineId;
+import de.metas.order.OrderId;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
@@ -88,6 +92,8 @@ public final class PackageableList implements Iterable<Packageable>
 	@Override
 	public @NonNull Iterator<Packageable> iterator() {return list.iterator();}
 
+	public OrgId getSingleOrgId() {return getSingleValue(Packageable::getOrgId).orElseThrow(() -> new AdempiereException("No single org found in " + list));}
+
 	public ImmutableSet<ShipmentScheduleId> getShipmentScheduleIds()
 	{
 		return list.stream().map(Packageable::getShipmentScheduleId).sorted().collect(ImmutableSet.toImmutableSet());
@@ -100,6 +106,12 @@ public final class PackageableList implements Iterable<Packageable>
 	}
 
 	public Optional<BPartnerId> getSingleCustomerId() {return getSingleValue(Packageable::getCustomerId);}
+
+	public Optional<BPartnerLocationId> getSingleCustomerLocationId() {return getSingleValue(Packageable::getCustomerLocationId);}
+
+	public Optional<String> getSingleCustomerAddress() {return getSingleValue(Packageable::getCustomerAddress);}
+
+	public Optional<BPartnerLocationId> getSingleHandoverLocationId() {return getSingleValue(Packageable::getHandoverLocationId);}
 
 	public ProductId getSingleProductId()
 	{
@@ -121,10 +133,16 @@ public final class PackageableList implements Iterable<Packageable>
 		return catchWeightUomIds.size() == 1 ? Optional.ofNullable(catchWeightUomIds.get(0)) : Optional.empty();
 	}
 
+	public Optional<OrderId> getSingleSalesOrderId() {return getSingleValue(Packageable::getSalesOrderId);}
+
 	public OrderAndLineId getSingleSalesOrderLineId()
 	{
 		return getSingleValue(Packageable::getSalesOrderAndLineIdOrNull).orElseThrow(() -> new AdempiereException("No single sales order line found for " + list));
 	}
+
+	public Optional<InstantAndOrgId> getSinglePreparationDate() {return getSingleValue(Packageable::getPreparationDate);}
+
+	public Optional<InstantAndOrgId> getSingleDeliveryDate() {return getSingleValue(Packageable::getDeliveryDate);}
 
 	public Quantity getQtyToPick()
 	{
@@ -157,7 +175,8 @@ public final class PackageableList implements Iterable<Packageable>
 		}
 		else
 		{
-			throw new AdempiereException("More than one value were extracted (" + values + ") from " + list);
+			//throw new AdempiereException("More than one value were extracted (" + values + ") from " + list);
+			return Optional.empty();
 		}
 	}
 

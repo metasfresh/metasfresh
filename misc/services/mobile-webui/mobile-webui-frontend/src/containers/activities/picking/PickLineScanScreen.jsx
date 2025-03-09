@@ -40,7 +40,7 @@ import { useSearchParams } from '../../../hooks/useSearchParams';
 import { useHeaderUpdate } from './PickLineScreen';
 import { pickingLineScanScreenLocation, pickingLineScreenLocation } from '../../../routes/picking';
 import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
-import { useCurrentPickTarget } from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
+import { useCurrentPickingTargetInfo } from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
 import { toNumberOrZero } from '../../../utils/numbers';
 import { isBarcodeProductNoMatching } from '../../../utils/qrCode/common';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
@@ -74,7 +74,7 @@ const PickLineScanScreen = () => {
     isShowPromptWhenOverPicking,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
-  const pickTarget = useCurrentPickTarget({ wfProcessId, activityId });
+  const { luPickingTarget } = useCurrentPickingTargetInfo({ wfProcessId, activityId });
 
   useHeaderUpdate({ url, caption, uom, qtyToPick, qtyPicked });
 
@@ -117,7 +117,7 @@ const PickLineScanScreen = () => {
       catchWeightUom={catchWeightUom}
       isShowBestBeforeDate={isShowBestBeforeDate}
       isShowLotNo={isShowLotNo}
-      isShowCloseTargetButton={!!pickTarget}
+      isShowCloseTargetButton={!!luPickingTarget}
       //
       resolveScannedBarcode={resolveScannedBarcode}
       onResult={onResult}

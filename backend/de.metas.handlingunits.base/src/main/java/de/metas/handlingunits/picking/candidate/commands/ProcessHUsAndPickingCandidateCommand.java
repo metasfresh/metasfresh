@@ -343,7 +343,7 @@ public class ProcessHUsAndPickingCandidateCommand
 
 		if (anyNotClearedHUs)
 		{
-			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_ONLY_CLEARED_HUs_CAN_BE_PICKED));
+			throw new AdempiereException(MSG_ONLY_CLEARED_HUs_CAN_BE_PICKED);
 		}
 	}
 }

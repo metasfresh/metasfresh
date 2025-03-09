@@ -3,8 +3,6 @@ package de.metas.bpartner_product.interceptor;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -76,8 +74,7 @@ public class C_BPartner_Product
 
 		if (!isASIValid)
 		{
-			final ITranslatableString translatableMsgText = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_C_BPartner_Product_Duplicate_ASI);
-			throw new AdempiereException(translatableMsgText).markAsUserValidationError();
+			throw new AdempiereException(MSG_C_BPartner_Product_Duplicate_ASI).markAsUserValidationError();
 		}
 	}
 

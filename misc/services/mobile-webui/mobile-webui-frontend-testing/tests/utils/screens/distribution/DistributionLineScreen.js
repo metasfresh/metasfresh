@@ -4,6 +4,7 @@ import { DistributionLinePickFromScreen } from './DistributionLinePickFromScreen
 import { DistributionStepScreen } from './DistributionStepScreen';
 import { expect } from '@playwright/test';
 import { DistributionJobScreen } from './DistributionJobScreen';
+import { GetQuantityDialog } from '../picking/GetQuantityDialog';
 
 const NAME = 'DistributionLineScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -18,10 +19,11 @@ export const DistributionLineScreen = {
         await expect(containerElement()).toBeVisible();
     }),
 
-    scanHUToMove: async ({ huQRCode }) => await test.step(`${NAME} Scan QR Code`, async () => {
+    scanHUToMove: async ({ huQRCode, qtyToMove, expectedQtyToMove }) => await test.step(`${NAME} - Scan QR Code`, async () => {
         await page.getByTestId('scanQRCode-button').tap(); // click Scan QR Code button
         await DistributionLinePickFromScreen.waitForScreen();
         await DistributionLinePickFromScreen.typeQRCode(huQRCode);
+        await GetQuantityDialog.fillAndPressDone({ qtyEntered: qtyToMove, expectQtyEntered: expectedQtyToMove });
         await DistributionLineScreen.waitForScreen();
     }),
 
@@ -29,6 +31,11 @@ export const DistributionLineScreen = {
         await DistributionLineScreen.expectVisible();
         await page.getByTestId(`step-${index}-button`).tap({ timeout: FAST_ACTION_TIMEOUT });
         await DistributionStepScreen.waitForScreen();
+    }),
+
+    expectNoStepButton: async () => await test.step(`${NAME} - Expect no step buttons`, async () => {
+        await DistributionLineScreen.expectVisible();
+        await expect(page.getByTestId('step-0-button')).toHaveCount(0);
     }),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {

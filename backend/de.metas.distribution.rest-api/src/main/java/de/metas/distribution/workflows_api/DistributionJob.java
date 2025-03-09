@@ -78,6 +78,16 @@ public class DistributionJob
 		return withChangedLine(lineId, line -> line.withNewStep(step));
 	}
 
+	public DistributionJob withChangedStep(@NonNull final DistributionJobStepId id, @NonNull final DistributionJobStep changedStep)
+	{
+		return withChangedStep(id, ignored -> changedStep);
+	}
+
+	public DistributionJob removeStep(@NonNull final DistributionJobStepId id)
+	{
+		return withChangedLines(line -> line.removeStep(id));
+	}
+
 	public DistributionJob withChangedStep(@NonNull final DistributionJobStepId id, @NonNull final UnaryOperator<DistributionJobStep> stepMapper)
 	{
 		return withChangedSteps(step -> DistributionJobStepId.equals(step.getId(), id) ? stepMapper.apply(step) : step);
@@ -107,5 +117,14 @@ public class DistributionJob
 				.filter(line -> DistributionJobLineId.equals(line.getId(), lineId))
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No line found for " + lineId));
+	}
+
+	@NonNull
+	public DistributionJobLine getLineByStepId(@NonNull final DistributionJobStepId stepId)
+	{
+		return lines.stream()
+				.filter(line -> line.getStepById(stepId).isPresent())
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No line found for " + stepId));
 	}
 }

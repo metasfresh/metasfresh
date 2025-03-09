@@ -26,6 +26,9 @@ import java.util.Objects;
  */
 public class DBException extends AdempiereException
 {
+
+	public static final String DB_ERROR_CODE_PREFIX = "DB-";
+
 	/**
 	 * Wraps given throwable to {@link DBException} if is not already an {@link DBException}.
 	 *
@@ -196,6 +199,14 @@ public class DBException extends AdempiereException
 	{
 		final SQLException e = getSQLException();
 		return e != null ? e.getErrorCode() : -1;
+	}
+
+	@Nullable
+	@Override
+	public String getErrorCode()
+	{
+		final SQLException e = getSQLException();
+		return DB_ERROR_CODE_PREFIX + (e != null ? e.getSQLState() : null);
 	}
 
 	/**

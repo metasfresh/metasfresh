@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class MasterdataContext
@@ -60,18 +61,14 @@ public class MasterdataContext
 		final T id = (T)identifiers.get(typeAndIdentifier);
 		if (id == null)
 		{
-			throw new IllegalArgumentException("No identifier found for " + typeAndIdentifier);
+			throw new IllegalArgumentException("No identifier found for " + typeAndIdentifier + " in " + identifiers.keySet());
 		}
 		return id;
 	}
 
 	public <T extends RepoIdAware> T getIdOfType(@NonNull final Class<T> idClass)
 	{
-		final @NotNull List<T> result = identifiers.entrySet()
-				.stream()
-				.filter(entry -> entry.getKey().isTypeMatch(idClass))
-				.map(entry -> idClass.cast(entry.getValue()))
-				.collect(Collectors.toList());
+		final List<T> result = getIdsOfType(idClass);
 
 		if (result.isEmpty())
 		{
@@ -87,6 +84,30 @@ public class MasterdataContext
 		}
 	}
 
+	public <T extends RepoIdAware> Optional<T> getIdOfTypeIfUnique(@NonNull final Class<T> idClass)
+	{
+		final List<T> result = getIdsOfType(idClass);
+
+		if (result.size() == 1)
+		{
+			return Optional.of(result.get(0));
+		}
+		else
+		{
+			return Optional.empty();
+		}
+	}
+
+	private <T extends RepoIdAware> @NotNull List<T> getIdsOfType(final @NotNull Class<T> idClass)
+	{
+		return identifiers.entrySet()
+				.stream()
+				.filter(entry -> entry.getKey().isTypeMatch(idClass))
+				.map(entry -> idClass.cast(entry.getValue()))
+				.distinct()
+				.collect(Collectors.toList());
+	}
+
 	public void putObject(@NonNull final Identifier identifier, @NonNull final Object object)
 	{
 		final Object prevObject = objects.get(identifier);
@@ -99,16 +120,18 @@ public class MasterdataContext
 		objects.put(identifier, object);
 	}
 
-	public <T> T getObject(@NonNull final Identifier identifier)
+	public <T> T getObjectNotNull(@NonNull final Identifier identifier)
 	{
-		final Object object = objects.get(identifier);
-		if (object == null)
-		{
-			throw new IllegalArgumentException("No object found for " + identifier);
-		}
+		return this.<T>getObject(identifier)
+				.orElseThrow(() -> new IllegalArgumentException("No object found for " + identifier + ".\n"
+						+ "Available identifiers are: " + objects.keySet()));
+	}
 
+	public <T> Optional<T> getObject(@NonNull final Identifier identifier)
+	{
 		//noinspection unchecked
-		return (T)object;
+		final T object = (T)objects.get(identifier);
+		return Optional.ofNullable(object);
 	}
 
 	//

@@ -23,10 +23,14 @@
 package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.picking.job.model.CurrentPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
 import de.metas.i18n.ITranslatableString;
+import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.uom.UomId;
+import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.JsonQRCode;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.Builder;
 import lombok.NonNull;
@@ -36,6 +40,7 @@ import lombok.extern.jackson.Jacksonized;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 @Value
@@ -47,6 +52,11 @@ public class JsonPickingJobLine
 	@NonNull String productId;
 	@NonNull String productNo;
 	@NonNull String caption;
+
+	@Nullable JsonQRCode pickingSlot;
+	@Nullable JsonLUPickingTarget luPickingTarget;
+	@Nullable JsonTUPickingTarget tuPickingTarget;
+
 	@NonNull PickingUnit pickingUnit;
 	@NonNull String packingItemName;
 	@NonNull String uom;
@@ -61,12 +71,13 @@ public class JsonPickingJobLine
 	@NonNull JsonCompleteStatus completeStatus;
 	boolean manuallyClosed;
 	@NonNull String displayGroupKey;
+	@Nullable String salesOrderDocumentNo;
+	int orderLineSeqNo;
 
 	public static JsonPickingJobLineBuilder builderFrom(
 			@NonNull final PickingJobLine line,
 			@NonNull final Function<UomId, ITranslatableString> getUOMSymbolById,
-			@NonNull final JsonOpts jsonOpts,
-			@NonNull final String displayGroupKey)
+			@NonNull final JsonOpts jsonOpts)
 	{
 		final String adLanguage = jsonOpts.getAdLanguage();
 
@@ -79,10 +90,10 @@ public class JsonPickingJobLine
 		if (pickingUnit.isTU())
 		{
 			uom = "TU";
-			qtyRemainingToPick = line.getQtyRemainingToPickTUs().toBigDecimal();
-			qtyToPick = line.getQtyToPickTUs().toBigDecimal();
-			qtyPicked = line.getQtyPickedTUs().toBigDecimal();
-			qtyRejected = line.getQtyRejectedTUs().toBigDecimal();
+			qtyRemainingToPick = Objects.requireNonNull(line.getQtyRemainingToPickTUs()).toBigDecimal();
+			qtyToPick = Objects.requireNonNull(line.getQtyToPickTUs()).toBigDecimal();
+			qtyPicked = Objects.requireNonNull(line.getQtyPickedTUs()).toBigDecimal();
+			qtyRejected = Objects.requireNonNull(line.getQtyRejectedTUs()).toBigDecimal();
 		}
 		else
 		{
@@ -93,13 +104,18 @@ public class JsonPickingJobLine
 			qtyRemainingToPick = line.getQtyRemainingToPick().toBigDecimal();
 		}
 
+		final CurrentPickingTarget currentPickingTarget = line.getCurrentPickingTarget();
+
 		return builder()
 				.pickingLineId(line.getId().getAsString())
 				.productId(line.getProductId().getAsString())
 				.productNo(line.getProductNo())
-				.caption(line.getProductName().translate(adLanguage))
-				.packingItemName(line.getPackingInfo().getName().translate(adLanguage))
+				.caption(line.getCaption().translate(adLanguage))
+				.pickingSlot(currentPickingTarget.getPickingSlot().map(JsonPickingJobLine::toJsonQRCode).orElse(null))
+				.luPickingTarget(currentPickingTarget.getLuPickingTarget().map(JsonLUPickingTarget::of).orElse(null))
+				.tuPickingTarget(currentPickingTarget.getTuPickingTarget().map(JsonTUPickingTarget::of).orElse(null))
 				.pickingUnit(pickingUnit)
+				.packingItemName(line.getPackingInfo().getName().translate(adLanguage))
 				.uom(uom)
 				.qtyToPick(qtyToPick)
 				.qtyPicked(qtyPicked)
@@ -113,6 +129,17 @@ public class JsonPickingJobLine
 						.collect(ImmutableList.toImmutableList()))
 				.completeStatus(JsonCompleteStatus.of(line.getProgress()))
 				.manuallyClosed(line.isManuallyClosed())
-				.displayGroupKey(displayGroupKey);
+				.salesOrderDocumentNo(line.getSalesOrderDocumentNo())
+				.orderLineSeqNo(line.getOrderLineSeqNo())
+				;
 	}
+
+	public static JsonQRCode toJsonQRCode(final PickingSlotIdAndCaption pickingSlotIdAndCaption)
+	{
+		return JsonQRCode.builder()
+				.qrCode(PickingSlotQRCode.ofPickingSlotIdAndCaption(pickingSlotIdAndCaption).toGlobalQRCodeJsonString())
+				.caption(pickingSlotIdAndCaption.getCaption())
+				.build();
+	}
+
 }

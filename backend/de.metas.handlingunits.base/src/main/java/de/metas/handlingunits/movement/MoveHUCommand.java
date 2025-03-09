@@ -17,6 +17,7 @@ import de.metas.handlingunits.movement.api.IHUMovementBL;
 import de.metas.handlingunits.movement.generate.HUMovementGenerateRequest;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.i18n.AdMessageKey;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -38,6 +39,8 @@ import java.util.stream.Stream;
 
 public class MoveHUCommand
 {
+	private final static AdMessageKey ONLY_TUS_ON_LUS = AdMessageKey.of("de.metas.handlingunits.movement.MoveHUCommand.ONLY_TUS_ON_LUS");
+
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -107,15 +110,15 @@ public class MoveHUCommand
 
 		if (handlingUnitsBL.isLoadingUnit(targetHU))
 		{
-			return getMoveToLUConsumer(targetHU);
+			return getMoveToLUFunction(targetHU);
 		}
 		else if (handlingUnitsBL.isTransportUnit(targetHU))
 		{
-			return getMoveToTUConsumer(targetHU);
+			return getMoveToTUFunction(targetHU);
 		}
 		else if (handlingUnitsBL.isVirtual(targetHU))
 		{
-			return getMoveToCUConsumer(targetHU);
+			return getMoveToCUFunction(targetHU);
 		}
 		else
 		{
@@ -124,7 +127,7 @@ public class MoveHUCommand
 	}
 
 	@NonNull
-	private Function<List<HuId>, ImmutableSet<HuId>> getMoveToCUConsumer(final I_M_HU targetHU)
+	private Function<List<HuId>, ImmutableSet<HuId>> getMoveToCUFunction(final I_M_HU targetHU)
 	{
 		if (!handlingUnitsBL.isVirtual(targetHU))
 		{
@@ -151,7 +154,7 @@ public class MoveHUCommand
 	}
 
 	@NonNull
-	private Function<List<HuId>, ImmutableSet<HuId>> getMoveToLUConsumer(final I_M_HU targetHU)
+	private Function<List<HuId>, ImmutableSet<HuId>> getMoveToLUFunction(final I_M_HU targetHU)
 	{
 		if (!handlingUnitsBL.isLoadingUnit(targetHU))
 		{
@@ -165,7 +168,7 @@ public class MoveHUCommand
 
 			if (husToMove.stream().anyMatch(tu -> !handlingUnitsBL.isTransportUnit(tu)))
 			{
-				throw new AdempiereException("Expecting only TUs to be moved");
+				throw new AdempiereException(ONLY_TUS_ON_LUS);
 			}
 
 			moveHUsToLocator(husToMove, locatorIdOfTargetHU);
@@ -177,7 +180,7 @@ public class MoveHUCommand
 	}
 
 	@NonNull
-	private Function<List<HuId>, ImmutableSet<HuId>> getMoveToTUConsumer(final I_M_HU targetHU)
+	private Function<List<HuId>, ImmutableSet<HuId>> getMoveToTUFunction(final I_M_HU targetHU)
 	{
 		if (!handlingUnitsBL.isTransportUnit(targetHU))
 		{
