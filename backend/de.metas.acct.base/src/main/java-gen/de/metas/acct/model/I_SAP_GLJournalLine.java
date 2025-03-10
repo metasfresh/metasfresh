@@ -263,8 +263,8 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Price incl. Tax.
-	 * Tax is included in the price
+	 * Set Tax Included.
+	 * Tax Included
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -273,8 +273,8 @@ public interface I_SAP_GLJournalLine
 	void setIsTaxIncluded (boolean IsTaxIncluded);
 
 	/**
-	 * Get Price incl. Tax.
-	 * Tax is included in the price
+	 * Get Tax Included.
+	 * Tax Included
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -332,7 +332,7 @@ public interface I_SAP_GLJournalLine
 	 * Set Section Code.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setM_SectionCode_ID (int M_SectionCode_ID);
@@ -341,14 +341,14 @@ public interface I_SAP_GLJournalLine
 	 * Get Section Code.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getM_SectionCode_ID();
 
-	org.compiere.model.I_M_SectionCode getM_SectionCode();
+	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
 
-	void setM_SectionCode(org.compiere.model.I_M_SectionCode M_SectionCode);
+	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
 
 	ModelColumn<I_SAP_GLJournalLine, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_SAP_GLJournalLine.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
 	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
@@ -400,6 +400,27 @@ public interface I_SAP_GLJournalLine
 
 	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_PostingSign = new ModelColumn<>(I_SAP_GLJournalLine.class, "PostingSign", null);
 	String COLUMNNAME_PostingSign = "PostingSign";
+
+	/**
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProcessed (boolean Processed);
+
+	/**
+	 * Get Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessed();
+
+	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_Processed = new ModelColumn<>(I_SAP_GLJournalLine.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set Determine tax base.
