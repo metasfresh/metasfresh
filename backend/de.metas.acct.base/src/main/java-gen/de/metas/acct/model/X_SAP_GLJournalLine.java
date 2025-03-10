@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_GLJournalLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -816968235L;
+	private static final long serialVersionUID = 679258423L;
 
     /** Standard Constructor */
     public X_SAP_GLJournalLine (final Properties ctx, final int SAP_GLJournalLine_ID, @Nullable final String trxName)
@@ -158,6 +158,18 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	}
 
 	@Override
+	public void setIsTaxIncluded (final boolean IsTaxIncluded)
+	{
+		set_Value (COLUMNNAME_IsTaxIncluded, IsTaxIncluded);
+	}
+
+	@Override
+	public boolean isTaxIncluded() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsTaxIncluded);
+	}
+
+	@Override
 	public void setLine (final int Line)
 	{
 		set_Value (COLUMNNAME_Line, Line);
@@ -257,6 +269,18 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	public java.lang.String getPostingSign() 
 	{
 		return get_ValueAsString(COLUMNNAME_PostingSign);
+	}
+
+	@Override
+	public void setProcessed (final boolean Processed)
+	{
+		set_Value (COLUMNNAME_Processed, Processed);
+	}
+
+	@Override
+	public boolean isProcessed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 
 	@Override
@@ -395,18 +419,5 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	public java.lang.String getUserElementString7() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
-	}
-
-
-	@Override
-	public void setIsTaxIncluded (final boolean IsTaxIncluded)
-	{
-		set_Value (COLUMNNAME_IsTaxIncluded, IsTaxIncluded);
-	}
-
-	@Override
-	public boolean isTaxIncluded()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsTaxIncluded);
 	}
 }

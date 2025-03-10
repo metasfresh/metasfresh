@@ -6,6 +6,7 @@ import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.lang.SeqNo;
+import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -22,6 +23,7 @@ import javax.annotation.Nullable;
 public class SAPGLJournalLine
 {
 	@Nullable private SAPGLJournalLineId id;
+	@Getter @Setter(AccessLevel.PACKAGE) private boolean processed;
 
 	@Nullable @Getter private final SAPGLJournalLineId parentId;
 
