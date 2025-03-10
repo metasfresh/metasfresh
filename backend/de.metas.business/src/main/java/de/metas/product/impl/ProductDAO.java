@@ -640,15 +640,15 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
-	public Optional<ProductId> getProductIdByEAN13CodeOrValue(@NonNull final String barcode, @NonNull final ClientId clientId)
+	public Optional<ProductId> getProductIdByEAN13CodeOrValue(@NonNull final String ean13code, @NonNull final ClientId clientId)
 	{
 		final ImmutableSet<ProductId> productIds = queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
 				.filter(queryBL.createCompositeQueryFilter(I_M_Product.class)
 								.setJoinOr()
-								.addStringLikeFilter(I_M_Product.COLUMNNAME_UPC, "__"+ barcode.substring(0,4) + "%", true)
-								.addStringStartsWith(I_M_Product.COLUMNNAME_Value, barcode))
+								.addStringLikeFilter(I_M_Product.COLUMNNAME_UPC, "__"+ ean13code.substring(0, 4) + "%", true)
+								.addStringStartsWith(I_M_Product.COLUMNNAME_Value, ean13code))
 				.setLimit(QueryLimit.TWO)
 				.create()
 				.listIds(ProductId::ofRepoIdOrNull);
