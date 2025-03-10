@@ -53,44 +53,48 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Details($P{REC
 	<pageHeader>
 		<band height="12" splitType="Stretch">
 			<textField>
-				<reportElement key="textField-16" x="37" y="0" width="115" height="12" forecolor="#000000" uuid="eb476af4-b073-4070-9a1a-c2c973a60b7e"/>
+				<reportElement key="textField-16" x="37" y="0" width="114" height="12" forecolor="#000000" uuid="eb476af4-b073-4070-9a1a-c2c973a60b7e"/>
 				<textElement markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{BPName}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-16" x="151" y="0" width="115" height="12" forecolor="#000000" uuid="b4bb8f27-47ed-4754-bbb5-b589345bda20"/>
+				<box leftPadding="2"/>
 				<textElement markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{BPAddress}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-16" x="266" y="0" width="85" height="12" forecolor="#000000" uuid="f43638ed-8f3f-49ac-878e-7f6761b08abb"/>
+				<box leftPadding="2"/>
 				<textElement markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Time}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-16" x="350" y="0" width="35" height="12" forecolor="#000000" uuid="96305905-191e-4d0f-b7c7-95bc8de3364e"/>
+				<reportElement key="textField-16" x="351" y="0" width="41" height="12" forecolor="#000000" uuid="96305905-191e-4d0f-b7c7-95bc8de3364e"/>
+				<box rightPadding="2"/>
 				<textElement textAlignment="Right" markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Qty}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-16" x="392" y="0" width="45" height="12" forecolor="#000000" uuid="58d5e493-ff08-445a-ba1d-aee21c925057"/>
 				<textElement markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{HUs}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-16" x="437" y="0" width="110" height="12" forecolor="#000000" uuid="67f56434-f07d-4084-a473-3d829e5e4940"/>
+				<box leftPadding="2"/>
 				<textElement markup="none">
-					<font size="9" fontName="Arial" isBold="true" />
+					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Notes}]]></textFieldExpression>
 			</textField>
@@ -99,7 +103,7 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Details($P{REC
 	<detail>
 		<band height="12" splitType="Stretch">
 			<textField isStretchWithOverflow="true">
-				<reportElement key="textField-16" x="37" y="0" width="115" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="1b4cc2a7-14ad-4b21-8275-fda17943337b"/>
+				<reportElement key="textField-16" x="37" y="0" width="114" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="1b4cc2a7-14ad-4b21-8275-fda17943337b"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
@@ -107,6 +111,7 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Details($P{REC
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement key="textField-16" x="151" y="0" width="115" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="149a75da-bec3-4688-8c75-bf3603956ed6"/>
+				<box leftPadding="2"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
@@ -114,13 +119,15 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Details($P{REC
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="437" y="0" width="110" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="be68a796-ba69-4dbd-927e-5c7f231caf20"/>
+				<box leftPadding="2"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{notes}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-16" x="350" y="0" width="35" height="12" forecolor="#000000" uuid="b97d1f91-d6f3-4150-bef9-9cc656d6510a"/>
+				<reportElement key="textField-16" x="351" y="0" width="41" height="12" forecolor="#000000" uuid="b97d1f91-d6f3-4150-bef9-9cc656d6510a"/>
+				<box rightPadding="2"/>
 				<textElement textAlignment="Right" markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
@@ -128,6 +135,7 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Details($P{REC
 			</textField>
 			<textField pattern="dd.MM.yyyy, HH.mm" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="266" y="0" width="85" height="12" forecolor="#000000" uuid="fa602562-4a5e-4857-95ce-af3a4777aa8f"/>
+				<box leftPadding="2"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>
