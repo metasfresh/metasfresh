@@ -69,6 +69,7 @@
 			</textField>
 			<textField>
 				<reportElement key="textField-16" x="151" y="0" width="115" height="12" forecolor="#000000" uuid="b4bb8f27-47ed-4754-bbb5-b589345bda20"/>
+				<box leftPadding="2"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
@@ -118,6 +119,7 @@
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-16" x="151" y="0" width="115" height="12" isPrintWhenDetailOverflows="true" forecolor="#000000" uuid="149a75da-bec3-4688-8c75-bf3603956ed6"/>
+				<box leftPadding="2"/>
 				<textElement markup="none">
 					<font size="9" isBold="false"/>
 				</textElement>

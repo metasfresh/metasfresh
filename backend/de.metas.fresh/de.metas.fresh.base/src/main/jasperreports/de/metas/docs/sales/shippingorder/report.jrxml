@@ -172,7 +172,7 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Root($P{RECORD
 				<textElement textAlignment="Right">
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{PAGE_NUMBER} + " von "]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER} + " / "]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
 				<reportElement key="textField-63" x="439" y="20" width="63" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="25c41579-a43d-4437-bbd4-2e42a608a4be"/>
