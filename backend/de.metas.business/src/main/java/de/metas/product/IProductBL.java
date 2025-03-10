@@ -190,6 +190,8 @@ public interface IProductBL extends ISingletonService
 
 	String getProductValue(ProductId productId);
 
+	String getEAN13Code(@NonNull ProductId productId);
+
 	ImmutableMap<ProductId, String> getProductValues(Set<ProductId> productIds);
 
 	String getProductName(ProductId productId);
@@ -222,7 +224,7 @@ public interface IProductBL extends ISingletonService
 
 	ProductId getProductIdByGTINNotNull(@NonNull GTIN gtin, @NonNull ClientId clientId);
 
-	Optional<ProductId> getProductIdByValueStartsWith(@NonNull String valuePrefix, @NonNull ClientId clientId);
+	Optional<ProductId> getProductIdByEAN13CodeOrValue(@NonNull String ean13Code, @NonNull ClientId clientId);
 
 	Set<ProductId> getProductIdsMatchingQueryString(
 			@NonNull String queryString,
