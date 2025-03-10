@@ -30,6 +30,7 @@ const createMasterdata = async () => {
                 "P1": {
                     valuePrefix: '00027', // important for EAN13 barcodes
                     gtin: '97311876341811',
+                    upc: '2948885000006',
                     uom: 'PCE',
                     uomConversions: [{ from: 'PCE', to: 'KGM', multiplyRate: 0.10, isCatchUOMForProduct: true }],
                     prices: [{ price: 5, uom: 'KGM', invoicableQtyBasedOn: 'CatchWeight' }]
@@ -131,6 +132,28 @@ test('EAN13', async ({ page }) => {
         qrCode: huQRCode,
         catchWeightQRCode: [
             '2800027002616',
+        ],
+    });
+    await PickingJobScreen.complete();
+});
+
+// noinspection JSUnusedLocalSymbols
+test('EAN13WithUPC', async ({ page }) => {
+    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName, tuPIName } = await createMasterdata();
+
+    await LoginScreen.login(login);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(documentNo);
+    await PickingJobsListScreen.startJob({ documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
+    await PickingJobScreen.setTargetLU({ lu: luPIName });
+    await PickingJobScreen.setTargetTU({ tu: tuPIName });
+    await PickingJobScreen.pickHU({
+        qrCode: huQRCode,
+        catchWeightQRCode: [
+            '2948882005745',
         ],
     });
     await PickingJobScreen.complete();

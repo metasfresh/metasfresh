@@ -42,5 +42,10 @@ describe('common tests', () => {
         isBarcodeProductNoMatching({ expectedProductNo: '12345', barcodeProductNo: '12344', barcodeType: 'EAN13' })
       ).toBe(false);
     });
+    it('EAN13 barcode - from UPC', () => {
+      expect(
+          isBarcodeProductNoMatching({ expectedProductNo: '48885', barcodeProductNo: '4888', barcodeType: 'EAN13' })
+      ).toBe(true);
+    });
   });
 });

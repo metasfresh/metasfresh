@@ -20,10 +20,10 @@ export const parseEAN13CodeString = (barcode) => {
     }
 
     // Ensure the first two digits are "28" as a prefix
-    if (barcode.substring(0, 2) !== '28') {
+    if (barcode.substring(0, 2) !== '28' && barcode.substring(0, 2) !== '29') {
       return {
         error: trl('error.qrCode.invalid'),
-        errorDetail: "Invalid barcode prefix. Expected '28'.",
+        errorDetail: "Invalid barcode prefix. Expected '28' or '29'.",
       };
     }
 
