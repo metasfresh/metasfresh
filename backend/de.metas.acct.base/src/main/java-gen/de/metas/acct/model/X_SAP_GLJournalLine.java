@@ -13,7 +13,11 @@ import java.util.Properties;
 public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_GLJournalLine, org.compiere.model.I_Persistent 
 {
 
+<<<<<<< HEAD
 	private static final long serialVersionUID = 1380987167L;
+=======
+	private static final long serialVersionUID = 679258423L;
+>>>>>>> 229602331d (Introduce SAP_GLJournalLine.Processed  (#20303))
 
     /** Standard Constructor */
     public X_SAP_GLJournalLine (final Properties ctx, final int SAP_GLJournalLine_ID, @Nullable final String trxName)
@@ -173,6 +177,7 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void setIsFieldsReadOnlyInUI (final boolean IsFieldsReadOnlyInUI)
 	{
 		set_Value (COLUMNNAME_IsFieldsReadOnlyInUI, IsFieldsReadOnlyInUI);
@@ -197,6 +202,8 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	}
 
 	@Override
+=======
+>>>>>>> 229602331d (Introduce SAP_GLJournalLine.Processed  (#20303))
 	public void setIsTaxIncluded (final boolean IsTaxIncluded)
 	{
 		set_Value (COLUMNNAME_IsTaxIncluded, IsTaxIncluded);
@@ -428,6 +435,7 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	}
 
 	@Override
+<<<<<<< HEAD
 	public void setSAP_CalculateTax (final boolean SAP_CalculateTax)
 	{
 		set_Value (COLUMNNAME_SAP_CalculateTax, SAP_CalculateTax);
@@ -440,6 +448,8 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	}
 
 	@Override
+=======
+>>>>>>> 229602331d (Introduce SAP_GLJournalLine.Processed  (#20303))
 	public void setSAP_DetermineTaxBase (final boolean SAP_DetermineTaxBase)
 	{
 		set_Value (COLUMNNAME_SAP_DetermineTaxBase, SAP_DetermineTaxBase);

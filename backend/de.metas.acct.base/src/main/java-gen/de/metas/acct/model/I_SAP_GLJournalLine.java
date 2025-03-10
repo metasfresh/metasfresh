@@ -284,6 +284,7 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+<<<<<<< HEAD
 	 * Set Fields are Read Only for User.
 	 *
 	 * <br>Type: YesNo
@@ -330,6 +331,10 @@ public interface I_SAP_GLJournalLine
 	/**
 	 * Set Price incl. Tax.
 	 * Tax is included in the price
+=======
+	 * Set Tax Included.
+	 * Tax Included
+>>>>>>> 229602331d (Introduce SAP_GLJournalLine.Processed  (#20303))
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -338,8 +343,8 @@ public interface I_SAP_GLJournalLine
 	void setIsTaxIncluded (boolean IsTaxIncluded);
 
 	/**
-	 * Get Price incl. Tax.
-	 * Tax is included in the price
+	 * Get Tax Included.
+	 * Tax Included
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -396,7 +401,11 @@ public interface I_SAP_GLJournalLine
 	/**
 	 * Set OI Clearing Account conceptual name.
 	 *
+<<<<<<< HEAD
 	 * <br>Type: String
+=======
+	 * <br>Type: Search
+>>>>>>> 229602331d (Introduce SAP_GLJournalLine.Processed  (#20303))
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -405,12 +414,17 @@ public interface I_SAP_GLJournalLine
 	/**
 	 * Get OI Clearing Account conceptual name.
 	 *
+<<<<<<< HEAD
 	 * <br>Type: String
+=======
+	 * <br>Type: Search
+>>>>>>> 229602331d (Introduce SAP_GLJournalLine.Processed  (#20303))
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	@Nullable java.lang.String getOI_AccountConceptualName();
 
+<<<<<<< HEAD
 	ModelColumn<I_SAP_GLJournalLine, Object> COLUMN_OI_AccountConceptualName = new ModelColumn<>(I_SAP_GLJournalLine.class, "OI_AccountConceptualName", null);
 	String COLUMNNAME_OI_AccountConceptualName = "OI_AccountConceptualName";
 
@@ -422,6 +436,11 @@ public interface I_SAP_GLJournalLine
 	 * <br>Virtual Column: false
 	 */
 	void setOI_BankStatement_ID (int OI_BankStatement_ID);
+=======
+	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
+
+	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
+>>>>>>> 229602331d (Introduce SAP_GLJournalLine.Processed  (#20303))
 
 	/**
 	 * Get OI Clearing Bank Statement.
@@ -632,6 +651,7 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
+<<<<<<< HEAD
 	 * Set Calculate tax.
 	 *
 	 * <br>Type: YesNo
@@ -653,6 +673,8 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_SAP_CalculateTax = "SAP_CalculateTax";
 
 	/**
+=======
+>>>>>>> 229602331d (Introduce SAP_GLJournalLine.Processed  (#20303))
 	 * Set Determine tax base.
 	 *
 	 * <br>Type: YesNo

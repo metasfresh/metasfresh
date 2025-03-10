@@ -235,11 +235,14 @@ public class SAPGLJournal
 		lines.forEach(line -> line.setProcessed(processed));
 	}
 
+<<<<<<< HEAD
 	public boolean isTaxLineGeneratedForBaseLine(@NonNull final SAPGLJournalLine taxBaseLine)
 	{
 		return lines.stream().anyMatch(line -> line.isTaxLineGeneratedForBaseLine(taxBaseLine));
 	}
 
+=======
+>>>>>>> 229602331d (Introduce SAP_GLJournalLine.Processed  (#20303))
 	public void regenerateTaxLines(
 			@NonNull final SAPGLJournalTaxProvider taxProvider,
 			@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
