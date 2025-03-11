@@ -5,7 +5,6 @@ import de.metas.contracts.ConditionsId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.GroupRepository.RetrieveOrCreateGroupRequest;
-import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -47,7 +46,6 @@ public final class GroupCreator
 	private final GroupTemplate groupTemplate;
 
 	private final BigDecimal qty;
-	private final ProductId groupingProductId;
 
 	@Builder
 	private GroupCreator(
@@ -55,15 +53,13 @@ public final class GroupCreator
 			@NonNull final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory,
 			//
 			@NonNull final GroupTemplate groupTemplate,
-			@Nullable final BigDecimal qty,
-			@Nullable final ProductId groupingProductId)
+			@Nullable final BigDecimal qty)
 	{
 		this.groupsRepo = groupsRepo;
 		this.compensationLineCreateRequestFactory = compensationLineCreateRequestFactory;
 
 		this.groupTemplate = groupTemplate;
 		this.qty = coalesceNotNull(qty, ONE);
-		this.groupingProductId = groupingProductId;
 	}
 
 	public static class GroupCreatorBuilder
@@ -95,7 +91,6 @@ public final class GroupCreator
 						.newGroupTemplate(groupTemplate)
 						.newContractConditionsId(contractConditionsId)
 						.qtyMultiplier(qty)
-						.groupingProductId(groupingProductId)
 						.build());
 
 		recreateGroup(group);

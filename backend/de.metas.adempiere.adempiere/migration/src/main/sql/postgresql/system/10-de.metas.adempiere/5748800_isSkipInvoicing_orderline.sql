@@ -111,3 +111,42 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=740368
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,740368,0,187,1000005,630673,'F',TO_TIMESTAMP('2025-03-10 14:00:52.003000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','Y','N','Y','N','N','N',0,'Rechnungsstellung überspringen',440,0,0,TO_TIMESTAMP('2025-03-10 14:00:52.003000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
+-- Column: C_CompensationGroup_Schema_TemplateLine.IsHideWhenPrinting
+-- 2025-03-11T12:33:31.780Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,589770,579540,0,20,541679,'XX','IsHideWhenPrinting',TO_TIMESTAMP('2025-03-11 12:33:31.570000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','N','D',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Beim Drucken ausblenden',0,0,TO_TIMESTAMP('2025-03-11 12:33:31.570000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
+;
+
+-- 2025-03-11T12:33:31.783Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=589770 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2025-03-11T12:33:31.811Z
+/* DDL */  select update_Column_Translation_From_AD_Element(579540)
+;
+
+-- 2025-03-11T12:33:34.742Z
+/* DDL */ SELECT public.db_alter_table('C_CompensationGroup_Schema_TemplateLine','ALTER TABLE public.C_CompensationGroup_Schema_TemplateLine ADD COLUMN IsHideWhenPrinting CHAR(1) DEFAULT ''N'' CHECK (IsHideWhenPrinting IN (''Y'',''N'')) NOT NULL')
+;
+
+-- Field: Kompensationsgruppe Schema(540415,de.metas.order) -> Schema-Zeilen(544005,de.metas.order) -> Beim Drucken ausblenden
+-- Column: C_CompensationGroup_Schema_TemplateLine.IsHideWhenPrinting
+-- 2025-03-11T12:38:25.709Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,589770,740369,0,544005,0,TO_TIMESTAMP('2025-03-11 12:38:25.501000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,10,'D',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,'Beim Drucken ausblenden',0,48,48,0,1,1,TO_TIMESTAMP('2025-03-11 12:38:25.501000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-03-11T12:38:25.711Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=740369 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-03-11T12:38:25.714Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579540)
+;
+
+-- 2025-03-11T12:38:25.725Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=740369
+;
+
+-- 2025-03-11T12:38:25.728Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(740369)
+;
+

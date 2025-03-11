@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.ConditionsId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
-import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -56,6 +55,5 @@ public interface GroupRepository
 		@NonNull GroupTemplate newGroupTemplate;
 		@Nullable ConditionsId newContractConditionsId;
 		@NonNull @Builder.Default BigDecimal qtyMultiplier = ONE;
-		@Nullable ProductId groupingProductId;
 	}
 }

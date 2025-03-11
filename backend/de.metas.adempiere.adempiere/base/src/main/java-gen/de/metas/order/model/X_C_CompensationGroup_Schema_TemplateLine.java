@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_CompensationGroup_Schema_TemplateLine extends org.compiere.model.PO implements I_C_CompensationGroup_Schema_TemplateLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -655535731L;
+	private static final long serialVersionUID = -619523189L;
 
     /** Standard Constructor */
     public X_C_CompensationGroup_Schema_TemplateLine (final Properties ctx, final int C_CompensationGroup_Schema_TemplateLine_ID, @Nullable final String trxName)
@@ -105,6 +105,18 @@ public class X_C_CompensationGroup_Schema_TemplateLine extends org.compiere.mode
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public void setIsHideWhenPrinting (final boolean IsHideWhenPrinting)
+	{
+		set_Value (COLUMNNAME_IsHideWhenPrinting, IsHideWhenPrinting);
+	}
+
+	@Override
+	public boolean isHideWhenPrinting() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsHideWhenPrinting);
 	}
 
 	@Override

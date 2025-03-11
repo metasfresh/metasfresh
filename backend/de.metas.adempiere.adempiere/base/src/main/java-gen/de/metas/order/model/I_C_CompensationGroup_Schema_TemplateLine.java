@@ -191,6 +191,27 @@ public interface I_C_CompensationGroup_Schema_TemplateLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Hide when printing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsHideWhenPrinting (boolean IsHideWhenPrinting);
+
+	/**
+	 * Get Hide when printing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isHideWhenPrinting();
+
+	ModelColumn<I_C_CompensationGroup_Schema_TemplateLine, Object> COLUMN_IsHideWhenPrinting = new ModelColumn<>(I_C_CompensationGroup_Schema_TemplateLine.class, "IsHideWhenPrinting", null);
+	String COLUMNNAME_IsHideWhenPrinting = "IsHideWhenPrinting";
+
+	/**
 	 * Set Skip invoicing.
 	 *
 	 * <br>Type: YesNo

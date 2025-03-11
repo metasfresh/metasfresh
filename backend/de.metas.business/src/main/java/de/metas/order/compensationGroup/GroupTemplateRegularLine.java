@@ -40,6 +40,7 @@ public class GroupTemplateRegularLine
 	@NonNull Quantity qty;
 	@Nullable ConditionsId contractConditionsId;
 	boolean isSkipInvoicing;
+	boolean isHideWhenPrinting;
 
 	public boolean isMatching(@Nullable final ConditionsId contextContractConditionsId)
 	{

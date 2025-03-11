@@ -778,7 +778,7 @@ public class OrderGroupRepository implements GroupRepository
 		orderLine.setC_Flatrate_Conditions_ID(ConditionsId.toRepoId(request.getNewContractConditionsId()));
 		orderLine.setIsSkipInvoicing(from.isSkipInvoicing());
 
-		orderLine.setIsHideWhenPrinting(!productId.equals(request.getGroupingProductId()));
+		orderLine.setIsHideWhenPrinting(from.isHideWhenPrinting());
 		orderLineBL.save(orderLine);
 
 		return orderLine;

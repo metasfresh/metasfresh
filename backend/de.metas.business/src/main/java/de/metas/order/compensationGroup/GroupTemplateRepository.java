@@ -119,6 +119,7 @@ public class GroupTemplateRepository
 				.qty(Quantity.of(record.getQty(), uom))
 				.contractConditionsId(ConditionsId.ofRepoIdOrNull(record.getC_Flatrate_Conditions_ID()))
 				.isSkipInvoicing(record.isSkipInvoicing())
+				.isHideWhenPrinting(record.isHideWhenPrinting())
 				.build();
 	}
 
