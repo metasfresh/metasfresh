@@ -59,7 +59,7 @@ public class UserNotificationRequest
 	UserNotificationsConfig notificationsConfig;
 
 	private static final NotificationGroupName DEFAULT_NotificationGroupName = NotificationGroupName.of(EventBusConfig.TOPIC_GeneralUserNotifications.getName());
-	NotificationGroupName notificationGroupName;
+	@NonNull NotificationGroupName notificationGroupName;
 
 	boolean important;
 

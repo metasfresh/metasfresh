@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import com.google.common.collect.ImmutableMap;
 import org.adempiere.service.ClientId;
 
 import com.google.common.collect.ImmutableList;
@@ -22,6 +23,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -48,18 +51,17 @@ import lombok.Value;
 @Value
 public class UserNotificationsConfig
 {
-	private UserId userId;
-	private String userADLanguage; // might be null
-	private ClientId clientId;
-	private OrgId orgId;
+	@NonNull UserId userId;
+	@Nullable String userADLanguage; // might be null
+	@NonNull ClientId clientId;
+	@NonNull OrgId orgId;
 
-	@Getter(AccessLevel.NONE)
-	private final ImmutableList<UserNotificationsGroup> userNotificationGroups; // needed for toBuilder()
-	private Map<NotificationGroupName, UserNotificationsGroup> userNotificationGroupsByInternalName;
-	private final UserNotificationsGroup defaults;
+	@NonNull @Getter(AccessLevel.NONE) ImmutableList<UserNotificationsGroup> userNotificationGroups; // needed for toBuilder()
+	@NonNull ImmutableMap<NotificationGroupName, UserNotificationsGroup> userNotificationGroupsByInternalName;
+	@NonNull UserNotificationsGroup defaults;
 
-	private EMailAddress email;
-	private UserId userInChargeId;
+	EMailAddress email;
+	UserId userInChargeId;
 
 	@Builder(toBuilder = true)
 	private UserNotificationsConfig(
