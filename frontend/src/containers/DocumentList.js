@@ -199,11 +199,10 @@ class DocumentListContainer extends Component {
             if (included) {
               unsetIncludedView(includedView);
             }
-
-            this.fetchLayoutAndDataOnUpdate = true;
-            //this.fetchLayoutAndData();
           }
         );
+
+        this.fetchLayoutAndDataOnUpdate = true;
       }
     }
   }
