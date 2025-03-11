@@ -448,22 +448,23 @@ public final class ProductBL implements IProductBL
 
 	@Override
 	@Nullable
-	public String getEAN13Code(@NonNull final ProductId productId)
+	public Optional<String> getEAN13Code(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
 		if (product == null)
 		{
-			return "<" + productId + ">";
+			throw new AdempiereException("@NotFound@: " + productId);
 		}
 
 		final String upc = product.getUPC();
 
-		if(upc == null)
-		{
 
-			return null;
+		if (upc == null)
+		{
+			return Optional.empty();
 		}
-		return upc.substring(2, 6);
+
+		return Optional.of(upc.substring(2, 6));
 	}
 
 	@Override
