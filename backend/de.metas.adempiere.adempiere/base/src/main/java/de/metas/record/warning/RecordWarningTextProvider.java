@@ -37,12 +37,12 @@ public class RecordWarningTextProvider implements IRecordTextProvider
 	@Override
 	public Optional<String> getTextMessageIfApplies(final ITableRecordReference referencedRecord)
 	{
-		if (I_AD_Record_Warning.Table_Name.equals(referencedRecord.getTableName()))
+		if (!I_AD_Record_Warning.Table_Name.equals(referencedRecord.getTableName()))
 		{
 			return Optional.absent();
 		}
-		final RecordWarningId recordWarningId = RecordWarningId.ofRepoId(referencedRecord.getRecord_ID());
 		
+		final RecordWarningId recordWarningId = RecordWarningId.ofRepoId(referencedRecord.getRecord_ID());
 		return Optional.of(recordWarningRepository.getById(recordWarningId).getMsgText());
 	}
 }
