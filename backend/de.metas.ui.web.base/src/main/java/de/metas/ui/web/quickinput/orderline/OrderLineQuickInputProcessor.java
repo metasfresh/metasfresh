@@ -124,7 +124,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		final Group group = orderGroupsRepo.prepareNewGroup()
 				.groupTemplate(groupTemplate)
 				.qty(extractQty(quickInput))
-				.groupingProductId(extractProductAndAttributes(quickInput).getProductId())
+				.groupingProductId(extractProductId(quickInput))
 				.createGroup(orderId, contractConditionsId);
 
 		final HashSet<OrderLineId> newOrderLineIds = new HashSet<>();
@@ -181,10 +181,10 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		return orderLineQuickInput.getQty();
 	}
 
-	private static ProductAndAttributes extractProductAndAttributes(final QuickInput quickInput)
+	private static ProductId extractProductId(final QuickInput quickInput)
 	{
 		final IOrderLineQuickInput orderLineQuickInput = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
-		return ProductLookupDescriptor.toProductAndAttributes(orderLineQuickInput.getM_Product_ID());
+		return ProductLookupDescriptor.toProductId(orderLineQuickInput.getM_Product_ID());
 	}
 
 	private void validateInput(final OrderLineCandidate candidate)

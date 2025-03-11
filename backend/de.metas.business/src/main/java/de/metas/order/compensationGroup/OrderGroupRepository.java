@@ -477,7 +477,7 @@ public class OrderGroupRepository implements GroupRepository
 				continue;
 			}
 
-			final I_C_OrderLine regularOrderLine = createRegularLineFromTemplate(regularLineToAdd, order, contractConditionsId, request);
+			final I_C_OrderLine regularOrderLine = createRegularLineFromTemplate(regularLineToAdd, order, request);
 			allRegularOrderLines.add(regularOrderLine);
 		}
 
@@ -766,7 +766,6 @@ public class OrderGroupRepository implements GroupRepository
 	public I_C_OrderLine createRegularLineFromTemplate(
 			@NonNull final GroupTemplateRegularLine from,
 			@NonNull final I_C_Order targetOrder,
-			@Nullable final ConditionsId contractConditionsId,
 			final @NonNull RetrieveOrCreateGroupRequest request)
 	{
 		final I_C_OrderLine orderLine = orderLineBL.createOrderLine(targetOrder);
@@ -776,7 +775,7 @@ public class OrderGroupRepository implements GroupRepository
 		orderLine.setC_UOM_ID(from.getQty().getUomId().getRepoId());
 		orderLine.setQtyEntered(request.getQtyMultiplier().multiply(from.getQty().toBigDecimal()));
 		orderLine.setC_CompensationGroup_Schema_TemplateLine_ID(from.getId().getRepoId());
-		orderLine.setC_Flatrate_Conditions_ID(ConditionsId.toRepoId(contractConditionsId));
+		orderLine.setC_Flatrate_Conditions_ID(ConditionsId.toRepoId(request.getNewContractConditionsId()));
 		orderLine.setIsSkipInvoicing(from.isSkipInvoicing());
 
 		orderLine.setIsHideWhenPrinting(!productId.equals(request.getGroupingProductId()));
