@@ -1,7 +1,5 @@
 package de.metas.notification;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

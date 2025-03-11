@@ -3,7 +3,6 @@ package de.metas.notification.impl;
 import de.metas.cache.CCache;
 import de.metas.notification.INotificationGroupRepository;
 import de.metas.notification.NotificationGroup;
-import de.metas.notification.NotificationGroupCC;
 import de.metas.notification.NotificationGroupCCs;
 import de.metas.notification.NotificationGroupId;
 import de.metas.notification.NotificationGroupName;
@@ -12,7 +11,6 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_NotificationGroup;
 import org.compiere.model.I_AD_NotificationGroup_CC;
 
@@ -83,15 +81,6 @@ public class NotificationGroupRepository implements INotificationGroupRepository
 				.stream()
 				.map(record -> toNotificationGroup(record, ccsByGroupId))
 				.collect(NotificationGroupMap.collect());
-	}
-
-	private static NotificationGroupCC toNotificationGroupCC(final I_AD_NotificationGroup_CC record)
-	{
-		return NotificationGroupCC.builder()
-				.recipient(extractRecipient(record))
-				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
-				.build();
-
 	}
 
 	private static Recipient extractRecipient(final I_AD_NotificationGroup_CC record)

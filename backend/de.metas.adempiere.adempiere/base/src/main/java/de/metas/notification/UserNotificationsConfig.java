@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Supplier;
 
 import com.google.common.collect.ImmutableMap;
@@ -102,14 +101,6 @@ public class UserNotificationsConfig
 	public boolean isUserInChargeSet()
 	{
 		return userInChargeId != null;
-	}
-
-	public UserNotificationsConfig deriveWithNotificationTypes(final Set<NotificationType> notificationTypes)
-	{
-		return toBuilder()
-				.clearUserNotificationGroups()
-				.defaults(UserNotificationsGroup.prepareDefault().notificationTypes(notificationTypes).build())
-				.build();
 	}
 
 	public UserNotificationsConfig deriveWithNotificationGroups(final List<UserNotificationsGroup> notificationGroups)
