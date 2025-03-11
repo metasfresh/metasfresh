@@ -1,17 +1,19 @@
 package de.metas.order.compensationGroup;
 
-import java.util.Set;
-
 import com.google.common.collect.ImmutableSet;
 import de.metas.contracts.ConditionsId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
+import static java.math.BigDecimal.ONE;
 
 /*
  * #%L
@@ -44,7 +46,7 @@ public interface GroupRepository
 	GroupCreator.GroupCreatorBuilder prepareNewGroup();
 
 	Group retrieveOrCreateGroup(RetrieveOrCreateGroupRequest request);
-	
+
 	@Value
 	@Builder
 	class RetrieveOrCreateGroupRequest
@@ -53,5 +55,7 @@ public interface GroupRepository
 		@NonNull @Singular ImmutableSet<OrderLineId> orderLineIds;
 		@NonNull GroupTemplate newGroupTemplate;
 		@Nullable ConditionsId newContractConditionsId;
+		@NonNull @Builder.Default BigDecimal qtyMultiplier = ONE;
+		@Nullable ProductId groupingProductId;
 	}
 }
