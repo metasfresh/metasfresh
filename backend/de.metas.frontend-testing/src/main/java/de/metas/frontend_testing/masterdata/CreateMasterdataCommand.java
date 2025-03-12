@@ -28,6 +28,12 @@ import de.metas.frontend_testing.masterdata.pp_order.PPOrderCommand;
 import de.metas.frontend_testing.masterdata.product.CreateProductCommand;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
+import de.metas.frontend_testing.masterdata.product_planning.CreateProductPlanningCommand;
+import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningRequest;
+import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningResponse;
+import de.metas.frontend_testing.masterdata.resource.CreateResourceCommand;
+import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
+import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceResponse;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.sales_order.SalesOrderCreateCommand;
@@ -82,7 +88,9 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonLoginUserResponse> login = createLoginUsers();
 		final ImmutableMap<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
 		final ImmutableMap<String, JsonCreateProductResponse> products = createProducts();
+		final ImmutableMap<String, JsonCreateResourceResponse> resources = createResources();
 		final ImmutableMap<String, JsonWarehouseResponse> warehouses = createWarehouses();
+		final ImmutableMap<String, JsonCreateProductPlanningResponse> productPlannings = createProductPlannings();
 		final Map<String, JsonPackingInstructionsResponse> packingInstructions = createPackingInstructions();
 		final ImmutableMap<String, JsonPickingSlotCreateResponse> pickingSlots = createPickingSlots();
 		final JsonMobileConfigResponse mobileConfig = createMobileConfiguration();
@@ -96,6 +104,8 @@ public class CreateMasterdataCommand
 				.login(login)
 				.bpartners(bpartners)
 				.products(products)
+				.resources(resources)
+				.productPlannings(productPlannings)
 				.pickingSlots(pickingSlots)
 				.warehouses(warehouses)
 				.packingInstructions(packingInstructions)
@@ -163,6 +173,36 @@ public class CreateMasterdataCommand
 				.execute();
 	}
 
+	private ImmutableMap<String, JsonCreateResourceResponse> createResources()
+	{
+		return process(request.getResources(), this::createResource);
+	}
+
+	private JsonCreateResourceResponse createResource(String identifier, JsonCreateResourceRequest request)
+	{
+		return CreateResourceCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonCreateProductPlanningResponse> createProductPlannings()
+	{
+		return process(request.getProductPlannings(), this::createProductPlanning);
+	}
+
+	private JsonCreateProductPlanningResponse createProductPlanning(String identifier, JsonCreateProductPlanningRequest request)
+	{
+		return CreateProductPlanningCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
 	private ImmutableMap<String, JsonPickingSlotCreateResponse> createPickingSlots()
 	{
 		return process(request.getPickingSlots(), this::createPickingSlot);
@@ -176,7 +216,6 @@ public class CreateMasterdataCommand
 				.identifier(Identifier.ofString(identifier))
 				.build().execute();
 	}
-
 
 	private ImmutableMap<String, JsonWarehouseResponse> createWarehouses()
 	{

@@ -49,6 +49,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+@Builder
 public class CreateProductCommand
 {
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
@@ -61,20 +62,9 @@ public class CreateProductCommand
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonCreateProductRequest request;
 
+	@NonNull private final Identifier identifier;
 	@NonNull private final OrgId orgId = MasterdataContext.ORG_ID;
 	@NonNull private final ProductCategoryId productCategoryId = MasterdataContext.PRODUCT_CATEGORY_STANDARD_ID;
-	@NonNull private final Identifier identifier;
-
-	@Builder
-	private CreateProductCommand(
-			@NonNull final MasterdataContext context,
-			@NonNull final JsonCreateProductRequest request,
-			@NonNull final Identifier identifier)
-	{
-		this.context = context;
-		this.request = request;
-		this.identifier = identifier;
-	}
 
 	public JsonCreateProductResponse execute()
 	{
@@ -232,8 +222,12 @@ public class CreateProductCommand
 		final I_PP_Product_BOMVersions record = newInstance(I_PP_Product_BOMVersions.class);
 		record.setM_Product_ID(productRecord.getM_Product_ID());
 		record.setName(productRecord.getName());
+		
 		saveRecord(record);
-		return ProductBOMVersionsId.ofRepoId(record.getPP_Product_BOMVersions_ID());
+		final ProductBOMVersionsId bomVersionsId = ProductBOMVersionsId.ofRepoId(record.getPP_Product_BOMVersions_ID());
+		context.putIdentifier(identifier, bomVersionsId);
+		
+		return bomVersionsId;
 	}
 
 	private DocTypeId getBOMDocTypeId()
