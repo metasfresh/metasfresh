@@ -471,6 +471,7 @@ public class OrderGroupRepository implements GroupRepository
 		final OrderId expectedOrderId = request.getOrderId();
 		final GroupTemplate newGroupTemplate = request.getNewGroupTemplate();
 		final ConditionsId contractConditionsId = request.getNewContractConditionsId();
+		final GroupCompensationOrderBy groupCompensationOrderBy = request.getGroupCompensationOrderBy();
 		existingRegularOrderLines.forEach(OrderGroupCompensationUtils::assertNotInGroup);
 
 		final OrderId orderId = extractOrderId(existingRegularOrderLines, expectedOrderId);
