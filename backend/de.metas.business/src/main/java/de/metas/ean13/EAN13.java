@@ -20,10 +20,16 @@ public class EAN13
 	public static final String PREFIX_VariableWeight = "28";
 	public static final String PREFIX_InternalUseOrVariableMeasure = "29";
 
-	@NonNull @Getter private final String prefix;
-	@NonNull @Getter private final String productNo;
-	@Nullable private final BigDecimal weightInKg;
-	@Getter private final int checksum;
+	@NonNull
+	@Getter
+	private final String prefix;
+	@NonNull
+	@Getter
+	private final String productNo;
+	@Nullable
+	private final BigDecimal weightInKg;
+	@Getter
+	private final int checksum;
 
 	public static ExplainedOptional<EAN13> fromString(@NonNull final String barcode)
 	{
@@ -50,7 +56,16 @@ public class EAN13
 		// 29 - Internal Use / Variable measure
 		if (prefix.equals(PREFIX_VariableWeight) || prefix.equals(PREFIX_InternalUseOrVariableMeasure))
 		{
-			final String productNo = barcode.substring(2, 7); // 5 digits for article code (AAAAA)
+			final String productNo;
+			if (PREFIX_VariableWeight.equals(prefix))
+			{
+				productNo = barcode.substring(2, 7); // 5 digits for article code (AAAAA)
+			}
+			else
+			{
+				productNo = barcode.substring(2, 6); // 4 digits for article code (IIII), see https://www.gs1.org/docs/barcodes/SummaryOfGS1MOPrefixes20-29.pdf
+
+			}
 			final String weightStr = barcode.substring(7, 12); // 5 digits for weight (GGGGG)
 
 			// Interpret the weight/measure (assume it's in grams or kilograms)
@@ -67,7 +82,7 @@ public class EAN13
 		}
 		else
 		{
-			return ExplainedOptional.emptyBecause("Invalid barcode prefix.");
+			return ExplainedOptional.emptyBecause("Unsupported barcode prefix: " + barcode);
 		}
 	}
 
@@ -104,5 +119,18 @@ public class EAN13
 		return nearestTen - totalSum;
 	}
 
-	public Optional<BigDecimal> getWeightInKg() {return Optional.ofNullable(weightInKg);}
+	public Optional<BigDecimal> getWeightInKg()
+	{
+		return Optional.ofNullable(weightInKg);
+	}
+
+	public boolean isVariableWeight()
+	{
+		return prefix.equals(PREFIX_VariableWeight);
+	}
+
+	public boolean isInternalUseOrVariableMeasure()
+	{
+		return prefix.equals(PREFIX_InternalUseOrVariableMeasure);
+	}
 }

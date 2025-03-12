@@ -44,7 +44,7 @@ class EAN13Test
 			assertThat(result.isPresent()).isTrue();
 			final EAN13 qrCode = result.get();
 			assertThat(qrCode.getPrefix()).isEqualTo("29");
-			assertThat(qrCode.getProductNo()).isEqualTo("12345");
+			assertThat(qrCode.getProductNo()).isEqualTo("1234");
 			assertThat(qrCode.getWeightInKg()).contains(new BigDecimal("0.500"));
 			assertThat(qrCode.getChecksum()).isEqualTo(9);
 
@@ -57,7 +57,7 @@ class EAN13Test
 			assertThat(result.isPresent()).isTrue();
 			final EAN13 qrCode = result.get();
 			assertThat(qrCode.getPrefix()).isEqualTo("29");
-			assertThat(qrCode.getProductNo()).isEqualTo("48882");
+			assertThat(qrCode.getProductNo()).isEqualTo("4888");
 			assertThat(qrCode.getWeightInKg()).contains(new BigDecimal("0.574"));
 			assertThat(qrCode.getChecksum()).isEqualTo(5);
 
@@ -80,5 +80,13 @@ class EAN13Test
 			System.out.println(result.getExplanation());
 			assertThat(result.getExplanation().getDefaultValue()).contains("Invalid barcode length");
 		}
+	}
+	@Test
+	void unsupportedPrefix()
+	{
+		final ExplainedOptional<EAN13> result = EAN13.fromString("2748882005741"); // Prefix 27 is not supported
+		assertThat(result.isPresent()).isFalse();
+		System.out.println(result.getExplanation());
+		assertThat(result.getExplanation().getDefaultValue()).contains("Unsupported barcode prefix: 27");
 	}
 }

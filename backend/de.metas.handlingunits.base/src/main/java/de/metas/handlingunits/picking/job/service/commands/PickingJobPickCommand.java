@@ -996,10 +996,12 @@ public class PickingJobPickCommand
 			@Nullable final BigDecimal expectedCatchWeightBD)
 	{
 		final String expectedProductNo = productBL.getProductValue(expectedProductId);
-		final Optional<String> expectedEAN13Code = productBL.getEAN13Code(expectedProductId);
+		final Optional<String> expectedEAN13Code = productBL.getEAN13ProductCode(expectedProductId);
 		final String ean13ProductNo = pickFromHUQRCode.getProductNo();
 		{
-			if (!expectedProductNo.startsWith(ean13ProductNo) && !(expectedEAN13Code.isPresent() && ean13ProductNo.startsWith(expectedEAN13Code.get())))
+			final boolean fitsVariableWeight = pickFromHUQRCode.isVariableWeight() && expectedProductNo.startsWith(ean13ProductNo);
+			final boolean fitsInternalUseOrVariableMeasure = pickFromHUQRCode.isInternalUseOrVariableMeasure() && ean13ProductNo.equals(expectedEAN13Code.orElse(null));
+			if (!fitsVariableWeight && !fitsInternalUseOrVariableMeasure)
 			{
 				throw new AdempiereException(QR_CODE_PRODUCT_ERROR_MSG)
 						.setParameter("ean13ProductNo", ean13ProductNo)

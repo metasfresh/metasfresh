@@ -12,6 +12,7 @@ import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
@@ -21,11 +22,14 @@ import java.util.Set;
 
 class POSProductsSearchCommand
 {
-	@NonNull private final IProductBL productBL;
-	@NonNull private final POSProductsLoader loader;
-
-	@NonNull final Instant evalDate;
-	@Nullable final String queryString;
+	@NonNull
+	final Instant evalDate;
+	@Nullable
+	final String queryString;
+	@NonNull
+	private final IProductBL productBL;
+	@NonNull
+	private final POSProductsLoader loader;
 
 	@Builder
 	private POSProductsSearchCommand(
@@ -97,7 +101,20 @@ class POSProductsSearchCommand
 			return null;
 		}
 
-		final ProductId productId = productBL.getProductIdByEAN13ProductCode(ean13.getProductNo(), ClientId.METASFRESH).orElse(null);
+		final ProductId productId;
+		if (ean13.isVariableWeight())
+		{
+			productId = productBL.getProductIdByValueStartsWith(ean13.getProductNo(), ClientId.METASFRESH).orElse(null);
+		}
+
+		else if (ean13.isInternalUseOrVariableMeasure())
+		{
+			productId = productBL.getProductIdByEAN13ProductCode(ean13.getProductNo(), ClientId.METASFRESH).orElse(null);
+		}
+		else
+		{
+			throw new AdempiereException("Unsupported EAN13 prefix: " + ean13.getPrefix());
+		}
 		final POSProduct product = getPOSProduct(productId);
 		if (product == null)
 		{

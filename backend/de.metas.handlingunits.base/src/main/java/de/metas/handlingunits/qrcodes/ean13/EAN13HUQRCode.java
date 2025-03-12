@@ -48,4 +48,8 @@ public class EAN13HUQRCode implements IHUQRCode
 	public Optional<String> getLotNumber() {return Optional.empty();}
 
 	public int getChecksum() {return ean13.getChecksum();}
+
+	public boolean isVariableWeight() { return ean13.isVariableWeight();}
+
+	public boolean isInternalUseOrVariableMeasure() { return ean13.isInternalUseOrVariableMeasure();}
 }

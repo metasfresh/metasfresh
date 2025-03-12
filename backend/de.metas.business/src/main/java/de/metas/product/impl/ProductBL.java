@@ -447,8 +447,7 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	@Nullable
-	public Optional<String> getEAN13Code(@NonNull final ProductId productId)
+	public Optional<String> getEAN13ProductCode(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
 		if (product == null)
@@ -456,15 +455,7 @@ public final class ProductBL implements IProductBL
 			throw new AdempiereException("@NotFound@: " + productId);
 		}
 
-		final String upc = product.getUPC();
-
-
-		if (upc == null)
-		{
-			return Optional.empty();
-		}
-
-		return Optional.of(upc.substring(2, 6));
+		return Optional.of(product.getEAN13_ProductCode());
 	}
 
 	@Override
