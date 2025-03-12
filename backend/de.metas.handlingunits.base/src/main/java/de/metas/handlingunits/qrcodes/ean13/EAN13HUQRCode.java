@@ -8,6 +8,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -24,6 +25,7 @@ public class EAN13HUQRCode implements IHUQRCode
 		return new EAN13HUQRCode(ean13);
 	}
 
+	@Nullable
 	public static EAN13HUQRCode fromStringOrNullIfNotHandled(@NonNull final String barcode)
 	{
 		return fromString(barcode).orElse(null);

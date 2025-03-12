@@ -161,9 +161,9 @@ public class ProductBLTest
 			return UomId.ofRepoId(uom.getC_UOM_ID());
 		}
 
-		void createUOMConversion(final UomId fromUomId, final UomId toUomId, boolean isCatchWeight)
+		void createUOMConversion(final UomId fromUomId, final UomId toUomId, final boolean isCatchWeight)
 		{
-			I_C_UOM_Conversion record = InterfaceWrapperHelper.newInstance(I_C_UOM_Conversion.class);
+			final I_C_UOM_Conversion record = InterfaceWrapperHelper.newInstance(I_C_UOM_Conversion.class);
 			record.setM_Product_ID(productId.getRepoId());
 			record.setC_UOM_ID(fromUomId.getRepoId());
 			record.setC_UOM_To_ID(toUomId.getRepoId());
@@ -259,7 +259,7 @@ public class ProductBLTest
 		{
 			final I_M_Product product1 = createProductWithEAN13("101505", "4888");
 			final ClientId clientId = ClientId.ofRepoId(product1.getAD_Client_ID());
-			final I_M_Product product2 = createProductWithEAN13("101506", "4888");
+			createProductWithEAN13("101506", "4888");
 
 			assertThat(productBL.getProductIdByEAN13ProductCode("4888", clientId)).isEmpty();
 		}
@@ -286,7 +286,7 @@ public class ProductBLTest
 			final ProductId product1Id = ProductId.ofRepoId(product1.getM_Product_ID());
 			final ClientId clientId = ClientId.ofRepoId(product1.getAD_Client_ID());
 			final I_M_Product product2 = createProductWithEAN13("101506", "4889");
-			final ProductId product2Id = ProductId.ofRepoId(product2.getM_Product_ID());
+			ProductId.ofRepoId(product2.getM_Product_ID());
 
 			createBPProduct(product1Id, "4889");
 

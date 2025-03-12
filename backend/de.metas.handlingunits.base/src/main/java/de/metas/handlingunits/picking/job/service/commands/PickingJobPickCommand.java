@@ -827,7 +827,7 @@ public class PickingJobPickCommand
 		return isSetBestBeforeDate || isSetLotNo;
 	}
 
-	private void addShipmentScheduleQtyPicked(@NonNull TU tu, @NonNull final Quantity qtyPicked)
+	private void addShipmentScheduleQtyPicked(@NonNull final TU tu, @NonNull final Quantity qtyPicked)
 	{
 		final IMutableHUContext huContext = HUContextHolder.getCurrent();
 		final ShipmentScheduleInfo shipmentScheduleInfo = getShipmentScheduleInfo();

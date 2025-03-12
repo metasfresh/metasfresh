@@ -42,8 +42,8 @@ public class EAN13
 
 		//
 		// Validate the check digit
-		int checksum = Character.getNumericValue(barcode.charAt(12)); // Checksum digit (C)
-		int checksumExpected = computeChecksum(barcode.substring(0, 12));
+		final int checksum = Character.getNumericValue(barcode.charAt(12)); // Checksum digit (C)
+		final int checksumExpected = computeChecksum(barcode.substring(0, 12));
 		if (checksumExpected != checksum)
 		{
 			return ExplainedOptional.emptyBecause("Invalid checksum. Expected '" + checksumExpected + "' but got '" + checksum + "'.");
@@ -94,7 +94,7 @@ public class EAN13
 		// Loop through barcode without the checksum
 		for (int i = 0; i < barcodeWithoutChecksum.length(); i++)
 		{
-			int digit = Character.getNumericValue(barcodeWithoutChecksum.charAt(i));
+			final int digit = Character.getNumericValue(barcodeWithoutChecksum.charAt(i));
 
 			if (i % 2 == 0)
 			{
@@ -112,10 +112,10 @@ public class EAN13
 		evenSum *= 3;
 
 		// Total sum
-		int totalSum = oddSum + evenSum;
+		final int totalSum = oddSum + evenSum;
 
 		// Calculate check digit (nearest multiple of 10 - total sum % 10)
-		int nearestTen = (int)Math.ceil(totalSum / 10.0) * 10;
+		final int nearestTen = (int)Math.ceil(totalSum / 10.0) * 10;
 		return nearestTen - totalSum;
 	}
 
