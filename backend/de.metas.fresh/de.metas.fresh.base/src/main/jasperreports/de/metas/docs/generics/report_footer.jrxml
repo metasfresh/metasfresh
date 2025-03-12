@@ -169,7 +169,7 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report($P{org_id})
 				<textElement textAlignment="Center">
 					<font fontName="Arial" size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{orgphone} + " " + $F{phone} + " | " + $R{orgfax} + " " + $F{fax} + " | " +  $R{orgeamil} + " " +$F{email}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{orgphone} + " " + $F{phone} + " | " + $R{orgfax} + " " + $F{fax} + " | " +  $R{orgEmail} + " " +$F{email}]]></textFieldExpression>
 			</textField>
 			<image scaleImage="RetainShape" hAlign="Center" onErrorType="Blank">
 				<reportElement key="image-1" x="20" y="2" width="553" height="58" isRemoveLineWhenBlank="true" uuid="d0e5fac0-9f73-4fd2-92e0-a88d9ed6498d"/>
