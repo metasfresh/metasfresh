@@ -52,7 +52,7 @@ export const isBarcodeProductNoMatching = ({
 
   if (barcodeType === BARCODE_TYPE_EAN13) {
     const validProductValue = expectedProductNoStr.startsWith(barcodeProductNoStr);
-    const validEAN13ProductCode = expectedProductNoStr === expectedEan13ProductCodeStr;
+    const validEAN13ProductCode = barcodeProductNoStr === expectedEan13ProductCodeStr;
     return validProductValue || validEAN13ProductCode;
   } else {
     return expectedProductNoStr === barcodeProductNoStr;
