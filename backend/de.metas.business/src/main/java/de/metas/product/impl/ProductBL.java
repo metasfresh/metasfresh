@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.IProductCostingBL;
 import de.metas.gs1.GTIN;
@@ -39,6 +40,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSet;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -54,6 +56,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -61,6 +64,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import static de.metas.util.Check.assumeNotNull;
+import static de.metas.util.Check.isNotBlank;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public final class ProductBL implements IProductBL
@@ -75,6 +79,8 @@ public final class ProductBL implements IProductBL
 	private final IAcctSchemaDAO acctSchemasRepo = Services.get(IAcctSchemaDAO.class);
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
+	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
+
 
 	@Override
 	public I_M_Product getById(@NonNull final ProductId productId)
@@ -456,6 +462,30 @@ public final class ProductBL implements IProductBL
 		}
 
 		return Optional.of(product.getEAN13_ProductCode());
+	}
+
+	@Override
+	public List<String> getEAN13ProductCodes(@NonNull final ProductId productId)
+	{
+		final List<String> ean13ProductCodes = new ArrayList<>();
+		final List<I_C_BPartner_Product> bPartnerProductRecords = partnerProductDAO.retrieveForProductIds(ImmutableSet.of(productId));
+		for (final I_C_BPartner_Product bPartnerProductRecord : bPartnerProductRecords)
+		{
+			final String partnerEAN13ProductCode = bPartnerProductRecord.getEAN13_ProductCode();
+			if (isNotBlank(partnerEAN13ProductCode))
+			{
+				ean13ProductCodes.add(partnerEAN13ProductCode);
+			}
+		}
+
+		final I_M_Product product = getById(productId);
+		final String ean13ProductCode = product.getEAN13_ProductCode();
+		if (isNotBlank(ean13ProductCode))
+		{
+			ean13ProductCodes.add(ean13ProductCode);
+		}
+
+		return ean13ProductCodes;
 	}
 
 	@Override

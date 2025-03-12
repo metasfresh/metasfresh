@@ -133,4 +133,9 @@ public class EAN13
 	{
 		return prefix.equals(PREFIX_InternalUseOrVariableMeasure);
 	}
+
+	public boolean isPrefixNotSupported()
+	{
+		return ! (prefix.equals(PREFIX_VariableWeight) || prefix.equals(PREFIX_InternalUseOrVariableMeasure));
+	}
 }

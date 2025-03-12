@@ -81,6 +81,7 @@ class EAN13Test
 			assertThat(result.getExplanation().getDefaultValue()).contains("Invalid barcode length");
 		}
 	}
+
 	@Test
 	void unsupportedPrefix()
 	{

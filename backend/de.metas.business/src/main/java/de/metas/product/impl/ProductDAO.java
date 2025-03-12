@@ -65,6 +65,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_CostDetail;
@@ -101,18 +102,45 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class ProductDAO implements IProductDAO
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 	final static int ONE_YEAR_DAYS = 365;
 	final static int TWO_YEAR_DAYS = 730;
 	final static int THREE_YEAR_DAYS = 1095;
 	final static int FIVE_YEAR_DAYS = 1825;
-
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final CCache<Integer, ProductCategoryId> defaultProductCategoryCache = CCache.<Integer, ProductCategoryId>builder()
 			.tableName(I_M_Product_Category.Table_Name)
 			.initialCapacity(1)
 			.expireMinutes(CCache.EXPIREMINUTES_Never)
 			.build();
+
+	public static Optional<IssuingToleranceSpec> extractIssuingToleranceSpec(@NonNull final I_M_Product product)
+	{
+		if (!product.isEnforceIssuingTolerance())
+		{
+			return Optional.empty();
+		}
+
+		final IssuingToleranceValueType valueType = IssuingToleranceValueType.ofNullableCode(product.getIssuingTolerance_ValueType());
+		if (valueType == null)
+		{
+			throw new FillMandatoryException(I_M_Product.COLUMNNAME_IssuingTolerance_ValueType);
+		}
+		else if (valueType == IssuingToleranceValueType.PERCENTAGE)
+		{
+			final Percent percent = Percent.of(product.getIssuingTolerance_Perc());
+			return Optional.of(IssuingToleranceSpec.ofPercent(percent));
+		}
+		else if (valueType == IssuingToleranceValueType.QUANTITY)
+		{
+			final UomId uomId = UomId.ofRepoId(product.getIssuingTolerance_UOM_ID());
+			final Quantity qty = Quantitys.of(product.getIssuingTolerance_Qty(), uomId);
+			return Optional.of(IssuingToleranceSpec.ofQuantity(qty));
+		}
+		else
+		{
+			throw new AdempiereException("Unknown valueType: " + valueType);
+		}
+	}
 
 	@Override
 	public I_M_Product getById(@NonNull final ProductId productId)
@@ -617,9 +645,9 @@ public class ProductDAO implements IProductDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
 				.filter(queryBL.createCompositeQueryFilter(I_M_Product.class)
-						.setJoinOr()
-						.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
-						.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
+								.setJoinOr()
+								.addEqualsFilter(I_M_Product.COLUMNNAME_UPC, barcode)
+								.addEqualsFilter(I_M_Product.COLUMNNAME_Value, barcode))
 				.create()
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
 
@@ -642,10 +670,18 @@ public class ProductDAO implements IProductDAO
 	@Override
 	public Optional<ProductId> getProductIdByEAN13ProductCode(@NonNull final String ean13ProductCode, @NonNull final ClientId clientId)
 	{
+		final IQuery<I_C_BPartner_Product> bpProductEAN13CodeFilter = queryBL.createQueryBuilder(I_C_BPartner_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_EAN13_ProductCode, ean13ProductCode)
+				.create();
+
 		final ImmutableSet<ProductId> productIds = queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
-				.addEqualsFilter(I_M_Product.COLUMNNAME_EAN13_ProductCode, ean13ProductCode)
+				.filter(queryBL.createCompositeQueryFilter(I_M_Product.class)
+								.setJoinOr()
+								.addEqualsFilter(I_M_Product.COLUMNNAME_EAN13_ProductCode, ean13ProductCode)
+								.addInSubQueryFilter(I_M_Product.COLUMNNAME_M_Product_ID, I_C_BPartner_Product.COLUMNNAME_M_Product_ID, bpProductEAN13CodeFilter))
 				.setLimit(QueryLimit.TWO)
 				.create()
 				.listIds(ProductId::ofRepoIdOrNull);
@@ -746,35 +782,6 @@ public class ProductDAO implements IProductDAO
 	{
 		final I_M_Product product = getById(productId);
 		return extractIssuingToleranceSpec(product);
-	}
-
-	public static Optional<IssuingToleranceSpec> extractIssuingToleranceSpec(@NonNull final I_M_Product product)
-	{
-		if (!product.isEnforceIssuingTolerance())
-		{
-			return Optional.empty();
-		}
-
-		final IssuingToleranceValueType valueType = IssuingToleranceValueType.ofNullableCode(product.getIssuingTolerance_ValueType());
-		if (valueType == null)
-		{
-			throw new FillMandatoryException(I_M_Product.COLUMNNAME_IssuingTolerance_ValueType);
-		}
-		else if (valueType == IssuingToleranceValueType.PERCENTAGE)
-		{
-			final Percent percent = Percent.of(product.getIssuingTolerance_Perc());
-			return Optional.of(IssuingToleranceSpec.ofPercent(percent));
-		}
-		else if (valueType == IssuingToleranceValueType.QUANTITY)
-		{
-			final UomId uomId = UomId.ofRepoId(product.getIssuingTolerance_UOM_ID());
-			final Quantity qty = Quantitys.of(product.getIssuingTolerance_Qty(), uomId);
-			return Optional.of(IssuingToleranceSpec.ofQuantity(qty));
-		}
-		else
-		{
-			throw new AdempiereException("Unknown valueType: " + valueType);
-		}
 	}
 
 	@Override

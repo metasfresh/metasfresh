@@ -52,4 +52,6 @@ public class EAN13HUQRCode implements IHUQRCode
 	public boolean isVariableWeight() { return ean13.isVariableWeight();}
 
 	public boolean isInternalUseOrVariableMeasure() { return ean13.isInternalUseOrVariableMeasure();}
+
+	public boolean isPrefixNotSupported() { return ean13.isPrefixNotSupported(); }
 }

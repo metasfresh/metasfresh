@@ -192,6 +192,8 @@ public interface IProductBL extends ISingletonService
 
 	Optional<String> getEAN13ProductCode(@NonNull ProductId productId);
 
+	List<String> getEAN13ProductCodes(@NonNull ProductId productId);
+
 	ImmutableMap<ProductId, String> getProductValues(Set<ProductId> productIds);
 
 	String getProductName(ProductId productId);
