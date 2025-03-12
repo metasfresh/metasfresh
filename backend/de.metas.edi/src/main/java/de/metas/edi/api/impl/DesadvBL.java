@@ -376,15 +376,20 @@ public class DesadvBL implements IDesadvBL
 			@NonNull final BPartnerId recipientBPartnerId,
 			@NonNull final EDIDesadvPackService.Sequences sequences)
 	{
+		if(inOutLineRecord.getMovementQty().signum() <= 0)
+		{
+			logger.debug("DesadvBL.addInOutLine - M_InOutLine with ID={} has movementQty={}; -> doing nothing",
+					inOutLineRecord.getM_InOutLine_ID(), inOutLineRecord.getMovementQty());
+			return;
+		}
+
 		final I_C_OrderLine orderLineRecord = InterfaceWrapperHelper.create(inOutLineRecord.getC_OrderLine(), I_C_OrderLine.class);
 
 		final EDIDesadvLineId desadvLineId = EDIDesadvLineId.ofRepoIdOrNull(orderLineRecord.getEDI_DesadvLine_ID());
-
 		if (desadvLineId == null)
 		{
-			logger.debug("No EDI_DesadvLine_ID set on C_OrderLine with ID={};",
-						 orderLineRecord.getC_OrderLine_ID());
-
+			logger.debug("DesadvBL.addInOutLine - No EDI_DesadvLine_ID set on C_OrderLine with ID={};",
+					orderLineRecord.getC_OrderLine_ID());
 			return;
 		}
 
@@ -563,9 +568,9 @@ public class DesadvBL implements IDesadvBL
 			// If both are TU or both are not, then uom-conversion will work fine.
 			// Anyway, if the desadv's quantity is in stock-UOM, then go with the inOutLine's stock-quantity.
 			final boolean desadvUomIsStockUom = inOutLineStockQty.getUomId().equals(desadvLineQtyUomId);
-			
-			augentQtyDeliveredInUOM = desadvUomIsStockUom 
-					? inOutLineStockQty 
+
+			augentQtyDeliveredInUOM = desadvUomIsStockUom
+					? inOutLineStockQty
 					: inOutLineLineQtyDelivered;
 		}
 
@@ -721,9 +726,10 @@ public class DesadvBL implements IDesadvBL
 
 	public void propagateEDIStatus(@NonNull final I_EDI_Desadv desadv)
 	{
+		final String ediExportStatus = Check.assumeNotNull(desadv.getEDI_ExportStatus(), "EDI_ExportStatus is not null; EDI_DesadvID={}", desadv.getEDI_Desadv_ID());
 		desadvDAO.retrieveShipmentsWithStatus(desadv, ImmutableSet.of(EDIExportStatus.SendingStarted))
 				.stream()
-				.peek(shipment -> shipment.setEDI_ExportStatus(desadv.getEDI_ExportStatus()))
+				.peek(shipment -> shipment.setEDI_ExportStatus(ediExportStatus))
 				.forEach(inOutBL::save);
 	}
 
