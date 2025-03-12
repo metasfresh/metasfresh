@@ -19,7 +19,7 @@ public class JsonCreateProductRequest
 {
 	@Nullable String valuePrefix;
 	@Nullable String gtin;
-	@Nullable String upc;
+	@Nullable String ean13ProductCode;
 	@Nullable X12DE355 uom;
 	@Nullable List<UOMConversion> uomConversions;
 

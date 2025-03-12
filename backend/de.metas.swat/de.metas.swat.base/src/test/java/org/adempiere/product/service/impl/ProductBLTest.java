@@ -188,18 +188,18 @@ public class ProductBLTest
 	}
 
 	@Test
-	public void getProductIdByEAN13CodeOrValue() {
+	public void getProductIdByEAN13ProductCodeOrValue() {
 		final I_M_Product product1 = InterfaceWrapperHelper.newInstance(I_M_Product.class);
 		product1.setValue("101505");
 		product1.setUPC("2948885000006");
 		save(product1);
 		final ProductId product1Id = ProductId.ofRepoId(product1.getM_Product_ID());
 
-		assertThat(productBL.getProductIdByEAN13CodeOrValue("10150", ClientId.ofRepoId(product1.getAD_Client_ID()))).contains(product1Id);
-		assertThat(productBL.getProductIdByEAN13CodeOrValue("48885", ClientId.ofRepoId(product1.getAD_Client_ID()))).contains(product1Id);
-		assertThat(productBL.getProductIdByEAN13CodeOrValue("48882", ClientId.ofRepoId(product1.getAD_Client_ID()))).contains(product1Id);
+		assertThat(productBL.getProductIdByEAN13ProductCode("10150", ClientId.ofRepoId(product1.getAD_Client_ID()))).contains(product1Id);
+		assertThat(productBL.getProductIdByEAN13ProductCode("48885", ClientId.ofRepoId(product1.getAD_Client_ID()))).contains(product1Id);
+		assertThat(productBL.getProductIdByEAN13ProductCode("48882", ClientId.ofRepoId(product1.getAD_Client_ID()))).contains(product1Id);
 
-		assertThat(productBL.getProductIdByEAN13CodeOrValue("48892", ClientId.ofRepoId(product1.getAD_Client_ID()))).isEmpty();
-		assertThat(productBL.getProductIdByEAN13CodeOrValue("10151", ClientId.ofRepoId(product1.getAD_Client_ID()))).isEmpty();
+		assertThat(productBL.getProductIdByEAN13ProductCode("48892", ClientId.ofRepoId(product1.getAD_Client_ID()))).isEmpty();
+		assertThat(productBL.getProductIdByEAN13ProductCode("10151", ClientId.ofRepoId(product1.getAD_Client_ID()))).isEmpty();
 	}
 }

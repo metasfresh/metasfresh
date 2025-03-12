@@ -10,5 +10,5 @@ import lombok.extern.jackson.Jacksonized;
 public class JsonCreateProductResponse
 {
 	String productCode;
-	String upc;
+	String ean13ProductCode;
 }

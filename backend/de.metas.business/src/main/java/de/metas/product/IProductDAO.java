@@ -112,7 +112,9 @@ public interface IProductDAO extends ISingletonService
 
 	Optional<ProductId> getProductIdByGTIN(@NonNull GTIN gtin, @NonNull ClientId clientId);
 
-	Optional<ProductId> getProductIdByEAN13CodeOrValue(@NonNull String ean13code, @NonNull ClientId clientId);
+	Optional<ProductId> getProductIdByValueStartsWith(@NonNull String valuePrefix, @NonNull ClientId clientId);
+
+	public Optional<ProductId> getProductIdByEAN13ProductCode(@NonNull String ean13ProductCode, @NonNull ClientId clientId);
 
 	Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull ProductId productId);
 

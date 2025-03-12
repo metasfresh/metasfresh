@@ -624,10 +624,16 @@ public final class ProductBL implements IProductBL
 				.orElseThrow(()->new AdempiereException("@NotFound@ @M_Product_ID@: @GTIN@ "+gtin));
 	}
 
+
 	@Override
-	public Optional<ProductId> getProductIdByEAN13CodeOrValue(@NonNull final String ean13Code, @NonNull final ClientId clientId)
+	public Optional<ProductId> getProductIdByValueStartsWith(@NonNull final String valuePrefix, @NonNull final ClientId clientId)
 	{
-		return productsRepo.getProductIdByEAN13CodeOrValue(ean13Code, clientId);
+		return productsRepo.getProductIdByValueStartsWith(valuePrefix, clientId);
+	}
+	@Override
+	public Optional<ProductId> getProductIdByEAN13ProductCode(@NonNull final String ean13ProductCode, @NonNull final ClientId clientId)
+	{
+		return productsRepo.getProductIdByEAN13ProductCode(ean13ProductCode, clientId);
 	}
 
 	@Override

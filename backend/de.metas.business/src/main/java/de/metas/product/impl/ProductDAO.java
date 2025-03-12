@@ -640,15 +640,26 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
-	public Optional<ProductId> getProductIdByEAN13CodeOrValue(@NonNull final String ean13code, @NonNull final ClientId clientId)
+	public Optional<ProductId> getProductIdByEAN13ProductCode(@NonNull final String ean13ProductCode, @NonNull final ClientId clientId)
 	{
 		final ImmutableSet<ProductId> productIds = queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
-				.filter(queryBL.createCompositeQueryFilter(I_M_Product.class)
-								.setJoinOr()
-								.addStringLikeFilter(I_M_Product.COLUMNNAME_UPC, "__"+ ean13code.substring(0, 4) + "%", true)
-								.addStringStartsWith(I_M_Product.COLUMNNAME_Value, ean13code))
+				.addEqualsFilter(I_M_Product.COLUMNNAME_EAN13_ProductCode, ean13ProductCode)
+				.setLimit(QueryLimit.TWO)
+				.create()
+				.listIds(ProductId::ofRepoIdOrNull);
+
+		return productIds.size() == 1 ? Optional.of(productIds.iterator().next()) : Optional.empty();
+	}
+
+	@Override
+	public Optional<ProductId> getProductIdByValueStartsWith(@NonNull final String valuePrefix, @NonNull final ClientId clientId)
+	{
+		final ImmutableSet<ProductId> productIds = queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
+				.addStringStartsWith(I_M_Product.COLUMNNAME_Value, valuePrefix)
 				.setLimit(QueryLimit.TWO)
 				.create()
 				.listIds(ProductId::ofRepoIdOrNull);

@@ -88,7 +88,7 @@ public class CreateProductCommand
 
 		return JsonCreateProductResponse.builder()
 				.productCode(productRecord.getValue())
-				.upc(productRecord.getUPC())
+				.ean13ProductCode(productRecord.getEAN13_ProductCode())
 				.build();
 	}
 
@@ -104,7 +104,7 @@ public class CreateProductCommand
 		productRecord.setValue(value);
 		productRecord.setName(value);
 		productRecord.setGTIN(request.getGtin());
-		productRecord.setUPC(request.getUpc());
+		productRecord.setEAN13_ProductCode(request.getEan13ProductCode());
 		productRecord.setC_UOM_ID(productUomId.getRepoId());
 		productRecord.setProductType(ProductType.Item.getCode());
 		productRecord.setIsStocked(true);
