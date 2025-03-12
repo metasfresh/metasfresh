@@ -1,6 +1,5 @@
 package de.metas.notification;
 
-import de.metas.notification.impl.NotificationGroupId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
 

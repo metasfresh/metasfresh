@@ -5,7 +5,8 @@ import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
 import de.metas.email.EMailAddress;
-import de.metas.notification.INotificationGroupNameRepository;
+import de.metas.notification.INotificationGroupRepository;
+import de.metas.notification.NotificationGroupId;
 import de.metas.notification.NotificationGroupName;
 import de.metas.notification.UserNotificationsConfig;
 import de.metas.notification.UserNotificationsGroup;
@@ -58,7 +59,7 @@ public class UserNotificationsConfigService
 			.additionalTableNameToResetFor(I_AD_NotificationGroup.Table_Name)
 			.build();
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final INotificationGroupNameRepository notificationGroupNamesRepo = Services.get(INotificationGroupNameRepository.class);
+	private final INotificationGroupRepository notificationGroupRepo = Services.get(INotificationGroupRepository.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 
@@ -69,9 +70,13 @@ public class UserNotificationsConfigService
 
 	public List<UserId> getByNotificationGroupAndOrgId(final @NonNull NotificationGroupName notificationGroupName, @NonNull final OrgId orgId)
 	{
-		final NotificationGroupId notificationGroupId = notificationGroupNamesRepo.getNotificationGroupId(notificationGroupName);
+		final NotificationGroupId notificationGroupId = notificationGroupRepo.getNotificationGroupId(notificationGroupName).orElse(null);
+		if (notificationGroupId == null)
+		{
+			return ImmutableList.of();
+		}
 
-		final boolean restrictToOrgBPUsers = notificationGroupNamesRepo.isNotifyOrgBpUsersOnly(notificationGroupName);
+		final boolean restrictToOrgBPUsers = notificationGroupRepo.isNotifyOrgBpUsersOnly(notificationGroupName);
 
 		final List<UserId> userIdsToBeNotified = queryBL
 				.createQueryBuilderOutOfTrx(I_AD_User_NotificationGroup.class)
@@ -125,7 +130,7 @@ public class UserNotificationsConfigService
 			return null;
 		}
 
-		final NotificationGroupName groupInternalName = notificationGroupNamesRepo.getById(notificationsGroupRecord.getAD_NotificationGroup_ID());
+		final NotificationGroupName groupInternalName = notificationGroupRepo.getNameById(NotificationGroupId.ofRepoId(notificationsGroupRecord.getAD_NotificationGroup_ID())).orElse(null);
 		if (groupInternalName == null)
 		{
 			// group does not exist or it was deactivated

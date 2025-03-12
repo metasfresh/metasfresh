@@ -14,6 +14,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_AD_NotificationGroup;
 import org.compiere.model.I_AD_NotificationGroup_CC;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -96,6 +97,25 @@ public class NotificationGroupRepository implements INotificationGroupRepository
 				.id(id)
 				.name(NotificationGroupName.of(record.getInternalName()))
 				.ccs(ccsById.getOrDefault(id, NotificationGroupCCs.EMPTY))
+				.deadLetterRecipientUserId(UserId.ofRepoIdOrNull(record.getDeadletter_User_ID()))
+				.isNotifyOrgBPUsersOnly(record.isNotifyOrgBPUsersOnly())
 				.build();
+	}
+
+	@Override
+	@Nullable
+	public UserId getDeadletterUserId(@NonNull final NotificationGroupName notificationGroupName)
+	{
+		return getNotificationGroupByName(notificationGroupName)
+				.map(NotificationGroup::getDeadLetterRecipientUserId)
+				.orElse(null);
+	}
+
+	@Override
+	public boolean isNotifyOrgBpUsersOnly(@NonNull final NotificationGroupName notificationGroupName)
+	{
+		return getNotificationGroupByName(notificationGroupName)
+				.map(NotificationGroup::isNotifyOrgBPUsersOnly)
+				.orElse(false);
 	}
 }

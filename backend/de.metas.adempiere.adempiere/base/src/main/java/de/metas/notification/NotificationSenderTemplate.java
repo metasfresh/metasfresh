@@ -89,7 +89,6 @@ public class NotificationSenderTemplate
 	private final IRoleDAO rolesRepo = Services.get(IRoleDAO.class);
 	private final INotificationGroupRepository notificationGroupRepository = Services.get(INotificationGroupRepository.class);
 	private final IRoleNotificationsConfigRepository roleNotificationsConfigRepository = Services.get(IRoleNotificationsConfigRepository.class);
-	private final INotificationGroupNameRepository notificationGroupNamesRepo = Services.get(INotificationGroupNameRepository.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final INotificationRepository notificationsRepo = Services.get(INotificationRepository.class);
@@ -248,7 +247,7 @@ public class NotificationSenderTemplate
 
 	private Stream<Recipient> getDeadletterUserStream(@NonNull final NotificationGroupName notificationGroupName)
 	{
-		final UserId deadletterUserId = notificationGroupNamesRepo.getDeadletterUserId(notificationGroupName);
+		final UserId deadletterUserId = notificationGroupRepository.getDeadletterUserId(notificationGroupName);
 		if (deadletterUserId != null)
 		{
 			return Stream.of(Recipient.user(deadletterUserId));
