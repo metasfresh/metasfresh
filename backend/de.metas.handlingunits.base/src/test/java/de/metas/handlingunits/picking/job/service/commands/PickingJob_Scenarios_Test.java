@@ -366,7 +366,7 @@ class PickingJob_Scenarios_Test
 		}
 
 		@Test
-		void ean13Valid()
+		void ean13Prefix28Valid()
 		{
 			// remark: we use 6 digits from productNo while our EAN13 contains 5 digits product no
 			// we expect product to be valid
@@ -392,12 +392,12 @@ class PickingJob_Scenarios_Test
 
 
 		@Test
-		void ean13WithUPCValid()
+		void ean13Prefix29Valid()
 		{
 			final I_M_Product product = BusinessTestHelper.createProduct("594143", helper.uomEach);
 			product.setValue("594143");
 			product.setM_Product_Category_ID(productCategoryId.getRepoId());
-			product.setUPC("2948885000006");
+			product.setEAN13_ProductCode("4888");
 			InterfaceWrapperHelper.save(product);
 			final ProductId productId= ProductId.ofRepoId(product.getM_Product_ID());
 

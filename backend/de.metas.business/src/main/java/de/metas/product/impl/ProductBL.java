@@ -453,18 +453,6 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public Optional<String> getEAN13ProductCode(@NonNull final ProductId productId)
-	{
-		final I_M_Product product = getById(productId);
-		if (product == null)
-		{
-			throw new AdempiereException("@NotFound@: " + productId);
-		}
-
-		return Optional.of(product.getEAN13_ProductCode());
-	}
-
-	@Override
 	public List<String> getEAN13ProductCodes(@NonNull final ProductId productId)
 	{
 		final List<String> ean13ProductCodes = new ArrayList<>();

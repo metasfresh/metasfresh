@@ -30,7 +30,7 @@ const createMasterdata = async () => {
                 "P1": {
                     valuePrefix: '00027', // important for EAN13 barcodes
                     gtin: '97311876341811',
-                    upc: '2948885000006',
+                    ean13ProductCode: '4888',
                     uom: 'PCE',
                     uomConversions: [{ from: 'PCE', to: 'KGM', multiplyRate: 0.10, isCatchUOMForProduct: true }],
                     prices: [{ price: 5, uom: 'KGM', invoicableQtyBasedOn: 'CatchWeight' }]

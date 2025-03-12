@@ -20,15 +20,15 @@ export const parseEAN13CodeString = (barcode) => {
     }
 
     // Ensure the first two digits are "28" as a prefix
-    if (barcode.substring(0, 2) !== '28' && barcode.substring(0, 2) !== '29') {
+    const barcodePrefix = barcode.substring(0, 2);
+    if (barcodePrefix !== '28' && barcodePrefix !== '29') {
       return {
         error: trl('error.qrCode.invalid'),
         errorDetail: "Invalid barcode prefix. Expected '28' or '29'.",
       };
     }
 
-    // Extract components from the barcode
-    const productNo = barcode.substring(2, 7); // 5 digits for article code (AAAAA)
+    const productNo = barcodePrefix === '29' ? barcode.substring(2, 6) : barcode.substring(2, 7);
     const weightStr = barcode.substring(7, 12); // 5 digits for weight (GGGGG)
     const checksum = parseInt(barcode.charAt(12)); // Checksum digit (C)
 

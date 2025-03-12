@@ -1075,17 +1075,17 @@ public class PickingJobPickCommand
 			throwQRCodeProductErrorException(expectedProductId, ean13ProductNo, expectedProductNo, expectedEAN13Codes);
 		}
 
-		final boolean fitsVariableWeight = pickFromHUQRCode.isVariableWeight() && expectedProductNo.startsWith(ean13ProductNo);
-
-		if (!fitsVariableWeight)
+		if (pickFromHUQRCode.isInternalUseOrVariableMeasure())
 		{
-			throwQRCodeProductErrorException(expectedProductId, ean13ProductNo, expectedProductNo, expectedEAN13Codes);
+			final Optional<String> suitableEAN13ProductCode = expectedEAN13Codes.stream().filter(ean13ProductNo::equals).findFirst();
+
+			final boolean fitsInternalUseOrVariableMeasure = pickFromHUQRCode.isInternalUseOrVariableMeasure() && suitableEAN13ProductCode.isPresent();
+			if (!fitsInternalUseOrVariableMeasure)
+			{
+				throwQRCodeProductErrorException(expectedProductId, ean13ProductNo, expectedProductNo, expectedEAN13Codes);
+			}
 		}
-
-		final Optional<String> suitableEAN13ProductCode = expectedEAN13Codes.stream().filter(ean13ProductNo::equals).findFirst();
-
-		final boolean fitsInternalUseOrVariableMeasure = pickFromHUQRCode.isInternalUseOrVariableMeasure() && suitableEAN13ProductCode.isPresent();
-		if (!fitsInternalUseOrVariableMeasure)
+		else if (!(pickFromHUQRCode.isVariableWeight() && expectedProductNo.startsWith(ean13ProductNo)))
 		{
 			throwQRCodeProductErrorException(expectedProductId, ean13ProductNo, expectedProductNo, expectedEAN13Codes);
 		}

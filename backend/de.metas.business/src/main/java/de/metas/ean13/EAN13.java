@@ -57,13 +57,13 @@ public class EAN13
 		if (prefix.equals(PREFIX_VariableWeight) || prefix.equals(PREFIX_InternalUseOrVariableMeasure))
 		{
 			final String productNo;
-			if (PREFIX_VariableWeight.equals(prefix))
+			if (PREFIX_InternalUseOrVariableMeasure.equals(prefix))
 			{
-				productNo = barcode.substring(2, 7); // 5 digits for article code (AAAAA)
+				productNo = barcode.substring(2, 6); // 4 digits for article code (IIII), see https://www.gs1.org/docs/barcodes/SummaryOfGS1MOPrefixes20-29.pdf
 			}
 			else
 			{
-				productNo = barcode.substring(2, 6); // 4 digits for article code (IIII), see https://www.gs1.org/docs/barcodes/SummaryOfGS1MOPrefixes20-29.pdf
+				productNo = barcode.substring(2, 7); // 5 digits for article code (AAAAA)
 
 			}
 			final String weightStr = barcode.substring(7, 12); // 5 digits for weight (GGGGG)
