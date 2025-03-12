@@ -447,6 +447,26 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	@Nullable
+	public String getEAN13Code(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		if (product == null)
+		{
+			return "<" + productId + ">";
+		}
+
+		final String upc = product.getUPC();
+
+		if(upc == null)
+		{
+
+			return null;
+		}
+		return upc.substring(2, 6);
+	}
+
+	@Override
 	public ImmutableMap<ProductId, String> getProductValues(@NonNull final Set<ProductId> productIds)
 	{
 		if (productIds.isEmpty())
@@ -604,9 +624,9 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public Optional<ProductId> getProductIdByValueStartsWith(@NonNull final String valuePrefix, @NonNull final ClientId clientId)
+	public Optional<ProductId> getProductIdByEAN13CodeOrValue(@NonNull final String ean13Code, @NonNull final ClientId clientId)
 	{
-		return productsRepo.getProductIdByValueStartsWith(valuePrefix, clientId);
+		return productsRepo.getProductIdByEAN13CodeOrValue(ean13Code, clientId);
 	}
 
 	@Override

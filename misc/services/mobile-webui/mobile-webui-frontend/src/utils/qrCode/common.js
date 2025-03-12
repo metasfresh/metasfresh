@@ -45,7 +45,7 @@ export const isBarcodeProductNoMatching = ({ expectedProductNo, barcodeProductNo
   const barcodeProductNoStr = String(barcodeProductNo);
 
   if (barcodeType === BARCODE_TYPE_EAN13) {
-    return expectedProductNoStr.startsWith(barcodeProductNoStr);
+    return expectedProductNoStr.startsWith(barcodeProductNoStr) || barcodeProductNoStr.startsWith(expectedProductNoStr);
   } else {
     return expectedProductNoStr === barcodeProductNoStr;
   }
