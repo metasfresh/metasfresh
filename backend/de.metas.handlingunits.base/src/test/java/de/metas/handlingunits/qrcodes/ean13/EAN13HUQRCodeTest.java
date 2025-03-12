@@ -51,7 +51,7 @@ class EAN13HUQRCodeTest
 			assertThat(result.isPresent()).isTrue();
 			final EAN13HUQRCode qrCode = result.get();
 			assertThat(qrCode.getPrefix()).isEqualTo("29");
-			assertThat(qrCode.getProductNo()).isEqualTo("12345");
+			assertThat(qrCode.getProductNo()).isEqualTo("1234");
 			assertThat(qrCode.getWeightInKg()).contains(new BigDecimal("0.500"));
 			assertThat(qrCode.getChecksum()).isEqualTo(9);
 
@@ -64,7 +64,7 @@ class EAN13HUQRCodeTest
 			assertThat(result.isPresent()).isTrue();
 			final EAN13HUQRCode qrCode = result.get();
 			assertThat(qrCode.getPrefix()).isEqualTo("29");
-			assertThat(qrCode.getProductNo()).isEqualTo("48882");
+			assertThat(qrCode.getProductNo()).isEqualTo("4888");
 			assertThat(qrCode.getWeightInKg()).contains(new BigDecimal("0.574"));
 			assertThat(qrCode.getChecksum()).isEqualTo(5);
 
