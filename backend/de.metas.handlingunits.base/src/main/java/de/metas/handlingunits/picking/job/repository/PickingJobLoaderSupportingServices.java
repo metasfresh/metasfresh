@@ -6,7 +6,6 @@ import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.ITranslatableString;
@@ -49,6 +48,8 @@ public interface PickingJobLoaderSupportingServices
 	PickingSlotIdAndCaption getPickingSlotIdAndCaption(@NonNull PickingSlotId pickingSlotId);
 
 	String getProductNo(@NonNull ProductId productId);
+
+	String getEAN13ProductCode(@NonNull ProductId productId);
 
 	ProductCategoryId getProductCategoryId(@NonNull ProductId productId);
 

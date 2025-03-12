@@ -44,6 +44,7 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collection;
@@ -139,6 +140,14 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	}
 
 	@Override
+	@Nullable
+	public String getEAN13ProductCode(@NonNull final ProductId productId)
+	{
+		return getProductInfo(productId).getEan13ProductCode();
+	}
+
+
+	@Override
 	public ProductCategoryId getProductCategoryId(@NonNull final ProductId productId)
 	{
 		return getProductInfo(productId).getProductCategoryId();
@@ -162,6 +171,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 		return ProductInfo.builder()
 				.productId(productId)
 				.productNo(product.getValue())
+				.ean13ProductCode(product.getEAN13_ProductCode())
 				.productCategoryId(ProductCategoryId.ofRepoId(product.getM_Product_Category_ID()))
 				.name(InterfaceWrapperHelper.getModelTranslationMap(product).getColumnTrl(I_M_Product.COLUMNNAME_Name, product.getName()))
 				.build();
@@ -217,6 +227,8 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	{
 		@NonNull ProductId productId;
 		@NonNull String productNo;
+		@Nullable
+		String ean13ProductCode;
 		@NonNull ProductCategoryId productCategoryId;
 		@NonNull ITranslatableString name;
 	}

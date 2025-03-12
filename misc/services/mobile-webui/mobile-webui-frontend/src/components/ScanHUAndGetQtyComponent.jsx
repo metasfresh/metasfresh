@@ -217,6 +217,7 @@ const ScanHUAndGetQtyComponent = ({
     bestBeforeDate,
     lotNo,
     productNo,
+    ean13ProductCode,
     barcodeType,
     isCloseTarget = false,
     isDone = true,
@@ -234,6 +235,7 @@ const ScanHUAndGetQtyComponent = ({
       bestBeforeDate,
       lotNo,
       productNo,
+      ean13ProductCode,
       isCloseTarget,
       isDone,
     });

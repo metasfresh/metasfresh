@@ -34,18 +34,26 @@ export const toLocalDateString = ({ year, month, day }) => {
   return `${yearInt}-${monthInt < 10 ? '0' + monthInt : monthInt}-${dayInt < 10 ? '0' + dayInt : dayInt}`;
 };
 
-export const isBarcodeProductNoMatching = ({ expectedProductNo, barcodeProductNo, barcodeType }) => {
+export const isBarcodeProductNoMatching = ({
+  expectedProductNo,
+  expectedEan13ProductCode,
+  barcodeProductNo,
+  barcodeType,
+}) => {
   // if expected nor barcode productNo was specified, consider products are matching
-  if (!expectedProductNo || !barcodeProductNo) {
+  if ((!expectedProductNo && !expectedEan13ProductCode) || !barcodeProductNo) {
     return true;
   }
 
   // normalize productNo(s) before comparing
   const expectedProductNoStr = String(expectedProductNo);
+  const expectedEan13ProductCodeStr = String(expectedEan13ProductCode);
   const barcodeProductNoStr = String(barcodeProductNo);
 
   if (barcodeType === BARCODE_TYPE_EAN13) {
-    return expectedProductNoStr.startsWith(barcodeProductNoStr) || barcodeProductNoStr.startsWith(expectedProductNoStr);
+    const validProductValue = expectedProductNoStr.startsWith(barcodeProductNoStr);
+    const validEAN13ProductCode = expectedProductNoStr === expectedEan13ProductCodeStr;
+    return validProductValue || validEAN13ProductCode;
   } else {
     return expectedProductNoStr === barcodeProductNoStr;
   }

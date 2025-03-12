@@ -63,6 +63,7 @@ const PickLineScanScreen = () => {
     caption,
     productId,
     productNo,
+    ean13ProductCode,
     pickingUnit,
     packingItemName,
     qtyToPick,
@@ -84,13 +85,21 @@ const PickLineScanScreen = () => {
         scannedBarcode,
         expectedProductId: productId,
         expectedProductNo: productNo,
+        expectedEAN13ProductCode: ean13ProductCode,
       }),
-    [productId, productNo]
+    [productId, productNo, ean13ProductCode]
   );
 
   const onClose = useOnClose({ applicationId, wfProcessId, activity, lineId, next });
 
-  const onResult = usePostQtyPicked({ wfProcessId, activityId, lineId, expectedProductNo: productNo, onClose });
+  const onResult = usePostQtyPicked({
+    wfProcessId,
+    activityId,
+    lineId,
+    expectedProductNo: productNo,
+    expectedEAN13ProductCode: ean13ProductCode,
+    onClose,
+  });
 
   const getConfirmationPromptForQty = useCallback(
     (qtyInput) => {
@@ -138,6 +147,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     caption: line?.caption,
     productId: line.productId,
     productNo: line.productNo,
+    ean13ProductCode: line.ean13ProductCode,
     pickingUnit: line?.pickingUnit,
     packingItemName: line?.packingItemName,
     qtyToPick: getQtyToPickForLine({ line }),
@@ -151,9 +161,20 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 };
 
 // @VisibleForTesting
-export const convertScannedBarcodeToResolvedResult = ({ scannedBarcode, expectedProductId, expectedProductNo }) => {
+export const convertScannedBarcodeToResolvedResult = ({
+  scannedBarcode,
+  expectedProductId,
+  expectedProductNo,
+  expectedEAN13ProductCode,
+}) => {
   const parsedHUQRCode = parseQRCodeString(scannedBarcode);
-  console.log('resolveScannedBarcode', { parsedHUQRCode, scannedBarcode, expectedProductId, expectedProductNo });
+  console.log('resolveScannedBarcode', {
+    parsedHUQRCode,
+    scannedBarcode,
+    expectedProductId,
+    expectedProductNo,
+    expectedEAN13ProductCode,
+  });
 
   if (expectedProductId != null && parsedHUQRCode.productId != null && parsedHUQRCode.productId !== expectedProductId) {
     throw trl('activities.picking.notEligibleHUBarcode');
@@ -162,7 +183,8 @@ export const convertScannedBarcodeToResolvedResult = ({ scannedBarcode, expected
   if (
     expectedProductNo != null &&
     parsedHUQRCode.productNo != null &&
-    String(parsedHUQRCode.productNo) !== expectedProductNo
+    String(parsedHUQRCode.productNo) !== expectedProductNo &&
+    String(parsedHUQRCode.productNo) !== expectedEAN13ProductCode // Add comparison to expectedEAN13ProductCode
   ) {
     throw trl('activities.picking.notEligibleHUBarcode');
   }
@@ -228,7 +250,14 @@ const useOnClose = ({ applicationId, wfProcessId, activity, lineId, next }) => {
   };
 };
 
-const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam = null, expectedProductNo, onClose }) => {
+const usePostQtyPicked = ({
+  wfProcessId,
+  activityId,
+  lineId: lineIdParam = null,
+  expectedProductNo,
+  expectedEAN13ProductCode,
+  onClose,
+}) => {
   const dispatch = useDispatch();
 
   return ({
@@ -243,6 +272,7 @@ const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam = null,
     bestBeforeDate = null,
     lotNo = null,
     productNo,
+    ean13ProductCode,
     isCloseTarget = false,
     isDone = true,
     resolvedBarcodeData,
@@ -264,14 +294,22 @@ const usePostQtyPicked = ({ wfProcessId, activityId, lineId: lineIdParam = null,
       isShowLotNo,
       lotNo,
       productNo,
+      ean13ProductCode,
       isDone,
       ...others,
     });
 
-    if (!isBarcodeProductNoMatching({ expectedProductNo, barcodeProductNo: productNo, barcodeType: barcodeType })) {
+    if (
+      !isBarcodeProductNoMatching({
+        expectedProductNo,
+        expectedEAN13ProductCode,
+        barcodeProductNo: productNo,
+        barcodeType: barcodeType,
+      })
+    ) {
       throw {
         messageKey: 'activities.picking.qrcode.differentProduct',
-        context: { expectedProductNo, productNo, barcodeType },
+        context: { expectedProductNo, expectedEAN13ProductCode, productNo, barcodeType },
       };
     }
 

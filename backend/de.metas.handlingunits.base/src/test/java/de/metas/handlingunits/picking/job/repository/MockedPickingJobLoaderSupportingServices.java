@@ -27,6 +27,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -88,6 +89,13 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	public String getProductNo(@NonNull final ProductId productId)
 	{
 		return "productNo-" + productId.getRepoId();
+	}
+
+	@Override
+	@Nullable
+	public String getEAN13ProductCode(@NonNull final ProductId productId)
+	{
+		return null;
 	}
 
 	@Override

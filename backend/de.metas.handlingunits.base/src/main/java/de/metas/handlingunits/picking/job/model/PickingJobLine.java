@@ -64,6 +64,7 @@ public class PickingJobLine
 
 	@NonNull ProductId productId;
 	@NonNull String productNo;
+	@Nullable String ean13ProductCode;
 	@NonNull ProductCategoryId productCategoryId;
 	@NonNull ITranslatableString productName;
 	@NonNull HUPIItemProduct packingInfo;
@@ -99,6 +100,7 @@ public class PickingJobLine
 			@NonNull final ITranslatableString caption,
 			@NonNull final ProductId productId,
 			@NonNull final String productNo,
+			@Nullable final String ean13ProductCode,
 			@NonNull final ProductCategoryId productCategoryId,
 			@NonNull final ITranslatableString productName,
 			@NonNull final HUPIItemProduct packingInfo,
@@ -118,6 +120,7 @@ public class PickingJobLine
 		this.caption = caption;
 		this.productId = productId;
 		this.productNo = productNo;
+		this.ean13ProductCode = ean13ProductCode;
 		this.productCategoryId = productCategoryId;
 		this.productName = productName;
 		this.packingInfo = packingInfo;

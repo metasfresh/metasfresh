@@ -51,6 +51,7 @@ public class JsonPickingJobLine
 	@NonNull String pickingLineId;
 	@NonNull String productId;
 	@NonNull String productNo;
+	@Nullable String ean13ProductCode;
 	@NonNull String caption;
 
 	@Nullable JsonQRCode pickingSlot;
@@ -110,6 +111,7 @@ public class JsonPickingJobLine
 				.pickingLineId(line.getId().getAsString())
 				.productId(line.getProductId().getAsString())
 				.productNo(line.getProductNo())
+				.ean13ProductCode(line.getEan13ProductCode())
 				.caption(line.getCaption().translate(adLanguage))
 				.pickingSlot(currentPickingTarget.getPickingSlot().map(JsonPickingJobLine::toJsonQRCode).orElse(null))
 				.luPickingTarget(currentPickingTarget.getLuPickingTarget().map(JsonLUPickingTarget::of).orElse(null))
