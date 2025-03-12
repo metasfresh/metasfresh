@@ -1,0 +1,3 @@
+CREATE TABLE backup.EDI_DesadvLine_gh20320_11032025
+AS
+SELECT * FROM EDI_DesadvLine;
