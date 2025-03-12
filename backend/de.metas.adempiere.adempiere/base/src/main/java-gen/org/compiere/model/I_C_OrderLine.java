@@ -1485,6 +1485,27 @@ public interface I_C_OrderLine
 	String COLUMNNAME_IsPriceEditable = "IsPriceEditable";
 
 	/**
+	 * Set Skip invoicing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSkipInvoicing (boolean IsSkipInvoicing);
+
+	/**
+	 * Get Skip invoicing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSkipInvoicing();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_IsSkipInvoicing = new ModelColumn<>(I_C_OrderLine.class, "IsSkipInvoicing", null);
+	String COLUMNNAME_IsSkipInvoicing = "IsSkipInvoicing";
+
+	/**
 	 * Set Abo.
 	 *
 	 * <br>Type: YesNo

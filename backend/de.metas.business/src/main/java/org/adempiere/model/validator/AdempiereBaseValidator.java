@@ -15,7 +15,7 @@ import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.event.EventBusAdempiereInterceptor;
 import de.metas.event.Topic;
-import de.metas.notification.INotificationGroupNameRepository;
+import de.metas.notification.INotificationGroupRepository;
 import de.metas.notification.NotificationGroupName;
 import de.metas.organization.interceptors.C_Fiscal_Representation;
 import de.metas.reference.model.interceptor.AD_Ref_Table;
@@ -97,8 +97,8 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 	@Override
 	protected List<Topic> getAvailableUserNotificationsTopics()
 	{
-		final INotificationGroupNameRepository notificationGroupNameRepo = Services.get(INotificationGroupNameRepository.class);
-		return notificationGroupNameRepo.getAll()
+		final INotificationGroupRepository notificationGroupRepo = Services.get(INotificationGroupRepository.class);
+		return notificationGroupRepo.getActiveNames()
 				.stream()
 				.map(NotificationGroupName::toTopic)
 				.collect(ImmutableList.toImmutableList());

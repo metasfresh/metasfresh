@@ -341,7 +341,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" mode="Transparent" x="59" y="0" width="128" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05">
-					<printWhenExpression><![CDATA[new Boolean($F{attributes} != null)]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{attributes} != null || $F{lotno} != null || $F{best_before_date} != null)]]></printWhenExpression>
 				</reportElement>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -356,7 +356,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
 				<reportElement key="textField-24" mode="Transparent" x="59" y="0" width="192" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="1de2cada-0d12-402f-b86d-3aff77578db6">
-					<printWhenExpression><![CDATA[new Boolean($F{attributes} == null)]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean($F{attributes} == null && $F{lotno} == null && $F{best_before_date} == null)]]></printWhenExpression>
 				</reportElement>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

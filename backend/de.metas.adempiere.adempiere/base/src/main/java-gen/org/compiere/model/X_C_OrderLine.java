@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -490384294L;
+	private static final long serialVersionUID = -208488602L;
 
     /** Standard Constructor */
     public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
@@ -1032,6 +1032,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public boolean isPriceEditable() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPriceEditable);
+	}
+
+	@Override
+	public void setIsSkipInvoicing (final boolean IsSkipInvoicing)
+	{
+		set_Value (COLUMNNAME_IsSkipInvoicing, IsSkipInvoicing);
+	}
+
+	@Override
+	public boolean isSkipInvoicing() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSkipInvoicing);
 	}
 
 	@Override

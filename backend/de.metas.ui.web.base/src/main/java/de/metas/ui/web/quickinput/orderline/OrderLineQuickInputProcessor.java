@@ -87,7 +87,7 @@ import java.util.Set;
 public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 {
 	// services
-	private static final transient Logger logger = LogManager.getLogger(OrderLineQuickInputProcessor.class);
+	private static final Logger logger = LogManager.getLogger(OrderLineQuickInputProcessor.class);
 	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
@@ -124,6 +124,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 
 		final Group group = orderGroupsRepo.prepareNewGroup()
 				.groupTemplate(groupTemplate)
+				.qty(extractQty(quickInput))
 				.createGroup(orderId, contractConditionsId);
 
 		final HashSet<OrderLineId> newOrderLineIds = new HashSet<>();
@@ -172,6 +173,12 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 	{
 		final IOrderLineQuickInput orderLineQuickInput = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
 		return ConditionsId.optionalOfRepoId(orderLineQuickInput.getC_Flatrate_Conditions_ID());
+	}
+
+	private static BigDecimal extractQty(final QuickInput quickInput)
+	{
+		final IOrderLineQuickInput orderLineQuickInput = quickInput.getQuickInputDocumentAs(IOrderLineQuickInput.class);
+		return orderLineQuickInput.getQty();
 	}
 
 	private void validateInput(final OrderLineCandidate candidate)

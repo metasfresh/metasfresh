@@ -10,6 +10,9 @@ import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
+import static java.math.BigDecimal.ONE;
 
 /*
  * #%L
@@ -42,7 +45,7 @@ public interface GroupRepository
 	GroupCreator.GroupCreatorBuilder prepareNewGroup();
 
 	Group retrieveOrCreateGroup(RetrieveOrCreateGroupRequest request);
-	
+
 	@Value
 	@Builder
 	class RetrieveOrCreateGroupRequest
@@ -52,5 +55,6 @@ public interface GroupRepository
 		@NonNull GroupTemplate newGroupTemplate;
 		@Nullable ConditionsId newContractConditionsId;
 		@Nullable GroupCompensationOrderBy groupCompensationOrderBy;
+		@NonNull @Builder.Default BigDecimal qtyMultiplier = ONE;
 	}
 }

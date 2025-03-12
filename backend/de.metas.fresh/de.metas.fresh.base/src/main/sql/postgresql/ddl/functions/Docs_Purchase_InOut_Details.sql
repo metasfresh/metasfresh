@@ -24,6 +24,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOu
             )
 AS
 $$
+SELECT *
+FROM (
 SELECT Attributes,
        Name, -- product
        SUM(HUQty)       AS HUQty,
@@ -38,7 +40,7 @@ SELECT Attributes,
        iol.Description,
        bp_product_no,
        bp_product_name,
-       MAX(iol.line)    AS line
+       (ROW_NUMBER() OVER (ORDER BY MAX(iol.line))) * 10 AS line
 
 FROM
     -- Sub select to get all in out lines we need. They are in a subselect so we can neatly group by the attributes
@@ -70,7 +72,7 @@ FROM
                                                                    WHERE rsa.m_receiptschedule_id = rs.m_receiptschedule_id
                                                                      AND rs.C_OrderLine_ID = ic.C_OrderLine_ID
                                                                      AND rsa.isActive = 'Y'
-                                                          )
+                                                      )
                                                   )
                END                                                                                                AS QualityNote,
                iol.isInDispute,
@@ -173,7 +175,8 @@ GROUP BY Attributes,
          Description,
          bp_product_no,
          bp_product_name
-ORDER BY Name, MIN(M_InOutLine_ID)
+ORDER BY Name, MIN(M_InOutLine_ID), line) AS result
+ORDER BY line
 
 $$
     LANGUAGE sql STABLE

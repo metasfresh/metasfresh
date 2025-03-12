@@ -87,6 +87,7 @@ public class NotificationSenderTemplate
 	private final IUserDAO usersRepo = Services.get(IUserDAO.class);
 	private final INotificationBL notificationsService = Services.get(INotificationBL.class);
 	private final IRoleDAO rolesRepo = Services.get(IRoleDAO.class);
+	private final INotificationGroupRepository notificationGroupRepository = Services.get(INotificationGroupRepository.class);
 	private final IRoleNotificationsConfigRepository roleNotificationsConfigRepository = Services.get(IRoleNotificationsConfigRepository.class);
 	private final INotificationGroupNameRepository notificationGroupNamesRepo = Services.get(INotificationGroupNameRepository.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
@@ -135,7 +136,7 @@ public class NotificationSenderTemplate
 		try
 		{
 			Stream.of(resolve(request))
-					.flatMap(this::explodeByUser)
+					.flatMap(this::explodeByRecipient)
 					.flatMap(this::explodeByEffectiveNotificationsConfigs)
 					.forEach(this::send0);
 		}
@@ -179,13 +180,20 @@ public class NotificationSenderTemplate
 				.build();
 	}
 
-	private Stream<UserNotificationRequest> explodeByUser(final UserNotificationRequest request)
+	private Stream<UserNotificationRequest> explodeByRecipient(final UserNotificationRequest request)
 	{
-		return explodeRecipients(request.getRecipient())
+		final LinkedHashSet<Recipient> recipients = new LinkedHashSet<>();
+		recipients.add(request.getRecipient());
+		notificationGroupRepository.getNotificationGroupByName(request.getNotificationGroupName())
+				.ifPresent(notificationGroup -> recipients.addAll(notificationGroup.getCcs().toSet()));
+
+		return recipients.stream()
+				.flatMap(this::explodeRecipient)
+				.distinct()
 				.map(request::deriveByRecipient);
 	}
 
-	private Stream<Recipient> explodeRecipients(final Recipient recipient)
+	private Stream<Recipient> explodeRecipient(final Recipient recipient)
 	{
 		if (recipient.isAllUsers())
 		{

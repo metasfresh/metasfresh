@@ -3,8 +3,9 @@ package de.metas.notification.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
-import de.metas.notification.INotificationGroupNameRepository;
+import de.metas.notification.INotificationGroupRepository;
 import de.metas.notification.IRoleNotificationsConfigRepository;
+import de.metas.notification.NotificationGroupId;
 import de.metas.notification.NotificationGroupName;
 import de.metas.notification.RoleNotificationsConfig;
 import de.metas.notification.UserNotificationsGroup;
@@ -75,8 +76,8 @@ public class RoleNotificationsConfigRepository implements IRoleNotificationsConf
 
 	private UserNotificationsGroup toNotificationGroup(final I_AD_Role_NotificationGroup record)
 	{
-		final INotificationGroupNameRepository notificationGroupNamesRepo = Services.get(INotificationGroupNameRepository.class);
-		final NotificationGroupName groupInternalName = notificationGroupNamesRepo.getById(record.getAD_NotificationGroup_ID());
+		final INotificationGroupRepository notificationGroupRepo = Services.get(INotificationGroupRepository.class);
+		final NotificationGroupName groupInternalName = notificationGroupRepo.getNameById(NotificationGroupId.ofRepoId(record.getAD_NotificationGroup_ID())).orElse(null);
 		if (groupInternalName == null)
 		{
 			// group does not exist or it was deactivated
@@ -92,8 +93,12 @@ public class RoleNotificationsConfigRepository implements IRoleNotificationsConf
 	@Override
 	public ImmutableSet<RoleId> getRoleIdsContainingNotificationGroupName(@NonNull final NotificationGroupName notificationGroupName)
 	{
-		final INotificationGroupNameRepository notificationGroupNamesRepo = Services.get(INotificationGroupNameRepository.class);
-		final NotificationGroupId notificationGroupId = notificationGroupNamesRepo.getNotificationGroupId(notificationGroupName);
+		final INotificationGroupRepository notificationGroupRepo = Services.get(INotificationGroupRepository.class);
+		final NotificationGroupId notificationGroupId = notificationGroupRepo.getNotificationGroupId(notificationGroupName).orElse(null);
+		if(notificationGroupId == null)
+		{
+			return ImmutableSet.of();
+		}
 
 		return Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_AD_Role_NotificationGroup.class)

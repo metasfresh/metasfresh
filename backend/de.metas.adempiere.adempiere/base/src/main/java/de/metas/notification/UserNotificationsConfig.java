@@ -1,6 +1,7 @@
 package de.metas.notification;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.email.EMailAddress;
 import de.metas.email.EMailCustomType;
@@ -20,7 +21,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Supplier;
 
 /*
@@ -48,15 +48,14 @@ import java.util.function.Supplier;
 @Value
 public class UserNotificationsConfig
 {
-	UserId userId;
-	String userADLanguage; // might be null
-	ClientId clientId;
-	OrgId orgId;
+	@NonNull UserId userId;
+	@Nullable String userADLanguage; // might be null
+	@NonNull ClientId clientId;
+	@NonNull OrgId orgId;
 
-	@Getter(AccessLevel.NONE)
-	ImmutableList<UserNotificationsGroup> userNotificationGroups; // needed for toBuilder()
-	Map<NotificationGroupName, UserNotificationsGroup> userNotificationGroupsByInternalName;
-	UserNotificationsGroup defaults;
+	@NonNull @Getter(AccessLevel.NONE) ImmutableList<UserNotificationsGroup> userNotificationGroups; // needed for toBuilder()
+	@NonNull ImmutableMap<NotificationGroupName, UserNotificationsGroup> userNotificationGroupsByInternalName;
+	@NonNull UserNotificationsGroup defaults;
 
 	EMailAddress email;
 	EMailCustomType eMailCustomType;
@@ -104,15 +103,7 @@ public class UserNotificationsConfig
 	{
 		return userInChargeId != null;
 	}
-
-	public UserNotificationsConfig deriveWithNotificationTypes(final Set<NotificationType> notificationTypes)
-	{
-		return toBuilder()
-				.clearUserNotificationGroups()
-				.defaults(UserNotificationsGroup.prepareDefault().notificationTypes(notificationTypes).build())
-				.build();
-	}
-
+	
 	public UserNotificationsConfig deriveWithEMailCustomType(final EMailCustomType eMailCustomType)
 	{
 		return toBuilder()
