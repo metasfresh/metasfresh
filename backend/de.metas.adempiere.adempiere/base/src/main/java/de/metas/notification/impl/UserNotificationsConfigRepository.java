@@ -3,6 +3,7 @@ package de.metas.notification.impl;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.notification.IUserNotificationsConfigRepository;
+import de.metas.notification.NotificationGroupId;
 import de.metas.notification.NotificationType;
 import de.metas.user.UserId;
 import de.metas.util.Check;

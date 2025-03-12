@@ -22,6 +22,7 @@
 
 package de.metas.notification.impl;
 
+import de.metas.notification.NotificationGroupId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;

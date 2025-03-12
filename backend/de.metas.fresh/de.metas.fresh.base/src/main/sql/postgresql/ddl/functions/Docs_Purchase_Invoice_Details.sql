@@ -42,6 +42,8 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Invoice_Details
     LANGUAGE sql
 AS
 $$
+SELECT *
+FROM (
 SELECT COALESCE(io1.DocType, io2.DocType) || ': ' || COALESCE(io1.DocNo, io2.DocNo) AS InOuts,
        COALESCE(io1.DocType, io2.DocType)                                           AS DocType,
        TO_CHAR(COALESCE(io1.DateFrom, io2.DateFrom), 'DD.MM.YYYY')                  AS InOuts_DateFrom,
@@ -238,6 +240,8 @@ ORDER BY COALESCE(io1.DateFrom, io2.DateFrom),
          COALESCE(pc.IsHU, FALSE),
          Name,
          MAX(line)
+     ) result
+ORDER BY line
 $$
 ;
 

@@ -1,4 +1,4 @@
-DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details(IN p_record_id   numeric,
+﻿DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Details(IN p_record_id   numeric,
                                                                                     IN p_ad_language Character Varying(6))
 ;
 
@@ -16,7 +16,6 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_D
                 PriceEntered                 numeric,
                 UOMSymbol                    character varying(10),
                 StdPrecision                 numeric(10, 0),
-                QtyPattern                   character varying,
                 linenetamt                   numeric,
                 discount                     numeric,
                 isDiscountPrinted            character(1),
@@ -58,7 +57,6 @@ SELECT ol.line,
        ol.PriceEntered                                        AS PriceEntered,
        COALESCE(uomt.UOMSymbol, uom.UOMSymbol)                AS UOMSymbol,
        uom.StdPrecision,
-       report.getQtyPattern(uom.StdPrecision) AS QtyPattern,
        ol.linenetamt                                          AS linenetamt,
        CASE
            WHEN ROUND(discount, 0) = discount THEN ROUND(discount, 0)

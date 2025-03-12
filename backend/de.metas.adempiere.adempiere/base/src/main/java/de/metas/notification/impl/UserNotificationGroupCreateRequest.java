@@ -22,6 +22,7 @@
 
 package de.metas.notification.impl;
 
+import de.metas.notification.NotificationGroupId;
 import de.metas.notification.NotificationType;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
