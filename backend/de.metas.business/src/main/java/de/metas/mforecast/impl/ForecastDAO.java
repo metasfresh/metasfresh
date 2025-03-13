@@ -60,10 +60,8 @@ public class ForecastDAO implements IForecastDAO
 	}
 
 	@Override
-	public List<I_M_ForecastLine> retrieveLinesByForecastId(final int forecastId)
+	public List<I_M_ForecastLine> retrieveLinesByForecastId(final ForecastId forecastId)
 	{
-		Check.assumeGreaterThanZero(forecastId, "forecastId");
-
 		return queryBL.createQueryBuilder(I_M_ForecastLine.class)
 				.addEqualsFilter(I_M_ForecastLine.COLUMNNAME_M_Forecast_ID, forecastId)
 				.filter(ActiveRecordQueryFilter.getInstance(I_M_ForecastLine.class))

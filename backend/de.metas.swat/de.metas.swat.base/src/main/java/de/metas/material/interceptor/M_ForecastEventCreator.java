@@ -1,6 +1,6 @@
 package de.metas.material.interceptor;
 
-import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.material.event.ModelProductDescriptorExtractor;
@@ -8,9 +8,12 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.forecast.Forecast;
-import de.metas.material.event.forecast.Forecast.ForecastBuilder;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
+import de.metas.material.event.forecast.ForecastDeletedEvent;
 import de.metas.material.event.forecast.ForecastLine;
+import de.metas.mforecast.IForecastDAO;
+import de.metas.mforecast.impl.ForecastId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.warehouse.WarehouseId;
@@ -19,6 +22,7 @@ import org.compiere.model.I_M_ForecastLine;
 import org.compiere.util.TimeUtil;
 
 import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -44,6 +48,8 @@ import java.util.List;
 
 public class M_ForecastEventCreator
 {
+	private final IForecastDAO forecastsRepo = Services.get(IForecastDAO.class);
+
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
 
 	public M_ForecastEventCreator(@NonNull final ModelProductDescriptorExtractor productDescriptorFactory)
@@ -51,28 +57,50 @@ public class M_ForecastEventCreator
 		this.productDescriptorFactory = productDescriptorFactory;
 	}
 
-	public ForecastCreatedEvent createEventWithLinesAndTiming(
-			@NonNull final List<I_M_ForecastLine> forecastLineRecords,
+	public Optional<ForecastCreatedEvent> createEventWithLinesAndTiming(
+			@NonNull final I_M_Forecast forecastRecord,
 			@NonNull final DocTimingType timing)
 	{
-		Preconditions.checkArgument(!forecastLineRecords.isEmpty(), "Param 'forecastLines' may not be empty; timing=%s", timing);
+		return buildForecast(forecastRecord, timing)
+				.map(forecast -> ForecastCreatedEvent
+						.builder()
+						.forecast(forecast)
+						.eventDescriptor(EventDescriptor.ofClientAndOrg(forecastRecord.getAD_Client_ID(), forecastRecord.getAD_Org_ID()))
+						.build());
+	}
 
-		final I_M_Forecast forecastRecord = forecastLineRecords.get(0).getM_Forecast();
+	public Optional<ForecastDeletedEvent> createDeletedEvent(
+			@NonNull final I_M_Forecast forecastRecord,
+			@NonNull final DocTimingType timing)
+	{
+		return buildForecast(forecastRecord, timing)
+				.map(forecast -> ForecastDeletedEvent
+						.builder()
+						.forecast(forecast)
+						.eventDescriptor(EventDescriptor.ofClientAndOrg(forecastRecord.getAD_Client_ID(), forecastRecord.getAD_Org_ID()))
+						.build());
+	}
 
-		final ForecastBuilder forecastBuilder = Forecast.builder()
-				.forecastId(forecastRecord.getM_Forecast_ID())
-				.docStatus(timing.getDocStatus());
+	@NonNull
+	private Optional<Forecast> buildForecast(
+			@NonNull final I_M_Forecast forecastRecord,
+			@NonNull final DocTimingType timing)
+	{
+		final List<I_M_ForecastLine> forecastLineRecords = forecastsRepo
+				.retrieveLinesByForecastId(ForecastId.ofRepoId(forecastRecord.getM_Forecast_ID()));
 
-		for (final I_M_ForecastLine forecastLineRecord : forecastLineRecords)
+		if (forecastLineRecords.isEmpty())
 		{
-			forecastBuilder.forecastLine(createForecastLine(forecastLineRecord, forecastRecord));
+			return Optional.empty();
 		}
 
-		return ForecastCreatedEvent
-				.builder()
-				.forecast(forecastBuilder.build())
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(forecastRecord.getAD_Client_ID(), forecastRecord.getAD_Org_ID()))
-				.build();
+		return Optional.of(Forecast.builder()
+								   .forecastId(forecastRecord.getM_Forecast_ID())
+								   .docStatus(timing.getDocStatus())
+								   .forecastLines(forecastLineRecords.stream()
+														  .map(line -> createForecastLine(line, forecastRecord))
+														  .collect(ImmutableList.toImmutableList()))
+								   .build());
 	}
 
 	private ForecastLine createForecastLine(
