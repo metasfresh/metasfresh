@@ -43,7 +43,7 @@ class MessagesMapRepository
 
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		final String sql = "SELECT"
-				+ " m.AD_Message_ID, m.Value, m.MsgText, m.MsgTip, m.ErrorCode"
+				+ " m.AD_Message_ID, m.Value, m.MsgText, m.MsgTip, m.ErrorCode,"
 				+ " trl.AD_Language, trl.MsgText as trl_MsgText, trl.MsgTip as trl_MsgTip"
 				+ " FROM AD_Message m"
 				+ " LEFT OUTER JOIN AD_Message_Trl trl on trl.AD_Message_ID=m.AD_Message_ID"

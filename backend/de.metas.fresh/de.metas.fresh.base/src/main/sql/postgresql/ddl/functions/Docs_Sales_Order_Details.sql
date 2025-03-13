@@ -124,6 +124,7 @@ FROM C_OrderLine ol
 WHERE ol.C_Order_ID = p_record_id
   AND ol.isActive = 'Y'
   AND (COALESCE(pc.M_Product_Category_ID, -1) != getSysConfigAsNumeric('PackingMaterialProductCategoryID', ol.AD_Client_ID, ol.AD_Org_ID))
+  AND ol.isHideWhenPrinting != 'Y'
 ORDER BY ol.line
 
 $$
