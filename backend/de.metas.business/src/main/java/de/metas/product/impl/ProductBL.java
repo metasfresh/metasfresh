@@ -5,8 +5,14 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.IProductCostingBL;
+import de.metas.ean13.EAN13;
+import de.metas.ean13.EAN13Prefix;
+import de.metas.ean13.EAN13ProductCode;
+import de.metas.ean13.EAN13ProductCodes;
 import de.metas.gs1.GTIN;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.i18n.ITranslatableString;
@@ -30,6 +36,7 @@ import de.metas.uom.UOMType;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -41,6 +48,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.IClientDAO;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -93,6 +101,12 @@ public final class ProductBL implements IProductBL
 	public I_M_Product getByIdInTrx(@NonNull final ProductId productId)
 	{
 		return productsRepo.getByIdInTrx(productId);
+	}
+
+	@Override
+	public List<I_M_Product> getByIds(@NonNull final Set<ProductId> productIds)
+	{
+		return productsRepo.getByIds(productIds);
 	}
 
 	@Override
@@ -419,6 +433,7 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	@NonNull
 	public String getProductValueAndName(@Nullable final ProductId productId)
 	{
 		if (productId == null)
