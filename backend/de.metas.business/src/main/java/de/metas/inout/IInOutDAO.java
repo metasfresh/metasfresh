@@ -135,4 +135,6 @@ public interface IInOutDAO extends ISingletonService
 	<T extends I_M_InOut> Map<InOutId, T> getShipmentsByIds(Set<InOutId> inOutIds, Class<T> modelClass);
 
 	Optional<I_M_InOutLine> getReversalLineForLineId(@NonNull final InOutLineId inoutLineId);
+
+	Stream<I_M_InOut> retrieveByQuery(@NonNull de.metas.inout.InOutQuery query);
 }

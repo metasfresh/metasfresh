@@ -1,5 +1,7 @@
 package de.metas.inout;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.order.OrderId;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.InvoicableQtyBasedOn;
@@ -191,4 +193,6 @@ public interface IInOutBL extends ISingletonService
 	String getLocationEmail(InOutId ofRepoId);
 
 	StockQtyAndUOMQty extractInOutLineQty(I_M_InOutLine inOutLineRecord, InvoicableQtyBasedOn invoicableQtyBasedOn);
+
+	ImmutableSet<I_M_InOut> getNotVoidedNotReversedForOrderId(@NonNull OrderId orderId);
 }
