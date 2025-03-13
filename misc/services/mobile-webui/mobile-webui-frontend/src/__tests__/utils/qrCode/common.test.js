@@ -6,7 +6,6 @@ describe('common tests', () => {
       expect(
         isBarcodeProductNoMatching({
           expectedProductNo: null,
-          expectedEAN13ProductCode: null,
           barcodeProductNo: '12345',
           barcodeType: 'HU',
         })
@@ -16,7 +15,6 @@ describe('common tests', () => {
       expect(
         isBarcodeProductNoMatching({
           expectedProductNo: '12345',
-          expectedEAN13ProductCode: null,
           barcodeProductNo: null,
           barcodeType: 'HU',
         })
@@ -26,7 +24,6 @@ describe('common tests', () => {
       expect(
         isBarcodeProductNoMatching({
           expectedProductNo: '12345',
-          expectedEAN13ProductCode: null,
           barcodeProductNo: '12345',
           barcodeType: 'HU',
         })
@@ -36,7 +33,6 @@ describe('common tests', () => {
       expect(
         isBarcodeProductNoMatching({
           expectedProductNo: '123456789',
-          expectedEAN13ProductCode: null,
           barcodeProductNo: '12345',
           barcodeType: 'HU',
         })
@@ -46,7 +42,6 @@ describe('common tests', () => {
       expect(
         isBarcodeProductNoMatching({
           expectedProductNo: '12345',
-          expectedEAN13ProductCode: null,
           barcodeProductNo: '12344',
           barcodeType: 'EAN13',
         })
@@ -56,7 +51,6 @@ describe('common tests', () => {
       expect(
         isBarcodeProductNoMatching({
           expectedProductNo: '12345',
-          expectedEAN13ProductCode: null,
           barcodeProductNo: '12345',
           barcodeType: 'EAN13',
         })
@@ -66,7 +60,6 @@ describe('common tests', () => {
       expect(
         isBarcodeProductNoMatching({
           expectedProductNo: '123456789',
-          expectedEAN13ProductCode: null,
           barcodeProductNo: '12345',
           barcodeType: 'EAN13',
         })
@@ -76,7 +69,6 @@ describe('common tests', () => {
       expect(
         isBarcodeProductNoMatching({
           expectedProductNo: '12345',
-          expectedEAN13ProductCode: null,
           barcodeProductNo: '12344',
           barcodeType: 'EAN13',
         })
