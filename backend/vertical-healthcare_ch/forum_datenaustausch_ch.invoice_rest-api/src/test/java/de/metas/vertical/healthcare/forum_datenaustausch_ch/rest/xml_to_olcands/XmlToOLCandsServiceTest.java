@@ -22,8 +22,12 @@
 
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands;
 
+import de.metas.common.bpartner.v1.request.JsonRequestBPartner;
+import de.metas.common.bpartner.v1.request.JsonRequestLocation;
 import de.metas.common.ordercandidates.v1.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v1.request.JsonOLCandCreateRequest;
+import de.metas.common.ordercandidates.v1.request.JsonRequestBPartnerLocationAndContact;
+import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v1.SyncAdvise;
 import de.metas.rest_api.v1.bpartner.BpartnerRestController;
 import de.metas.rest_api.v1.ordercandidates.OrderCandidatesRestEndpoint;
@@ -34,6 +38,7 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.reque
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.util.lang.ImmutablePair;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -95,6 +100,28 @@ public class XmlToOLCandsServiceTest
 	}
 
 	@Test
+	public void extractBPartnerExternalId_KV_2()
+	{
+		final InputStream inputStream = getClass().getResourceAsStream("/public_examples/md_440_tp_kvg_de.xml");
+		final RequestType xmlInvoice = JaxbUtil.unmarshalToJaxbElement(inputStream, RequestType.class).getValue();
+
+		final String invoiceRecipientEAN = xmlToOLCandsService.extractRecipientEAN(xmlInvoice);
+
+		assertThat(invoiceRecipientEAN).isEqualTo("7634567890000");
+	}
+
+	@Test
+	public void createBPartnerExternalId_KV_2()
+	{
+		final InputStream inputStream = getClass().getResourceAsStream("/public_examples/md_440_tp_kvg_de.xml");
+		final RequestType xmlInvoice = JaxbUtil.unmarshalToJaxbElement(inputStream, RequestType.class).getValue();
+
+		final JsonExternalId billerOrgCode = xmlToOLCandsService.createBPartnerExternalId(xmlToOLCandsService.getBiller(xmlInvoice.getPayload().getBody()));
+	
+		assertThat(billerOrgCode.getValue()).isEqualTo("EAN-2011234567890");
+	}
+
+	@Test
 	public void createJsonOLCandCreateBulkRequest_KV_2()
 	{
 		final InputStream inputStream = getClass().getResourceAsStream("/public_examples/md_440_tp_kvg_de.xml");
@@ -123,9 +150,34 @@ public class XmlToOLCandsServiceTest
 				.ifNotExists(SyncAdvise.IfNotExists.CREATE)
 				.build();
 
+		// extractRecipientEAN has its own dedicated unittest
+		final String invoiceRecipientEAN = xmlToOLCandsService.extractRecipientEAN(xmlInvoice);
+		
+		// createBPartnerExternalId has its own dedicated unittest
+		final JsonExternalId billerOrgCode = xmlToOLCandsService.createBPartnerExternalId(xmlToOLCandsService.getBiller(xmlInvoice.getPayload().getBody()));
+		
+		final JsonRequestBPartner bpartner = new JsonRequestBPartner();
+		bpartner.setExternalId(JsonExternalId.of(invoiceRecipientEAN));
+
+		final JsonRequestLocation location = new JsonRequestLocation();
+		location.setExternalId(JsonExternalId.of("abc"));
+
+		final XmlToOLCandsService.HighLevelContext context = XmlToOLCandsService.HighLevelContext.builder()
+				.targetDocType(HealthCareInvoiceDocSubType.KV)
+				.billerSyncAdvise(billerSyncAdvise)
+				.debitorSyncAdvise(debitorSyncAdvise)
+				.productsSyncAdvise(productSyncAdvise)
+				.invoiceRecipientEAN(invoiceRecipientEAN)
+				.billerOrgCode(billerOrgCode)
+				.patientWithPossibleBillToLocation(ImmutablePair.of(JsonRequestBPartnerLocationAndContact.builder()
+						.bpartner(bpartner)
+						.location(location)
+						.build(), null))
+				.build();
+
 		// when
 		final JsonOLCandCreateBulkRequest result = xmlToOLCandsService
-				.createJsonOLCandCreateBulkRequest(xmlInvoice, HealthCareInvoiceDocSubType.KV, billerSyncAdvise, debitorSyncAdvise, productSyncAdvise);
+				.createJsonOLCandCreateBulkRequest(xmlInvoice, context);
 
 		// then
 		assertThat(result).isNotNull();
