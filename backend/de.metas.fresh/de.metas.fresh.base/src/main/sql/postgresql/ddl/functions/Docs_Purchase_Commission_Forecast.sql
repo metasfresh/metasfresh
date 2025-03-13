@@ -20,6 +20,28 @@
  * #L%
  */
 
+/*
+ * #%L
+ * de.metas.fresh.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Commission_Forecast (IN p_BPartner_SalesRep_ID numeric,
                                                                                               IN p_ad_language          Character Varying(6))
 ;
@@ -28,41 +50,41 @@ CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Commission_Fore
                                                                                      IN p_ad_language          Character Varying(6))
     RETURNS TABLE
             (
-                documentno        varchar,
-                poreference       varchar,
-                dateordered       date,
-                bpValue           varchar,
-                bpName            varchar,
-                productValue      varchar,
-                productName       varchar,
-                qtyentered        numeric,
-                uom               varchar,
-                billed            numeric,
-                percent           numeric,
-                forecast          numeric,
-                DeliveryToAddress varchar
+                OrderDocumentNo     varchar,
+                poreference         varchar,
+                dateordered         date,
+                BPartnerValue       varchar,
+                BPartnerName        varchar,
+                ProductValue        varchar,
+                ProductName         varchar,
+                qtyentered          numeric,
+                uom                 varchar,
+                pointsbase_invoiced numeric,
+                percentofbasepoints numeric,
+                pointssum_tosettle  numeric,
+                DeliveryToAddress   varchar
             )
     STABLE
     LANGUAGE sql
 AS
 $$
-SELECT o.documentno                                              AS documentno,
+SELECT o.documentno                                              AS OrderDocumentNo,
        o.poreference                                             AS poreference,
        o.dateordered::date                                       AS dateordered,
-       bp.value                                                  AS bpValue,
-       bp.Name                                                   AS bpName,
+       bp.value                                                  AS BPartnerValue,
+       bp.Name                                                   AS BPartnerName,
 
        -- Name Kunde
        -- Produkt
        -- Menge
-       p.value                                                   AS productValue,
-       COALESCE(pt.name, p.name)                                 AS productName,
+       p.value                                                   AS ProductValue,
+       COALESCE(pt.name, p.name)                                 AS ProductName,
        c.qtyentered                                              AS qtyentered,
-       COALESCE(ut.uomsymbol, u.uomsymbol)                       AS uom,
-       c.pointsbase_invoiced                                     AS billed,
+       COALESCE(ut.uomsymbol, u.uomsymbol)                       AS UOM,
+       c.pointsbase_invoiced                                     AS pointsbase_invoiced,
        --c.pointssum_settled,
-       c.percentofbasepoints                                     AS percent,
-       c.pointssum_tosettle                                      AS forecast,
+       c.percentofbasepoints                                     AS percentofbasepoints,
+       c.pointssum_tosettle                                      AS pointssum_tosettle,
        CASE WHEN o.isdropship = 'Y' THEN o.DeliveryToAddress END AS DeliveryToAddress
 
 FROM C_Commission_Overview_V c
@@ -76,6 +98,6 @@ FROM C_Commission_Overview_V c
          LEFT JOIN C_Uom u ON c.C_Uom_id = u.C_Uom_id
          LEFT JOIN C_Uom_trl ut ON ut.C_Uom_id = u.C_Uom_id AND ut.ad_language = p_ad_language
 WHERE c.C_BPartner_SalesRep_ID = p_BPartner_SalesRep_ID
-ORDER BY documentno, bpValue, productValue, productName;
+ORDER BY documentno, BPartnerValue, ProductValue, ProductName;
 $$
 ;
