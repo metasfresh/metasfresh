@@ -172,7 +172,6 @@ const GetQuantityDialog = ({
         bestBeforeDate: qrCode.bestBeforeDate,
         lotNo: qrCode.lotNo,
         productNo: qrCode.productNo,
-        ean13ProductCode: qrCode.ean13ProductCode,
         barcodeType: qrCode.barcodeType,
         isDone: false,
       };
