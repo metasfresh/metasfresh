@@ -116,7 +116,7 @@ test('GS1', async ({ page }) => {
 });
 
 // noinspection JSUnusedLocalSymbols
-test('EAN13', async ({ page }) => {
+test('EAN13WithPrefix28', async ({ page }) => {
     const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName, tuPIName } = await createMasterdata();
 
     await LoginScreen.login(login);
@@ -138,7 +138,7 @@ test('EAN13', async ({ page }) => {
 });
 
 // noinspection JSUnusedLocalSymbols
-test('EAN13WithUPC', async ({ page }) => {
+test('EAN13WithPrefix29', async ({ page }) => {
     const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName, tuPIName } = await createMasterdata();
 
     await LoginScreen.login(login);

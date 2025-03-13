@@ -302,7 +302,7 @@ const usePostQtyPicked = ({
     if (
       !isBarcodeProductNoMatching({
         expectedProductNo,
-        expectedEAN13ProductCode,
+        expectedEAN13ProductCode: expectedEAN13ProductCode,
         barcodeProductNo: productNo,
         barcodeType: barcodeType,
       })
