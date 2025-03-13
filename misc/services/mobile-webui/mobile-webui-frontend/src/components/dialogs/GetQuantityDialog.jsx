@@ -113,8 +113,12 @@ const GetQuantityDialog = ({
   const fireOnQtyChange = useCallback(
     (payload) => {
       setProcessing(true);
-      const promise = onQtyChange(payload)?.catch?.((error) => toastErrorFromObj(error));
-      doFinally(promise, () => setProcessing(false));
+      try {
+        const promise = onQtyChange(payload)?.catch?.((error) => toastErrorFromObj(error));
+        doFinally(promise, () => setProcessing(false));
+      } finally {
+        setProcessing(false);
+      }
     },
     [onQtyChange]
   );
