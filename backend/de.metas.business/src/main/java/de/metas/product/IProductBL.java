@@ -24,6 +24,9 @@ package de.metas.product;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.bpartner.BPartnerId;
+import de.metas.ean13.EAN13;
+import de.metas.ean13.EAN13ProductCodes;
 import de.metas.gs1.GTIN;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
@@ -190,7 +193,9 @@ public interface IProductBL extends ISingletonService
 
 	String getProductValue(ProductId productId);
 
-	List<String> getEAN13ProductCodes(@NonNull ProductId productId);
+	EAN13ProductCodes getEAN13ProductCodes(@NonNull ProductId productId);
+
+	EAN13ProductCodes getEAN13ProductCodes(@NonNull I_M_Product product);
 
 	ImmutableMap<ProductId, String> getProductValues(Set<ProductId> productIds);
 
@@ -226,7 +231,9 @@ public interface IProductBL extends ISingletonService
 
 	Optional<ProductId> getProductIdByValueStartsWith(@NonNull String valuePrefix, @NonNull ClientId clientId);
 
-	Optional<ProductId> getProductIdByEAN13ProductCode(@NonNull String ean13Code, @NonNull ClientId clientId);
+	Optional<ProductId> getProductIdByEAN13(@NonNull EAN13 ean13, @Nullable BPartnerId bpartnerId, @NonNull ClientId clientId);
+
+	boolean isValidEAN13Product(@NonNull EAN13 ean13, @NonNull ProductId expectedProductId, @Nullable BPartnerId bpartnerId);
 
 	Set<ProductId> getProductIdsMatchingQueryString(
 			@NonNull String queryString,

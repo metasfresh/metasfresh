@@ -400,7 +400,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.caption(caption)
 				.productId(productId)
 				.productNo(loadingSupportingServices.getProductNo(productId))
-				.ean13ProductCode(loadingSupportingServices.getEAN13ProductCode(productId))
+				.ean13ProductCode(loadingSupportingServices.getEAN13ProductCode(productId, deliveryBPLocationId.getBpartnerId()).orElse(null))
 				.productName(productName)
 				.productCategoryId(loadingSupportingServices.getProductCategoryId(productId))
 				.packingInfo(packingInfo)

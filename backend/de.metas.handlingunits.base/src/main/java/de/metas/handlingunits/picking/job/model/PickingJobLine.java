@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.ean13.EAN13ProductCode;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.QtyTU;
@@ -64,7 +65,7 @@ public class PickingJobLine
 
 	@NonNull ProductId productId;
 	@NonNull String productNo;
-	@Nullable String ean13ProductCode;
+	@Nullable EAN13ProductCode ean13ProductCode;
 	@NonNull ProductCategoryId productCategoryId;
 	@NonNull ITranslatableString productName;
 	@NonNull HUPIItemProduct packingInfo;
@@ -100,7 +101,7 @@ public class PickingJobLine
 			@NonNull final ITranslatableString caption,
 			@NonNull final ProductId productId,
 			@NonNull final String productNo,
-			@Nullable final String ean13ProductCode,
+			@Nullable final EAN13ProductCode ean13ProductCode,
 			@NonNull final ProductCategoryId productCategoryId,
 			@NonNull final ITranslatableString productName,
 			@NonNull final HUPIItemProduct packingInfo,

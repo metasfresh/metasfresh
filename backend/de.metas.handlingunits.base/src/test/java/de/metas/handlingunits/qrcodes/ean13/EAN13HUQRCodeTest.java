@@ -1,6 +1,5 @@
 package de.metas.handlingunits.qrcodes.ean13;
 
-import de.metas.ean13.EAN13;
 import de.metas.i18n.ExplainedOptional;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -20,8 +19,8 @@ class EAN13HUQRCodeTest
 			final EAN13HUQRCode ean13 = EAN13HUQRCode.fromStringOrNullIfNotHandled("2859414004825");
 			assertThat(ean13).isNotNull();
 
-			assertThat(ean13.getPrefix()).contains(EAN13.PREFIX_VariableWeight);
-			assertThat(ean13.getProductNo()).contains("59414");
+			assertThat(ean13.unbox().getPrefix().getAsString()).isEqualTo("28");
+			assertThat(ean13.unbox().getProductNo().getAsString()).contains("59414");
 			assertThat(ean13.getWeightInKg()).contains(new BigDecimal("0.482"));
 			assertThat(ean13.getBestBeforeDate()).isEmpty();
 			assertThat(ean13.getLotNumber()).isEmpty();
@@ -33,8 +32,8 @@ class EAN13HUQRCodeTest
 			final EAN13HUQRCode ean13 = EAN13HUQRCode.fromStringOrNullIfNotHandled("2800027002616");
 			assertThat(ean13).isNotNull();
 
-			assertThat(ean13.getPrefix()).contains(EAN13.PREFIX_VariableWeight);
-			assertThat(ean13.getProductNo()).contains("00027");
+			assertThat(ean13.unbox().getPrefix().getAsString()).isEqualTo("28");
+			assertThat(ean13.unbox().getProductNo().getAsString()).contains("00027");
 			assertThat(ean13.getWeightInKg()).contains(new BigDecimal("0.261"));
 			assertThat(ean13.getBestBeforeDate()).isEmpty();
 			assertThat(ean13.getLotNumber()).isEmpty();
@@ -50,10 +49,10 @@ class EAN13HUQRCodeTest
 			final ExplainedOptional<EAN13HUQRCode> result = EAN13HUQRCode.fromString("2912345005009");
 			assertThat(result.isPresent()).isTrue();
 			final EAN13HUQRCode qrCode = result.get();
-			assertThat(qrCode.getPrefix()).isEqualTo("29");
-			assertThat(qrCode.getProductNo()).isEqualTo("1234");
+			assertThat(qrCode.unbox().getPrefix().getAsString()).isEqualTo("29");
+			assertThat(qrCode.unbox().getProductNo().getAsString()).isEqualTo("1234");
 			assertThat(qrCode.getWeightInKg()).contains(new BigDecimal("0.500"));
-			assertThat(qrCode.getChecksum()).isEqualTo(9);
+			assertThat(qrCode.unbox().getChecksum()).isEqualTo(9);
 
 		}
 
@@ -63,10 +62,10 @@ class EAN13HUQRCodeTest
 			final ExplainedOptional<EAN13HUQRCode> result = EAN13HUQRCode.fromString("2948882005745");
 			assertThat(result.isPresent()).isTrue();
 			final EAN13HUQRCode qrCode = result.get();
-			assertThat(qrCode.getPrefix()).isEqualTo("29");
-			assertThat(qrCode.getProductNo()).isEqualTo("4888");
+			assertThat(qrCode.unbox().getPrefix().getAsString()).isEqualTo("29");
+			assertThat(qrCode.unbox().getProductNo().getAsString()).isEqualTo("4888");
 			assertThat(qrCode.getWeightInKg()).contains(new BigDecimal("0.574"));
-			assertThat(qrCode.getChecksum()).isEqualTo(5);
+			assertThat(qrCode.unbox().getChecksum()).isEqualTo(5);
 
 		}
 

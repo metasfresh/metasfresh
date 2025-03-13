@@ -24,7 +24,6 @@ package de.metas.handlingunits.qrcodes.service;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
-import de.metas.ean13.EAN13;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
@@ -322,8 +321,8 @@ class HUQRCodesServiceTest
 			assertThat(huQRCode).isInstanceOf(EAN13HUQRCode.class);
 
 			final EAN13HUQRCode ean13 = (EAN13HUQRCode)huQRCode;
-			assertThat(ean13.getPrefix()).contains(EAN13.PREFIX_VariableWeight);
-			assertThat(ean13.getProductNo()).contains("59414");
+			assertThat(ean13.unbox().getPrefix().getAsString()).isEqualTo("28");
+			assertThat(ean13.unbox().getProductNo().getAsString()).isEqualTo("59414");
 			assertThat(ean13.getWeightInKg()).contains(new BigDecimal("0.482"));
 			assertThat(ean13.getBestBeforeDate()).isEmpty();
 			assertThat(ean13.getLotNumber()).isEmpty();

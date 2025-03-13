@@ -36,10 +36,6 @@ public class EAN13HUQRCode implements IHUQRCode
 		return EAN13.fromString(barcode).map(EAN13HUQRCode::ofEAN13);
 	}
 
-	public String getPrefix() { return ean13.getPrefix();}
-
-	public String getProductNo() {return ean13.getProductNo();}
-
 	@Override
 	public Optional<BigDecimal> getWeightInKg() {return ean13.getWeightInKg();}
 
@@ -49,11 +45,6 @@ public class EAN13HUQRCode implements IHUQRCode
 	@Override
 	public Optional<String> getLotNumber() {return Optional.empty();}
 
-	public int getChecksum() {return ean13.getChecksum();}
-
-	public boolean isVariableWeight() { return ean13.isVariableWeight();}
-
-	public boolean isInternalUseOrVariableMeasure() { return ean13.isInternalUseOrVariableMeasure();}
-
-	public boolean isPrefixNotSupported() { return ean13.isPrefixNotSupported(); }
+	@NonNull
+	public EAN13 unbox() {return ean13;}
 }

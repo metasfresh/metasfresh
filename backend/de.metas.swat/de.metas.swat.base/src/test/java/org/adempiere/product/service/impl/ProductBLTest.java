@@ -2,15 +2,14 @@ package org.adempiere.product.service.impl;
 
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.impl.ProductBL;
 import de.metas.uom.UOMType;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_M_AttributeSet;
@@ -23,20 +22,11 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductBLTest
 {
-	private IProductBL productBL;
-
-	private static void createBPProduct(final ProductId product1Id, final String ean13ProductCode)
-	{
-		final I_C_BPartner_Product bpProduct1 = InterfaceWrapperHelper.newInstance(I_C_BPartner_Product.class);
-		bpProduct1.setM_Product_ID(product1Id.getRepoId());
-		bpProduct1.setC_BPartner_ID(1);
-		bpProduct1.setEAN13_ProductCode(ean13ProductCode);
-		save(bpProduct1);
-	}
+	private ProductBL productBL;
 
 	@BeforeEach
 	public void beforeEach()
@@ -44,16 +34,7 @@ public class ProductBLTest
 		AdempiereTestHelper.get().init();
 		POJOWrapper.setDefaultStrictValues(false);
 
-		productBL = Services.get(IProductBL.class);
-	}
-
-	private I_M_Product createProductWithEAN13(final String value, final String ean13ProductCode)
-	{
-		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
-		product.setValue(value);
-		product.setEAN13_ProductCode(ean13ProductCode);
-		save(product);
-		return product;
+		productBL = (ProductBL)Services.get(IProductBL.class);
 	}
 
 	@Nested
@@ -205,105 +186,4 @@ public class ProductBLTest
 		}
 
 	}
-
-	@Nested
-	class getProductIdByEAN13ProductCode
-	{
-		@Test
-		void ean13CodeFromProduct()
-		{
-			final I_M_Product product1 = createProductWithEAN13("101505", "4888");
-			final ProductId product1Id = ProductId.ofRepoId(product1.getM_Product_ID());
-			final ClientId clientId = ClientId.ofRepoId(product1.getAD_Client_ID());
-			final I_M_Product product2 = createProductWithEAN13("101506", "4889");
-			final ProductId product2Id = ProductId.ofRepoId(product2.getM_Product_ID());
-
-			assertThat(productBL.getProductIdByEAN13ProductCode("4888", clientId)).contains(product1Id);
-			assertThat(productBL.getProductIdByEAN13ProductCode("4889", clientId)).contains(product2Id);
-		}
-
-		@Test
-		void ean13CodeFromBPartnerProduct()
-		{
-			final I_M_Product product1 = createProductWithEAN13("101505", "4888");
-			final ProductId product1Id = ProductId.ofRepoId(product1.getM_Product_ID());
-			final ClientId clientId = ClientId.ofRepoId(product1.getAD_Client_ID());
-			final I_M_Product product2 = createProductWithEAN13("101506", "4889");
-			final ProductId product2Id = ProductId.ofRepoId(product2.getM_Product_ID());
-
-			createBPProduct(product1Id, "1234");
-			createBPProduct(product2Id, "4321");
-
-			assertThat(productBL.getProductIdByEAN13ProductCode("1234", clientId)).contains(product1Id);
-			assertThat(productBL.getProductIdByEAN13ProductCode("4321", clientId)).contains(product2Id);
-		}
-
-		@Test
-		void ean13CodeDoesNotFit()
-		{
-			final I_M_Product product1 = createProductWithEAN13("101505", "4888");
-			final ProductId product1Id = ProductId.ofRepoId(product1.getM_Product_ID());
-			final ClientId clientId = ClientId.ofRepoId(product1.getAD_Client_ID());
-			final I_M_Product product2 = createProductWithEAN13("101506", "4889");
-			final ProductId product2Id = ProductId.ofRepoId(product2.getM_Product_ID());
-
-			createBPProduct(product1Id, "1234");
-			createBPProduct(product2Id, "4321");
-
-			assertThat(productBL.getProductIdByEAN13ProductCode("48882", clientId)).isEmpty();
-			assertThat(productBL.getProductIdByEAN13ProductCode("10150", clientId)).isEmpty();
-		}
-
-		@Test
-		void ean13CodeDuplicateInProduct()
-		{
-			final I_M_Product product1 = createProductWithEAN13("101505", "4888");
-			final ClientId clientId = ClientId.ofRepoId(product1.getAD_Client_ID());
-			createProductWithEAN13("101506", "4888");
-
-			assertThat(productBL.getProductIdByEAN13ProductCode("4888", clientId)).isEmpty();
-		}
-
-		@Test
-		void ean13CodeDuplicateInBPartnerProduct()
-		{
-			final I_M_Product product1 = createProductWithEAN13("101505", "4888");
-			final ProductId product1Id = ProductId.ofRepoId(product1.getM_Product_ID());
-			final ClientId clientId = ClientId.ofRepoId(product1.getAD_Client_ID());
-			final I_M_Product product2 = createProductWithEAN13("101506", "4889");
-			final ProductId product2Id = ProductId.ofRepoId(product2.getM_Product_ID());
-
-			createBPProduct(product1Id, "9999");
-			createBPProduct(product2Id, "9999");
-
-			assertThat(productBL.getProductIdByEAN13ProductCode("9999", clientId)).isEmpty();
-		}
-
-		@Test
-		void ean13CodeDuplicateInProductAndBPartnerProduct()
-		{
-			final I_M_Product product1 = createProductWithEAN13("101505", "4888");
-			final ProductId product1Id = ProductId.ofRepoId(product1.getM_Product_ID());
-			final ClientId clientId = ClientId.ofRepoId(product1.getAD_Client_ID());
-			final I_M_Product product2 = createProductWithEAN13("101506", "4889");
-			ProductId.ofRepoId(product2.getM_Product_ID());
-
-			createBPProduct(product1Id, "4889");
-
-			assertThat(productBL.getProductIdByEAN13ProductCode("4889", clientId)).isEmpty();
-		}
-
-		@Test
-		void ean13CodeSameInBPartnerProductAndProduct()
-		{
-			final I_M_Product product1 = createProductWithEAN13("101505", "4888");
-			final ProductId product1Id = ProductId.ofRepoId(product1.getM_Product_ID());
-			final ClientId clientId = ClientId.ofRepoId(product1.getAD_Client_ID());
-
-			createBPProduct(product1Id, "4888");
-
-			assertThat(productBL.getProductIdByEAN13ProductCode("4888", clientId)).contains(product1Id);
-		}
-	}
-
 }

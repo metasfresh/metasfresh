@@ -22,23 +22,27 @@
 
 package de.metas.product.impl;
 
+import de.metas.ean13.EAN13ProductCode;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.X_M_Product;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductDAOTest
 {
@@ -51,7 +55,8 @@ public class ProductDAOTest
 	private I_M_Product productWithMinGuarantee60Months;
 
 	@BeforeEach
-	public void init() {
+	public void init()
+	{
 		AdempiereTestHelper.get().init();
 		productDAO = Services.get(IProductDAO.class);
 		final Properties ctx = Env.getCtx();
@@ -62,7 +67,8 @@ public class ProductDAOTest
 	}
 
 	@Test
-	public void testGetProductGuaranteeDaysMinFallbackProductCategory() {
+	public void testGetProductGuaranteeDaysMinFallbackProductCategory()
+	{
 
 		int expectedGuaranteeDays = productDAO.getProductGuaranteeDaysMinFallbackProductCategory(ProductId.ofRepoId(productWithMinGuaranteeDays.getM_Product_ID()));
 		assertThat(expectedGuaranteeDays).isEqualTo(10);
@@ -75,7 +81,8 @@ public class ProductDAOTest
 	}
 
 	@Test
-	public void testGetGuaranteeMonthsInDays() {
+	public void testGetGuaranteeMonthsInDays()
+	{
 		int expectedGuaranteeDays = productDAO.getGuaranteeMonthsInDays(ProductId.ofRepoId(productWithMinGuarantee12Months.getM_Product_ID()));
 		assertThat(expectedGuaranteeDays).isEqualTo(ProductDAO.ONE_YEAR_DAYS);
 
@@ -89,7 +96,8 @@ public class ProductDAOTest
 		assertThat(expectedGuaranteeDays).isEqualTo(ProductDAO.FIVE_YEAR_DAYS);
 	}
 
-	private void setUpProducts() {
+	private void setUpProducts()
+	{
 		final I_M_Product_Category prodCat = newInstance(I_M_Product_Category.class);
 		prodCat.setIsActive(true);
 		prodCat.setName("TestCat");
@@ -136,4 +144,123 @@ public class ProductDAOTest
 		productWithMinGuarantee60Months.setGuaranteeMonths(X_M_Product.GUARANTEEMONTHS_60);
 		save(productWithMinGuarantee60Months);
 	}
+
+	@Nested
+	class getProductIdByEAN13ProductCode
+	{
+		private I_M_Product createProductWithEAN13(final String value, final String ean13ProductCode)
+		{
+			final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+			product.setValue(value);
+			product.setEAN13_ProductCode(ean13ProductCode);
+			save(product);
+			return product;
+		}
+
+		private void createBPProduct(final ProductId product1Id, final String ean13ProductCode)
+		{
+			final I_C_BPartner_Product bpProduct1 = InterfaceWrapperHelper.newInstance(I_C_BPartner_Product.class);
+			bpProduct1.setM_Product_ID(product1Id.getRepoId());
+			bpProduct1.setC_BPartner_ID(1);
+			bpProduct1.setEAN13_ProductCode(ean13ProductCode);
+			save(bpProduct1);
+		}
+
+		@Test
+		void ean13CodeFromProduct()
+		{
+			final I_M_Product product1 = createProductWithEAN13("101505", "4888");
+			final ProductId product1Id = ProductId.ofRepoId(product1.getM_Product_ID());
+			final ClientId clientId = ClientId.ofRepoId(product1.getAD_Client_ID());
+			final I_M_Product product2 = createProductWithEAN13("101506", "4889");
+			final ProductId product2Id = ProductId.ofRepoId(product2.getM_Product_ID());
+
+			assertThat(productDAO.getProductIdByEAN13ProductCode(EAN13ProductCode.ofString("4888"), clientId)).contains(product1Id);
+			assertThat(productDAO.getProductIdByEAN13ProductCode(EAN13ProductCode.ofString("4889"), clientId)).contains(product2Id);
+		}
+
+		@Test
+		void ean13CodeFromBPartnerProduct()
+		{
+			final I_M_Product product1 = createProductWithEAN13("101505", "4888");
+			final ProductId product1Id = ProductId.ofRepoId(product1.getM_Product_ID());
+			final ClientId clientId = ClientId.ofRepoId(product1.getAD_Client_ID());
+			final I_M_Product product2 = createProductWithEAN13("101506", "4889");
+			final ProductId product2Id = ProductId.ofRepoId(product2.getM_Product_ID());
+
+			createBPProduct(product1Id, "1234");
+			createBPProduct(product2Id, "4321");
+
+			assertThat(productDAO.getProductIdByEAN13ProductCode(EAN13ProductCode.ofString("1234"), clientId)).contains(product1Id);
+			assertThat(productDAO.getProductIdByEAN13ProductCode(EAN13ProductCode.ofString("4321"), clientId)).contains(product2Id);
+		}
+
+		@Test
+		void ean13CodeDoesNotFit()
+		{
+			final I_M_Product product1 = createProductWithEAN13("101505", "4888");
+			final ProductId product1Id = ProductId.ofRepoId(product1.getM_Product_ID());
+			final ClientId clientId = ClientId.ofRepoId(product1.getAD_Client_ID());
+			final I_M_Product product2 = createProductWithEAN13("101506", "4889");
+			final ProductId product2Id = ProductId.ofRepoId(product2.getM_Product_ID());
+
+			createBPProduct(product1Id, "1234");
+			createBPProduct(product2Id, "4321");
+
+			assertThat(productDAO.getProductIdByEAN13ProductCode(EAN13ProductCode.ofString("48882"), clientId)).isEmpty();
+			assertThat(productDAO.getProductIdByEAN13ProductCode(EAN13ProductCode.ofString("10150"), clientId)).isEmpty();
+		}
+
+		@Test
+		void ean13CodeDuplicateInProduct()
+		{
+			final I_M_Product product1 = createProductWithEAN13("101505", "4888");
+			final ClientId clientId = ClientId.ofRepoId(product1.getAD_Client_ID());
+			createProductWithEAN13("101506", "4888");
+
+			assertThat(productDAO.getProductIdByEAN13ProductCode(EAN13ProductCode.ofString("4888"), clientId)).isEmpty();
+		}
+
+		@Test
+		void ean13CodeDuplicateInBPartnerProduct()
+		{
+			final I_M_Product product1 = createProductWithEAN13("101505", "4888");
+			final ProductId product1Id = ProductId.ofRepoId(product1.getM_Product_ID());
+			final ClientId clientId = ClientId.ofRepoId(product1.getAD_Client_ID());
+			final I_M_Product product2 = createProductWithEAN13("101506", "4889");
+			final ProductId product2Id = ProductId.ofRepoId(product2.getM_Product_ID());
+
+			createBPProduct(product1Id, "9999");
+			createBPProduct(product2Id, "9999");
+
+			assertThat(productDAO.getProductIdByEAN13ProductCode(EAN13ProductCode.ofString("9999"), clientId)).isEmpty();
+		}
+
+		@Test
+		void ean13CodeDuplicateInProductAndBPartnerProduct()
+		{
+			final I_M_Product product1 = createProductWithEAN13("101505", "4888");
+			final ProductId product1Id = ProductId.ofRepoId(product1.getM_Product_ID());
+			final ClientId clientId = ClientId.ofRepoId(product1.getAD_Client_ID());
+			final I_M_Product product2 = createProductWithEAN13("101506", "4889");
+			ProductId.ofRepoId(product2.getM_Product_ID());
+
+			createBPProduct(product1Id, "4889");
+
+			assertThat(productDAO.getProductIdByEAN13ProductCode(EAN13ProductCode.ofString("4889"), clientId)).isEmpty();
+		}
+
+		@Test
+		void ean13CodeSameInBPartnerProductAndProduct()
+		{
+			final I_M_Product product1 = createProductWithEAN13("101505", "4888");
+			final ProductId product1Id = ProductId.ofRepoId(product1.getM_Product_ID());
+			final ClientId clientId = ClientId.ofRepoId(product1.getAD_Client_ID());
+
+			createBPProduct(product1Id, "4888");
+
+			assertThat(productDAO.getProductIdByEAN13ProductCode(EAN13ProductCode.ofString("4888"), clientId)).contains(product1Id);
+		}
+	}
+
 }

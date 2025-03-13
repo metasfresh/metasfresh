@@ -23,6 +23,7 @@
 package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ean13.EAN13ProductCode;
 import de.metas.handlingunits.picking.job.model.CurrentPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingUnit;
@@ -51,7 +52,7 @@ public class JsonPickingJobLine
 	@NonNull String pickingLineId;
 	@NonNull String productId;
 	@NonNull String productNo;
-	@Nullable String ean13ProductCode;
+	@Nullable EAN13ProductCode ean13ProductCode;
 	@NonNull String caption;
 
 	@Nullable JsonQRCode pickingSlot;

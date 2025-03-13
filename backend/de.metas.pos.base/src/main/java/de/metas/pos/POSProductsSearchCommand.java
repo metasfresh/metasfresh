@@ -1,6 +1,7 @@
 package de.metas.pos;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.ean13.EAN13;
 import de.metas.gs1.GS1Elements;
 import de.metas.gs1.GS1Parser;
 import de.metas.gs1.GTIN;
@@ -12,7 +13,6 @@ import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
@@ -92,26 +92,13 @@ class POSProductsSearchCommand
 			return null;
 		}
 
-		final EAN13HUQRCode ean13 = EAN13HUQRCode.fromString(queryString).orElse(null);
+		final EAN13 ean13 = EAN13HUQRCode.fromString(queryString).map(EAN13HUQRCode::unbox).orElse(null);
 		if (ean13 == null)
 		{
 			return null;
 		}
 
-		final ProductId productId;
-		if (ean13.isVariableWeight())
-		{
-			productId = productBL.getProductIdByValueStartsWith(ean13.getProductNo(), ClientId.METASFRESH).orElse(null);
-		}
-
-		else if (ean13.isInternalUseOrVariableMeasure())
-		{
-			productId = productBL.getProductIdByEAN13ProductCode(ean13.getProductNo(), ClientId.METASFRESH).orElse(null);
-		}
-		else
-		{
-			throw new AdempiereException("Unsupported EAN13 prefix: " + ean13.getPrefix());
-		}
+		final ProductId productId = productBL.getProductIdByEAN13(ean13, null, ClientId.METASFRESH).orElse(null);
 		final POSProduct product = getPOSProduct(productId);
 		if (product == null)
 		{
