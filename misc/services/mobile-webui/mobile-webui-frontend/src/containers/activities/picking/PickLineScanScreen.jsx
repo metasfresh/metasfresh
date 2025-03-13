@@ -84,10 +84,8 @@ const PickLineScanScreen = () => {
       convertScannedBarcodeToResolvedResult({
         scannedBarcode,
         expectedProductId: productId,
-        expectedProductNo: productNo,
-        expectedEAN13ProductCode: ean13ProductCode,
       }),
-    [productId, productNo, ean13ProductCode]
+    [productId]
   );
 
   const onClose = useOnClose({ applicationId, wfProcessId, activity, lineId, next });
@@ -161,31 +159,10 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 };
 
 // @VisibleForTesting
-export const convertScannedBarcodeToResolvedResult = ({
-  scannedBarcode,
-  expectedProductId,
-  expectedProductNo,
-  expectedEAN13ProductCode,
-}) => {
+export const convertScannedBarcodeToResolvedResult = ({ scannedBarcode, expectedProductId }) => {
   const parsedHUQRCode = parseQRCodeString(scannedBarcode);
-  console.log('resolveScannedBarcode', {
-    parsedHUQRCode,
-    scannedBarcode,
-    expectedProductId,
-    expectedProductNo,
-    expectedEAN13ProductCode,
-  });
 
   if (expectedProductId != null && parsedHUQRCode.productId != null && parsedHUQRCode.productId !== expectedProductId) {
-    throw trl('activities.picking.notEligibleHUBarcode');
-  }
-
-  if (
-    expectedProductNo != null &&
-    parsedHUQRCode.productNo != null &&
-    String(parsedHUQRCode.productNo) !== expectedProductNo &&
-    String(parsedHUQRCode.productNo) !== expectedEAN13ProductCode
-  ) {
     throw trl('activities.picking.notEligibleHUBarcode');
   }
 
@@ -302,9 +279,9 @@ const usePostQtyPicked = ({
     if (
       !isBarcodeProductNoMatching({
         expectedProductNo,
-        expectedEAN13ProductCode: expectedEAN13ProductCode,
+        expectedEAN13ProductCode,
         barcodeProductNo: productNo,
-        barcodeType: barcodeType,
+        barcodeType,
       })
     ) {
       throw {

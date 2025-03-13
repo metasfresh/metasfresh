@@ -40,17 +40,23 @@ export const isBarcodeProductNoMatching = ({
   barcodeProductNo,
   barcodeType,
 }) => {
+  // if no barcode productNo provided then there is nothing to validate
+  if (!barcodeProductNo) {
+    return true;
+  }
+
   // if expected nor barcode productNo was specified, consider products are matching
-  if ((!expectedProductNo && !expectedEAN13ProductCode) || !barcodeProductNo) {
+  if (!expectedProductNo && !expectedEAN13ProductCode) {
     return true;
   }
 
   // normalize productNo(s) before comparing
   const expectedProductNoStr = String(expectedProductNo);
-  const expectedEAN13ProductCodeStr = String(expectedEAN13ProductCode);
   const barcodeProductNoStr = String(barcodeProductNo);
 
   if (barcodeType === BARCODE_TYPE_EAN13) {
+    const expectedEAN13ProductCodeStr = String(expectedEAN13ProductCode);
+
     const validProductValue = expectedProductNoStr.startsWith(barcodeProductNoStr);
     const validEAN13ProductCode = barcodeProductNoStr === expectedEAN13ProductCodeStr;
     return validProductValue || validEAN13ProductCode;
