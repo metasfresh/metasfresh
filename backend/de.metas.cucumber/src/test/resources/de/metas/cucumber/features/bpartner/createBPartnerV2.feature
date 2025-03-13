@@ -603,7 +603,6 @@ Feature: create or update BPartner v2
     And verify that S_ExternalReference was created
       | ExternalSystem | Type   | ExternalReference | OPT.IsReadOnlyInMetasfresh |
       | ALBERTA        | UserID | c11               | false                      |
-
     And the metasfresh REST-API endpoint path 'api/v2/bpartner/ext-ALBERTA-001' receives a 'GET' request
     Then the metasfresh REST-API responds with
 """
@@ -622,7 +621,8 @@ Feature: create or update BPartner v2
 """
 
   @Id:S0285_400
-  Scenario: Update a BPartner contact record and Create another contact record
+  @S0405
+  Scenario: Update a BPartner contact record and Create another contact record - DEPENDS ON PREDECESSOR
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
 {
@@ -682,7 +682,7 @@ Feature: create or update BPartner v2
 
   @Id:S0285_500
   @from:cucumber
-  Scenario: create BPartner with external reference type of code - orgCode set in path
+  Scenario: create BPartner with external reference type of code - orgCode set in path - DEPENDS ON PREDECESSOR
 
     Given load AD_Org:
       | AD_Org_ID.Identifier | Value |
@@ -724,7 +724,7 @@ Feature: create or update BPartner v2
 
   @Id:S0285_600
   @from:cucumber
-  Scenario: process CreateBPartner requests given:
+  Scenario: process CreateBPartner requests given - DEPENDS ON PREDECESSOR:
   _no orgCode in path
   _different orgCode set for each request item
 
@@ -784,8 +784,7 @@ Feature: create or update BPartner v2
       | bpartner3                | ext-ALBERTA-bPartner3 | BPartnerTestName3 | BPartnerTestName3 | bPartner3_orgCode        |
 
   @Id:S0285_700
-  Scenario: Create BPartner Account record,
-  using all supported external identifier formats:
+  Scenario: Create BPartner Account record, using all supported external identifier formats - DEPENDS ON PREDECESSOR?:
   - external reference
   - iban
   - qr_iban
@@ -1068,9 +1067,7 @@ Feature: create or update BPartner v2
 }
 """
 
-
-
-  Scenario: Update a BPartner contact record with a missing greeting, expecting error
+  Scenario: Update a BPartner contact record with a missing greeting, expecting error - DEPENDS ON PREDECESSOR
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '422' status code
     """
 
