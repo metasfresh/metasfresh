@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner_Product
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_BPartner_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1782571382L;
+	private static final long serialVersionUID = 1699736568L;
 
     /** Standard Constructor */
     public X_C_BPartner_Product (final Properties ctx, final int C_BPartner_Product_ID, @Nullable final String trxName)
@@ -114,6 +114,18 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
+	public void setEAN13_ProductCode (final @Nullable java.lang.String EAN13_ProductCode)
+	{
+		set_Value (COLUMNNAME_EAN13_ProductCode, EAN13_ProductCode);
+	}
+
+	@Override
+	public java.lang.String getEAN13_ProductCode() 
+	{
+		return get_ValueAsString(COLUMNNAME_EAN13_ProductCode);
 	}
 
 	@Override

@@ -292,6 +292,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
+	public void setEAN13_ProductCode (final @Nullable java.lang.String EAN13_ProductCode)
+	{
+		set_Value (COLUMNNAME_EAN13_ProductCode, EAN13_ProductCode);
+	}
+
+	@Override
+	public java.lang.String getEAN13_ProductCode()
+	{
+		return get_ValueAsString(COLUMNNAME_EAN13_ProductCode);
+	}
+
+	@Override
 	public void setExternalId (final @Nullable java.lang.String ExternalId)
 	{
 		set_Value (COLUMNNAME_ExternalId, ExternalId);
