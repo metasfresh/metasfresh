@@ -548,6 +548,29 @@ public interface I_M_Product
 	ModelColumn<I_M_Product, Object> COLUMN_DryingMethods = new ModelColumn<>(I_M_Product.class, "DryingMethods", null);
 	String COLUMNNAME_DryingMethods = "DryingMethods";
 
+
+
+	/**
+	 * Set EAN13 Product Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEAN13_ProductCode (@Nullable java.lang.String EAN13_ProductCode);
+
+	/**
+	 * Get EAN13 Product Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEAN13_ProductCode();
+
+	ModelColumn<I_M_Product, Object> COLUMN_EAN13_ProductCode = new ModelColumn<>(I_M_Product.class, "EAN13_ProductCode", null);
+	String COLUMNNAME_EAN13_ProductCode = "EAN13_ProductCode";
+
 	/**
 	 * Set External ID.
 	 *

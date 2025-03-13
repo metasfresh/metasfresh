@@ -81,6 +81,7 @@ public final class ProductBL implements IProductBL
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
 
 	@Override
 	public I_M_Product getById(@NonNull final ProductId productId)
@@ -92,12 +93,6 @@ public final class ProductBL implements IProductBL
 	public I_M_Product getByIdInTrx(@NonNull final ProductId productId)
 	{
 		return productsRepo.getByIdInTrx(productId);
-	}
-
-	@Override
-	public List<I_M_Product> getByIds(@NonNull final Set<ProductId> productIds)
-	{
-		return productsRepo.getByIds(productIds);
 	}
 
 	@Override
@@ -424,7 +419,6 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	@NonNull
 	public String getProductValueAndName(@Nullable final ProductId productId)
 	{
 		if (productId == null)
@@ -457,6 +451,34 @@ public final class ProductBL implements IProductBL
 			return "<" + productId + ">";
 		}
 		return product.getValue();
+	}
+
+	@Override
+	public EAN13ProductCodes getEAN13ProductCodes(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		return getEAN13ProductCodes(product);
+	}
+
+	@Override
+	public EAN13ProductCodes getEAN13ProductCodes(@NonNull final I_M_Product product)
+	{
+		final EAN13ProductCodes.EAN13ProductCodesBuilder result = EAN13ProductCodes.builder()
+				.productValue(product.getValue())
+				.defaultCode(EAN13ProductCode.ofNullableString(product.getEAN13_ProductCode()));
+
+		final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+		for (final I_C_BPartner_Product bPartnerProductRecord : partnerProductDAO.retrieveForProductIds(ImmutableSet.of(productId)))
+		{
+			final EAN13ProductCode partnerEAN13ProductCode = EAN13ProductCode.ofNullableString(bPartnerProductRecord.getEAN13_ProductCode());
+			if (partnerEAN13ProductCode != null)
+			{
+				final BPartnerId bpartnerId = BPartnerId.ofRepoId(bPartnerProductRecord.getC_BPartner_ID());
+				result.code(bpartnerId, partnerEAN13ProductCode);
+			}
+		}
+
+		return result.build();
 	}
 
 	@Override
@@ -665,6 +687,56 @@ public final class ProductBL implements IProductBL
 	public Optional<ProductId> getProductIdByValueStartsWith(@NonNull final String valuePrefix, @NonNull final ClientId clientId)
 	{
 		return productsRepo.getProductIdByValueStartsWith(valuePrefix, clientId);
+	}
+
+	@Override
+	public Optional<ProductId> getProductIdByEAN13(
+			@NonNull final EAN13 ean13,
+			@Nullable final BPartnerId bpartnerId,
+			@NonNull final ClientId clientId)
+	{
+		final EAN13Prefix ean13Prefix = ean13.getPrefix();
+		if (ean13Prefix.isVariableWeight())
+		{
+			return Optionals.firstPresentOfSuppliers(
+					() -> getProductIdByEAN13ProductCode(ean13, bpartnerId, clientId),
+					() -> getProductIdByValueStartsWith(ean13.getProductNo().getAsString(), clientId)
+			);
+		}
+		else if (ean13Prefix.isInternalUseOrVariableMeasure())
+		{
+			return getProductIdByEAN13ProductCode(ean13, bpartnerId, clientId);
+		}
+		else
+		{
+			throw new AdempiereException("Unsupported EAN13 prefix: " + ean13Prefix);
+		}
+	}
+
+	private Optional<ProductId> getProductIdByEAN13ProductCode(
+			@NonNull final EAN13 ean13,
+			@Nullable final BPartnerId bpartnerId,
+			@NonNull final ClientId clientId)
+	{
+		if (bpartnerId != null)
+		{
+			final ImmutableSet<ProductId> productIds = partnerProductDAO.retrieveByEAN13ProductCode(ean13.getProductNo(), bpartnerId)
+					.stream()
+					.map(partnerProduct -> ProductId.ofRepoId(partnerProduct.getM_Product_ID()))
+					.collect(ImmutableSet.toImmutableSet());
+			if (productIds.size() == 1)
+			{
+				return Optional.of(productIds.iterator().next());
+			}
+		}
+
+		return productsRepo.getProductIdByEAN13ProductCode(ean13.getProductNo(), clientId);
+	}
+
+	@Override
+	public boolean isValidEAN13Product(@NonNull final EAN13 ean13, @NonNull final ProductId expectedProductId, @Nullable final BPartnerId bpartnerId)
+	{
+		return getEAN13ProductCodes(expectedProductId).isValidProductNo(ean13, bpartnerId);
 	}
 
 	@Override

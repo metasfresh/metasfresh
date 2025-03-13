@@ -117,6 +117,18 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
+	public void setEAN13_ProductCode (final @Nullable java.lang.String EAN13_ProductCode)
+	{
+		set_Value (COLUMNNAME_EAN13_ProductCode, EAN13_ProductCode);
+	}
+
+	@Override
+	public java.lang.String getEAN13_ProductCode()
+	{
+		return get_ValueAsString(COLUMNNAME_EAN13_ProductCode);
+	}
+
+	@Override
 	public void setEAN_CU (final @Nullable java.lang.String EAN_CU)
 	{
 		set_Value (COLUMNNAME_EAN_CU, EAN_CU);

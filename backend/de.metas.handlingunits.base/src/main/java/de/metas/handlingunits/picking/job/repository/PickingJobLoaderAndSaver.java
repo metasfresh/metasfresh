@@ -403,6 +403,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.caption(caption)
 				.productId(productId)
 				.productNo(loadingSupportingServices.getProductNo(productId))
+				.ean13ProductCode(loadingSupportingServices.getEAN13ProductCode(productId, deliveryBPLocationId.getBpartnerId()).orElse(null))
 				.productName(productName)
 				.productCategoryId(loadingSupportingServices.getProductCategoryId(productId))
 				.packingInfo(packingInfo)
@@ -750,12 +751,14 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.build();
 	}
 
+	@Nullable
 	private ITranslatableString extractSingleProductNameOrNull(final PickingJobId pickingJobId)
 	{
 		final ProductId productId = extractSingleProductIdOrNull(pickingJobId);
 		return productId != null ? loadingSupportingServices.getProductName(productId) : null;
 	}
 
+	@Nullable
 	private ProductId extractSingleProductIdOrNull(final PickingJobId pickingJobId)
 	{
 		ProductId productId = null;
@@ -777,6 +780,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		return productId;
 	}
 
+	@Nullable
 	private Quantity extractQtyToPickOrNull(final PickingJobId pickingJobId)
 	{
 		return PickingJob.extractQtyToPickOrNull(
@@ -835,7 +839,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		for (final PickingJobId pickingJobId : pickingJobIds)
 		{
 			boolean hasLocks = false;
-			for (ShipmentScheduleId shipmentScheduleId : shipmentScheduleIdsByPickingJobId.get(pickingJobId))
+			for (final ShipmentScheduleId shipmentScheduleId : shipmentScheduleIdsByPickingJobId.get(pickingJobId))
 			{
 				if (existingLocks.containsKey(shipmentScheduleId))
 				{
@@ -866,7 +870,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		return packingInfo.isFiniteTU() ? PickingUnit.TU : PickingUnit.CU;
 	}
 
-	private PickingJobOptions getPickingJobOptions(@NonNull BPartnerId customerId)
+	private PickingJobOptions getPickingJobOptions(@NonNull final BPartnerId customerId)
 	{
 		return loadingSupportingServices.getPickingJobOptions(customerId);
 	}

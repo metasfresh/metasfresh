@@ -28,6 +28,7 @@ import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.common.util.pair.ImmutablePair;
+import de.metas.ean13.EAN13ProductCode;
 import de.metas.gs1.GTIN;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplateId;
@@ -466,7 +467,7 @@ public class ProductDAO implements IProductDAO
 	{
 		final ProductId productId = queryBL
 				.createQueryBuilderOutOfTrx(I_M_Product.class)
-				.addEqualsFilter(I_M_Product.COLUMNNAME_S_Resource_ID, resourceId)
+				.addEqualsFilter(I_M_Product.COLUMN_S_Resource_ID, resourceId)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
@@ -688,6 +689,20 @@ public class ProductDAO implements IProductDAO
 				.firstIdOnly(ProductId::ofRepoIdOrNull);
 
 		return Optional.ofNullable(productId);
+	}
+
+	@Override
+	public Optional<ProductId> getProductIdByEAN13ProductCode(@NonNull final EAN13ProductCode ean13ProductCode, @NonNull final ClientId clientId)
+	{
+		final ImmutableSet<ProductId> productIds = queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
+				.addEqualsFilter(I_M_Product.COLUMNNAME_EAN13_ProductCode, ean13ProductCode.getAsString())
+				.setLimit(QueryLimit.TWO)
+				.create()
+				.listIds(ProductId::ofRepoIdOrNull);
+
+		return productIds.size() == 1 ? Optional.of(productIds.iterator().next()) : Optional.empty();
 	}
 
 	@Override

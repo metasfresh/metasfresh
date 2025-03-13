@@ -4,9 +4,10 @@ import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsLi
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
+import { expectErrorToast } from '../../utils/common';
 
 const createMasterdata = async () => {
-    const response = await Backend.createMasterdata({
+    return await Backend.createMasterdata({
         language: "en_US",
         request: {
             login: {
@@ -26,10 +27,14 @@ const createMasterdata = async () => {
             warehouses: {
                 "wh": {},
             },
+            pickingSlots: {
+                slot1: {},
+            },
             products: {
                 "P1": {
                     valuePrefix: '00027', // important for EAN13 barcodes
                     gtin: '97311876341811',
+                    ean13ProductCode: '4888',
                     uom: 'PCE',
                     uomConversions: [{ from: 'PCE', to: 'KGM', multiplyRate: 0.10, isCatchUOMForProduct: true }],
                     prices: [{ price: 5, uom: 'KGM', invoicableQtyBasedOn: 'CatchWeight' }]
@@ -51,36 +56,23 @@ const createMasterdata = async () => {
             },
         }
     })
-
-    const { pickingSlotQRCode } = await Backend.getFreePickingSlot({
-        bpartnerCode: response.bpartners.BP1.bpartnerCode
-    });
-
-    return {
-        login: response.login.user,
-        pickingSlotQRCode,
-        documentNo: response.salesOrders.SO1.documentNo,
-        huQRCode: response.handlingUnits.HU1.qrCode,
-        luPIName: response.packingInstructions.PI.luName,
-        tuPIName: response.packingInstructions.PI.tuName,
-    };
 }
 
 // noinspection JSUnusedLocalSymbols
 test('Leich+Mehl', async ({ page }) => {
-    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName, tuPIName } = await createMasterdata();
+    const masterdata = await createMasterdata();
 
-    await LoginScreen.login(login);
+    await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
-    await PickingJobsListScreen.filterByDocumentNo(documentNo);
-    await PickingJobsListScreen.startJob({ documentNo });
-    await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
-    await PickingJobScreen.setTargetLU({ lu: luPIName });
-    await PickingJobScreen.setTargetTU({ tu: tuPIName });
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+    await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI.tuName });
     await PickingJobScreen.pickHU({
-        qrCode: huQRCode,
+        qrCode: masterdata.handlingUnits.HU1.qrCode,
         catchWeightQRCode: [
             'LMQ#1#0.101#08.11.2025#500',
             'LMQ#1#0.101#08.11.2025#500',
@@ -94,19 +86,19 @@ test('Leich+Mehl', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('GS1', async ({ page }) => {
-    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName, tuPIName } = await createMasterdata();
+    const masterdata = await createMasterdata();
 
-    await LoginScreen.login(login);
+    await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
-    await PickingJobsListScreen.filterByDocumentNo(documentNo);
-    await PickingJobsListScreen.startJob({ documentNo });
-    await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
-    await PickingJobScreen.setTargetLU({ lu: luPIName });
-    await PickingJobScreen.setTargetTU({ tu: tuPIName });
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+    await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI.tuName });
     await PickingJobScreen.pickHU({
-        qrCode: huQRCode,
+        qrCode: masterdata.handlingUnits.HU1.qrCode,
         catchWeightQRCode: [
             '019731187634181131030075201527080910501',
         ],
@@ -115,23 +107,92 @@ test('GS1', async ({ page }) => {
 });
 
 // noinspection JSUnusedLocalSymbols
-test('EAN13', async ({ page }) => {
-    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName, tuPIName } = await createMasterdata();
+test('EAN13 with prefix 28', async ({ page }) => {
+    const masterdata = await createMasterdata();
 
-    await LoginScreen.login(login);
+    await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
-    await PickingJobsListScreen.filterByDocumentNo(documentNo);
-    await PickingJobsListScreen.startJob({ documentNo });
-    await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
-    await PickingJobScreen.setTargetLU({ lu: luPIName });
-    await PickingJobScreen.setTargetTU({ tu: tuPIName });
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+    await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI.tuName });
     await PickingJobScreen.pickHU({
-        qrCode: huQRCode,
+        qrCode: masterdata.handlingUnits.HU1.qrCode,
         catchWeightQRCode: [
             '2800027002616',
         ],
     });
     await PickingJobScreen.complete();
+});
+
+// noinspection JSUnusedLocalSymbols
+test('EAN13 with prefix 28 and not matching product', async ({ page }) => {
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+    await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI.tuName });
+
+    await expectErrorToast('Not matching EAN13 product code', async () => {
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.handlingUnits.HU1.qrCode,
+            catchWeightQRCode: [
+                '2899999002618',
+            ],
+        });
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('EAN13 with prefix 29', async ({ page }) => {
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+    await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI.tuName });
+    await PickingJobScreen.pickHU({
+        qrCode: masterdata.handlingUnits.HU1.qrCode,
+        catchWeightQRCode: [
+            '2948882005745',
+        ],
+    });
+    await PickingJobScreen.complete();
+});
+
+test('EAN13 with prefix 29 and not matching product', async ({ page }) => {
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+    await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI.tuName });
+
+    await expectErrorToast('Not matching EAN13 product code', async () => {
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.handlingUnits.HU1.qrCode,
+            catchWeightQRCode: [
+                '2999992005743',
+            ],
+        });
+    });
 });

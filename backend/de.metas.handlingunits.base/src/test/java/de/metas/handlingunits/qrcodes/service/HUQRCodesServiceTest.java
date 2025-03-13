@@ -64,7 +64,8 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class HUQRCodesServiceTest
 {
@@ -320,8 +321,8 @@ class HUQRCodesServiceTest
 			assertThat(huQRCode).isInstanceOf(EAN13HUQRCode.class);
 
 			final EAN13HUQRCode ean13 = (EAN13HUQRCode)huQRCode;
-			assertThat(ean13.getPrefix()).contains(EAN13HUQRCode.PREFIX_VariableWeight);
-			assertThat(ean13.getProductNo()).contains("59414");
+			assertThat(ean13.unbox().getPrefix().getAsString()).isEqualTo("28");
+			assertThat(ean13.unbox().getProductNo().getAsString()).isEqualTo("59414");
 			assertThat(ean13.getWeightInKg()).contains(new BigDecimal("0.482"));
 			assertThat(ean13.getBestBeforeDate()).isEmpty();
 			assertThat(ean13.getLotNumber()).isEmpty();
