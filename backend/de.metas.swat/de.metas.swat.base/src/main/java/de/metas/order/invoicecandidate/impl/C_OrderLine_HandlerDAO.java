@@ -78,6 +78,11 @@ public class C_OrderLine_HandlerDAO implements IC_OrderLine_HandlerDAO
 			filters.addFilter(notQueryFilter);
 		}
 
+		//specifically skip orderLines with IsSkipInvoicing=True
+		{
+			filters.addNotEqualsFilter(I_C_OrderLine.COLUMNNAME_IsSkipInvoicing, true);
+		}
+
 		{
 			//
 			// Excluding docTypes. We ignore for Proposals, Quotations,Frame Agreement, POS-Orders (SO) or delivery RMAs (PO)

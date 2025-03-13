@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 408795132L;
+	private static final long serialVersionUID = -208488602L;
 
     /** Standard Constructor */
     public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
@@ -118,6 +118,21 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getC_Activity_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Activity_ID);
+	}
+
+	@Override
+	public void setC_BPartner2_ID (final int C_BPartner2_ID)
+	{
+		if (C_BPartner2_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner2_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner2_ID, C_BPartner2_ID);
+	}
+
+	@Override
+	public int getC_BPartner2_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner2_ID);
 	}
 
 	@Override
@@ -417,14 +432,14 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	@Override
 	public void setC_OrderSO_ID (final int C_OrderSO_ID)
 	{
-		if (C_OrderSO_ID < 1)
+		if (C_OrderSO_ID < 1) 
 			set_Value (COLUMNNAME_C_OrderSO_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_OrderSO_ID, C_OrderSO_ID);
 	}
 
 	@Override
-	public int getC_OrderSO_ID()
+	public int getC_OrderSO_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_OrderSO_ID);
 	}
@@ -747,18 +762,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return get_ValueAsString(COLUMNNAME_FrequencyType);
 	}
 
-	@Override
-	public void setgk196_TotalWeight (final @Nullable BigDecimal gk196_TotalWeight)
-	{
-		throw new IllegalArgumentException ("gk196_TotalWeight is virtual column");	}
-
-	@Override
-	public BigDecimal getgk196_TotalWeight() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_gk196_TotalWeight);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
 	/** 
 	 * GroupCompensationAmtType AD_Reference_ID=540759
 	 * Reference name: GroupCompensationAmtType
@@ -849,18 +852,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public void setIsDeliveryClosed (final boolean IsDeliveryClosed)
-	{
-		set_Value (COLUMNNAME_IsDeliveryClosed, IsDeliveryClosed);
-	}
-
-	@Override
-	public boolean isDeliveryClosed()
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsDeliveryClosed);
-	}
-
-	@Override
 	public void setIsCampaignPrice (final boolean IsCampaignPrice)
 	{
 		set_Value (COLUMNNAME_IsCampaignPrice, IsCampaignPrice);
@@ -870,6 +861,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public boolean isCampaignPrice() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCampaignPrice);
+	}
+
+	@Override
+	public void setIsDeliveryClosed (final boolean IsDeliveryClosed)
+	{
+		set_Value (COLUMNNAME_IsDeliveryClosed, IsDeliveryClosed);
+	}
+
+	@Override
+	public boolean isDeliveryClosed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDeliveryClosed);
 	}
 
 	@Override
@@ -1002,6 +1005,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public boolean isPriceEditable() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPriceEditable);
+	}
+
+	@Override
+	public void setIsSkipInvoicing (final boolean IsSkipInvoicing)
+	{
+		set_Value (COLUMNNAME_IsSkipInvoicing, IsSkipInvoicing);
+	}
+
+	@Override
+	public boolean isSkipInvoicing() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSkipInvoicing);
 	}
 
 	@Override

@@ -39,6 +39,8 @@ public class GroupTemplateRegularLine
 	@NonNull ProductId productId;
 	@NonNull Quantity qty;
 	@Nullable ConditionsId contractConditionsId;
+	boolean isSkipInvoicing;
+	boolean isHideWhenPrinting;
 
 	public boolean isMatching(@Nullable final ConditionsId contextContractConditionsId)
 	{

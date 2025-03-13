@@ -181,6 +181,26 @@ public interface I_C_OrderLine
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
 
 	/**
+	 * Set Business Partner (2).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner2_ID (int C_BPartner2_ID);
+
+	/**
+	 * Get Business Partner (2).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner2_ID();
+
+	String COLUMNNAME_C_BPartner2_ID = "C_BPartner2_ID";
+
+	/**
 	 * Set Business Partner.
 	 *
 	 * <br>Type: TableDir
@@ -1010,31 +1030,6 @@ public interface I_C_OrderLine
 	String COLUMNNAME_FrequencyType = "FrequencyType";
 
 	/**
-	 * Set Total Weight.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setgk196_TotalWeight (@Nullable BigDecimal gk196_TotalWeight);
-
-	/**
-	 * Get Total Weight.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	BigDecimal getgk196_TotalWeight();
-
-	ModelColumn<I_C_OrderLine, Object> COLUMN_gk196_TotalWeight = new ModelColumn<>(I_C_OrderLine.class, "gk196_TotalWeight", null);
-	String COLUMNNAME_gk196_TotalWeight = "gk196_TotalWeight";
-
-	/**
 	 * Set Compensation Amount Type.
 	 *
 	 * <br>Type: List
@@ -1165,27 +1160,6 @@ public interface I_C_OrderLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Delivery Closed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsDeliveryClosed (boolean IsDeliveryClosed);
-
-	/**
-	 * Get Delivery Closed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isDeliveryClosed();
-
-	ModelColumn<I_C_OrderLine, Object> COLUMN_IsDeliveryClosed = new ModelColumn<>(I_C_OrderLine.class, "IsDeliveryClosed", null);
-	String COLUMNNAME_IsDeliveryClosed = "IsDeliveryClosed";
-
-	/**
 	 * Set CP.
 	 * Campaign Price
 	 *
@@ -1207,6 +1181,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_IsCampaignPrice = new ModelColumn<>(I_C_OrderLine.class, "IsCampaignPrice", null);
 	String COLUMNNAME_IsCampaignPrice = "IsCampaignPrice";
+
+	/**
+	 * Set Delivery Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDeliveryClosed (boolean IsDeliveryClosed);
+
+	/**
+	 * Get Delivery Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDeliveryClosed();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_IsDeliveryClosed = new ModelColumn<>(I_C_OrderLine.class, "IsDeliveryClosed", null);
+	String COLUMNNAME_IsDeliveryClosed = "IsDeliveryClosed";
 
 	/**
 	 * Set Description Only.
@@ -1448,6 +1443,27 @@ public interface I_C_OrderLine
 	String COLUMNNAME_IsPriceEditable = "IsPriceEditable";
 
 	/**
+	 * Set Skip invoicing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSkipInvoicing (boolean IsSkipInvoicing);
+
+	/**
+	 * Get Skip invoicing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSkipInvoicing();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_IsSkipInvoicing = new ModelColumn<>(I_C_OrderLine.class, "IsSkipInvoicing", null);
+	String COLUMNNAME_IsSkipInvoicing = "IsSkipInvoicing";
+
+	/**
 	 * Set Abo.
 	 *
 	 * <br>Type: YesNo
@@ -1660,7 +1676,7 @@ public interface I_C_OrderLine
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false (lazy loading)
+	 * <br>Virtual Column: false
 	 */
 	void setM_Product_DocumentNote (@Nullable java.lang.String M_Product_DocumentNote);
 
@@ -1669,7 +1685,7 @@ public interface I_C_OrderLine
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false (lazy loading)
+	 * <br>Virtual Column: false
 	 */
 	@Nullable java.lang.String getM_Product_DocumentNote();
 
