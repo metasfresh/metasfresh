@@ -49,7 +49,11 @@ public class EAN13
 			final EAN13ProductCode productNo;
 			if (EAN13Prefix.InternalUseOrVariableMeasure.equals(prefix))
 			{
-				productNo = EAN13ProductCode.ofString(barcode.substring(2, 6)); // 4 digits for article code (IIII), see https://www.gs1.org/docs/barcodes/SummaryOfGS1MOPrefixes20-29.pdf
+
+				// 4 digits for article code (IIII),
+				// The digit at index 6 does not belong to the product code. It can be used for other purposes. For the time being it's ignored.
+				// see https://www.gs1.org/docs/barcodes/SummaryOfGS1MOPrefixes20-29.pdf, page 81 (2.71 GS1 Switzerland)
+				productNo = EAN13ProductCode.ofString(barcode.substring(2, 6));
 			}
 			else
 			{
