@@ -252,7 +252,7 @@ Feature: create or update BPartner v2
       | ALBERTA        | BPartnerLocation | l22                |                              | 540000                       | true                       |
       | ALBERTA        | UserID           | c11                |                              | 540000                       | true                       |
       | ALBERTA        | UserID           | c22                |                              | 540000                       | true                       |
-      | ALBERTA        | Greeting         | greetingTest261023 |                              | 540000                       | false                      |
+      | ALBERTA        | Greeting         | greetingTest261023 |                              |                              |                            |
     And the metasfresh REST-API endpoint path 'api/v2/bpartner/ext-ALBERTA-001' receives a 'GET' request
     Then the metasfresh REST-API responds with
 """
