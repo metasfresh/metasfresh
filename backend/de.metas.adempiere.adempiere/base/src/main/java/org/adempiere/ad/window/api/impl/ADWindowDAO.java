@@ -31,6 +31,7 @@ import org.compiere.model.IQuery.Aggregate;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Table;
+import org.compiere.model.I_AD_Table_Process;
 import org.compiere.model.I_AD_UI_Column;
 import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.I_AD_UI_ElementField;
@@ -51,6 +52,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.copy;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -63,7 +65,6 @@ public class ADWindowDAO implements IADWindowDAO
 	private static final Logger logger = LogManager.getLogger(ADWindowDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-
 	private final CCache<String, AdWindowId> windowIdsByInternalName = CCache.<String, AdWindowId>builder()
 			.tableName(I_AD_Window.Table_Name)
 			.build();
@@ -394,6 +395,7 @@ public class ADWindowDAO implements IADWindowDAO
 		copyWindowTrl(targetWindowId, sourceWindowId);
 
 		copyTabs(targetWindow, sourceWindow);
+
 	}
 
 	private void copyWindowTrl(@NonNull final AdWindowId targetWindowId, @NonNull final AdWindowId sourceWindowId)
@@ -639,7 +641,7 @@ public class ADWindowDAO implements IADWindowDAO
 
 		for (final I_AD_UI_Element sourceUIElement : sourceUIElements)
 		{
-			if(isValidSourceUIElement(sourceUIElement))
+			if (isValidSourceUIElement(sourceUIElement))
 			{
 				final I_AD_UI_Element existingTargetElement = existingTargetUIElements.get(sourceUIElement.getName());
 				copyUIElement(copyCtx, targetUIElementGroup, existingTargetElement, sourceUIElement);
@@ -649,12 +651,12 @@ public class ADWindowDAO implements IADWindowDAO
 
 	private boolean isValidSourceUIElement(final I_AD_UI_Element sourceUIElements)
 	{
-		if(sourceUIElements.getAD_UI_ElementType().equals(X_AD_UI_Element.AD_UI_ELEMENTTYPE_Labels))
+		if (sourceUIElements.getAD_UI_ElementType().equals(X_AD_UI_Element.AD_UI_ELEMENTTYPE_Labels))
 		{
 			return sourceUIElements.getLabels_Tab_ID() > 0 && sourceUIElements.getLabels_Tab().isActive();
 		}
 
-		if(sourceUIElements.getAD_UI_ElementType().equals(X_AD_UI_Element.AD_UI_ELEMENTTYPE_InlineTab))
+		if (sourceUIElements.getAD_UI_ElementType().equals(X_AD_UI_Element.AD_UI_ELEMENTTYPE_InlineTab))
 		{
 			return sourceUIElements.getInline_Tab_ID() > 0 && sourceUIElements.getInline_Tab().isActive();
 		}
@@ -892,6 +894,7 @@ public class ADWindowDAO implements IADWindowDAO
 	private void copyTabs(final I_AD_Window targetWindow, final I_AD_Window sourceWindow)
 	{
 		final AdWindowId targetWindowId = AdWindowId.ofRepoId(targetWindow.getAD_Window_ID());
+		final AdWindowId sourceWindowId = AdWindowId.ofRepoId(sourceWindow.getAD_Window_ID());
 		final Map<AdTableId, I_AD_Tab> existingTargetTabs = retrieveTabsQuery(targetWindowId)
 				.create()
 				.map(I_AD_Tab.class, adTab -> AdTableId.ofRepoId(adTab.getAD_Table_ID()));
@@ -909,6 +912,20 @@ public class ADWindowDAO implements IADWindowDAO
 			final I_AD_Tab targetTab = copyTab_SkipUISections(copyCtx, targetWindow, existingTargetTab, sourceTab);
 
 			sourceAndTargetTabs.add(ImmutablePair.of(sourceTab, targetTab));
+
+			queryBL.createQueryBuilder(I_AD_Table_Process.class)
+					.addEqualsFilter(I_AD_Table_Process.COLUMN_AD_Table_ID, sourceTab.getAD_Table_ID())
+					.addInArrayFilter(I_AD_Table_Process.COLUMN_AD_Window_ID, null, sourceWindow.getAD_Window_ID())
+					.addInArrayFilter(I_AD_Table_Process.COLUMN_AD_Tab_ID, null, sourceTab.getAD_Tab_ID())
+					.create()
+					.stream()
+					.forEach(tableProcess -> {
+						tableProcess.setAD_Window_ID(targetWindow.getAD_Window_ID());
+						tableProcess.setAD_Tab_ID(targetTab.getAD_Tab_ID());
+						InterfaceWrapperHelper.saveRecord(tableProcess);
+
+					});
+
 		}
 
 		for (final ImmutablePair<I_AD_Tab, I_AD_Tab> sourceAndTargetTab : sourceAndTargetTabs)
