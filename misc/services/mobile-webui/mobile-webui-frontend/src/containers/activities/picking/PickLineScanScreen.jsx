@@ -184,7 +184,7 @@ export const convertScannedBarcodeToResolvedResult = ({
     expectedProductNo != null &&
     parsedHUQRCode.productNo != null &&
     String(parsedHUQRCode.productNo) !== expectedProductNo &&
-    String(parsedHUQRCode.productNo) !== expectedEAN13ProductCode // Add comparison to expectedEAN13ProductCode
+    String(parsedHUQRCode.productNo) !== expectedEAN13ProductCode
   ) {
     throw trl('activities.picking.notEligibleHUBarcode');
   }
