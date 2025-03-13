@@ -3,6 +3,7 @@ package de.metas.product;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.pair.ImmutablePair;
+import de.metas.ean13.EAN13ProductCode;
 import de.metas.gs1.GTIN;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplateId;
@@ -114,7 +115,7 @@ public interface IProductDAO extends ISingletonService
 
 	Optional<ProductId> getProductIdByValueStartsWith(@NonNull String valuePrefix, @NonNull ClientId clientId);
 
-	public Optional<ProductId> getProductIdByEAN13ProductCode(@NonNull String ean13ProductCode, @NonNull ClientId clientId);
+	Optional<ProductId> getProductIdByEAN13ProductCode(@NonNull EAN13ProductCode ean13ProductCode, @NonNull ClientId clientId);
 
 	Optional<GroupTemplateId> getGroupTemplateIdByProductId(@NonNull ProductId productId);
 

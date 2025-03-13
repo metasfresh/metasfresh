@@ -18,8 +18,8 @@ class EAN13Test
 		{
 			final EAN13 ean13 = EAN13.fromString("2859414004825").get();
 
-			assertThat(ean13.getPrefix()).contains(EAN13.PREFIX_VariableWeight);
-			assertThat(ean13.getProductNo()).contains("59414");
+			assertThat(ean13.getPrefix().getAsString()).isEqualTo("28");
+			assertThat(ean13.getProductNo().getAsString()).contains("59414");
 			assertThat(ean13.getWeightInKg()).contains(new BigDecimal("0.482"));
 		}
 
@@ -28,8 +28,8 @@ class EAN13Test
 		{
 			final EAN13 ean13 = EAN13.fromString("2800027002616").get();
 
-			assertThat(ean13.getPrefix()).contains(EAN13.PREFIX_VariableWeight);
-			assertThat(ean13.getProductNo()).contains("00027");
+			assertThat(ean13.getPrefix().getAsString()).isEqualTo("28");
+			assertThat(ean13.getProductNo().getAsString()).contains("00027");
 			assertThat(ean13.getWeightInKg()).contains(new BigDecimal("0.261"));
 		}
 	}
@@ -42,11 +42,11 @@ class EAN13Test
 		{
 			final ExplainedOptional<EAN13> result = EAN13.fromString("2912345005009");
 			assertThat(result.isPresent()).isTrue();
-			final EAN13 qrCode = result.get();
-			assertThat(qrCode.getPrefix()).isEqualTo("29");
-			assertThat(qrCode.getProductNo()).isEqualTo("1234");
-			assertThat(qrCode.getWeightInKg()).contains(new BigDecimal("0.500"));
-			assertThat(qrCode.getChecksum()).isEqualTo(9);
+			final EAN13 ean13 = result.get();
+			assertThat(ean13.getPrefix().getAsString()).isEqualTo("29");
+			assertThat(ean13.getProductNo().getAsString()).isEqualTo("1234");
+			assertThat(ean13.getWeightInKg()).contains(new BigDecimal("0.500"));
+			assertThat(ean13.getChecksum()).isEqualTo(9);
 
 		}
 
@@ -56,8 +56,8 @@ class EAN13Test
 			final ExplainedOptional<EAN13> result = EAN13.fromString("2948882005745");
 			assertThat(result.isPresent()).isTrue();
 			final EAN13 qrCode = result.get();
-			assertThat(qrCode.getPrefix()).isEqualTo("29");
-			assertThat(qrCode.getProductNo()).isEqualTo("4888");
+			assertThat(qrCode.getPrefix().getAsString()).isEqualTo("29");
+			assertThat(qrCode.getProductNo().getAsString()).isEqualTo("4888");
 			assertThat(qrCode.getWeightInKg()).contains(new BigDecimal("0.574"));
 			assertThat(qrCode.getChecksum()).isEqualTo(5);
 

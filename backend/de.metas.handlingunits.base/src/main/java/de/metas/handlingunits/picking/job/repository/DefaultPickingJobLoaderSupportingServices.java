@@ -3,6 +3,8 @@ package de.metas.handlingunits.picking.job.repository;
 import com.google.common.collect.SetMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.ean13.EAN13ProductCode;
+import de.metas.ean13.EAN13ProductCodes;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -49,6 +51,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -140,12 +143,10 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	}
 
 	@Override
-	@Nullable
-	public String getEAN13ProductCode(@NonNull final ProductId productId)
+	public Optional<EAN13ProductCode> getEAN13ProductCode(@NonNull final ProductId productId, @Nullable final BPartnerId customerId)
 	{
-		return getProductInfo(productId).getEan13ProductCode();
+		return getProductInfo(productId).getEan13ProductCodes().getCode(customerId);
 	}
-
 
 	@Override
 	public ProductCategoryId getProductCategoryId(@NonNull final ProductId productId)
@@ -168,10 +169,12 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	private ProductInfo retrieveProductInfo(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = productBL.getById(productId);
+		final EAN13ProductCodes ean13ProductCodes = productBL.getEAN13ProductCodes(product);
+		
 		return ProductInfo.builder()
 				.productId(productId)
 				.productNo(product.getValue())
-				.ean13ProductCode(product.getEAN13_ProductCode())
+				.ean13ProductCodes(ean13ProductCodes)
 				.productCategoryId(ProductCategoryId.ofRepoId(product.getM_Product_Category_ID()))
 				.name(InterfaceWrapperHelper.getModelTranslationMap(product).getColumnTrl(I_M_Product.COLUMNNAME_Name, product.getName()))
 				.build();
@@ -227,8 +230,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	{
 		@NonNull ProductId productId;
 		@NonNull String productNo;
-		@Nullable
-		String ean13ProductCode;
+		@NonNull EAN13ProductCodes ean13ProductCodes;
 		@NonNull ProductCategoryId productCategoryId;
 		@NonNull ITranslatableString name;
 	}

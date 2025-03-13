@@ -5,6 +5,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.ean13.EAN13;
+import de.metas.ean13.EAN13ProductCode;
 import de.metas.gs1.GTIN;
 import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HUPIItemProduct;
@@ -404,18 +406,6 @@ public class PickingJobPickCommand
 				: qtyToPickCUsBasedOnPackingInfo;
 	}
 
-	private static void throwQRCodeProductErrorException(final @NonNull ProductId expectedProductId,
-			final String ean13ProductNo,
-			final String expectedProductNo,
-			final List<String> expectedEAN13Codes)
-	{
-		throw new AdempiereException(QR_CODE_PRODUCT_ERROR_MSG)
-				.setParameter("ean13ProductNo", ean13ProductNo)
-				.setParameter("expectedProductNo", expectedProductNo)
-				.setParameter("expectedEAN13Codes", expectedEAN13Codes)
-				.setParameter("expectedProductId", expectedProductId);
-	}
-
 	public PickingJob execute()
 	{
 		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
@@ -611,13 +601,13 @@ public class PickingJobPickCommand
 						.lineId(line.getId())
 						.qtyToPick(qtyToPickCUs)
 						.pickFromLocator(LocatorInfo.builder()
-												 .id(pickFromLocatorId)
-												 .caption(warehouseBL.getLocatorNameById(pickFromLocatorId))
-												 .build())
+								.id(pickFromLocatorId)
+								.caption(warehouseBL.getLocatorNameById(pickFromLocatorId))
+								.build())
 						.pickFromHU(HUInfo.builder()
-											.id(pickFromHUId)
-											.qrCode(pickFromHUQRCode)
-											.build())
+								.id(pickFromHUId)
+								.qrCode(pickFromHUQRCode)
+								.build())
 						.packToSpec(packToSpec)
 						.build()
 		);
@@ -896,9 +886,9 @@ public class PickingJobPickCommand
 		for (int i = 0; i < tu.getQtyTU().toInt(); i++)
 		{
 			result.add(pickedHUTemplate
-							   .actualPickedHU(HUInfo.builder().id(tu.getId()).qrCode(huQRCodes.get(i)).build())
-							   .qtyPicked(qtyPickedPerTU.get(i))
-							   .build());
+					.actualPickedHU(HUInfo.builder().id(tu.getId()).qrCode(huQRCodes.get(i)).build())
+					.qtyPicked(qtyPickedPerTU.get(i))
+					.build());
 		}
 
 		return result.build();
@@ -939,10 +929,10 @@ public class PickingJobPickCommand
 			});
 
 			result = huTransformService.luExtractTUs(LUExtractTUsRequest.builder()
-															 .sourceLU(pickFromHU)
-															 .qtyTU(qtyToPickTUs)
-															 .targetLU(targetLU)
-															 .build());
+					.sourceLU(pickFromHU)
+					.qtyTU(qtyToPickTUs)
+					.targetLU(targetLU)
+					.build());
 			InterfaceWrapperHelper.setThreadInheritedTrxName(result.getAllTURecords()); // workaround because the returned HUs have trxName=null
 		}
 		else if (qtyToPickTUs.isOne() && pickingTarget == null && handlingUnitsBL.isTransportUnit(pickFromHU))
@@ -1024,7 +1014,8 @@ public class PickingJobPickCommand
 		}
 		else if (pickFromHUQRCode instanceof EAN13HUQRCode)
 		{
-			validateQRCodeForEAN13((EAN13HUQRCode)pickFromHUQRCode, productId, catchWeightBD);
+			final EAN13 ean13 = ((EAN13HUQRCode)pickFromHUQRCode).unbox();
+			validateQRCodeForEAN13(ean13, productId, catchWeightBD);
 		}
 	}
 
@@ -1062,37 +1053,25 @@ public class PickingJobPickCommand
 	}
 
 	private void validateQRCodeForEAN13(
-			@NonNull final EAN13HUQRCode pickFromHUQRCode,
+			@NonNull final EAN13 ean13,
 			@NonNull final ProductId expectedProductId,
 			@Nullable final BigDecimal expectedCatchWeightBD)
 	{
 		final String expectedProductNo = productBL.getProductValue(expectedProductId);
-		final List<String> expectedEAN13Codes = productBL.getEAN13ProductCodes(expectedProductId);
-		final String ean13ProductNo = pickFromHUQRCode.getProductNo();
+		final EAN13ProductCode ean13ProductNo = ean13.getProductNo();
+		final BPartnerId customerId = getShipmentScheduleInfo().getBpartnerId();
 
-		if (pickFromHUQRCode.isPrefixNotSupported())
+		if (!productBL.isValidEAN13Product(ean13, expectedProductId, customerId))
 		{
-			throwQRCodeProductErrorException(expectedProductId, ean13ProductNo, expectedProductNo, expectedEAN13Codes);
-		}
-
-		if (pickFromHUQRCode.isInternalUseOrVariableMeasure())
-		{
-			final Optional<String> suitableEAN13ProductCode = expectedEAN13Codes.stream().filter(ean13ProductNo::equals).findFirst();
-
-			final boolean fitsInternalUseOrVariableMeasure = pickFromHUQRCode.isInternalUseOrVariableMeasure() && suitableEAN13ProductCode.isPresent();
-			if (!fitsInternalUseOrVariableMeasure)
-			{
-				throwQRCodeProductErrorException(expectedProductId, ean13ProductNo, expectedProductNo, expectedEAN13Codes);
-			}
-		}
-		else if (!(pickFromHUQRCode.isVariableWeight() && expectedProductNo.startsWith(ean13ProductNo)))
-		{
-			throwQRCodeProductErrorException(expectedProductId, ean13ProductNo, expectedProductNo, expectedEAN13Codes);
+			throw new AdempiereException(QR_CODE_PRODUCT_ERROR_MSG)
+					.setParameter("ean13ProductNo", ean13ProductNo)
+					.setParameter("expectedProductNo", expectedProductNo)
+					.setParameter("expectedProductId", expectedProductId);
 		}
 
 		if (expectedCatchWeightBD != null)
 		{
-			final BigDecimal ean13Weight = pickFromHUQRCode.getWeightInKg().orElse(null);
+			final BigDecimal ean13Weight = ean13.getWeightInKg().orElse(null);
 			if (ean13Weight == null)
 			{
 				return;
@@ -1102,7 +1081,7 @@ public class PickingJobPickCommand
 			{
 				throw new AdempiereException(CATCH_WEIGHT_MUST_MATCH_LM_QR_CODE_WEIGHT_ERROR_MSG)
 						.appendParametersToMessage()
-						.setParameter("pickFromHUQRCode", pickFromHUQRCode)
+						.setParameter("ean13", ean13)
 						.setParameter("expectedCatchWeightBD", expectedCatchWeightBD);
 			}
 		}

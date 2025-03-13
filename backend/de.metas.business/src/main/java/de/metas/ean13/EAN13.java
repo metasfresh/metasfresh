@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.ToString;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -14,22 +13,13 @@ import java.util.Optional;
 
 @Builder
 @EqualsAndHashCode
-@ToString
 public class EAN13
 {
-	public static final String PREFIX_VariableWeight = "28";
-	public static final String PREFIX_InternalUseOrVariableMeasure = "29";
-
-	@NonNull
-	@Getter
-	private final String prefix;
-	@NonNull
-	@Getter
-	private final String productNo;
-	@Nullable
-	private final BigDecimal weightInKg;
-	@Getter
-	private final int checksum;
+	@NonNull private final String barcode;
+	@Getter @NonNull private final EAN13Prefix prefix;
+	@Getter @NonNull private final EAN13ProductCode productNo;
+	@Nullable private final BigDecimal weightInKg;
+	@Getter private final int checksum;
 
 	public static ExplainedOptional<EAN13> fromString(@NonNull final String barcode)
 	{
@@ -49,21 +39,21 @@ public class EAN13
 			return ExplainedOptional.emptyBecause("Invalid checksum. Expected '" + checksumExpected + "' but got '" + checksum + "'.");
 		}
 
-		final String prefix = barcode.substring(0, 2);
+		final EAN13Prefix prefix = EAN13Prefix.ofString(barcode.substring(0, 2));
 
 		//
 		// 28 - Variable-Weight barcodes
 		// 29 - Internal Use / Variable measure
-		if (prefix.equals(PREFIX_VariableWeight) || prefix.equals(PREFIX_InternalUseOrVariableMeasure))
+		if (prefix.equals(EAN13Prefix.VariableWeight) || prefix.equals(EAN13Prefix.InternalUseOrVariableMeasure))
 		{
-			final String productNo;
-			if (PREFIX_InternalUseOrVariableMeasure.equals(prefix))
+			final EAN13ProductCode productNo;
+			if (EAN13Prefix.InternalUseOrVariableMeasure.equals(prefix))
 			{
-				productNo = barcode.substring(2, 6); // 4 digits for article code (IIII), see https://www.gs1.org/docs/barcodes/SummaryOfGS1MOPrefixes20-29.pdf
+				productNo = EAN13ProductCode.ofString(barcode.substring(2, 6)); // 4 digits for article code (IIII), see https://www.gs1.org/docs/barcodes/SummaryOfGS1MOPrefixes20-29.pdf
 			}
 			else
 			{
-				productNo = barcode.substring(2, 7); // 5 digits for article code (AAAAA)
+				productNo = EAN13ProductCode.ofString(barcode.substring(2, 7)); // 5 digits for article code (AAAAA)
 
 			}
 			final String weightStr = barcode.substring(7, 12); // 5 digits for weight (GGGGG)
@@ -73,6 +63,7 @@ public class EAN13
 
 			return ExplainedOptional.of(
 					builder()
+							.barcode(barcode)
 							.prefix(prefix)
 							.productNo(productNo)
 							.weightInKg(weightInKg)
@@ -119,23 +110,12 @@ public class EAN13
 		return nearestTen - totalSum;
 	}
 
+	@Override
+	@Deprecated
+	public String toString() {return barcode;}
+
 	public Optional<BigDecimal> getWeightInKg()
 	{
 		return Optional.ofNullable(weightInKg);
-	}
-
-	public boolean isVariableWeight()
-	{
-		return prefix.equals(PREFIX_VariableWeight);
-	}
-
-	public boolean isInternalUseOrVariableMeasure()
-	{
-		return prefix.equals(PREFIX_InternalUseOrVariableMeasure);
-	}
-
-	public boolean isPrefixNotSupported()
-	{
-		return ! (prefix.equals(PREFIX_VariableWeight) || prefix.equals(PREFIX_InternalUseOrVariableMeasure));
 	}
 }

@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking.job.repository;
 
 import com.google.common.collect.SetMultimap;
 import de.metas.bpartner.BPartnerId;
+import de.metas.ean13.EAN13ProductCode;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -22,8 +23,10 @@ import de.metas.product.ProductId;
 import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 
+import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -49,7 +52,7 @@ public interface PickingJobLoaderSupportingServices
 
 	String getProductNo(@NonNull ProductId productId);
 
-	String getEAN13ProductCode(@NonNull ProductId productId);
+	Optional<EAN13ProductCode> getEAN13ProductCode(@NonNull ProductId productId, @Nullable BPartnerId customerId);
 
 	ProductCategoryId getProductCategoryId(@NonNull ProductId productId);
 
