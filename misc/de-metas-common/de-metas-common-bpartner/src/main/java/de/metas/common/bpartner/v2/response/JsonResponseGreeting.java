@@ -1,18 +1,8 @@
-package de.metas.greeting;
-
-import de.metas.i18n.ITranslatableString;
-import de.metas.organization.OrgId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-
 /*
  * #%L
- * de.metas.business
+ * de-metas-common-bpartner
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,23 +20,24 @@ import javax.annotation.Nullable;
  * #L%
  */
 
+package de.metas.common.bpartner.v2.response;
+
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
+
+import javax.annotation.Nullable;
+
 @Value
 @Builder
-public class Greeting
+@Jacksonized
+public class JsonResponseGreeting
 {
-	@NonNull GreetingId id;
-	@NonNull OrgId orgId;
+	@NonNull JsonMetasfreshId id;
 	@NonNull String name;
-	@NonNull ITranslatableString greeting;
+	@NonNull String greeting;
 
 	@Nullable String letterSalutation;
-
-	@Nullable GreetingStandardType standardType;
-
-	boolean active;
-
-	public String getGreeting(@NonNull final String adLanguage)
-	{
-		return getGreeting().translate(adLanguage);
-	}
 }
