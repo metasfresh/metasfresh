@@ -69,7 +69,7 @@ SELECT i.description                         AS description,
        cm.documentno                         AS creditmemo_docNo
 FROM C_Invoice i
          JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
-         LEFT JOIN AD_User srep ON i.SalesRep_ID = srep.AD_User_ID AND srep.AD_User_ID <> 100
+         LEFT JOIN AD_User srep ON i.SalesRep_ID = srep.AD_User_ID
          LEFT JOIN AD_User cont ON i.AD_User_ID = cont.AD_User_ID
          LEFT JOIN C_Greeting cogr ON cont.C_Greeting_ID = cogr.C_Greeting_ID
          LEFT JOIN C_Greeting srgr ON srep.C_Greeting_ID = srgr.C_Greeting_ID

@@ -15,15 +15,15 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_Orde
                 bp_value           character varying,
                 eori               character varying,
                 customernoatvendor character varying,
-                cont_name          text,
-                cont_phone         character varying,
-                cont_fax           character varying,
-                cont_email         character varying,
-                sr_name            text,
-                sr_phone           character varying,
-                sr_fax             character varying,
-                sr_email           character varying,
-                printname          character varying,
+                cont_name     text,
+                cont_phone    character varying,
+                cont_fax      character varying,
+                cont_email    character varying,
+                sr_name       text,
+                sr_phone      character varying,
+                sr_fax        character varying,
+                sr_email      character varying,
+                printname     character varying,
                 billtoaddress character varying
             )
     STABLE
@@ -73,7 +73,6 @@ FROM C_Order o
          LEFT OUTER JOIN C_DocType_Trl dtt ON o.C_DocTypeTarget_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_language
 
 WHERE o.c_order_id = record_id
-  AND o.isActive = 'Y'
 $$
 ;
 

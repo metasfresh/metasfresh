@@ -22,9 +22,11 @@
 
 package de.metas.product.impl;
 
+import de.metas.ean13.EAN13ProductCode;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
 import lombok.Builder;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
@@ -129,4 +131,54 @@ public class ProductDAOTest
 
 		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
+
+
+	@Nested
+	class getProductIdByEAN13ProductCode
+	{
+		private I_M_Product createProductWithEAN13(final String value, final String ean13ProductCode)
+		{
+			final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+			product.setValue(value);
+			product.setEAN13_ProductCode(ean13ProductCode);
+			save(product);
+			return product;
+		}
+
+		@Test
+		void ean13CodeFromProduct()
+		{
+			final I_M_Product product1 = createProductWithEAN13("101505", "4888");
+			final ProductId product1Id = ProductId.ofRepoId(product1.getM_Product_ID());
+			final ClientId clientId = ClientId.ofRepoId(product1.getAD_Client_ID());
+			final I_M_Product product2 = createProductWithEAN13("101506", "4889");
+			final ProductId product2Id = ProductId.ofRepoId(product2.getM_Product_ID());
+
+			assertThat(productDAO.getProductIdByEAN13ProductCode(EAN13ProductCode.ofString("4888"), clientId)).contains(product1Id);
+			assertThat(productDAO.getProductIdByEAN13ProductCode(EAN13ProductCode.ofString("4889"), clientId)).contains(product2Id);
+		}
+
+		@Test
+		void ean13CodeDoesNotFit()
+		{
+			final I_M_Product product1 = createProductWithEAN13("101505", "4888");
+			ProductId.ofRepoId(product1.getM_Product_ID());
+			final ClientId clientId = ClientId.ofRepoId(product1.getAD_Client_ID());
+			createProductWithEAN13("101506", "4889");
+
+			assertThat(productDAO.getProductIdByEAN13ProductCode(EAN13ProductCode.ofString("48882"), clientId)).isEmpty();
+			assertThat(productDAO.getProductIdByEAN13ProductCode(EAN13ProductCode.ofString("10150"), clientId)).isEmpty();
+		}
+
+		@Test
+		void ean13CodeDuplicateInProduct()
+		{
+			final I_M_Product product1 = createProductWithEAN13("101505", "4888");
+			final ClientId clientId = ClientId.ofRepoId(product1.getAD_Client_ID());
+			createProductWithEAN13("101506", "4888");
+
+			assertThat(productDAO.getProductIdByEAN13ProductCode(EAN13ProductCode.ofString("4888"), clientId)).isEmpty();
+		}
+	}
+
 }
