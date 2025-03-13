@@ -22,24 +22,31 @@
 
 package de.metas.cucumber.stepdefs.createbpartner;
 
+import de.metas.banking.BankAccountId;
+import de.metas.banking.api.impl.BPBankAccountDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
+import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.rest_api.v2.bpartner.BPartnerEndpointService;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 
 import java.util.List;
@@ -47,7 +54,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 
 public class CreateBPartnerV2_StepDef
@@ -55,16 +62,23 @@ public class CreateBPartnerV2_StepDef
 	private final BPartnerEndpointService bpartnerEndpointService;
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final AD_User_StepDefData userTable;
+	private final C_BP_BankAccount_StepDefData bankAccountTable;
+	private final JsonRetrieverService jsonRetriever;
+	private final BPBankAccountDAO bankAccountDAO;
 
 	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public CreateBPartnerV2_StepDef(
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final AD_User_StepDefData userTable)
+			@NonNull final AD_User_StepDefData userTable,
+			@NonNull final C_BP_BankAccount_StepDefData bankAccountTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.userTable = userTable;
+		this.bankAccountTable = bankAccountTable;
 		this.bpartnerEndpointService = SpringContextHolder.instance.getBean(BPartnerEndpointService.class);
+		this.jsonRetriever = SpringContextHolder.instance.getBean(JsonServiceFactory.class).createRetriever();
+		this.bankAccountDAO = SpringContextHolder.instance.getBean(BPBankAccountDAO.class);
 	}
 
 	@Then("^verify that bPartner was (updated|created) for externalIdentifier$")
@@ -179,6 +193,21 @@ public class CreateBPartnerV2_StepDef
 			assertThat(persistedContact.getName()).isEqualTo(name);
 			assertThat(persistedContact.getFax()).isEqualTo(fax);
 			assertThat(persistedContact.getInvoiceEmailEnabled()).isEqualTo(isInvoiceEmailEnabled);
+		}
+	}
+
+	@And("locate C_BP_BankAccount by IBAN:")
+	public void locateBPBankAccountByIban(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> dataTableRow : dataTable.asMaps())
+		{
+			final String bankAccountIban = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_BP_BankAccount.COLUMNNAME_IBAN);
+			final String bankAccountTableIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID);
+
+			final BankAccountId bankAccountId = bankAccountDAO.getBankAccountIdByIBAN(bankAccountIban)
+					.orElseThrow(() -> new RuntimeException("No record found for IBAN = " + bankAccountIban));
+
+			bankAccountTable.put(bankAccountTableIdentifier, InterfaceWrapperHelper.load(bankAccountId, I_C_BP_BankAccount.class));
 		}
 	}
 }

@@ -194,17 +194,6 @@ final class ChangeLogUtil
 			.put(I_C_BP_BankAccount.COLUMNNAME_A_Country, BPartnerBankAccount.ACCOUNT_COUNTRY)
 			.build();
 
-	@VisibleForTesting
-	private static final ImmutableMap<String, String> C_BPARTNER_CREDIT_LIMIT_COLUMN_MAP = ImmutableMap
-			.<String, String>builder()
-			.put(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_CreditLimit_ID, BPartnerCreditLimit.ID)
-			.put(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, BPartnerCreditLimit.BPARTNER_ID)
-			.put(I_C_BPartner_CreditLimit.COLUMNNAME_C_CreditLimit_Type_ID, BPartnerCreditLimit.CREDIT_LIMIT_TYPE_ID)
-			.put(I_C_BPartner_CreditLimit.COLUMNNAME_Amount, BPartnerCreditLimit.AMOUNT)
-			.put(I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom, BPartnerCreditLimit.DATE_FROM)
-			.put(I_C_BPartner_CreditLimit.COLUMNNAME_IsActive, BPartnerCreditLimit.ACTIVE)
-			.build();
-
 	public static RecordChangeLog createBPartnerChangeLog(
 			@NonNull final I_C_BPartner bpartnerRecord,
 			@NonNull final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> changeLogEntries)
