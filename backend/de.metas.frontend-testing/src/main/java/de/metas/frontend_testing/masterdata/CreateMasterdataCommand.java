@@ -28,6 +28,7 @@ import de.metas.frontend_testing.masterdata.pp_order.PPOrderCommand;
 import de.metas.frontend_testing.masterdata.product.CreateProductCommand;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
+import de.metas.frontend_testing.masterdata.resource.ResourceCommand;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.sales_order.SalesOrderCreateCommand;
@@ -79,6 +80,7 @@ public class CreateMasterdataCommand
 		this.context = new MasterdataContext();
 
 		// IMPORTANT: the order is very important
+		createResources();
 		final ImmutableMap<String, JsonLoginUserResponse> login = createLoginUsers();
 		final ImmutableMap<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
 		final ImmutableMap<String, JsonCreateProductResponse> products = createProducts();
@@ -259,6 +261,22 @@ public class CreateMasterdataCommand
 	private ImmutableMap<String, JsonDDOrderResponse> createDistributionOrders()
 	{
 		return process(request.getDistributionOrders(), this::createDistributionOrder);
+	}
+
+	private void createResources()
+	{
+		if (request.getResources() == null)
+		{
+			return;
+		}
+
+		request.getResources()
+				.forEach((key, value) -> ResourceCommand.builder()
+						.context(context)
+						.request(value)
+						.identifier(Identifier.ofString(key))
+						.build()
+						.execute());
 	}
 
 	private JsonDDOrderResponse createDistributionOrder(String identifier, JsonDDOrderRequest request)

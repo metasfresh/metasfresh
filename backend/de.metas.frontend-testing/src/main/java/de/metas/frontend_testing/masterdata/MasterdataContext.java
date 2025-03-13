@@ -7,6 +7,7 @@ import de.metas.location.CountryId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ResourceId;
+import de.metas.resource.ResourceTypeId;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,6 +33,7 @@ public class MasterdataContext
 	public static final BPartnerId METASFRESH_ORG_BPARTNER_ID = BPartnerId.ofRepoId(2155894);
 	public static final BPartnerLocationId METASFRESH_ORG_BPARTNER_LOCATION_ID = BPartnerLocationId.ofRepoId(METASFRESH_ORG_BPARTNER_ID, 2202690);
 	public static final ResourceId DEFAULT_PLANT_ID = ResourceId.ofRepoId(540006);
+	public static final ResourceTypeId DEFAULT_RESOURCE_TYPE_ID = ResourceTypeId.ofRepoId(1000000);
 	public static final int STANDARD_AD_PRINTER_ID = 1000000;
 	public static final int PRINT_TO_DISK_AD_PRINTERHW_ID = 540331;
 

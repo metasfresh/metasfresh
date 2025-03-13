@@ -7,6 +7,7 @@ import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.exceptions.DocTypeNotFoundException;
@@ -115,4 +116,6 @@ public interface IPPOrderBL extends ISingletonService
 	void completeDocument(@NonNull I_PP_Order ppOrder);
 
 	Set<ProductId> getProductIdsToIssue(@NonNull PPOrderId ppOrderId);
+
+	String getResourceName(@NonNull ResourceId resourceId);
 }
