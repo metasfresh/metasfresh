@@ -327,10 +327,10 @@ Feature: create or update BPartner v2
       | C_BPartner_ID.Identifier | externalIdentifier | Name              |
       | bpartner                 | ext-ALBERTA-001    | test_name_updated |
     And locate C_BP_BankAccount by IBAN:
-      | C_BP_BankAccount_ID           | BankAccountExternalIdentifier  | BPartnerExternalIdentifier |
-      | BPA_Via_ExternalRef_S0285_700 | ext-ALBERTA-BPACCT_S0285_700_1 | ext-ALBERTA-001            |
-      | BPA_Via_IBAN_S0285_700        | iban-DE54500105178721351673    | ext-ALBERTA-001            |
-      | BPA_Via_QR_IBAN_S0285_700     | qr_iban-DE91500105177122223557 | ext-ALBERTA-001            |
+      | C_BP_BankAccount_ID           | IBAN                   |
+      | BPA_Via_ExternalRef_S0285_700 | DE15500105171114521777 |
+      | BPA_Via_IBAN_S0285_700        | DE54500105178721351673 |
+      | BPA_Via_QR_IBAN_S0285_700     | DE26500105174427157327 |
     And validate C_BP_BankAccount:
       | C_BP_BankAccount_ID           | C_BPartner_ID | IBAN                   | ISO_Code | IsActive | A_Name             | A_Street             | A_Zip             | A_City             | A_Country             |
       | BPA_Via_ExternalRef_S0285_700 | bpartner      | DE15500105171114521777 | EUR      | false    | test-accountName_1 | test-accountStreet_1 | test-accountZip_1 | test-accountCity_1 | test-accountCountry_1 |
