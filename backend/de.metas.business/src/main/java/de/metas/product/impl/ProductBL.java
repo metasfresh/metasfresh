@@ -647,24 +647,47 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public Optional<ProductId> getProductIdByEAN13(@NonNull final EAN13 ean13, @NonNull final ClientId clientId)
+	public Optional<ProductId> getProductIdByEAN13(
+			@NonNull final EAN13 ean13,
+			@Nullable final BPartnerId bpartnerId,
+			@NonNull final ClientId clientId)
 	{
 		final EAN13Prefix ean13Prefix = ean13.getPrefix();
 		if (ean13Prefix.isVariableWeight())
 		{
 			return Optionals.firstPresentOfSuppliers(
-					() -> productsRepo.getProductIdByEAN13ProductCode(ean13.getProductNo(), clientId),
+					() -> getProductIdByEAN13ProductCode(ean13, bpartnerId, clientId),
 					() -> getProductIdByValueStartsWith(ean13.getProductNo().getAsString(), clientId)
 			);
 		}
 		else if (ean13Prefix.isInternalUseOrVariableMeasure())
 		{
-			return productsRepo.getProductIdByEAN13ProductCode(ean13.getProductNo(), clientId);
+			return getProductIdByEAN13ProductCode(ean13, bpartnerId, clientId);
 		}
 		else
 		{
 			throw new AdempiereException("Unsupported EAN13 prefix: " + ean13Prefix);
 		}
+	}
+
+	private Optional<ProductId> getProductIdByEAN13ProductCode(
+			@NonNull final EAN13 ean13,
+			@Nullable final BPartnerId bpartnerId,
+			@NonNull final ClientId clientId)
+	{
+		if (bpartnerId != null)
+		{
+			final ImmutableSet<ProductId> productIds = partnerProductDAO.retrieveByEAN13ProductCode(ean13.getProductNo(), bpartnerId)
+					.stream()
+					.map(partnerProduct -> ProductId.ofRepoId(partnerProduct.getM_Product_ID()))
+					.collect(ImmutableSet.toImmutableSet());
+			if (productIds.size() == 1)
+			{
+				return Optional.of(productIds.iterator().next());
+			}
+		}
+
+		return productsRepo.getProductIdByEAN13ProductCode(ean13.getProductNo(), clientId);
 	}
 
 	@Override

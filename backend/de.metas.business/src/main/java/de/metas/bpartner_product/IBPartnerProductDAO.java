@@ -26,6 +26,7 @@ package de.metas.bpartner_product;
  */
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.ean13.EAN13ProductCode;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
@@ -95,4 +96,7 @@ public interface IBPartnerProductDAO extends ISingletonService
 	Optional<ProductId> getProductIdByCustomerProductName(BPartnerId customerId, String customerProductName);
 
 	List<I_C_BPartner_Product> retrieveByBPartnerId(BPartnerId bPartnerId);
+
+	@NonNull
+	List<I_C_BPartner_Product> retrieveByEAN13ProductCode(@NonNull EAN13ProductCode ean13ProductCode, @NonNull BPartnerId bpartnerId);
 }

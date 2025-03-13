@@ -66,7 +66,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_CostDetail;
@@ -671,18 +670,10 @@ public class ProductDAO implements IProductDAO
 	@Override
 	public Optional<ProductId> getProductIdByEAN13ProductCode(@NonNull final EAN13ProductCode ean13ProductCode, @NonNull final ClientId clientId)
 	{
-		final IQuery<I_C_BPartner_Product> bpProductEAN13CodeFilter = queryBL.createQueryBuilder(I_C_BPartner_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_EAN13_ProductCode, ean13ProductCode.getAsString())
-				.create();
-
 		final ImmutableSet<ProductId> productIds = queryBL.createQueryBuilderOutOfTrx(I_M_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Product.COLUMNNAME_AD_Client_ID, clientId)
-				.filter(queryBL.createCompositeQueryFilter(I_M_Product.class)
-								.setJoinOr()
-								.addEqualsFilter(I_M_Product.COLUMNNAME_EAN13_ProductCode, ean13ProductCode.getAsString())
-								.addInSubQueryFilter(I_M_Product.COLUMNNAME_M_Product_ID, I_C_BPartner_Product.COLUMNNAME_M_Product_ID, bpProductEAN13CodeFilter))
+				.addEqualsFilter(I_M_Product.COLUMNNAME_EAN13_ProductCode, ean13ProductCode.getAsString())
 				.setLimit(QueryLimit.TWO)
 				.create()
 				.listIds(ProductId::ofRepoIdOrNull);
