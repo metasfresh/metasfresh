@@ -22,14 +22,11 @@ import java.util.Set;
 
 class POSProductsSearchCommand
 {
-	@NonNull
-	final Instant evalDate;
-	@Nullable
-	final String queryString;
-	@NonNull
-	private final IProductBL productBL;
-	@NonNull
-	private final POSProductsLoader loader;
+	@NonNull private final IProductBL productBL;
+	@NonNull private final POSProductsLoader loader;
+
+	@NonNull final Instant evalDate;
+	@Nullable final String queryString;
 
 	@Builder
 	private POSProductsSearchCommand(
