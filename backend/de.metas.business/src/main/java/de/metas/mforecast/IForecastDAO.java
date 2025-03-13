@@ -35,7 +35,7 @@ import java.util.stream.Stream;
 public interface IForecastDAO extends ISingletonService
 {
 	@NonNull
-	List<I_M_ForecastLine> retrieveLinesByForecastId(ForecastId forecastId);
+	List<I_M_ForecastLine> retrieveLinesByForecastId(@NonNull ForecastId forecastId);
 
 	I_M_ForecastLine getForecastLineById(int forecastLineRecordId);
 

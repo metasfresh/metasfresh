@@ -25,7 +25,6 @@ package de.metas.mforecast.impl;
 import com.google.common.collect.ImmutableSet;
 import de.metas.mforecast.ForecastRequest;
 import de.metas.mforecast.IForecastDAO;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -60,7 +59,8 @@ public class ForecastDAO implements IForecastDAO
 	}
 
 	@Override
-	public List<I_M_ForecastLine> retrieveLinesByForecastId(final ForecastId forecastId)
+	@NonNull
+	public List<I_M_ForecastLine> retrieveLinesByForecastId(@NonNull final ForecastId forecastId)
 	{
 		return queryBL.createQueryBuilder(I_M_ForecastLine.class)
 				.addEqualsFilter(I_M_ForecastLine.COLUMNNAME_M_Forecast_ID, forecastId)

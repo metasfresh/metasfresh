@@ -712,6 +712,9 @@ public class CandidateRepositoryWriteService
 		return deleteResult;
 	}
 
+	/**
+	 * @see CandidateType#STOCK_UP
+	 */
 	@NonNull
 	public DeleteResult deleteCandidateWithoutStock(@NonNull final CandidateId candidateId)
 	{
