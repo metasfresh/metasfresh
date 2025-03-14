@@ -31,6 +31,7 @@ import de.metas.common.ordercandidates.v1.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v1.request.JsonRequestBPartnerLocationAndContact;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v1.SyncAdvise;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.rest_api.v1.bpartner.BpartnerRestController;
 import de.metas.rest_api.v1.ordercandidates.OrderCandidatesRestEndpoint;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.HealthCareInvoiceDocSubType;
@@ -38,7 +39,6 @@ import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.base.config.Impor
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.request.RequestType;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.JaxbUtil;
 import lombok.NonNull;
-import org.adempiere.util.lang.ImmutablePair;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -48,7 +48,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.InputStream;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith({SnapshotExtension.class, MockitoExtension.class})
 public class XmlToOLCandsServiceTest
