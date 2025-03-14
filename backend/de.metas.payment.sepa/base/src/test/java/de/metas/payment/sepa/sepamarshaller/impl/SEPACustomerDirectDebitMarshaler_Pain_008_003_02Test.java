@@ -9,6 +9,7 @@ import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.currency.CurrencyRepository;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -61,8 +62,10 @@ class SEPACustomerDirectDebitMarshaler_Pain_008_003_02Test
 	{
 		AdempiereTestHelper.get().init();
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
+		final BankAccountService bankAccountService = new BankAccountService(new BankRepository(), new CurrencyRepository()); 
+		SpringContextHolder.registerJUnitBean(bankAccountService);
 
-		this.xmlGenerator = new SEPACustomerDirectDebitMarshaler_Pain_008_003_02(new BankAccountService(new BankRepository(), new CurrencyRepository()));
+		this.xmlGenerator = new SEPACustomerDirectDebitMarshaler_Pain_008_003_02(bankAccountService);
 		this.xmlDocument = null;
 
 		eur = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
@@ -105,7 +108,7 @@ class SEPACustomerDirectDebitMarshaler_Pain_008_003_02Test
 		assertThat(xmlDocument.getCstmrDrctDbtInitn().getGrpHdr().getNbOfTxs()).isEqualTo("3");
 		assertThat(xmlDocument.getCstmrDrctDbtInitn().getGrpHdr().getInitgPty().getNm()).isEqualTo("SEPA_CreditorName");
 
-		assertThat(xmlDocument.getCstmrDrctDbtInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.getCdtr().getNm()).isEqualTo("SEPA_CreditorName"));
+		assertThat(xmlDocument.getCstmrDrctDbtInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.getCdtr().getNm()).isEqualTo("bankAccount.A_Name"));
 		assertThat(xmlDocument.getCstmrDrctDbtInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.getCdtrSchmeId().getId().getPrvtId().getOthr().getId()).isEqualTo("SEPA_CreditorIdentifier"));
 	}
 

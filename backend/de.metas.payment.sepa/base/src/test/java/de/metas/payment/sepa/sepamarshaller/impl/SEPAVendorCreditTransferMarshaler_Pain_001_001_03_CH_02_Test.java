@@ -18,6 +18,7 @@ import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.PaymentIdentificatio
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -60,6 +61,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 
 		eur = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 		chf = PlainCurrencyDAO.createCurrencyId(CurrencyCode.CHF);
+
+		SpringContextHolder.registerJUnitBean(bankAccountService);
 	}
 
 	@Test
