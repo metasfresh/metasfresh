@@ -103,4 +103,12 @@ class GreetingsMap
 			}
 		}
 	}
+
+	public Optional<Greeting> getByName(@NonNull final String name)
+	{
+		return greetingsById.values()
+				.stream()
+				.filter(greeting -> name.equals(greeting.getName()))
+				.findFirst();
+	}
 }

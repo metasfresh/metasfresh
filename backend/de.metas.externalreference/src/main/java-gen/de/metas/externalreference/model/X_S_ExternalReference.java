@@ -221,6 +221,8 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public static final String TYPE_Allergen = "Allergen";
 	/** BankAccount = BankAccount */
 	public static final String TYPE_BankAccount = "BankAccount";
+	/** Greeting = Greeting */
+	public static final String TYPE_Greeting = "Greeting";
 	@Override
 	public void setType (final String Type)
 	{
