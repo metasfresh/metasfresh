@@ -25,6 +25,7 @@ package de.metas.mforecast;
 import java.util.List;
 
 import de.metas.mforecast.impl.ForecastId;
+import lombok.NonNull;
 import org.compiere.model.I_M_ForecastLine;
 
 import de.metas.util.ISingletonService;

@@ -22,42 +22,19 @@ package de.metas.mforecast.impl;
  * #L%
  */
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.mforecast.ForecastRequest;
 import de.metas.mforecast.IForecastDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
-import java.util.List;
-import java.util.stream.Stream;
-
-import de.metas.interfaces.I_C_OrderLine;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_ForecastLine;
 
-import de.metas.mforecast.IForecastDAO;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.List;
 
 public class ForecastDAO implements IForecastDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	@Override
-	@NonNull
-	public Stream<I_M_Forecast> streamRecordsByIds(@NonNull final ImmutableSet<ForecastId> ids)
-	{
-		if (ids.isEmpty())
-		{
-			return Stream.empty();
-		}
-		
-		return queryBL.createQueryBuilder(I_M_Forecast.class)
-				.addInArrayFilter(I_M_ForecastLine.COLUMNNAME_M_Forecast_ID, ids)
-				.create()
-				.stream(I_M_Forecast.class);
-	}
 
 	@Override
 	@NonNull
