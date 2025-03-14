@@ -42,6 +42,10 @@
  * #L%
  */
 
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Commission_Forecast (IN p_BPartner_SalesRep_ID numeric,
+                                                                                              IN p_ad_language          Character Varying(6))
+;
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_Commission_Forecast(p_bpartner_salesrep_id numeric,
                                                                                              p_commissiondate_from  timestamp without time zone,
                                                                                              p_commissiondate_to    timestamp without time zone,
