@@ -22,6 +22,7 @@
 
 package de.metas.distribution.workflows_api;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.product.ResourceId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -32,5 +33,5 @@ import lombok.Value;
 public class ResourceInfo
 {
 	@NonNull ResourceId resourceId;
-	@NonNull String caption;
+	@NonNull ITranslatableString caption;
 }

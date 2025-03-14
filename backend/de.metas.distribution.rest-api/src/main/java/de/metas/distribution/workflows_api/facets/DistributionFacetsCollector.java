@@ -265,7 +265,7 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 
 	private ITranslatableString getResourceName(final ResourceId resourceId)
 	{
-		return resourceNames.computeIfAbsent(resourceId, id -> TranslatableStrings.constant(ppOrderBL.getResourceName(id)));
+		return resourceNames.computeIfAbsent(resourceId, ppOrderBL::getResourceName);
 	}
 
 }

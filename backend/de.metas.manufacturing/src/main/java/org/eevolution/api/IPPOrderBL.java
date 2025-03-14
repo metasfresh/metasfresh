@@ -1,6 +1,7 @@
 package org.eevolution.api;
 
 import de.metas.document.DocSubType;
+import de.metas.i18n.ITranslatableString;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.material.planning.pporder.OrderQtyChangeRequest;
 import de.metas.material.planning.pporder.PPOrderQuantities;
@@ -131,5 +132,5 @@ public interface IPPOrderBL extends ISingletonService
 
 	PPOrderDocBaseType getPPOrderDocBaseType(@NonNull I_PP_Order ppOrder);
 
-	String getResourceName(@NonNull ResourceId resourceId);
+	ITranslatableString getResourceName(@NonNull ResourceId resourceId);
 }

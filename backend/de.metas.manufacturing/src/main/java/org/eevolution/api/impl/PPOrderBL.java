@@ -37,13 +37,13 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
-import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.WorkingTime;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
@@ -64,6 +64,7 @@ import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.resource.ResourceRepository;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -142,7 +143,7 @@ public class PPOrderBL implements IPPOrderBL
 	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 	private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
-	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
+	private final ResourceRepository resourceRepository = SpringContextHolder.instance.getBean(ResourceRepository.class);
 
 	@VisibleForTesting
 	static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.manufacturing.PP_Order.canBeExportedAfterSeconds";
@@ -758,8 +759,8 @@ public class PPOrderBL implements IPPOrderBL
 		return PPOrderDocBaseType.ofCode(docTypeTarget.getDocBaseType());
 	}
 	@NonNull
-	public String getResourceName(@NonNull final ResourceId resourceId)
+	public ITranslatableString getResourceName(@NonNull final ResourceId resourceId)
 	{
-		return resourceDAO.getById(resourceId).getName();
+		return resourceRepository.getById(resourceId).getName();
 	}
 }
