@@ -28,6 +28,7 @@ import de.metas.mforecast.IForecastDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import java.util.List;
+import java.util.stream.Stream;
 
 import de.metas.interfaces.I_C_OrderLine;
 import org.adempiere.ad.dao.IQueryBL;
