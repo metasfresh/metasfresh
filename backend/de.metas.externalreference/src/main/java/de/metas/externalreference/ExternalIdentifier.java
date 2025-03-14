@@ -152,12 +152,6 @@ public class ExternalIdentifier
 			return Optional.of(new ExternalIdentifier(Type.QR_IBAN, identifier, null));
 		}
 
-		final Matcher nameMatcher = Type.NAME.pattern.matcher(identifier);
-		if (nameMatcher.matches())
-		{
-			return Optional.of(new ExternalIdentifier(Type.NAME, identifier, null));
-		}
-
 		return Optional.empty();
 	}
 
@@ -289,22 +283,6 @@ public class ExternalIdentifier
 		return qrIbanMatcher.group(1);
 	}
 
-	@NonNull
-	public String asName()
-	{
-		Check.assume(Type.NAME.equals(type),
-					 "The type of this instance needs to be {}; this={}", Type.NAME, this);
-
-		final Matcher nameMatcher = Type.NAME.pattern.matcher(rawValue);
-
-		if (!nameMatcher.matches())
-		{
-			throw new AdempiereException("External identifier parsing failed. External Identifier:" + rawValue);
-		}
-
-		return nameMatcher.group(1);
-	}
-
 	@AllArgsConstructor
 	@Getter
 	public enum Type
@@ -313,7 +291,6 @@ public class ExternalIdentifier
 		EXTERNAL_REFERENCE(Pattern.compile("(?:^ext-)([a-zA-Z0-9]+)-(.+)")),
 		GLN(Pattern.compile("(?:^gln)-(.+)")),
 		VALUE(Pattern.compile("(?:^val)-(.+)")),
-		NAME(Pattern.compile("(?:^name)-(.+)")),
 		INTERNAL_NAME(Pattern.compile("(?:^int)-(.+)")),
 		NAME(Pattern.compile("(?:^name)-(.+)")),
 		IBAN(Pattern.compile("(?:^iban)-(.+)")),

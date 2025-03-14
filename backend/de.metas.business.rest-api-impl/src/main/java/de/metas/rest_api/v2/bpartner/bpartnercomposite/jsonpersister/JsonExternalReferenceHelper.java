@@ -158,25 +158,4 @@ public class JsonExternalReferenceHelper
 
 		return Optional.of(externalReferenceItem);
 	}
-
-	@NonNull
-	public static Optional<JsonExternalReferenceItem> getExternalReferenceItem(@NonNull final JsonRequestGreetingUpsertItem upsertItem)
-	{
-		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(upsertItem.getIdentifier());
-
-		if (externalIdentifier.getType() != EXTERNAL_REFERENCE)
-		{
-			return Optional.empty();
-		}
-
-		final JsonExternalReferenceItem externalReferenceItem = JsonExternalReferenceItem.builder()
-				.lookupItem(JsonExternalReferenceLookupItem.builder()
-						.type(GreetingExternalReferenceType.GREETING.getCode())
-						.id(externalIdentifier.asExternalValueAndSystem().getValue())
-						.build())
-				.externalReference(externalIdentifier.asExternalValueAndSystem().getValue())
-				.build();
-
-		return Optional.of(externalReferenceItem);
-	}
 }
