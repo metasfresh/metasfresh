@@ -24,6 +24,7 @@ package de.metas.cucumber;
 
 import de.metas.CommandLineParser;
 import de.metas.ServerBoot;
+import de.metas.acct.housekeeping.AddMissingAcctRecords;
 import de.metas.server.housekeep.SequenceCheckHouseKeepingTask;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
@@ -95,6 +96,7 @@ public class CucumberLifeCycleSupport
 			update_ReplicationProcessors();
 
 			SpringContextHolder.instance.getBean(SequenceCheckHouseKeepingTask.class).executeTask();
+			SpringContextHolder.instance.getBean(AddMissingAcctRecords.class).executeTask();
 
 			beforeAllMethodDone = true;
 		}
