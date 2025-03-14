@@ -207,7 +207,7 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 					.build());
 		}
 
-		if (Check.isNotBlank(job.getPlantName()))
+		if (job.getPlantName() != null)
 		{
 			builder.entry(WFProcessHeaderProperty.builder()
 								  .caption(TranslatableStrings.adElementOrMessage("PP_Plant_ID"))

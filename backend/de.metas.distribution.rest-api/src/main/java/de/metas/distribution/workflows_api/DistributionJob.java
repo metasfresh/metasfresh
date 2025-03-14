@@ -3,6 +3,7 @@ package de.metas.distribution.workflows_api;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.i18n.ITranslatableString;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
@@ -132,7 +133,7 @@ public class DistributionJob
 	}
 
 	@Nullable
-	public String getPlantName()
+	public ITranslatableString getPlantName()
 	{
 		return plantInfo != null ? plantInfo.getCaption() : null;
 	}
