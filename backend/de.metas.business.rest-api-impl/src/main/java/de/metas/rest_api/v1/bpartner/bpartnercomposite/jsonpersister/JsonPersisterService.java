@@ -172,7 +172,7 @@ public class JsonPersisterService
 		resultBuilder.setJsonResponseBPartnerUpsertItemBuilder(JsonResponseUpsertItem.builder().identifier(rawBpartnerIdentifier));
 
 		final JsonRequestComposite jsonRequestComposite = requestItem.getBpartnerComposite();
-		final SyncAdvise effectiveSyncAdvise = coalesce(jsonRequestComposite.getSyncAdvise(), parentSyncAdvise);
+		final SyncAdvise effectiveSyncAdvise = coalesceNotNull(jsonRequestComposite.getSyncAdvise(), parentSyncAdvise);
 
 		final BPartnerComposite bpartnerComposite;
 		if (optionalBPartnerComposite.isPresent())
