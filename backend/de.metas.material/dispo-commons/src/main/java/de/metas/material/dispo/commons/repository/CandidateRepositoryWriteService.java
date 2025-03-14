@@ -85,6 +85,7 @@ import java.math.RoundingMode;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
@@ -711,6 +712,40 @@ public class CandidateRepositoryWriteService
 		return deleteResult;
 	}
 
+	/**
+	 * @see CandidateType#STOCK_UP
+	 */
+	@NonNull
+	public DeleteResult deleteCandidateWithoutStock(@NonNull final CandidateId candidateId)
+	{
+		final I_MD_Candidate candidateRecord = load(candidateId, I_MD_Candidate.class);
+		if (candidateRecord == null)
+		{
+			throw new AdempiereException("No candidate found with id " + candidateId);
+		}
+
+		final boolean isStock = MD_CANDIDATE_TYPE_STOCK.equals(candidateRecord.getMD_Candidate_Type());
+
+		if (isStock)
+		{
+			throw new AdempiereException("STOCK Candidate must be deleted together with the actual MD_Candidate!");
+		}
+
+		final CandidateId stockCandidateId = getOptionalStockCandidateIdForCandidate(candidateRecord).orElse(null);
+		if (stockCandidateId != null)
+		{
+			throw new AdempiereException("STOCK Candidate must be deleted together with the actual MD_Candidate!");
+		}
+
+		final DeleteResult deleteResult = buildDeleteResultForCandidate(candidateRecord);
+
+		deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
+												  .candidateId(candidateId)
+												  .build());
+
+		return deleteResult;
+	}
+
 	private I_MD_Candidate retrieveRecordById(final @NonNull CandidateId candidateId)
 	{
 		return load(candidateId, I_MD_Candidate.class);
@@ -871,19 +906,25 @@ public class CandidateRepositoryWriteService
 	@NonNull
 	private CandidateId getStockCandidateIdForCandidate(@NonNull final I_MD_Candidate candidate)
 	{
+		return getOptionalStockCandidateIdForCandidate(candidate)
+				.orElseThrow(() -> new AdempiereException("No stock found for CandidateId!")
+						.appendParametersToMessage()
+						.setParameter("CandidateId", candidate.getMD_Candidate_ID()));
+	}
+
+	@NonNull
+	private Optional<CandidateId> getOptionalStockCandidateIdForCandidate(@NonNull final I_MD_Candidate candidate)
+	{
 		Check.assume(!MD_CANDIDATE_TYPE_STOCK.equals(candidate.getMD_Candidate_Type()), "The given Candidate is a Stock Candidate!");
 
 		if (candidate.getMD_Candidate_Parent_ID() > 0)
 		{
-			return CandidateId.ofRepoId(candidate.getMD_Candidate_Parent_ID());
+			return Optional.of(CandidateId.ofRepoId(candidate.getMD_Candidate_Parent_ID()));
 		}
 
 		final CandidateId candidateId = CandidateId.ofRepoId(candidate.getMD_Candidate_ID());
 		return candidateRepositoryRetrieval.retrieveSingleChild(candidateId)
-				.orElseThrow(() -> new AdempiereException("No stock found for CandidateId!")
-						.appendParametersToMessage()
-						.setParameter("CandidateId", candidateId))
-				.getId();
+				.map(Candidate::getId);
 	}
 
 	@NonNull
