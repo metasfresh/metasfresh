@@ -1,5 +1,6 @@
 package de.metas.payment.sepa.api.impl;
 
+import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.common.util.time.SystemTime;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
@@ -24,6 +25,8 @@ import java.util.Date;
 
 public class SEPADocumentBL implements ISEPADocumentBL
 {
+	private final BankAccountService bankAccountService = SpringContextHolder.instance.getBean(BankAccountService.class);
+
 	@Override
 	public I_SEPA_Export createSEPAExportFromPaySelection(final I_C_PaySelection from)
 	{
@@ -72,11 +75,11 @@ public class SEPADocumentBL implements ISEPADocumentBL
 		if (SEPAProtocol.CREDIT_TRANSFER_PAIN_001_001_03_CH_02.equals(protocol))
 		{
 			final BankRepository bankRepository = SpringContextHolder.instance.getBean(BankRepository.class);
-			return new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(bankRepository, exportContext);
+			return new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(bankRepository, exportContext, bankAccountService);
 		}
 		else if (SEPAProtocol.DIRECT_DEBIT_PAIN_008_003_02.equals(protocol))
 		{
-			return new SEPACustomerDirectDebitMarshaler_Pain_008_003_02();
+			return new SEPACustomerDirectDebitMarshaler_Pain_008_003_02(bankAccountService);
 		}
 		else
 		{

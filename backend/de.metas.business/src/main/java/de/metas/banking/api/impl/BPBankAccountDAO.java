@@ -79,6 +79,10 @@ public class BPBankAccountDAO extends de.metas.bpartner.service.impl.BPBankAccou
 				.id(BankAccountId.ofRepoId(record.getC_BP_BankAccount_ID()))
 				.bankId(BankId.ofRepoIdOrNull(record.getC_Bank_ID())) // C_BP_BankAccount.C_Bank_ID is not mandatory!
 				.accountName(StringUtils.trimBlankToNull(record.getA_Name()))
+				.accountStreet(StringUtils.trimBlankToNull(record.getA_Street()))
+				.accountZip(StringUtils.trimBlankToNull(record.getA_Zip()))
+				.accountCity(StringUtils.trimBlankToNull(record.getA_City()))
+				.accountCountry(StringUtils.trimBlankToNull(record.getA_Country()))
 				.esrRenderedAccountNo(record.getESR_RenderedAccountNo())
 				.IBAN(StringUtils.trimBlankToNull(record.getIBAN()))
 				.SwiftCode(StringUtils.trimBlankToNull(record.getSwiftCode()))
