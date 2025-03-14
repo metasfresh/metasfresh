@@ -7,7 +7,7 @@ import { DistributionJobScreen } from '../utils/screens/distribution/Distributio
 import { DistributionLineScreen } from '../utils/screens/distribution/DistributionLineScreen';
 import { DistributionStepScreen } from '../utils/screens/distribution/DistributionStepScreen';
 
-const createMasterdata = async ({qtyToMove}) => {
+const createMasterdata = async ({ qtyToMove }) => {
     const response = await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -15,9 +15,7 @@ const createMasterdata = async ({qtyToMove}) => {
                 user: { language: "en_US" },
             },
             resources: {
-                "plantId": {
-                    manufacturingResourceTypeCode: "PT",
-                }
+                "plantId": { type: "PT" },
             },
             products: {
                 "P1": {},
@@ -66,7 +64,7 @@ test('Simple distribution test', async ({ page }) => {
     await DistributionJobsListScreen.filterByFacetId({ facetId: warehouseFromFacetId, expectHitCount: 1 });
     await DistributionJobsListScreen.startJob({ launcherTestId });
     await DistributionJobScreen.clickLineButton({ index: 1 });
-    await DistributionLineScreen.scanHUToMove({ huQRCode, qtyToMove: '100', expectedQtyToMove: '100'});
+    await DistributionLineScreen.scanHUToMove({ huQRCode, qtyToMove: '100', expectedQtyToMove: '100' });
     await DistributionLineScreen.clickStepButton({ index: 1 });
     await DistributionStepScreen.scanDropToLocator({ dropToLocatorQRCode });
     await DistributionStepScreen.expectVisible();
@@ -75,10 +73,9 @@ test('Simple distribution test', async ({ page }) => {
     await DistributionJobScreen.complete();
 });
 
-
 // noinspection JSUnusedLocalSymbols
 test('Distribution using 2 steps to pick the needed qty.', async ({ page }) => {
-    const { login, warehouseFromFacetId, launcherTestId, huQRCode, dropToLocatorQRCode } = await createMasterdata({qtyToMove: 80});
+    const { login, warehouseFromFacetId, launcherTestId, huQRCode, dropToLocatorQRCode } = await createMasterdata({ qtyToMove: 80 });
 
     await LoginScreen.login(login);
     await ApplicationsListScreen.expectVisible();
@@ -112,12 +109,11 @@ test('Pick & Unpick in distribution step screen', async ({ page }) => {
     await DistributionJobsListScreen.filterByFacetId({ facetId: warehouseFromFacetId, expectHitCount: 1 });
     await DistributionJobsListScreen.startJob({ launcherTestId });
     await DistributionJobScreen.clickLineButton({ index: 1 });
-    await DistributionLineScreen.scanHUToMove({ huQRCode, qtyToMove: '100', expectedQtyToMove: '100'});
+    await DistributionLineScreen.scanHUToMove({ huQRCode, qtyToMove: '100', expectedQtyToMove: '100' });
     await DistributionLineScreen.clickStepButton({ index: 1 });
     await DistributionStepScreen.unpick();
     await DistributionLineScreen.expectNoStepButton();
 });
-
 
 // noinspection JSUnusedLocalSymbols
 test('Filter distribution orders by plantId', async ({ page }) => {

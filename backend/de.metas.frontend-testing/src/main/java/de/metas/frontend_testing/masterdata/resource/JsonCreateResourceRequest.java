@@ -1,6 +1,6 @@
 package de.metas.frontend_testing.masterdata.resource;
 
-import de.metas.material.planning.ResourceTypeId;
+import de.metas.resource.ResourceTypeId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

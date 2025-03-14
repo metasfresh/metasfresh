@@ -34,9 +34,6 @@ import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPl
 import de.metas.frontend_testing.masterdata.resource.CreateResourceCommand;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceResponse;
-import de.metas.frontend_testing.masterdata.resource.JsonResourceRequest;
-import de.metas.frontend_testing.masterdata.resource.JsonResourceResponse;
-import de.metas.frontend_testing.masterdata.resource.ResourceCommand;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.sales_order.SalesOrderCreateCommand;
@@ -88,7 +85,6 @@ public class CreateMasterdataCommand
 		this.context = new MasterdataContext();
 
 		// IMPORTANT: the order is very important
-		final ImmutableMap<String, JsonResourceResponse> resources = createResources();
 		final ImmutableMap<String, JsonLoginUserResponse> login = createLoginUsers();
 		final ImmutableMap<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
 		final ImmutableMap<String, JsonCreateProductResponse> products = createProducts();
@@ -305,11 +301,6 @@ public class CreateMasterdataCommand
 		return process(request.getDistributionOrders(), this::createDistributionOrder);
 	}
 
-	private ImmutableMap<String, JsonResourceResponse> createResources()
-	{
-		return process(request.getResources(), this::createResource);
-	}
-
 	private JsonDDOrderResponse createDistributionOrder(String identifier, JsonDDOrderRequest request)
 	{
 		return DDOrderCommand.builder()
@@ -329,19 +320,6 @@ public class CreateMasterdataCommand
 	private JsonPPOrderResponse createManufacturingOrder(String identifier, JsonPPOrderRequest request)
 	{
 		return PPOrderCommand.builder()
-				.context(context)
-				.request(request)
-				.identifier(Identifier.ofString(identifier))
-				.build()
-				.execute();
-	}
-
-	@NonNull
-	private JsonResourceResponse createResource(
-			@NonNull final String identifier,
-			@NonNull final JsonResourceRequest request)
-	{
-		return ResourceCommand.builder()
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
