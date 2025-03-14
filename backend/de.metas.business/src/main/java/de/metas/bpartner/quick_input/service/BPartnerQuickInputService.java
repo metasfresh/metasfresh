@@ -135,8 +135,8 @@ public class BPartnerQuickInputService
 	private final BPartnerAttributesRepository bpartnerAttributesRepository;
 	private final BpartnerRelatedRecordsRepository bpartnerRelatedRecordsRepository;
 	private final BPartnerContactAttributesRepository bpartnerContactAttributesRepository;
-	private final UserGroupRepository userGroupRepository;
 	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
+	private final UserGroupRepository userGroupRepository;
 	private final UserDefaultAttributesRepository userDefaultAttributesRepository;
 
 	private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
