@@ -44,23 +44,23 @@ Feature: create or update BPartner v2
     """
 
 {
-   "requestItems":[
-      {
-         "bpartnerIdentifier":"ext-ALBERTA-001",
-         "externalReferenceUrl":"www.ExternalReferenceURL.com",
-         "externalSystemConfigId": 540000,
+  "requestItems": [
+    {
+      "bpartnerIdentifier": "ext-ALBERTA-001",
+      "externalReferenceUrl": "www.ExternalReferenceURL.com",
+      "externalSystemConfigId": 540000,
          "isReadOnlyInMetasfresh": false,
-         "bpartnerComposite":{
-            "bpartner":{
-               "code":"test_code_211122",
-               "name":"test_name",
-               "companyName":"test_name",
-               "parentId":null,
-               "phone":null,
-               "language":"de",
-               "url":null,
-               "group":"test-group",
-               "priceListId": 2008396,
+         "bpartnerComposite": {
+        "bpartner": {
+          "code": "test_code_211122",
+          "name": "test_name",
+          "companyName": "test_name",
+          "parentId": null,
+          "phone": null,
+          "language": "de",
+          "url": null,
+          "group": "test-group",
+          "priceListId": 2008396,
                "vatId": "vatId_BPartner001",
                "sectionCodeValue":"ALBERTA_001_sectionCode",
                "description":"ALBERTA BPartner Description",
@@ -76,21 +76,21 @@ Feature: create or update BPartner v2
                "sectionGroupPartnerIdentifier":"ext-ALBERTA-bp2212",
                "prospect":true,
                "urproduzent":true
-            },
-            "locations":{
-               "requestItems":[
-                  {
-                     "locationIdentifier":"gln-l11",
-                     "location":{
-                        "address1":"test_address1",
-                        "address2":"test_address2",
-                        "poBox":null,
-                        "district":null,
-                        "region":null,
-                        "city":null,
-                        "countryCode":"DE",
-                        "gln":null,
-                        "postal":null,
+        },
+        "locations": {
+          "requestItems": [
+            {
+              "locationIdentifier": "gln-l11",
+              "location": {
+                "address1": "test_address1",
+                "address2": "test_address2",
+                "poBox": null,
+                "district": null,
+                "region": null,
+                "city": null,
+                "countryCode": "DE",
+                "gln": null,
+                "postal": null,
                         "handoverLocation":true,
                         "remitTo":false,
                         "replicationLookupDefault":false,
@@ -100,18 +100,18 @@ Feature: create or update BPartner v2
                   },
                   {
                      "locationIdentifier":"ext-ALBERTA-l22",
-                     "externalSystemConfigId": 540000,
+              "externalSystemConfigId": 540000,
                      "isReadOnlyInMetasfresh": true,
-                     "location":{
-                        "address1":null,
-                        "address2":"test_address2",
-                        "poBox":"test_poBox",
-                        "district":null,
-                        "region":"test_region",
-                        "city":"test_city",
-                        "countryCode":"DE",
-                        "gln":null,
-                        "postal":null,
+                     "location": {
+                "address1": null,
+                "address2": "test_address2",
+                "poBox": "test_poBox",
+                "district": null,
+                "region": "test_region",
+                "city": "test_city",
+                "countryCode": "DE",
+                "gln": null,
+                "postal": null,
                         "vatId": "vatId_Location_l22"
                      }
                   },
@@ -147,22 +147,22 @@ Feature: create or update BPartner v2
                         "gln":null,
                         "postal":null,
                         "vatId":null
-                     }
-                  }
-               ]
-            },
-            "contacts":{
-               "requestItems":[
-                  {
-                     "contactIdentifier":"ext-ALBERTA-c11",
-                     "externalSystemConfigId": 540000,
+              }
+            }
+          ]
+        },
+        "contacts": {
+          "requestItems": [
+            {
+              "contactIdentifier": "ext-ALBERTA-c11",
+              "externalSystemConfigId": 540000,
                      "isReadOnlyInMetasfresh": true,
-                     "contact":{
-                        "code":"c11",
-                        "name":"test_name_c11",
-                        "email":"test_email",
-                        "fax":"fax",
-                        "invoiceEmailEnabled" : false,
+                     "contact": {
+                "code": "c11",
+                "name": "test_name_c11",
+                "email": "test_email",
+                "fax": "fax",
+                "invoiceEmailEnabled": false,
                         "greeting": {
                           "greetingInfo": {
                             "greeting": "test_greeting_261023",
@@ -219,14 +219,14 @@ Feature: create or update BPartner v2
                 "ifNotExists": "CREATE",
                 "ifExists": "UPDATE_MERGE"
               }
-            }
-         }
+        }
       }
-   ],
-   "syncAdvise":{
-      "ifNotExists":"CREATE",
-      "ifExists":"UPDATE_MERGE"
-   }
+    }
+  ],
+  "syncAdvise": {
+    "ifNotExists": "CREATE",
+    "ifExists": "UPDATE_MERGE"
+  }
 }
 
 """
@@ -254,6 +254,22 @@ Feature: create or update BPartner v2
       | ALBERTA        | UserID           | c11                | null                         | 540000                       | true                       |
       | ALBERTA        | UserID           | c22                | null                         | 540000                       | true                       |
       | ALBERTA        | Greeting         | greetingTest261023 | null                         |                              |                            |
+    And the metasfresh REST-API endpoint path 'api/v2/bpartner/ext-ALBERTA-001' receives a 'GET' request
+    Then the metasfresh REST-API responds with
+"""
+{
+  "contacts": [
+    {
+      "greeting": {
+        "name": "test_name_261023",
+        "greeting": "test_greeting_261023",
+        "letterSalutation": "test_salutation_261023"
+      }
+    },
+    {}
+  ]
+}
+"""
     And validate C_BPartner_Stats
       | C_BPartner_ID.Identifier | OPT.SOCreditStatus | OPT.SO_CreditUsed |
       | created_bpartner         | W                  | 0                 |
@@ -548,21 +564,21 @@ Feature: create or update BPartner v2
     """
 
 {
-   "requestItems":[
-      {
-         "bpartnerIdentifier":"ext-ALBERTA-001",
-         "bpartnerComposite":{
-            "contacts":{
-               "requestItems":[
-                  {
-                     "contactIdentifier":"ext-ALBERTA-c11",
-                     "isReadOnlyInMetasfresh": false,
-                     "contact":{
-                        "code":"c11",
-                        "name":"test_name_c11_updated",
-                        "email":"test_email_updated",
-                        "fax":"fax_updated",
-                        "invoiceEmailEnabled" : true,
+  "requestItems": [
+    {
+      "bpartnerIdentifier": "ext-ALBERTA-001",
+      "bpartnerComposite": {
+        "contacts": {
+          "requestItems": [
+            {
+              "contactIdentifier": "ext-ALBERTA-c11",
+              "isReadOnlyInMetasfresh": false,
+                     "contact": {
+                "code": "c11",
+                "name": "test_name_c11_updated",
+                "email": "test_email_updated",
+                "fax": "fax_updated",
+                "invoiceEmailEnabled": true,
                         "greeting": {
                           "greetingInfo": {
                             "greeting": "test_greeting_261023_updated",
@@ -815,7 +831,7 @@ Feature: create or update BPartner v2
               "accountStreet": "test-accountStreet_1",
               "accountZip": "test-accountZip_1",
               "accountCity": "test-accountCity_1",
-              "accountCountry": "test-accountCountry_1" 
+              "accountCountry": "test-accountCountry_1"
             },
             {
               "identifier": "iban-DE54500105178721351673",
@@ -913,7 +929,7 @@ Feature: create or update BPartner v2
               "accountStreet": "test-accountStreet_1_updated",
               "accountZip": "test-accountZip_1_up",
               "accountCity": "test-accountCity_1_updated",
-              "accountCountry": "test-accountCountry_1_updated" 
+              "accountCountry": "test-accountCountry_1_updated"
             },
             {
               "identifier": "iban-DE54500105178721351673",
@@ -998,7 +1014,7 @@ Feature: create or update BPartner v2
       "accountStreet": "test-accountStreet_1_updated",
       "accountZip": "test-accountZip_1_up",
       "accountCity": "test-accountCity_1_updated",
-      "accountCountry": "test-accountCountry_1_updated" 
+      "accountCountry": "test-accountCountry_1_updated"
     },
     {
       "currencyId": 102,

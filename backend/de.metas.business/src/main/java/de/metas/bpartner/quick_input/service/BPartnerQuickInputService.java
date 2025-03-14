@@ -135,7 +135,10 @@ public class BPartnerQuickInputService
 	private final BPartnerAttributesRepository bpartnerAttributesRepository;
 	private final BpartnerRelatedRecordsRepository bpartnerRelatedRecordsRepository;
 	private final BPartnerContactAttributesRepository bpartnerContactAttributesRepository;
+	private final UserGroupRepository userGroupRepository;
 	private final CustomizedWindowInfoMapRepository customizedWindowInfoMapRepository;
+	private final UserDefaultAttributesRepository userDefaultAttributesRepository;
+
 	private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
@@ -147,8 +150,6 @@ public class BPartnerQuickInputService
 	private final IRequestDAO requestDAO = Services.get(IRequestDAO.class);
 	private final INotificationBL notificationBL = Services.get(INotificationBL.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
-	private final UserGroupRepository userGroupRepository;
-	private final UserDefaultAttributesRepository userDefaultAttributesRepository;
 
 	private static final ModelDynAttributeAccessor<I_C_BPartner_QuickInput, Boolean>
 			DYNATTR_UPDATING_NAME_AND_GREETING = new ModelDynAttributeAccessor<>("UPDATING_NAME_AND_GREETING", Boolean.class);
