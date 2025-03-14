@@ -22,13 +22,10 @@
 
 package de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands;
 
-<<<<<<< HEAD
 import au.com.origin.snapshots.Expect;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
-=======
 import de.metas.common.bpartner.v1.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v1.request.JsonRequestLocation;
->>>>>>> 329d94a058 (forum-datenaustausch - Make sure patients are always created as BPartners  (#20342))
 import de.metas.common.ordercandidates.v1.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v1.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v1.request.JsonRequestBPartnerLocationAndContact;
@@ -95,6 +92,28 @@ class XmlToOLCandsServiceTest
 
 		final JsonOLCandCreateBulkRequest result = performTest_KV(xmlInvoice);
 		expect.serializer("orderedJson").toMatchSnapshot(result);
+	}
+
+	@Test
+	public void extractBPartnerExternalId_KV_2()
+	{
+		final InputStream inputStream = getClass().getResourceAsStream("/public_examples/md_440_tp_kvg_de.xml");
+		final RequestType xmlInvoice = JaxbUtil.unmarshalToJaxbElement(inputStream, RequestType.class).getValue();
+
+		final String invoiceRecipientEAN = xmlToOLCandsService.extractRecipientEAN(xmlInvoice);
+
+		assertThat(invoiceRecipientEAN).isEqualTo("7634567890000");
+	}
+
+	@Test
+	public void createBPartnerExternalId_KV_2()
+	{
+		final InputStream inputStream = getClass().getResourceAsStream("/public_examples/md_440_tp_kvg_de.xml");
+		final RequestType xmlInvoice = JaxbUtil.unmarshalToJaxbElement(inputStream, RequestType.class).getValue();
+
+		final JsonExternalId billerOrgCode = xmlToOLCandsService.createBPartnerExternalId(xmlToOLCandsService.getBiller(xmlInvoice.getPayload().getBody()));
+	
+		assertThat(billerOrgCode.getValue()).isEqualTo("EAN-2011234567890");
 	}
 
 	@Test
