@@ -2,8 +2,10 @@ package de.metas.payment.sepa.sepamarshaller.impl;
 
 import de.metas.banking.Bank;
 import de.metas.banking.BankCreateRequest;
+import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.money.CurrencyId;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
@@ -36,6 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 {
 	private BankRepository bankRepository;
+	private BankAccountService bankAccountService;
 	private SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 xmlGenerator;
 	private Document xmlDocument;
 
@@ -48,10 +51,11 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		AdempiereTestHelper.get().init();
 
 		this.bankRepository = new BankRepository();
+		this.bankAccountService = new BankAccountService(bankRepository, new CurrencyRepository());
 		final SEPAExportContext exportContext = SEPAExportContext.builder()
 				.referenceAsEndToEndId(false)
 				.build();
-		this.xmlGenerator = new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(bankRepository, exportContext);
+		this.xmlGenerator = new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(bankRepository, exportContext, bankAccountService);
 		this.xmlDocument = null;
 
 		eur = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
@@ -139,7 +143,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		final SEPAExportContext exportContext = SEPAExportContext.builder()
 				.referenceAsEndToEndId(true)
 				.build();
-		this.xmlGenerator = new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(bankRepository, exportContext);
+		this.xmlGenerator = new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(bankRepository, exportContext, bankAccountService);
 
 		final I_SEPA_Export sepaExport = createSEPAExport(
 				"org", // SEPA_CreditorName
@@ -191,7 +195,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		final SEPAExportContext exportContext = SEPAExportContext.builder()
 				.referenceAsEndToEndId(true)
 				.build();
-		this.xmlGenerator = new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(bankRepository, exportContext);
+		this.xmlGenerator = new SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02(bankRepository, exportContext, bankAccountService);
 
 		final I_SEPA_Export sepaExport = createSEPAExport(
 				"org", // SEPA_CreditorName

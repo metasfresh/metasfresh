@@ -2,6 +2,7 @@ package de.metas.banking;
 
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -74,6 +75,18 @@ public class BankAccount
 	@Nullable
 	String routingNo;
 
+	@Nullable
+	String accountStreet;
+
+	@Nullable
+	String accountZip;
+
+	@Nullable
+	String accountCity;
+
+	@Nullable
+	String accountCountry;
+
 	public boolean isAccountNoMatching(@NonNull final String accountNo)
 	{
 		final String QR_IBAN = StringUtils.trimBlankToNull(getQR_IBAN());
@@ -92,5 +105,13 @@ public class BankAccount
 				|| postAcctNoCleaned.equals(IBAN)
 				|| postAcctNoCleaned.equals(SEPA_CreditorIdentifier);
 
+	}
+
+	public boolean isAddressComplete()
+	{
+		return Check.isNotBlank(accountStreet) &&
+				Check.isNotBlank(accountZip) &&
+				Check.isNotBlank(accountCity) &&
+				Check.isNotBlank(accountCountry);
 	}
 }

@@ -5,6 +5,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import java.math.BigDecimal;
 
+import de.metas.banking.api.BankAccountService;
+import de.metas.banking.api.BankRepository;
+import de.metas.currency.CurrencyRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,7 +62,7 @@ class SEPACustomerDirectDebitMarshaler_Pain_008_003_02Test
 		AdempiereTestHelper.get().init();
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 
-		this.xmlGenerator = new SEPACustomerDirectDebitMarshaler_Pain_008_003_02();
+		this.xmlGenerator = new SEPACustomerDirectDebitMarshaler_Pain_008_003_02(new BankAccountService(new BankRepository(), new CurrencyRepository()));
 		this.xmlDocument = null;
 
 		eur = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
