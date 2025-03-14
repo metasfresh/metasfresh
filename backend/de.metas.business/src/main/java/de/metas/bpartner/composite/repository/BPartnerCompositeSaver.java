@@ -47,6 +47,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -101,6 +102,7 @@ import static org.compiere.model.X_AD_User.ISINVOICEEMAILENABLED_Yes;
  * #L%
  */
 
+@RequiredArgsConstructor
 final class BPartnerCompositeSaver
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -110,13 +112,6 @@ final class BPartnerCompositeSaver
 	private final IBPartnerBL bpartnerBL;
 	private final BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
 
-	BPartnerCompositeSaver(
-			@NonNull final IBPartnerBL bpartnerBL,
-			@NonNull final BPartnerCreditLimitRepository bPartnerCreditLimitRepository)
-	{
-		this.bpartnerBL = bpartnerBL;
-		this.bPartnerCreditLimitRepository = bPartnerCreditLimitRepository;
-	}
 
 	/**
 	 * @param validatePermissions Use-Case for {@code false}: when transferring a customer to another org, the user who does the transfer might not have access to the target-org.
@@ -628,7 +623,7 @@ final class BPartnerCompositeSaver
 
 			bpartnerContactRecord.setIsInvoiceEmailEnabled(invoiceEmailEnabled);
 
-			bpartnerContactRecord.setC_Greeting_ID(GreetingId.toRepoIdOr(bpartnerContact.getGreetingId(), 0));
+			bpartnerContactRecord.setC_Greeting_ID(GreetingId.toRepoId(bpartnerContact.getGreetingId()));
 			bpartnerContactRecord.setC_Title_ID(TitleId.toRepoIdOr(bpartnerContact.getTitleId(), 0));
 
 			bpartnerContactRecord.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(bpartnerContact.getOrgMappingId()));

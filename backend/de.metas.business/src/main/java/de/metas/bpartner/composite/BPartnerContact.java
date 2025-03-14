@@ -12,6 +12,7 @@ import de.metas.bpartner.user.role.UserRole;
 import de.metas.greeting.GreetingId;
 import de.metas.job.JobId;
 import de.metas.title.TitleId;
+import de.metas.util.Check;
 import de.metas.util.lang.ExternalId;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -280,5 +281,11 @@ public class BPartnerContact
 	public void addHandle(@NonNull final String handle)
 	{
 		handles.add(handle);
+	}
+
+	@NonNull
+	public BPartnerContactId getIdNotNull()
+	{
+		return Check.assumeNotNull(id, "Assuming Id has been set when using this method!");
 	}
 }
