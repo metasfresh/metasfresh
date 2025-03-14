@@ -66,7 +66,8 @@ FROM M_HU tu
          INNER JOIN M_HU_Storage tus ON tu.M_HU_ID = tus.M_HU_ID
          INNER JOIN M_Product p ON tus.M_Product_ID = p.M_Product_ID
     -- QR Code
-         INNER JOIN M_HU_QRCode qr ON tu.m_hu_id = qr.m_hu_id
+         INNER JOIN M_HU_QRCODE_ASSIGNMENT qr_assign ON tu.m_hu_id = qr_assign.m_hu_id
+         INNER JOIN M_HU_QRCode qr ON qr_assign.m_hu_qrcode_id = qr.m_hu_qrcode_id
 
     /** receipt infos */
          LEFT OUTER JOIN (SELECT DISTINCT ON (tu.M_HU_ID) tu.M_HU_ID,

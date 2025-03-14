@@ -17,4 +17,5 @@ public class JsonDDOrderResponse
 
 	@NonNull String warehouseFromFacetId;
 	@NonNull String warehouseToFacetId;
+	@NonNull String plantFacetId;
 }

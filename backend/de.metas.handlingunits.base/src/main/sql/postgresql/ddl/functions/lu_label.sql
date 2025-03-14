@@ -66,7 +66,8 @@ FROM M_HU tu
                                  FROM M_Attribute
                                  WHERE value = 'WeightNet'))
 
-         JOIN M_HU_QRCode qr ON tu.m_hu_id = qr.m_hu_id
+         INNER JOIN M_HU_QRCODE_ASSIGNMENT qr_assign ON tu.m_hu_id = qr_assign.m_hu_id
+         INNER JOIN M_HU_QRCode qr ON qr_assign.m_hu_qrcode_id = qr.m_hu_qrcode_id
 WHERE tu.M_HU_ID = p_M_HU_ID;
 $$
 ;

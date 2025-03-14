@@ -11,6 +11,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -49,6 +50,7 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 	private final HashMap<OrderId, ITranslatableString> salesOrderDocumentNos = new HashMap<>();
 	private final HashMap<PPOrderId, ITranslatableString> manufacturingOrderDocumentNos = new HashMap<>();
 	private final HashMap<ProductId, ITranslatableString> productNames = new HashMap<>();
+	private final HashMap<ResourceId, ITranslatableString> resourceNames = new HashMap<>();
 
 	@Override
 	public Collection<DistributionFacet> getCollectedItems()
@@ -72,6 +74,7 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 		collectDatePromised(ddOrder);
 		collectProducts(ddOrder);
 		collectQuantities(ddOrder);
+		collectPlant(ddOrder);
 	}
 
 	private void collectWarehouseFrom(final I_DD_Order ddOrder)
@@ -127,6 +130,20 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 		collect(
 				DistributionFacetId.ofManufacturingOrderId(manufacturingOrderId),
 				builder -> builder.caption(getManufacturingOrderDocumentNo(manufacturingOrderId))
+		);
+	}
+
+	private void collectPlant(final I_DD_Order ddOrder)
+	{
+		final ResourceId plantId = ResourceId.ofRepoIdOrNull(ddOrder.getPP_Plant_ID());
+		if (plantId == null)
+		{
+			return;
+		}
+
+		collect(
+				DistributionFacetId.ofPlantId(plantId),
+				builder -> builder.caption(getResourceName(plantId))
 		);
 	}
 
@@ -244,6 +261,11 @@ public class DistributionFacetsCollector implements DistributionOrderCollector<D
 					.forEach(this::collectQuantity);
 			pendingCollectQuantitiesFromDDOrderIds.clear();
 		}
+	}
+
+	private ITranslatableString getResourceName(final ResourceId resourceId)
+	{
+		return resourceNames.computeIfAbsent(resourceId, ppOrderBL::getResourceName);
 	}
 
 }

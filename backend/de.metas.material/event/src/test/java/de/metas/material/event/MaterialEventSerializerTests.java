@@ -21,6 +21,7 @@ import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.eventbus.MaterialEventConverter;
 import de.metas.material.event.forecast.Forecast;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
+import de.metas.material.event.forecast.ForecastDeletedEvent;
 import de.metas.material.event.forecast.ForecastLine;
 import de.metas.material.event.picking.PickingRequestedEvent;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
@@ -64,6 +65,7 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.JSONObjectMapper;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderAndBOMLineId;
@@ -465,17 +467,7 @@ public class MaterialEventSerializerTests
 	@Test
 	public void forecastCreatedEvent()
 	{
-		final MaterialDescriptor materialDescriptor = newMaterialDescriptor();
-
-		final ForecastLine forecastLine = ForecastLine.builder()
-				.forecastLineId(30)
-				.materialDescriptor(materialDescriptor)
-				.build();
-		final Forecast forecast = Forecast.builder()
-				.forecastId(20)
-				.docStatus("docStatus")
-				.forecastLine(forecastLine)
-				.build();
+		final Forecast forecast = createForecast(newMaterialDescriptor());
 		final ForecastCreatedEvent forecastCreatedEvent = ForecastCreatedEvent
 				.builder()
 				.forecast(forecast)
@@ -483,6 +475,19 @@ public class MaterialEventSerializerTests
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(forecastCreatedEvent);
+	}
+
+	@Test
+	public void forecastDeletedEvent()
+	{
+		final Forecast forecast = createForecast(newMaterialDescriptor());
+		final ForecastDeletedEvent forecastDeletedEvent = ForecastDeletedEvent
+				.builder()
+				.forecast(forecast)
+				.eventDescriptor(newEventDescriptor())
+				.build();
+
+		assertEventEqualAfterSerializeDeserialize(forecastDeletedEvent);
 	}
 
 	@Test
@@ -778,5 +783,18 @@ public class MaterialEventSerializerTests
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(evt);
+	}
+
+	private static Forecast createForecast(@NonNull final MaterialDescriptor materialDescriptor)
+	{
+		final ForecastLine forecastLine = ForecastLine.builder()
+				.forecastLineId(30)
+				.materialDescriptor(materialDescriptor)
+				.build();
+		return Forecast.builder()
+				.forecastId(20)
+				.docStatus("docStatus")
+				.forecastLine(forecastLine)
+				.build();
 	}
 }

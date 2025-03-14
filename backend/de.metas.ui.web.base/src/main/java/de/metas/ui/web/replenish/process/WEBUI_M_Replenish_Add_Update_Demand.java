@@ -35,7 +35,6 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.replenishment.I_M_Material_Needs_Planner_V;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
-import de.metas.ui.web.view.IViewRow;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -58,9 +57,13 @@ public class WEBUI_M_Replenish_Add_Update_Demand extends ViewBasedProcessTemplat
 	@Param(parameterName = PARAM_M_Warehouse_ID, mandatory = true)
 	private WarehouseId warehouseId;
 
-	private static final String PARAM_Demand = I_M_Material_Needs_Planner_V.COLUMNNAME_Demand;
-	@Param(parameterName = PARAM_Demand, mandatory = true)
-	private BigDecimal demand;
+	private static final String PARAM_Level_Min = I_M_Material_Needs_Planner_V.COLUMNNAME_Level_Min;
+	@Param(parameterName = PARAM_Level_Min, mandatory = true)
+	private BigDecimal levelMin;
+
+	private static final String PARAM_Level_Max = I_M_Material_Needs_Planner_V.COLUMNNAME_Level_Max;
+	@Param(parameterName = PARAM_Level_Max, mandatory = true)
+	private BigDecimal levelMax;
 
 	@Override
 	public final ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -81,15 +84,16 @@ public class WEBUI_M_Replenish_Add_Update_Demand extends ViewBasedProcessTemplat
 	protected String doIt() throws Exception
 	{
 		final UomId uomId = productBL.getStockUOMId(productId);
-		final StockQtyAndUOMQty minAndMax = StockQtyAndUOMQtys.createConvert(demand, productId, uomId);
+		final StockQtyAndUOMQty levelMin = StockQtyAndUOMQtys.createConvert(this.levelMin, productId, uomId);
+		final StockQtyAndUOMQty levelMax = StockQtyAndUOMQtys.createConvert(this.levelMax, productId, uomId);
 
 		replenishInfoRepository.save(ReplenishInfo.builder()
 				.identifier(ReplenishInfo.Identifier.builder()
 						.productId(productId)
 						.warehouseId(warehouseId)
 						.build())
-				.min(minAndMax)
-				.max(minAndMax)
+				.min(levelMin)
+				.max(levelMax)
 				.build());
 
 		return MSG_OK;
@@ -99,44 +103,33 @@ public class WEBUI_M_Replenish_Add_Update_Demand extends ViewBasedProcessTemplat
 	@Override
 	public Object getParameterDefaultValue(final IProcessDefaultParameter parameter)
 	{
+		final MaterialNeedsPlannerRow materialNeedsPlannerRow = MaterialNeedsPlannerRow.ofRow(getSingleSelectedRow());
+
 		if (PARAM_M_Product_ID.equals(parameter.getColumnName()))
 		{
-			return getProductId(getSingleSelectedRow());
+			return materialNeedsPlannerRow.getProductId();
 		}
-
-		if (PARAM_M_Warehouse_ID.equals(parameter.getColumnName()))
+		else if (PARAM_M_Warehouse_ID.equals(parameter.getColumnName()))
 		{
-			return getWarehouseId(getSingleSelectedRow());
+			return materialNeedsPlannerRow.getWarehouseId();
 		}
-
-		if (PARAM_Demand.equals(parameter.getColumnName()))
+		else if (PARAM_Level_Min.equals(parameter.getColumnName()))
 		{
-			return getDemand(getSingleSelectedRow());
+			return materialNeedsPlannerRow.getLevelMin();
 		}
-
-		return DEFAULT_VALUE_NOTAVAILABLE;
+		else if (PARAM_Level_Max.equals(parameter.getColumnName()))
+		{
+			return materialNeedsPlannerRow.getLevelMax();
+		}
+		else
+		{
+			return DEFAULT_VALUE_NOTAVAILABLE;
+		}
 	}
 
 	@Override
 	protected void postProcess(final boolean success)
 	{
 		getView().invalidateSelection();
-	}
-
-	@Nullable
-	private static ProductId getProductId(@NonNull final IViewRow row)
-	{
-		return ProductId.ofRepoIdOrNull(row.getFieldValueAsInt(I_M_Material_Needs_Planner_V.COLUMNNAME_M_Product_ID, -1));
-	}
-
-	@Nullable
-	private static WarehouseId getWarehouseId(@NonNull final IViewRow row)
-	{
-		return WarehouseId.ofRepoIdOrNull(row.getFieldValueAsInt(I_M_Material_Needs_Planner_V.COLUMNNAME_M_Warehouse_ID, -1));
-	}
-
-	private static BigDecimal getDemand(@NonNull final IViewRow row)
-	{
-		return row.getFieldValueAsBigDecimal(I_M_Material_Needs_Planner_V.COLUMNNAME_Demand, BigDecimal.ZERO);
 	}
 }

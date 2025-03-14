@@ -1,6 +1,7 @@
 package org.eevolution.api;
 
 import de.metas.document.DocSubType;
+import de.metas.i18n.ITranslatableString;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.material.planning.pporder.OrderQtyChangeRequest;
 import de.metas.material.planning.pporder.PPOrderQuantities;
@@ -8,6 +9,7 @@ import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.product.ResourceId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.exceptions.DocTypeNotFoundException;
@@ -129,4 +131,6 @@ public interface IPPOrderBL extends ISingletonService
 	Optional<Quantity> getRoundingToScale(@NonNull PPOrderId ppOrderId);
 
 	PPOrderDocBaseType getPPOrderDocBaseType(@NonNull I_PP_Order ppOrder);
+
+	ITranslatableString getResourceName(@NonNull ResourceId resourceId);
 }

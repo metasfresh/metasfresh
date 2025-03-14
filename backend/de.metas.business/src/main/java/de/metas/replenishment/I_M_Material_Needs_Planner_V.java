@@ -101,27 +101,6 @@ public interface I_M_Material_Needs_Planner_V
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Demand.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setDemand (@Nullable BigDecimal Demand);
-
-	/**
-	 * Get Demand.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getDemand();
-
-	ModelColumn<I_M_Material_Needs_Planner_V, Object> COLUMN_Demand = new ModelColumn<>(I_M_Material_Needs_Planner_V.class, "Demand", null);
-	String COLUMNNAME_Demand = "Demand";
-
-	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -143,6 +122,52 @@ public interface I_M_Material_Needs_Planner_V
 
 	ModelColumn<I_M_Material_Needs_Planner_V, Object> COLUMN_IsActive = new ModelColumn<>(I_M_Material_Needs_Planner_V.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Maximum Level.
+	 * Maximum Inventory level for this product
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLevel_Max (@Nullable BigDecimal Level_Max);
+
+	/**
+	 * Get Maximum Level.
+	 * Maximum Inventory level for this product
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getLevel_Max();
+
+	ModelColumn<I_M_Material_Needs_Planner_V, Object> COLUMN_Level_Max = new ModelColumn<>(I_M_Material_Needs_Planner_V.class, "Level_Max", null);
+	String COLUMNNAME_Level_Max = "Level_Max";
+
+	/**
+	 * Set Minimum Level.
+	 * Minimum Inventory level for this product
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setLevel_Min (BigDecimal Level_Min);
+
+	/**
+	 * Get Minimum Level.
+	 * Minimum Inventory level for this product
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getLevel_Min();
+
+	ModelColumn<I_M_Material_Needs_Planner_V, Object> COLUMN_Level_Min = new ModelColumn<>(I_M_Material_Needs_Planner_V.class, "Level_Min", null);
+	String COLUMNNAME_Level_Min = "Level_Min";
 
 	/**
 	 * Set Product Category.

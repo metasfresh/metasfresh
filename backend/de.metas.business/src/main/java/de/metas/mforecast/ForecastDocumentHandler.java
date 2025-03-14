@@ -6,9 +6,21 @@ import de.metas.document.engine.DocumentTableFields;
 import de.metas.document.engine.IDocument;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.mforecast.impl.ForecastId;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Forecast;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Forecast;
+import org.compiere.model.I_M_ForecastLine;
+import org.compiere.util.TimeUtil;
+
+import java.io.File;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
 
 /*
  * #%L
@@ -32,8 +44,11 @@ import org.compiere.model.I_M_Forecast;
  * #L%
  */
 
+@RequiredArgsConstructor
 class ForecastDocumentHandler implements DocumentHandler
 {
+	private final IForecastDAO forecastDAO;
+
 	private static I_M_Forecast extractForecast(final DocumentTableFields docFields)
 	{
 		return InterfaceWrapperHelper.create(docFields, I_M_Forecast.class);
@@ -73,10 +88,69 @@ class ForecastDocumentHandler implements DocumentHandler
 	}
 
 	@Override
+	public void approveIt(final DocumentTableFields docFields)
+	{
+	}
+
+	@Override
+	public void rejectIt(final DocumentTableFields docFields)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void voidIt(final DocumentTableFields docFields)
+	{
+		final I_M_Forecast forecast = extractForecast(docFields);
+
+		final DocStatus docStatus = DocStatus.ofNullableCodeOrUnknown(forecast.getDocStatus());
+		if (docStatus.isClosedReversedOrVoided())
+		{
+			throw new AdempiereException("Document Closed: " + docStatus);
+		}
+
+		getLines(forecast).forEach(this::voidLine);
+
+		forecast.setProcessed(true);
+		forecast.setDocAction(IDocument.ACTION_None);
+	}
+
+	@Override
+	public void unCloseIt(final DocumentTableFields docFields)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void reverseCorrectIt(final DocumentTableFields docFields)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void reverseAccrualIt(final DocumentTableFields docFields)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public void reactivateIt(final DocumentTableFields docFields)
 	{
 		final I_M_Forecast forecast = extractForecast(docFields);
 		forecast.setProcessed(false);
 		forecast.setDocAction(IDocument.ACTION_Complete);
+	}
+
+
+	private void voidLine(@NonNull final I_M_ForecastLine line)
+	{
+		line.setQty(BigDecimal.ZERO);
+		line.setQtyCalculated(BigDecimal.ZERO);
+		InterfaceWrapperHelper.save(line);
+	}
+
+	private List<I_M_ForecastLine> getLines(@NonNull final I_M_Forecast forecast)
+	{
+		return forecastDAO.retrieveLinesByForecastId(ForecastId.ofRepoId(forecast.getM_Forecast_ID()));
 	}
 }

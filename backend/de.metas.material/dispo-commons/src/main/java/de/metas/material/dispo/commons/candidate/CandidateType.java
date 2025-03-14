@@ -46,7 +46,14 @@ public enum CandidateType implements ReferenceListAwareEnum
 	SUPPLY(X_MD_Candidate.MD_CANDIDATE_TYPE_SUPPLY),
 
 	/**
-	 * Somewhat similar to {@link #DEMAND}, but afterward the ATP shall not be back at zero (as the demand was fulfilled), but shall be at the level "requested" by the forecast.
+	 * Somewhat similar to {@link #DEMAND}, but afterwards the ATP shall not be back at zero (as the demand was fulfilled),
+	 * but shall be at the level "requested" by the forecast.
+	 * <p/>
+	 * Therefore, {@code StockUpCandiateHandler} might well fire a {@link de.metas.material.event.supplyrequired.SupplyRequiredEvent} according to the ATP after the candidate was applied. However, the handler won't decrease the ATP.
+	 * <p/>
+	 * So, if the ATP is 5 and now a STOCK_UP-candidate with a quantity of 10 is handeled (and the min-qty is 0), 
+	 * then a {@code SupplyRequiredEvent} with quantity=5 will be fired.
+	 * But unlike the case of a DEMAND-candidate, the {@code StockUpCandiateHandler} will <b>not</b> create a Stock-Candidate with quantity -10.
 	 */
 	STOCK_UP(X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK_UP),
 

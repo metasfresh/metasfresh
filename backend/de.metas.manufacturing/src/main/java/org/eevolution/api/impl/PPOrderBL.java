@@ -37,6 +37,7 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.material.event.PostMaterialEventService;
@@ -60,8 +61,10 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.resource.ResourceRepository;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -140,6 +143,7 @@ public class PPOrderBL implements IPPOrderBL
 	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 	private final IPPOrderCandidateDAO ppOrderCandidateDAO = Services.get(IPPOrderCandidateDAO.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final SpringContextHolder.Lazy<ResourceRepository> resourceRepositoryLazy = SpringContextHolder.lazyBean(ResourceRepository.class);
 
 	@VisibleForTesting
 	static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.manufacturing.PP_Order.canBeExportedAfterSeconds";
@@ -753,5 +757,10 @@ public class PPOrderBL implements IPPOrderBL
 	{
 		final I_C_DocType docTypeTarget = docTypesRepo.getRecordById(DocTypeId.ofRepoId(ppOrder.getC_DocTypeTarget_ID()));
 		return PPOrderDocBaseType.ofCode(docTypeTarget.getDocBaseType());
+	}
+	@NonNull
+	public ITranslatableString getResourceName(@NonNull final ResourceId resourceId)
+	{
+		return resourceRepositoryLazy.get().getById(resourceId).getName();
 	}
 }

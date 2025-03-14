@@ -3,6 +3,7 @@ package de.metas.distribution.workflows_api;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.i18n.ITranslatableString;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
@@ -28,6 +29,7 @@ public class DistributionJob
 	@NonNull private final ZonedDateTime pickDate;
 	@NonNull private final WarehouseInfo pickFromWarehouse;
 	@NonNull private final WarehouseInfo dropToWarehouse;
+	@Nullable private final ResourceInfo plantInfo;
 	@Nullable private final UserId responsibleId;
 	private final boolean isClosed;
 	@Nullable private final String salesOrderDocumentNo;
@@ -46,6 +48,7 @@ public class DistributionJob
 			final @NonNull ZonedDateTime pickDate,
 			final @NonNull WarehouseInfo pickFromWarehouse,
 			final @NonNull WarehouseInfo dropToWarehouse,
+			final @Nullable ResourceInfo plantInfo,
 			final @Nullable UserId responsibleId,
 			final boolean isClosed,
 			final @Nullable String salesOrderDocumentNo,
@@ -60,6 +63,7 @@ public class DistributionJob
 		this.pickDate = pickDate;
 		this.pickFromWarehouse = pickFromWarehouse;
 		this.dropToWarehouse = dropToWarehouse;
+		this.plantInfo = plantInfo;
 		this.responsibleId = responsibleId;
 		this.isClosed = isClosed;
 		this.salesOrderDocumentNo = salesOrderDocumentNo;
@@ -126,5 +130,11 @@ public class DistributionJob
 				.filter(line -> line.getStepById(stepId).isPresent())
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No line found for " + stepId));
+	}
+
+	@Nullable
+	public ITranslatableString getPlantName()
+	{
+		return plantInfo != null ? plantInfo.getCaption() : null;
 	}
 }
