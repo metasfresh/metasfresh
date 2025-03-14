@@ -12,6 +12,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -80,6 +81,9 @@ class DistributionJobLoader
 				.pickDate(pickDate)
 				.pickFromWarehouse(loadingSupportServices.getWarehouseInfoByRepoId(ddOrder.getM_Warehouse_From_ID()))
 				.dropToWarehouse(loadingSupportServices.getWarehouseInfoByRepoId(ddOrder.getM_Warehouse_To_ID()))
+				.plantInfo(Optional.ofNullable(ResourceId.ofRepoIdOrNull(ddOrder.getPP_Plant_ID()))
+								   .map(loadingSupportServices::getPlantInfo)
+								   .orElse(null))
 				.responsibleId(extractResponsibleId(ddOrder))
 				.isClosed(!docStatus.isCompleted()) // NOTE: we consider closed (for us) anything which is not completed
 				.allowPickingAnyHU(config.isAllowPickingAnyHU())

@@ -14,6 +14,7 @@ import de.metas.material.event.ddordercandidate.DDOrderCandidateDeletedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateRequestedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateUpdatedEvent;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
+import de.metas.material.event.forecast.ForecastDeletedEvent;
 import de.metas.material.event.picking.PickingRequestedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderCandidateCreatedEvent;
@@ -82,6 +83,7 @@ import javax.annotation.Nullable;
 		@JsonSubTypes.Type(name = DDOrderCandidateRequestedEvent.TYPE, value = DDOrderCandidateRequestedEvent.class),
 
 		@JsonSubTypes.Type(name = ForecastCreatedEvent.TYPE, value = ForecastCreatedEvent.class),
+		@JsonSubTypes.Type(name = ForecastDeletedEvent.TYPE, value = ForecastDeletedEvent.class),
 
 		@JsonSubTypes.Type(name = PickingRequestedEvent.TYPE, value = PickingRequestedEvent.class),
 

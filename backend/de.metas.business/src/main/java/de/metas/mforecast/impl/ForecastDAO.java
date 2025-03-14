@@ -22,6 +22,11 @@ package de.metas.mforecast.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.mforecast.ForecastRequest;
+import de.metas.mforecast.IForecastDAO;
+import de.metas.util.Services;
+import lombok.NonNull;
 import java.util.List;
 
 import de.metas.interfaces.I_C_OrderLine;
@@ -39,10 +44,24 @@ public class ForecastDAO implements IForecastDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	public List<I_M_ForecastLine> retrieveLinesByForecastId(final int forecastId)
+	@NonNull
+	public Stream<I_M_Forecast> streamRecordsByIds(@NonNull final ImmutableSet<ForecastId> ids)
 	{
-		Check.assumeGreaterThanZero(forecastId, "forecastId");
+		if (ids.isEmpty())
+		{
+			return Stream.empty();
+		}
+		
+		return queryBL.createQueryBuilder(I_M_Forecast.class)
+				.addInArrayFilter(I_M_ForecastLine.COLUMNNAME_M_Forecast_ID, ids)
+				.create()
+				.stream(I_M_Forecast.class);
+	}
 
+	@Override
+	@NonNull
+	public List<I_M_ForecastLine> retrieveLinesByForecastId(@NonNull final ForecastId forecastId)
+	{
 		return queryBL.createQueryBuilder(I_M_ForecastLine.class)
 				.addEqualsFilter(I_M_ForecastLine.COLUMNNAME_M_Forecast_ID, forecastId)
 				.filter(ActiveRecordQueryFilter.getInstance(I_M_ForecastLine.class))

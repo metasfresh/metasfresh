@@ -14,6 +14,11 @@ const createMasterdata = async ({qtyToMove}) => {
             login: {
                 user: { language: "en_US" },
             },
+            resources: {
+                "plantId": {
+                    manufacturingResourceTypeCode: "PT",
+                }
+            },
             products: {
                 "P1": {},
             },
@@ -33,6 +38,7 @@ const createMasterdata = async ({qtyToMove}) => {
                     warehouseFrom: "wh1",
                     warehouseTo: "wh2",
                     warehouseInTransit: "whInTransit",
+                    plant: "plantId",
                     lines: [{ product: "P1", qtyEntered: qtyToMove }],
                 }
             },
@@ -42,6 +48,7 @@ const createMasterdata = async ({qtyToMove}) => {
     return {
         login: response.login.user,
         warehouseFromFacetId: response.distributionOrders.DD1.warehouseFromFacetId,
+        plantFacetId: response.distributionOrders.DD1.plantFacetId,
         dropToLocatorQRCode: response.warehouses.wh2.locatorQRCode,
         launcherTestId: response.distributionOrders.DD1.launcherTestId,
         huQRCode: response.handlingUnits.HU1.qrCode,
@@ -96,7 +103,7 @@ test('Distribution using 2 steps to pick the needed qty.', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Pick & Unpick in distribution step screen', async ({ page }) => {
-    const { login, warehouseFromFacetId, launcherTestId, huQRCode, dropToLocatorQRCode } = await createMasterdata({ qtyToMove: 100 });
+    const { login, warehouseFromFacetId, launcherTestId, huQRCode } = await createMasterdata({ qtyToMove: 100 });
 
     await LoginScreen.login(login);
     await ApplicationsListScreen.expectVisible();
@@ -109,4 +116,16 @@ test('Pick & Unpick in distribution step screen', async ({ page }) => {
     await DistributionLineScreen.clickStepButton({ index: 1 });
     await DistributionStepScreen.unpick();
     await DistributionLineScreen.expectNoStepButton();
+});
+
+
+// noinspection JSUnusedLocalSymbols
+test('Filter distribution orders by plantId', async ({ page }) => {
+    const { login, plantFacetId } = await createMasterdata({ qtyToMove: 100 });
+
+    await LoginScreen.login(login);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('distribution');
+    await DistributionJobsListScreen.waitForScreen();
+    await DistributionJobsListScreen.filterByFacetId({ facetId: plantFacetId, expectHitCount: 1 });
 });

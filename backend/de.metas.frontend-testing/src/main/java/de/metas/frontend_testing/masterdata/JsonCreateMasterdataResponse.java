@@ -9,6 +9,7 @@ import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfi
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateResponse;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderResponse;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
+import de.metas.frontend_testing.masterdata.resource.JsonResourceResponse;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserResponse;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseResponse;
@@ -36,4 +37,5 @@ public class JsonCreateMasterdataResponse
 	@NonNull Map<String, JsonSalesOrderCreateResponse> salesOrders;
 	@NonNull Map<String, JsonDDOrderResponse> distributionOrders;
 	@NonNull Map<String, JsonPPOrderResponse> manufacturingOrders;
+	@NonNull Map<String, JsonResourceResponse> resources;
 }

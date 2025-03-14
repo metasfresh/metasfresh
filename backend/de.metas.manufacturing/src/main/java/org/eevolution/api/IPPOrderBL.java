@@ -8,6 +8,7 @@ import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.product.ResourceId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.exceptions.DocTypeNotFoundException;
@@ -129,4 +130,6 @@ public interface IPPOrderBL extends ISingletonService
 	Optional<Quantity> getRoundingToScale(@NonNull PPOrderId ppOrderId);
 
 	PPOrderDocBaseType getPPOrderDocBaseType(@NonNull I_PP_Order ppOrder);
+
+	String getResourceName(@NonNull ResourceId resourceId);
 }

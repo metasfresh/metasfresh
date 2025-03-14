@@ -5,6 +5,7 @@ import de.metas.frontend_testing.JsonTestId;
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -28,6 +29,7 @@ public class DDOrderReference
 	@Nullable OrderId salesOrderId;
 	@Nullable ProductId productId;
 	@Nullable Quantity qty;
+	@Nullable ResourceId plantId;
 	boolean isJobStarted;
 
 	@NonNull

@@ -10,6 +10,7 @@ import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -85,6 +86,7 @@ public class DDOrderReferenceCollector implements DistributionOrderCollector<DDO
 				.salesOrderId(OrderId.ofRepoIdOrNull(ddOrder.getC_Order_ID()))
 				.ppOrderId(PPOrderId.ofRepoIdOrNull(ddOrder.getForward_PP_Order_ID()))
 				.isJobStarted(isJobStarted)
+				.plantId(ResourceId.ofRepoIdOrNull(ddOrder.getPP_Plant_ID()))
 				.build();
 	}
 
