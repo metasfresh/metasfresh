@@ -111,7 +111,6 @@ public class BankAccount
 	{
 		return Check.isNotBlank(accountStreet) &&
 				Check.isNotBlank(accountZip) &&
-				Check.isNotBlank(accountCity) &&
-				Check.isNotBlank(accountCountry);
+				Check.isNotBlank(accountCity);
 	}
 }

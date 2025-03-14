@@ -467,7 +467,10 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 		}
 
 		final PostalAddressSEPA postalAddressSEPA = new PostalAddressSEPA();
-		postalAddressSEPA.setCtry(bankAccount.getAccountCountry());
+		if (Check.isNotBlank(bankAccount.getAccountCountry()))
+		{
+			postalAddressSEPA.setCtry(SepaUtils.replaceForbiddenChars(bankAccount.getAccountCountry()));
+		}
 
 		postalAddressSEPA.getAdrLine().add(SepaUtils.replaceForbiddenChars(bankAccount.getAccountStreet()));
 		postalAddressSEPA.getAdrLine().add(SepaUtils.replaceForbiddenChars(bankAccount.getAccountZip() + " " + bankAccount.getAccountCity()));
