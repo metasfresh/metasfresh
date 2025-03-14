@@ -178,8 +178,7 @@ Feature: Reversal of material receipt
       | M_InOutLine | reversal1_line1 | N       | -10000000 CHF | -10 PCE | N               |
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
-      # FIXME: not sure, but IMHO CurrentCostPrice has to get to zero in this case
-      | acctSchema      | product      | 1000002          | 1000000 CHF      | 0 PCE      |
+      | acctSchema      | product      | 1000002          | 0 CHF            | 0 PCE      |
 
 
 
