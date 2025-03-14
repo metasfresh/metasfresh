@@ -34,7 +34,7 @@ class ESQueryTemplateTest
 		{
 			final ESQueryTemplate esQueryTemplate = ESQueryTemplate.ofJsonString("@query@");
 			assertThat(esQueryTemplate.resolve(Evaluatees.ofSingleton(ESQueryTemplate.PARAM_query.getName(), "test")))
-					.isEqualTo("\"test\"");
+					.isEqualTo("test");
 		}
 
 		@Test
