@@ -33,12 +33,14 @@ import de.metas.product.IProductDAO;
 import de.metas.product.model.I_M_Product;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class OrgChangeService
 {
 	private final OrgChangeRepository orgChangeRepo;
@@ -48,20 +50,6 @@ public class OrgChangeService
 	private final GroupTemplateRepository groupTemplateRepo;
 
 	final IProductDAO productDAO = Services.get(IProductDAO.class);
-
-	public OrgChangeService(
-			@NonNull final OrgChangeRepository orgChangeRepo,
-			@NonNull final BPartnerCompositeRepository bpCompositeRepo,
-			@NonNull final OrgMappingRepository orgMappingRepo,
-			@NonNull final OrgChangeHistoryRepository orgChangeHistoryRepo,
-			@NonNull final GroupTemplateRepository groupTemplateRepo)
-	{
-		this.orgChangeRepo = orgChangeRepo;
-		this.bpCompositeRepo = bpCompositeRepo;
-		this.orgMappingRepo = orgMappingRepo;
-		this.orgChangeHistoryRepo = orgChangeHistoryRepo;
-		this.groupTemplateRepo = groupTemplateRepo;
-	}
 
 	public void moveToNewOrg(@NonNull final OrgChangeRequest request)
 	{
