@@ -37,7 +37,7 @@ FROM (SELECT Attributes,
              iol.Description,
              bp_product_no,
              bp_product_name,
-             (ROW_NUMBER() OVER (ORDER BY MAX(iol.line))) * 10 AS line
+             ((ROW_NUMBER() OVER (ORDER BY MAX(iol.line))) * 10)::numeric AS line
 
       FROM
           -- Sub select to get all in out lines we need. They are in a subselect so we can neatly group by the attributes

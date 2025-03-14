@@ -5,6 +5,8 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.product.IProductBL;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.util.DB;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -63,6 +65,12 @@ public class AccountProviderFactory
 				.projectAccountsRepository(projectAccountsRepository)
 				.costElementAccountsRepository(costElementAccountsRepository)
 				;
+	}
+
+	public void addMissingAcctRecords()
+	{
+		productCategoryAccountsRepository.addMissingAcctRecords();
+		productAccountsRepository.addMissingAcctRecords();
 	}
 
 }

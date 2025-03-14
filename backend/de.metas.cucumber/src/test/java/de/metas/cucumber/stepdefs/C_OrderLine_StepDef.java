@@ -209,6 +209,16 @@ public class C_OrderLine_StepDef
 						orderLine.setC_UOM_ID(UomId.toRepoId(uomId));
 					}
 
+					tableRow.getAsOptionalBigDecimal("Price")
+							.ifPresent(price -> {
+								orderLine.setIsManualPrice(true);
+								orderLine.setPriceEntered(price);
+								orderLine.setPriceActual(price);
+							});
+
+					tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_Description)
+							.ifPresent(orderLine::setDescription);
+
 					saveRecord(orderLine);
 
 					orderLineTable.putOrReplace(tableRow.getAsIdentifier(), orderLine);

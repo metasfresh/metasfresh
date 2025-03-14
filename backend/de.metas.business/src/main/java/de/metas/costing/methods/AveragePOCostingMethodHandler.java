@@ -383,6 +383,10 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		if (isInboundTrx)
 		{
 			currentCosts.addWeightedAverage(request.getAmt().negate(), qty.negate(), utils.getQuantityUOMConverter());
+			if (currentCosts.getCurrentQty().isZero())
+			{
+				currentCosts.clearOwnCostPrice();
+			}
 		}
 		else
 		{

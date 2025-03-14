@@ -22,16 +22,24 @@
 
 package de.metas.cucumber.stepdefs.acctschema;
 
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
 import org.compiere.model.I_C_AcctSchema;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
-public class C_AcctSchema_StepDefData extends StepDefData<I_C_AcctSchema>
+public class C_AcctSchema_StepDefData extends StepDefData<I_C_AcctSchema> implements StepDefDataGetIdAware<AcctSchemaId, I_C_AcctSchema>
 {
 	public C_AcctSchema_StepDefData()
 	{
 		super(I_C_AcctSchema.class);
+	}
+
+	@Override
+	public AcctSchemaId extractIdFromRecord(final I_C_AcctSchema record)
+	{
+		return AcctSchemaId.ofRepoId(record.getC_AcctSchema_ID());
 	}
 }
