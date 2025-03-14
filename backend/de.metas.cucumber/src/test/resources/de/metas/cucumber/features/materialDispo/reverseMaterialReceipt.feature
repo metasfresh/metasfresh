@@ -127,7 +127,90 @@ Feature: Reversal of material receipt
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
-  Scenario: Check costing
+  Scenario: Check costing - no initial stock
+    #
+    # Create material receipt 
+    #
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | C_PaymentTerm_ID | DocBaseType | M_PricingSystem_ID | DatePromised        | M_Warehouse_ID |
+      | po1        | N       | vendor        | 2021-04-16  | 1000012          | POO         | ps_1               | 2021-04-15T15:00:00 | warehouseStd   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | Price   | Description                    |
+      | po1_l1     | po1        | product      | 10         | 1000000 | intentionally wrong huge price |
+    And the order identified by po1 is completed
+    And after not more than 60s, M_ReceiptSchedule are found:
+      | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
+      | rs1                             | po1                   | po1_l1                    | vendor                   | vendorLocation                    | product                 | 10         | warehouseStd              |
+    And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
+      | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
+      | huLuTuConfig                          | hu1                | rs1                             | N               | 1     | N               | 1     | N               | 10          | 101                                | 1000006                      |
+    And create material receipt
+      | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | hu1                | rs1                             | receipt1              |
+    And validate the created material receipt lines
+      | M_InOutLine_ID | M_InOut_ID | M_Product_ID | C_OrderLine_ID |
+      | receipt1_line1 | receipt1   | product      | po1_l1         |
+    And Wait until receipt receipt1 is posted
+    And M_MatchPO are found
+      | Identifier | C_OrderLine_ID |
+      | mpo1       | po1_l1         |
+    And Wait until M_MatchPO mpo1 is posted
+    And after not more than 10s, M_CostDetails are found for product product and cost element 1000002
+      | TableName   | Record_ID      | IsSOTrx | Amt          | Qty    | IsChangingCosts |
+      | M_MatchPO   | mpo1           | N       | 10000000 CHF | 10 PCE | Y               |
+      | M_InOutLine | receipt1_line1 | N       | 10000000 CHF | 10 PCE | N               |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
+      | acctSchema      | product      | 1000002          | 1000000 CHF      | 10 PCE     |
+    
+    
+    #
+    # Reverse the material receipt 
+    #
+    And the material receipt identified by receipt1 is reversed as reversal1
+    And validate the created material receipt lines
+      | M_InOutLine_ID  | M_InOut_ID | M_Product_ID |
+      | reversal1_line1 | reversal1  | product      |
+    And Wait until receipt reversal1 are posted
+    And after not more than 10s, M_CostDetails are found for product product and cost element 1000002
+      | TableName   | Record_ID       | IsSOTrx | Amt           | Qty     | IsChangingCosts |
+      | M_InOutLine | receipt1_line1  | N       | 10000000 CHF  | 10 PCE  | N               |
+      | M_InOutLine | reversal1_line1 | N       | -10000000 CHF | -10 PCE | N               |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
+      # FIXME: not sure, but IMHO CurrentCostPrice has to get to zero in this case
+      | acctSchema      | product      | 1000002          | 1000000 CHF      | 0 PCE      |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+# ######################################################################################################################
+  @from:cucumber
+  Scenario: Check costing - with initial stock
     #
     # Create the initial inventory 
     #
