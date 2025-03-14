@@ -21,7 +21,7 @@ public class ResourceCommand
 	@NonNull private final JsonResourceRequest request;
 	@NonNull private final Identifier identifier;
 
-	public void execute()
+	public JsonResourceResponse execute()
 	{
 		final String value = identifier.toUniqueString();
 
@@ -36,5 +36,9 @@ public class ResourceCommand
 
 		final ResourceId resourceId = ResourceId.ofRepoId(resource.getS_Resource_ID());
 		context.putIdentifier(identifier, resourceId);
+
+		return JsonResourceResponse.builder()
+				.code(value)
+				.build();
 	}
 }
