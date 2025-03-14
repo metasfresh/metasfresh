@@ -308,7 +308,8 @@ public class ManufacturingJobService
 
 		final ManufacturingOrderQuery.ManufacturingOrderQueryBuilder queryBuilder = ManufacturingOrderQuery.builder()
 				.onlyCompleted(true)
-				.responsibleId(ValueRestriction.isNull());
+				.responsibleId(ValueRestriction.isNull()) // NOT assigned
+				;
 
 		if (query.getPlantOrWorkstationId() != null)
 		{

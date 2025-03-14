@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_Picking_Job_Line, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 248868948L;
+	private static final long serialVersionUID = 1628110248L;
 
     /** Standard Constructor */
     public X_M_Picking_Job_Line (final Properties ctx, final int M_Picking_Job_Line_ID, @Nullable final String trxName)
@@ -354,6 +354,33 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	public int getM_ShipmentSchedule_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Order getPP_Order()
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class);
+	}
+
+	@Override
+	public void setPP_Order(final org.eevolution.model.I_PP_Order PP_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class, PP_Order);
+	}
+
+	@Override
+	public void setPP_Order_ID (final int PP_Order_ID)
+	{
+		if (PP_Order_ID < 1) 
+			set_Value (COLUMNNAME_PP_Order_ID, null);
+		else 
+			set_Value (COLUMNNAME_PP_Order_ID, PP_Order_ID);
+	}
+
+	@Override
+	public int getPP_Order_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PP_Order_ID);
 	}
 
 	@Override

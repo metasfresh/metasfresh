@@ -43,13 +43,14 @@ public class PP_Product_Planning
 		this.pickingBOMService = pickingBOMService;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void beforeSave(@NonNull final I_PP_Product_Planning record)
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	public void afterSave(@NonNull final I_PP_Product_Planning record)
 	{
 		final ProductPlanning productPlanning = ProductPlanningDAO.fromRecord(record);
 
 		//
 		// Make sure the picking order configuration, if any, is valid
+		// IMPORTANT: we have to call it after save because ProductPlanningId is required
 		if (productPlanning.isPickingOrder())
 		{
 			pickingBOMService.extractPickingOrderConfig(productPlanning); // extract it just to validate
