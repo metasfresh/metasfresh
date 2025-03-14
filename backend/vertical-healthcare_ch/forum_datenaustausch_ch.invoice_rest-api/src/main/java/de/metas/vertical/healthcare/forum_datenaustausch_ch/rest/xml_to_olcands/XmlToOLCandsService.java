@@ -132,6 +132,7 @@ public class XmlToOLCandsService
 		final MultipartFile xmlInvoiceFile = createOLCandsRequest.getXmlInvoiceFile();
 		final RequestType xmlInvoice = unmarshal(xmlInvoiceFile);
 
+		// note: the billers-organisation is created manually before the first XML is send
 		final JsonExternalId billerOrgCode = createBPartnerExternalId(getBiller(xmlInvoice.getPayload().getBody()));
 
 		// the patient is needed in all cases, because we are going to reference it from C_Invoice.Beneficiary_BPartner_ID
