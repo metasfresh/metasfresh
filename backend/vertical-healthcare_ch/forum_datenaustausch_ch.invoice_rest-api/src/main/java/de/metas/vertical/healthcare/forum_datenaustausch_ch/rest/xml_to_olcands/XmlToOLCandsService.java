@@ -190,19 +190,20 @@ public class XmlToOLCandsService
 					.build());
 		}
 
+		final String orgCode = context.getBillerOrgCode().getValue();
 		final JsonRequestBPartnerUpsert partnerUpsert = JsonRequestBPartnerUpsert.builder()
-				.syncAdvise(context.getDebitorSyncAdvise())
+				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
 				.requestItem(JsonRequestBPartnerUpsertItem.builder()
 						.bpartnerIdentifier("ext-" + bpartner.getExternalId().getValue())
 						.bpartnerComposite(JsonRequestComposite.builder()
-								.orgCode(context.getBillerOrgCode().getValue())
+								.orgCode(orgCode)
 								.bpartner(bpartner)
 								.locations(locations.build())
 								.build())
 						.build())
 				.build();
 		
-		bpartnerRestController.createOrUpdateBPartner(partnerUpsert);
+		bpartnerRestController.createOrUpdateBPartner(orgCode, partnerUpsert);
 	}
 
 	@Value
