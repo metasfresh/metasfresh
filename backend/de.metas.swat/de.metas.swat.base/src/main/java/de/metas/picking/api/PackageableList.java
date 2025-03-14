@@ -40,6 +40,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.PPOrderId;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -143,6 +144,8 @@ public final class PackageableList implements Iterable<Packageable>
 	public Optional<InstantAndOrgId> getSinglePreparationDate() {return getSingleValue(Packageable::getPreparationDate);}
 
 	public Optional<InstantAndOrgId> getSingleDeliveryDate() {return getSingleValue(Packageable::getDeliveryDate);}
+	
+	public Optional<PPOrderId> getSingleManufacturingOrderId() {return getSingleValue(Packageable::getPickFromOrderId);}
 
 	public Quantity getQtyToPick()
 	{

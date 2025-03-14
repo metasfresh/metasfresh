@@ -21,6 +21,7 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 import org.adempiere.warehouse.LocatorId;
+import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
 
@@ -56,6 +57,7 @@ public class PickingJobCreateRepoRequest
 		@NonNull BPartnerLocationId deliveryBPLocationId;
 		@Nullable ShipmentScheduleId shipmentScheduleId;
 		@Nullable UomId catchWeightUomId;
+		@Nullable PPOrderId pickFromManufacturingOrderId;
 		@Singular @NonNull ImmutableList<Step> steps;
 
 		@Builder.Default
