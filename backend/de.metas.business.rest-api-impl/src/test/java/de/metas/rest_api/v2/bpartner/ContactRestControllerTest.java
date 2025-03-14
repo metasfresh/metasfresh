@@ -99,7 +99,7 @@ import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.setupTimeSource;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith({ AdempiereTestWatcher.class, SnapshotExtension.class })
 class ContactRestControllerTest

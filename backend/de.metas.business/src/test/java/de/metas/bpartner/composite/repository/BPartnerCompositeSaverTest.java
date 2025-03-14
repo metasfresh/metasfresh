@@ -26,8 +26,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.MockedBPartnerCompositeUtil;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.greeting.GreetingRepository;
 import de.metas.location.ILocationDAO;
@@ -54,7 +54,7 @@ import static de.metas.bpartner.composite.MockedBPartnerCompositeUtil.GROUP_ID;
 import static de.metas.bpartner.composite.MockedBPartnerCompositeUtil.ORG_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class BPartnerCompositeSaverTest

@@ -28,7 +28,7 @@ package de.metas.util.lang;
  *     <li>ofRepoId(int)</li>
  *     <li>ofRepoIdOrNull(int)</li>
  * </ul>
- * Note that instances of RepoIdAware can be used in query-filters, instead of integers. 
+ * Note that instances of RepoIdAware can be used in query-filters, instead of integers.
  * metasfresh will unbox them by calling {@link #getRepoId()}.
  */
 import lombok.NonNull;

@@ -185,8 +185,10 @@ public class JsonRequestContact
 	@Schema(hidden = true)
 	private boolean birthdaySet;
 
+	@Schema
 	private JsonRequestGreetingUpsertItem greeting;
 
+	@Schema(hidden = true)
 	private boolean greetingSet;
 
 	private SyncAdvise syncAdvise;
