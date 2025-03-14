@@ -166,6 +166,11 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 				.iban(record.getIBAN())
 				.qrIban(record.getQR_IBAN())
 				.bankId(BankId.ofRepoIdOrNull(record.getC_Bank_ID()))
+				.accountName(record.getA_Name())
+				.accountStreet(record.getA_Street())
+				.accountZip(record.getA_Zip())
+				.accountCity(record.getA_City())
+				.accountCountry(record.getA_Country())
 				//.changeLog()
 				.build();
 	}

@@ -152,6 +152,7 @@ public class DistributionRestService
 				.datesPromised(activeFacetIds.getDatesPromised())
 				.productIds(activeFacetIds.getProductIds())
 				.qtysEntered(activeFacetIds.getQuantities())
+				.plantIds(activeFacetIds.getPlantIds())
 				.build();
 	}
 

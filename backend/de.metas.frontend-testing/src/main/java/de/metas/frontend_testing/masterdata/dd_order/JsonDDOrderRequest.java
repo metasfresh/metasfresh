@@ -6,6 +6,7 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -17,6 +18,7 @@ public class JsonDDOrderRequest
 	@NonNull Identifier warehouseFrom;
 	@NonNull Identifier warehouseTo;
 	@NonNull Identifier warehouseInTransit;
+	@Nullable Identifier plant;
 	@NonNull List<Line> lines;
 
 	//

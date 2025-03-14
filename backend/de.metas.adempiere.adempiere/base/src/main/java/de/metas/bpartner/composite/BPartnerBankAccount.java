@@ -28,6 +28,7 @@ import de.metas.banking.BankId;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
+import de.metas.common.util.Check;
 import de.metas.money.CurrencyId;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -71,6 +72,11 @@ public class BPartnerBankAccount
 	public static final String IBAN = "iban";
 	public static final String CURRENCY_ID = "currencyId";
 	public static final String ACTIVE = "active";
+	public static final String ACCOUNT_NAME = "accountName";
+	public static final String ACCOUNT_STREET = "accountStreet";
+	public static final String ACCOUNT_ZIP = "accountZip";
+	public static final String ACCOUNT_CITY = "accountCity";
+	public static final String ACCOUNT_COUNTRY = "accountCountry";
 
 	@Nullable
 	private BPartnerBankAccountId id;
@@ -101,6 +107,21 @@ public class BPartnerBankAccount
 	@Nullable
 	private BankId bankId;
 
+	@Nullable
+	private String accountName;
+
+	@Nullable
+	private String accountStreet;
+
+	@Nullable
+	private String accountZip;
+
+	@Nullable
+	private String accountCity;
+
+	@Nullable
+	private String accountCountry;
+
 
 	@Builder(toBuilder = true)
 	private BPartnerBankAccount(
@@ -111,7 +132,12 @@ public class BPartnerBankAccount
 			@Nullable final Boolean active,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final OrgMappingId orgMappingId,
-			@Nullable final BankId bankId)
+			@Nullable final BankId bankId,
+			@Nullable final String accountName,
+			@Nullable final String accountStreet,
+			@Nullable final String accountZip,
+			@Nullable final String accountCity,
+			@Nullable final String accountCountry)
 	{
 		setId(id);
 		this.iban = iban;
@@ -123,6 +149,11 @@ public class BPartnerBankAccount
 
 		this.orgMappingId = orgMappingId;
 		this.bankId = bankId;
+		this.accountName = accountName;
+		this.accountStreet = accountStreet;
+		this.accountZip = accountZip;
+		this.accountCity = accountCity;
+		this.accountCountry = accountCountry;
 	}
 
 	public final void setId(@Nullable final BPartnerBankAccountId id)
@@ -131,4 +162,9 @@ public class BPartnerBankAccount
 		this.bpartnerId = id != null ? id.getBpartnerId() : null;
 	}
 
+	@NonNull
+	public BPartnerBankAccountId getIdNotNull()
+	{
+		return Check.assumeNotNull(id, "Assuming the id is set at this point!");
+	}
 }

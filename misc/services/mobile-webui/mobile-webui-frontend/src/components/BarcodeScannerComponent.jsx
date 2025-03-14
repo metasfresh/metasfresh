@@ -8,6 +8,7 @@ import { useBooleanSetting, useNumber, usePositiveNumberSetting } from '../reduc
 import { debounce } from 'lodash';
 import { beep } from '../utils/audio';
 import * as uiTrace from '../utils/ui_trace';
+import Spinner from './Spinner';
 
 const READER_HINTS = new Map().set(DecodeHintType.POSSIBLE_FORMATS, [
   BarcodeFormat.QR_CODE,
@@ -203,14 +204,6 @@ const BarcodeScannerComponent = ({
           data-testid="qrCode-input"
         />
       )}
-    </div>
-  );
-};
-
-const Spinner = () => {
-  return (
-    <div className="loading">
-      <i className="loading-icon fas fa-solid fa-spinner fa-spin" />
     </div>
   );
 };
