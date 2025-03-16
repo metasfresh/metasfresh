@@ -26,9 +26,9 @@ $$
 SELECT *
 FROM (SELECT Attributes,
              Name, -- product
-             SUM(HUQty)                                        AS HUQty,
+             SUM(HUQty)                                                   AS HUQty,
              HUName,
-             SUM(MovementQty)                                  AS MovementQty,
+             SUM(MovementQty)                                             AS MovementQty,
              UOMSymbol,
              StdPrecision,
              QualityDiscountPercent,

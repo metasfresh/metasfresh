@@ -4,6 +4,8 @@ import com.google.common.base.Stopwatch;
 import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.settings.ModularContractSettingsService;
 import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
+import de.metas.banking.api.BankAccountService;
+import de.metas.banking.api.BankRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
@@ -88,7 +90,7 @@ public class AllAvailableSingletonServicesTest
 			.skipServiceInterface(de.metas.printing.api.IPrintPackageBL.class, "spring component")
 			.skipServiceInterface(de.metas.procurement.base.IAgentSyncBL.class, "spring component")
 			.skipServiceInterface(de.metas.procurement.base.IServerSyncBL.class, "spring component")
-			
+
 			.skipServiceInterface(de.metas.hostkey.spi.IHttpSessionProvider.class, "implementation is registered in de.metas.ui.web.base project")
 			//
 			;
@@ -106,6 +108,7 @@ public class AllAvailableSingletonServicesTest
 		SpringContextHolder.registerJUnitBean(new ModularContractSettingsService(new ModularContractSettingsRepository()));
 		SpringContextHolder.registerJUnitBean(new BoilerPlateRepository());
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
+		SpringContextHolder.registerJUnitBean(new BankAccountService(new BankRepository(), new CurrencyRepository()));
 	}
 
 	@ParameterizedTest
