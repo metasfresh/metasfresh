@@ -459,7 +459,7 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 		final BankAccount bankAccount = bankAccountService.getByIdNotNull(bankAccountId);
 
 		partyIdCopy.setNm(Optional.ofNullable(StringUtils.trimBlankToNull(SepaUtils.replaceForbiddenChars(bankAccount.getAccountName())))
-				.orElseGet(() -> SepaUtils.replaceForbiddenChars(partyId.getNm())));
+								  .orElseGet(() -> SepaUtils.replaceForbiddenChars(partyId.getNm())));
 
 		if (!bankAccount.isAddressComplete())
 		{

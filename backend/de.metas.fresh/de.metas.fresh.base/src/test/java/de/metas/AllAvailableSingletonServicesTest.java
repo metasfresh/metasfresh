@@ -1,16 +1,16 @@
 package de.metas;
 
 import com.google.common.base.Stopwatch;
-import de.metas.contracts.modular.log.ModularContractLogDAO;
-import de.metas.contracts.modular.settings.ModularContractSettingsService;
-import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
+import de.metas.contracts.modular.settings.ModularContractSettingsService;
 import de.metas.currency.CurrencyRepository;
 import de.metas.handlingunits.impl.ShipperTransportationRepository;
+import de.metas.letter.BoilerPlateRepository;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
-import de.metas.letter.BoilerPlateRepository;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
