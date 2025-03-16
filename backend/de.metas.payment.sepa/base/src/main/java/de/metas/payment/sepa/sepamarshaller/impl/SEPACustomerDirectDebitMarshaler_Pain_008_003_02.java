@@ -1,33 +1,15 @@
 package de.metas.payment.sepa.sepamarshaller.impl;
 
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-
-import de.metas.common.util.time.SystemTime;
-import de.metas.payment.sepa.api.SepaUtils;
-import de.metas.util.StringUtils;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.TimeUtil;
-
+import de.metas.banking.BankAccount;
+import de.metas.banking.BankAccountId;
+import de.metas.banking.api.BankAccountService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.ISEPADocumentDAO;
+import de.metas.payment.sepa.api.SepaUtils;
 import de.metas.payment.sepa.jaxb.sct.pain_008_003_02.AccountIdentificationSEPA;
 import de.metas.payment.sepa.jaxb.sct.pain_008_003_02.ActiveOrHistoricCurrencyAndAmountSEPA;
 import de.metas.payment.sepa.jaxb.sct.pain_008_003_02.ActiveOrHistoricCurrencyCodeEUR;
@@ -55,6 +37,7 @@ import de.metas.payment.sepa.jaxb.sct.pain_008_003_02.PaymentInstructionInformat
 import de.metas.payment.sepa.jaxb.sct.pain_008_003_02.PaymentMethod2Code;
 import de.metas.payment.sepa.jaxb.sct.pain_008_003_02.PaymentTypeInformationSDD;
 import de.metas.payment.sepa.jaxb.sct.pain_008_003_02.PersonIdentificationSEPA2;
+import de.metas.payment.sepa.jaxb.sct.pain_008_003_02.PostalAddressSEPA;
 import de.metas.payment.sepa.jaxb.sct.pain_008_003_02.RemittanceInformationSEPA1Choice;
 import de.metas.payment.sepa.jaxb.sct.pain_008_003_02.RestrictedPersonIdentificationSEPA;
 import de.metas.payment.sepa.jaxb.sct.pain_008_003_02.RestrictedPersonIdentificationSchemeNameSEPA;
@@ -64,9 +47,29 @@ import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
+import de.metas.util.StringUtils;
 import de.metas.util.xml.DynamicObjectFactory;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMarshaler
 {
@@ -75,12 +78,13 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 	private static final DynamicObjectFactory JAXB_ObjectFactory = new DynamicObjectFactory(new ObjectFactory());
 
 	private final DatatypeFactory datatypeFactory;
+	private final BankAccountService bankAccountService;
 
 	private final IBPartnerBL bpartnerService = Services.get(IBPartnerBL.class);
 
 	private static final String encoding = "UTF-8";
 
-	public SEPACustomerDirectDebitMarshaler_Pain_008_003_02()
+	public SEPACustomerDirectDebitMarshaler_Pain_008_003_02(@NonNull final BankAccountService bankAccountService)
 	{
 		try
 		{
@@ -90,6 +94,8 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 		{
 			throw new AdempiereException(e);
 		}
+
+		this.bankAccountService = bankAccountService;
 	}
 
 	@Override
@@ -278,9 +284,8 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 
 		//
 		// Creditor BPartner (Cdtr)
-		// NOTE: actually it's same as GroupHeader's initiating party
 		{
-			final PartyIdentificationSEPA5 cdtr = convertPartyIdentificationSEPA5(customerDirectDebitInitiation.getGrpHdr().getInitgPty());
+			final PartyIdentificationSEPA5 cdtr = convertPartyIdentificationSEPA5(customerDirectDebitInitiation.getGrpHdr().getInitgPty(), line);
 			pmtInf.setCdtr(cdtr);
 		}
 
@@ -437,14 +442,40 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 		return datatypeFactory.newXMLGregorianCalendar(dateStr);
 	}
 
-	private PartyIdentificationSEPA5 convertPartyIdentificationSEPA5(final PartyIdentificationSEPA1 partyId)
+	@NonNull
+	private PartyIdentificationSEPA5 convertPartyIdentificationSEPA5(
+			@NonNull final PartyIdentificationSEPA1 partyId,
+			@NonNull final I_SEPA_Export_Line line)
 	{
 		final PartyIdentificationSEPA5 partyIdCopy = new PartyIdentificationSEPA5();
+		final BankAccountId bankAccountId = BankAccountId.ofRepoIdOrNull(line.getC_BP_BankAccount_ID());
+		if (bankAccountId == null)
+		{
+			partyIdCopy.setNm(SepaUtils.replaceForbiddenChars(partyId.getNm()));
 
-		partyIdCopy.setNm(SepaUtils.replaceForbiddenChars(partyId.getNm()));
+			return partyIdCopy;
+		}
 
-		// NOTE: address is not mandatory
-		// FIXME: copy address if exists
+		final BankAccount bankAccount = bankAccountService.getByIdNotNull(bankAccountId);
+
+		partyIdCopy.setNm(Optional.ofNullable(StringUtils.trimBlankToNull(SepaUtils.replaceForbiddenChars(bankAccount.getAccountName())))
+								  .orElseGet(() -> SepaUtils.replaceForbiddenChars(partyId.getNm())));
+
+		if (!bankAccount.isAddressComplete())
+		{
+			return partyIdCopy;
+		}
+
+		final PostalAddressSEPA postalAddressSEPA = new PostalAddressSEPA();
+		if (Check.isNotBlank(bankAccount.getAccountCountry()))
+		{
+			postalAddressSEPA.setCtry(SepaUtils.replaceForbiddenChars(bankAccount.getAccountCountry()));
+		}
+
+		postalAddressSEPA.getAdrLine().add(SepaUtils.replaceForbiddenChars(bankAccount.getAccountStreet()));
+		postalAddressSEPA.getAdrLine().add(SepaUtils.replaceForbiddenChars(bankAccount.getAccountZip() + " " + bankAccount.getAccountCity()));
+
+		partyIdCopy.setPstlAdr(postalAddressSEPA);
 
 		return partyIdCopy;
 	}
