@@ -17,6 +17,7 @@ import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -137,12 +138,16 @@ class SEPACustomerDirectDebitMarshaler_Pain_008_003_02Test
 			final CurrencyId currencyId)
 	{
 
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
+		save(partner);
+		
 		final I_C_BP_BankAccount bankAccount = newInstance(I_C_BP_BankAccount.class);
 		bankAccount.setC_Currency_ID(currencyId.getRepoId());
 		bankAccount.setIBAN(iban);
 		bankAccount.setSwiftCode(swiftCode);
 		bankAccount.setIsEsrAccount(true);
 		bankAccount.setA_Name("bankAccount.A_Name");
+		bankAccount.setC_BPartner_ID(partner.getC_BPartner_ID());
 		save(bankAccount);
 
 		final I_SEPA_Export_Line line = newInstance(I_SEPA_Export_Line.class);

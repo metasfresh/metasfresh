@@ -19,6 +19,7 @@ import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -332,6 +333,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 				.routingNo("routingNo")
 				.build());
 
+		final I_C_BPartner partner = newInstance(I_C_BPartner.class);
+		save(partner);
+		
 		final I_C_BP_BankAccount bankAccount = newInstance(I_C_BP_BankAccount.class);
 		bankAccount.setC_Bank_ID(bank.getBankId().getRepoId());
 		bankAccount.setC_Currency_ID(currencyId.getRepoId());
@@ -339,6 +343,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		bankAccount.setSwiftCode(swiftCode);
 		bankAccount.setIsEsrAccount(true);
 		bankAccount.setA_Name("bankAccount.A_Name");
+		bankAccount.setC_BPartner_ID(partner.getC_BPartner_ID());
 		save(bankAccount);
 
 		final I_SEPA_Export_Line line = newInstance(I_SEPA_Export_Line.class);
