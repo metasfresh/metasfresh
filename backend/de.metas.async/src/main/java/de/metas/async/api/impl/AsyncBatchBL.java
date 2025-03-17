@@ -472,7 +472,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	public boolean isAsyncBatchTypeInternalName(@NonNull final I_C_Async_Batch asyncBatch, @NonNull final String expectedInternalName)
 	{
 		final String internalName = getAsyncBatchTypeInternalName(asyncBatch).orElse(null);
-		return internalName != null && internalName.equals(expectedInternalName);
+		return expectedInternalName.equals(internalName);
 	}
 
 	@Override

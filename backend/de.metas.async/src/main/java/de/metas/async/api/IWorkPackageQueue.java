@@ -165,7 +165,7 @@ public interface IWorkPackageQueue
 	// /**
 	//  * Set the async batch Id every new workpackage will be associated with.
 	//  */
-	// IWorkPackageQueue setAsyncBatchIdForNewWorkpackages(@Nullable AsyncBatchId asyncBatchId);
+	// IWorkPackageQueue setAsyncBatchIdForNewWorkpackages(@NonNull AsyncBatchId asyncBatchId);
 
 	/**
 	 * For queues that were created with {@link IWorkPackageQueueFactory#getQueueForEnqueuing(Properties, Class)}, this method returns the <code>InternalName</code> value of the queue's

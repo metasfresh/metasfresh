@@ -7,20 +7,19 @@ import javax.annotation.Nullable;
 
 public interface IWorkpackageProcessorContextFactory extends ISingletonService
 {
-	/**
-	 * Associate the given {@code asyncBatchId} (or {@code null} with the current thread.
-	 * Called to aworkpackage's AsyncBatchId while the WP is processed. 
-	 * So, if the workpackage-processor enqueues another workpackage, it will automatically inherit the parent-WP's AsyncBatchId.
-	 *
-	 * @return the async batch Id that was formerly associate with the current thread, or <code>null</code>.
-	 */
-	AsyncBatchId setThreadInheritedAsyncBatch(@Nullable AsyncBatchId asyncBatch);
+	// /**
+	//  * Associate the given {@code asyncBatchId} (or {@code null} with the current thread.
+	//  * Called to aworkpackage's AsyncBatchId while the WP is processed. 
+	//  * So, if the workpackage-processor enqueues another workpackage, it will automatically inherit the parent-WP's AsyncBatchId.
+	//  *
+	//  * @return the async batch Id that was formerly associate with the current thread, or <code>null</code>.
+	//  */
+	// AsyncBatchId setThreadInheritedAsyncBatch(@Nullable AsyncBatchId asyncBatch);
 
-	/**
-	 * Get batch id from the inherited thread or {@code null}
-	 */
-	AsyncBatchId getThreadInheritedAsyncBatchId();
-
+	// /**
+	//  * Get batch id from the inherited thread or {@code null}
+	//  */
+	// AsyncBatchId getThreadInheritedAsyncBatchId();
 
 	/**
 	 * Get the priority associated with the current thread

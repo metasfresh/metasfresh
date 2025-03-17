@@ -111,12 +111,12 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	 */
 	private final String enquingPackageProcessorInternalName;
 
-	/**
-	 * {@link I_C_Async_Batch} to be used when enquing new workpackages
-	 */
-	private AsyncBatchId asyncBatchForNewWorkpackages;
+	// /**
+	//  * {@link I_C_Async_Batch} to be used when enquing new workpackages
+	//  */
+	//private AsyncBatchId asyncBatchForNewWorkpackages;
 
-	private boolean asyncBatchForNewWorkpackagesSet = false;
+	//private boolean asyncBatchForNewWorkpackagesSet = false;
 
 	private final ReentrantLock mainLock = new ReentrantLock();
 
@@ -336,11 +336,11 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 		// C_Async_Batch_ID - get it from context if available
 		// set only if is not new workpackage; the first new one is always for the async batch itself and we do want to track it
-		if (!asyncBatchForNewWorkpackagesSet)
-		{
-			final AsyncBatchId asyncBatchId = getAsyncBatchIdForNewWorkpackage();
-			workPackage.setC_Async_Batch_ID(AsyncBatchId.toRepoId(asyncBatchId));
-		}
+		// if (!asyncBatchForNewWorkpackagesSet)
+		// {
+		// 	final AsyncBatchId asyncBatchId = getAsyncBatchIdForNewWorkpackage();
+		// 	workPackage.setC_Async_Batch_ID(AsyncBatchId.toRepoId(asyncBatchId));
+		// }
 
 		// increase enqueued counter
 		final int enqueuedCount = asyncBatchBL.increaseEnqueued(workPackage);
@@ -682,19 +682,19 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		return createQuery(workPackageCtx, QueryLimit.NO_LIMIT);
 	}
 
-	private AsyncBatchId getAsyncBatchIdForNewWorkpackage()
-	{
-		//
-		// Use the preconfigured C_Async_Batch (if any)
-		if (asyncBatchForNewWorkpackagesSet)
-		{
-			return asyncBatchForNewWorkpackages;
-		}
-
-		//
-		// Use the one from thread context (if any)
-		return contextFactory.getThreadInheritedAsyncBatchId();
-	}
+	// private AsyncBatchId getAsyncBatchIdForNewWorkpackage()
+	// {
+	// 	//
+	// 	// Use the preconfigured C_Async_Batch (if any)
+	// 	// if (asyncBatchForNewWorkpackagesSet)
+	// 	// {
+	// 	// 	return asyncBatchForNewWorkpackages;
+	// 	// }
+	//
+	// 	//
+	// 	// Use the one from thread context (if any)
+	// 	return contextFactory.getThreadInheritedAsyncBatchId();
+	// }
 
 	/**
 	 * Gets the priority to be used for new workpackages.<br>
