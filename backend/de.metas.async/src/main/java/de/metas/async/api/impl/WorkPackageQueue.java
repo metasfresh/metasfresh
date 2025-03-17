@@ -461,10 +461,10 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 		enqueueWorkPackage(workPackage, PRIORITY_AUTO); // default priority
 
-		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.getDynAttribute(model, Async_Constants.C_Async_Batch);
-		if (asyncBatch != null)
+		final AsyncBatchId asyncBatchId = InterfaceWrapperHelper.getDynAttribute(model, Async_Constants.AsyncBatchId);
+		if (asyncBatchId != null)
 		{
-			workPackage.setC_Async_Batch(asyncBatch);
+			workPackage.setC_Async_Batch_ID(asyncBatchId.getRepoId());
 		}
 
 		final I_C_Queue_Element element = enqueueElement(workPackage, TableRecordReference.of(model));
@@ -660,16 +660,16 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		return Optional.of(dao.createQuery(workPackageCtx, workPackageQuery));
 	}
 
-	@Override
-	public WorkPackageQueue setAsyncBatchIdForNewWorkpackages(final AsyncBatchId asyncBatchId)
-	{
-		asyncBatchForNewWorkpackages = asyncBatchId;
-		asyncBatchForNewWorkpackagesSet = true;
-
-		// set also in thread
-		contextFactory.setThreadInheritedAsyncBatch(asyncBatchId);
-		return this;
-	}
+	// @Override
+	// public WorkPackageQueue setAsyncBatchIdForNewWorkpackages(@Nullable final AsyncBatchId asyncBatchId)
+	// {
+	// 	asyncBatchForNewWorkpackages = asyncBatchId;
+	// 	asyncBatchForNewWorkpackagesSet = true;
+	//
+	// 	// set also in thread
+	// 	contextFactory.setThreadInheritedAsyncBatch(asyncBatchId);
+	// 	return this;
+	// }
 
 	public int assignAsyncBatchForProcessing(@NonNull final AsyncBatchId asyncBatchId)
 	{

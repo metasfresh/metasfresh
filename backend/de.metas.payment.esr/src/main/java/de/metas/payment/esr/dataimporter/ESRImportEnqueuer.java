@@ -1,8 +1,8 @@
 package de.metas.payment.esr.dataimporter;
 
+import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IWorkPackageQueue;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
@@ -23,7 +23,6 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -98,7 +97,7 @@ public class ESRImportEnqueuer
 
 	}
 
-	public static final ESRImportEnqueuer newInstance()
+	public static ESRImportEnqueuer newInstance()
 	{
 		return new ESRImportEnqueuer();
 	}
@@ -173,7 +172,7 @@ public class ESRImportEnqueuer
 			final Properties ctx = getCtx();
 
 			// Create Async Batch for tracking
-			final I_C_Async_Batch asyncBatch = asyncBatchBL.newAsyncBatch()
+			final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch()
 					.setContext(ctx)
 					.setC_Async_Batch_Type(ESRConstants.C_Async_Batch_InternalName)
 					.setAD_PInstance_Creator_ID(getPinstanceId())
@@ -185,7 +184,7 @@ public class ESRImportEnqueuer
 			final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, LoadESRImportFileWorkpackageProcessor.class);
 			queue
 					.newWorkPackage()
-					.setC_Async_Batch(asyncBatch) // set the async batch in workpackage in order to track it
+					.setC_Async_Batch_ID(asyncBatchId) // set the async batch in workpackage in order to track it
 					.addElement(esrImport)
 					.buildAndEnqueue();
 		}

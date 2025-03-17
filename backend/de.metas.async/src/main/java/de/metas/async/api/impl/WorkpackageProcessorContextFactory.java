@@ -3,6 +3,8 @@ package de.metas.async.api.impl;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IWorkpackageProcessorContextFactory;
 
+import javax.annotation.Nullable;
+
 public class WorkpackageProcessorContextFactory implements IWorkpackageProcessorContextFactory
 {
 
@@ -13,7 +15,7 @@ public class WorkpackageProcessorContextFactory implements IWorkpackageProcessor
 	private final InheritableThreadLocal<String> threadLocalPriority = new InheritableThreadLocal<>();
 
 	@Override
-	public AsyncBatchId setThreadInheritedAsyncBatch(final AsyncBatchId asyncBatchId)
+	public AsyncBatchId setThreadInheritedAsyncBatch(@Nullable final AsyncBatchId asyncBatchId)
 	{
 		final AsyncBatchId asyncBatchIdOld = threadLocalAsyncBatch.get();
 		threadLocalAsyncBatch.set(asyncBatchId);

@@ -96,15 +96,13 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 	private AsyncBatchId createAsyncBatch()
 	{
 		// Create Async Batch for tracking
-		final I_C_Async_Batch asyncBatch = asyncBatchBL.newAsyncBatch()
+		return asyncBatchBL.newAsyncBatch()
 				.setContext(getCtx())
 				.setAD_PInstance_Creator_ID(getPinstanceId())
 				.setOrgId(p_OrgId)
 				.setC_Async_Batch_Type(C_Async_Batch_InternalName_InvoiceCandidate_Processing)
 				.setName(C_Async_Batch_InternalName_InvoiceCandidate_Processing)
 				.build();
-
-		return AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
 	}
 
 	@Override

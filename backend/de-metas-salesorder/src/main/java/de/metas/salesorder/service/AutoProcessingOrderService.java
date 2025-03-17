@@ -26,7 +26,6 @@ import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.handlingunits.shipmentschedule.api.GenerateShipmentsForSchedulesRequest;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
@@ -145,7 +144,6 @@ public class AutoProcessingOrderService
 				.collect(ImmutableSet.toImmutableSet());
 
 		final AsyncBatchId asyncBatchId = extractOrCreateAsyncBatchId(orderId);
-
 		invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds, asyncBatchId);
 	}
 
@@ -160,13 +158,12 @@ public class AutoProcessingOrderService
 			return AsyncBatchId.ofRepoId(asyncBatchIdInt);
 		}
 
-		final I_C_Async_Batch asyncBatchRecord = asyncBatchBL.newAsyncBatch()
+		return asyncBatchBL.newAsyncBatch()
 				.setContext(Env.getCtx())
 				.setC_Async_Batch_Type(C_Async_Batch_InternalName_InvoiceCandidate_Processing)
 				.setName("Process ICs for C_Order_ID=" + OrderId.toRepoId(orderId))
 				.setOrgId(OrgId.ofRepoId(orderRecord.getAD_Org_ID()))
 				.build();
-		return AsyncBatchId.ofRepoId(asyncBatchRecord.getC_Async_Batch_ID());
 	}
 
 	private boolean sameShippingAndBillingAddress(
