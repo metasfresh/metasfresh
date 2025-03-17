@@ -19,6 +19,13 @@ export const ManufacturingJobScreen = {
         await expect(containerElement()).toBeVisible();
     }),
 
+    issueRawProduct: async ({ index, qrCode, expectQtyEntered }) => await test.step(`${NAME} - Issue line ${index}`, async () => {
+        await ManufacturingJobScreen.clickIssueButton({ index });
+        await RawMaterialIssueLineScreen.scanQRCode({ qrCode, expectQtyEntered });
+        await RawMaterialIssueLineScreen.goBack();
+
+    }),
+
     clickIssueButton: async ({ index }) => await test.step(`${NAME} - Click issue button ${index}`, async () => {
         await ManufacturingJobScreen.expectVisible();
         await page.getByTestId(`issue-${index}-button`).tap();

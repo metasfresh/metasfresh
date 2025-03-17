@@ -4,6 +4,9 @@ import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsLi
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
+import { PickingJobLineScreen } from '../../utils/screens/picking/PickingJobLineScreen';
+import { ManufacturingJobScreen } from '../../utils/screens/manufacturing/ManufacturingJobScreen';
+import { MaterialReceiptLineScreen } from '../../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
 
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
@@ -63,7 +66,7 @@ const createMasterdata = async () => {
 }
 
 // noinspection JSUnusedLocalSymbols
-test('Simple picking test', async ({ page }) => {
+test('Assemble/Manufacture while picking test', async ({ page }) => {
     const masterdata = await createMasterdata();
 
     await LoginScreen.login(masterdata.login.user);
@@ -74,6 +77,15 @@ test('Simple picking test', async ({ page }) => {
     await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.P2x25x5.luName });
-    // await PickingJobScreen.pickHU({ qrCode: huQRCode, expectQtyEntered: '3' });
-    // await PickingJobScreen.complete();
+    await PickingJobScreen.clickLineButton({ index: 1 });
+
+    await PickingJobLineScreen.clickManufactureButton();
+    await ManufacturingJobScreen.issueRawProduct({
+        index: 1,
+        expectQtyEntered: 80,
+        qrCode: masterdata.handlingUnits.HU1.qrCode,
+    })
+    await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
+    await MaterialReceiptLineScreen.selectNewLUTarget({ luPIItemTestId: masterdata.packingInstructions.P2x25x5.luPIItemTestId });
+    await MaterialReceiptLineScreen.receiveQty({ expectQtyEntered: 80 });
 });
