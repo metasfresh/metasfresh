@@ -88,3 +88,8 @@ Feature: material dispo reacts to forecast docactions
       | c_1        | STOCK_UP          | FORECAST                  | p_1          | 2021-04-16T22:00:00Z | 10  | 0                      |
       | c_2        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T22:00:00Z | 10  | 10                     |
       | c_3        | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T22:00:00Z | 100 | -100                   |
+    When the forecast identified by f_1 is reactivated
+    Then after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_2        | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T22:00:00Z | 10  | 10                     |
+      | c_3        | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T22:00:00Z | 100 | -100                   |

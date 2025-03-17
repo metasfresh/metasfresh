@@ -3,6 +3,7 @@ package de.metas.distribution.workflows_api.facets;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -29,6 +30,7 @@ public class DistributionFacetId
 	@Nullable LocalDate datePromised;
 	@Nullable ProductId productId;
 	@Nullable Quantity qty;
+	@Nullable ResourceId plantId;
 
 	private DistributionFacetId(@NonNull WorkflowLaunchersFacetId workflowLaunchersFacetId)
 	{
@@ -45,6 +47,7 @@ public class DistributionFacetId
 				this.datePromised = null;
 				this.productId = null;
 				this.qty = null;
+				this.plantId = null;
 				break;
 			}
 			case SALES_ORDER:
@@ -55,6 +58,7 @@ public class DistributionFacetId
 				this.datePromised = null;
 				this.productId = null;
 				this.qty = null;
+				this.plantId = null;
 				break;
 			}
 			case MANUFACTURING_ORDER_NO:
@@ -65,6 +69,7 @@ public class DistributionFacetId
 				this.datePromised = null;
 				this.productId = null;
 				this.qty = null;
+				this.plantId = null;
 				break;
 			}
 			case DATE_PROMISED:
@@ -75,6 +80,7 @@ public class DistributionFacetId
 				this.datePromised = workflowLaunchersFacetId.getAsLocalDate();
 				this.productId = null;
 				this.qty = null;
+				this.plantId = null;
 				break;
 			}
 			case PRODUCT:
@@ -85,6 +91,7 @@ public class DistributionFacetId
 				this.datePromised = null;
 				this.productId = workflowLaunchersFacetId.getAsId(ProductId.class);
 				this.qty = null;
+				this.plantId = null;
 				break;
 			}
 
@@ -95,6 +102,16 @@ public class DistributionFacetId
 				this.datePromised = null;
 				this.productId = null;
 				this.qty = getAsQuantity(workflowLaunchersFacetId);
+				this.plantId = null;
+				break;
+			case PLANT_RESOURCE_ID:
+				this.warehouseId = null;
+				this.salesOrderId = null;
+				this.manufacturingOrderId = null;
+				this.datePromised = null;
+				this.productId = null;
+				this.qty = null;
+				this.plantId = workflowLaunchersFacetId.getAsId(ResourceId.class);
 				break;
 			default:
 			{
@@ -160,6 +177,11 @@ public class DistributionFacetId
 						qty.getUomId()
 				)
 		);
+	}
+
+	public static DistributionFacetId ofPlantId(@NonNull final ResourceId plantId)
+	{
+		return ofRepoId(DistributionFacetGroupType.PLANT_RESOURCE_ID, plantId);
 	}
 
 	private static Quantity getAsQuantity(final @NonNull WorkflowLaunchersFacetId workflowLaunchersFacetId)

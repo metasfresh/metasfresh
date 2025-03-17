@@ -366,7 +366,7 @@ class PickingJob_Scenarios_Test
 		}
 
 		@Test
-		void ean13Valid()
+		void ean13Prefix28Valid()
 		{
 			// remark: we use 6 digits from productNo while our EAN13 contains 5 digits product no
 			// we expect product to be valid
@@ -374,7 +374,7 @@ class PickingJob_Scenarios_Test
 			final ProductId productId = createProduct("594143");
 			helper.createVHU(productId, "100");
 
-			PickingJob pickingJob = createPickingJob(productId, "100");
+			final PickingJob pickingJob = createPickingJob(productId, "100");
 			System.out.println("Created " + pickingJob);
 			final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
 			final PickingJobStepId stepId = CollectionUtils.singleElement(line.getSteps().stream().map(PickingJobStep::getId).collect(ImmutableSet.toImmutableSet()));
@@ -390,5 +390,33 @@ class PickingJob_Scenarios_Test
 					.build());
 		}
 
+
+		@Test
+		void ean13Prefix29Valid()
+		{
+			final I_M_Product product = BusinessTestHelper.createProduct("594143", helper.uomEach);
+			product.setValue("594143");
+			product.setM_Product_Category_ID(productCategoryId.getRepoId());
+			product.setEAN13_ProductCode("4888");
+			InterfaceWrapperHelper.save(product);
+			final ProductId productId= ProductId.ofRepoId(product.getM_Product_ID());
+
+			helper.createVHU(productId, "100");
+
+			final PickingJob pickingJob = createPickingJob(productId, "100");
+			System.out.println("Created " + pickingJob);
+			final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
+			final PickingJobStepId stepId = CollectionUtils.singleElement(line.getSteps().stream().map(PickingJobStep::getId).collect(ImmutableSet.toImmutableSet()));
+
+			helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
+					.pickingLineId(line.getId())
+					.pickingStepId(stepId)
+					.pickFromKey(PickingJobStepPickFromKey.MAIN)
+					.eventType(PickingJobStepEventType.PICK)
+					.huQRCode(EAN13HUQRCode.fromString("2948882005745").orElseThrow())
+					.qtyPicked(new BigDecimal("1"))
+					.qtyRejectedReasonCode(null)
+					.build());
+		}
 	}
 }

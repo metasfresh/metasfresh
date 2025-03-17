@@ -207,6 +207,14 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 					.build());
 		}
 
+		if (Check.isNotBlank(job.getPlantName()))
+		{
+			builder.entry(WFProcessHeaderProperty.builder()
+								  .caption(TranslatableStrings.adElementOrMessage("PP_Plant_ID"))
+								  .value(job.getPlantName())
+								  .build());
+		}
+
 		return builder.build();
 	}
 

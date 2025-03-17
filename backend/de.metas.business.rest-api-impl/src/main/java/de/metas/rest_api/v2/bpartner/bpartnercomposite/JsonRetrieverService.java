@@ -33,6 +33,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.BPartner;
+import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerCompositeAndContactId;
 import de.metas.bpartner.composite.BPartnerContact;
@@ -48,6 +49,7 @@ import de.metas.bpartner.service.BPartnerContactQuery.BPartnerContactQueryBuilde
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.common.bpartner.v2.response.JsonResponseBPBankAccount;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite.JsonResponseCompositeBuilder;
@@ -80,6 +82,7 @@ import de.metas.interfaces.I_C_BPartner;
 import de.metas.job.Job;
 import de.metas.job.JobRepository;
 import de.metas.logging.TableRecordMDC;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
@@ -223,6 +226,22 @@ public class JsonRetrieverService
 			.put(BPartnerLocationType.VISITORS_ADDRESS, JsonResponseLocation.VISITORS_ADDRESS)
 			.build();
 
+	/**
+	 * Mapping between {@link JsonResponseBPBankAccount} property names and REST-API properties names
+	 */
+	private static final ImmutableMap<String, String> BANK_ACCOUNT_FIELD_MAP = ImmutableMap
+			.<String, String>builder()
+			.put(BPartnerBankAccount.ID, JsonResponseBPBankAccount.ID)
+			.put(BPartnerBankAccount.IBAN, JsonResponseBPBankAccount.IBAN)
+			.put(BPartnerBankAccount.ACTIVE, JsonResponseBPBankAccount.ACTIVE)
+			.put(BPartnerBankAccount.BPARTNER_ID, JsonResponseBPBankAccount.BPARTNER_ID)
+			.put(BPartnerBankAccount.ACCOUNT_NAME, JsonResponseBPBankAccount.ACCOUNT_NAME)
+			.put(BPartnerBankAccount.ACCOUNT_STREET, JsonResponseBPBankAccount.ACCOUNT_STREET)
+			.put(BPartnerBankAccount.ACCOUNT_ZIP, JsonResponseBPBankAccount.ACCOUNT_ZIP)
+			.put(BPartnerBankAccount.ACCOUNT_CITY, JsonResponseBPBankAccount.ACCOUNT_CITY)
+			.put(BPartnerBankAccount.ACCOUNT_COUNTRY, JsonResponseBPBankAccount.ACCOUNT_COUNTRY)
+			.build();
+
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
 	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
 
@@ -316,6 +335,12 @@ public class JsonRetrieverService
 			for (final BPartnerLocation location : bpartnerComposite.getLocations())
 			{
 				result.location(toJson(location));
+			}
+
+			// bank accounts
+			for (final BPartnerBankAccount bankAccount : bpartnerComposite.getBankAccounts())
+			{
+				result.bankAccount(toJson(bankAccount));
 			}
 			return result.build();
 		}
@@ -883,6 +908,29 @@ public class JsonRetrieverService
 				.excludedFromPurchase(record.isExcludedFromPurchase())
 				.exclusionFromPurchaseReason(record.getExclusionFromPurchaseReason())
 				//
+				.build();
+	}
+
+	private static JsonResponseBPBankAccount toJson(@NonNull final BPartnerBankAccount bankAccount)
+	{
+		final JsonMetasfreshId metasfreshId = JsonMetasfreshId.of(bankAccount.getIdNotNull().getRepoId());
+		final JsonMetasfreshId metasfreshBPartnerId = JsonMetasfreshId.of(bankAccount.getIdNotNull().getBpartnerId().getRepoId());
+		final JsonMetasfreshId currencyId = JsonMetasfreshId.of(CurrencyId.toRepoId(bankAccount.getCurrencyId()));
+
+		final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(bankAccount.getChangeLog(), BANK_ACCOUNT_FIELD_MAP);
+
+		return JsonResponseBPBankAccount.builder()
+				.metasfreshId(metasfreshId)
+				.metasfreshBPartnerId(metasfreshBPartnerId)
+				.currencyId(currencyId)
+				.iban(bankAccount.getIban())
+				.active(bankAccount.isActive())
+				.accountName(bankAccount.getAccountName())
+				.accountStreet(bankAccount.getAccountStreet())
+				.accountZip(bankAccount.getAccountZip())
+				.accountCity(bankAccount.getAccountCity())
+				.accountCountry(bankAccount.getAccountCountry())
+				.changeInfo(jsonChangeInfo)
 				.build();
 	}
 }

@@ -5,6 +5,7 @@ import de.metas.dao.ValueRestriction;
 import de.metas.document.engine.DocStatus;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import lombok.Builder;
@@ -33,6 +34,7 @@ public class DDOrderQuery
 	@Nullable Set<LocalDate> datesPromised;
 	@Nullable Set<ProductId> productIds;
 	@Nullable Set<Quantity> qtysEntered;
+	@Nullable Set<ResourceId> plantIds;
 
 	//
 	//

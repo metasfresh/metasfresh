@@ -68,7 +68,7 @@ public class JsonAttachment
 	String mimeType;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
-	private final String url;
+	String url;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
@@ -88,13 +88,5 @@ public class JsonAttachment
 		this.filename = filename;
 		this.mimeType = mimeType;
 		this.url = url;
-	}
-
-	/** Used by adapters where the data source name is a constant and would only be a distraction for the adapter's invoker. */
-	public JsonAttachment withoutDataSource()
-	{
-		return toBuilder()
-				.dataSourceName(null)
-				.build();
 	}
 }
