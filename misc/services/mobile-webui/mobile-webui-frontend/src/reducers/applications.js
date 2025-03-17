@@ -1,6 +1,7 @@
 import * as types from '../constants/ApplicationsActionTypes';
 import { shallowEqual, useSelector } from 'react-redux';
 import { useRouteMatch } from 'react-router-dom';
+import { APPLICATION_ID_Manufacturing } from '../apps/manufacturing/constants';
 
 const initialState = {
   availableApplications: {},
@@ -55,7 +56,7 @@ const getIconClassNames = (applicationId) => {
       return 'fas fa-box-open';
     case 'distribution':
       return 'fas fa-people-carry';
-    case 'mfg':
+    case APPLICATION_ID_Manufacturing:
       return 'fas fa-industry';
     case 'huManager':
       return 'fas fa-boxes';

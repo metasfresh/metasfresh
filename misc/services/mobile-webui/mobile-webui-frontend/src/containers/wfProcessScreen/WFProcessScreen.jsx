@@ -20,15 +20,19 @@ import ScanAndValidateActivity, {
 } from '../activities/scan/ScanAndValidateActivity';
 import { useScreenDefinition } from '../../hooks/useScreenDefinition';
 import { appLaunchersLocation } from '../../routes/launchers';
+import { useSearchParams } from '../../hooks/useSearchParams';
 
 const WFProcessScreen = () => {
+  const [urlParams] = useSearchParams();
+  const back = urlParams.get('back');
+
   const { url, applicationId, wfProcessId } = useScreenDefinition({
     screenId: 'WFProcessScreen',
-    back: appLaunchersLocation,
+    back: back ? back : appLaunchersLocation,
     isHomeStop: true,
   });
 
-  const { iconClassNames: appIconClassName } = useApplicationInfo({ applicationId });
+  const { iconClassNames: appIconClassName, caption: appCaption } = useApplicationInfo({ applicationId });
 
   const { activities, isAllowAbort, headerProperties } = useSelector(
     (state) => getPropsFromState({ state, wfProcessId }),
@@ -40,6 +44,7 @@ const WFProcessScreen = () => {
     dispatch(
       updateHeaderEntry({
         location: url,
+        caption: appCaption,
         values: headerProperties,
         homeIconClassName: appIconClassName,
       })
