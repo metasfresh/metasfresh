@@ -112,7 +112,6 @@ public class StepDefUtil
 				.maxWaitSeconds((int)maxWaitSeconds)
 				.checkingIntervalMs(checkingIntervalMs)
 				.execute();
-
 	}
 
 	public <T> T tryAndWaitForItem(
@@ -120,7 +119,11 @@ public class StepDefUtil
 			final long checkingIntervalMs,
 			@NonNull final ItemProvider<T> worker) throws InterruptedException
 	{
-		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, worker, null);
+		return StepDefUtil.<T>tryAndWaitForItem()
+				.worker(worker)
+				.maxWaitSeconds((int)maxWaitSeconds)
+				.checkingIntervalMs(checkingIntervalMs)
+				.execute();
 	}
 
 	public <T> T tryAndWaitForItem(
