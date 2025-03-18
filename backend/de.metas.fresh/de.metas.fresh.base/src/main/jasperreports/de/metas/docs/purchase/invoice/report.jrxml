@@ -292,6 +292,7 @@ join
 	<summary>
 		<band height="80">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$F{rows_no} > 0]]></printWhenExpression>
 			<subreport isUsingCache="true">
 				<reportElement key="subreport-3" x="0" y="21" width="595" height="12" uuid="9dc596a1-5d7d-4935-8fd8-b9a7dd93c28d">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
