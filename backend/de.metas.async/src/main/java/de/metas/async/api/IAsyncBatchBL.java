@@ -65,12 +65,6 @@ public interface IAsyncBatchBL extends ISingletonService
 	 */
 	 void enqueueAsyncBatch(@NonNull AsyncBatchId asyncBatchId);
 
-	// /**
-	//  * Like {@link #enqueueAsyncBatch(AsyncBatchId)}, but also calls IWorkPackageQueue#setAsyncBatchIdForNewWorkpackages(AsyncBatchId)}. 
-	//  * @return a closable that unsets the asyncBatchId for further new workpackages within this thread.
-	//  */
-	// IAutoCloseable enqueueAsyncBatchUseBatchIdForNewWorkpackages(@NonNull AsyncBatchId asyncBatchId);
-	
 	/**
 	 * check if the keep alive time has expired for the current batch
 	 */

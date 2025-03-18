@@ -162,11 +162,6 @@ public interface IWorkPackageQueue
 	 */
 	Future<IWorkpackageProcessorExecutionResult> markReadyForProcessingAfterTrxCommit(I_C_Queue_WorkPackage workPackage, String trxName);
 
-	// /**
-	//  * Set the async batch Id every new workpackage will be associated with.
-	//  */
-	// IWorkPackageQueue setAsyncBatchIdForNewWorkpackages(@NonNull AsyncBatchId asyncBatchId);
-
 	/**
 	 * For queues that were created with {@link IWorkPackageQueueFactory#getQueueForEnqueuing(Properties, Class)}, this method returns the <code>InternalName</code> value of the queue's
 	 * {@link I_C_Queue_PackageProcessor}. If the queue doesn't have an internal name, it returns the <code>ClassName</code> value.

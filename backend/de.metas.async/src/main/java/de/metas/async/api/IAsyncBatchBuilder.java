@@ -26,8 +26,6 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
-import lombok.Value;
-import org.adempiere.util.lang.IAutoCloseable;
 
 import javax.annotation.Nullable;
 import java.util.Properties;
@@ -46,8 +44,6 @@ public interface IAsyncBatchBuilder
 	 */
 	AsyncBatchId build();
 
-	//EnqueuedAsyncBatchId buildAndUseIdForNewWorkpackages();
-
 	IAsyncBatchBuilder setContext(Properties ctx);
 
 	IAsyncBatchBuilder setC_Async_Batch_Type(final String internalName);
@@ -63,21 +59,5 @@ public interface IAsyncBatchBuilder
 	IAsyncBatchBuilder setParentAsyncBatchId(@Nullable AsyncBatchId parentAsyncBatchId);
 
 	IAsyncBatchBuilder setOrgId(@Nullable final OrgId orgId);
-	
-	// @Value
-	// class EnqueuedAsyncBatchId implements IAutoCloseable
-	// {
-	// 	AsyncBatchId asyncBatchId;
-	//
-	// 	IAutoCloseable delegate;
-	//
-	// 	@Override
-	// 	public void close()
-	// 	{
-	// 		if (delegate != null)
-	// 		{
-	// 			delegate.close();
-	// 		}
-	// 	}
-	// }
+
 }

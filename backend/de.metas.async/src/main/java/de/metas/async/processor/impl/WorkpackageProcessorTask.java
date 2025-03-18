@@ -330,7 +330,6 @@ class WorkpackageProcessorTask implements Runnable
 	private void beforeWorkpackageProcessing()
 	{
 		// If the current workpackage's processor creates a follow-up-workpackage, the asyncBatch and priority will be forwarded.
-		//contextFactory.setThreadInheritedAsyncBatch(AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID()));
 		contextFactory.setThreadInheritedWorkpackageAsyncBatch(AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID()));
 
 		final String priority = workPackage.getPriority();
@@ -600,18 +599,11 @@ class WorkpackageProcessorTask implements Runnable
 
 		//
 		// Allow retry processing this workpackage?
-		if (workPackageProcessorWrapped.isAllowRetryOnError())
-		{
-			workPackage.setProcessed(false); // just in case it was true
-		}
-		else
-		{
-			// Flag the workpackage as processed in order to:
-			// * not allow future retries
-			// * avoid discarding items from this workpackage on future workpackages because they were enqueued here
-			// TODO shall we also release the elements lock if any?
-			workPackage.setProcessed(true);
-		}
+		// Flag the workpackage as processed in order to:
+		// * not allow future retries
+		// * avoid discarding items from this workpackage on future workpackages because they were enqueued here
+		// TODO shall we also release the elements lock if any?
+		workPackage.setProcessed(!workPackageProcessorWrapped.isAllowRetryOnError()); // just in case it was true
 
 		workPackage.setIsError(true);
 		workPackage.setErrorMsg(ex.getLocalizedMessage());

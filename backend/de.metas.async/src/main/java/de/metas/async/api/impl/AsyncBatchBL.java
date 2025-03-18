@@ -163,35 +163,17 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		}
 	}
 
-	// @Override
-	// public IAutoCloseable enqueueAsyncBatchUseBatchIdForNewWorkpackages(@NonNull final AsyncBatchId asyncBatchId)
-	// {
-	// 	return enqueueAsyncBatch0(asyncBatchId, true);
-	// }
-
 	@Override
 	public void enqueueAsyncBatch(@NonNull final AsyncBatchId asyncBatchId)
 	{
-		enqueueAsyncBatch0(asyncBatchId, false);
+		enqueueAsyncBatch0(asyncBatchId);
 	}
 
-	private IAutoCloseable enqueueAsyncBatch0(
-			@NonNull final AsyncBatchId asyncBatchId,
-			final boolean useBatchIdForNewWorkpackages)
+	private void enqueueAsyncBatch0(
+			@NonNull final AsyncBatchId asyncBatchId)
 	{
 		final Properties ctx = Env.getCtx();
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, CheckProcessedAsynBatchWorkpackageProcessor.class);
-
-		final IAutoCloseable result;
-		// if (useBatchIdForNewWorkpackages)
-		// {
-		// 	queue.setAsyncBatchIdForNewWorkpackages(asyncBatchId);
-		// 	result = () -> queue.setAsyncBatchIdForNewWorkpackages(null);
-		// }
-		// else
-		// {
-			result = () -> {};
-		// }
 
 		final IWorkpackagePrioStrategy prio = NullWorkpackagePrio.INSTANCE; // don't specify a particular prio. this is OK because we assume that there is a dedicated queue/thread for CheckProcessedAsynBatchWorkpackageProcessor
 
@@ -209,7 +191,6 @@ public class AsyncBatchBL implements IAsyncBatchBL
 				TableRecordReference.of(I_C_Async_Batch.Table_Name, asyncBatchId));
 		queue.markReadyForProcessing(queueWorkpackage);
 
-		return result;
 	}
 
 	@Override
@@ -409,7 +390,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			InterfaceWrapperHelper.setValue(modelRecord, I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID, newAsyncBatchId.getRepoId());
 
 			InterfaceWrapperHelper.save(modelRecord);
-				
+
 			return ImmutablePair.of(newAsyncBatchId, modelRecord);
 		});
 	}

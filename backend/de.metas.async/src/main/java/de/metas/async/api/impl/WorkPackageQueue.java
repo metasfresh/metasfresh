@@ -31,7 +31,6 @@ import de.metas.async.api.IWorkPackageBL;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.api.IWorkpackageProcessorContextFactory;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -85,7 +84,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class WorkPackageQueue implements IWorkPackageQueue
 {
-	private static final transient Logger logger = LogManager.getLogger(WorkPackageQueue.class);
+	private static final Logger logger = LogManager.getLogger(WorkPackageQueue.class);
 
 	private final transient IQueueDAO dao;
 	private final transient IWorkpackageProcessorContextFactory contextFactory = Services.get(IWorkpackageProcessorContextFactory.class);
@@ -110,13 +109,6 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	 * Task http://dewiki908/mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
 	 */
 	private final String enquingPackageProcessorInternalName;
-
-	// /**
-	//  * {@link I_C_Async_Batch} to be used when enquing new workpackages
-	//  */
-	//private AsyncBatchId asyncBatchForNewWorkpackages;
-
-	//private boolean asyncBatchForNewWorkpackagesSet = false;
 
 	private final ReentrantLock mainLock = new ReentrantLock();
 
@@ -158,11 +150,11 @@ public class WorkPackageQueue implements IWorkPackageQueue
 			final String enquingPackageProcessorInternalName)
 	{
 		return new WorkPackageQueue(ctx,
-									ImmutableSet.of(packageProcessorId),
-									queueProcessorId,
-									enquingPackageProcessorInternalName,
-									null,
-									true);
+				ImmutableSet.of(packageProcessorId),
+				queueProcessorId,
+				enquingPackageProcessorInternalName,
+				null,
+				true);
 	}
 
 	public static WorkPackageQueue createForQueueProcessing(
@@ -192,7 +184,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 	/**
 	 * Update context from work package (AD_Client_ID, AD_Org_ID, AD_User_ID, AD_Role_ID etc).
-	 *
+	 * <p>
 	 * NOTE: this will be the context that work package processors will use on processing
 	 */
 	public static void setupWorkPackageContext(final Properties workPackageCtx, final I_C_Queue_WorkPackage workPackage)
@@ -331,16 +323,6 @@ public class WorkPackageQueue implements IWorkPackageQueue
 			final String priorityStr = getPriorityForNewWorkpackage(priority);
 			workPackage.setPriority(priorityStr);
 		}
-
-		//
-
-		// C_Async_Batch_ID - get it from context if available
-		// set only if is not new workpackage; the first new one is always for the async batch itself and we do want to track it
-		// if (!asyncBatchForNewWorkpackagesSet)
-		// {
-		// 	final AsyncBatchId asyncBatchId = getAsyncBatchIdForNewWorkpackage();
-		// 	workPackage.setC_Async_Batch_ID(AsyncBatchId.toRepoId(asyncBatchId));
-		// }
 
 		// increase enqueued counter
 		final int enqueuedCount = asyncBatchBL.increaseEnqueued(workPackage);
@@ -660,17 +642,6 @@ public class WorkPackageQueue implements IWorkPackageQueue
 		return Optional.of(dao.createQuery(workPackageCtx, workPackageQuery));
 	}
 
-	// @Override
-	// public WorkPackageQueue setAsyncBatchIdForNewWorkpackages(@Nullable final AsyncBatchId asyncBatchId)
-	// {
-	// 	asyncBatchForNewWorkpackages = asyncBatchId;
-	// 	asyncBatchForNewWorkpackagesSet = true;
-	//
-	// 	// set also in thread
-	// 	contextFactory.setThreadInheritedAsyncBatch(asyncBatchId);
-	// 	return this;
-	// }
-
 	public int assignAsyncBatchForProcessing(@NonNull final AsyncBatchId asyncBatchId)
 	{
 		return dao.assignAsyncBatchForProcessing(getQueuePackageProcessorIds(), asyncBatchId);
@@ -681,20 +652,6 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	{
 		return createQuery(workPackageCtx, QueryLimit.NO_LIMIT);
 	}
-
-	// private AsyncBatchId getAsyncBatchIdForNewWorkpackage()
-	// {
-	// 	//
-	// 	// Use the preconfigured C_Async_Batch (if any)
-	// 	// if (asyncBatchForNewWorkpackagesSet)
-	// 	// {
-	// 	// 	return asyncBatchForNewWorkpackages;
-	// 	// }
-	//
-	// 	//
-	// 	// Use the one from thread context (if any)
-	// 	return contextFactory.getThreadInheritedAsyncBatchId();
-	// }
 
 	/**
 	 * Gets the priority to be used for new workpackages.<br>

@@ -83,19 +83,6 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 		return asyncBatchId;
 	}
 
-	// @Override
-	// public EnqueuedAsyncBatchId buildAndUseIdForNewWorkpackages()
-	// {
-	// 	final I_C_Async_Batch asyncBatchRecord = build0();
-	//
-	// 	// the order is very important: first enque and then set the batch
-	// 	// otherwise, will be counted also the workpackage for the batch
-	// 	final IAutoCloseable unsetBatchIdInThreadLocal = asyncBatchBL.enqueueAsyncBatchUseBatchIdForNewWorkpackages(
-	// 			AsyncBatchId.ofRepoId(asyncBatchRecord.getC_Async_Batch_ID()));
-	//
-	// 	return new EnqueuedAsyncBatchId(AsyncBatchId.ofRepoId(asyncBatchRecord.getC_Async_Batch_ID()), unsetBatchIdInThreadLocal);
-	// }
-
 	private I_C_Async_Batch build0()
 	{
 		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.create(getCtx(), I_C_Async_Batch.class, ITrx.TRXNAME_None);
@@ -132,7 +119,7 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 	}
 
 	@Override
-	public IAsyncBatchBuilder setCountExpected(int expected)
+	public IAsyncBatchBuilder setCountExpected(final int expected)
 	{
 		_countExpected = expected;
 		return this;
