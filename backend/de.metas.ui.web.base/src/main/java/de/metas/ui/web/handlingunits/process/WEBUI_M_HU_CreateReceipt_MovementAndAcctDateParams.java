@@ -24,6 +24,7 @@ package de.metas.ui.web.handlingunits.process;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.Profiles;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.inoutcandidate.ReceiptScheduleId;
@@ -47,15 +48,16 @@ public class WEBUI_M_HU_CreateReceipt_MovementAndAcctDateParams extends WEBUI_M_
 	private LocalDate movementDate;
 
 	private final static String ACCT_DATE_PARAM_NAME = I_M_InOut.COLUMNNAME_DateAcct;
-	@Param(parameterName = ACCT_DATE_PARAM_NAME, mandatory = true)
+	@Param(parameterName = ACCT_DATE_PARAM_NAME)
 	private LocalDate dateAcct;
 
 	@Override
 	protected void customizeParametersBuilder(@NonNull final IHUReceiptScheduleBL.CreateReceiptsParameters.CreateReceiptsParametersBuilder parametersBuilder)
 	{
+		final LocalDate dateAcctToUse = CoalesceUtil.coalesce(dateAcct, movementDate);
 		final ReceiptScheduleExternalInfo scheduleExternalInfo = ReceiptScheduleExternalInfo.builder()
 				.movementDate(movementDate)
-				.dateAcct(dateAcct)
+				.dateAcct(dateAcctToUse)
 				.build();
 
 		final ImmutableMap<ReceiptScheduleId, ReceiptScheduleExternalInfo> externalInfoByScheduleId = getM_ReceiptSchedules()

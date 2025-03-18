@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCntr_Settings, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -316277356L;
+	private static final long serialVersionUID = 94041749L;
 
     /** Standard Constructor */
     public X_ModCntr_Settings (final Properties ctx, final int ModCntr_Settings_ID, @Nullable final String trxName)
@@ -149,13 +149,13 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	/** No = N */
 	public static final String ISSOTRX_No = "N";
 	@Override
-	public void setIsSOTrx (final java.lang.String IsSOTrx)
+	public void setIsSOTrx (final String IsSOTrx)
 	{
 		set_Value (COLUMNNAME_IsSOTrx, IsSOTrx);
 	}
 
 	@Override
-	public java.lang.String getIsSOTrx() 
+	public String getIsSOTrx() 
 	{
 		return get_ValueAsString(COLUMNNAME_IsSOTrx);
 	}
@@ -173,21 +173,6 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	public int getM_Co_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Co_Product_ID);
-	}
-
-	@Override
-	public void setModCntr_Settings_ID (final int ModCntr_Settings_ID)
-	{
-		if (ModCntr_Settings_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_ModCntr_Settings_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_ModCntr_Settings_ID, ModCntr_Settings_ID);
-	}
-
-	@Override
-	public int getModCntr_Settings_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_ModCntr_Settings_ID);
 	}
 
 	@Override
@@ -236,13 +221,28 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	}
 
 	@Override
-	public void setName (final java.lang.String Name)
+	public void setModCntr_Settings_ID (final int ModCntr_Settings_ID)
+	{
+		if (ModCntr_Settings_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_ModCntr_Settings_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_ModCntr_Settings_ID, ModCntr_Settings_ID);
+	}
+
+	@Override
+	public int getModCntr_Settings_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ModCntr_Settings_ID);
+	}
+
+	@Override
+	public void setName (final String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
 	@Override
-	public java.lang.String getName() 
+	public String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
 	}
@@ -257,18 +257,5 @@ public class X_ModCntr_Settings extends org.compiere.model.PO implements I_ModCn
 	public java.sql.Timestamp getStorageCostStartDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_StorageCostStartDate);
-	}
-
-	@Override
-	public void setTradeMargin (final BigDecimal TradeMargin)
-	{
-		set_Value (COLUMNNAME_TradeMargin, TradeMargin);
-	}
-
-	@Override
-	public BigDecimal getTradeMargin() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TradeMargin);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }
