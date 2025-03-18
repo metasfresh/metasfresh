@@ -44,7 +44,6 @@ class ManufacturingJobServiceTest
 		);
 
 		this.manufacturingJobService = new ManufacturingJobService(
-				new ManufacturingComponentGeneratorService(new ComponentGeneratorRepository()),
 				ppOrderIssueScheduleService,
 				new HUReservationService(new HUReservationRepository()),
 				new PPOrderSourceHUService(new PPOrderSourceHURepository(), ppOrderIssueScheduleService),
