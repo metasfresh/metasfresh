@@ -2,6 +2,7 @@ import * as types from '../constants/ApplicationsActionTypes';
 import { shallowEqual, useSelector } from 'react-redux';
 import { APPLICATION_ID_Manufacturing } from '../apps/manufacturing/constants';
 import { useMobileLocation } from '../hooks/useMobileLocation';
+import { APPLICATION_ID_Picking } from '../apps/picking';
 
 const initialState = {
   availableApplications: {},
@@ -52,7 +53,7 @@ export default function applications(state = initialState, action) {
 // TODO: this shall come from the backend
 const getIconClassNames = (applicationId) => {
   switch (applicationId) {
-    case 'picking':
+    case APPLICATION_ID_Picking:
       return 'fas fa-box-open';
     case 'distribution':
       return 'fas fa-people-carry';

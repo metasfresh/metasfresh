@@ -59,7 +59,12 @@ const PickLineScreen = () => {
       },
     })
       .then((wfProcess) => {
-        dispatch(updateWFProcess({ wfProcess: { ...wfProcess, backUrl: url } }));
+        dispatch(
+          updateWFProcess({
+            wfProcess,
+            parent: { url, applicationId, wfProcessId, activityId, lineId },
+          })
+        );
         history.push(
           getWFProcessScreenLocation({
             applicationId: APPLICATION_ID_Manufacturing,

@@ -23,7 +23,7 @@ const WFLauncherButton = ({ applicationId, startedWFProcessId, wfParameters, cap
 
     wfProcessPromise
       .then((wfProcess) => {
-        dispatch(updateWFProcess({ wfProcess: { ...wfProcess, backUrl: null } }));
+        dispatch(updateWFProcess({ wfProcess, parent: null }));
         history.push(getWFProcessScreenLocation({ applicationId, wfProcessId: wfProcess.id }));
       })
       .catch((axiosError) => toastError({ axiosError }));

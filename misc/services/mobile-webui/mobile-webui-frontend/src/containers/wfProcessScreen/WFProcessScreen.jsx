@@ -24,14 +24,14 @@ import { useMobileLocation } from '../../hooks/useMobileLocation';
 
 const WFProcessScreen = () => {
   const { wfProcessId } = useMobileLocation();
-  const { backUrl, activities, isAllowAbort, headerProperties } = useSelector(
+  const { parentUrl, activities, isAllowAbort, headerProperties } = useSelector(
     (state) => getPropsFromState({ state, wfProcessId }),
     shallowEqual
   );
 
   const { url, applicationId } = useScreenDefinition({
     screenId: 'WFProcessScreen',
-    back: backUrl ? backUrl : appLaunchersLocation,
+    back: parentUrl ? parentUrl : appLaunchersLocation,
     isHomeStop: true,
   });
 
@@ -170,7 +170,7 @@ const getPropsFromState = ({ state, wfProcessId }) => {
   const wfProcess = getWfProcess(state, wfProcessId);
 
   return {
-    backUrl: wfProcess.backUrl,
+    parentUrl: wfProcess?.parent?.url,
     headerProperties: wfProcess?.headerProperties?.entries ?? [],
     activities: wfProcess ? getActivitiesInOrder(wfProcess) : [],
     isAllowAbort: !!wfProcess?.isAllowAbort,
