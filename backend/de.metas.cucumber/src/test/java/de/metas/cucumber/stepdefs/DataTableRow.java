@@ -24,7 +24,10 @@ package de.metas.cucumber.stepdefs;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import de.metas.currency.CurrencyCode;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.quantity.Quantity;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
@@ -481,6 +484,40 @@ public class DataTableRow
 			throw new AdempiereException("No value found for " + columnName);
 		}
 		return X12DE355.ofCode(valueStr);
+	}
+
+	public Optional<Money> getAsOptionalMoney(
+			@NonNull final String valueColumnName,
+			@NonNull final Function<CurrencyCode, CurrencyId> currencyCodeMapper)
+	{
+		final String valueStr = getAsOptionalString(valueColumnName).map(StringUtils::trimBlankToNull).orElse(null);
+		if (valueStr == null)
+		{
+			return Optional.empty();
+		}
+
+		final int spaceIdx = valueStr.indexOf(" ");
+		final BigDecimal valueBD;
+		CurrencyCode currencyCode;
+		if (spaceIdx <= 0)
+		{
+			valueBD = parseBigDecimal(valueStr, valueColumnName);
+			currencyCode = null;
+		}
+		else
+		{
+			valueBD = parseBigDecimal(valueStr.substring(0, spaceIdx), valueColumnName);
+			final String currencyCodeStr = StringUtils.trimBlankToNull(valueStr.substring(spaceIdx));
+			currencyCode = currencyCodeStr != null ? CurrencyCode.ofThreeLetterCode(currencyCodeStr) : null;
+		}
+
+		if (currencyCode == null)
+		{
+			throw new AdempiereException("No currency code incorporated into `" + valueColumnName + "`: " + valueStr);
+		}
+
+		final CurrencyId currencyId = currencyCodeMapper.apply(currencyCode);
+		return Optional.of(Money.of(valueBD, currencyId));
 	}
 
 	public LocalDate getAsLocalDate(@NonNull final String columnName)

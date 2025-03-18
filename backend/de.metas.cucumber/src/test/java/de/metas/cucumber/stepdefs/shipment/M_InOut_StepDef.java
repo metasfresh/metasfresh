@@ -39,6 +39,7 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper;
 import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
@@ -84,6 +85,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_C_BPartner;
@@ -125,8 +127,8 @@ import static org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID;
 public class M_InOut_StepDef
 {
 	private static final Logger logger = LogManager.getLogger(M_InOut_StepDef.class);
-	private final M_InOut_StepDefData shipmentTable;
-	private final M_InOutLine_StepDefData shipmentLineTable;
+	private final M_InOut_StepDefData inoutTable;
+	private final M_InOutLine_StepDefData inoutLineTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
@@ -176,7 +178,7 @@ public class M_InOut_StepDef
 				.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
 				.orElseGet(bpartnerLocationIdentifier::getAsInt);
 
-		final I_M_InOut shipment = shipmentTable.get(identifier);
+		final I_M_InOut shipment = inoutTable.get(identifier);
 
 		softly.assertThat(shipment.getC_BPartner_ID()).isEqualTo(expectedBPartnerId);
 		softly.assertThat(shipment.getC_BPartner_Location_ID()).isEqualTo(expectedBPartnerLocationId);
@@ -373,10 +375,10 @@ public class M_InOut_StepDef
 
 			if (shipment != null)
 			{
-				final I_M_InOut prevShipment = shipmentTable.getOptional(shipmentIdentifier).orElse(null);
+				final I_M_InOut prevShipment = inoutTable.getOptional(shipmentIdentifier).orElse(null);
 				if (prevShipment == null)
 				{
-					shipmentTable.put(shipmentIdentifier, shipment);
+					inoutTable.put(shipmentIdentifier, shipment);
 				}
 				else
 				{
@@ -384,7 +386,7 @@ public class M_InOut_StepDef
 							.as("We already registered shipment-M_InOut_ID=%s for M_InOut_ID.Identifier %s; ; M_ShipmentSchedule_ID.Identifier=%s",
 									prevShipment.getM_InOut_ID(), shipmentIdentifier, shipmentScheduleIdentifier)
 							.isEqualTo(shipment.getM_InOut_ID());
-					shipmentTable.putOrReplace(shipmentIdentifier, shipment);
+					inoutTable.putOrReplace(shipmentIdentifier, shipment);
 				}
 				return true;
 			}
@@ -439,10 +441,28 @@ public class M_InOut_StepDef
 		}
 	}
 
-	@And("^the (shipment|material receipt|return inOut) identified by (.*) is (completed|reactivated|reversed|voided|closed)$")
-	public void shipment_action(@NonNull final String model_UNUSED, @NonNull final String shipmentIdentifier, @NonNull final String action)
+	@And("^the (shipment|material receipt|return inOut) identified by (.*) is reversed as (.*)$")
+	public void reverseInOut(
+			@NonNull @SuppressWarnings("unused") final String model_UNUSED,
+			@NonNull final String identifier,
+			@NonNull final String reversalIdentifier)
 	{
-		final I_M_InOut shipment = shipmentTable.get(shipmentIdentifier);
+		final I_M_InOut inout = inoutTable.get(identifier);
+		InterfaceWrapperHelper.refresh(inout);
+		documentBL.processEx(inout, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+
+		final InOutId reversalId = InOutId.ofRepoId(inout.getReversal_ID());
+		final I_M_InOut reversal = inOutDAO.getById(reversalId);
+		inoutTable.put(reversalIdentifier, reversal);
+	}
+
+	@And("^the (shipment|material receipt|return inOut) identified by (.*) is (completed|reactivated|reversed|voided|closed)$")
+	public void processInOut(
+			@NonNull @SuppressWarnings("unused") final String model_UNUSED, 
+			@NonNull final String shipmentIdentifier, 
+			@NonNull final String action)
+	{
+		final I_M_InOut shipment = inoutTable.get(shipmentIdentifier);
 		InterfaceWrapperHelper.refresh(shipment);
 
 		switch (StepDefDocAction.valueOf(action))
@@ -495,7 +515,7 @@ public class M_InOut_StepDef
 					.firstOnlyNotNull(I_M_InOutLine.class);
 
 			final String shipmentLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOutLine.COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-			shipmentLineTable.putOrReplace(shipmentLineIdentifier, shipmentLine);
+			inoutLineTable.putOrReplace(shipmentLineIdentifier, shipmentLine);
 
 			final I_M_InOut shipment = InterfaceWrapperHelper.load(shipmentLine.getM_InOut_ID(), I_M_InOut.class);
 			assertThat(shipment).isNotNull();
@@ -511,7 +531,7 @@ public class M_InOut_StepDef
 			}
 
 			final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-			shipmentTable.putOrReplace(shipmentIdentifier, shipment);
+			inoutTable.putOrReplace(shipmentIdentifier, shipment);
 		}
 	}
 
@@ -525,7 +545,7 @@ public class M_InOut_StepDef
 
 			final String docAction = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_DocAction);
 
-			final I_M_InOut shipment = shipmentTable.get(shipmentIdentifier);
+			final I_M_InOut shipment = inoutTable.get(shipmentIdentifier);
 
 			documentBL.processEx(shipment, docAction);
 		}
@@ -548,7 +568,7 @@ public class M_InOut_StepDef
 		for (final Map<String, String> row : dataTable)
 		{
 			final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_InOut shipment = shipmentTable.get(shipmentIdentifier);
+			final I_M_InOut shipment = inoutTable.get(shipmentIdentifier);
 			InterfaceWrapperHelper.refresh(shipment);
 
 			final String docStatus = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_DocStatus);
@@ -559,7 +579,7 @@ public class M_InOut_StepDef
 	@And("^reset M_InOut packing lines for shipment (.*)$")
 	public void reset_M_InOut_PackingLines(@NonNull final String shipmentIdentifier)
 	{
-		final I_M_InOut shipment = shipmentTable.get(shipmentIdentifier);
+		final I_M_InOut shipment = inoutTable.get(shipmentIdentifier);
 		assertThat(shipment).isNotNull();
 
 		huInOutBL.recreatePackingMaterialLines(shipment);
@@ -644,7 +664,7 @@ public class M_InOut_StepDef
 			InterfaceWrapperHelper.saveRecord(inOut);
 
 			final String inOutIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-			shipmentTable.putOrReplace(inOutIdentifier, inOut);
+			inoutTable.putOrReplace(inOutIdentifier, inOut);
 		}
 	}
 
@@ -659,7 +679,7 @@ public class M_InOut_StepDef
 		final I_M_InOut shipmentRecord = inOutDAO.retrieveInOutByLineIds(ImmutableSet.of(lineId)).get(lineId);
 
 		final String shipmentIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + ".Identifier");
-		shipmentTable.put(shipmentIdentifier, shipmentRecord);
+		inoutTable.put(shipmentIdentifier, shipmentRecord);
 	}
 
 	@And("^the (shipment|material receipt|return inOut) identified by (.*) is (completed|reactivated|reversed|voided|closed) expecting error$")
@@ -731,7 +751,25 @@ public class M_InOut_StepDef
 		final I_M_InOut customerReturnRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> isCustomerReturnFound(row));
 
 		final String customerReturnIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-		shipmentTable.put(customerReturnIdentifier, customerReturnRecord);
+		inoutTable.put(customerReturnIdentifier, customerReturnRecord);
+	}
+
+	@And("^the (shipment|material receipt) identified by (.*) is (completed) and an exception with error-code (.*) is thrown")
+	public void complete_inOut_expect_exception(
+			@NonNull final String model_UNUSED,
+			@NonNull final String shipmentIdentifier,
+			@NonNull final String action,
+			@NonNull final String errorCode)
+	{
+		try
+		{
+			processInOut(model_UNUSED, shipmentIdentifier, action);
+			assertThat(1).as("An Exception should have been thrown !").isEqualTo(2);
+		}
+		catch (final AdempiereException exception)
+		{
+			assertThat(exception.getErrorCode()).as("ErrorCode of %s", exception).isEqualTo(errorCode);
+		}
 	}
 
 	@NonNull
@@ -791,11 +829,73 @@ public class M_InOut_StepDef
 		return message.toString();
 	}
 
+	@And("^the (shipment|material receipt|return inOut) identified by (.*) is (completed|reactivated|reversed|voided|closed) expecting error$")
+	public void shipment_action_expecting_error(@NonNull final String model_UNUSED, @NonNull final String shipmentIdentifier, @NonNull final String action, @NonNull final DataTable dataTable)
+	{
+		final Map<String, String> row = dataTable.asMaps().get(0);
+
+		boolean errorThrown = false;
+
+		try
+		{
+			processInOut(model_UNUSED, shipmentIdentifier, action);
+		}
+		catch (final Exception e)
+		{
+			errorThrown = true;
+
+			final String errorMessageIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_AD_Message_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			if (errorMessageIdentifier != null)
+			{
+				final I_AD_Message errorMessage = messageTable.get(errorMessageIdentifier);
+				assertThat(e.getMessage()).contains(msgBL.getMsg(Env.getCtx(), AdMessageKey.of(errorMessage.getValue())));
+			}
+		}
+
+		assertThat(errorThrown).isTrue();
+	}
+
+	@And("^after not more than (.*)s, locate reversal M_InOut$")
+	public void find_reversal_M_InOut(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final SoftAssertions softly = new SoftAssertions();
+
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final I_M_InOut reversalInOut = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> load_reversal_InOut(row));
+
+			softly.assertThat(reversalInOut).isNotNull();
+
+			final String reversalInOutIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+			inoutTable.putOrReplace(reversalInOutIdentifier, reversalInOut);
+		}
+		softly.assertAll();
+	}
+
+	@NonNull
+	private Set<InOutLineId> getShipmentLinesForShipmentIdentifiers(@NonNull final List<String> shipmentIdentifiers)
+	{
+		final Set<Integer> shipmentIds = shipmentIdentifiers.stream()
+				.map(inoutTable::get)
+				.map(I_M_InOut::getM_InOut_ID)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_InOutLine.COLUMNNAME_M_InOut_ID, shipmentIds)
+				.create()
+				.stream()
+				.map(I_M_InOutLine::getM_InOutLine_ID)
+				.map(InOutLineId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	@NonNull
 	private ItemProvider.ProviderResult<I_M_InOut> load_reversal_InOut(@NonNull final Map<String, String> row)
 	{
 		final String inOutToReverseIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_Reversal_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_M_InOut inOutToReverse = shipmentTable.get(inOutToReverseIdentifier);
+		final I_M_InOut inOutToReverse = inoutTable.get(inOutToReverseIdentifier);
 
 		final I_M_InOut reversalInOutRecord = queryBL.createQueryBuilder(I_M_InOut.class)
 				.addEqualsFilter(I_M_InOut.COLUMNNAME_Reversal_ID, inOutToReverse.getM_InOut_ID())
@@ -808,5 +908,20 @@ public class M_InOut_StepDef
 		}
 
 		return ItemProvider.ProviderResult.resultWasFound(reversalInOutRecord);
+	}
+
+	@And("^Wait until (shipment|shipments|receipt|receipts) (.*) (is|are) posted$")
+	public void waitUntilPosted(
+			@SuppressWarnings("unused") final String type,
+			@NonNull final String commaSeparatedIdentifiers,
+			@SuppressWarnings("unused") final String isOrAre) throws InterruptedException
+	{
+		final ImmutableSet<TableRecordReference> inoutRefs = StepDefDataIdentifier.ofCommaSeparatedString(commaSeparatedIdentifiers)
+				.stream()
+				.map(inoutTable::getId)
+				.map(inoutId -> TableRecordReference.of(I_M_InOut.Table_Name, inoutId))
+				.collect(ImmutableSet.toImmutableSet());
+
+		AccountingCucumberHelper.waitUtilPosted(inoutRefs);
 	}
 }

@@ -61,6 +61,7 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -112,7 +113,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_AD_Message.COLUMNNAME_AD_Message_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
@@ -211,8 +212,12 @@ public class C_Order_StepDef
 					final String poReference = tableRow.getAsOptionalName(I_C_Order.COLUMNNAME_POReference).orElse(null);
 					final String description = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_Description);
 					final int paymentTermId = tableRow.getAsOptionalInt(I_C_Order.COLUMNNAME_C_PaymentTerm_ID).orElse(-1);
-					final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
-					final String docBaseType = tableRow.getAsOptionalString(COLUMNNAME_DocBaseType).orElse(null);
+					final StepDefDataIdentifier pricingSystemIdentifier = tableRow.getAsOptionalIdentifier(COLUMNNAME_M_PricingSystem_ID).orElse(null);
+					final Boolean isSOTrx = tableRow.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsSOTrx).toBooleanOrNull();
+					final DocBaseType docBaseType = Optionals.firstPresentOfSuppliers(
+							() -> tableRow.getAsOptionalEnum(COLUMNNAME_DocBaseType, DocBaseType.class),
+							() -> isSOTrx != null && !isSOTrx ? Optional.of(DocBaseType.PurchaseOrder) : Optional.empty() // if we don't do this, MOrder.beforeSave will automatically set IsSOTrx=true because C_DocTypeTarget_ID is not set 
+					).orElse(null);
 
 					final int dropShipPartnerId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + COLUMNNAME_DropShip_BPartner_ID);
 					final Boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
@@ -228,7 +233,10 @@ public class C_Order_StepDef
 
 					final I_C_Order order = newInstance(I_C_Order.class);
 					order.setC_BPartner_ID(bpartnerId.getRepoId());
-					tableRow.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsSOTrx).ifPresent(order::setIsSOTrx);
+					if (isSOTrx != null)
+					{
+						order.setIsSOTrx(isSOTrx);
+					}
 					order.setDateOrdered(tableRow.getAsLocalDateTimestamp(I_C_Order.COLUMNNAME_DateOrdered));
 					order.setDropShip_BPartner_ID(dropShipPartnerId);
 					order.setIsDropShip(isDropShip);
@@ -265,7 +273,7 @@ public class C_Order_StepDef
 						order.setBill_Location_ID(billBPartnerLocation.getC_BPartner_Location_ID());
 					}
 
-					final String deliveryRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DeliveryRule);
+					final String deliveryRule = tableRow.getAsOptionalString(I_C_Order.COLUMNNAME_DeliveryRule).orElse(null);
 					if (Check.isNotBlank(deliveryRule))
 					{
 						// note that IF the C_BPartner has a deliveryRule set, this values will be overwritten by it
@@ -322,7 +330,7 @@ public class C_Order_StepDef
 						order.setDescription(description);
 					}
 
-					if (EmptyUtil.isNotBlank(pricingSystemIdentifier))
+					if (pricingSystemIdentifier != null)
 					{
 						final I_M_PricingSystem pricingSystem = pricingSystemDataTable.get(pricingSystemIdentifier);
 						assertThat(pricingSystem).isNotNull();
@@ -330,7 +338,7 @@ public class C_Order_StepDef
 
 					}
 
-					if (EmptyUtil.isNotBlank(docBaseType))
+					if (docBaseType != null)
 					{
 						final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocSubType);
 
@@ -664,7 +672,7 @@ public class C_Order_StepDef
 
 	@Then("a PurchaseOrder with externalId {string} is created after not more than {int} seconds and has values")
 	public void verifyOrder(final String externalId, final int timeoutSec,
-			@NonNull final DataTable dataTable) throws InterruptedException
+							@NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final Map<String, String> dataTableRow = dataTable.asMaps().get(0);
 
@@ -997,7 +1005,7 @@ public class C_Order_StepDef
 
 	@Then("the following group compensation order lines were created for externalHeaderId: {string}")
 	public void verifyOrderLines(final String externalHeaderId,
-			@NonNull final DataTable dataTable)
+								 @NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
