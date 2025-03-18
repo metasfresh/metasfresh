@@ -74,7 +74,6 @@ public class ModularContractSettings
 
 	@NonNull Percent interestPercent;
 	@NonNull Percent interimPricePercent;
-	@NonNull BigDecimal tradeMargin;
 
 	private static final AdMessageKey MSG_ERROR_INVALID_MODULAR_CONTRACT_SETTINGS = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_Flatrate_Conditions.INVALID_MODULAR_CONTRACT_SETTINGS");
 

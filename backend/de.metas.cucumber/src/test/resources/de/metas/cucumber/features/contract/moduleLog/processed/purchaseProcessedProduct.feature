@@ -423,16 +423,16 @@ Feature: Modular contract log from purchase order for processed product
 
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.InvoiceRule | OPT.PriceActual | OPT.NetAmtToInvoice | OPT.NetAmtInvoiced | OPT.Processed |
-      | candidate_definitive              | 0            | 50             | 50               | I               | 19              | 0                   | 950                | Y             |
+      | candidate_definitive              | 0            | 50             | 50               | I               | 20              | 0                   | 1000               | Y             |
 
     Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus | OPT.TotalLines |
-      | candidate_definitive              | defInv                  | CO            | 950            |
+      | candidate_definitive              | defInv                  | CO            | 1000           |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
-      | defInv                  | bp_moduleLogPO           | bp_moduleLogPO_Location           | 1000002     | true      | CO        | 1130.5         | definitive                  |
+      | defInv                  | bp_moduleLogPO           | bp_moduleLogPO_Location           | 1000002     | true      | CO        | 1190           | definitive                  |
 
     And validate created modular invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | ProductName                        | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
-      | invoiceLine_2_1             | defInv                  | processedProduct        | salesOnProcessedProduct_06062024_1 | 50          | true      | 19.00            | 19.00           | 950            | PCE                   | PCE                       |
+      | invoiceLine_2_1             | defInv                  | processedProduct        | salesOnProcessedProduct_06062024_1 | 50          | true      | 20.00            | 20.00           | 1000           | PCE                   | PCE                       |
