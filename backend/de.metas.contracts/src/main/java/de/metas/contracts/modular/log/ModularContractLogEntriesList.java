@@ -250,8 +250,7 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 	public Optional<ProductPrice> getAveragePrice(
 			@NonNull final ProductId productId,
 			@NonNull final UomId targetUOMId,
-			@NonNull final QuantityUOMConverter quantityUOMConverter,
-			@NonNull final BigDecimal tradeMargin)
+			@NonNull final QuantityUOMConverter quantityUOMConverter)
 	{
 		if (list.isEmpty())
 		{
@@ -266,7 +265,7 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 			return Optional.empty();
 		}
 
-		final Money priceAverage = priceSum.get().divide(qtySum.toBigDecimal(), precision).subtract(tradeMargin);
+		final Money priceAverage = priceSum.get().divide(qtySum.toBigDecimal(), precision);
 
 		return Optional.of(ProductPrice.builder()
 								   .money(priceAverage)
