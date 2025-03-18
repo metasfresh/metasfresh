@@ -472,13 +472,13 @@
 		 final UomId targetUOMId = productBL.getStockUOMId(productId);
 		 final ModularContractSettings settings = modularContractSettingsService.getById(moduleConfig.getModularContractSettingsId());
 
-		 final Optional<ProductPrice> unprocessedLogsPrice = logs.subsetOf(false).getAveragePrice(productId, targetUOMId, uomConversionBL, settings.getTradeMargin());
+		 final Optional<ProductPrice> unprocessedLogsPrice = logs.subsetOf(false).getAveragePrice(productId, targetUOMId, uomConversionBL);
 		 if (unprocessedLogsPrice.isPresent())
 		 {
 			 return unprocessedLogsPrice.get();
 		 }
 
-		 final Optional<ProductPrice> processedLogsPrice = logs.subsetOf(true).getAveragePrice(productId, targetUOMId, uomConversionBL, settings.getTradeMargin());
+		 final Optional<ProductPrice> processedLogsPrice = logs.subsetOf(true).getAveragePrice(productId, targetUOMId, uomConversionBL);
 		 if (processedLogsPrice.isPresent())
 		 {
 			 return processedLogsPrice.get();
