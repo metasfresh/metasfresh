@@ -26,6 +26,7 @@ import lombok.Value;
 import lombok.experimental.Delegate;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.IPPOrderBL;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -39,6 +40,7 @@ public class PickingJobCompleteCommand
 	private final static AdMessageKey ALL_STEPS_SHALL_BE_PICKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.service.commands.ALL_STEPS_SHALL_BE_PICKED_ERROR_MSG");
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	@NonNull private final MobileUIPickingUserProfileRepository configRepository;
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final PickingJobRepository pickingJobRepository;
@@ -47,7 +49,10 @@ public class PickingJobCompleteCommand
 	@NonNull private final PickingJobHUReservationService pickingJobHUReservationService;
 	@NonNull private final IShipmentService shipmentService;
 
-	@NonNull private final PickingJob initialPickingJob;
+	@NonNull private final PickingJob initialPickingJob0;
+
+	// State
+	private PickingJob pickingJob = null;
 
 	@Builder
 	private PickingJobCompleteCommand(
@@ -69,7 +74,7 @@ public class PickingJobCompleteCommand
 		this.pickingJobHUReservationService = pickingJobHUReservationService;
 		this.shipmentService = shipmentService;
 
-		this.initialPickingJob = pickingJob;
+		this.initialPickingJob0 = pickingJob;
 	}
 
 	public static class PickingJobCompleteCommandBuilder
@@ -79,8 +84,8 @@ public class PickingJobCompleteCommand
 
 	public PickingJob execute()
 	{
-		initialPickingJob.assertNotProcessed();
-		if (!initialPickingJob.getProgress().isDone())
+		initialPickingJob0.assertNotProcessed();
+		if (!initialPickingJob0.getProgress().isDone())
 		{
 			throw new AdempiereException(PICKING_ON_ALL_STEPS_ERROR_MSG);
 		}
@@ -90,12 +95,15 @@ public class PickingJobCompleteCommand
 
 	private PickingJob executeInTrx()
 	{
-		if (!initialPickingJob.getProgress().isDone())
+		pickingJob = initialPickingJob0;
+		if (!pickingJob.getProgress().isDone())
 		{
 			throw new AdempiereException(ALL_STEPS_SHALL_BE_PICKED_ERROR_MSG);
 		}
 
-		PickingJob pickingJob = initialPickingJob.withDocStatus(PickingJobDocStatus.Completed);
+		ppOrderBL.closeOrdersByIds(pickingJob.getManufacturingOrderIds());
+
+		pickingJob = pickingJob.withDocStatus(PickingJobDocStatus.Completed);
 		pickingJobRepository.save(pickingJob);
 
 		pickingJob = pickingJobService.closeAllLUPickingTargets(pickingJob);
@@ -108,12 +116,12 @@ public class PickingJobCompleteCommand
 
 		pickingJobLockService.unlockShipmentSchedules(pickingJob);
 
-		createShipmentIfNeeded(pickingJob);
+		createShipmentIfNeeded();
 
 		return pickingJob;
 	}
 
-	private void createShipmentIfNeeded(final PickingJob pickingJob)
+	private void createShipmentIfNeeded()
 	{
 		prepareShipmentCandidates(pickingJob).forEach(this::processShipmentCandidate);
 	}
