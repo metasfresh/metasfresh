@@ -24,9 +24,10 @@ package de.metas.dunning.process;
 
 import java.util.Iterator;
 
+import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
+import de.metas.async.api.IAsyncBatchBuilder;
 import de.metas.async.api.IAsyncBatchDAO;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.dunning.Dunning_Constants;
 import de.metas.dunning.api.IDunningBL;
@@ -39,12 +40,12 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 
 /**
  * Process responsible for creating <code>C_DunningDocs</code> from dunning candidates
  *
  * @author tsa
- *
  */
 public class C_Dunning_Candidate_Process extends JavaProcess
 {
@@ -104,15 +105,15 @@ public class C_Dunning_Candidate_Process extends JavaProcess
 		Check.assumeNotNull(asyncBatchType, "Defined Async Batch type should not be null for internal name ", m_asyncBatchType);
 
 		// Create Async Batch for tracking
-		final I_C_Async_Batch asyncBatch = asyncBatchBL.newAsyncBatch()
+		final IAsyncBatchBuilder asyncBatchBuilder = asyncBatchBL.newAsyncBatch()
 				.setContext(getCtx())
 				.setC_Async_Batch_Type(asyncBatchType.getInternalName())
 				.setAD_PInstance_Creator_ID(getPinstanceId())
 				.setName(m_AsyncBatchName)
-				.setDescription(m_AsyncBatchDesc)
-				.build();
+				.setDescription(m_AsyncBatchDesc);
 
-		context.setProperty(IDunningProducer.CONTEXT_AsyncBatchDunningDoc, asyncBatch);
+		final AsyncBatchId asyncBatchId = asyncBatchBuilder.build();
+		context.setProperty(IDunningProducer.CONTEXT_AsyncBatchIdDunningDoc, asyncBatchId);
 
 		final SelectedDunningCandidatesSource source = new SelectedDunningCandidatesSource(getProcessInfo().getWhereClause());
 		source.setDunningContext(context);
@@ -124,9 +125,6 @@ public class C_Dunning_Candidate_Process extends JavaProcess
 
 	/**
 	 * This dunning candidate source returns only those candidates that have been selected by the user.
-	 *
-	 * @author ts
-	 *
 	 */
 	private static final class SelectedDunningCandidatesSource extends AbstractDunningCandidateSource
 	{
