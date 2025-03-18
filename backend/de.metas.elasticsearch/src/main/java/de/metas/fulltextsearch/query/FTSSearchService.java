@@ -120,7 +120,7 @@ public class FTSSearchService
 					.search(new SearchRequest()
 									.indices(ftsConfig.getEsIndexName())
 									.source(SearchSourceBuilder.fromXContent(parser)
-											.size(getResultMaxSize())),
+											.size(extractResultMaxSize(request))),
 							RequestOptions.DEFAULT
 					);
 
@@ -139,6 +139,20 @@ public class FTSSearchService
 		catch (final IOException ex)
 		{
 			throw AdempiereException.wrapIfNeeded(ex);
+		}
+	}
+
+	private int extractResultMaxSize(@NonNull final FTSSearchRequest request)
+	{
+		if (request.getLimit() != null)
+		{
+			return request.getLimit().isLimited()
+					? request.getLimit().toInt()
+					: -1;
+		}
+		else
+		{
+			return getResultMaxSize();
 		}
 	}
 

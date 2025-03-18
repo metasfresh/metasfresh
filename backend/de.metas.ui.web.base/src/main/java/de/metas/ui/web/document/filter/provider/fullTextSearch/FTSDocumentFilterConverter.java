@@ -27,6 +27,10 @@ import de.metas.fulltextsearch.config.FTSFilterDescriptor;
 import de.metas.fulltextsearch.query.FTSSearchRequest;
 import de.metas.fulltextsearch.query.FTSSearchResult;
 import de.metas.fulltextsearch.query.FTSSearchService;
+import de.metas.security.IUserRolePermissions;
+import de.metas.security.IUserRolePermissionsDAO;
+import de.metas.security.UserRolePermissionsKey;
+import de.metas.security.permissions.WindowMaxQueryRecordsConstraint;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.FilterSql;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
@@ -34,7 +38,9 @@ import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
@@ -73,6 +79,7 @@ public class FTSDocumentFilterConverter implements SqlDocumentFilterConverter
 				.searchId(extractSearchId(context))
 				.searchText(searchText)
 				.esIndexName(ftsConfig.getEsIndexName())
+				.limit(extractQueryLimit(context))
 				.userRolePermissionsKey(context.getUserRolePermissionsKey())
 				.filterDescriptor(ftsFilterDescriptor)
 				.build());
@@ -108,4 +115,17 @@ public class FTSDocumentFilterConverter implements SqlDocumentFilterConverter
 		}
 		return viewId.toJson();
 	}
+
+	private QueryLimit extractQueryLimit(@NonNull final SqlDocumentFilterConverterContext context)
+	{
+		final IUserRolePermissionsDAO userRolePermissionsRepo = Services.get(IUserRolePermissionsDAO.class);
+
+		final UserRolePermissionsKey permissionsKey = context.getUserRolePermissionsKey();
+		final IUserRolePermissions permissions = userRolePermissionsRepo.getUserRolePermissions(permissionsKey);
+		return QueryLimit.ofInt(
+				permissions.getConstraint(WindowMaxQueryRecordsConstraint.class)
+						.orElse(WindowMaxQueryRecordsConstraint.DEFAULT)
+						.getMaxQueryRecordsPerRole());
+	}
+
 }
