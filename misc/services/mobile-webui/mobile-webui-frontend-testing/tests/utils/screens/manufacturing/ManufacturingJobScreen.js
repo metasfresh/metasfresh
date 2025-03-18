@@ -1,10 +1,11 @@
-import { page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
 import { test } from '../../../../playwright.config';
 import { expect } from '@playwright/test';
 import { RawMaterialIssueLineScreen } from './issue/RawMaterialIssueLineScreen';
 import { MaterialReceiptLineScreen } from './receipt/MaterialReceiptLineScreen';
 import { YesNoDialog } from '../../dialogs/YesNoDialog';
 import { ManufacturingJobsListScreen } from './ManufacturingJobsListScreen';
+import { PickingJobLineScreen } from '../picking/PickingJobLineScreen';
 
 const NAME = 'ManufacturingJobScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -17,6 +18,11 @@ export const ManufacturingJobScreen = {
 
     expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
         await expect(containerElement()).toBeVisible();
+    }),
+
+    goBackToPickingJobLine: async () => await test.step(`${NAME} - Go back to picking job line`, async () => {
+        await page.locator(ID_BACK_BUTTON).tap();
+        await PickingJobLineScreen.waitForScreen();
     }),
 
     issueRawProduct: async ({ index, qrCode, expectQtyEntered }) => await test.step(`${NAME} - Issue line ${index}`, async () => {

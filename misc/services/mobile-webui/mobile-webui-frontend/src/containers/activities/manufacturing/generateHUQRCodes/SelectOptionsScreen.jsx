@@ -10,6 +10,7 @@ import { getWFProcessScreenLocation } from '../../../../routes/workflow_location
 
 const SelectOptionsScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId } = useScreenDefinition({
+    screenId: 'generateHUQRCodes.SelectOptionsScreen',
     back: getWFProcessScreenLocation,
   });
 

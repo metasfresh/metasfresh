@@ -88,4 +88,8 @@ test('Assemble/Manufacture while picking test', async ({ page }) => {
     await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
     await MaterialReceiptLineScreen.selectNewLUTarget({ luPIItemTestId: masterdata.packingInstructions.P2x25x5.luPIItemTestId });
     await MaterialReceiptLineScreen.receiveQty({ expectQtyEntered: 80 });
+    await ManufacturingJobScreen.goBackToPickingJobLine();
+
+    await PickingJobLineScreen.goBack();
+    // await PickingJobScreen.complete();
 });

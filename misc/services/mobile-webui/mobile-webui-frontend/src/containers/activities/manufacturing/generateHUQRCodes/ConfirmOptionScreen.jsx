@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getOptionByIndex } from './utils';
 import { postGenerateHUQRCodes } from '../../../../api/generateHUQRCodes';
@@ -15,15 +14,13 @@ import { selectOptionsLocation } from '../../../../routes/generateHUQRCodes';
 import { getWFProcessScreenLocation } from '../../../../routes/workflow_locations';
 
 const ConfirmOptionScreen = () => {
-  const {
-    url,
-    params: { wfProcessId, activityId, optionIndex },
-  } = useRouteMatch();
-  const { history } = useScreenDefinition({
+  const { history, url, wfProcessId, activityId, optionIndex } = useScreenDefinition({
+    screenId: 'generateHUQRCodes.ConfirmOptionScreen',
     back: selectOptionsLocation,
   });
 
   const optionInfo = useSelector((state) => getOptionByIndex({ state, wfProcessId, activityId, optionIndex }));
+  const [processing, setProcessing] = useState(false);
   const [numberOfHUs, setNumberOfHUs] = useState(optionInfo.numberOfHUs);
   const [numberOfCopies, setNumberOfCopies] = useState(1);
 
@@ -61,6 +58,7 @@ const ConfirmOptionScreen = () => {
   const onPrintClick = () => {
     uiTrace.putContext({ numberOfHUs, numberOfCopies });
 
+    setProcessing(true);
     postGenerateHUQRCodes({
       wfProcessId,
       finishedGoodsReceiveLineId: optionInfo.finishedGoodsReceiveLineId,
@@ -69,7 +67,8 @@ const ConfirmOptionScreen = () => {
       numberOfCopies,
     })
       .then(() => history.goTo(getWFProcessScreenLocation)) // back to wfProcess screen
-      .catch((axiosError) => toastError({ axiosError }));
+      .catch((axiosError) => toastError({ axiosError }))
+      .finally(() => setProcessing(false));
   };
 
   const isValidNumberOfHUs = numberOfHUs != null && numberOfHUs > 0;
@@ -87,6 +86,7 @@ const ConfirmOptionScreen = () => {
                 validateQtyEntered={validateQtyEntered}
                 onQtyChange={({ qty }) => setNumberOfHUs(qtyInfos.toNumberOrString(qty))}
                 isRequestFocus={true}
+                readonly={processing}
               />
             </td>
           </tr>
@@ -99,6 +99,7 @@ const ConfirmOptionScreen = () => {
                 validateQtyEntered={validateNumberOfCopies}
                 onQtyChange={({ qty }) => setNumberOfCopies(qtyInfos.toNumberOrString(qty))}
                 isRequestFocus={true}
+                readonly={processing}
               />
             </td>
           </tr>
@@ -107,7 +108,7 @@ const ConfirmOptionScreen = () => {
       <div className="section pt-2">
         <Button
           caption={trl('activities.mfg.generateHUQRCodes.print')}
-          disabled={!isValidNumberOfHUs}
+          disabled={processing || !isValidNumberOfHUs}
           onClick={onPrintClick}
         />
       </div>

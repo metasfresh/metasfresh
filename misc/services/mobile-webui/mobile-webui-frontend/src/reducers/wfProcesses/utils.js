@@ -96,6 +96,10 @@ export const mergeWFProcessToState = ({ draftWFProcess, fromWFProcess }) => {
   draftWFProcess.headerProperties = fromWFProcess.headerProperties;
   draftWFProcess.isAllowAbort = !!fromWFProcess.isAllowAbort;
 
+  if (fromWFProcess.backUrl !== undefined) {
+    draftWFProcess.backUrl = fromWFProcess.backUrl;
+  }
+
   if (!draftWFProcess.activities) {
     draftWFProcess.activities = {};
   }

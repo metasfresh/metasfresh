@@ -32,7 +32,7 @@ export const MaterialReceiptLineScreen = {
         await MaterialReceiptLineScreen.waitForScreen();
     }),
 
-    receiveQty: async ({ qtyEntered, expectQtyEntered }) => await test.step(`${NAME} - Receive qty ${qtyEntered}`, async () => {
+    receiveQty: async ({ qtyEntered, expectQtyEntered }) => await test.step(`${NAME} - Receive qty ${qtyEntered ? qtyEntered : ''}`, async () => {
         await page.getByTestId('receive-qty-button').tap();
         await GetQuantityDialog.fillAndPressDone({ expectQtyEntered, qtyEntered });
         await MaterialReceiptLineScreen.waitForScreen(); // while processing

@@ -20,24 +20,22 @@ import ScanAndValidateActivity, {
 } from '../activities/scan/ScanAndValidateActivity';
 import { useScreenDefinition } from '../../hooks/useScreenDefinition';
 import { appLaunchersLocation } from '../../routes/launchers';
-import { useSearchParams } from '../../hooks/useSearchParams';
+import { useMobileLocation } from '../../hooks/useMobileLocation';
 
 const WFProcessScreen = () => {
-  const [urlParams] = useSearchParams();
-  const back = urlParams.get('back');
+  const { wfProcessId } = useMobileLocation();
+  const { backUrl, activities, isAllowAbort, headerProperties } = useSelector(
+    (state) => getPropsFromState({ state, wfProcessId }),
+    shallowEqual
+  );
 
-  const { url, applicationId, wfProcessId } = useScreenDefinition({
+  const { url, applicationId } = useScreenDefinition({
     screenId: 'WFProcessScreen',
-    back: back ? back : appLaunchersLocation,
+    back: backUrl ? backUrl : appLaunchersLocation,
     isHomeStop: true,
   });
 
   const { iconClassNames: appIconClassName, caption: appCaption } = useApplicationInfo({ applicationId });
-
-  const { activities, isAllowAbort, headerProperties } = useSelector(
-    (state) => getPropsFromState({ state, wfProcessId }),
-    shallowEqual
-  );
 
   const dispatch = useDispatch();
   useEffect(() => {
@@ -172,6 +170,7 @@ const getPropsFromState = ({ state, wfProcessId }) => {
   const wfProcess = getWfProcess(state, wfProcessId);
 
   return {
+    backUrl: wfProcess.backUrl,
     headerProperties: wfProcess?.headerProperties?.entries ?? [],
     activities: wfProcess ? getActivitiesInOrder(wfProcess) : [],
     isAllowAbort: !!wfProcess?.isAllowAbort,
