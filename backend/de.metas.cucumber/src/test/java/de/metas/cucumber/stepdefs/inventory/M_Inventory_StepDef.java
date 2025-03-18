@@ -30,7 +30,6 @@ import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
-import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
@@ -60,27 +59,24 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
-import org.compiere.acct.PostingStatus;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.DB;
 
 import java.sql.Timestamp;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper.waitUtilPosted;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -365,36 +361,6 @@ public class M_Inventory_StepDef
 					});
 		}
 
-		waitUtilPosted(inventoryId);
-	}
-
-	private void waitUtilPosted(final InventoryId inventoryId) throws InterruptedException
-	{
-		StepDefUtil.tryAndWait(60, 500, () -> {
-			final PostingStatus postingStatus = retrievePostingStatus(inventoryId);
-			if (postingStatus.isPosted())
-			{
-				return true;
-			}
-			else if (postingStatus.isNotPosted())
-			{
-				return false;
-			}
-			else
-			{
-				throw new AdempiereException("Inventory " + inventoryId.getRepoId() + " has posting error: " + postingStatus);
-			}
-		});
-	}
-
-	private PostingStatus retrievePostingStatus(final InventoryId inventoryId)
-	{
-		final String postingStatus = DB.getSQLValueStringEx(
-				ITrx.TRXNAME_ThreadInherited,
-				"SELECT " + I_M_Inventory.COLUMNNAME_Posted + " FROM " + I_M_Inventory.Table_Name + " WHERE " + I_M_Inventory.COLUMNNAME_M_Inventory_ID + "=?",
-				Collections.singletonList(inventoryId)
-		);
-
-		return StringUtils.trimBlankToOptional(postingStatus).map(PostingStatus::ofCode).orElse(PostingStatus.NotPosted);
+		waitUtilPosted(TableRecordReference.of(I_M_Inventory.Table_Name, inventoryId));
 	}
 }
