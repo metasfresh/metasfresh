@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useRouteMatch } from 'react-router-dom';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import * as CompleteStatus from '../../../constants/CompleteStatus';
@@ -16,11 +15,10 @@ import { toQRCodeDisplayable, toQRCodeString } from '../../../utils/qrCode/hu';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import UnpickDialog from './UnpickDialog';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
+import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 
 const PickStepScreen = () => {
-  const {
-    params: { applicationId, workflowId: wfProcessId, activityId, lineId, stepId, altStepId },
-  } = useRouteMatch();
+  const { applicationId, wfProcessId, activityId, lineId, stepId, altStepId } = useMobileNavigation();
   const { pickFrom, qtyToPick, uom } = useSelector(
     (state) => getPropsFromState({ state, wfProcessId, activityId, lineId, stepId, altStepId }),
     shallowEqual

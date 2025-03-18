@@ -1,4 +1,3 @@
-import { useRouteMatch } from 'react-router-dom';
 import { ViewHeader } from '../ViewHeader';
 import ScreenToaster from '../../components/ScreenToaster';
 import React, { useEffect } from 'react';
@@ -112,8 +111,7 @@ BottomButton.propTypes = {
 };
 
 const isWFProcessRequiredButNotLoaded = () => {
-  const { params } = useRouteMatch();
-  const wfProcessId = params.wfProcessId || params.workflowId;
+  const { wfProcessId } = useMobileNavigation();
   if (!wfProcessId) {
     return false;
   }

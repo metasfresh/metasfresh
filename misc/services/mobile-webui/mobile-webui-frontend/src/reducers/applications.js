@@ -1,7 +1,7 @@
 import * as types from '../constants/ApplicationsActionTypes';
 import { shallowEqual, useSelector } from 'react-redux';
-import { useRouteMatch } from 'react-router-dom';
 import { APPLICATION_ID_Manufacturing } from '../apps/manufacturing/constants';
+import { useMobileLocation } from '../hooks/useMobileLocation';
 
 const initialState = {
   availableApplications: {},
@@ -17,8 +17,8 @@ const getApplicationInfoById = ({ state, applicationId }) => {
 };
 
 export const useApplicationInfo = ({ applicationId }) => {
-  const routerMatch = useRouteMatch();
-  const applicationIdEffective = applicationId ? applicationId : routerMatch.params.applicationId;
+  const { applicationId: pathApplicationId } = useMobileLocation();
+  const applicationIdEffective = applicationId ? applicationId : pathApplicationId;
 
   return useSelector((state) => getApplicationInfoById({ state, applicationId: applicationIdEffective }), shallowEqual);
 };

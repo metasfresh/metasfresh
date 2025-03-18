@@ -1,9 +1,8 @@
 import React from 'react';
 import { shallowEqual, useSelector } from 'react-redux';
-import { useRouteMatch } from 'react-router-dom';
 
 import { trl } from '../../../utils/translations';
-import { getLineById, computeQtyToPickRemaining, getStepsArrayFromLine } from '../../../reducers/wfProcesses';
+import { computeQtyToPickRemaining, getLineById, getStepsArrayFromLine } from '../../../reducers/wfProcesses';
 
 import DistributionStepButton from './DistributionStepButton';
 import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
@@ -11,6 +10,7 @@ import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator
 import { distributionLinePickFromScreenLocation } from '../../../routes/distribution';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
+import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 
 const DistributionLineScreen = () => {
   const { history, applicationId, wfProcessId, activityId, lineId } = useDistributionScreenDefinition({
@@ -82,9 +82,7 @@ export const useDistributionLineProps = ({ wfProcessId, activityId, lineId }) =>
 //
 
 export const useDistributionScreenDefinition = ({ screenId, captionKey, back } = {}) => {
-  const {
-    params: { workflowId: wfProcessId, activityId, lineId },
-  } = useRouteMatch();
+  const { wfProcessId, activityId, lineId } = useMobileNavigation();
 
   const { productName, uom, qtyToMove } = useDistributionLineProps({ wfProcessId, activityId, lineId });
 
