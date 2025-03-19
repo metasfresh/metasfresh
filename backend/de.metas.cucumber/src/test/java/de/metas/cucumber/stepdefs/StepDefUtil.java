@@ -103,7 +103,7 @@ public class StepDefUtil
 	public static <T> T tryAndWaitForItem(
 			final long maxWaitSeconds,
 			final long checkingIntervalMs,
-			@NonNull final ItemProvider<T> worker, 
+			@NonNull final ItemProvider<T> worker,
 			@Nullable final Runnable logContext) throws InterruptedException
 	{
 		return StepDefUtil.<T>tryAndWaitForItem()
@@ -112,7 +112,6 @@ public class StepDefUtil
 				.maxWaitSeconds((int)maxWaitSeconds)
 				.checkingIntervalMs(checkingIntervalMs)
 				.execute();
-
 	}
 
 	public <T> T tryAndWaitForItem(
@@ -120,7 +119,11 @@ public class StepDefUtil
 			final long checkingIntervalMs,
 			@NonNull final ItemProvider<T> worker) throws InterruptedException
 	{
-		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, worker, (Supplier<String>)null);
+		return StepDefUtil.<T>tryAndWaitForItem()
+				.worker(worker)
+				.maxWaitSeconds((int)maxWaitSeconds)
+				.checkingIntervalMs(checkingIntervalMs)
+				.execute();
 	}
 
 	public <T> T tryAndWaitForItem(
@@ -246,6 +249,11 @@ public class StepDefUtil
 		return ItemFetcherExecutor.<T>builder().query(query);
 	}
 
+	public <T> ItemFetcherExecutor.ItemFetcherExecutorBuilder<T> tryAndWaitForData(@NonNull final Supplier<T> dataSupplier)
+	{
+		return ItemFetcherExecutor.<T>builder().dataSupplier(dataSupplier);
+	}
+
 	static long getMaxWaitSecondsEffective(final long maxWaitSecondsParam)
 	{
 		final Long sys_maxWaitSeconds = getSysMaxWaitSeconds().orElse(null);
@@ -325,7 +333,7 @@ public class StepDefUtil
 			throw e;
 		}
 	}
-	
+
 	public List<String> splitByColon(@NonNull final String s)
 	{
 		return Arrays.asList(s.split(":"));
