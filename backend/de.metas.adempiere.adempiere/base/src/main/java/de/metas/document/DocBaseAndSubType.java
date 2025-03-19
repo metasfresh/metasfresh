@@ -86,6 +86,9 @@ public class DocBaseAndSubType
 
 	public boolean isCallOrder() {return (docBaseType.isSalesOrder() || docBaseType.isPurchaseOrder()) && docSubType.isCallOrder();}
 
+
+	public boolean isRetour() {return docBaseType.isSalesCreditMemo()  && docSubType.isRetour();}
+
 	public boolean isFrameAgreement() { return ( docBaseType.isSalesOrder() || docBaseType.isPurchaseOrder() ) && docSubType.isFrameAgreement(); }
 
 	public boolean isMediated() {return (docBaseType.isPurchaseOrder()) && docSubType.isMediated();}

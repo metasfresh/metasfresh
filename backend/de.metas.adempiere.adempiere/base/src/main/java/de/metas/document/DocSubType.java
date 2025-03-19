@@ -111,4 +111,5 @@ public enum DocSubType implements ReferenceListAwareEnum
 	public boolean isFrameAgreement() { return FrameAgrement.equals(this); }
 	public boolean isMediated() { return Mediated.equals(this); }
 	public boolean isRequisition() { return Requisition.equals(this); }
+	public boolean isRetour() { return GSRetoure.equals(this); }
 }

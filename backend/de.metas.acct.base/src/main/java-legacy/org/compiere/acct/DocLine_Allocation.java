@@ -82,11 +82,13 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		{
 			final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 			creditMemoInvoice = invoiceBL.isCreditMemo(invoice);
+			retourInvoice = invoiceBL.isRetour(invoice);
 			soTrxInvoice = invoice.isSOTrx();
 		}
 		else
 		{
 			creditMemoInvoice = false;
+			retourInvoice = false;
 			soTrxInvoice = null;
 		}
 
@@ -128,6 +130,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	private final I_C_Invoice invoice;
 	private CurrencyConversionContext invoiceCurrencyConversionCtx;
 	private final boolean creditMemoInvoice;
+	private final boolean retourInvoice;
 	private final Boolean soTrxInvoice;
 
 	private final int m_Counter_AllocationLine_ID;
@@ -298,7 +301,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			return false;
 		}
 		// The invoice shall not be a credit memo
-		if (isCreditMemoInvoice())
+		if (isCreditMemoInvoice() && !isRetour())
 		{
 			return false;
 		}
@@ -373,6 +376,11 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	public final boolean isCreditMemoInvoice()
 	{
 		return creditMemoInvoice;
+	}
+
+	public final boolean isRetour()
+	{
+		return retourInvoice;
 	}
 
 	@NonNull
