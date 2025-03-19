@@ -178,12 +178,8 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 			final boolean isInsertOnly)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
-
-		// First line to import or this line does NOT have the same product value
-		// => create a new Product or update the existing one
-		ProductImportContext context = (ProductImportContext)state.getValue();
+		ProductImportContext context = (ProductImportContext) state.getValue();
 		final ImportRecordResult productImportResult;
-
 
 		if (context == null || !context.isSameProduct(importRecord))
 		{
@@ -203,7 +199,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 			{
 				productImportResult = importOrUpdateProduct(context);
 			}
-			else if (productId == null || ProductId.equals(productId,previousProductId))
+			else if (productId == null || ProductId.equals(productId, previousProductId))
 			{
 				importRecord.setM_Product_ID(previousProductId.getRepoId());
 				productImportResult = ImportRecordResult.Nothing;
@@ -214,19 +210,23 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 			}
 		}
 
-
 		final ProductId productId = ProductId.ofRepoIdOrNull(importRecord.getM_Product_ID());
 		if (productId != null)
 		{
-			// Price List
 			createUpdateProductPrice(importRecord);
-
-			// #3404 Create default product planning
 			productPlanningSchemaBL.createDefaultProductPlanningsForAllProducts();
+
+			// **NEW: Handle Packing Instructions**
+			if (!Check.isEmpty(importRecord.getM_HU_PI_Value(), true))
+			{
+				final ProductImportHelper productHelper = ProductImportHelper.newInstance();
+				productHelper.handlePackingInstructions(importRecord, productId);
+			}
 		}
 
 		return productImportResult;
 	}
+
 
 	private void createUpdateProductPrice(final I_I_Product imp)
 	{

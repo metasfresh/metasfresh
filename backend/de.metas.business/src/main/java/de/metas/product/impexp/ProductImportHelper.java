@@ -2,13 +2,20 @@ package de.metas.product.impexp;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
+import de.metas.product.impexp.ProductsCache.Product;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_I_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidationEngine;
-import de.metas.product.impexp.ProductsCache.Product;
+import org.slf4j.Logger;
+
 import java.math.BigDecimal;
 
 /*
@@ -35,15 +42,16 @@ import java.math.BigDecimal;
 
 /* package */ class ProductImportHelper
 {
-	public static ProductImportHelper newInstance()
-	{
-		return new ProductImportHelper();
-	}
-
 	private ProductImportProcess process;
+	private static final Logger log = LogManager.getLogger(ProductImportHelper.class);
 
 	private ProductImportHelper()
 	{
+	}
+
+	public static ProductImportHelper newInstance()
+	{
+		return new ProductImportHelper();
 	}
 
 	public ProductImportHelper setProcess(final ProductImportProcess process)
@@ -73,7 +81,6 @@ import java.math.BigDecimal;
 			product = context.getCurrentProduct();
 			updateExistingProductNotSave(product.getRecord(), context.getCurrentImportRecord());
 		}
-
 
 		ModelValidationEngine.get().fireImportValidate(process, context.getCurrentImportRecord(), product.getRecord(), IImportInterceptor.TIMING_AFTER_IMPORT);
 
@@ -203,10 +210,126 @@ import java.math.BigDecimal;
 		product.setTrademark(importRecord.getTrademark());
 		product.setPZN(importRecord.getPZN());
 		product.setIsCommissioned(importRecord.isCommissioned());
-		product.setIsPurchased(importRecord.isPurchased());
 
 		return product;
 	}    // MProduct
+
+	public void handlePackingInstructions(@NonNull final I_I_Product importRecord, @NonNull final ProductId productId)
+	{
+		// 1. Retrieve or create the Packing Instruction (M_HU_PI)
+		final I_M_HU_PI packingInstruction = findOrCreatePackingInstruction(importRecord.getM_HU_PI_Value());
+
+		// 2. Link Packing Instruction to Product
+		linkProductToPackingInstruction(productId, packingInstruction, importRecord.isDefaultPacking());
+
+		// 3. Handle Infinite Capacity Flag
+		if (importRecord.getQtyCU() == null)
+		{
+			packingInstruction.setIsInfiniteCapacity(true);
+		}
+
+		// 4. Handle Catch Weight UOM Conversion
+		if ("Catchweight".equalsIgnoreCase(importRecord.getInvoicableQtyBasedOn()))
+		{
+			handleUOMConversion(importRecord);
+		}
+	}
+
+	private I_M_HU_PI findOrCreatePackingInstruction(String packingInstructionValue)
+	{
+		I_M_HU_PI huPi = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU_PI.class)
+				.addEqualsFilter(I_M_HU_PI.COLUMNNAME_Value, packingInstructionValue)
+				.first();
+
+		if (huPi == null)
+		{
+			huPi = InterfaceWrapperHelper.create(I_M_HU_PI.class);
+			huPi.setValue(packingInstructionValue);
+			huPi.setName(packingInstructionValue);
+			huPi.setIsActive(true);
+			huPi.saveEx();
+		}
+		return huPi;
+	}
+
+	private void linkProductToPackingInstruction(@NonNull final ProductId productId,
+												 @NonNull final I_M_HU_PI packingInstruction,
+												 @NonNull final boolean isDefault)
+	{
+		I_M_Product_HU_PI productHuPi = Services.get(IQueryBL.class)
+				.createQuery(I_M_Product_HU_PI.class)
+				.addEqualsFilter(I_M_Product_HU_PI.COLUMNNAME_M_Product_ID, productId.getRepoId())
+				.addEqualsFilter(I_M_Product_HU_PI.COLUMNNAME_M_HU_PI_ID, packingInstruction.getM_HU_PI_ID())
+				.first();
+
+		if (productHuPi == null)
+		{
+			productHuPi = InterfaceWrapperHelper.create(I_M_Product_HU_PI.class);
+			productHuPi.setM_Product_ID(productId.getRepoId());
+			productHuPi.setM_HU_PI_ID(packingInstruction.getM_HU_PI_ID());
+		}
+
+		productHuPi.setIsDefault("Y".equalsIgnoreCase(isDefault));
+		productHuPi.saveEx();
+	}
+
+	private void handleUOMConversion(@NonNull final I_I_Product importRecord)
+	{
+		final int fromUOM = importRecord.getQtyCU_UOM_ID();
+		final int toUOM = importRecord.getC_UOM_ID();
+		BigDecimal multiplierRate = importRecord.getUOM_MultiplierRate();
+
+		if (multiplierRate == null)
+		{
+			multiplierRate = getDefaultConversionRate(fromUOM, toUOM);
+		}
+
+		createUOMConversion(fromUOM, toUOM, multiplierRate);
+	}
+
+	private BigDecimal getDefaultConversionRate(int fromUOM, int toUOM)
+	{
+		I_C_UOM_Conversion conversion = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_UOM_Conversion.class)
+				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_C_UOM_ID, fromUOM)
+				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_C_UOM_To_ID, toUOM)
+				.first();
+
+		return conversion != null ? conversion.getMultiplyRate() : BigDecimal.ONE;
+	}
+
+	private void createUOMConversion(int fromUOM, int toUOM, BigDecimal multiplierRate)
+	{
+		if (fromUOM <= 0 || toUOM <= 0 || multiplierRate == null || multiplierRate.signum() == 0)
+		{
+			log.warn("Skipping UOM conversion: invalid parameters (fromUOM={}, toUOM={}, multiplierRate={})",
+					fromUOM, toUOM, multiplierRate);
+			return;
+		}
+
+		I_C_UOM_Conversion conversion = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_UOM_Conversion.class)
+				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_C_UOM_ID, fromUOM)
+				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_C_UOM_To_ID, toUOM)
+				.first();
+
+		if (conversion == null)
+		{
+			conversion = InterfaceWrapperHelper.newInstance(I_C_UOM_Conversion.class);
+			conversion.setC_UOM_ID(fromUOM);
+			conversion.setC_UOM_To_ID(toUOM);
+			conversion.setMultiplyRate(multiplierRate);
+			conversion.setIsActive(true);
+			conversion.saveEx();
+
+			log.info("Created new UOM conversion: {} -> {} with rate {}", fromUOM, toUOM, multiplierRate);
+		}
+		else
+		{
+			log.info("UOM conversion already exists: {} -> {} with rate {}", fromUOM, toUOM, conversion.getMultiplyRate());
+		}
+	}
 
 
 }
