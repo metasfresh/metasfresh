@@ -1552,6 +1552,27 @@ public interface I_I_Product
 	String COLUMNNAME_Qty = "Qty";
 
 	/**
+	 * Set Menge CU.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyCU (@Nullable BigDecimal QtyCU);
+
+	/**
+	 * Get Menge CU.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyCU();
+
+	ModelColumn<I_I_Product, Object> COLUMN_QtyCU = new ModelColumn<>(I_I_Product.class, "QtyCU", null);
+	String COLUMNNAME_QtyCU = "QtyCU";
+
+	/**
 	 * Set Maßeinheit CU.
 	 *
 	 * <br>Type: Table

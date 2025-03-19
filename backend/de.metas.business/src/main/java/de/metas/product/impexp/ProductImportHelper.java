@@ -3,6 +3,7 @@ package de.metas.product.impexp;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.logging.LogManager;
+import de.metas.product.IProductPackingInstructionService;
 import de.metas.product.ProductId;
 import de.metas.product.impexp.ProductsCache.Product;
 import de.metas.util.Check;
@@ -216,63 +217,16 @@ import java.math.BigDecimal;
 
 	public void handlePackingInstructions(@NonNull final I_I_Product importRecord, @NonNull final ProductId productId)
 	{
-		// 1. Retrieve or create the Packing Instruction (M_HU_PI)
-		final I_M_HU_PI packingInstruction = findOrCreatePackingInstruction(importRecord.getM_HU_PI_Value());
+		Services.get(IProductPackingInstructionService.class).handlePackingInstructions(importRecord, productId);
 
-		// 2. Link Packing Instruction to Product
-		linkProductToPackingInstruction(productId, packingInstruction, importRecord.isDefaultPacking());
-
-		// 3. Handle Infinite Capacity Flag
-		if (importRecord.getQtyCU() == null)
-		{
-			packingInstruction.setIsInfiniteCapacity(true);
-		}
-
-		// 4. Handle Catch Weight UOM Conversion
-		if ("Catchweight".equalsIgnoreCase(importRecord.getInvoicableQtyBasedOn()))
-		{
-			handleUOMConversion(importRecord);
-		}
+		// // 4. Handle Catch Weight UOM Conversion
+		// if ("Catchweight".equalsIgnoreCase(importRecord.getInvoicableQtyBasedOn()))
+		// {
+		// 	handleUOMConversion(importRecord);
+		// }
 	}
 
-	private I_M_HU_PI findOrCreatePackingInstruction(String packingInstructionValue)
-	{
-		I_M_HU_PI huPi = Services.get(IQueryBL.class)
-				.createQueryBuilder(I_M_HU_PI.class)
-				.addEqualsFilter(I_M_HU_PI.COLUMNNAME_Value, packingInstructionValue)
-				.first();
 
-		if (huPi == null)
-		{
-			huPi = InterfaceWrapperHelper.create(I_M_HU_PI.class);
-			huPi.setValue(packingInstructionValue);
-			huPi.setName(packingInstructionValue);
-			huPi.setIsActive(true);
-			huPi.saveEx();
-		}
-		return huPi;
-	}
-
-	private void linkProductToPackingInstruction(@NonNull final ProductId productId,
-												 @NonNull final I_M_HU_PI packingInstruction,
-												 @NonNull final boolean isDefault)
-	{
-		I_M_Product_HU_PI productHuPi = Services.get(IQueryBL.class)
-				.createQuery(I_M_Product_HU_PI.class)
-				.addEqualsFilter(I_M_Product_HU_PI.COLUMNNAME_M_Product_ID, productId.getRepoId())
-				.addEqualsFilter(I_M_Product_HU_PI.COLUMNNAME_M_HU_PI_ID, packingInstruction.getM_HU_PI_ID())
-				.first();
-
-		if (productHuPi == null)
-		{
-			productHuPi = InterfaceWrapperHelper.create(I_M_Product_HU_PI.class);
-			productHuPi.setM_Product_ID(productId.getRepoId());
-			productHuPi.setM_HU_PI_ID(packingInstruction.getM_HU_PI_ID());
-		}
-
-		productHuPi.setIsDefault("Y".equalsIgnoreCase(isDefault));
-		productHuPi.saveEx();
-	}
 
 	private void handleUOMConversion(@NonNull final I_I_Product importRecord)
 	{
@@ -321,7 +275,6 @@ import java.math.BigDecimal;
 			conversion.setC_UOM_To_ID(toUOM);
 			conversion.setMultiplyRate(multiplierRate);
 			conversion.setIsActive(true);
-			conversion.saveEx();
 
 			log.info("Created new UOM conversion: {} -> {} with rate {}", fromUOM, toUOM, multiplierRate);
 		}

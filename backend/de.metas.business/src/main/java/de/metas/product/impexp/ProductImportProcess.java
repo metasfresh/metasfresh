@@ -216,7 +216,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 			createUpdateProductPrice(importRecord);
 			productPlanningSchemaBL.createDefaultProductPlanningsForAllProducts();
 
-			// **NEW: Handle Packing Instructions**
+			// ** Handle Packing Instructions**
 			if (!Check.isEmpty(importRecord.getM_HU_PI_Value(), true))
 			{
 				final ProductImportHelper productHelper = ProductImportHelper.newInstance();

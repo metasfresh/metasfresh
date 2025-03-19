@@ -22,7 +22,11 @@
 
 package de.metas.handlingunits.impl;
 
+import de.metas.handlingunits.HUItemType;
+import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.model.I_M_HU_PI;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
@@ -31,6 +35,7 @@ import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM_Conversion;
@@ -41,11 +46,29 @@ import java.math.BigDecimal;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Builder
-public class CreatePackingInstructionsService
+public class CreatePackingInstructionsCommand
 {
-	private static final Logger log = LogManager.getLogger(CreatePackingInstructionsService.class);
+	private static final Logger log = LogManager.getLogger(CreatePackingInstructionsCommand.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	;
+	@NonNull private final ProductPackingInstructionsRequest request;
+
+	public void execute()
+	{
+		// 1. Retrieve or create the Packing Instruction (M_HU_PI)
+		final I_M_HU_PI piItem = findOrCreatePIItem(request.getM_HU_PI_Value());
+
+		// 2. Link Packing Instruction to Product
+		linkProductToPackingInstruction(request.getProductId(), piItem, request.isDefault(), request.isInfiniteCapacity());
+	}
+
+	@Value
+	@Builder
+	static class PIResult
+	{
+		@NonNull HuPackingInstructionsId piId;
+		@NonNull String piName;
+		@NonNull HuPackingInstructionsVersionId pivId;
+	}
 
 	/**
 	 * Creates or retrieves a Packing Instruction (M_HU_PI)
@@ -78,10 +101,12 @@ public class CreatePackingInstructionsService
 
 	/**
 	 * Links a product to a Packing Instruction by creating an entry in M_HU_PI_Item_Product
+	 * and  Handle Infinite Capacity Flag
 	 */
 	private void linkProductToPackingInstruction(@NonNull final ProductId productId,
 												 @NonNull final I_M_HU_PI packingInstruction,
-												 @NonNull final boolean isDefault)
+												 @NonNull final boolean isDefault,
+												 @NonNull final boolean isInfiniteCapacity)
 	{
 		I_M_HU_PI_Item_Product productHuPi = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
 				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, productId.getRepoId())
@@ -96,9 +121,21 @@ public class CreatePackingInstructionsService
 		}
 
 		productHuPi.setIsDefaultForProduct(isDefault);
+		productHuPi.setIsInfiniteCapacity(isInfiniteCapacity);
 		InterfaceWrapperHelper.saveRecord(productHuPi);
 
 		log.info("Linked Product {} to Packing Instruction {} (Default: {})", productId, packingInstruction.getName(), isDefault);
+	}
+
+	private I_M_HU_PI_Item createPIItem_IncludedHU(final PIResult lu, final PIResult tu, final int qtyTUsPerLU)
+	{
+		final I_M_HU_PI_Item luPIItemRecord = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class);
+		luPIItemRecord.setM_HU_PI_Version_ID(lu.getPivId().getRepoId());
+		luPIItemRecord.setItemType(HUItemType.HandlingUnit.getCode());
+		luPIItemRecord.setQty(BigDecimal.valueOf(qtyTUsPerLU));
+		luPIItemRecord.setIncluded_HU_PI_ID(tu.getPiId().getRepoId());
+		saveRecord(luPIItemRecord);
+		return luPIItemRecord;
 	}
 
 	/**

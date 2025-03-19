@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_I_Product extends org.compiere.model.PO implements I_I_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1540704792L;
+	private static final long serialVersionUID = -1396481618L;
 
     /** Standard Constructor */
     public X_I_Product (final Properties ctx, final int I_Product_ID, @Nullable final String trxName)
@@ -961,6 +961,19 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 	public BigDecimal getQty() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Qty);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyCU (final @Nullable BigDecimal QtyCU)
+	{
+		set_Value (COLUMNNAME_QtyCU, QtyCU);
+	}
+
+	@Override
+	public BigDecimal getQtyCU() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyCU);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
