@@ -354,7 +354,7 @@ Feature: Modular contract log from purchase order for raw product
 
     And after not more than 30s, ModCntr_Logs are found:
       | ModCntr_Log_ID.Identifier | Record_ID.Identifier | ContractType    | OPT.CollectionPoint_BPartner_ID.Identifier | OPT.M_Warehouse_ID.Identifier | M_Product_ID.Identifier | OPT.Producer_BPartner_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | Qty | TableName       | C_Flatrate_Term_ID.Identifier | ModCntr_Type_ID.Identifier | OPT.Processed | OPT.ModCntr_Log_DocumentType | OPT.C_Currency_ID.ISO_Code | OPT.C_UOM_ID.X12DE355 | OPT.Amount | OPT.Harvesting_Year_ID.Identifier | OPT.ModCntr_Module_ID.Identifier | OPT.PriceActual | OPT.Price_UOM_ID.X12DE355 | OPT.ProductName              | OPT.IsBillable |
-      | log_inv_1                 | inv_1_l1             | ModularContract | bp_moduleLogPO                             | warehouse_06032024_1          | rawProduct              | bp_moduleLogPO                      | bp_moduleLogPO                  | -50 | M_InventoryLine | moduleLogContract_1           | modCntr_type_1             | false         | Inventory                    | EUR                        | PCE                   | -950       | y2022                             | definitive_module                | 19.00           | PCE                       | salesOnRawProduct_06032024_1 | Y              |
+      | log_inv_1                 | inv_1_l1             | ModularContract | bp_moduleLogPO                             | warehouse_06032024_1          | rawProduct              | bp_moduleLogPO                      | bp_moduleLogPO                  | -50 | M_InventoryLine | moduleLogContract_1           | modCntr_type_1             | false         | Inventory                    | EUR                        | PCE                   | -1000      | y2022                             | definitive_module                | 20.00           | PCE                       | salesOnRawProduct_06032024_1 | Y              |
 
     And create definitive invoice
       | C_Flatrate_Term_ID.Identifier | AD_User_ID.Identifier | OPT.DateInvoiced | OPT.DateAcct |
@@ -370,16 +370,16 @@ Feature: Modular contract log from purchase order for raw product
 
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.InvoiceRule | OPT.PriceActual | OPT.NetAmtToInvoice | OPT.NetAmtInvoiced | OPT.Processed |
-      | candidate_definitive              | 0            | 50             | 50               | I               | -19             | 0                   | -950               | Y             |
+      | candidate_definitive              | 0            | 50             | 50               | I               | -20             | 0                   | -1000              | Y             |
 
     Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus | OPT.TotalLines |
-      | candidate_definitive              | invoice_2               | CO            | 950            |
+      | candidate_definitive              | invoice_2               | CO            | 1000           |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm | processed | docStatus | OPT.GrandTotal | OPT.C_DocType_ID.Identifier |
-      | invoice_2               | bp_moduleLogPO           | bp_moduleLogPO_Location           | 1000002     | true      | CO        | 1130.5         | definitive_cm               |
+      | invoice_2               | bp_moduleLogPO           | bp_moduleLogPO_Location           | 1000002     | true      | CO        | 1190           | definitive_cm               |
 
     And validate created modular invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | ProductName                  | QtyInvoiced | Processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
-      | invoiceLine_2_1             | invoice_2               | rawProduct              | salesOnRawProduct_06032024_1 | 50          | true      | -19              | 19              | 950            | PCE                   | PCE                       |
+      | invoiceLine_2_1             | invoice_2               | rawProduct              | salesOnRawProduct_06032024_1 | 50          | true      | -20              | 20              | 1000           | PCE                   | PCE                       |
