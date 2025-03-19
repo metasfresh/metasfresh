@@ -310,6 +310,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 				.discountAmt(paymentDiscountAmt)
 				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
 				.invoiceIsCreditMemo(invoiceBL.isCreditMemo(invoice))
+				.invoiceIsRetour(invoiceBL.isRetour(invoice))
 				.invoiceBPartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()))
 				.orgId(remittanceAdvice.getOrgId())
 				.clientId(remittanceAdvice.getClientId())
