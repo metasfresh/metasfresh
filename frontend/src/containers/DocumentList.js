@@ -320,50 +320,45 @@ class DocumentListContainer extends Component {
    * @summary ToDo: Describe the method.
    */
   fetchLayoutAndData = ({ isNewFilter = false, locationAreaSearch } = {}) => {
-    const {
-      windowId,
-      type,
-      viewProfileId,
-      setModalTitle,
-      viewId,
-      fetchLayout,
-      updateRawModal,
-      setModalDescription,
-      isModal,
-    } = this.props;
+    const { windowId, type, viewProfileId, isModal, fetchLayout } = this.props;
 
     fetchLayout(windowId, type, viewProfileId, isModal)
       .then((response) => {
-        if (this.mounted) {
-          const { allowedCloseActions } = response;
+        if (!this.mounted) {
+          console.log('Skip updating because no longer mounted');
+        }
 
-          // TODO: Check if we still need to do this
-          if (isModal) {
-            if (allowedCloseActions) {
-              updateRawModal(windowId, { allowedCloseActions });
-            }
+        const { viewId, setModalTitle, updateRawModal, setModalDescription } =
+          this.props;
+
+        const { allowedCloseActions } = response;
+
+        // TODO: Check if we still need to do this
+        if (isModal) {
+          if (allowedCloseActions) {
+            updateRawModal(windowId, { allowedCloseActions });
           }
+        }
 
-          if (viewId) {
-            this.connectWebSocket(viewId);
+        if (viewId) {
+          this.connectWebSocket(viewId);
 
-            if (!isNewFilter) {
-              this.browseView();
-            } else {
-              this.filterCurrentView(locationAreaSearch);
-            }
+          if (!isNewFilter) {
+            this.browseView();
           } else {
-            this.createNewView();
+            this.filterCurrentView(locationAreaSearch);
           }
+        } else {
+          this.createNewView();
+        }
 
-          if (response.data) {
-            if (response.data.caption) {
-              setModalTitle && setModalTitle(response.data.caption);
-            }
-            if (response.data.description) {
-              setModalDescription &&
-                setModalDescription(response.data.description);
-            }
+        if (response.data) {
+          if (response.data.caption) {
+            setModalTitle && setModalTitle(response.data.caption);
+          }
+          if (response.data.description) {
+            setModalDescription &&
+              setModalDescription(response.data.description);
           }
         }
       })
