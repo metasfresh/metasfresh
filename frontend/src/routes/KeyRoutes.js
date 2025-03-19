@@ -7,7 +7,7 @@ import { createWindow } from '../actions/WindowActions';
 
 import Board from '../containers/Board.js';
 import DocList from '../containers/DocList.js';
-import MasterWindow from '../containers/MasterWindow.js';
+import MasterWindowContainer from '../containers/MasterWindowContainer.js';
 
 /**
  * @file Module holding routes that required to be a bit more specific, than the
@@ -100,7 +100,7 @@ const RawMasterWindowRoute = (props) => {
     dispatch(createWindow({ windowId, docId, urlSearchParams }));
   }, [windowId, docId, urlSearchParams]);
 
-  return <MasterWindow {...props} params={matchParams} />;
+  return <MasterWindowContainer {...props} params={matchParams} />;
 };
 
 RawMasterWindowRoute.propTypes = {
