@@ -15,10 +15,10 @@ import { toQRCodeDisplayable, toQRCodeString } from '../../../utils/qrCode/hu';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import UnpickDialog from './UnpickDialog';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
-import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
+import { useMobileLocation } from '../../../hooks/useMobileLocation';
 
 const PickStepScreen = () => {
-  const { applicationId, wfProcessId, activityId, lineId, stepId, altStepId } = useMobileNavigation();
+  const { applicationId, wfProcessId, activityId, lineId, stepId, altStepId } = useMobileLocation();
   const { pickFrom, qtyToPick, uom } = useSelector(
     (state) => getPropsFromState({ state, wfProcessId, activityId, lineId, stepId, altStepId }),
     shallowEqual

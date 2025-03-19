@@ -12,6 +12,7 @@ import { useUITraceLocationChange } from '../../utils/ui_trace/useUITraceLocatio
 import * as uiTrace from '../../utils/ui_trace';
 import { useMobileNavigation } from '../../hooks/useMobileNavigation';
 import { computeId } from '../../utils/testing_support';
+import { useMobileLocation } from '../../hooks/useMobileLocation';
 
 export const ApplicationLayout = ({ applicationId, Component }) => {
   const history = useMobileNavigation();
@@ -111,7 +112,7 @@ BottomButton.propTypes = {
 };
 
 const isWFProcessRequiredButNotLoaded = () => {
-  const { wfProcessId } = useMobileNavigation();
+  const { wfProcessId } = useMobileLocation();
   if (!wfProcessId) {
     return false;
   }

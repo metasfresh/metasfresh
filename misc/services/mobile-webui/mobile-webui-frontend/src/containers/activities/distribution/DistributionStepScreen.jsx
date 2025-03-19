@@ -18,12 +18,12 @@ import { postDistributionUnpickEvent } from '../../../api/distribution';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { toastError } from '../../../utils/toast';
 import UnpickDialog from '../picking/UnpickDialog';
-import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
+import { useMobileLocation } from '../../../hooks/useMobileLocation';
 
 const HIDE_UNDO_BUTTONS = true; // hide them because they are not working
 
 const DistributionStepScreen = () => {
-  const { applicationId, wfProcessId, activityId, lineId, stepId } = useMobileNavigation();
+  const { applicationId, wfProcessId, activityId, lineId, stepId } = useMobileLocation();
 
   const {
     qtyToMove,
