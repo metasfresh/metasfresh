@@ -485,6 +485,33 @@ public interface I_M_Picking_Job_Line
 	String COLUMNNAME_M_ShipmentSchedule_ID = "M_ShipmentSchedule_ID";
 
 	/**
+	 * Set Manufacturing Order.
+	 * Manufacturing Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPP_Order_ID (int PP_Order_ID);
+
+	/**
+	 * Get Manufacturing Order.
+	 * Manufacturing Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPP_Order_ID();
+
+	@Nullable org.eevolution.model.I_PP_Order getPP_Order();
+
+	void setPP_Order(@Nullable org.eevolution.model.I_PP_Order PP_Order);
+
+	ModelColumn<I_M_Picking_Job_Line, org.eevolution.model.I_PP_Order> COLUMN_PP_Order_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "PP_Order_ID", org.eevolution.model.I_PP_Order.class);
+	String COLUMNNAME_PP_Order_ID = "PP_Order_ID";
+
+	/**
 	 * Set Processed.
 	 *
 	 * <br>Type: YesNo

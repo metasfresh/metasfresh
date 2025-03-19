@@ -65,6 +65,7 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
+import org.eevolution.api.PPOrderId;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
@@ -418,6 +419,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.isManuallyClosed(record.isManuallyClosed())
 				.pickingUnit(computePickingUnit(UomId.ofRepoIdOrNull(record.getCatch_UOM_ID()), packingInfo, pickingJobOptions))
 				.currentPickingTarget(currentPickingTarget)
+				.pickFromManufacturingOrderId(PPOrderId.ofRepoIdOrNull(record.getPP_Order_ID()))
 				.build();
 	}
 

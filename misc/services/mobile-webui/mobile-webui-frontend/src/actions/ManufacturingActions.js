@@ -1,7 +1,7 @@
 import {
   UPDATE_MANUFACTURING_ISSUE_QTY,
-  UPDATE_MANUFACTURING_RECEIPT_QTY,
   UPDATE_MANUFACTURING_LU_RECEIPT_TARGET,
+  UPDATE_MANUFACTURING_RECEIPT_QTY,
   UPDATE_MANUFACTURING_TU_RECEIPT_TARGET,
 } from '../constants/ManufacturingActionTypes';
 
@@ -87,8 +87,8 @@ export const updateManufacturingTUReceiptTarget = ({ wfProcessId, activityId, li
   };
 };
 
-export const updateManufacturingReceiptQty = ({ wfProcessId, activityId, lineId, qtyReceived }) => {
-  console.log('updateManufacturingReceiptQty', { wfProcessId, activityId, lineId, qtyReceived });
+export const updateManufacturingReceiptQty = ({ wfProcessId, activityId, lineId, qtyReceived, pickTo }) => {
+  console.log('updateManufacturingReceiptQty', { wfProcessId, activityId, lineId, qtyReceived, pickTo });
   return (dispatch, getState) => {
     const { aggregateToLU, aggregateToTU } = getAggregateTarget({
       globalState: getState(),
@@ -100,6 +100,7 @@ export const updateManufacturingReceiptQty = ({ wfProcessId, activityId, lineId,
       wfProcessId,
       activityId,
       receiveFrom: { lineId, aggregateToLU, aggregateToTU, qtyReceived },
+      pickTo,
     }) //
       .then((response) => {
         dispatch({ type: UPDATE_MANUFACTURING_RECEIPT_QTY, payload: { wfProcessId, activityId, lineId, qtyReceived } });

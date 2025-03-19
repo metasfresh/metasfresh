@@ -1,5 +1,4 @@
 import React from 'react';
-import { useRouteMatch } from 'react-router-dom';
 import { shallowEqual, useSelector } from 'react-redux';
 import { getActivityById } from '../../../reducers/wfProcesses';
 import { getNextEligibleLineToPick } from '../../../utils/picking';
@@ -11,15 +10,11 @@ import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
 
 const PickProductsScanScreen = () => {
-  const { history } = useScreenDefinition({
+  const { applicationId, wfProcessId, activityId, history } = useScreenDefinition({
     screenId: 'PickProductsScanScreen',
     captionKey: 'activities.picking.scanQRCode',
     back: getWFProcessScreenLocation,
   });
-
-  const {
-    params: { applicationId, workflowId: wfProcessId, activityId },
-  } = useRouteMatch();
 
   const { activity } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId }), shallowEqual);
 

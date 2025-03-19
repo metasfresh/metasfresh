@@ -298,6 +298,7 @@ public class PickingJobCreateCommand
 				.deliveryBPLocationId(items.getSingleCustomerLocationId().orElseThrow(() -> new AdempiereException("No single customer location found for " + items)))
 				.shipmentScheduleId(items.getSingleShipmentScheduleIdIfUnique().orElseThrow(() -> new AdempiereException("No shipment schedule found for " + items)))
 				.catchWeightUomId(items.getSingleCatchWeightUomIdIfUnique().orElse(null))
+				.pickFromManufacturingOrderId(items.getSingleManufacturingOrderId().orElse(null))
 				.build();
 	}
 
