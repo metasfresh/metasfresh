@@ -6,6 +6,7 @@ import { MaterialReceiptLineScreen } from './receipt/MaterialReceiptLineScreen';
 import { YesNoDialog } from '../../dialogs/YesNoDialog';
 import { ManufacturingJobsListScreen } from './ManufacturingJobsListScreen';
 import { PickingJobLineScreen } from '../picking/PickingJobLineScreen';
+import { GenerateHUQRCodesScreen } from './generateHUQRCodes/GenerateHUQRCodesScreen';
 
 const NAME = 'ManufacturingJobScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -23,6 +24,16 @@ export const ManufacturingJobScreen = {
     goBackToPickingJobLine: async () => await test.step(`${NAME} - Go back to picking job line`, async () => {
         await page.locator(ID_BACK_BUTTON).tap();
         await PickingJobLineScreen.waitForScreen();
+    }),
+
+    generateSingleHUQRCode: async ({ piTestId, expectNumberOfHUs, expectNumberOfCopies }) => await test.step(`${NAME} - Generate HU QR codes`, async () => {
+        await page.getByTestId(`generateHUQRCodes-button`).tap();
+        await GenerateHUQRCodesScreen.waitForScreen();
+        const generatedQRCodesResult = await GenerateHUQRCodesScreen.print({ piTestId, expectNumberOfHUs: 1, expectNumberOfCopies: 1 });
+        expect(generatedQRCodesResult?.qrCodes).toHaveLength(1);
+        const generatedQRCode = generatedQRCodesResult.qrCodes[0].code;
+        console.log('Generated QR codes:\n' + generatedQRCode);
+        return generatedQRCode;
     }),
 
     issueRawProduct: async ({ index, qrCode, expectQtyEntered }) => await test.step(`${NAME} - Issue line ${index}`, async () => {

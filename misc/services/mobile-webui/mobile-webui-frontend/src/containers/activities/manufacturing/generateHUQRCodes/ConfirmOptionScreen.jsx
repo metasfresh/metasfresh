@@ -15,7 +15,7 @@ import { getWFProcessScreenLocation } from '../../../../routes/workflow_location
 
 const ConfirmOptionScreen = () => {
   const { history, url, wfProcessId, activityId, optionIndex } = useScreenDefinition({
-    screenId: 'generateHUQRCodes.ConfirmOptionScreen',
+    screenId: 'GenerateHUQRCodesConfirmScreen',
     back: selectOptionsLocation,
   });
 
@@ -81,6 +81,7 @@ const ConfirmOptionScreen = () => {
             <th>{trl('activities.mfg.generateHUQRCodes.numberOfHUs')}</th>
             <td>
               <QtyInputField
+                testId="numberOfHUs-field"
                 qty={numberOfHUs}
                 integerValuesOnly
                 validateQtyEntered={validateQtyEntered}
@@ -94,6 +95,7 @@ const ConfirmOptionScreen = () => {
             <th>{trl('activities.mfg.generateHUQRCodes.numberOfCopies')}</th>
             <td>
               <QtyInputField
+                testId="numberOfCopies-field"
                 qty={numberOfCopies}
                 integerValuesOnly
                 validateQtyEntered={validateNumberOfCopies}
@@ -110,6 +112,7 @@ const ConfirmOptionScreen = () => {
           caption={trl('activities.mfg.generateHUQRCodes.print')}
           disabled={processing || !isValidNumberOfHUs}
           onClick={onPrintClick}
+          testId="print-button"
         />
       </div>
     </>

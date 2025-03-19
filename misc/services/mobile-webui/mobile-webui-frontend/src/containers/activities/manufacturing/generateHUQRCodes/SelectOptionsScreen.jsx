@@ -10,7 +10,7 @@ import { getWFProcessScreenLocation } from '../../../../routes/workflow_location
 
 const SelectOptionsScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId } = useScreenDefinition({
-    screenId: 'generateHUQRCodes.SelectOptionsScreen',
+    screenId: 'GenerateHUQRCodesScreen',
     back: getWFProcessScreenLocation,
   });
 
@@ -35,7 +35,12 @@ const SelectOptionsScreen = () => {
   return (
     <div className="section pt-2">
       {options.map((optionItem, optionIndex) => (
-        <Button key={optionIndex} caption={optionItem.caption} onClick={() => onOptionButtonClicked(optionIndex)} />
+        <Button
+          key={optionIndex}
+          caption={optionItem.caption}
+          onClick={() => onOptionButtonClicked(optionIndex)}
+          testId={optionItem.testId}
+        />
       ))}
     </div>
   );

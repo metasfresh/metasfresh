@@ -58,7 +58,7 @@ const createMasterdata = async () => {
                     bpartner: 'BP1',
                     warehouse: 'wh',
                     datePromised: '2025-03-01T00:00:00.000+02:00',
-                    lines: [{ product: 'P2', qty: 80, piItemProduct: 'P2_5CU' }]
+                    lines: [{ product: 'P2', qty: 5, piItemProduct: 'P2_5CU' }]
                 }
             },
         }
@@ -80,16 +80,20 @@ test('Assemble/Manufacture while picking test', async ({ page }) => {
     await PickingJobScreen.clickLineButton({ index: 1 });
 
     await PickingJobLineScreen.clickManufactureButton();
+
+    await ManufacturingJobScreen.waitForScreen();
+    const generatedQRCode = await ManufacturingJobScreen.generateSingleHUQRCode({ piTestId: masterdata.packingInstructions.P2x25x5.tuPITestId });
     await ManufacturingJobScreen.issueRawProduct({
         index: 1,
-        expectQtyEntered: 80,
+        expectQtyEntered: 5,
         qrCode: masterdata.handlingUnits.HU1.qrCode,
     })
     await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
-    await MaterialReceiptLineScreen.selectNewLUTarget({ luPIItemTestId: masterdata.packingInstructions.P2x25x5.luPIItemTestId });
-    await MaterialReceiptLineScreen.receiveQty({ expectQtyEntered: 80 });
+    await MaterialReceiptLineScreen.selectExistingHUTarget({ huQRCode: generatedQRCode });
+    await MaterialReceiptLineScreen.receiveQty({ expectQtyEntered: 5 });
     await ManufacturingJobScreen.goBackToPickingJobLine();
 
     await PickingJobLineScreen.goBack();
-    // await PickingJobScreen.complete();
+    await PickingJobScreen.pickHU({ qrCode: generatedQRCode });
+    await PickingJobScreen.complete();
 });
