@@ -24,10 +24,6 @@ package de.metas.product.impexp;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.model.I_M_Product;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.impexp.BPCreditLimitImportRequest;
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.logging.LogManager;
@@ -37,34 +33,29 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.IProductDAO;
 import de.metas.product.IProductPlanningSchemaBL;
-import de.metas.product.Product;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
 import org.adempiere.model.I_M_ProductScalePrice;
 import org.adempiere.util.lang.IMutable;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_I_Product;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_ProductPrice;
-import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_Product;
 import org.compiere.model.X_M_ProductPrice;
-import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
@@ -82,11 +73,12 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
-	private final ProductImportHelper productImporter;
+	private final ProductImportHelper productImporter = SpringContextHolder.instance.getBean(ProductImportHelper.class);
 
 	public ProductImportProcess()
 	{
-		productImporter = ProductImportHelper.newInstance().setProcess(this);
+		productImporter
+				.setProcess(this);
 	}
 
 	@Override
@@ -178,7 +170,7 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 			final boolean isInsertOnly)
 	{
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
-		ProductImportContext context = (ProductImportContext) state.getValue();
+		ProductImportContext context = (ProductImportContext)state.getValue();
 		final ImportRecordResult productImportResult;
 
 		if (context == null || !context.isSameProduct(importRecord))
@@ -219,14 +211,12 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 			// ** Handle Packing Instructions**
 			if (!Check.isEmpty(importRecord.getM_HU_PI_Value(), true))
 			{
-				final ProductImportHelper productHelper = ProductImportHelper.newInstance();
-				productHelper.handlePackingInstructions(importRecord, productId);
+				productImporter.handlePackingInstructions(importRecord, productId);
 			}
 		}
 
 		return productImportResult;
 	}
-
 
 	private void createUpdateProductPrice(final I_I_Product imp)
 	{

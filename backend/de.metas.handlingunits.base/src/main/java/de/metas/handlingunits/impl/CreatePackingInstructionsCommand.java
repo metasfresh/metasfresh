@@ -22,23 +22,26 @@
 
 package de.metas.handlingunits.impl;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUItemType;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.logging.LogManager;
-import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM_Conversion;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -47,12 +50,14 @@ public class CreatePackingInstructionsCommand
 {
 	private static final Logger log = LogManager.getLogger(CreatePackingInstructionsCommand.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+
 	@NonNull private final ProductPackingInstructionsRequest request;
 
 	public void execute()
 	{
 		// 1. Retrieve or create the Packing Instruction (M_HU_PI)
-		final I_M_HU_PI piItem = findOrCreatePIItem(request.getM_HU_PI_Value());
+		final I_M_HU_PI_Item piItem = findOrCreatePIItem(request.getM_HU_PI_Value());
 
 		// 2. Link Packing Instruction to Product
 		linkProductToPackingInstruction(request, piItem);
@@ -61,10 +66,11 @@ public class CreatePackingInstructionsCommand
 	/**
 	 * Creates or retrieves a Packing Instruction (M_HU_PI)
 	 */
-	private I_M_HU_PI findOrCreatePIItem(@NonNull final String M_HU_PI_Value)
+	private I_M_HU_PI_Item findOrCreatePIItem(@NonNull final String M_HU_PI_Value)
 	{
 		I_M_HU_PI huPi = queryBL.createQueryBuilder(I_M_HU_PI.class)
 				.addEqualsFilter(I_M_HU_PI.COLUMNNAME_Name, M_HU_PI_Value)
+				.orderByDescending(I_M_HU_PI.COLUMNNAME_Created)
 				.first();
 
 		// create M_HU_Item with M_HU_PI_Version
@@ -75,18 +81,48 @@ public class CreatePackingInstructionsCommand
 			piRecord.setIsActive(true);
 			saveRecord(piRecord);
 
-			final I_M_HU_PI_Version pivRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_PI_Version.class);
-			pivRecord.setM_HU_PI_ID(piRecord.getM_HU_PI_ID());
-			pivRecord.setName(M_HU_PI_Value);
-			pivRecord.setHU_UnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
-			pivRecord.setIsCurrent(true);
-			pivRecord.setIsActive(true);
-			saveRecord(pivRecord);
+			final I_M_HU_PI_Version pivRecord = createHUPIVersion(M_HU_PI_Value, piRecord);
 
-			createPIItem_IncludedHU(pivRecord);
+			return createPIItemHU(pivRecord);
 		}
 
-		return huPi;
+		I_M_HU_PI_Version tuPIVersion = handlingUnitsDAO.retrievePICurrentVersionOrNull(huPi);
+		if (tuPIVersion == null)
+		{
+			tuPIVersion = createHUPIVersion(M_HU_PI_Value, huPi);
+		}
+
+		I_M_HU_PI_Item item = retrievePIItem(tuPIVersion);
+		if (item == null)
+		{
+			item = createPIItemHU(tuPIVersion);
+		}
+
+		return item;
+	}
+
+	private I_M_HU_PI_Item retrievePIItem(@NonNull final I_M_HU_PI_Version version)
+	{
+		final List<I_M_HU_PI_Item> items = handlingUnitsDAO.retrieveAllPIItems(version);
+		if (items.isEmpty() || items.size() > 1)
+		{
+			return null;
+		}
+
+		return items.get(0);
+
+	}
+
+	private @NotNull I_M_HU_PI_Version createHUPIVersion(final @NotNull String M_HU_PI_Value, final I_M_HU_PI piRecord)
+	{
+		final I_M_HU_PI_Version pivRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_PI_Version.class);
+		pivRecord.setM_HU_PI_ID(piRecord.getM_HU_PI_ID());
+		pivRecord.setName(M_HU_PI_Value);
+		pivRecord.setHU_UnitType(X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
+		pivRecord.setIsCurrent(true);
+		pivRecord.setIsActive(true);
+		saveRecord(pivRecord);
+		return pivRecord;
 	}
 
 	/**
@@ -94,36 +130,36 @@ public class CreatePackingInstructionsCommand
 	 * and  Handle Infinite Capacity Flag
 	 */
 	private void linkProductToPackingInstruction(@NonNull final ProductPackingInstructionsRequest request,
-												 @NonNull final I_M_HU_PI packingInstruction)
+												 @NonNull final I_M_HU_PI_Item item)
 	{
 		I_M_HU_PI_Item_Product productHuPi = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
 				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, request.getProductId())
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, packingInstruction.getM_HU_PI_ID())
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, item.getM_HU_PI_Item_ID())
 				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_Qty, request.getQtyCU())
-				.first();
+				.firstOnly();
 
 		if (productHuPi == null)
 		{
 			productHuPi = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
 			productHuPi.setM_Product_ID(request.getProductId().getRepoId());
-			productHuPi.setM_HU_PI_Item_ID(packingInstruction.getM_HU_PI_ID());
+			productHuPi.setM_HU_PI_Item_ID(item.getM_HU_PI_Item_ID());
 			productHuPi.setQty(request.getQtyCU());
+			productHuPi.setValidFrom(SystemTime.asTimestamp());
 		}
 
 		productHuPi.setIsDefaultForProduct(request.isDefault());
 		productHuPi.setIsInfiniteCapacity(request.isInfiniteCapacity());
 		saveRecord(productHuPi);
 
-		log.info("Linked Product {} to Packing Instruction {})", request.getProductId(), packingInstruction.getName());
+		log.info("Linked Product {} to Packing Instruction {})", request.getProductId(), item.getM_HU_PI_Item_ID());
 	}
 
-	private I_M_HU_PI_Item createPIItem_IncludedHU(final I_M_HU_PI_Version pivRecord)
+	private I_M_HU_PI_Item createPIItemHU(final I_M_HU_PI_Version pivRecord)
 	{
 		final I_M_HU_PI_Item luPIItemRecord = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item.class);
 		luPIItemRecord.setM_HU_PI_Version_ID(pivRecord.getM_HU_PI_Version_ID());
 		luPIItemRecord.setItemType(HUItemType.HandlingUnit.getCode());
 		luPIItemRecord.setQty(BigDecimal.ONE);
-		luPIItemRecord.setIncluded_HU_PI_ID(pivRecord.getM_HU_PI_ID());
 		saveRecord(luPIItemRecord);
 		return luPIItemRecord;
 	}

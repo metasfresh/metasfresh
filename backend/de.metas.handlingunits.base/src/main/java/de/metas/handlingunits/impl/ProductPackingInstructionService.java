@@ -27,7 +27,9 @@ import de.metas.product.ProductId;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.compiere.model.I_I_Product;
+import org.springframework.stereotype.Service;
 
+@Service
 public class ProductPackingInstructionService implements IProductPackingInstructionService
 {
 
@@ -41,6 +43,7 @@ public class ProductPackingInstructionService implements IProductPackingInstruct
 		final ProductPackingInstructionsRequest request = ProductPackingInstructionsRequest.builder()
 				.productId(productId)
 				.qtyCU(importRecord.getQtyCU())
+				.M_HU_PI_Value(importRecord.getM_HU_PI_Value())
 				.isDefault(importRecord.isDefaultPacking())
 				.isInfiniteCapacity(importRecord.getQtyCU() != null)
 				.build();

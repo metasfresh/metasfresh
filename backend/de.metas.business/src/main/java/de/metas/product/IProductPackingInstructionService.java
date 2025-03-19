@@ -26,7 +26,7 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_I_Product;
 
-public interface IProductPackingInstructionService extends ISingletonService
+public interface IProductPackingInstructionService
 {
 	public void handlePackingInstructions(@NonNull final I_I_Product importRecord, @NonNull final ProductId productId);
 }
