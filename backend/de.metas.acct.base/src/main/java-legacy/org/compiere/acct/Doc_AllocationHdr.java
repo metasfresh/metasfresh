@@ -853,7 +853,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			factLineBuilder.setAccount(getCustomerAccount(BPartnerCustomerAccountType.C_Receivable, as));
 
 			// ARC
-			if (line.isCreditMemoInvoice())
+			if (line.isCreditMemoInvoice() && !line.isRetour())
 			{
 				factLineBuilder.setAmtSource(allocationSource, null);
 			}
@@ -928,7 +928,10 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		//
 		// Make sure the compensation amount of this line and of it's counter part are matching
 		final BigDecimal counterLine_compensationAmtSource = counterLine.getAllocatedAmt();
-		if (compensationAmtSource.compareTo(counterLine_compensationAmtSource.negate()) != 0)
+		// This matching is unnatural, but it is needed to allocate retour (sales) credit memos with service invoices
+		final boolean isMatchingForRetourAndService = line.isRetour() && counterLine.isService() && compensationAmtSource.compareTo(counterLine_compensationAmtSource) == 0;
+		final boolean isMatchingForGeneralCases = !(line.isRetour() && counterLine.isService()) && compensationAmtSource.compareTo(counterLine_compensationAmtSource.negate()) != 0;
+		if(!isMatchingForGeneralCases && !isMatchingForRetourAndService)
 		{
 			throw newPostingException()
 					.setFact(fact)
@@ -946,13 +949,22 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.alsoAddZeroLine();
 		if (counterLine.isSOTrxInvoice())
 		{
+			if(line.isService() && counterLine.isRetour())
 			factLineBuilder.setAccount(getCustomerAccount(BPartnerCustomerAccountType.C_Receivable, as));
 			factLineBuilder.setAmtSource(null, compensationAmtSource.negate());
 		}
 		else
 		{
-			factLineBuilder.setAccount(getVendorAccount(BPartnerVendorAccountType.V_Liability, as));
-			factLineBuilder.setAmtSource(compensationAmtSource, null);
+			if(counterLine.isService() && line.isRetour())
+			{
+				factLineBuilder.setAccount(getVendorAccount(BPartnerVendorAccountType.V_Liability, as));
+				factLineBuilder.setAmtSource( compensationAmtSource.negate(), null );
+			}
+			else
+			{
+				factLineBuilder.setAccount(getVendorAccount(BPartnerVendorAccountType.V_Liability, as));
+				factLineBuilder.setAmtSource(compensationAmtSource, null);
+			}
 		}
 		final FactLine factLine = factLineBuilder.buildAndAdd();
 
