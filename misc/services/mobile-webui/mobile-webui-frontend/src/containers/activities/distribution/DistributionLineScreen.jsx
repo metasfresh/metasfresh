@@ -10,7 +10,7 @@ import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator
 import { distributionLinePickFromScreenLocation } from '../../../routes/distribution';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
-import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
+import { useMobileLocation } from '../../../hooks/useMobileLocation';
 
 const DistributionLineScreen = () => {
   const { history, applicationId, wfProcessId, activityId, lineId } = useDistributionScreenDefinition({
@@ -82,7 +82,7 @@ export const useDistributionLineProps = ({ wfProcessId, activityId, lineId }) =>
 //
 
 export const useDistributionScreenDefinition = ({ screenId, captionKey, back } = {}) => {
-  const { wfProcessId, activityId, lineId } = useMobileNavigation();
+  const { wfProcessId, activityId, lineId } = useMobileLocation();
 
   const { productName, uom, qtyToMove } = useDistributionLineProps({ wfProcessId, activityId, lineId });
 
