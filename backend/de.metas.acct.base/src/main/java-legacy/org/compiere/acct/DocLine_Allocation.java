@@ -305,16 +305,6 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			return false;
 		}
 
-		// The invoice shall not be a credit memo, unless it's allocated with a service
-		if (isCreditMemoInvoice())
-		{
-			if(!counterLine.isService())
-			{
-				return false;
-			}
-		}
-
-
 		// The counter line shall have a invoice set
 		if (!counterLine.hasInvoiceDocument())
 		{
