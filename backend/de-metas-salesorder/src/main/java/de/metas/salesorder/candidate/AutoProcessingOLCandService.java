@@ -61,6 +61,7 @@ public class AutoProcessingOLCandService
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
 	private final OrderService orderService;
 	private final ShipmentService shipmentService;
