@@ -18,8 +18,6 @@ import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
 import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
-import de.metas.manufacturing.generatedcomponents.ComponentGeneratorRepository;
-import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.resource.ResourceService;

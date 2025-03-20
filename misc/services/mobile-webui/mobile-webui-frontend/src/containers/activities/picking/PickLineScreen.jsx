@@ -21,6 +21,9 @@ import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
 import SelectCurrentLUTUButtons from './SelectCurrentLUTUButtons';
+import { startWorkflowRequest } from '../../../api/launchers';
+import { toastError } from '../../../utils/toast';
+import { APPLICATION_ID_Manufacturing } from '../../../apps/manufacturing/constants';
 
 const PickLineScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
@@ -31,6 +34,7 @@ const PickLineScreen = () => {
 
   const {
     caption,
+    pickFromManufacturingOrder,
     pickFromHUQRCode,
     allowPickingAnyHU,
     steps,
@@ -46,6 +50,30 @@ const PickLineScreen = () => {
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
   useHeaderUpdate({ url, caption, uom, pickingSlot, pickingUnit, packingItemName, qtyToPick, qtyPicked });
+
+  const onPickFromManufacturingOrderClicked = () => {
+    startWorkflowRequest({
+      wfParameters: {
+        applicationId: APPLICATION_ID_Manufacturing,
+        ...pickFromManufacturingOrder.wfParameters,
+      },
+    })
+      .then((wfProcess) => {
+        dispatch(
+          updateWFProcess({
+            wfProcess,
+            parent: { url, applicationId, wfProcessId, activityId, lineId },
+          })
+        );
+        history.push(
+          getWFProcessScreenLocation({
+            applicationId: APPLICATION_ID_Manufacturing,
+            wfProcessId: wfProcess.id,
+          })
+        );
+      })
+      .catch((axiosError) => toastError({ axiosError }));
+  };
 
   const onScanButtonClick = () =>
     history.push(
@@ -83,8 +111,9 @@ const PickLineScreen = () => {
     });
   };
 
+  const isShowPickFromManufacturingOrder = !manuallyClosed && pickFromManufacturingOrder != null;
   const isShowScanQRCodeButton = !manuallyClosed && allowPickingAnyHU && pickFromHUQRCode == null;
-  const isShowPickButton = !manuallyClosed && pickFromHUQRCode != null;
+  const isShowPickHUButton = !manuallyClosed && pickFromHUQRCode != null;
 
   return (
     <div className="section pt-2">
@@ -97,10 +126,18 @@ const PickLineScreen = () => {
         />
         <br />
 
+        {isShowPickFromManufacturingOrder && (
+          <ButtonWithIndicator
+            captionKey="activities.picking.PickFromManufacturingOrder"
+            onClick={onPickFromManufacturingOrderClicked}
+          />
+        )}
         {isShowScanQRCodeButton && (
           <ButtonWithIndicator captionKey="activities.picking.scanQRCode" onClick={onScanButtonClick} />
         )}
-        {isShowPickButton && <ButtonWithIndicator captionKey="activities.picking.PickHU" onClick={onPickButtonClick} />}
+        {isShowPickHUButton && (
+          <ButtonWithIndicator captionKey="activities.picking.PickHU" onClick={onPickButtonClick} />
+        )}
         {steps.length > 0 &&
           steps.map((stepItem, idx) => {
             return (
@@ -139,6 +176,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
   return {
     caption: line?.caption,
     pickFromHUQRCode: getCurrentPickFromHUQRCode({ activity }),
+    pickFromManufacturingOrder: line?.pickFromManufacturingOrder,
     allowPickingAnyHU: isAllowPickingAnyHUForLine({ line }),
     steps: Object.values(stepsById),
     pickingSlot: line?.pickingSlot,

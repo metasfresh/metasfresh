@@ -2,6 +2,7 @@ package de.metas.manufacturing.workflows_api.activity_handlers.generateHUQRCodes
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.frontend_testing.JsonTestId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
@@ -13,6 +14,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.manufacturing.job.model.FinishedGoodsReceive;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
+import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
@@ -89,6 +91,7 @@ public class GenerateHUQRCodesActivityHandler implements WFActivityHandler
 
 		//
 		// TU packing instructions
+		final FinishedGoodsReceiveLineId finishedGoodsReceiveLineId = finishedGoodsReceiveLine.getId();
 		for (final I_M_HU_PI_Item_Product tuPIItemProduct : getTUPIItemProducts(finishedGoodsReceiveLine, customerId))
 		{
 			final HuPackingInstructionsId tuPackingInstructionsId = getTUPackingInstructionsId(tuPIItemProduct);
@@ -97,8 +100,9 @@ public class GenerateHUQRCodesActivityHandler implements WFActivityHandler
 			result.add(JsonPackingInstructions.builder()
 					.caption(tuPIItemProduct.getName())
 					.packingInstructionsId(tuPackingInstructionsId)
-					.finishedGoodsReceiveLineId(finishedGoodsReceiveLine.getId())
+					.finishedGoodsReceiveLineId(finishedGoodsReceiveLineId)
 					.numberOfHUs(qtyTUs.toInt())
+					.testId(toPITestId(tuPackingInstructionsId))
 					.build());
 
 			handlingUnitsBL.retrieveParentPIItemsForParentPI(tuPackingInstructionsId, HUType.LoadLogistiqueUnit.getCode(), customerId)
@@ -113,15 +117,24 @@ public class GenerateHUQRCodesActivityHandler implements WFActivityHandler
 		huPackingInstructionsVersionIds.stream()
 				.map(handlingUnitsBL::getPI)
 				.distinct()
-				.map(luPacking -> JsonPackingInstructions.builder()
-						.caption(luPacking.getName())
-						.packingInstructionsId(HuPackingInstructionsId.ofRepoId(luPacking.getM_HU_PI_ID()))
-						.finishedGoodsReceiveLineId(finishedGoodsReceiveLine.getId())
-						.numberOfHUs(1)
-						.build())
+				.map(luPacking -> {
+					final HuPackingInstructionsId luPackingInstructionsId = HuPackingInstructionsId.ofRepoId(luPacking.getM_HU_PI_ID());
+					return JsonPackingInstructions.builder()
+							.caption(luPacking.getName())
+							.packingInstructionsId(luPackingInstructionsId)
+							.finishedGoodsReceiveLineId(finishedGoodsReceiveLineId)
+							.numberOfHUs(1)
+							.testId(toPITestId(luPackingInstructionsId))
+							.build();
+				})
 				.forEach(result::add);
 
 		return result;
+	}
+
+	public static JsonTestId toPITestId(@NonNull final HuPackingInstructionsId packingInstructionsId)
+	{
+		return JsonTestId.ofString("pi-" + packingInstructionsId.getRepoId());
 	}
 
 	private List<I_M_HU_PI_Item_Product> getTUPIItemProducts(final @NonNull FinishedGoodsReceiveLine finishedGoodsReceiveLine, final @Nullable BPartnerId customerId)

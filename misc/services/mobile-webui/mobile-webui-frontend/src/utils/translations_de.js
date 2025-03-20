@@ -91,10 +91,11 @@ const translations = {
     },
     picking: {
       PickingLine: 'Pick Zeile',
+      PickFromManufacturingOrder: 'Produzieren',
       PickHU: 'HU kommissionieren',
       scanQRCode: 'QR scannen',
       notEligibleHUBarcode: 'HU Code passt nicht',
-      qtyAboveMax: '%(qtyDiff)s über max', // TODO verify trl
+      qtyAboveMax: '%(qtyDiff)s über max',
       notPositiveQtyNotAllowed: 'Null oder negative Menge nicht erlaubt', // TODO verify trl
       confirmDone: 'OK',
       confirmDoneAndCloseTarget: 'OK und LU schließen',

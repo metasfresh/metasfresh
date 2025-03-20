@@ -31,7 +31,7 @@ const ReceiptReceiveTargetScreen = () => {
       <Button
         caption={trl('activities.mfg.receipts.existingLU')}
         onClick={handleScanClick}
-        testId="existing-lu-button"
+        testId="existing-hu-button"
       />
     </div>
   );

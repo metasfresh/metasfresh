@@ -12,7 +12,9 @@ public class JsonPackingInstructionsResponse
 {
 	String tuName;
 	JsonTestId tuPIItemProductTestId;
+	JsonTestId tuPITestId;
 
 	String luName;
 	JsonTestId luPIItemTestId;
+	JsonTestId luPITestId;
 }

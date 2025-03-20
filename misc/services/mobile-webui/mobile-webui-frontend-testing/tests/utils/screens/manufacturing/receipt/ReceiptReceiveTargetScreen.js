@@ -2,6 +2,7 @@ import { page } from '../../../common';
 import { test } from '../../../../../playwright.config';
 import { expect } from '@playwright/test';
 import { ReceiptNewHUScreen } from './ReceiptNewHUScreen';
+import { ManufacturingReceiptScanScreen } from './ManufacturingReceiptScanScreen';
 
 const NAME = 'ReceiptReceiveTargetScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -21,8 +22,8 @@ export const ReceiptReceiveTargetScreen = {
         await ReceiptNewHUScreen.waitForScreen();
     }),
 
-    clickExistingLUButton: async () => await test.step(`${NAME} - Click existing LU button`, async () => {
-        await page.getByTestId('existing-lu-button').tap();
-        // TODO waitForScreen 
+    clickExistingHUButton: async () => await test.step(`${NAME} - Click existing HU button`, async () => {
+        await page.getByTestId('existing-hu-button').tap();
+        await ManufacturingReceiptScanScreen.waitForScreen();
     }),
 };

@@ -23,7 +23,6 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
-import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
@@ -329,7 +328,7 @@ public class ManufacturingJobService
 				.onlyCompleted(true)
 				.sortingOption(ManufacturingOrderQuery.SortingOption.SEQ_NO)
 				.onlyPlanningStatuses(ImmutableSet.of(PPOrderPlanningStatus.PLANNING))
-				.responsibleId(ValueRestriction.isNull());
+				.responsibleId(ValueRestriction.isNull()); // NOT assigned
 
 		if (query.getPlantOrWorkstationId() != null)
 		{
@@ -572,13 +571,13 @@ public class ManufacturingJobService
 		final DeviceAccessor deviceAccessor = Optional.ofNullable(currentScaleDeviceId)
 				.flatMap(this::getDeviceAccessor)
 				.orElse(null);
-		
+
 		// Make sure the device really exists, to avoid future issues in mobile UI
 		if (deviceAccessor == null)
 		{
 			throw new AdempiereException(MSG_ScaleDeviceNotRegistered).markAsUserValidationError();
 		}
-		
+
 		if (!deviceAccessor.isAvailableForLocator(job.getLocatorId()))
 		{
 			throw new AdempiereException(MSG_LocationNotAllowed).markAsUserValidationError();
@@ -611,7 +610,7 @@ public class ManufacturingJobService
 				.getDefaultDeviceAccessorsHub()
 				.getDeviceAccessorById(currentScaleDeviceId);
 	}
-	
+
 	private Optional<ScaleDevice> getScaleDevice(@NonNull final DeviceId currentScaleDeviceId)
 	{
 		return getDeviceAccessor(currentScaleDeviceId)

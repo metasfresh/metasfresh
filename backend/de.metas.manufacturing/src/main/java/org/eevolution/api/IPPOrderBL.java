@@ -17,7 +17,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.eevolution.model.I_PP_Order;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -26,7 +26,7 @@ public interface IPPOrderBL extends ISingletonService
 {
 	I_PP_Order getById(@NonNull PPOrderId id);
 
-	Collection<I_PP_Order> getByIds(@NonNull Set<PPOrderId> ids);
+	List<I_PP_Order> getByIds(@NonNull Set<PPOrderId> ids);
 
 	String getDocumentNoById(@NonNull PPOrderId ppOrderId);
 
@@ -90,6 +90,8 @@ public interface IPPOrderBL extends ISingletonService
 	void closeOrder(PPOrderId ppOrderId);
 
 	void closeOrder(I_PP_Order ppOrder);
+
+	void closeOrdersByIds(@NonNull Set<PPOrderId> ppOrderIds);
 
 	/**
 	 * Set QtyOrdered=QtyDelivered, QtyClosed=QtyOrdered(old) - QtyDelivered
