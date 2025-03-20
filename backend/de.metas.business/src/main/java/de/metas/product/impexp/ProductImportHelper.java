@@ -52,7 +52,7 @@ import java.math.BigDecimal;
 {
 	private ProductImportProcess process;
 	private static final Logger log = LogManager.getLogger(ProductImportHelper.class);
-
+	private static final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private IProductPackingInstructionService packingInstructionService;
 
 	public ProductImportHelper(@NonNull final IProductPackingInstructionService packingInstructionService)
@@ -225,7 +225,7 @@ import java.math.BigDecimal;
 		packingInstructionService.handlePackingInstructions(importRecord, productId);
 	}
 
-	public void handleCatchWeight(@NonNull final I_I_Product importRecord, @NonNull final ProductId productId)
+	public void handleCatchWeight(@NonNull final I_I_Product importRecord)
 	{
 		//	 Handle Catch Weight UOM Conversion
 		if (X_I_Product.INVOICABLEQTYBASEDON_CatchWeight.equalsIgnoreCase(importRecord.getInvoicableQtyBasedOn()))
@@ -238,6 +238,11 @@ import java.math.BigDecimal;
 
 	private void handleUOMConversion(@NonNull final I_I_Product importRecord)
 	{
+		if (importRecord.getQtyCU_UOM_ID() <=0 )
+		{
+			return;
+		}
+
 		final int fromUOM = importRecord.getQtyCU_UOM_ID();
 		final int toUOM = importRecord.getC_UOM_ID();
 		BigDecimal multiplierRate = importRecord.getUOM_MultiplierRate();
@@ -270,7 +275,7 @@ import java.math.BigDecimal;
 			return;
 		}
 
-		I_C_UOM_Conversion conversion = Services.get(IQueryBL.class)
+		I_C_UOM_Conversion conversion = queryBL
 				.createQueryBuilder(I_C_UOM_Conversion.class)
 				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_C_UOM_ID, fromUOM)
 				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_C_UOM_To_ID, toUOM)

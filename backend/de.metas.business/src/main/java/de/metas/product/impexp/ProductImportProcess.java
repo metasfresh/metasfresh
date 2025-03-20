@@ -273,6 +273,11 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 		pp.setM_PriceList_Version_ID(priceListVersionId);    // FK
 		pp.setM_Product_ID(productId.getRepoId()); // FK
 		pp.setC_TaxCategory_ID(taxCategoryId);
+		if (X_I_Product.INVOICABLEQTYBASEDON_CatchWeight.equals(imp.getInvoicableQtyBasedOn()))
+		{
+			pp.setInvoicableQtyBasedOn(imp.getInvoicableQtyBasedOn());
+			productImporter.handleCatchWeight(imp);
+		}
 		pp.setC_UOM_ID(uomId);
 
 		save(pp);
