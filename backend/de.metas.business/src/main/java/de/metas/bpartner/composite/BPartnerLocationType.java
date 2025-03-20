@@ -56,7 +56,7 @@ public class BPartnerLocationType
 	@JsonInclude(Include.NON_ABSENT)
 	private Optional<Boolean> visitorsAddress;
 
-	@Builder(toBuilder = true)
+	@Builder
 	public BPartnerLocationType(
 			@Nullable final Boolean billTo,
 			@Nullable final Boolean billToDefault,

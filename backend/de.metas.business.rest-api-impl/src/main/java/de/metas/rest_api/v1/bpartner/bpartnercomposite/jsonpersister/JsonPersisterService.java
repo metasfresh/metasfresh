@@ -1649,7 +1649,7 @@ public class JsonPersisterService
 		{
 			final BPartnerLocation locationToCompare = createLocationToCompare(location);
 			final BPartnerLocation originalLocationToCompare = createLocationToCompare(originalBPartnerLocation);
-			
+
 			if (!Objects.equals(locationToCompare, originalLocationToCompare))
 			{
 				throw new AdempiereException("The location was assumed unchanged, but it was changed")
@@ -1671,19 +1671,25 @@ public class JsonPersisterService
 		{
 			return null;
 		}
-		
+
 		final BPartnerLocation.BPartnerLocationBuilder locationToCompare = location.toBuilder();
 		locationToCompare.changeLog(null); // we aren't interested in comparing the changelog
-		
+
 		final BPartnerLocationType locationType = location.getLocationType();
 		if (locationType != null)
 		{
-			// locationType.visitorAddress is not supported by the v1-API, so we remove it from the comparison
-			locationToCompare.locationType(locationType.toBuilder().visitorsAddress(null).build());
+			final BPartnerLocationType locationTypeToCompare = BPartnerLocationType.builder()
+					.billToDefault(locationType.getIsBillToDefaultOr(false))
+					.billTo(locationType.getIsBillToOr(false))
+					.shipToDefault(locationType.getIsShipToDefaultOr(false))
+					.shipTo(locationType.getIsShipToOr(false))
+					.visitorsAddress(null) // locationType.visitorAddress is not supported by the v1-API, so we remove it from the comparison
+					.build();
+			locationToCompare.locationType(locationTypeToCompare);
 		}
 		return locationToCompare.build();
 	}
-	
+
 	private Optional<BPartnerLocationType> syncJsonToLocationType(@NonNull final JsonRequestLocation jsonBPartnerLocation)
 	{
 		final BPartnerLocationTypeBuilder locationType = BPartnerLocationType.builder();
