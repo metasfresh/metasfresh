@@ -21,9 +21,9 @@
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<style name="Barcode" forecolor="#000000" fontName="Arial" fontSize="11"/>
-	<parameter name="AD_PInstance_ID" class="java.lang.Integer"/>
+	<parameter name="M_HU_ID" class="java.math.BigDecimal"/>
 	<queryString>
-		<![CDATA[SELECT * FROM report.EDI_DesadvLine_Migros_SSCC_Label($P{AD_PInstance_ID});]]>
+		<![CDATA[SELECT * FROM report.Migros_SSCC_Label($P{M_HU_ID});]]>
 	</queryString>
 	<field name="org_address" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="org_address"/>
@@ -130,6 +130,7 @@
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement x="10" y="71" width="180" height="20" uuid="5458817e-b006-4c10-8c77-676d8b621970">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<printWhenExpression><![CDATA[new Boolean($F{p_value} != null && !$F{p_value}.isEmpty())]]></printWhenExpression>
 				</reportElement>
 				<textElement verticalAlignment="Bottom" markup="none">
 					<font fontName="Arial" size="12" isBold="false"/>
@@ -139,6 +140,7 @@
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement x="231" y="71" width="39" height="40" uuid="a63fe2b6-8827-4291-91f9-23ee090433ed">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<printWhenExpression><![CDATA[new Boolean($F{p_value} != null && !$F{p_value}.isEmpty())]]></printWhenExpression>
 				</reportElement>
 				<textElement verticalAlignment="Bottom" markup="none">
 					<font fontName="Arial" size="12" isBold="false"/>
@@ -146,7 +148,9 @@
 				<textFieldExpression><![CDATA[$R{priceactual}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement x="10" y="91" width="180" height="20" uuid="3a09859e-1889-4b7c-8b1c-d4bfe8f14db9"/>
+				<reportElement x="10" y="91" width="180" height="20" uuid="3a09859e-1889-4b7c-8b1c-d4bfe8f14db9">
+					<printWhenExpression><![CDATA[new Boolean($F{p_value} != null && !$F{p_value}.isEmpty())]]></printWhenExpression>
+				</reportElement>
 				<textElement>
 					<font fontName="Arial" size="12" isBold="true"/>
 				</textElement>
@@ -155,6 +159,7 @@
 			<textField textAdjust="StretchHeight" pattern="###0.00" isBlankWhenNull="true">
 				<reportElement x="270" y="91" width="139" height="20" uuid="22bc55ed-2a59-4833-aec1-3c9fcc6ed17a">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<printWhenExpression><![CDATA[new Boolean($F{p_value} != null && !$F{p_value}.isEmpty())]]></printWhenExpression>
 				</reportElement>
 				<textElement>
 					<font fontName="Arial" size="12" isBold="true"/>
@@ -164,6 +169,7 @@
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement x="10" y="131" width="180" height="20" uuid="c757fa61-8034-4042-bf8c-05d3a0e7edd5">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<printWhenExpression><![CDATA[new Boolean($F{p_value} != null && !$F{p_value}.isEmpty())]]></printWhenExpression>
 				</reportElement>
 				<textElement verticalAlignment="Bottom" markup="none">
 					<font fontName="Arial" size="12" isBold="false"/>
@@ -173,6 +179,7 @@
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="10" y="151" width="399" height="20" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<printWhenExpression><![CDATA[new Boolean($F{p_value} != null && !$F{p_value}.isEmpty())]]></printWhenExpression>
 				</reportElement>
 				<textElement>
 					<font fontName="Arial" size="12" isBold="true"/>
@@ -185,6 +192,7 @@
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<printWhenExpression><![CDATA[new Boolean($F{p_value} != null && !$F{p_value}.isEmpty())]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center" verticalAlignment="Bottom" markup="none">
 					<font fontName="Arial" size="12" isBold="false"/>
@@ -195,6 +203,7 @@
 				<reportElement positionType="Float" x="10" y="199" width="60" height="20" uuid="45d77dd8-1af1-4268-b530-08564b45f2c9">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<printWhenExpression><![CDATA[new Boolean($F{p_value} != null && !$F{p_value}.isEmpty())]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
 					<font fontName="Arial" size="12" isBold="true"/>
@@ -205,6 +214,7 @@
 				<reportElement positionType="Float" x="91" y="199" width="60" height="20" uuid="687083e1-f6a3-4c6f-b984-e2729c107a63">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<printWhenExpression><![CDATA[new Boolean($F{p_value} != null && !$F{p_value}.isEmpty())]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center">
 					<font fontName="Arial" size="12" isBold="true"/>
@@ -215,6 +225,7 @@
 				<reportElement positionType="Float" x="91" y="179" width="60" height="20" uuid="58f4060d-1975-4901-9be9-66323de2ea20">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<printWhenExpression><![CDATA[new Boolean($F{p_value} != null && !$F{p_value}.isEmpty())]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Center" verticalAlignment="Bottom" markup="none">
 					<font fontName="Arial" size="12" isBold="false"/>
@@ -226,6 +237,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<printWhenExpression><![CDATA[new Boolean($F{p_value} != null && !$F{p_value}.isEmpty())]]></printWhenExpression>
 				</reportElement>
 				<textElement>
 					<font fontName="Arial" size="12" isBold="true"/>
@@ -237,6 +249,7 @@
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<printWhenExpression><![CDATA[new Boolean($F{p_value} != null && !$F{p_value}.isEmpty())]]></printWhenExpression>
 				</reportElement>
 				<textElement verticalAlignment="Bottom" markup="none">
 					<font fontName="Arial" size="12" isBold="false"/>
@@ -403,6 +416,16 @@
 					<font fontName="Arial" size="14" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA["(00) " + $F{sscc}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement x="0" y="65" width="420" height="165" uuid="017de1b4-b50c-4cc1-b6db-876dacf0e73c">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<printWhenExpression><![CDATA[new Boolean($F{p_value} == null || $F{p_value}.isEmpty())]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Composed LU"]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
