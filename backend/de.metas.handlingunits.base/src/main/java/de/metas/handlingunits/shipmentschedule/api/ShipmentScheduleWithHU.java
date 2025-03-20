@@ -291,7 +291,7 @@ public class ShipmentScheduleWithHU
 				new TreeSet<>(Comparator.comparing(av -> av.getM_Attribute().getM_Attribute_ID()));
 
 		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
-		streamHUsFromAllLevels().forEach(hu -> {
+		streamHUHierarchy().forEach(hu -> {
 			final IAttributeStorage huAttributeStorage = attributeStorageFactory.getAttributeStorage(hu);
 			final List<IAttributeValue> nonEmptyAttributeValues = huAttributeStorage.getAttributeValues()
 					.stream()
@@ -379,7 +379,7 @@ public class ShipmentScheduleWithHU
 		return CoalesceUtil.coalesce(luHU, tuHU, vhu);
 	}
 
-	private Stream<I_M_HU> streamHUsFromAllLevels()
+	private Stream<I_M_HU> streamHUHierarchy()
 	{
 		return Stream.of(vhu, tuHU, luHU).filter(java.util.Objects::nonNull);
 	}
