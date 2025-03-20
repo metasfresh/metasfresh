@@ -1,8 +1,6 @@
 package de.metas.product.impexp;
 
 import de.metas.common.util.CoalesceUtil;
-import de.metas.event.IEventBusFactory;
-import de.metas.event.log.EventLogUserService;
 import de.metas.impexp.processing.IImportInterceptor;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductPackingInstructionService;
@@ -19,8 +17,6 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.X_I_Product;
 import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
