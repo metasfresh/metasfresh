@@ -852,12 +852,14 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		{
 			factLineBuilder.setAccount(getCustomerAccount(BPartnerCustomerAccountType.C_Receivable, as));
 
+			final DocLine_Allocation counterLine = line.getCounterDocLine();
+
 			// ARC
-			if (line.isCreditMemoInvoice() && !line.isRetour())
+			if (line.isCreditMemoInvoice() && !counterLine.isService())
 			{
 				factLineBuilder.setAmtSource(allocationSource, null);
 			}
-			// ARI
+			// ARI or allocation against service invoice
 			else
 			{
 				factLineBuilder.setAmtSource(null, allocationSource);
@@ -928,10 +930,10 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		//
 		// Make sure the compensation amount of this line and of it's counter part are matching
 		final BigDecimal counterLine_compensationAmtSource = counterLine.getAllocatedAmt();
-		// This matching is unnatural, but it is needed to allocate retour (sales) credit memos with service invoices
-		final boolean isMatchingForRetourAndService = line.isRetour() && counterLine.isService() && compensationAmtSource.compareTo(counterLine_compensationAmtSource) == 0;
-		final boolean isMatchingForGeneralCases = !(line.isRetour() && counterLine.isService()) && compensationAmtSource.compareTo(counterLine_compensationAmtSource.negate()) != 0;
-		if(!isMatchingForGeneralCases && !isMatchingForRetourAndService)
+		// This matching is unnatural, but it is needed to allocate sales credit memos with service invoices
+		final boolean isMatchingForARCAndService = line.isSOTrxInvoice() && line.isCreditMemoInvoice() && counterLine.isService() && compensationAmtSource.compareTo(counterLine_compensationAmtSource) == 0;
+		final boolean isMatchingForGeneralCases = !isMatchingForARCAndService && compensationAmtSource.compareTo(counterLine_compensationAmtSource.negate()) != 0;
+		if(!isMatchingForGeneralCases && !isMatchingForARCAndService)
 		{
 			throw newPostingException()
 					.setFact(fact)
@@ -955,7 +957,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		}
 		else
 		{
-			if(counterLine.isService() && line.isRetour())
+			if(counterLine.isService() && line.isCreditMemoInvoice())
 			{
 				factLineBuilder.setAccount(getVendorAccount(BPartnerVendorAccountType.V_Liability, as));
 				factLineBuilder.setAmtSource( compensationAmtSource.negate(), null );

@@ -82,13 +82,11 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		{
 			final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 			creditMemoInvoice = invoiceBL.isCreditMemo(invoice);
-			retourInvoice = invoiceBL.isRetour(invoice);
 			soTrxInvoice = invoice.isSOTrx();
 		}
 		else
 		{
 			creditMemoInvoice = false;
-			retourInvoice = false;
 			soTrxInvoice = null;
 		}
 
@@ -130,7 +128,6 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	private final I_C_Invoice invoice;
 	private CurrencyConversionContext invoiceCurrencyConversionCtx;
 	private final boolean creditMemoInvoice;
-	private final boolean retourInvoice;
 	private final Boolean soTrxInvoice;
 
 	private final int m_Counter_AllocationLine_ID;
@@ -300,18 +297,23 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		{
 			return false;
 		}
-		// The invoice shall not be a credit memo
-		if (isCreditMemoInvoice() && !isRetour())
-		{
-			return false;
-		}
 
-		// Shall have a counter line set
 		final DocLine_Allocation counterLine = getCounterDocLine();
 		if (counterLine == null)
 		{
 			return false;
 		}
+
+		// The invoice shall not be a credit memo, unless it's allocated with a service
+		if (isCreditMemoInvoice())
+		{
+			if(!counterLine.isService())
+			{
+				return false;
+			}
+		}
+
+		// Shall have a counter line set
 
 		// The counter line shall have a invoice set
 		if (!counterLine.hasInvoiceDocument())
@@ -376,11 +378,6 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	public final boolean isCreditMemoInvoice()
 	{
 		return creditMemoInvoice;
-	}
-
-	public final boolean isRetour()
-	{
-		return retourInvoice;
 	}
 
 	@NonNull
