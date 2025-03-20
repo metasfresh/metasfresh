@@ -2,6 +2,7 @@ package de.metas.cucumber.stepdefs.costing;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
@@ -14,6 +15,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.cucumber.stepdefs.inventory.M_InventoryLine_StepDefData;
 import de.metas.cucumber.stepdefs.match_po.M_MatchPO_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
@@ -23,6 +25,7 @@ import de.metas.inventory.InventoryLineId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.order.MatchPOId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
@@ -45,6 +48,8 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 @RequiredArgsConstructor
 public class M_CostDetail_StepDef
 {
@@ -61,20 +66,26 @@ public class M_CostDetail_StepDef
 			final int timeoutSec,
 			@NonNull final String productIdentifierStr,
 			@NonNull final String costElementStr,
-			@NonNull final DataTable table) throws InterruptedException
+			@NonNull final DataTable table) throws Throwable
 	{
-		final CostDetailQuery costDetailQuery = CostDetailQuery.builder()
-				.productId(productTable.getId(productIdentifierStr))
-				.costElementId(RepoIdAwares.ofObject(costElementStr, CostElementId.class))
-				.orderBy(CostDetailQuery.OrderBy.ID_ASC)
-				.build();
-
+		final ProductId productId = productTable.getId(productIdentifierStr);
+		final ImmutableSet<CostElementId> costElementIds = RepoIdAwares.ofCommaSeparatedSet(costElementStr, CostElementId.class);
 		final CostDetailMatchers matchers = toCostDetailMatchers(table);
 
-		StepDefUtil.tryAndWaitForData(() -> costDetailRepository.stream(costDetailQuery).collect(ImmutableList.toImmutableList()))
-				.validateUsingFunction(matchers::checkValid)
-				.maxWaitSeconds(timeoutSec)
-				.execute();
+		assertThat(costElementIds).isNotEmpty();
+
+		SharedTestContext.forEach(costElementIds, "costElement", costElementId -> {
+			final CostDetailQuery costDetailQuery = CostDetailQuery.builder()
+					.productId(productId)
+					.costElementId(costElementId)
+					.orderBy(CostDetailQuery.OrderBy.ID_ASC)
+					.build();
+
+			StepDefUtil.tryAndWaitForData(() -> costDetailRepository.stream(costDetailQuery).collect(ImmutableList.toImmutableList()))
+					.validateUsingFunction(matchers::checkValid)
+					.maxWaitSeconds(timeoutSec)
+					.execute();
+		});
 	}
 
 	private CostDetailMatchers toCostDetailMatchers(final DataTable table)

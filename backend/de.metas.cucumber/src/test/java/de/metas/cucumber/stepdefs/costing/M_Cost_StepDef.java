@@ -1,5 +1,6 @@
 package de.metas.cucumber.stepdefs.costing;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -20,6 +21,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAwares;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -51,40 +53,45 @@ public class M_Cost_StepDef
 		DataTableRows.of(table).forEach(this::validateCurrentCost);
 	}
 
-	public void validateCurrentCost(DataTableRow row)
+	public void validateCurrentCost(DataTableRow row) throws Throwable
 	{
 		final AcctSchemaId acctSchemaId = row.getAsIdentifier(I_M_Cost.COLUMNNAME_C_AcctSchema_ID).lookupIdIn(acctSchemaTable);
 		final AcctSchema acctSchema = acctSchemaDAO.getById(acctSchemaId);
 		final ProductId productId = row.getAsIdentifier(I_M_Cost.COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
 		final CostingLevel costingLevel = productCostingBL.getCostingLevel(productId, acctSchema);
-		final CostElementId costElementId = CostElementId.ofRepoId(row.getAsInt(I_M_Cost.COLUMNNAME_M_CostElement_ID));
-		final CostSegmentAndElement costSegmentAndElement = CostSegmentAndElement.builder()
-				.costingLevel(costingLevel)
-				.acctSchemaId(acctSchema.getId())
-				.costTypeId(acctSchema.getCosting().getCostTypeId())
-				.clientId(ClientId.METASFRESH)
-				.orgId(Env.getOrgId())
-				.productId(Objects.requireNonNull(productId))
-				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
-				.costElementId(costElementId)
-				.build();
-		SharedTestContext.put("costSegmentAndElement", costSegmentAndElement);
+		final ImmutableSet<CostElementId> costElementIds = RepoIdAwares.ofCommaSeparatedSet(row.getAsString(I_M_Cost.COLUMNNAME_M_CostElement_ID), CostElementId.class);
 
-		final CurrentCost currentCost = currentCostsRepository.getOrNull(costSegmentAndElement);
-		assertThat(currentCost).isNotNull();
-		SharedTestContext.put("currentCost", currentCost);
+		assertThat(costElementIds).isNotEmpty();
 
-		row.getAsOptionalMoney(I_M_Cost.COLUMNNAME_CurrentCostPrice, moneyService::getCurrencyIdByCurrencyCode)
-				.ifPresent(currentCostPriceExpected -> {
-					final Money currentCostPriceActual = currentCost.getCostPrice().toCostAmount().toMoney();
-					assertThat(currentCostPriceActual).isEqualTo(currentCostPriceExpected);
-				});
+		SharedTestContext.forEach(costElementIds, "costElement", costElementId -> {
+			final CostSegmentAndElement costSegmentAndElement = CostSegmentAndElement.builder()
+					.costingLevel(costingLevel)
+					.acctSchemaId(acctSchema.getId())
+					.costTypeId(acctSchema.getCosting().getCostTypeId())
+					.clientId(ClientId.METASFRESH)
+					.orgId(Env.getOrgId())
+					.productId(Objects.requireNonNull(productId))
+					.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+					.costElementId(costElementId)
+					.build();
+			SharedTestContext.put("costSegmentAndElement", costSegmentAndElement);
 
-		row.getAsOptionalQuantity(I_M_Cost.COLUMNNAME_CurrentQty, uomDAO::getByX12DE355)
-				.ifPresent(currentQtyExpected -> {
-					final Quantity currentQtyActual = currentCost.getCurrentQty();
-					assertThat(currentQtyActual).isEqualTo(currentQtyExpected);
-				});
+			final CurrentCost currentCost = currentCostsRepository.getOrNull(costSegmentAndElement);
+			assertThat(currentCost).isNotNull();
+			SharedTestContext.put("currentCost", currentCost);
+
+			row.getAsOptionalMoney(I_M_Cost.COLUMNNAME_CurrentCostPrice, moneyService::getCurrencyIdByCurrencyCode)
+					.ifPresent(currentCostPriceExpected -> {
+						final Money currentCostPriceActual = currentCost.getCostPrice().toCostAmount().toMoney();
+						assertThat(currentCostPriceActual).isEqualTo(currentCostPriceExpected);
+					});
+
+			row.getAsOptionalQuantity(I_M_Cost.COLUMNNAME_CurrentQty, uomDAO::getByX12DE355)
+					.ifPresent(currentQtyExpected -> {
+						final Quantity currentQtyActual = currentCost.getCurrentQty();
+						assertThat(currentQtyActual).isEqualTo(currentQtyExpected);
+					});
+		});
 	}
 
 }
