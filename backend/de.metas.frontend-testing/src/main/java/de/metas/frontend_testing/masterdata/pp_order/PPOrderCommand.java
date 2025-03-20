@@ -2,7 +2,6 @@ package de.metas.frontend_testing.masterdata.pp_order;
 
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
-import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -40,7 +39,7 @@ public class PPOrderCommand
 						.plantId(MasterdataContext.DEFAULT_PLANT_ID)
 						.warehouseId(context.getId(request.getWarehouse(), WarehouseId.class))
 						.productId(productId)
-						.routingId(PPRoutingId.ofRepoId(540118)) // Default Workflow for mobile UI Manufacturing
+						.routingId(MasterdataContext.DEFAULT_ROUTING_ID)
 						.qtyRequired(quantity)
 						.dateOrdered(datePromised)
 						.datePromised(datePromised)

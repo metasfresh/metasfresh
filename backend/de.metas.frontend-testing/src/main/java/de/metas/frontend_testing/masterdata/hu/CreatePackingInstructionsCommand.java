@@ -15,6 +15,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.manufacturing.workflows_api.activity_handlers.generateHUQRCodes.GenerateHUQRCodesActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialReceiptActivityHandler;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -70,9 +71,11 @@ public class CreatePackingInstructionsCommand
 		return JsonPackingInstructionsResponse.builder()
 				.tuName(tu.getPiName())
 				.tuPIItemProductTestId(tuPIItemProductTestId)
+				.tuPITestId(GenerateHUQRCodesActivityHandler.toPITestId(tu.getPiId()))
 				//
 				.luName(lu != null ? lu.getPiName() : null)
 				.luPIItemTestId(luPIItemTestId)
+				.luPITestId(lu != null ? GenerateHUQRCodesActivityHandler.toPITestId(lu.getPiId()) : null)
 				//
 				.build();
 	}

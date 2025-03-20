@@ -4,7 +4,7 @@ import { pickingLineScanScreenLocation } from '../../routes/picking';
 import { COMPONENTTYPE_PickProducts } from '../../containers/activities/picking/PickProductsActivity';
 import { NEXT_NextPickingLine } from '../../containers/activities/picking/PickLineScanScreen';
 
-const APPLICATION_ID_Picking = 'picking';
+export const APPLICATION_ID_Picking = 'picking';
 const ACTIVITY_ID_ScanPickingSlot = 'scanPickingSlot'; // keep in sync with PickingMobileApplication.ACTIVITY_ID_ScanPickingSlot
 
 export const applicationDescriptor = {

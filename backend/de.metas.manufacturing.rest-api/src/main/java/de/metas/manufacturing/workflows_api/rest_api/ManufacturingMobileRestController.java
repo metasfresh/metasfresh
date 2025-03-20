@@ -3,6 +3,7 @@ package de.metas.manufacturing.workflows_api.rest_api;
 import de.metas.Profiles;
 import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonFinishGoodsReceiveQRCodesGenerateRequest;
+import de.metas.manufacturing.workflows_api.rest_api.json.JsonFinishGoodsReceiveQRCodesGenerateResponse;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEventResult;
 import de.metas.mobile.application.service.MobileApplicationService;
@@ -39,9 +40,9 @@ public class ManufacturingMobileRestController
 	}
 
 	@PostMapping("/generateHUQRCodes")
-	public void generateHUQRCodes(@RequestBody @NonNull JsonFinishGoodsReceiveQRCodesGenerateRequest request)
+	public JsonFinishGoodsReceiveQRCodesGenerateResponse generateHUQRCodes(@RequestBody @NonNull JsonFinishGoodsReceiveQRCodesGenerateRequest request)
 	{
 		assertApplicationAccess();
-		manufacturingMobileApplication.generateFinishGoodsReceiveQRCodes(request);
+		return manufacturingMobileApplication.generateFinishGoodsReceiveQRCodes(request);
 	}
 }

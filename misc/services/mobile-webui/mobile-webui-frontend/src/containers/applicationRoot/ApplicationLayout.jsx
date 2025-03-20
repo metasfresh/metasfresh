@@ -1,4 +1,3 @@
-import { useRouteMatch } from 'react-router-dom';
 import { ViewHeader } from '../ViewHeader';
 import ScreenToaster from '../../components/ScreenToaster';
 import React, { useEffect } from 'react';
@@ -13,6 +12,7 @@ import { useUITraceLocationChange } from '../../utils/ui_trace/useUITraceLocatio
 import * as uiTrace from '../../utils/ui_trace';
 import { useMobileNavigation } from '../../hooks/useMobileNavigation';
 import { computeId } from '../../utils/testing_support';
+import { useMobileLocation } from '../../hooks/useMobileLocation';
 
 export const ApplicationLayout = ({ applicationId, Component }) => {
   const history = useMobileNavigation();
@@ -112,8 +112,7 @@ BottomButton.propTypes = {
 };
 
 const isWFProcessRequiredButNotLoaded = () => {
-  const { params } = useRouteMatch();
-  const wfProcessId = params.wfProcessId || params.workflowId;
+  const { wfProcessId } = useMobileLocation();
   if (!wfProcessId) {
     return false;
   }

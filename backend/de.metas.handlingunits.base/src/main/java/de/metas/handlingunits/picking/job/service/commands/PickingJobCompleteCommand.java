@@ -28,6 +28,7 @@ import lombok.Value;
 import lombok.experimental.Delegate;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.IPPOrderBL;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -41,6 +42,7 @@ public class PickingJobCompleteCommand
 	private final static AdMessageKey PICKING_ON_ALL_STEPS_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.service.commands.PICKING_ON_ALL_STEPS_ERROR_MSG");
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	@NonNull private final MobileUIPickingUserProfileRepository configRepository;
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final PickingJobRepository pickingJobRepository;
@@ -50,8 +52,10 @@ public class PickingJobCompleteCommand
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final IShipmentService shipmentService;
 
-	@NonNull private final PickingJob initialPickingJob;
-	@NonNull private final CreateShipmentPolicy createShipmentPolicy;
+	@NonNull private final PickingJob initialPickingJob0;
+
+	// State
+	private PickingJob pickingJob = null;
 	private final boolean approveIfReadyToReview;
 
 	private static final AdMessageKey MSG_NotApproved = AdMessageKey.of("NotApproved");
@@ -67,8 +71,7 @@ public class PickingJobCompleteCommand
 			final @NonNull IShipmentService shipmentService,
 			//
 			final @NonNull PickingJob pickingJob,
-			final boolean approveIfReadyToReview,
-			final @Nullable CreateShipmentPolicy createShipmentPolicy)
+			final boolean approveIfReadyToReview)
 	{
 		this.configRepository = configRepository;
 		this.pickingJobService = pickingJobService;
@@ -78,33 +81,34 @@ public class PickingJobCompleteCommand
 		this.pickingJobHUReservationService = pickingJobHUReservationService;
 		this.shipmentService = shipmentService;
 
-		this.initialPickingJob = pickingJob;
+		this.initialPickingJob0 = pickingJob;
 		this.approveIfReadyToReview = approveIfReadyToReview;
-		this.createShipmentPolicy = createShipmentPolicy != null ? createShipmentPolicy : CreateShipmentPolicy.DO_NOT_CREATE;
 	}
 
 	public static class PickingJobCompleteCommandBuilder
 	{
-		public PickingJob execute()
-		{
-			return build().execute();
-		}
+		public PickingJob execute() {return build().execute();}
 	}
 
 	public PickingJob execute()
 	{
+		initialPickingJob0.assertNotProcessed();
+		if (!initialPickingJob0.getProgress().isDone())
+		{
+			throw new AdempiereException(PICKING_ON_ALL_STEPS_ERROR_MSG);
+		}
+
 		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
 	}
 
 	private PickingJob executeInTrx()
 	{
-		initialPickingJob.assertNotProcessed();
-		if (!initialPickingJob.getProgress().isDone())
+		pickingJob = initialPickingJob0;
+		if (!pickingJob.getProgress().isDone())
 		{
 			throw new AdempiereException(PICKING_ON_ALL_STEPS_ERROR_MSG);
 		}
 
-		PickingJob pickingJob = initialPickingJob;
 		if (approveIfReadyToReview
 				&& !pickingJob.isApproved()
 				&& pickingJob.isReadyToReview())
@@ -117,6 +121,8 @@ public class PickingJobCompleteCommand
 			final ITranslatableString msg_notapproved = msgBL.getTranslatableMsgText(MSG_NotApproved, pickingJob.getPickingSlot(), pickingJob.getCustomerName());
 			throw new AdempiereException(msg_notapproved);
 		}
+
+		ppOrderBL.closeOrdersByIds(pickingJob.getManufacturingOrderIds());
 
 		pickingJob = pickingJob.withDocStatus(PickingJobDocStatus.Completed);
 		pickingJobRepository.save(pickingJob);
@@ -131,12 +137,12 @@ public class PickingJobCompleteCommand
 
 		pickingJobLockService.unlockShipmentSchedules(pickingJob);
 
-		createShipmentIfNeeded(pickingJob);
+		createShipmentIfNeeded();
 
 		return pickingJob;
 	}
 
-	private void createShipmentIfNeeded(final PickingJob pickingJob)
+	private void createShipmentIfNeeded()
 	{
 		prepareShipmentCandidates(pickingJob).forEach(this::processShipmentCandidate);
 	}

@@ -47,6 +47,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.compiere.model.I_C_UOM;
+import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -76,6 +77,7 @@ public class PickingJobLine
 	@NonNull BPartnerLocationId deliveryBPLocationId;
 	@NonNull ShipmentScheduleId shipmentScheduleId;
 	@Nullable UomId catchUomId;
+	@Nullable PPOrderId pickFromManufacturingOrderId;
 	@NonNull ImmutableList<PickingJobStep> steps;
 	boolean isManuallyClosed;
 
@@ -112,6 +114,7 @@ public class PickingJobLine
 			@NonNull final BPartnerLocationId deliveryBPLocationId,
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@Nullable final UomId catchUomId,
+			@Nullable final PPOrderId pickFromManufacturingOrderId,
 			@NonNull final ImmutableList<PickingJobStep> steps,
 			@Nullable final CurrentPickingTarget currentPickingTarget,
 			@NonNull final PickingUnit pickingUnit,
@@ -132,6 +135,7 @@ public class PickingJobLine
 		this.deliveryBPLocationId = deliveryBPLocationId;
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.catchUomId = catchUomId;
+		this.pickFromManufacturingOrderId = pickFromManufacturingOrderId;
 		this.steps = steps;
 		this.isManuallyClosed = isManuallyClosed;
 

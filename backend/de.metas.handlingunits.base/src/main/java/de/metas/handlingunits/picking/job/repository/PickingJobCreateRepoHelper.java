@@ -30,6 +30,7 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
+import org.eevolution.api.PPOrderId;
 
 class PickingJobCreateRepoHelper
 {
@@ -115,6 +116,7 @@ class PickingJobCreateRepoHelper
 		record.setC_BPartner_Location_ID(line.getDeliveryBPLocationId().getRepoId());
 		record.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(line.getShipmentScheduleId()));
 		record.setCatch_UOM_ID(UomId.toRepoId(line.getCatchWeightUomId()));
+		record.setPP_Order_ID(PPOrderId.toRepoId(line.getPickFromManufacturingOrderId()));
 		InterfaceWrapperHelper.save(record);
 		loader.addAlreadyLoadedFromDB(record);
 
