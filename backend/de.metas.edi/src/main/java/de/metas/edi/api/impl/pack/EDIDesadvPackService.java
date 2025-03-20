@@ -453,9 +453,9 @@ public class EDIDesadvPackService
 
 		// topLevelHU's quantity can be bigger than the inOutLine's quantity,
 		// if there are multiple lines with the same product and if those lines were picked onto the same LU.
-		// That's why we need to invoke min(..)
+		// That's why we need to invoke minStockAndUom(..)
 		final StockQtyAndUOMQty qtyCUsPerTopLevelHU = getQuantity(topLevelHU, productId)
-				.min(inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn));
+				.minStockAndUom(inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn));
 
 		final RequestParameters parameters = new RequestParameters(topLevelHU,
 				bPartnerId,
