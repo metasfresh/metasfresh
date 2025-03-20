@@ -66,10 +66,8 @@ public class DocBaseAndSubType
 
 	private static final Interner<DocBaseAndSubType> interner = Interners.newStrongInterner();
 
-	@NonNull
-	DocBaseType docBaseType;
-	@NonNull
-	DocSubType docSubType;
+	@NonNull DocBaseType docBaseType;
+	@NonNull DocSubType docSubType;
 
 	private DocBaseAndSubType(
 			@NonNull final DocBaseType docBaseType,
@@ -80,33 +78,18 @@ public class DocBaseAndSubType
 	}
 
 	// DocBaseAndSubTypeChecks
-	public boolean isSalesInvoice()
-	{
-		return docBaseType.isSalesInvoice() && docSubType.isNone();
-	}
+	public boolean isSalesInvoice() {return docBaseType.isSalesInvoice() && docSubType.isNone();}
 
-	public boolean isPrepaySO()
-	{
-		return docBaseType.isSalesOrder() && docSubType.isPrepay();
-	}
 
-	public boolean isCallOrder()
-	{
-		return (docBaseType.isSalesOrder() || docBaseType.isPurchaseOrder()) && docSubType.isCallOrder();
-	}
+	public boolean isPrepaySO() {return docBaseType.isSalesOrder() && docSubType.isPrepay();}
 
-	public boolean isFrameAgreement()
-	{
-		return (docBaseType.isSalesOrder() || docBaseType.isPurchaseOrder()) && docSubType.isFrameAgreement();
-	}
 
-	public boolean isMediated()
-	{
-		return (docBaseType.isPurchaseOrder()) && docSubType.isMediated();
-	}
+	public boolean isCallOrder() {return (docBaseType.isSalesOrder() || docBaseType.isPurchaseOrder()) && docSubType.isCallOrder();}
 
-	public boolean isRequisition()
-	{
-		return (docBaseType.isPurchaseOrder()) && docSubType.isRequisition();
-	}
+	public boolean isFrameAgreement() { return ( docBaseType.isSalesOrder() || docBaseType.isPurchaseOrder() ) && docSubType.isFrameAgreement(); }
+
+	public boolean isMediated() {return (docBaseType.isPurchaseOrder()) && docSubType.isMediated();}
+
+	public boolean isRequisition() {return (docBaseType.isPurchaseOrder()) && docSubType.isRequisition();}
+
 }
