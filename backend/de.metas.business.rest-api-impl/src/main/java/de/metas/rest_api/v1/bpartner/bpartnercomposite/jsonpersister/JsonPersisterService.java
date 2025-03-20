@@ -106,7 +106,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
-import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.isBlank;
@@ -1499,7 +1498,6 @@ public class JsonPersisterService
 		}
 
 		final boolean isUpdateRemove = syncAdvise.getIfExists().isUpdateRemove();
-		final boolean isAssumeUnchanged = syncAdvise.getIfExists().isAssertUnchanged();
 
 		// name
 		if (jsonBPartnerLocation.isNameSet())
@@ -1645,7 +1643,10 @@ public class JsonPersisterService
 		syncJsonToLocationType(jsonBPartnerLocation)
 				.ifPresent(location::setLocationType);
 
-		if (isAssumeUnchanged)
+		final boolean ifExistsThenAssumeUnchanged = syncAdvise.getIfExists().isAssertUnchanged();
+		final boolean locationAlreadyExists = originalBPartnerLocation.getId() != null;
+		
+		if (locationAlreadyExists && ifExistsThenAssumeUnchanged)
 		{
 			final BPartnerLocation locationToCompare = createLocationToCompare(location);
 			final BPartnerLocation originalLocationToCompare = createLocationToCompare(originalBPartnerLocation);
