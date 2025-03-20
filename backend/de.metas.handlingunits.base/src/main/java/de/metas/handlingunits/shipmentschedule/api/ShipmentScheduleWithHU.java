@@ -84,6 +84,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.TreeSet;
+import java.util.stream.Stream;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
@@ -290,12 +291,14 @@ public class ShipmentScheduleWithHU
 				new TreeSet<>(Comparator.comparing(av -> av.getM_Attribute().getM_Attribute_ID()));
 
 		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
-		final I_M_HU hu = getTopLevelHU();
-		if (hu != null)
-		{
+		streamHUsFromAllLevels().forEach(hu -> {
 			final IAttributeStorage huAttributeStorage = attributeStorageFactory.getAttributeStorage(hu);
-			allAttributeValues.addAll(huAttributeStorage.getAttributeValues());
-		}
+			final List<IAttributeValue> nonEmptyAttributeValues = huAttributeStorage.getAttributeValues()
+					.stream()
+					.filter(attributeValue -> !attributeValue.isEmpty())
+					.collect(ImmutableList.toImmutableList());
+			allAttributeValues.addAll(nonEmptyAttributeValues);
+		});
 
 		if (getM_AttributeSetInstance_ID() > 0)
 		{
@@ -374,6 +377,11 @@ public class ShipmentScheduleWithHU
 	private I_M_HU getTopLevelHU()
 	{
 		return CoalesceUtil.coalesce(luHU, tuHU, vhu);
+	}
+
+	private Stream<I_M_HU> streamHUsFromAllLevels()
+	{
+		return Stream.of(vhu, tuHU, luHU).filter(java.util.Objects::nonNull);
 	}
 
 	/**
