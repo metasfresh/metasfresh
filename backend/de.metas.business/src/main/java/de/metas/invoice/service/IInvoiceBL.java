@@ -112,10 +112,6 @@ public interface IInvoiceBL extends ISingletonService
 	boolean isCreditMemo(I_C_Invoice invoice);
 
 	/**
-	 * @return true if the given invoice is a CreditMemo (APC)  of subtype X_C_DocType.DOCSUBTYPE_GS_Retoure
-	 */
-	boolean isRetour(I_C_Invoice invoice);
-	/**
 	 * @return true if the given invoice DocBaseType is a CreditMemo (APC or ARC)
 	 */
 	boolean isCreditMemo(String docBaseType);

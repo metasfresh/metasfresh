@@ -60,8 +60,6 @@ public class PaymentAllocationPayableItem
 	
 	boolean invoiceIsCreditMemo;
 
-	boolean invoiceIsRetour;
-	
 	String documentNo;
 
 	/**
@@ -85,7 +83,6 @@ public class PaymentAllocationPayableItem
 			@NonNull final InvoiceId invoiceId,
 			@NonNull final BPartnerId invoiceBPartnerId,
 			final boolean invoiceIsCreditMemo,
-			final boolean invoiceIsRetour,
 			@NonNull final String documentNo,
 			@NonNull final SOTrx soTrx,
 			@NonNull final LocalDate dateInvoiced)
@@ -96,7 +93,6 @@ public class PaymentAllocationPayableItem
 		this.discountAmt = discountAmt;
 		this.serviceFeeAmt = serviceFeeAmt;
 		this.invoiceIsCreditMemo = invoiceIsCreditMemo;
-		this.invoiceIsRetour = invoiceIsRetour;
 		this.clientAndOrgId = ClientAndOrgId.ofClientAndOrg(clientId, orgId);
 		this.paymentDate = CoalesceUtil.coalesce(paymentDate, Instant::now);
 		this.bPartnerId = bPartnerId;

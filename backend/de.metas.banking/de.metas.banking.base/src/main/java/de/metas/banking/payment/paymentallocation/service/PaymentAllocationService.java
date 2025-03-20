@@ -244,11 +244,10 @@ public class PaymentAllocationService
 
 		final InvoiceAmtMultiplier amtMultiplier = paymentAllocationPayableItem.getAmtMultiplier();
 
-		// for purchase invoices and sales credit memos that are not retour, we need to negate
+		// for purchase invoices and sales credit memos, we need to negate
 		// but not for sales invoices and purchase credit memos
 		final boolean invoiceIsCreditMemo = paymentAllocationPayableItem.isInvoiceIsCreditMemo();
-		final boolean invoiceIsRetour = paymentAllocationPayableItem.isInvoiceIsRetour();
-		final boolean negateAmounts = paymentAllocationPayableItem.getSoTrx().isPurchase() ^ (invoiceIsCreditMemo && !invoiceIsRetour);
+		final boolean negateAmounts = paymentAllocationPayableItem.getSoTrx().isPurchase() ^ invoiceIsCreditMemo;
 
 		return PayableDocument.builder()
 				.invoiceId(paymentAllocationPayableItem.getInvoiceId())
