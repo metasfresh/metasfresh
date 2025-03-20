@@ -218,6 +218,12 @@ import java.math.BigDecimal;
 		}
 
 		final UomId toUomId = UomId.ofRepoId(importRecord.getC_UOM_ID());
+
+		if (fromUomId.equals(toUomId))
+		{
+			return;
+		}
+
 		final ProductId productId = ProductId.ofRepoId(importRecord.getM_Product_ID());
 		final UOMConversionRate productRate = uomConversionDAO.getProductConversions(productId).getRateIfExists(fromUomId, toUomId).orElse(null);
 		if (productRate != null)

@@ -386,3 +386,13 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,740709,0,442,552659,630839,'F',TO_TIMESTAMP('2025-03-20 11:07:10.858000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N',0,'UOM Multiplier Rate',60,0,0,TO_TIMESTAMP('2025-03-20 11:07:10.858000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
+
+-- Column: I_Product.InvoicableQtyBasedOn
+-- 2025-03-20T17:54:44.834Z
+UPDATE AD_Column SET FieldLength=20,Updated=TO_TIMESTAMP('2025-03-20 17:54:44.834000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=589787
+;
+
+-- 2025-03-20T17:54:46.170Z
+INSERT INTO t_alter_column values('i_product','InvoicableQtyBasedOn','VARCHAR(20)',null,null)
+;
+

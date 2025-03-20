@@ -1300,6 +1300,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		CreateTUPackingInstructionsCommand.builder()
 				.handlingUnitsDAO(this)
 				.request(request)
-				.build();
+				.build()
+				.execute();
 	}
 }
