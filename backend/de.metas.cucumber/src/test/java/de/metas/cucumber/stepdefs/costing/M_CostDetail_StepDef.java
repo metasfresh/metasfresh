@@ -14,6 +14,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.cucumber.stepdefs.inventory.M_InventoryLine_StepDefData;
 import de.metas.cucumber.stepdefs.match_po.M_MatchPO_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
@@ -23,11 +24,11 @@ import de.metas.inventory.InventoryLineId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.order.MatchPOId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.RepoIdAwares;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.Builder;
@@ -44,6 +45,9 @@ import org.compiere.util.Env;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
 public class M_CostDetail_StepDef
@@ -51,6 +55,7 @@ public class M_CostDetail_StepDef
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final CostDetailRepository costDetailRepository = SpringContextHolder.instance.getBean(CostDetailRepository.class);
 	@NonNull private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
+	@NonNull private final M_CostElement_StepDefData costElementTable;
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final M_MatchPO_StepDefData matchPOTable;
 	@NonNull private final M_InOutLine_StepDefData inoutLineTable;
@@ -61,20 +66,27 @@ public class M_CostDetail_StepDef
 			final int timeoutSec,
 			@NonNull final String productIdentifierStr,
 			@NonNull final String costElementStr,
-			@NonNull final DataTable table) throws InterruptedException
+			@NonNull final DataTable table) throws Throwable
 	{
-		final CostDetailQuery costDetailQuery = CostDetailQuery.builder()
-				.productId(productTable.getId(productIdentifierStr))
-				.costElementId(RepoIdAwares.ofObject(costElementStr, CostElementId.class))
-				.orderBy(CostDetailQuery.OrderBy.ID_ASC)
-				.build();
-
+		final ProductId productId = productTable.getId(productIdentifierStr);
+		final Set<CostElementId> costElementIds = costElementTable.getIdsOfCommaSeparatedString(costElementStr);
 		final CostDetailMatchers matchers = toCostDetailMatchers(table);
 
-		StepDefUtil.tryAndWaitForData(() -> costDetailRepository.stream(costDetailQuery).collect(ImmutableList.toImmutableList()))
-				.validateUsingFunction(matchers::checkValid)
-				.maxWaitSeconds(timeoutSec)
-				.execute();
+		assertThat(costElementIds).isNotEmpty();
+
+		SharedTestContext.forEach(costElementIds, "costElement", costElementId -> {
+			final CostDetailQuery costDetailQuery = CostDetailQuery.builder()
+					.productId(productId)
+					.costElementId(costElementId)
+					.orderBy(CostDetailQuery.OrderBy.ID_ASC)
+					.build();
+			SharedTestContext.put("costDetailQuery", costDetailQuery);
+
+			StepDefUtil.tryAndWaitForData(() -> costDetailRepository.stream(costDetailQuery).collect(ImmutableList.toImmutableList()))
+					.validateUsingFunction(matchers::checkValid)
+					.maxWaitSeconds(timeoutSec)
+					.execute();
+		});
 	}
 
 	private CostDetailMatchers toCostDetailMatchers(final DataTable table)
