@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="420" pageHeight="595" columnWidth="420" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/label/sscc/report" uuid="a235b651-ce67-479f-8246-f2ed82a0d6b6">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="2.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="528"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Remote"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.unit." value="mm"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="mm"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="mm"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Barcode" forecolor="#000000" fontName="Arial" fontSize="11"/>
+	<parameter name="AD_PInstance_ID" class="java.lang.Integer"/>
+	<queryString>
+		<![CDATA[SELECT * FROM report.EDI_DesadvLine_Migros_SSCC_Label($P{AD_PInstance_ID});]]>
+	</queryString>
+	<field name="org_address" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="org_address"/>
+		<property name="com.jaspersoft.studio.field.label" value="org_address"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="fresh_hu_sscc_label_report"/>
+	</field>
+	<field name="sscc" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="sscc"/>
+		<property name="com.jaspersoft.studio.field.label" value="sscc"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="fresh_hu_sscc_label_report"/>
+	</field>
+	<field name="p_customervalue" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="p_customervalue"/>
+		<property name="com.jaspersoft.studio.field.label" value="p_customervalue"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="fresh_hu_sscc_label_report"/>
+	</field>
+	<field name="priceactual" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="priceactual"/>
+		<property name="com.jaspersoft.studio.field.label" value="priceactual"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="fresh_hu_sscc_label_report"/>
+	</field>
+	<field name="p_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="p_name"/>
+		<property name="com.jaspersoft.studio.field.label" value="p_name"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="fresh_hu_sscc_label_report"/>
+	</field>
+	<field name="cu_per_tu" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="cu_per_tu"/>
+		<property name="com.jaspersoft.studio.field.label" value="cu_per_tu"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="fresh_hu_sscc_label_report"/>
+	</field>
+	<field name="tu_per_lu" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="tu_per_lu"/>
+		<property name="com.jaspersoft.studio.field.label" value="tu_per_lu"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="fresh_hu_sscc_label_report"/>
+	</field>
+	<field name="net_weight" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="net_weight"/>
+		<property name="com.jaspersoft.studio.field.label" value="net_weight"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="fresh_hu_sscc_label_report"/>
+	</field>
+	<field name="gross_weight" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="gross_weight"/>
+		<property name="com.jaspersoft.studio.field.label" value="gross_weight"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="fresh_hu_sscc_label_report"/>
+	</field>
+	<field name="order_docno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="order_docno"/>
+		<property name="com.jaspersoft.studio.field.label" value="order_docno"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="fresh_hu_sscc_label_report"/>
+	</field>
+	<field name="p_value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="p_value"/>
+		<property name="com.jaspersoft.studio.field.label" value="p_value"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="fresh_hu_sscc_label_report"/>
+	</field>
+	<field name="lotcode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="lotcode"/>
+		<property name="com.jaspersoft.studio.field.label" value="lotcode"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="fresh_hu_sscc_label_report"/>
+	</field>
+	<field name="paletno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="paletno"/>
+		<property name="com.jaspersoft.studio.field.label" value="paletno"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="fresh_hu_sscc_label_report"/>
+	</field>
+	<field name="customer" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="customer"/>
+		<property name="com.jaspersoft.studio.field.label" value="customer"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="fresh_hu_sscc_label_report"/>
+	</field>
+	<field name="ad_language" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="ad_language"/>
+		<property name="com.jaspersoft.studio.field.label" value="ad_language"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="fresh_hu_sscc_label_report"/>
+	</field>
+	<field name="lotnumberdate" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="lotnumberdate"/>
+		<property name="com.jaspersoft.studio.field.label" value="lotnumberdate"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="fresh_hu_sscc_label_report"/>
+	</field>
+	<detail>
+		<band height="595" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement x="0" y="31" width="420" height="34" uuid="95d6fd65-bcad-47ef-8cf6-6e4ac1feb886">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<box>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{sscc}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement x="10" y="34" width="66" height="26" uuid="8695bcca-d854-49ef-ba26-dbf35284a13b"/>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{sscc}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement x="10" y="71" width="180" height="20" uuid="5458817e-b006-4c10-8c77-676d8b621970">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Bottom" markup="none">
+					<font fontName="Arial" size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{customerno}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement x="231" y="71" width="39" height="40" uuid="a63fe2b6-8827-4291-91f9-23ee090433ed">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Bottom" markup="none">
+					<font fontName="Arial" size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{priceactual}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement x="10" y="91" width="180" height="20" uuid="3a09859e-1889-4b7c-8b1c-d4bfe8f14db9"/>
+				<textElement>
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{p_customervalue}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="###0.00" isBlankWhenNull="true">
+				<reportElement x="270" y="91" width="139" height="20" uuid="22bc55ed-2a59-4833-aec1-3c9fcc6ed17a">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{priceactual}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement x="10" y="131" width="180" height="20" uuid="c757fa61-8034-4042-bf8c-05d3a0e7edd5">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Bottom" markup="none">
+					<font fontName="Arial" size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{p_name}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="10" y="151" width="399" height="20" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{p_name}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="10" y="179" width="60" height="20" uuid="8cdc16eb-5f29-4253-ba95-2737af872264">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Bottom" markup="none">
+					<font fontName="Arial" size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{cu_per_tu}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="###0.##" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="10" y="199" width="60" height="20" uuid="45d77dd8-1af1-4268-b530-08564b45f2c9">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cu_per_tu}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="###0.##" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="91" y="199" width="60" height="20" uuid="687083e1-f6a3-4c6f-b984-e2729c107a63">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{tu_per_lu}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="91" y="179" width="60" height="20" uuid="58f4060d-1975-4901-9be9-66323de2ea20">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center" verticalAlignment="Bottom" markup="none">
+					<font fontName="Arial" size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{tu_per_lu}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="###0.00 kg" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="174" y="199" width="100" height="20" uuid="e641f243-6ae4-43b5-9270-d9a1d97139c1">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{net_weight}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="174" y="179" width="100" height="20" uuid="6e3c99d2-d0ec-43c5-84a5-37bbf9043099">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Bottom" markup="none">
+					<font fontName="Arial" size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{net_weight}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="310" y="179" width="100" height="20" uuid="614044f5-8e6e-40c5-b00d-c996d532ba1f">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Bottom" markup="none">
+					<font fontName="Arial" size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{gross_weight}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="###0.00 kg" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="310" y="199" width="100" height="20" uuid="8e393b6f-73fe-443e-b896-04a4e21df0bb">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement>
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{gross_weight}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="0" y="405" width="420" height="39" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08"/>
+				<box>
+					<topPen lineWidth="1.0" lineStyle="Solid"/>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="12" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{customer}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="0" y="0" width="420" height="31" uuid="c7e3461e-c2ac-4679-8811-a86f5f05ba08">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<box>
+					<bottomPen lineWidth="1.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Arial" size="12" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{org_address}]]></textFieldExpression>
+			</textField>
+			<componentElement>
+				<reportElement style="Barcode" positionType="Float" x="21" y="460" width="378" height="110" uuid="0ae1838d-4ffe-4779-bf46-6b97a1b81772">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="com.jaspersoft.studio.unit.x" value="mm"/>
+				</reportElement>
+				<jr:EAN128 xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" moduleWidth="3.5" textPosition="none" quietZone="1.0" verticalQuietZone="0.0">
+					<jr:codeExpression><![CDATA[("00"+$F{sscc})+"\u001D"]]></jr:codeExpression>
+				</jr:EAN128>
+			</componentElement>
+			<line>
+				<reportElement x="0" y="230" width="420" height="1" uuid="d960619c-0587-4bdc-96ed-2fdf115b4ec2"/>
+			</line>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="10" y="250" width="190" height="20" uuid="d7c308b9-4368-47ee-a08f-eee377f8d577"/>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{order_docno}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="10" y="278" width="190" height="20" uuid="c5c14be8-9760-43d0-abf4-b099ad57eaf0">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{p_value}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="10" y="310" width="190" height="20" uuid="ba4e4f35-0903-46b2-8858-e1bc26ff4202">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{lotcode}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="10" y="340" width="190" height="20" uuid="f0479d3b-7c27-4fc8-9b50-987de9d1b337">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{LotNumberDate}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="10" y="370" width="190" height="20" uuid="3fb0236e-8b8b-45b0-8448-886aed32b00c">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<textElement verticalAlignment="Middle" markup="none">
+					<font fontName="Arial" size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{paletno}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="200" y="370" width="208" height="20" uuid="cbf8e194-73b6-49f6-98cf-c6a69b1fca6a">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{paletno}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="200" y="340" width="208" height="20" uuid="80d6a4f3-835b-4c5c-aae9-113c85d55a96">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{lotnumberdate}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="200" y="310" width="208" height="20" uuid="0b55a77f-d478-43fc-a2bb-5769f337060f">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{lotcode}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="200" y="278" width="209" height="20" uuid="5dc31877-ad52-48eb-9f52-25c9b2a31fc4">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{p_value}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement positionType="Float" x="200" y="250" width="210" height="20" uuid="87e3be2f-2372-49c2-9df0-96c672d7e2a0">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{order_docno}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement x="21" y="550" width="378" height="34" uuid="03d32530-8459-413f-b79a-3f9df0f9dc07">
+					<property name="com.jaspersoft.studio.unit.height" value="mm"/>
+				</reportElement>
+				<box>
+					<bottomPen lineWidth="0.0" lineStyle="Solid"/>
+				</box>
+				<textElement textAlignment="Left" verticalAlignment="Top">
+					<font fontName="Arial" size="14" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA["(00) " + $F{sscc}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+</jasperReport>
