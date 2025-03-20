@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.impl;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.product.IProductPackingInstructionService;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -43,6 +44,7 @@ public class ProductPackingInstructionService implements IProductPackingInstruct
 		final ProductPackingInstructionsRequest request = ProductPackingInstructionsRequest.builder()
 				.productId(productId)
 				.qtyCU(importRecord.getQtyCU())
+				.bPartnerId(BPartnerId.ofRepoIdOrNull(importRecord.getC_BPartner_ID()))
 				.M_HU_PI_Value(importRecord.getM_HU_PI_Value())
 				.isDefault(importRecord.isDefaultPacking())
 				.isInfiniteCapacity(importRecord.getQtyCU() != null)

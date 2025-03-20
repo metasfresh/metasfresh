@@ -17,6 +17,7 @@ import org.compiere.model.I_C_UOM_Conversion;
 import org.compiere.model.I_I_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidationEngine;
+import org.compiere.model.X_I_Product;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -222,12 +223,15 @@ import java.math.BigDecimal;
 	public void handlePackingInstructions(@NonNull final I_I_Product importRecord, @NonNull final ProductId productId)
 	{
 		packingInstructionService.handlePackingInstructions(importRecord, productId);
+	}
 
-		// // 4. Handle Catch Weight UOM Conversion
-		// if ("Catchweight".equalsIgnoreCase(importRecord.getInvoicableQtyBasedOn()))
-		// {
-		// 	handleUOMConversion(importRecord);
-		// }
+	public void handleCatchWeight(@NonNull final I_I_Product importRecord, @NonNull final ProductId productId)
+	{
+		//	 Handle Catch Weight UOM Conversion
+		if (X_I_Product.INVOICABLEQTYBASEDON_CatchWeight.equalsIgnoreCase(importRecord.getInvoicableQtyBasedOn()))
+		{
+			handleUOMConversion(importRecord);
+		}
 	}
 
 

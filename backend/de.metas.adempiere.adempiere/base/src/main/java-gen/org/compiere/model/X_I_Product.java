@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_I_Product extends org.compiere.model.PO implements I_I_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1396481618L;
+	private static final long serialVersionUID = 232226665L;
 
     /** Standard Constructor */
     public X_I_Product (final Properties ctx, final int I_Product_ID, @Nullable final String trxName)
@@ -442,17 +442,25 @@ public class X_I_Product extends org.compiere.model.PO implements I_I_Product, o
 		return get_ValueAsString(COLUMNNAME_ImageURL);
 	}
 
+	/** 
+	 * InvoicableQtyBasedOn AD_Reference_ID=541023
+	 * Reference name: InvoicableQtyBasedOn
+	 */
+	public static final int INVOICABLEQTYBASEDON_AD_Reference_ID=541023;
+	/** Nominal = Nominal */
+	public static final String INVOICABLEQTYBASEDON_Nominal = "Nominal";
+	/** CatchWeight = CatchWeight */
+	public static final String INVOICABLEQTYBASEDON_CatchWeight = "CatchWeight";
 	@Override
-	public void setInvoicableQtyBasedOn (final @Nullable BigDecimal InvoicableQtyBasedOn)
+	public void setInvoicableQtyBasedOn (final @Nullable java.lang.String InvoicableQtyBasedOn)
 	{
 		set_Value (COLUMNNAME_InvoicableQtyBasedOn, InvoicableQtyBasedOn);
 	}
 
 	@Override
-	public BigDecimal getInvoicableQtyBasedOn() 
+	public java.lang.String getInvoicableQtyBasedOn() 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_InvoicableQtyBasedOn);
-		return bd != null ? bd : BigDecimal.ZERO;
+		return get_ValueAsString(COLUMNNAME_InvoicableQtyBasedOn);
 	}
 
 	@Override

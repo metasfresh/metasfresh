@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.impl;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.Value;
@@ -36,6 +37,6 @@ public class ProductPackingInstructionsRequest
 	BigDecimal qtyCU;
 	ProductId productId;
 	boolean isDefault;
-	;
+	BPartnerId bPartnerId;
 	boolean isInfiniteCapacity;
 }

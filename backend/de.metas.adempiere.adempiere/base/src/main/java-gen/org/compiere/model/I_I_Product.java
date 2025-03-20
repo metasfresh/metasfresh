@@ -718,20 +718,20 @@ public interface I_I_Product
 	/**
 	 * Set Invoicable Quantity per.
 	 *
-	 * <br>Type: Quantity
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setInvoicableQtyBasedOn (@Nullable BigDecimal InvoicableQtyBasedOn);
+	void setInvoicableQtyBasedOn (@Nullable java.lang.String InvoicableQtyBasedOn);
 
 	/**
 	 * Get Invoicable Quantity per.
 	 *
-	 * <br>Type: Quantity
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getInvoicableQtyBasedOn();
+	@Nullable java.lang.String getInvoicableQtyBasedOn();
 
 	ModelColumn<I_I_Product, Object> COLUMN_InvoicableQtyBasedOn = new ModelColumn<>(I_I_Product.class, "InvoicableQtyBasedOn", null);
 	String COLUMNNAME_InvoicableQtyBasedOn = "InvoicableQtyBasedOn";

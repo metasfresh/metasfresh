@@ -144,6 +144,10 @@ public class CreatePackingInstructionsCommand
 			productHuPi.setM_Product_ID(request.getProductId().getRepoId());
 			productHuPi.setM_HU_PI_Item_ID(item.getM_HU_PI_Item_ID());
 			productHuPi.setQty(request.getQtyCU());
+			if (request.getBPartnerId()!=null)
+			{
+				productHuPi.setC_BPartner_ID(request.getBPartnerId().getRepoId());
+			}
 			productHuPi.setValidFrom(SystemTime.asTimestamp());
 		}
 
