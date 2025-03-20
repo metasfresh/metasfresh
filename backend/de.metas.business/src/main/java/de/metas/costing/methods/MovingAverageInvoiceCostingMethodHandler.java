@@ -634,6 +634,10 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		if (isInboundTrx)
 		{
 			currentCosts.addWeightedAverage(negateAmount, qty.negate(), utils.getQuantityUOMConverter());
+			if (currentCosts.getCurrentQty().isZero())
+			{
+				currentCosts.clearOwnCostPrice();
+			}
 		}
 		else
 		{
