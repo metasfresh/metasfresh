@@ -121,13 +121,13 @@ Feature: mobileUI Picking - Pick mixed lines
     And pick lines
       | PickingLine.byProduct | PickFromHU    | QRCode                     |
       | catchWeightProduct    | catchWeightHU | LMQ#1#0.101#08.11.2025#500 |
-      | catchWeightProduct    | catchWeightHU | LMQ#1#0.102#08.11.2025#501 |
-      | catchWeightProduct    | catchWeightHU | LMQ#1#0.103#08.11.2025#502 |
-      | catchWeightProduct    | catchWeightHU | LMQ#1#0.104#08.11.2025#503 |
-      | catchWeightProduct    | catchWeightHU | LMQ#1#0.105#08.11.2025#504 |
-      | catchWeightProduct    | catchWeightHU | LMQ#1#0.106#08.11.2025#505 |
-      | catchWeightProduct    | catchWeightHU | LMQ#1#0.107#08.11.2025#506 |
-      | catchWeightProduct    | catchWeightHU | LMQ#1#0.108#08.11.2025#507 |
+      | catchWeightProduct    | catchWeightHU | LMQ#1#0.102#08.11.2025#500 |
+      | catchWeightProduct    | catchWeightHU | LMQ#1#0.103#08.11.2025#500 |
+      | catchWeightProduct    | catchWeightHU | LMQ#1#0.104#08.11.2025#500 |
+      | catchWeightProduct    | catchWeightHU | LMQ#1#0.105#08.11.2025#500 |
+      | catchWeightProduct    | catchWeightHU | LMQ#1#0.106#08.11.2025#500 |
+      | catchWeightProduct    | catchWeightHU | LMQ#1#0.107#08.11.2025#500 |
+      | catchWeightProduct    | catchWeightHU | LMQ#1#0.108#08.11.2025#500 |
     And pick lines
       | PickingLine.byProduct | PickFromHU         | QtyPicked | QtyRejected | QtyRejectedReasonCode | BestBeforeDate | LotNo |
       | regularTUProduct      | regularTUProductHU | 9         | 1           | N                     | 2027-03-01     | 9876  |
@@ -224,16 +224,16 @@ Feature: mobileUI Picking - Pick mixed lines
       | M_HU_ID                                                        | M_Attribute_ID.Value | Value |
       # catch weight product:
       | L1_cu1                                                         | Lot-Nummer           | 500   |
-      | L1_cu2                                                         | Lot-Nummer           | 501   |
-      | L1_cu3                                                         | Lot-Nummer           | 502   |
-      | L1_cu4                                                         | Lot-Nummer           | 503   |
-      | L1_cu5                                                         | Lot-Nummer           | 504   |
-      | L1_cu6                                                         | Lot-Nummer           | 505   |
-      | L1_cu7                                                         | Lot-Nummer           | 506   |
-      | L1_cu8                                                         | Lot-Nummer           | 507   |
-      | L1_tu1                                                         | Lot-Nummer           | -     |
-      | L1_tu2                                                         | Lot-Nummer           | -     |
-      | L1_lu                                                          | Lot-Nummer           | -     |
+      | L1_cu2                                                         | Lot-Nummer           | 500   |
+      | L1_cu3                                                         | Lot-Nummer           | 500   |
+      | L1_cu4                                                         | Lot-Nummer           | 500   |
+      | L1_cu5                                                         | Lot-Nummer           | 500   |
+      | L1_cu6                                                         | Lot-Nummer           | 500   |
+      | L1_cu7                                                         | Lot-Nummer           | 500   |
+      | L1_cu8                                                         | Lot-Nummer           | 500   |
+      | L1_tu1                                                         | Lot-Nummer           | 500   |
+      | L1_tu2                                                         | Lot-Nummer           | 500   |
+      | L1_lu                                                          | Lot-Nummer           | 500   |
       # regular TU product:
       | L2_tu1,L2_tu2,L2_tu3,L2_tu4,L2_tu5,L2_tu6,L2_tu7,L2_tu8,L2_tu9 | Lot-Nummer           | 9876  |
       | L2_lu                                                          | Lot-Nummer           | 9876  |
@@ -250,7 +250,7 @@ Feature: mobileUI Picking - Pick mixed lines
       | M_AttributeSetInstance_ID | AttributeCode     | Value                 |
       # shipment line 1:
       | asi1                      | HU_BestBeforeDate | 2025-11-08 00:00:00.0 |
-      | asi1                      | Lot-Nummer        |                       |
+      | asi1                      | Lot-Nummer        | 500                   |
       # shipment line 2:
       | asi2                      | HU_BestBeforeDate | 2027-03-01 00:00:00.0 |
       | asi2                      | Lot-Nummer        | 9876                  |
