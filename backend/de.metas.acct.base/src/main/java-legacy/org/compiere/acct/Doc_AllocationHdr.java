@@ -855,7 +855,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			final DocLine_Allocation counterLine = line.getCounterDocLine();
 
 			// ARC
-			if (line.isCreditMemoInvoice() && !counterLine.isService())
+			if (line.isCreditMemoInvoice() && (counterLine == null || !counterLine.isService()))
 			{
 				factLineBuilder.setAmtSource(allocationSource, null);
 			}

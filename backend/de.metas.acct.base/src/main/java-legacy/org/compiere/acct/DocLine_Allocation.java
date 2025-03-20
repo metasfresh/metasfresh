@@ -298,6 +298,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			return false;
 		}
 
+		// Shall have a counter line set
 		final DocLine_Allocation counterLine = getCounterDocLine();
 		if (counterLine == null)
 		{
@@ -313,7 +314,6 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			}
 		}
 
-		// Shall have a counter line set
 
 		// The counter line shall have a invoice set
 		if (!counterLine.hasInvoiceDocument())
