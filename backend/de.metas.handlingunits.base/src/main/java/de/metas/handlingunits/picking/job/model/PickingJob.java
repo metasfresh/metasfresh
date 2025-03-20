@@ -50,6 +50,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
@@ -356,22 +357,24 @@ public final class PickingJob
 
 	public Stream<ShipmentScheduleId> streamShipmentScheduleIds()
 	{
-		return lines.stream().flatMap(PickingJobLine::streamShipmentScheduleId);
+		return streamLines().flatMap(PickingJobLine::streamShipmentScheduleId);
 	}
 
 	public PickingJobLine getLineById(@NonNull final PickingJobLineId lineId)
 	{
-		return lines.stream()
+		return streamLines()
 				.filter(line -> PickingJobLineId.equals(line.getId(), lineId))
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No line found for " + lineId));
 	}
 
-	public Stream<PickingJobStep> streamSteps() {return lines.stream().flatMap(PickingJobLine::streamSteps);}
+	public Stream<PickingJobStep> streamSteps() {return streamLines().flatMap(PickingJobLine::streamSteps);}
+
+	public Stream<PickingJobLine> streamLines() {return lines.stream();}
 
 	public PickingJobStep getStepById(@NonNull final PickingJobStepId stepId)
 	{
-		return lines.stream()
+		return streamLines()
 				.flatMap(PickingJobLine::streamSteps)
 				.filter(step -> PickingJobStepId.equals(step.getId(), stepId))
 				.findFirst()
@@ -448,7 +451,7 @@ public final class PickingJob
 	@NonNull
 	public ImmutableSet<ProductId> getProductIds()
 	{
-		return lines.stream()
+		return streamLines()
 				.map(PickingJobLine::getProductId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
@@ -533,9 +536,18 @@ public final class PickingJob
 
 	public ImmutableSet<HuId> getAllPickedHuIds()
 	{
-		return lines.stream()
+		return streamLines()
 				.map(PickingJobLine::getPickedHUIds)
 				.flatMap(Set::stream)
 				.collect(ImmutableSet.toImmutableSet());
 	}
+
+	public ImmutableSet<PPOrderId> getManufacturingOrderIds()
+	{
+		return streamLines()
+				.map(PickingJobLine::getPickFromManufacturingOrderId)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 }

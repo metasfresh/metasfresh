@@ -13,6 +13,7 @@ import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonHUQRCodeTarget;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonHUQRCodeTargetConverters;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonFinishGoodsReceiveQRCodesGenerateRequest;
+import de.metas.manufacturing.workflows_api.rest_api.json.JsonFinishGoodsReceiveQRCodesGenerateResponse;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEventResult;
 import de.metas.mobile.application.MobileApplicationId;
@@ -246,7 +247,7 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 		return JsonHUQRCodeTargetConverters.fromNullable(receiveLine.getReceivingTarget(), huQRCodesService);
 	}
 
-	public void generateFinishGoodsReceiveQRCodes(@NonNull final JsonFinishGoodsReceiveQRCodesGenerateRequest request)
+	public JsonFinishGoodsReceiveQRCodesGenerateResponse generateFinishGoodsReceiveQRCodes(@NonNull final JsonFinishGoodsReceiveQRCodesGenerateRequest request)
 	{
 		final ManufacturingJob manufacturingJob = getManufacturingJob(getWFProcessById(request.getWfProcessId()));
 		final FinishedGoodsReceiveLine finishedGoodsReceiveLine = manufacturingJob.getFinishedGoodsReceiveLineById(request.getFinishedGoodsReceiveLineId());
@@ -264,6 +265,12 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 				: PrintCopies.ONE;
 
 		huQRCodesService.print(qrCodes, copies);
+
+		return JsonFinishGoodsReceiveQRCodesGenerateResponse.builder()
+				.qrCodes(qrCodes.stream()
+						.map(HUQRCode::toRenderedJson)
+						.collect(ImmutableList.toImmutableList()))
+				.build();
 	}
 
 	private static List<HUQRCodeGenerateRequest.Attribute> toHUQRCodeGenerateRequestAttributesList(@NonNull final ImmutableAttributeSet attributes)

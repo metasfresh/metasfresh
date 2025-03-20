@@ -21,4 +21,11 @@ export const ReceiptNewHUScreen = {
         await page.getByTestId(luPIItemTestId).tap();
         await MaterialReceiptLineScreen.waitForScreen();
     }),
+
+    clickTUTarget: async ({ tuPIItemProductTestId }) => await test.step(`${NAME} - Click TU target "${tuPIItemProductTestId}"`, async () => {
+        await ReceiptNewHUScreen.expectVisible();
+        await page.getByTestId(tuPIItemProductTestId).tap();
+        await MaterialReceiptLineScreen.waitForScreen();
+    }),
+
 };
