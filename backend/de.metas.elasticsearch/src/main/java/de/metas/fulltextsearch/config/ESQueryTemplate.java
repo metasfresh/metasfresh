@@ -63,6 +63,7 @@ public class ESQueryTemplate
 	{
 		final ToJsonEvaluatee evalCtxEffective = new ToJsonEvaluatee(evalCtx);
 		evalCtxEffective.skipConvertingToJson(PARAM_orgFilter.getName());
+		evalCtxEffective.skipConvertingToJson(PARAM_query.getName());
 		return expression.evaluate(evalCtxEffective, IExpressionEvaluator.OnVariableNotFound.Fail);
 	}
 }
