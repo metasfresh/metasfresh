@@ -947,9 +947,9 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.orgId(counterLine.getInvoiceOrgId())
 				.bPartnerAndLocationId(counterLine.getInvoiceBPartnerId(), counterLine.getInvoiceBPartnerLocationId())
 				.alsoAddZeroLine();
+
 		if (counterLine.isSOTrxInvoice())
 		{
-			if(line.isService() && counterLine.isRetour())
 			factLineBuilder.setAccount(getCustomerAccount(BPartnerCustomerAccountType.C_Receivable, as));
 			factLineBuilder.setAmtSource(null, compensationAmtSource.negate());
 		}
