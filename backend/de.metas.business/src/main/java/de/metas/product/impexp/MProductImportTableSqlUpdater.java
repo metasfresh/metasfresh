@@ -149,14 +149,6 @@ public class MProductImportTableSqlUpdater
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
 		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
-
-		sql = new StringBuilder("UPDATE ")
-				.append(targetTableName)
-				.append(" SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + "=" + COLUMNNAME_I_ErrorMsg + "||'ERR=Invalid BPartner,' ")
-				.append("WHERE C_BPartner_ID IS NULL AND BPartner_Value IS NOT NULL")
-				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
-				.append(selection.toSqlWhereClause());
-		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void dbUpdateManufacturers(@NonNull final ImportRecordsSelection selection)
