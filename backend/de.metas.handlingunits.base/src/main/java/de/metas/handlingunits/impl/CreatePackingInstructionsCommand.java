@@ -167,38 +167,4 @@ public class CreatePackingInstructionsCommand
 		saveRecord(luPIItemRecord);
 		return luPIItemRecord;
 	}
-
-	/**
-	 * Creates a UOM Conversion if it does not exist
-	 */
-	public void createUOMConversion(int fromUOM, int toUOM, BigDecimal multiplierRate)
-	{
-		if (fromUOM <= 0 || toUOM <= 0 || multiplierRate == null || multiplierRate.signum() == 0)
-		{
-			log.warn("Skipping UOM conversion: invalid parameters (fromUOM={}, toUOM={}, multiplierRate={})",
-					fromUOM, toUOM, multiplierRate);
-			return;
-		}
-
-		I_C_UOM_Conversion conversion = queryBL.createQueryBuilder(I_C_UOM_Conversion.class)
-				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_C_UOM_ID, fromUOM)
-				.addEqualsFilter(I_C_UOM_Conversion.COLUMNNAME_C_UOM_To_ID, toUOM)
-				.first();
-
-		if (conversion == null)
-		{
-			conversion = InterfaceWrapperHelper.newInstance(I_C_UOM_Conversion.class);
-			conversion.setC_UOM_ID(fromUOM);
-			conversion.setC_UOM_To_ID(toUOM);
-			conversion.setMultiplyRate(multiplierRate);
-			conversion.setIsActive(true);
-			InterfaceWrapperHelper.saveRecord(conversion);
-
-			log.info("Created new UOM conversion: {} -> {} with rate {}", fromUOM, toUOM, multiplierRate);
-		}
-		else
-		{
-			log.info("UOM conversion already exists: {} -> {} with rate {}", fromUOM, toUOM, conversion.getMultiplyRate());
-		}
-	}
 }
