@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.handlingunits.base
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,13 +20,24 @@
  * #L%
  */
 
-package de.metas.product;
+package de.metas.handlingunits.impl;
 
-import de.metas.util.ISingletonService;
+import de.metas.bpartner.BPartnerId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import lombok.Builder;
 import lombok.NonNull;
-import org.compiere.model.I_I_Product;
+import lombok.Value;
 
-public interface IProductPackingInstructionService
+import javax.annotation.Nullable;
+
+@Value
+@Builder
+public class CreateTUPackingInstructionsRequest
 {
-	public void handlePackingInstructions(@NonNull final I_I_Product importRecord, @NonNull final ProductId productId);
+	@NonNull String name;
+	@NonNull ProductId productId;
+	@Nullable BPartnerId bpartnerId;
+	@NonNull Quantity qtyCU;
+	boolean isDefault;
 }

@@ -48,6 +48,7 @@ public enum InvoicableQtyBasedOn implements ReferenceListAwareEnum
 
 	public static InvoicableQtyBasedOn ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
 
+	@NonNull
 	public static InvoicableQtyBasedOn ofNullableCodeOrNominal(@Nullable final String code)
 	{
 		final InvoicableQtyBasedOn type = index.ofNullableCode(code);

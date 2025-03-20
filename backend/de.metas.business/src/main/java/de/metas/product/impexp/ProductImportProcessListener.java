@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.business
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,23 +20,12 @@
  * #L%
  */
 
-package de.metas.handlingunits.impl;
+package de.metas.product.impexp;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.product.ProductId;
-import lombok.Builder;
-import lombok.Value;
+import lombok.NonNull;
+import org.compiere.model.I_I_Product;
 
-import java.math.BigDecimal;
-
-@Value
-@Builder
-public class ProductPackingInstructionsRequest
+public interface ProductImportProcessListener
 {
-	String M_HU_PI_Value;
-	BigDecimal qtyCU;
-	ProductId productId;
-	boolean isDefault;
-	BPartnerId bPartnerId;
-	boolean isInfiniteCapacity;
+	void afterRecordImport(@NonNull final I_I_Product importRecord);
 }
