@@ -1,6 +1,5 @@
 package de.metas.cucumber.stepdefs.costing;
 
-import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -21,7 +20,6 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
-import de.metas.util.lang.RepoIdAwares;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -33,6 +31,7 @@ import org.compiere.model.I_M_Cost;
 import org.compiere.util.Env;
 
 import java.util.Objects;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -45,6 +44,7 @@ public class M_Cost_StepDef
 	@NonNull private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final C_AcctSchema_StepDefData acctSchemaTable;
+	@NonNull private final M_CostElement_StepDefData costElementTable;
 	@NonNull private final M_Product_StepDefData productTable;
 
 	@And("^validate current costs")
@@ -59,7 +59,7 @@ public class M_Cost_StepDef
 		final AcctSchema acctSchema = acctSchemaDAO.getById(acctSchemaId);
 		final ProductId productId = row.getAsIdentifier(I_M_Cost.COLUMNNAME_M_Product_ID).lookupIdIn(productTable);
 		final CostingLevel costingLevel = productCostingBL.getCostingLevel(productId, acctSchema);
-		final ImmutableSet<CostElementId> costElementIds = RepoIdAwares.ofCommaSeparatedSet(row.getAsString(I_M_Cost.COLUMNNAME_M_CostElement_ID), CostElementId.class);
+		final Set<CostElementId> costElementIds = costElementTable.getIdsOfCommaSeparatedString(row.getAsString(I_M_Cost.COLUMNNAME_M_CostElement_ID));
 
 		assertThat(costElementIds).isNotEmpty();
 

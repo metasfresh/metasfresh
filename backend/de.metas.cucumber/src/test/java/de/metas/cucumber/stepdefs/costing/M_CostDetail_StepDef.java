@@ -2,7 +2,6 @@ package de.metas.cucumber.stepdefs.costing;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
@@ -30,7 +29,6 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.lang.RepoIdAwares;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.Builder;
@@ -47,6 +45,7 @@ import org.compiere.util.Env;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -56,6 +55,7 @@ public class M_CostDetail_StepDef
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final CostDetailRepository costDetailRepository = SpringContextHolder.instance.getBean(CostDetailRepository.class);
 	@NonNull private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
+	@NonNull private final M_CostElement_StepDefData costElementTable;
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final M_MatchPO_StepDefData matchPOTable;
 	@NonNull private final M_InOutLine_StepDefData inoutLineTable;
@@ -69,7 +69,7 @@ public class M_CostDetail_StepDef
 			@NonNull final DataTable table) throws Throwable
 	{
 		final ProductId productId = productTable.getId(productIdentifierStr);
-		final ImmutableSet<CostElementId> costElementIds = RepoIdAwares.ofCommaSeparatedSet(costElementStr, CostElementId.class);
+		final Set<CostElementId> costElementIds = costElementTable.getIdsOfCommaSeparatedString(costElementStr);
 		final CostDetailMatchers matchers = toCostDetailMatchers(table);
 
 		assertThat(costElementIds).isNotEmpty();
@@ -80,6 +80,7 @@ public class M_CostDetail_StepDef
 					.costElementId(costElementId)
 					.orderBy(CostDetailQuery.OrderBy.ID_ASC)
 					.build();
+			SharedTestContext.put("costDetailQuery", costDetailQuery);
 
 			StepDefUtil.tryAndWaitForData(() -> costDetailRepository.stream(costDetailQuery).collect(ImmutableList.toImmutableList()))
 					.validateUsingFunction(matchers::checkValid)

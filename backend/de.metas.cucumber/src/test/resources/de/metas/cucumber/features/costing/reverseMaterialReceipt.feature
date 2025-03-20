@@ -11,6 +11,7 @@ Feature: Check costing when reversing a material receipt
     And load and update C_AcctSchema:
       | C_AcctSchema_ID | Name                  |
       | acctSchema      | metas fresh UN/34 CHF |
+    And cost elements for material costing methods AveragePO,MovingAverageInvoice are active
     And load M_Warehouse:
       | M_Warehouse_ID | Value        |
       | warehouseStd   | StdWarehouse |
@@ -95,13 +96,13 @@ Feature: Check costing when reversing a material receipt
       | Identifier | C_OrderLine_ID |
       | mpo1       | po1_l1         |
     And Wait until M_MatchPO mpo1 is posted
-    And after not more than 10s, M_CostDetails are found for product product and cost element 1000002,1000008
+    And after not more than 10s, M_CostDetails are found for product product and cost element AveragePO,MovingAverageInvoice
       | TableName   | Record_ID      | IsSOTrx | Amt          | Qty    | IsChangingCosts |
       | M_MatchPO   | mpo1           | N       | 10000000 CHF | 10 PCE | Y               |
       | M_InOutLine | receipt1_line1 | N       | 10000000 CHF | 10 PCE | N               |
     And validate current costs
-      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
-      | acctSchema      | product      | 1000002,1000008  | 1000000 CHF      | 10 PCE     |
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID               | CurrentCostPrice | CurrentQty |
+      | acctSchema      | product      | AveragePO,MovingAverageInvoice | 1000000 CHF      | 10 PCE     |
     
     
     #
@@ -112,13 +113,13 @@ Feature: Check costing when reversing a material receipt
       | M_InOutLine_ID  | M_InOut_ID | M_Product_ID |
       | reversal1_line1 | reversal1  | product      |
     And Wait until receipt reversal1 are posted
-    And after not more than 10s, M_CostDetails are found for product product and cost element 1000002,1000008
+    And after not more than 10s, M_CostDetails are found for product product and cost element AveragePO,MovingAverageInvoice
       | TableName   | Record_ID       | IsSOTrx | Amt           | Qty     | IsChangingCosts |
       | M_InOutLine | receipt1_line1  | N       | 10000000 CHF  | 10 PCE  | N               |
       | M_InOutLine | reversal1_line1 | N       | -10000000 CHF | -10 PCE | N               |
     And validate current costs
-      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
-      | acctSchema      | product      | 1000002,1000008  | 0 CHF            | 0 PCE      |
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID               | CurrentCostPrice | CurrentQty |
+      | acctSchema      | product      | AveragePO,MovingAverageInvoice | 0 CHF            | 0 PCE      |
 
 
 
@@ -156,12 +157,12 @@ Feature: Check costing when reversing a material receipt
     When metasfresh contains single line completed inventories
       | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | CostPrice |
       | inv1           | inv1_l1            | 2021-01-01   | warehouseStd   | product      | 0       | 100      | PCE          | 10        |
-    And after not more than 10s, M_CostDetails are found for product product and cost element 1000002,1000008
+    And after not more than 10s, M_CostDetails are found for product product and cost element AveragePO,MovingAverageInvoice
       | TableName       | Record_ID | IsSOTrx | Amt      | Qty     | IsChangingCosts |
       | M_InventoryLine | inv1_l1   | N       | 1000 CHF | 100 PCE | Y               |
     And validate current costs
-      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
-      | acctSchema      | product      | 1000002,1000008  | 10 CHF           | 100 PCE    |
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID               | CurrentCostPrice | CurrentQty |
+      | acctSchema      | product      | AveragePO,MovingAverageInvoice | 10 CHF           | 100 PCE    |
 
     #
     # Create material receipt 
@@ -190,14 +191,14 @@ Feature: Check costing when reversing a material receipt
       | Identifier | C_OrderLine_ID |
       | mpo1       | po1_l1         |
     And Wait until M_MatchPO mpo1 is posted
-    And after not more than 10s, M_CostDetails are found for product product and cost element 1000002,1000008
+    And after not more than 10s, M_CostDetails are found for product product and cost element AveragePO,MovingAverageInvoice
       | TableName       | Record_ID      | IsSOTrx | Amt          | Qty     | IsChangingCosts |
       | M_InventoryLine | inv1_l1        | N       | 1000 CHF     | 100 PCE | Y               |
       | M_MatchPO       | mpo1           | N       | 10000000 CHF | 10 PCE  | Y               |
       | M_InOutLine     | receipt1_line1 | N       | 10000000 CHF | 10 PCE  | N               |
     And validate current costs
-      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty | Comment                     |
-      | acctSchema      | product      | 1000002,1000008  | 90918.1818 CHF   | 110 PCE    | (1_000+10_000_000)/(100+10) |
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID               | CurrentCostPrice | CurrentQty | Comment                     |
+      | acctSchema      | product      | AveragePO,MovingAverageInvoice | 90918.1818 CHF   | 110 PCE    | (1_000+10_000_000)/(100+10) |
     
     
     #
@@ -208,11 +209,11 @@ Feature: Check costing when reversing a material receipt
       | M_InOutLine_ID  | M_InOut_ID | M_Product_ID |
       | reversal1_line1 | reversal1  | product      |
     And Wait until receipt reversal1 are posted
-    And after not more than 10s, M_CostDetails are found for product product and cost element 1000002,1000008
+    And after not more than 10s, M_CostDetails are found for product product and cost element AveragePO,MovingAverageInvoice
       | TableName       | Record_ID       | IsSOTrx | Amt           | Qty     | IsChangingCosts |
       | M_InventoryLine | inv1_l1         | N       | 1000 CHF      | 100 PCE | Y               |
       | M_InOutLine     | receipt1_line1  | N       | 10000000 CHF  | 10 PCE  | N               |
       | M_InOutLine     | reversal1_line1 | N       | -10000000 CHF | -10 PCE | N               |
     And validate current costs
-      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
-      | acctSchema      | product      | 1000002,1000008  | 10 CHF           | 100 PCE    |
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID               | CurrentCostPrice | CurrentQty |
+      | acctSchema      | product      | AveragePO,MovingAverageInvoice | 10 CHF           | 100 PCE    |
