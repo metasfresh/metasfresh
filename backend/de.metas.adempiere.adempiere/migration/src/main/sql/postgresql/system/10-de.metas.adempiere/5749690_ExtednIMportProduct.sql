@@ -212,3 +212,177 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('I_Product','ALTER TABLE public.I_Product ADD COLUMN QtyCU_UOM_Code VARCHAR(10)')
 ;
 
+-- Field: Import - Produkt(247,D) -> Import - Produkt(442,D) -> M_HU_PI_Value
+-- Column: I_Product.M_HU_PI_Value
+-- 2025-03-20T11:04:01.736Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,589783,740704,0,442,0,TO_TIMESTAMP('2025-03-20 11:04:01.514000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'D',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,'M_HU_PI_Value',0,0,780,0,1,1,TO_TIMESTAMP('2025-03-20 11:04:01.514000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-03-20T11:04:01.743Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=740704 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-03-20T11:04:01.747Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583539)
+;
+
+-- 2025-03-20T11:04:01.758Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=740704
+;
+
+-- 2025-03-20T11:04:01.763Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(740704)
+;
+
+-- Field: Import - Produkt(247,D) -> Import - Produkt(442,D) -> Menge CU
+-- Column: I_Product.QtyCU
+-- 2025-03-20T11:04:10.214Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,589784,740705,0,442,0,TO_TIMESTAMP('2025-03-20 11:04:10.064000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'D',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,'Menge CU',0,0,790,0,1,1,TO_TIMESTAMP('2025-03-20 11:04:10.064000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-03-20T11:04:10.215Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=740705 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-03-20T11:04:10.216Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583543)
+;
+
+-- 2025-03-20T11:04:10.219Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=740705
+;
+
+-- 2025-03-20T11:04:10.220Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(740705)
+;
+
+-- Field: Import - Produkt(247,D) -> Import - Produkt(442,D) -> Maßeinheit CU
+-- Column: I_Product.QtyCU_UOM_ID
+-- 2025-03-20T11:04:19.493Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,589785,740706,0,442,0,TO_TIMESTAMP('2025-03-20 11:04:19.375000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'D',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,'Maßeinheit CU',0,0,800,0,1,1,TO_TIMESTAMP('2025-03-20 11:04:19.375000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-03-20T11:04:19.494Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=740706 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-03-20T11:04:19.496Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583540)
+;
+
+-- 2025-03-20T11:04:19.499Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=740706
+;
+
+-- 2025-03-20T11:04:19.500Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(740706)
+;
+
+-- Field: Import - Produkt(247,D) -> Import - Produkt(442,D) -> Default Packing
+-- Column: I_Product.IsDefaultPacking
+-- 2025-03-20T11:04:25.219Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,589786,740707,0,442,0,TO_TIMESTAMP('2025-03-20 11:04:25.077000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'D',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,'Default Packing',0,0,810,0,1,1,TO_TIMESTAMP('2025-03-20 11:04:25.077000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-03-20T11:04:25.221Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=740707 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-03-20T11:04:25.222Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583541)
+;
+
+-- 2025-03-20T11:04:25.225Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=740707
+;
+
+-- 2025-03-20T11:04:25.226Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(740707)
+;
+
+-- Field: Import - Produkt(247,D) -> Import - Produkt(442,D) -> Abr. Menge basiert auf
+-- Column: I_Product.InvoicableQtyBasedOn
+-- 2025-03-20T11:04:35.243Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,589787,740708,0,442,0,TO_TIMESTAMP('2025-03-20 11:04:35.087000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.',0,'D',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,'Abr. Menge basiert auf',0,0,820,0,1,1,TO_TIMESTAMP('2025-03-20 11:04:35.087000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-03-20T11:04:35.244Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=740708 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-03-20T11:04:35.246Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(576948)
+;
+
+-- 2025-03-20T11:04:35.260Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=740708
+;
+
+-- 2025-03-20T11:04:35.261Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(740708)
+;
+
+-- Field: Import - Produkt(247,D) -> Import - Produkt(442,D) -> UOM Multiplier Rate
+-- Column: I_Product.UOM_MultiplierRate
+-- 2025-03-20T11:04:42.287Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,589788,740709,0,442,0,TO_TIMESTAMP('2025-03-20 11:04:42.162000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'',0,'D',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,'UOM Multiplier Rate',0,0,830,0,1,1,TO_TIMESTAMP('2025-03-20 11:04:42.162000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-03-20T11:04:42.289Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=740709 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-03-20T11:04:42.291Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583542)
+;
+
+-- 2025-03-20T11:04:42.295Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=740709
+;
+
+-- 2025-03-20T11:04:42.296Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(740709)
+;
+
+-- UI Column: Import - Produkt(247,D) -> Import - Produkt(442,D) -> main -> 20
+-- UI Element Group: extend import
+-- 2025-03-20T11:05:33.767Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,540943,552659,TO_TIMESTAMP('2025-03-20 11:05:33.579000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','extend import',10,TO_TIMESTAMP('2025-03-20 11:05:33.579000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Import - Produkt(247,D) -> Import - Produkt(442,D) -> main -> 20 -> extend import.M_HU_PI_Value
+-- Column: I_Product.M_HU_PI_Value
+-- 2025-03-20T11:05:45.645Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,740704,0,442,552659,630834,'F',TO_TIMESTAMP('2025-03-20 11:05:45.518000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N',0,'M_HU_PI_Value',10,0,0,TO_TIMESTAMP('2025-03-20 11:05:45.518000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Import - Produkt(247,D) -> Import - Produkt(442,D) -> main -> 20 -> extend import.Menge CU
+-- Column: I_Product.QtyCU
+-- 2025-03-20T11:06:11.503Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,740705,0,442,552659,630835,'F',TO_TIMESTAMP('2025-03-20 11:06:11.363000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N',0,'Menge CU',20,0,0,TO_TIMESTAMP('2025-03-20 11:06:11.363000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Import - Produkt(247,D) -> Import - Produkt(442,D) -> main -> 20 -> extend import.Maßeinheit CU
+-- Column: I_Product.QtyCU_UOM_ID
+-- 2025-03-20T11:06:23.034Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,740706,0,442,552659,630836,'F',TO_TIMESTAMP('2025-03-20 11:06:22.919000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N',0,'Maßeinheit CU',30,0,0,TO_TIMESTAMP('2025-03-20 11:06:22.919000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Import - Produkt(247,D) -> Import - Produkt(442,D) -> main -> 20 -> extend import.Default Packing
+-- Column: I_Product.IsDefaultPacking
+-- 2025-03-20T11:06:44.614Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,740707,0,442,552659,630837,'F',TO_TIMESTAMP('2025-03-20 11:06:44.495000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N',0,'Default Packing',40,0,0,TO_TIMESTAMP('2025-03-20 11:06:44.495000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Import - Produkt(247,D) -> Import - Produkt(442,D) -> main -> 20 -> extend import.Abr. Menge basiert auf
+-- Column: I_Product.InvoicableQtyBasedOn
+-- 2025-03-20T11:06:59.149Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,740708,0,442,552659,630838,'F',TO_TIMESTAMP('2025-03-20 11:06:59.011000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Legt fest wie die abrechenbare Menge ermittelt wird, wenn die tatsächlich gelieferte Menge von der mominal gelieferten Menge abweicht.','Y','N','N','Y','N','N','N',0,'Abr. Menge basiert auf',50,0,0,TO_TIMESTAMP('2025-03-20 11:06:59.011000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Import - Produkt(247,D) -> Import - Produkt(442,D) -> main -> 20 -> extend import.UOM Multiplier Rate
+-- Column: I_Product.UOM_MultiplierRate
+-- 2025-03-20T11:07:10.983Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,740709,0,442,552659,630839,'F',TO_TIMESTAMP('2025-03-20 11:07:10.858000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N',0,'UOM Multiplier Rate',60,0,0,TO_TIMESTAMP('2025-03-20 11:07:10.858000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
