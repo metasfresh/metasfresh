@@ -230,8 +230,6 @@ import java.math.BigDecimal;
 		}
 	}
 
-
-
 	private void handleUOMConversion(@NonNull final I_I_Product importRecord)
 	{
 		if (importRecord.getQtyCU_UOM_ID() <=0 )
@@ -292,6 +290,4 @@ import java.math.BigDecimal;
 			log.info("UOM conversion already exists: {} -> {} with rate {}", fromUOM, toUOM, conversion.getMultiplyRate());
 		}
 	}
-
-
 }
