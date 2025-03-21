@@ -927,9 +927,9 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 					.setDetailMessage("Booking the counter invoice using cash based accounting method is not supported");
 		}
 
-		final boolean isValidAmounts = isValidCompensationAmtSource(line, counterLine);
+		final boolean validCompensationAmtSource = isValidCompensationAmtSource(line, counterLine);
 
-		if(!isValidAmounts)
+		if(!validCompensationAmtSource)
 		{
 			throw newPostingException()
 					.setFact(fact)
