@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="2.0"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="528"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="Remote"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="mm"/>
 	<property name="com.jaspersoft.studio.unit.pageHeight" value="mm"/>
@@ -21,9 +21,9 @@
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
 	<style name="Barcode" forecolor="#000000" fontName="Arial" fontSize="11"/>
-	<parameter name="M_HU_ID" class="java.math.BigDecimal"/>
+	<parameter name="RECORD_ID" class="java.lang.Integer"/>
 	<queryString>
-		<![CDATA[SELECT * FROM report.Migros_SSCC_Label($P{M_HU_ID});]]>
+		<![CDATA[SELECT * FROM report.Migros_SSCC_Label($P{RECORD_ID});]]>
 	</queryString>
 	<field name="org_address" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="org_address"/>
