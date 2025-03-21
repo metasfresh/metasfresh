@@ -14,6 +14,7 @@ import de.metas.frontend_testing.masterdata.picking_slot.JsonGetFreePickingSlotR
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.mobile.MobileConfigService;
 import de.metas.organization.OrgId;
@@ -21,6 +22,7 @@ import de.metas.picking.api.IPickingSlotBL;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.qrcode.PickingSlotQRCode;
+import de.metas.security.permissions2.PermissionNotGrantedException;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -30,10 +32,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -47,14 +49,15 @@ import java.util.function.Supplier;
 
 @RequestMapping(FrontendTestingRestController.ENDPOINT)
 @RestController
-@ConditionalOnProperty("frontend.testing")
 @Profile(Profiles.PROFILE_App)
 @RequiredArgsConstructor
 public class FrontendTestingRestController
 {
 	public static final String ENDPOINT = MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/frontendTesting";
+	private static final String SYSCONFIG_Enabled = "frontend.testing";
 
 	@NonNull private final Logger logger = LogManager.getLogger(FrontendTestingRestController.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IPickingSlotBL pickingSlotBL = Services.get(IPickingSlotBL.class);
 	@NonNull private final UserAuthTokenFilterConfiguration userAuthTokenFilterConfiguration;
@@ -66,20 +69,38 @@ public class FrontendTestingRestController
 	@NonNull private final CurrencyRepository currencyRepository;
 	@NonNull private final DDOrderService ddOrderService;
 
+	private boolean isEnabled()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_Enabled, false);
+	}
+
+	private void assertEnabled()
+	{
+		if (!isEnabled())
+		{
+			throw new PermissionNotGrantedException(TranslatableStrings.constant("Frontend testing REST endpoints are disabled"));
+		}
+	}
+
 	@PostConstruct
 	public void postConstruct()
 	{
 		userAuthTokenFilterConfiguration.doNotAuthenticatePathsContaining(ENDPOINT);
 
-		logger.warn("\n"
-				+ "\n************************************************************************************************************************"
-				+ "\n Frontend testing REST endpoints are active and accessible without login!"
-				+ "\n************************************************************************************************************************"
-		);
+		if (isEnabled())
+		{
+			logger.warn("\n"
+					+ "\n************************************************************************************************************************"
+					+ "\n Frontend testing REST endpoints are active and accessible without login!"
+					+ "\n************************************************************************************************************************"
+			);
+		}
 	}
 
 	private <T> T callInContext(Supplier<T> callable)
 	{
+		assertEnabled();
+
 		final Properties ctx = Env.copyCtx(Env.getCtx());
 		Env.setLoggedUserId(ctx, UserId.SYSTEM);
 		Env.setClientId(ctx, ClientId.METASFRESH);
