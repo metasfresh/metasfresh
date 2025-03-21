@@ -106,7 +106,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static de.metas.RestUtils.retrieveOrgIdOrDefault;
-import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static de.metas.util.Check.assumeNotEmpty;
 import static de.metas.util.Check.isBlank;
@@ -360,7 +359,7 @@ public class JsonPersisterService
 		final BPartnerComposite bpartnerComposite = optBPartnerComposite.get();
 		final ShortTermLocationIndex shortTermIndex = new ShortTermLocationIndex(bpartnerComposite);
 
-		final SyncAdvise effectiveSyncAdvise = coalesce(jsonRequestLocationUpsert.getSyncAdvise(), parentSyncAdvise);
+		final SyncAdvise effectiveSyncAdvise = coalesceNotNull(jsonRequestLocationUpsert.getSyncAdvise(), parentSyncAdvise);
 
 		final List<JsonRequestLocationUpsertItem> requestItems = jsonRequestLocationUpsert.getRequestItems();
 
@@ -412,7 +411,7 @@ public class JsonPersisterService
 		final BPartnerComposite bpartnerComposite = optBPartnerComposite.get();
 		final ShortTermContactIndex shortTermIndex = new ShortTermContactIndex(bpartnerComposite);
 
-		final SyncAdvise effectiveSyncAdvise = coalesce(jsonContactUpsert.getSyncAdvise(), parentSyncAdvise);
+		final SyncAdvise effectiveSyncAdvise = coalesceNotNull(jsonContactUpsert.getSyncAdvise(), parentSyncAdvise);
 
 		final Map<String, JsonResponseUpsertItemBuilder> identifierToBuilder = new HashMap<>();
 		for (final JsonRequestContactUpsertItem requestItem : jsonContactUpsert.getRequestItems())
@@ -462,7 +461,7 @@ public class JsonPersisterService
 
 		final ShortTermBankAccountIndex shortTermIndex = new ShortTermBankAccountIndex(bpartnerComposite);
 
-		final SyncAdvise effectiveSyncAdvise = coalesce(jsonBankAccountsUpsert.getSyncAdvise(), parentSyncAdvise);
+		final SyncAdvise effectiveSyncAdvise = coalesceNotNull(jsonBankAccountsUpsert.getSyncAdvise(), parentSyncAdvise);
 
 		final Map<String, JsonResponseUpsertItemBuilder> identifierToBuilder = new HashMap<>();
 		for (final JsonRequestBankAccountUpsertItem requestItem : jsonBankAccountsUpsert.getRequestItems())
@@ -560,7 +559,7 @@ public class JsonPersisterService
 			@NonNull final BPartnerComposite bpartnerComposite,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		final SyncAdvise syncAdvise = coalesce(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
+		final SyncAdvise syncAdvise = coalesceNotNull(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
 		final boolean hasOrgId = bpartnerComposite.getOrgId() != null;
 
 		if (hasOrgId && !syncAdvise.getIfExists().isUpdate())
@@ -585,7 +584,7 @@ public class JsonPersisterService
 		}
 
 		// note that if the BPartner wouldn't exist, we weren't here
-		final SyncAdvise effCompositeSyncAdvise = coalesce(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
+		final SyncAdvise effCompositeSyncAdvise = coalesceNotNull(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
 
 		if (bpartnerCompositeIsNew && effCompositeSyncAdvise.isFailIfNotExists())
 		{
@@ -593,7 +592,7 @@ public class JsonPersisterService
 		}
 
 		final BPartner bpartner = bpartnerComposite.getBpartner();
-		final SyncAdvise effectiveSyncAdvise = coalesce(jsonBPartner.getSyncAdvise(), effCompositeSyncAdvise);
+		final SyncAdvise effectiveSyncAdvise = coalesceNotNull(jsonBPartner.getSyncAdvise(), effCompositeSyncAdvise);
 		final IfExists ifExistsAdvise = effectiveSyncAdvise.getIfExists();
 
 		if (!bpartnerCompositeIsNew && !ifExistsAdvise.isUpdate())
@@ -864,7 +863,7 @@ public class JsonPersisterService
 
 		final JsonRequestContactUpsert contacts = jsonBPartnerComposite.getContactsNotNull();
 
-		final SyncAdvise contactsSyncAdvise = coalesce(contacts.getSyncAdvise(), jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
+		final SyncAdvise contactsSyncAdvise = coalesceNotNull(contacts.getSyncAdvise(), jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
 
 		final ImmutableMap.Builder<String, JsonResponseUpsertItemBuilder> result = ImmutableMap.builder();
 		for (final JsonRequestContactUpsertItem contactRequestItem : contacts.getRequestItems())
@@ -1010,7 +1009,7 @@ public class JsonPersisterService
 			@NonNull final BPartnerContact contact,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		final SyncAdvise syncAdvise = coalesce(jsonBPartnerContact.getSyncAdvise(), parentSyncAdvise);
+		final SyncAdvise syncAdvise = coalesceNotNull(jsonBPartnerContact.getSyncAdvise(), parentSyncAdvise);
 		final boolean isUpdateRemove = syncAdvise.getIfExists().isUpdateRemove();
 
 		// active
@@ -1499,7 +1498,6 @@ public class JsonPersisterService
 		}
 
 		final boolean isUpdateRemove = syncAdvise.getIfExists().isUpdateRemove();
-		final boolean isAssumeUnchanged = syncAdvise.getIfExists().isAssertUnchanged();
 
 		// name
 		if (jsonBPartnerLocation.isNameSet())
@@ -1645,12 +1643,52 @@ public class JsonPersisterService
 		syncJsonToLocationType(jsonBPartnerLocation)
 				.ifPresent(location::setLocationType);
 
-		if (isAssumeUnchanged && !Objects.equals(location, originalBPartnerLocation))
+		final boolean ifExistsThenAssumeUnchanged = syncAdvise.getIfExists().isAssertUnchanged();
+		final boolean locationAlreadyExists = originalBPartnerLocation.getId() != null;
+		
+		if (locationAlreadyExists && ifExistsThenAssumeUnchanged)
 		{
-			throw new AdempiereException("The location was assumed unchanged, but it was changed: " + location)
-					.setErrorCode(LOCATION_CHANGED_ERROR_CODE)
-					.setParameter("effectiveSyncAdvise", syncAdvise);
+			final BPartnerLocation locationToCompare = createLocationToCompare(location);
+			final BPartnerLocation originalLocationToCompare = createLocationToCompare(originalBPartnerLocation);
+
+			if (!Objects.equals(locationToCompare, originalLocationToCompare))
+			{
+				throw new AdempiereException("The location was assumed unchanged, but it was changed")
+						.setErrorCode(LOCATION_CHANGED_ERROR_CODE)
+						.setParameter("originalLocationToCompare", originalLocationToCompare)
+						.setParameter("changedLocationToCompare", locationToCompare)
+						.setParameter("effectiveSyncAdvise", syncAdvise);
+			}
 		}
+	}
+
+	/**
+	 * Creates a derived location-instance that is comparable.
+	 */
+	@Nullable
+	private static BPartnerLocation createLocationToCompare(@Nullable final BPartnerLocation location)
+	{
+		if (location == null)
+		{
+			return null;
+		}
+
+		final BPartnerLocation.BPartnerLocationBuilder locationToCompare = location.toBuilder();
+		locationToCompare.changeLog(null); // we aren't interested in comparing the changelog
+
+		final BPartnerLocationType locationType = location.getLocationType();
+		if (locationType != null)
+		{
+			final BPartnerLocationType locationTypeToCompare = BPartnerLocationType.builder()
+					.billToDefault(locationType.getIsBillToDefaultOr(false))
+					.billTo(locationType.getIsBillToOr(false))
+					.shipToDefault(locationType.getIsShipToDefaultOr(false))
+					.shipTo(locationType.getIsShipToOr(false))
+					.visitorsAddress(null) // locationType.visitorAddress is not supported by the v1-API, so we remove it from the comparison
+					.build();
+			locationToCompare.locationType(locationTypeToCompare);
+		}
+		return locationToCompare.build();
 	}
 
 	private Optional<BPartnerLocationType> syncJsonToLocationType(@NonNull final JsonRequestLocation jsonBPartnerLocation)

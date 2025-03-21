@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.pair.IPair;
+import de.metas.handlingunits.impl.CreateTUPackingInstructionsRequest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
@@ -184,6 +185,11 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
 			@NonNull HuPackingInstructionsId piId,
 			@Nullable String itemType,
+			@Nullable BPartnerId bpartnerId);
+
+	Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull I_M_HU_PI_Version version,
+			@Nullable HUItemType itemType,
 			@Nullable BPartnerId bpartnerId);
 
 	Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
@@ -354,4 +360,6 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	@NonNull
 	ImmutableSet<HuId> retrieveHuIdAndDownstream(@NonNull HuId huId);
+
+	void createTUPackingInstructions(CreateTUPackingInstructionsRequest request);
 }
