@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingSlotIdAndCaption;
@@ -11,6 +12,7 @@ import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.picking.rest_api.PickingRestController;
 import de.metas.picking.rest_api.json.JsonLUPickingTarget;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
+import de.metas.picking.rest_api.json.JsonTUPickingTarget;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
 import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
 import de.metas.util.Check;
@@ -95,6 +97,11 @@ public class MobileUIPickingClient
 	public JsonWFProcess setPickingTarget(@NonNull final String wfProcessId, LUPickingTarget pickingTarget)
 	{
 		return pickingRestController.setLUPickingTarget(wfProcessId, null, JsonLUPickingTarget.of(pickingTarget));
+	}
+
+	public JsonWFProcess setTUPickingTarget(@NonNull final String wfProcessId,@NonNull final TUPickingTarget pickingTarget)
+	{
+		return pickingRestController.setTUPickingTarget(wfProcessId, null, JsonTUPickingTarget.of(pickingTarget));
 	}
 
 	public Optional<LUPickingTarget> getPickingTarget(@NonNull final String wfProcessIdStr)
