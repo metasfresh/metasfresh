@@ -1684,7 +1684,6 @@ public class JsonPersisterService
 					.billTo(locationType.getIsBillToOr(false))
 					.shipToDefault(locationType.getIsShipToDefaultOr(false))
 					.shipTo(locationType.getIsShipToOr(false))
-					.visitorsAddress(null) // locationType.visitorAddress is not supported by the v1-API, so we remove it from the comparison
 					.build();
 			locationToCompare.locationType(locationTypeToCompare);
 		}
