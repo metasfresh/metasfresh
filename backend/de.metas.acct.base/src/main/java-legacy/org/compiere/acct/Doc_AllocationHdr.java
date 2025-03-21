@@ -927,13 +927,9 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 					.setDetailMessage("Booking the counter invoice using cash based accounting method is not supported");
 		}
 
-		//
-		// Make sure the compensation amount of this line and of it's counter part are matching
-		final BigDecimal counterLine_compensationAmtSource = counterLine.getAllocatedAmt();
-		// This matching is unnatural, but it is needed to allocate sales credit memos with service invoices
-		final boolean isMatchingForARC = line.isSOTrxInvoice() && line.isCreditMemoInvoice() && compensationAmtSource.compareTo(counterLine_compensationAmtSource) == 0;
-		final boolean isMatchingForGeneralCases = !isMatchingForARC && compensationAmtSource.compareTo(counterLine_compensationAmtSource.negate()) != 0;
-		if(!isMatchingForGeneralCases && !isMatchingForARC)
+		final boolean isValidAmounts = isIsValidAmounts(line, counterLine);
+
+		if(!isValidAmounts)
 		{
 			throw newPostingException()
 					.setFact(fact)
@@ -978,6 +974,25 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		//
 		// Return how much was booked here.
 		return factLine.getAmtSourceAndAcctDrOrCr();
+	}
+
+	private static boolean isIsValidAmounts(final DocLine_Allocation line, final DocLine_Allocation counterLine)
+	{
+		final boolean isSalesCreditMemo = line.isSOTrxInvoice() && line.isCreditMemoInvoice();
+		final BigDecimal compensationAmtSource = line.getAllocatedAmt();
+		final BigDecimal counterLine_compensationAmtSource = counterLine.getAllocatedAmt();
+		final boolean isValidAmounts;
+
+		if(isSalesCreditMemo)
+		{
+			// This matching is unnatural, but it is needed to allocate sales credit memos with purchase invoices. See PR #20395
+			return compensationAmtSource.compareTo(counterLine_compensationAmtSource) == 0;
+		}
+		else
+		{
+			// For all the other cases, the allocation line amounts should be equal, with opposite signs
+			return  compensationAmtSource.compareTo(counterLine_compensationAmtSource.negate()) == 0;
+		}
 	}
 
 	/**
