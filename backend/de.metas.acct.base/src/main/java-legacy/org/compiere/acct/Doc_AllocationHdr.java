@@ -855,7 +855,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 			final DocLine_Allocation counterLine = line.getCounterDocLine();
 
 			// ARC that is not allocated against another invoice
-			if (line.isCreditMemoInvoice() && (counterLine == null ))
+			if (line.isCreditMemoInvoice() && counterLine == null)
 			{
 				factLineBuilder.setAmtSource(allocationSource, null);
 			}
@@ -927,9 +927,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 					.setDetailMessage("Booking the counter invoice using cash based accounting method is not supported");
 		}
 
-		final boolean validCompensationAmtSource = isValidPurchaseSalesCompensationAmt(line, counterLine);
-
-		if(!validCompensationAmtSource)
+		if(!isValidPurchaseSalesCompensationAmt(line, counterLine))
 		{
 			throw newPostingException()
 					.setFact(fact)
@@ -978,20 +976,37 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 
 	private static boolean isValidPurchaseSalesCompensationAmt(final DocLine_Allocation line, final DocLine_Allocation counterLine)
 	{
-		final boolean isSalesCreditMemo = line.isSOTrxInvoice() && line.isCreditMemoInvoice();
 		final BigDecimal compensationAmtSource = line.getAllocatedAmt();
 		final BigDecimal counterLine_compensationAmtSource = counterLine.getAllocatedAmt();
 
-		if(isSalesCreditMemo)
+		if (isAllocationBetweenAPIAndARC(line, counterLine))
 		{
-			// This matching is unnatural, but it is needed to allocate sales credit memos with purchase invoices. See PR #20395
 			return compensationAmtSource.compareTo(counterLine_compensationAmtSource) == 0;
 		}
 		else
 		{
-			// For all the other cases, the allocation line amounts should be equal, with opposite signs
-			return  compensationAmtSource.compareTo(counterLine_compensationAmtSource.negate()) == 0;
+			return compensationAmtSource.compareTo(counterLine_compensationAmtSource.negate()) == 0;
 		}
+	}
+
+	private static boolean isAllocationBetweenAPIAndARC(DocLine_Allocation line, DocLine_Allocation counterLine)
+	{
+		final boolean isAPILine = isAPI(line);
+		final boolean isAPICounterLine = isAPI(counterLine);
+		final boolean isARCLine = isARC(line);
+		final boolean isARCCounterLine = isARC(counterLine);
+
+		return (isAPILine && isARCCounterLine) || (isARCLine && isAPICounterLine);
+	}
+
+	private static boolean isARC(final DocLine_Allocation line)
+	{
+		return line.isCreditMemoInvoice() && !line.isSOTrxInvoice();
+	}
+
+	private static boolean isAPI(final DocLine_Allocation line)
+	{
+		return line.isSOTrxInvoice() && !line.isCreditMemoInvoice();
 	}
 
 	/**
