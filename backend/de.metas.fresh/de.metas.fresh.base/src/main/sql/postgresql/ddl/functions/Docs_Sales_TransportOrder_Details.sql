@@ -45,7 +45,7 @@ FROM (SELECT name,
              address,
              DeliveryDateTimeMax,
              isPallet,
-             COUNT(M_HU_ID) AS Qty,
+             CAST(COUNT(M_HU_ID) AS bigint) AS Qty,
              note
       FROM (SELECT bp.name,
                    bpl.address,
