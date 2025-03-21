@@ -297,11 +297,6 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		{
 			return false;
 		}
-		// The invoice shall not be a credit memo
-		if (isCreditMemoInvoice())
-		{
-			return false;
-		}
 
 		// Shall have a counter line set
 		final DocLine_Allocation counterLine = getCounterDocLine();
@@ -312,12 +307,6 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 
 		// The counter line shall have a invoice set
 		if (!counterLine.hasInvoiceDocument())
-		{
-			return false;
-		}
-
-		// The counter line's invoice shall not be a credit memo
-		if (counterLine.isCreditMemoInvoice())
 		{
 			return false;
 		}

@@ -59,7 +59,7 @@ public class PaymentAllocationPayableItem
 	BPartnerId invoiceBPartnerId;
 	
 	boolean invoiceIsCreditMemo;
-	
+
 	String documentNo;
 
 	/**
@@ -82,7 +82,7 @@ public class PaymentAllocationPayableItem
 			@NonNull final BPartnerId bPartnerId,
 			@NonNull final InvoiceId invoiceId,
 			@NonNull final BPartnerId invoiceBPartnerId,
-			final boolean invoiceIsCreditMemo, 
+			final boolean invoiceIsCreditMemo,
 			@NonNull final String documentNo,
 			@NonNull final SOTrx soTrx,
 			@NonNull final LocalDate dateInvoiced)
