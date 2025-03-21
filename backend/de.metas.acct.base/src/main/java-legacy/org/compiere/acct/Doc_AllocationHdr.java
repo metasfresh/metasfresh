@@ -927,7 +927,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 					.setDetailMessage("Booking the counter invoice using cash based accounting method is not supported");
 		}
 
-		final boolean validCompensationAmtSource = isValidCompensationAmtSource(line, counterLine);
+		final boolean validCompensationAmtSource = isValidPurchaseSalesCompensationAmt(line, counterLine);
 
 		if(!validCompensationAmtSource)
 		{
@@ -976,7 +976,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		return factLine.getAmtSourceAndAcctDrOrCr();
 	}
 
-	private static boolean isValidCompensationAmtSource(final DocLine_Allocation line, final DocLine_Allocation counterLine)
+	private static boolean isValidPurchaseSalesCompensationAmt(final DocLine_Allocation line, final DocLine_Allocation counterLine)
 	{
 		final boolean isSalesCreditMemo = line.isSOTrxInvoice() && line.isCreditMemoInvoice();
 		final BigDecimal compensationAmtSource = line.getAllocatedAmt();
