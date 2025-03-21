@@ -356,6 +356,13 @@
     </dependencyManagement>
 
     <dependencies>
+        <!-- comment back in if really needed -->
+<!--        <dependency>-->
+<!--            <groupId>org.junit.vintage</groupId>-->
+<!--            <artifactId>junit-vintage-engine</artifactId>-->
+<!--            <version>${junit-jupiter.version}</version>-->
+<!--            <scope>test</scope>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-library</artifactId>
