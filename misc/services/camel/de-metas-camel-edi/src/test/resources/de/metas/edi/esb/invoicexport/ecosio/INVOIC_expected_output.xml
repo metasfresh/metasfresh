@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<EDI_cctop_invoic_v AD_Client_Value="AD_Client_Value" ReplicationMode="1" ReplicationType="M" SequenceNo="1489023" TrxName="" Version="*">
+<EDI_cctop_invoic_v AD_Client_Value="AD_Client_Value" ReplicationEvent="0" ReplicationMode="1" ReplicationType="M" SequenceNo="1489023" TrxName="" Version="*">
     <C_BPartner_Location_ID>2209104</C_BPartner_Location_ID>
     <C_Invoice_ID>1488989</C_Invoice_ID>
     <DateInvoiced>2021-02-05+01:00</DateInvoiced>

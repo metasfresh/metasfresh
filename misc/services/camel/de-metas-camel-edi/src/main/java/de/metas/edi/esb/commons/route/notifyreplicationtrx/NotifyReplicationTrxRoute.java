@@ -26,16 +26,14 @@ import de.metas.common.util.StringUtils;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.jaxb.metasfresh.EDIReplicationTrxUpdateType;
 import de.metas.edi.esb.jaxb.metasfresh.ObjectFactory;
-import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
-import de.metas.edi.esb.jaxb.metasfresh.ReplicationModeEnum;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationTypeEnum;
+import jakarta.xml.bind.JAXBElement;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.springframework.stereotype.Component;
 
-import javax.xml.bind.JAXBElement;
 import java.nio.charset.StandardCharsets;
 
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
@@ -82,12 +80,12 @@ public class NotifyReplicationTrxRoute extends RouteBuilder
 
 		document.setErrorMsg(request.getErrorMsg());
 
-		document.setTrxNameAttr(request.getTrxName());
-		document.setADClientValueAttr(request.getClientValue());
-		document.setVersionAttr(Constants.EXP_FORMAT_GENERIC_VERSION);
-		document.setReplicationEventAttr(ReplicationEventEnum.AfterChange);
-		document.setReplicationModeAttr(ReplicationModeEnum.Table);
-		document.setReplicationTypeAttr(ReplicationTypeEnum.Merge);
+		document.setTrxName(request.getTrxName());
+		document.setADClientValue(request.getClientValue());
+		document.setVersion(Constants.EXP_FORMAT_GENERIC_VERSION);
+		document.setReplicationEvent("5"/*AfterChange*/);
+		document.setReplicationMode("0" /*Table*/);
+		document.setReplicationType(ReplicationTypeEnum.M);
 
 		final JAXBElement<EDIReplicationTrxUpdateType> jaxbElement = factory.createEDIReplicationTrxUpdate(document);
 

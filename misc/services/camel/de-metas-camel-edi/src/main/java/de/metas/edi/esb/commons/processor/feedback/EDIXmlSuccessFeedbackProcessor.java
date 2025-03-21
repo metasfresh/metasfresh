@@ -22,14 +22,13 @@
 
 package de.metas.edi.esb.commons.processor.feedback;
 
-import static de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper.createEDIFeedbackType;
-
-import javax.xml.namespace.QName;
-
+import de.metas.edi.esb.jaxb.metasfresh.EDIExportStatusEnum;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
-import de.metas.edi.esb.jaxb.metasfresh.EDIExportStatusEnum;
+import javax.xml.namespace.QName;
+
+import static de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper.createEDIFeedbackType;
 
 public class EDIXmlSuccessFeedbackProcessor<T> implements Processor
 {
@@ -47,6 +46,6 @@ public class EDIXmlSuccessFeedbackProcessor<T> implements Processor
 	@Override
 	public void process(final Exchange exchange)
 	{
-		createEDIFeedbackType(exchange, EDIExportStatusEnum.Sent, feedbackType, feedbackQName, recordIdSetter);
+		createEDIFeedbackType(exchange, EDIExportStatusEnum.S, feedbackType, feedbackQName, recordIdSetter);
 	}
 }

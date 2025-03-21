@@ -22,33 +22,29 @@
 
 package de.metas.edi.esb.commons.processor.feedback.helper;
 
+import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.Util;
+import de.metas.edi.esb.commons.processor.exception.HeaderNotFoundException;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExportStatusEnum;
+import de.metas.edi.esb.jaxb.metasfresh.ReplicationTypeEnum;
+import jakarta.xml.bind.JAXBElement;
+import org.apache.camel.Exchange;
+import org.apache.camel.Message;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
+import javax.xml.namespace.QName;
 import java.math.BigInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.xml.bind.JAXBElement;
-import javax.xml.namespace.QName;
-
-import org.apache.camel.Exchange;
-import org.apache.camel.Message;
-import org.apache.commons.lang.exception.ExceptionUtils;
-
-import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExportStatusEnum;
-import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
-import de.metas.edi.esb.jaxb.metasfresh.ReplicationModeEnum;
-import de.metas.edi.esb.jaxb.metasfresh.ReplicationTypeEnum;
-import de.metas.edi.esb.commons.processor.exception.HeaderNotFoundException;
 
 public final class EDIXmlFeedbackHelper
 {
 	private static final String EDI_FEEDBACK_CHAREST_NAME = "edi.feedback.charset.name";
 
-	private static final String METHOD_setReplicationEventAttr = "setReplicationEventAttr";
-	private static final String METHOD_setReplicationModeAttr = "setReplicationModeAttr";
-	private static final String METHOD_setReplicationTypeAttr = "setReplicationTypeAttr";
-	private static final String METHOD_setVersionAttr = "setVersionAttr";
+	private static final String METHOD_setReplicationEventAttr = "setReplicationEvent";
+	private static final String METHOD_setReplicationModeAttr = "setReplicationMode";
+	private static final String METHOD_setReplicationTypeAttr = "setReplicationType";
+	private static final String METHOD_setVersionAttr = "setVersion";
 	private static final String METHOD_setEDIExportStatus = "setEDIExportStatus";
 	private static final String METHOD_setEDIErrorMsg = "setEDIErrorMsg";
 
@@ -56,7 +52,7 @@ public final class EDIXmlFeedbackHelper
 
 	public static final String HEADER_OriginalXMLBody = "OriginalXMLBody";
 
-	public static final String HEADER_ADClientValueAttr = "ADClientValueAttr";
+	public static final String HEADER_ADClientValueAttr = "ADClientValue";
 	public static final String HEADER_RecordID = "RecordID";
 
 	public static final String HEADER_ROUTE_ID = "CamelRouteID";
@@ -108,10 +104,10 @@ public final class EDIXmlFeedbackHelper
 		{
 			feedback = feedbackType.newInstance();
 
-			Util.invokeSetterMethod(feedback, clientValueAttr, String.class, "setADClientValueAttr");
-			Util.invokeSetterMethod(feedback, ReplicationEventEnum.AfterChange, ReplicationEventEnum.class, EDIXmlFeedbackHelper.METHOD_setReplicationEventAttr);
-			Util.invokeSetterMethod(feedback, ReplicationModeEnum.Table, ReplicationModeEnum.class, EDIXmlFeedbackHelper.METHOD_setReplicationModeAttr);
-			Util.invokeSetterMethod(feedback, ReplicationTypeEnum.Merge, ReplicationTypeEnum.class, EDIXmlFeedbackHelper.METHOD_setReplicationTypeAttr);
+			Util.invokeSetterMethod(feedback, clientValueAttr, String.class, "setADClientValue");
+			Util.invokeSetterMethod(feedback, "5"/*AfterChange*/, String.class, EDIXmlFeedbackHelper.METHOD_setReplicationEventAttr);
+			Util.invokeSetterMethod(feedback, "0"/*Table*/, String.class, EDIXmlFeedbackHelper.METHOD_setReplicationModeAttr);
+			Util.invokeSetterMethod(feedback, ReplicationTypeEnum.M, ReplicationTypeEnum.class, EDIXmlFeedbackHelper.METHOD_setReplicationTypeAttr);
 			Util.invokeSetterMethod(feedback, Constants.EXP_FORMAT_GENERIC_VERSION, String.class, EDIXmlFeedbackHelper.METHOD_setVersionAttr);
 			Util.invokeSetterMethod(feedback, recordId, BigInteger.class, recordIdSetter);
 			Util.invokeSetterMethod(feedback, status, EDIExportStatusEnum.class, EDIXmlFeedbackHelper.METHOD_setEDIExportStatus);
@@ -123,7 +119,7 @@ public final class EDIXmlFeedbackHelper
 		}
 
 		// Retrieve error message, if any
-		if (!EDIExportStatusEnum.Sent.equals(status))
+		if (!EDIExportStatusEnum.S.equals(status))
 		{
 			// We also check for exceptions set by Camel via properties
 			final Throwable cause = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Throwable.class);

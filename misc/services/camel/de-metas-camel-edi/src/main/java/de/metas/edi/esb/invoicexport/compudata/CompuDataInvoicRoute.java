@@ -34,8 +34,8 @@ import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
 import org.apache.camel.component.rabbitmq.RabbitMQConstants;
+import org.apache.camel.dataformat.smooks.SmooksDataFormat;
 import org.apache.camel.spi.DataFormat;
-import org.smooks.cartridges.camel.dataformat.SmooksDataFormat;
 import org.springframework.stereotype.Component;
 
 import javax.xml.namespace.QName;
@@ -92,7 +92,7 @@ public class CompuDataInvoicRoute extends AbstractEDIRoute
 
 						final EDICctopInvoicVType xmlCctopInvoice = exchange.getIn().getBody(EDICctopInvoicVType.class);
 
-						exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ADClientValueAttr, xmlCctopInvoice.getADClientValueAttr());
+						exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ADClientValueAttr, xmlCctopInvoice.getADClientValue());
 						exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlCctopInvoice.getCInvoiceID().longValue());
 					}
 				})

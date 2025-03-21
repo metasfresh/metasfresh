@@ -25,20 +25,20 @@ package de.metas.edi.esb.excelimport;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryRuleEnum;
 import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryViaRuleEnum;
-import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
-import de.metas.edi.esb.jaxb.metasfresh.ReplicationModeEnum;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationTypeEnum;
 import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
+import jakarta.xml.bind.JAXBElement;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.test.junit5.CamelContextConfiguration;
 import org.apache.camel.test.junit5.CamelTestSupport;
+import org.apache.camel.test.junit5.TestExecutionConfiguration;
 import org.junit.jupiter.api.Test;
 
-import javax.xml.bind.JAXBElement;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -63,40 +63,42 @@ public class ExcelOLCandRouteTest extends CamelTestSupport
 	}
 
 	@Override
-	public boolean isUseAdviceWith()
+	public void configureTest(@NonNull final TestExecutionConfiguration testExecutionConfiguration)
 	{
-		return true;
+		testExecutionConfiguration.withUseAdviceWith(true);
+
 	}
 
 	@Override
-	protected Properties useOverridePropertiesWithPropertiesComponent()
+	public void configureContext(@NonNull final CamelContextConfiguration camelContextConfiguration)
 	{
+		super.configureContext(camelContextConfiguration);
 		final Properties properties = new Properties();
 		try
 		{
 			properties.load(ExcelOLCandRouteTest.class.getClassLoader().getResourceAsStream("application.properties"));
-			return properties;
 		}
 		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+		camelContextConfiguration.withUseOverridePropertiesWithPropertiesComponent(properties);
 	}
 
 	private void prepareRouteForTesting(@NonNull final ExcelOLCandRouteTest.MockRabbitMQProcessor rabbitMQMockProcessor) throws Exception
 	{
 		AdviceWith.adviceWith(context, ExcelOLCandRoute.LOCAL_ROUTE_ID,
-							  advice -> {
-								  advice.replaceFromWith(MOCK_FROM);
+				advice -> {
+					advice.replaceFromWith(MOCK_FROM);
 
-								  advice.weaveById(MAP_TO_METASFRESH_TYPE_PROCESSOR_ID)
-										  .after()
-										  .to(COLLECT_MAPPED_TO_OLCAND_METASFRESH_TYPE_EP);
+					advice.weaveById(MAP_TO_METASFRESH_TYPE_PROCESSOR_ID)
+							.after()
+							.to(COLLECT_MAPPED_TO_OLCAND_METASFRESH_TYPE_EP);
 
-								  advice.interceptSendToEndpoint("{{" + Constants.EP_AMQP_TO_MF + "}}")
-										  .skipSendToOriginalEndpoint()
-										  .process(rabbitMQMockProcessor);
-							  });
+					advice.interceptSendToEndpoint("{{" + Constants.EP_AMQP_TO_MF + "}}")
+							.skipSendToOriginalEndpoint()
+							.process(rabbitMQMockProcessor);
+				});
 	}
 
 	@Test
@@ -115,7 +117,7 @@ public class ExcelOLCandRouteTest extends CamelTestSupport
 		template.sendBody(MOCK_FROM, olCandInputStream);
 
 		// then
-		assertMockEndpointsSatisfied();
+		mappedToOLCand.assertIsSatisfied(1000);
 		final List<JAXBElement<XLSImpCOLCandType>> result =
 				(List<JAXBElement<XLSImpCOLCandType>>)mappedToOLCand.getExchanges().get(0).getIn().getBody(List.class);
 
@@ -140,8 +142,8 @@ public class ExcelOLCandRouteTest extends CamelTestSupport
 		assertThat(oLCandType.getCCurrencyID().getISOCode()).isEqualTo("CHF");
 		assertThat(oLCandType.getCUOMID().getX12DE355()).isEqualTo("PCE");
 
-		assertThat(oLCandType.getDeliveryRule()).isEqualTo(COrderDeliveryRuleEnum.Availability);
-		assertThat(oLCandType.getDeliveryViaRule()).isEqualTo(COrderDeliveryViaRuleEnum.Pickup);
+		assertThat(oLCandType.getDeliveryRule()).isEqualTo(COrderDeliveryRuleEnum.A);
+		assertThat(oLCandType.getDeliveryViaRule()).isEqualTo(COrderDeliveryViaRuleEnum.P);
 		assertThat(oLCandType.getDescription()).isNull();
 
 		assertThat(oLCandType.getProductDescription()).isEqualTo("Test");
@@ -157,9 +159,9 @@ public class ExcelOLCandRouteTest extends CamelTestSupport
 		assertThat(oLCandType.getLine()).isEqualTo(BigInteger.valueOf(10));
 		assertThat(oLCandType.getPOReference()).isEqualTo("test_po_ref");
 
-		assertThat(oLCandType.getReplicationEventAttr()).isEqualTo(ReplicationEventEnum.AfterChange);
-		assertThat(oLCandType.getReplicationModeAttr()).isEqualTo(ReplicationModeEnum.Table);
-		assertThat(oLCandType.getReplicationTypeAttr()).isEqualTo(ReplicationTypeEnum.Merge);
+		assertThat(oLCandType.getReplicationEvent()).isEqualTo("5"/*AfterChange*/);
+		assertThat(oLCandType.getReplicationMode()).isEqualTo("0"/*Table*/);
+		assertThat(oLCandType.getReplicationType()).isEqualTo(ReplicationTypeEnum.M);
 
 		assertThat(mockRabbitMQProcessor.called).isEqualTo(1);
 	}

@@ -28,18 +28,20 @@ import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
 import de.metas.edi.esb.jaxb.metasfresh.ObjectFactory;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.Unmarshaller;
 import lombok.NonNull;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.support.DefaultExchange;
+import org.apache.camel.test.junit5.CamelContextConfiguration;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Unmarshaller;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
@@ -64,9 +66,10 @@ class CompudataDesadvRouteTest extends CamelTestSupport
 	}
 
 	@Override
-	protected Properties useOverridePropertiesWithPropertiesComponent()
+	public void configureContext(@NonNull final CamelContextConfiguration camelContextConfiguration)
 	{
-		final var properties = new Properties();
+		super.configureContext(camelContextConfiguration);
+		final Properties properties = new Properties();
 		try
 		{
 			properties.load(CompudataDesadvRouteTest.class.getClassLoader().getResourceAsStream("application.properties"));
@@ -77,13 +80,15 @@ class CompudataDesadvRouteTest extends CamelTestSupport
 			final var recipientGLNFromTestFile = "1234567890123";
 			properties.setProperty("edi.recipientGLN." + recipientGLNFromTestFile + ".clearingCenter", ClearingCenter.CompuData.toString());
 			properties.setProperty("edi.compudata.recipientGLN." + recipientGLNFromTestFile + ".desadv.testIndicator", "1");
-			return properties;
 		}
 		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+		camelContextConfiguration.withUseOverridePropertiesWithPropertiesComponent(properties);
 	}
+	
+
 
 	@Test
 	void desadv_as_ordered() throws Exception

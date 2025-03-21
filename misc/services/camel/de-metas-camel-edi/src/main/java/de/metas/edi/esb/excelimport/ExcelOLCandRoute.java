@@ -26,6 +26,7 @@ import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
+import jakarta.xml.bind.JAXBElement;
 import lombok.NonNull;
 import org.apache.camel.CamelContext;
 import org.apache.camel.LoggingLevel;
@@ -35,7 +36,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import javax.xml.bind.JAXBElement;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;

@@ -29,8 +29,6 @@ import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryViaRuleEnum;
 import de.metas.edi.esb.jaxb.metasfresh.EDIImpADInputDataSourceLookupINType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIImpCCurrencyLookupISOCodeType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIImpCUOMLookupUOMSymbolType;
-import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
-import de.metas.edi.esb.jaxb.metasfresh.ReplicationModeEnum;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationTypeEnum;
 import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
 import lombok.NonNull;
@@ -60,10 +58,10 @@ public class ExcelImpCOLCandTypeBuilder
 		olcand = Constants.JAXB_ObjectFactory.createXLSImpCOLCandType();
 
 		// Predefined
-		olcand.setReplicationEventAttr(ReplicationEventEnum.AfterChange);
-		olcand.setReplicationModeAttr(ReplicationModeEnum.Table);
-		olcand.setReplicationTypeAttr(ReplicationTypeEnum.Merge);
-		olcand.setVersionAttr(Constants.EXP_FORMAT_GENERIC_VERSION);
+		olcand.setReplicationEvent("5"/*AfterChange*/);
+		olcand.setReplicationMode("0"/*Table*/);
+		olcand.setReplicationType(ReplicationTypeEnum.M);
+		olcand.setVersion(Constants.EXP_FORMAT_GENERIC_VERSION);
 	}
 
 	public XLSImpCOLCandType build()
@@ -74,9 +72,9 @@ public class ExcelImpCOLCandTypeBuilder
 	public ExcelImpCOLCandTypeBuilder setFromContext(final ExcelConfigurationContext ctx)
 	{
 		// set ReplicationTrx attribute
-		olcand.setTrxNameAttr(ctx.getCamelFileName());
+		olcand.setTrxName(ctx.getCamelFileName());
 
-		olcand.setADClientValueAttr(ctx.getAD_Client_Value());
+		olcand.setADClientValue(ctx.getAD_Client_Value());
 		olcand.setADOrgID(toBigIntegerID(ctx.getAD_Org_ID()));
 
 		// AD_DataDestination_ID lookup
@@ -123,7 +121,7 @@ public class ExcelImpCOLCandTypeBuilder
 		olcand.setHandOverLocationID(toBigIntegerID(row.getHandOver_Location_ID()));
 		olcand.setDropShipBPartnerID(toBigIntegerID(row.getDropShip_BPartner_ID()));
 		olcand.setDropShipLocationID(toBigIntegerID(row.getDropShip_Location_ID()));
-		
+
 		//
 		// Product
 		olcand.setMProductID(toBigIntegerID(row.getM_Product_ID()));

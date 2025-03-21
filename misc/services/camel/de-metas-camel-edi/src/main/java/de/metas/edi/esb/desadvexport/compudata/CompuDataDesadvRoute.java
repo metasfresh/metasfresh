@@ -35,8 +35,8 @@ import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
 import org.apache.camel.component.rabbitmq.RabbitMQConstants;
+import org.apache.camel.dataformat.smooks.SmooksDataFormat;
 import org.apache.camel.spi.DataFormat;
-import org.smooks.cartridges.camel.dataformat.SmooksDataFormat;
 import org.springframework.stereotype.Component;
 
 import javax.xml.namespace.QName;
@@ -88,7 +88,7 @@ public class CompuDataDesadvRoute extends AbstractEDIRoute
 
 						final EDIExpDesadvType xmlDesadv = exchange.getIn().getBody(EDIExpDesadvType.class); // throw exceptions if mandatory fields are missing
 
-						exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ADClientValueAttr, xmlDesadv.getADClientValueAttr());
+						exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ADClientValueAttr, xmlDesadv.getADClientValue());
 						exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlDesadv.getEDIDesadvID().longValue());
 					}
 				})

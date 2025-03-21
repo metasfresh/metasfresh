@@ -28,6 +28,9 @@ import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
 import de.metas.edi.esb.jaxb.metasfresh.ObjectFactory;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.Unmarshaller;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
@@ -36,9 +39,6 @@ import org.apache.camel.support.DefaultExchange;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.IOException;
 import java.text.NumberFormat;
@@ -62,7 +62,7 @@ class CompudataInvoicRouteTest extends CamelTestSupport
 	{
 		return new CompuDataInvoicRoute();
 	}
-
+		
 	@Override
 	protected Properties useOverridePropertiesWithPropertiesComponent()
 	{
