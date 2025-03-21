@@ -39,13 +39,13 @@ SELECT name,
        address,
        DeliveryDateTimeMax,
        isPallet,
-       SUM(Qty)                AS Qty,
-       STRING_AGG(note, E'\n') AS notes
+       CAST(SUM(Qty) AS bigint) AS Qty,
+       STRING_AGG(note, E'\n')  AS notes
 FROM (SELECT name,
              address,
              DeliveryDateTimeMax,
              isPallet,
-             COUNT(M_HU_ID) AS Qty,
+             CAST(COUNT(M_HU_ID) AS bigint) AS Qty,
              note
       FROM (SELECT bp.name,
                    bpl.address,

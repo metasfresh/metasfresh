@@ -413,8 +413,6 @@ public interface IInvoiceCandBL extends ISingletonService
 	@NonNull
 	InvoiceCandidatesAmtSelectionSummary calculateAmtSelectionSummary(@Nullable String extraWhereClause);
 
-	void setAsyncBatch(InvoiceCandidateId invoiceCandidateId, AsyncBatchId asyncBatchId);
-
 	Quantity getQtyOrderedStockUOM(I_C_Invoice_Candidate ic);
 
 	Quantity getQtyInvoicedStockUOM(I_C_Invoice_Candidate ic);
