@@ -22,10 +22,10 @@ package de.metas.dunning.process;
  * #L%
  */
 
+import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchDAO;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.api.IDunningContext;
@@ -89,7 +89,7 @@ public class C_Dunning_Candidate_Process_AutomaticallyPDFPrinting extends JavaPr
 		Check.assumeNotNull(asyncBatchType, "Defined Async Batch type should not be null for internal name ", m_asyncBatchType);
 
 		// Create Async Batch for tracking
-		final I_C_Async_Batch asyncBatch = asyncBatchBL.newAsyncBatch()
+		final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch()
 				.setContext(getCtx())
 				.setC_Async_Batch_Type(asyncBatchType.getInternalName())
 				.setAD_PInstance_Creator_ID(getPinstanceId())
@@ -98,7 +98,7 @@ public class C_Dunning_Candidate_Process_AutomaticallyPDFPrinting extends JavaPr
 				.setDescription(m_AsyncBatchDesc)
 				.build();
 
-		context.setProperty(IDunningProducer.CONTEXT_AsyncBatchDunningDoc, asyncBatch);
+		context.setProperty(IDunningProducer.CONTEXT_AsyncBatchIdDunningDoc, asyncBatchId);
 
 		final OrgDunningCandidatesSource source = new OrgDunningCandidatesSource(p_OrgId);
 		source.setDunningContext(context);

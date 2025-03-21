@@ -50,7 +50,7 @@ public interface IDunningProducer
 	/**
 	 * If this option is set in context, the producer will use the async batch when enqueueing
 	 */
-	String CONTEXT_AsyncBatchDunningDoc = IDunningProducer.class.getName() + "#" + "AsyncBatch";
+	String CONTEXT_AsyncBatchIdDunningDoc = IDunningProducer.class.getName() + "#" + "AsyncBatch";
 
 	/**
 	 * If this option is set in context, the producer will also process the {@link I_C_DunningDoc}s.
@@ -62,15 +62,11 @@ public interface IDunningProducer
 
 	/**
 	 * Adds another aggregator that is consulted on aggregation issues during invocations of {@link #addCandidate(I_C_Dunning_Candidate)}.
-	 * 
-	 * @param aggregator
 	 */
 	void addAggregator(IDunningAggregator aggregator);
 
 	/**
 	 * Add a dunning candidate. Implementation of this method can generate an {@link I_C_DunningDoc} right away or can put the line in a queue and generate the document later.
-	 * 
-	 * @param candidate
 	 */
 	void addCandidate(I_C_Dunning_Candidate candidate);
 
