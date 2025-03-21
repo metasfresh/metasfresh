@@ -22,6 +22,7 @@
 
 package de.metas.ordercandidate.api.source;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
 import de.metas.common.util.time.SystemTime;
@@ -35,6 +36,8 @@ import de.metas.ordercandidate.api.OLCandAggregation;
 import de.metas.ordercandidate.api.OLCandAggregationColumn;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.process.PInstanceId;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -150,34 +153,36 @@ public class OLCandProcessingHelper
 			@NonNull final OLCand cand,
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
+		
 		if (cand.isProcessed())
 		{
-			logger.debug("Skipping processed C_OLCand: {}", cand);
+			loggable.addLog("Skipping processed C_OLCand: {}", cand);
 			return false;
 		}
 
 		if (cand.isError())
 		{
-			logger.debug("Skipping C_OLCand with errors: {}", cand);
+			loggable.addLog("Skipping C_OLCand with errors: {}", cand);
 			return false;
 		}
 
 		if (cand.getOrderLineGroup() != null && cand.getOrderLineGroup().isGroupingError())
 		{
-			logger.debug("Skipping C_OLCand with grouping errors: {}", cand);
+			loggable.addLog("Skipping C_OLCand with grouping errors: {}", cand);
 			return false;
 		}
 
 		final InputDataSourceId candDataDestinationId = InputDataSourceId.ofRepoIdOrNull(cand.getAD_DataDestination_ID());
 		if (!Objects.equals(candDataDestinationId, processorDataDestinationId))
 		{
-			logger.debug("Skipping C_OLCand with AD_DataDestination_ID={} but {} was expected: {}", candDataDestinationId, processorDataDestinationId, cand);
+			loggable.addLog("Skipping C_OLCand with AD_DataDestination_ID={} but {} was expected: {}", candDataDestinationId, processorDataDestinationId, cand);
 			return false;
 		}
 
 		if (asyncBatchId != null && !cand.isAssignToBatch(asyncBatchId))
 		{
-			logger.debug("Skipping C_OLCand due to missing batch assignment: targetBatchId: {}, candidate: {}", asyncBatchId, cand);
+			loggable.addLog("Skipping C_OLCand due to missing batch assignment: targetBatchId: {}, candidate: {}", asyncBatchId.getRepoId(), cand);
 			return false;
 		}
 
