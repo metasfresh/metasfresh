@@ -52,12 +52,16 @@ public class BPartnerLocationType
 	@JsonInclude(Include.NON_ABSENT)
 	private Optional<Boolean> shipToDefault;
 
+	@JsonInclude(Include.NON_ABSENT)
+	private Optional<Boolean> visitorsAddress;
+
 	@Builder
 	public BPartnerLocationType(
 			@Nullable final Boolean billTo,
 			@Nullable final Boolean billToDefault,
 			@Nullable final Boolean shipTo,
-			@Nullable final Boolean shipToDefault)
+			@Nullable final Boolean shipToDefault,
+			@Nullable final Boolean visitorsAddress)
 	{
 		this.billToDefault = Optional.ofNullable(billToDefault);
 		if (this.billToDefault.orElse(false) && billTo == null)
@@ -78,6 +82,8 @@ public class BPartnerLocationType
 		{
 			this.shipTo = Optional.ofNullable(shipTo);
 		}
+
+		this.visitorsAddress = Optional.ofNullable(visitorsAddress);
 	}
 
 	/** copy constructor, see {@link #deepCopy()}. */
@@ -85,17 +91,19 @@ public class BPartnerLocationType
 			@Nullable final Optional<Boolean> billTo,
 			@Nullable final Optional<Boolean> billToDefault,
 			@Nullable final Optional<Boolean> shipTo,
-			@Nullable final Optional<Boolean> shipToDefault)
+			@Nullable final Optional<Boolean> shipToDefault,
+			@Nullable final Optional<Boolean> visitorsAddress)
 	{
 		this.billTo = billTo;
 		this.billToDefault = billToDefault;
 		this.shipTo = shipTo;
 		this.shipToDefault = shipToDefault;
+		this.visitorsAddress = visitorsAddress;
 	}
 
 	public BPartnerLocationType deepCopy()
 	{
-		return new BPartnerLocationType(billTo, billToDefault, shipTo, shipToDefault);
+		return new BPartnerLocationType(billTo, billToDefault, shipTo, shipToDefault, visitorsAddress);
 	}
 
 	public boolean getIsShipToOr(final boolean defaultValue)
@@ -116,6 +124,11 @@ public class BPartnerLocationType
 	public boolean getIsBillToDefaultOr(final boolean defaultValue)
 	{
 		return billToDefault.orElse(defaultValue);
+	}
+
+	public boolean getIsVisitorsAddressOr(final boolean defaultValue)
+	{
+		return visitorsAddress.orElse(defaultValue);
 	}
 
 	public void setBillToDefault(final boolean billToDefault)
