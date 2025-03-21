@@ -927,7 +927,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 					.setDetailMessage("Booking the counter invoice using cash based accounting method is not supported");
 		}
 
-		if(!isValidPurchaseSalesCompensationAmt(line, counterLine))
+		if (!isValidPurchaseSalesCompensationAmt(line, counterLine))
 		{
 			throw newPostingException()
 					.setFact(fact)
@@ -953,7 +953,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		{
 			factLineBuilder.setAccount(getVendorAccount(BPartnerVendorAccountType.V_Liability, as));
 
-			if(line.isCreditMemoInvoice())
+			if (line.isCreditMemoInvoice())
 			{
 				factLineBuilder.setAmtSource(compensationAmtSource.negate(), null);
 			}
