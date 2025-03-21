@@ -43,7 +43,7 @@ import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvPackItemType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
-import org.smooks.io.payload.JavaSource;
+import org.smooks.io.source.JavaSource;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -89,7 +89,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		h000.setMessageDate(SystemTime.asDate());
 		h000.setReceiver(xmlDesadv.getCBPartnerID().getEdiRecipientGLN());
 
-		h000.setReference(formatNumber(xmlDesadv.getSequenceNoAttr(), decimalFormat));
+		h000.setReference(formatNumber(xmlDesadv.getSequenceNo(), decimalFormat));
 		h000.setTestFlag(testFlag);
 
 		final List<H100> h100Lines = new ArrayList<>();
@@ -126,7 +126,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		h100.setDocumentNo(xmlDesadv.getDocumentNo());
 		h100.setInvoiceID(voidString);
 		h100.setMessageDate(SystemTime.asDate());
-		h100.setMessageNo(formatNumber(xmlDesadv.getSequenceNoAttr(), decimalFormat));
+		h100.setMessageNo(formatNumber(xmlDesadv.getSequenceNo(), decimalFormat));
 
 		h100.setOrderDate(toDate(xmlDesadv.getDateOrdered()));
 		// 05768
@@ -168,7 +168,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		final P050 p050 = new P050();
 
 		p050.setPartner(xmlDesadv.getCBPartnerID().getEdiRecipientGLN());
-		p050.setMessageNo(formatNumber(xmlDesadv.getSequenceNoAttr(), decimalFormat));
+		p050.setMessageNo(formatNumber(xmlDesadv.getSequenceNo(), decimalFormat));
 
 		final DesadvLines desadvLines = DesadvParser.getDesadvLinesEnforcingSinglePacks(xmlDesadv);
 		final List<EDIExpDesadvLineType> lines = desadvLines.getAllSortedByLine();
@@ -257,7 +257,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p060.setLevelID("1");
 		p060.setCPScounter(formatNumber(BigInteger.valueOf(cpsCounter), decimalFormat));
 		p060.setInnerOuterCode(voidString);
-		p060.setMessageNo(formatNumber(xmlDesadv.getSequenceNoAttr(), decimalFormat));
+		p060.setMessageNo(formatNumber(xmlDesadv.getSequenceNo(), decimalFormat));
 
 		// p060.setPalettQTY(xmlInOutLine.getCOrderLineID().getQtyItemCapacity()); // leave empty for now
 		p060.setPalettTyp(voidString); // empty in sample - leave empty for now (see wiki)
@@ -344,7 +344,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p100.setUnitCode(voidString);
 		// p100.setDiffDeliveryDate(EDIDesadvBean.voidDate);
 		p100.setEanTU(xmlDesadvLine.getEANTU());
-		p100.setMessageNo(formatNumber(xmlDesadv.getSequenceNoAttr(), decimalFormat));
+		p100.setMessageNo(formatNumber(xmlDesadv.getSequenceNo(), decimalFormat));
 		// 05768
 		if (xmlDesadv.getPOReference() != null && !xmlDesadv.getPOReference().isEmpty())
 		{
@@ -400,7 +400,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p102.setUnitCode(voidString);
 		// p102.setDiffDeliveryDate(EDIDesadvBean.voidDate);
 		p102.setEanTU(xmlDesadvLine.getEANTU());
-		p102.setMessageNo(formatNumber(xmlDesadv.getSequenceNoAttr(), decimalFormat));
+		p102.setMessageNo(formatNumber(xmlDesadv.getSequenceNo(), decimalFormat));
 		// 05768
 		if (xmlDesadv.getPOReference() != null && !xmlDesadv.getPOReference().isEmpty())
 		{

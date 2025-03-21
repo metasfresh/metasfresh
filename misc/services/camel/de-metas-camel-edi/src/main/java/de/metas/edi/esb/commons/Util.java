@@ -2,6 +2,7 @@ package de.metas.edi.esb.commons;
 
 import de.metas.edi.esb.commons.api.ILookupTemplate;
 import de.metas.edi.esb.commons.api.ILookupValue;
+import jakarta.xml.bind.JAXBElement;
 import lombok.NonNull;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Message;
@@ -9,7 +10,6 @@ import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.support.DefaultMessage;
 import org.springframework.lang.Nullable;
 
-import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;

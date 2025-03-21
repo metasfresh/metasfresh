@@ -32,7 +32,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
+import org.apache.camel.component.http.HttpMethods;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.springframework.stereotype.Component;
@@ -83,7 +83,7 @@ public class EcosioRemadvRoute extends RouteBuilder
 					.removeHeaders("*", "Authorization") // we don't want so send all headers as HTTP-headers; might be too much and we'd get an error back
 					.setHeader(AUTHORIZATION, simple(ECOSIO_AUTH_TOKEN))
 					.setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
-					.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
+					.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.POST))
 					.to(http(CREATE_REMADV_MF_URL))
 					.unmarshal(responseJacksonDataFormat)
 					.process(new RemadvResponseProcessor())

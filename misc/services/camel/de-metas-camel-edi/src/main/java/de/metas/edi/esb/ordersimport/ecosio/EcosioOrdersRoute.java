@@ -34,8 +34,6 @@ import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryRuleEnum;
 import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryViaRuleEnum;
 import de.metas.edi.esb.jaxb.metasfresh.EDIImpADInputDataSourceLookupINType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIImpCOLCandType;
-import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
-import de.metas.edi.esb.jaxb.metasfresh.ReplicationModeEnum;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationTypeEnum;
 import lombok.NonNull;
 import org.apache.camel.CamelContext;
@@ -102,19 +100,19 @@ public class EcosioOrdersRoute
 						.process(exchange -> {
 							final EDIImpCOLCandType olCandXML = exchange.getIn().getBody(EDIImpCOLCandType.class);
 
-							olCandXML.setADClientValueAttr(adClientValue);
-							olCandXML.setReplicationEventAttr(ReplicationEventEnum.AfterChange);
-							olCandXML.setReplicationModeAttr(ReplicationModeEnum.Table);
-							olCandXML.setReplicationTypeAttr(ReplicationTypeEnum.Merge);
-							olCandXML.setVersionAttr("*");
+							olCandXML.setADClientValue(adClientValue);
+							olCandXML.setReplicationEvent("5"/*AfterChange*/);
+							olCandXML.setReplicationMode("0"/*Table*/);
+							olCandXML.setReplicationType(ReplicationTypeEnum.M);
+							olCandXML.setVersion("*");
 
 							// there might be multiple orders in one file. so we compose the replication-name like this to make sure one order is one replication-trx
 							final String trxNameAttr = olCandXML.getPOReference() + "_" + exchange.getIn().getHeader(Exchange.FILE_NAME, String.class);
-							olCandXML.setTrxNameAttr(trxNameAttr);
+							olCandXML.setTrxName(trxNameAttr);
 
 							// add the current trx to context
 							final EcosioOrdersRouteContext context = exchange.getProperty(ROUTE_PROPERTY_ECOSIO_ORDER_ROUTE_CONTEXT, EcosioOrdersRouteContext.class);
-							context.setCurrentReplicationTrx(olCandXML.getTrxNameAttr());
+							context.setCurrentReplicationTrx(olCandXML.getTrxName());
 
 							olCandXML.setADInputDataSourceID(new BigInteger("540215")); // hardcoded value for ecosio
 							olCandXML.setADUserEnteredByID(new BigInteger(userEnteredById));

@@ -73,7 +73,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.lang.Nullable;
 
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -143,7 +143,7 @@ public class StepComXMLDesadvBean
 		header.setPARTNERID(settings.getPartnerId());
 		header.setOWNERID(ownerId);
 		header.setTESTINDICATOR(settings.getTestIndicator());
-		header.setMESSAGEREF(formatNumber(xmlDesadv.getSequenceNoAttr(), decimalFormat));
+		header.setMESSAGEREF(formatNumber(xmlDesadv.getSequenceNo(), decimalFormat));
 		if (!Util.isEmpty(settings.getApplicationRef()))
 		{
 			header.setAPPLICATIONREF(settings.getApplicationRef());

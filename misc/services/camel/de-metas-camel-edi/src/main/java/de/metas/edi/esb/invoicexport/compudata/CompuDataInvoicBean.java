@@ -38,7 +38,7 @@ import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
-import org.smooks.io.payload.JavaSource;
+import org.smooks.io.source.JavaSource;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -166,7 +166,7 @@ public class CompuDataInvoicBean
 		cctop000V.setCbPartnerLocationID(formatNumber(xmlCctop000V.getCBPartnerLocationID(), decimalFormat));
 		cctop000V.setGln(xmlCctop000V.getGLN());
 
-		final BigInteger sequenceNoAttr = xmlCctopInvoice.getSequenceNoAttr();
+		final BigInteger sequenceNoAttr = xmlCctopInvoice.getSequenceNo();
 		if (sequenceNoAttr == null)
 		{
 			throw new RuntimeCamelException("sequenceNoAttr cannot be null for " + xmlCctopInvoice);

@@ -3023,7 +3023,7 @@ stackability) in layers.</xs:documentation>
 									</xs:element>
 									<xs:element name="PlatoVolumePercentage" type="PercentageType" minOccurs="0">
 										<xs:annotation>
-											<xs:documentation>Plato in percent. (German: Grad Plato der Stammwürze im Bier)</xs:documentation>
+											<xs:documentation>Plato in percent. (German: Grad Plato der Stammwuerze im Bier)</xs:documentation>
 										</xs:annotation>
 									</xs:element>
 									<xs:element name="GenderSpecific" minOccurs="0">

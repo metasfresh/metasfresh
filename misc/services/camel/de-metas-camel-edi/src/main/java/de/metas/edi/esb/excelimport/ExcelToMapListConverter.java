@@ -401,7 +401,7 @@ public class ExcelToMapListConverter
 		}
 
 		final Object value;
-		switch (cell.getCellTypeEnum())
+		switch (cell.getCellType())
 		{
 			case BLANK:
 				value = null;

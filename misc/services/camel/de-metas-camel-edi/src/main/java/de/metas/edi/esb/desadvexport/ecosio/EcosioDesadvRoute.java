@@ -34,6 +34,9 @@ import de.metas.edi.esb.jaxb.metasfresh.EDIDesadvFeedbackType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvPackItemType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvPackType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
+import de.metas.edi.esb.jaxb.metasfresh.ObjectFactory;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
@@ -72,7 +75,18 @@ public class EcosioDesadvRoute extends AbstractEDIRoute
 	@Override
 	public void configureEDIRoute(@NonNull final DataFormat jaxb, @NonNull final DecimalFormat decimalFormat)
 	{
-		final JaxbDataFormat dataFormat = new JaxbDataFormat(EDIExpDesadvType.class.getPackage().getName());
+		final JAXBContext jaxbContext;
+		try
+		{
+			jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
+		}
+		catch (JAXBException e)
+		{
+			throw new RuntimeException(e);
+		}
+		// jakarta.xml.bind.JAXBException: class de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType nor any of its super class is known to this context.
+		//final JaxbDataFormat dataFormat = new JaxbDataFormat(EDIExpDesadvType.class.getPackage().getName());
+		final JaxbDataFormat dataFormat = new JaxbDataFormat(jaxbContext);
 		dataFormat.setCamelContext(getContext());
 		dataFormat.setEncoding(StandardCharsets.UTF_8.name());
 
@@ -97,7 +111,7 @@ public class EcosioDesadvRoute extends AbstractEDIRoute
 
 		from(EcosioDesadvRoute.EP_EDI_METASFRESH_XML_DESADV_CONSUMER)
 				.routeId(ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 
 				.log(LoggingLevel.INFO, "Setting defaults as exchange properties...")
 				.setProperty(EcosioDesadvRoute.EDI_ORDER_EDIMessageDatePattern).constant(defaultEDIMessageDatePattern)
@@ -109,15 +123,26 @@ public class EcosioDesadvRoute extends AbstractEDIRoute
 
 					// i'm sure that there are better ways, but we want the EDIFeedbackRoute to identify that the error is coming from *this* route.
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ROUTE_ID, ROUTE_ID);
-					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ADClientValueAttr, xmlDesadv.getADClientValueAttr());
+					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ADClientValueAttr, xmlDesadv.getADClientValue());
 					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlDesadv.getEDIDesadvID().longValue());
 
 					final String fileName = "DESADV_" + xmlDesadv.getDocumentNo() + "_" + SystemTime.millis() + ".xml";
 					exchange.getIn().setHeader(Exchange.FILE_NAME, fileName);
+					//exchange.getIn().setBody(new ObjectFactory().createEDIExpDesadv(xmlDesadv));
 				})
 
 				.log(LoggingLevel.INFO, "Marshalling XML Java Object -> XML...")
 				.marshal(dataFormat)
+				// 				.process(exchange -> {
+				// 					final EDIExpDesadvType xmlDesadv = exchange.getIn().getBody(EDIExpDesadvType.class);
+				// 					final JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
+				// 					final Marshaller marshaller = jaxbContext.createMarshaller();
+				// 					final var writer = new StringWriter();
+				//					
+				// 					marshaller.marshal(new ObjectFactory().createEDIExpDesadv(xmlDesadv), writer);
+				//
+				// 					exchange.getIn().setBody(writer.toString());
+				// 				})
 
 				.log(LoggingLevel.INFO, "Output file's name=${in.headers." + Exchange.FILE_NAME + "}")
 				//.log(LoggingLevel.INFO, "Sending this XML to the " + endPointURIs.length + " endpoint(s):\r\n" + body())
@@ -139,13 +164,13 @@ public class EcosioDesadvRoute extends AbstractEDIRoute
 	{
 		xmlDesadv.getEDIExpDesadvPack()
 				.sort(Comparator.comparing(EDIExpDesadvPackType::getSeqNo,
-										   Comparator.nullsLast(Comparator.naturalOrder())));
+						Comparator.nullsLast(Comparator.naturalOrder())));
 
 		for (final EDIExpDesadvPackType pack : xmlDesadv.getEDIExpDesadvPack())
 		{
 			pack.getEDIExpDesadvPackItem()
 					.sort(Comparator.comparing(EDIExpDesadvPackItemType::getLine,
-											   Comparator.nullsLast(Comparator.naturalOrder())));
+							Comparator.nullsLast(Comparator.naturalOrder())));
 		}
 	}
 }
