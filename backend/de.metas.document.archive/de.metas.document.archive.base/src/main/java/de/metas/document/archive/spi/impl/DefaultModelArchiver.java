@@ -243,10 +243,10 @@ public class DefaultModelArchiver
 
 		//
 		// forward async batch if there is one
-		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.getDynAttribute(getRecord(), Async_Constants.C_Async_Batch);
-		if (asyncBatch != null)
+		final AsyncBatchId asyncBatchId = InterfaceWrapperHelper.getDynAttribute(getRecord(), Async_Constants.AsyncBatchId);
+		if (asyncBatchId != null)
 		{
-			InterfaceWrapperHelper.setDynAttribute(archive, Async_Constants.C_Async_Batch, asyncBatch);
+			InterfaceWrapperHelper.setDynAttribute(archive, Async_Constants.AsyncBatchId, asyncBatchId);
 		}
 
 		InterfaceWrapperHelper.save(archive);

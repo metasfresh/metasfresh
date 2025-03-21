@@ -285,11 +285,12 @@ public class PrintJobBL implements IPrintJobBL
 		}
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(printJobInstructions.get(0));
-		final I_C_Async_Batch asyncBatch = createAsyncBatchForPDFPrinting(ctx, printingAsyncBatch);
-		printJobInstructions.forEach(pji -> enqueuePrintJobInstructions(pji, asyncBatch));
+		final AsyncBatchId asyncBatchId = createAsyncBatchForPDFPrinting(ctx, printingAsyncBatch);
+		
+		printJobInstructions.forEach(pji -> enqueuePrintJobInstructions(pji, asyncBatchId));
 	}
 
-	private I_C_Async_Batch createAsyncBatchForPDFPrinting(@NonNull final Properties ctx, @NonNull PrintingAsyncBatch printingAsyncBatch)
+	private AsyncBatchId createAsyncBatchForPDFPrinting(@NonNull final Properties ctx, @NonNull PrintingAsyncBatch printingAsyncBatch)
 	{
 		final String name = Check.isEmpty(printingAsyncBatch.getName(), true) ? "Print to pdf" : printingAsyncBatch.getName();
 		final int printJobCount = printingAsyncBatch.getPrintJobCount();
@@ -318,14 +319,15 @@ public class PrintJobBL implements IPrintJobBL
 	}
 
 	@Override
-	public void enqueuePrintJobInstructions(final I_C_Print_Job_Instructions jobInstructions, final I_C_Async_Batch asyncBatch)
+	public void enqueuePrintJobInstructions(final I_C_Print_Job_Instructions jobInstructions, 
+											final AsyncBatchId asyncBatchId)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(jobInstructions);
 
 		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, PDFDocPrintingWorkpackageProcessor.class);
 		queue
 				.newWorkPackage()
-				.setC_Async_Batch(asyncBatch) // set the async batch in workpackage in order to track it
+				.setC_Async_Batch_ID(asyncBatchId) // set the async batch in workpackage in order to track it
 				.addElement(jobInstructions)
 				.buildAndEnqueue();
 	}

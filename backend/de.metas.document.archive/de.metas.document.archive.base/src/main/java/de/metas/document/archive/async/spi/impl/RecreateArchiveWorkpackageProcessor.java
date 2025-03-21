@@ -1,5 +1,6 @@
 package de.metas.document.archive.async.spi.impl;
 
+import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Async_Batch;
@@ -38,16 +39,17 @@ public class RecreateArchiveWorkpackageProcessor implements IWorkpackageProcesso
 
 		final List<I_C_Doc_Outbound_Log> logs = queueDAO.retrieveAllItems(workpackage, I_C_Doc_Outbound_Log.class);
 
-		logs.forEach(docOutboundLog -> {
+		for (final I_C_Doc_Outbound_Log docOutboundLog : logs)
+		{
 			final PO po = TableModelLoader.instance.getPO(ctx, adTableDAO.retrieveTableName(docOutboundLog.getAD_Table_ID()), docOutboundLog.getRecord_ID(), trxName);
 			if (workpackage.getC_Async_Batch_ID() > 0)
 			{
-				InterfaceWrapperHelper.setDynAttribute(po, Async_Constants.C_Async_Batch, workpackage.getC_Async_Batch());
+				InterfaceWrapperHelper.setDynAttribute(po, Async_Constants.AsyncBatchId, AsyncBatchId.ofRepoIdOrNull(workpackage.getC_Async_Batch_ID()));
 			}
 
 			DefaultModelArchiver.of(po).archive();
 			InterfaceWrapperHelper.save(docOutboundLog);
-		});
+		}
 		return Result.SUCCESS;
 	}
 

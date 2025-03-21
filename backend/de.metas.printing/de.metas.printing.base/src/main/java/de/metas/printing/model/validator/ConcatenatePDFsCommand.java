@@ -101,7 +101,7 @@ class ConcatenatePDFsCommand
 
 		final I_C_Async_Batch parentAsyncBatchRecord = asyncBatchBL.getAsyncBatchById(printingQueueItemsGeneratedAsyncBatchId);
 
-		final I_C_Async_Batch asyncBatch = asyncBatchBL.newAsyncBatch()
+		final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch()
 				.setContext(ctx)
 				.setC_Async_Batch_Type(C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting)
 				.setName(C_Async_Batch_InternalName_AutomaticallyInvoicePdfPrinting)
@@ -113,7 +113,7 @@ class ConcatenatePDFsCommand
 		workPackageQueueFactory
 				.getQueueForEnqueuing(ctx, PrintingQueuePDFConcatenateWorkpackageProcessor.class)
 				.newWorkPackage()
-				.setC_Async_Batch(asyncBatch)
+				.setC_Async_Batch_ID(asyncBatchId)
 				.addElements(printingQueues)
 				.buildAndEnqueue();
 	}
