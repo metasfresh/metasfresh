@@ -22,15 +22,18 @@ package de.metas.handlingunits.attribute.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.attribute.IAttributeValue;
+import de.metas.handlingunits.attribute.IAttributeValueListener;
+import de.metas.handlingunits.attribute.IHUAttributesDAO;
+import de.metas.handlingunits.attribute.exceptions.InvalidAttributeValueException;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.logging.LogManager;
+import de.metas.uom.IUOMDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
@@ -48,19 +51,13 @@ import org.compiere.util.NamePair;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.handlingunits.attribute.IAttributeValue;
-import de.metas.handlingunits.attribute.IAttributeValueListener;
-import de.metas.handlingunits.attribute.IHUAttributesDAO;
-import de.metas.handlingunits.attribute.exceptions.InvalidAttributeValueException;
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
-import de.metas.logging.LogManager;
-import de.metas.uom.IUOMDAO;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * Generic {@link IAttributeValue} value implementation
@@ -713,20 +710,7 @@ public abstract class AbstractAttributeValue implements IAttributeValue
 	@Override
 	public final boolean isEmpty()
 	{
-		final Object value = getValue();
-
-		if (value instanceof BigDecimal)
-		{
-			return Check.isEmpty((BigDecimal)value);
-		}
-		else if (value instanceof String)
-		{
-			return Check.isEmpty((String)value);
-		}
-		else
-		{
-			throw new InvalidAttributeValueException("Value type '" + value.getClass() + "' not supported for " + attribute);
-		}
+		return Objects.equals(getValue(), getEmptyValue());
 	}
 
 	@Nullable

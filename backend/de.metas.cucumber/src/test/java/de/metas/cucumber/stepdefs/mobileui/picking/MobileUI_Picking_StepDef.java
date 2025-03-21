@@ -14,6 +14,7 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
+import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -86,6 +87,16 @@ public class MobileUI_Picking_StepDef
 		final LUPickingTarget pickingTarget = LUPickingTarget.ofPackingInstructions(luPIId, packingInstructionsIdentifier);
 
 		final JsonWFProcess wfProcess = mobileUIPickingClient.setPickingTarget(context.getWfProcessIdNotNull(), pickingTarget);
+		context.setWfProcess(wfProcess);
+	}
+
+	@When("^set picking target as new TU identified by (.*)$")
+	public void setPickingTUTarget(@NonNull final String packingInstructionsIdentifier)
+	{
+		final HuPackingInstructionsId tuPIId = huPiTable.getId(packingInstructionsIdentifier);
+		final TUPickingTarget pickingTarget = TUPickingTarget.ofPackingInstructions(tuPIId, packingInstructionsIdentifier);
+
+		final JsonWFProcess wfProcess = mobileUIPickingClient.setTUPickingTarget(context.getWfProcessIdNotNull(), pickingTarget);
 		context.setWfProcess(wfProcess);
 	}
 
