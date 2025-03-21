@@ -51,6 +51,8 @@ public class MobileUIPickingUserProfile_StepDef
 		row.getAsOptionalBoolean("IsAllowPickingAnyHU").ifPresent(defaultPickingJobOptionsBuilder::isAllowPickingAnyHU);
 		row.getAsOptionalString("CreateShipmentPolicy").map(CreateShipmentPolicy::ofCodeOrName).ifPresent(defaultPickingJobOptionsBuilder::createShipmentPolicy);
 		row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsAlwaysSplitHUsEnabled).ifPresent(defaultPickingJobOptionsBuilder::isAlwaysSplitHUsEnabled);
+		row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsAllowNewTU).ifPresent(defaultPickingJobOptionsBuilder::isAllowNewTU);
+		row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsPickingWithNewLU).ifPresent(defaultPickingJobOptionsBuilder::isPickWithNewLU);
 
 		final MobileUIPickingUserProfile newProfile = profile.toBuilder()
 				.defaultPickingJobOptions(defaultPickingJobOptionsBuilder.build())
