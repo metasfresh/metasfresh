@@ -23,7 +23,7 @@ export const Backend = {
         console.log(`Created master data (${language}):\n` + JSON.stringify(responseBody, null, 2));
 
         if (responseBody.errors || responseBody.stackTrace) {
-            throw "Got error while creating master data";
+            throw Error("Got error while creating master data:\n" + JSON.stringify(responseBody, null, 2));
         }
 
         return responseBody;
@@ -84,4 +84,3 @@ export const loadConfigFromFrontendApp = async () => await test.step(`Fetching f
 
     return serverUrl + '/api/v2';
 });
-
