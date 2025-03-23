@@ -8,6 +8,7 @@
 package de.metas.edi.esb.jaxb.metasfresh;
 
 import jakarta.xml.bind.annotation.XmlEnum;
+import jakarta.xml.bind.annotation.XmlEnumValue;
 import jakarta.xml.bind.annotation.XmlType;
 
 
@@ -36,20 +37,53 @@ import jakarta.xml.bind.annotation.XmlType;
 @XmlEnum
 public enum EDIExportStatusEnum {
 
-    P,
-    S,
-    D,
-    E,
-    U,
-    I,
-    N;
+    @XmlEnumValue("P")
+    Pending("P"),
+    @XmlEnumValue("S")
+    Sent("S"),
+    @XmlEnumValue("D")
+    SendingStarted("D"),
+    @XmlEnumValue("E")
+    Error("E"),
+    @XmlEnumValue("U")
+    Enqueued("U"),
+    @XmlEnumValue("I")
+    Invalid("I"),
+    @XmlEnumValue("N")
+    DontSend("N");
+    private final String value;
 
-    public String value() {
-        return name();
+    EDIExportStatusEnum(String v) {
+        value = v;
     }
 
+    /**
+     * Gets the value associated to the enum constant.
+     * 
+     * @return
+     *     The value linked to the enum.
+     */
+    public String value() {
+        return value;
+    }
+
+    /**
+     * Gets the enum associated to the value passed as parameter.
+     * 
+     * @param v
+     *     The value to get the enum from.
+     * @return
+     *     The enum which corresponds to the value, if it exists.
+     * @throws IllegalArgumentException
+     *     If no value matches in the enum declaration.
+     */
     public static EDIExportStatusEnum fromValue(String v) {
-        return valueOf(v);
+        for (EDIExportStatusEnum c: EDIExportStatusEnum.values()) {
+            if (c.value.equals(v)) {
+                return c;
+            }
+        }
+        throw new IllegalArgumentException(v);
     }
 
 }

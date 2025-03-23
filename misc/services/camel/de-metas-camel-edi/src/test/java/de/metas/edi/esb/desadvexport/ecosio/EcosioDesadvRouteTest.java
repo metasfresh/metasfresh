@@ -84,7 +84,7 @@ class EcosioDesadvRouteTest extends CamelTestSupport
 	{
 		final var ediExpDesadvType = new ObjectFactory().createEDIExpDesadvType();
 		ediExpDesadvType.setEDIDesadvID(new BigInteger("1001"));
-		ediExpDesadvType.setADClientValue("ADClientValueAttr");
+		ediExpDesadvType.setADClientValueAttr("ADClientValueAttr");
 
 		template.sendBodyAndHeader(
 				EcosioDesadvRoute.EP_EDI_METASFRESH_XML_DESADV_CONSUMER /*endpoint-URI*/,

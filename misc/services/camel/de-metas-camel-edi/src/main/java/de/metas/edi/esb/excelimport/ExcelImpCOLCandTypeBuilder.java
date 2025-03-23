@@ -29,6 +29,8 @@ import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryViaRuleEnum;
 import de.metas.edi.esb.jaxb.metasfresh.EDIImpADInputDataSourceLookupINType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIImpCCurrencyLookupISOCodeType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIImpCUOMLookupUOMSymbolType;
+import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
+import de.metas.edi.esb.jaxb.metasfresh.ReplicationModeEnum;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationTypeEnum;
 import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
 import lombok.NonNull;
@@ -58,10 +60,10 @@ public class ExcelImpCOLCandTypeBuilder
 		olcand = Constants.JAXB_ObjectFactory.createXLSImpCOLCandType();
 
 		// Predefined
-		olcand.setReplicationEvent("5"/*AfterChange*/);
-		olcand.setReplicationMode("0"/*Table*/);
-		olcand.setReplicationType(ReplicationTypeEnum.M);
-		olcand.setVersion(Constants.EXP_FORMAT_GENERIC_VERSION);
+		olcand.setReplicationEventAttr(ReplicationEventEnum.AfterChange);
+		olcand.setReplicationModeAttr(ReplicationModeEnum.Table);
+		olcand.setReplicationTypeAttr(ReplicationTypeEnum.Merge);
+		olcand.setVersionAttr(Constants.EXP_FORMAT_GENERIC_VERSION);
 	}
 
 	public XLSImpCOLCandType build()
@@ -72,9 +74,9 @@ public class ExcelImpCOLCandTypeBuilder
 	public ExcelImpCOLCandTypeBuilder setFromContext(final ExcelConfigurationContext ctx)
 	{
 		// set ReplicationTrx attribute
-		olcand.setTrxName(ctx.getCamelFileName());
+		olcand.setTrxNameAttr(ctx.getCamelFileName());
 
-		olcand.setADClientValue(ctx.getAD_Client_Value());
+		olcand.setADClientValueAttr(ctx.getAD_Client_Value());
 		olcand.setADOrgID(toBigIntegerID(ctx.getAD_Org_ID()));
 
 		// AD_DataDestination_ID lookup

@@ -46,6 +46,6 @@ public class EDIXmlSuccessFeedbackProcessor<T> implements Processor
 	@Override
 	public void process(final Exchange exchange)
 	{
-		createEDIFeedbackType(exchange, EDIExportStatusEnum.S, feedbackType, feedbackQName, recordIdSetter);
+		createEDIFeedbackType(exchange, EDIExportStatusEnum.Sent, feedbackType, feedbackQName, recordIdSetter);
 	}
 }

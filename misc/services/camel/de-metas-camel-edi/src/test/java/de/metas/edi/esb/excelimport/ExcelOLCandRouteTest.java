@@ -25,6 +25,8 @@ package de.metas.edi.esb.excelimport;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryRuleEnum;
 import de.metas.edi.esb.jaxb.metasfresh.COrderDeliveryViaRuleEnum;
+import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
+import de.metas.edi.esb.jaxb.metasfresh.ReplicationModeEnum;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationTypeEnum;
 import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
 import jakarta.xml.bind.JAXBElement;
@@ -142,8 +144,8 @@ public class ExcelOLCandRouteTest extends CamelTestSupport
 		assertThat(oLCandType.getCCurrencyID().getISOCode()).isEqualTo("CHF");
 		assertThat(oLCandType.getCUOMID().getX12DE355()).isEqualTo("PCE");
 
-		assertThat(oLCandType.getDeliveryRule()).isEqualTo(COrderDeliveryRuleEnum.A);
-		assertThat(oLCandType.getDeliveryViaRule()).isEqualTo(COrderDeliveryViaRuleEnum.P);
+		assertThat(oLCandType.getDeliveryRule()).isEqualTo(COrderDeliveryRuleEnum.Availability);
+		assertThat(oLCandType.getDeliveryViaRule()).isEqualTo(COrderDeliveryViaRuleEnum.Pickup);
 		assertThat(oLCandType.getDescription()).isNull();
 
 		assertThat(oLCandType.getProductDescription()).isEqualTo("Test");
@@ -159,9 +161,9 @@ public class ExcelOLCandRouteTest extends CamelTestSupport
 		assertThat(oLCandType.getLine()).isEqualTo(BigInteger.valueOf(10));
 		assertThat(oLCandType.getPOReference()).isEqualTo("test_po_ref");
 
-		assertThat(oLCandType.getReplicationEvent()).isEqualTo("5"/*AfterChange*/);
-		assertThat(oLCandType.getReplicationMode()).isEqualTo("0"/*Table*/);
-		assertThat(oLCandType.getReplicationType()).isEqualTo(ReplicationTypeEnum.M);
+		assertThat(oLCandType.getReplicationEventAttr()).isEqualTo(ReplicationEventEnum.AfterChange);
+		assertThat(oLCandType.getReplicationModeAttr()).isEqualTo(ReplicationModeEnum.Table);
+		assertThat(oLCandType.getReplicationTypeAttr()).isEqualTo(ReplicationTypeEnum.Merge);
 
 		assertThat(mockRabbitMQProcessor.called).isEqualTo(1);
 	}

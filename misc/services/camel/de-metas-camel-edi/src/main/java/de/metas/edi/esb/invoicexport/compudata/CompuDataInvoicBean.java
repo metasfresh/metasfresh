@@ -166,7 +166,7 @@ public class CompuDataInvoicBean
 		cctop000V.setCbPartnerLocationID(formatNumber(xmlCctop000V.getCBPartnerLocationID(), decimalFormat));
 		cctop000V.setGln(xmlCctop000V.getGLN());
 
-		final BigInteger sequenceNoAttr = xmlCctopInvoice.getSequenceNo();
+		final BigInteger sequenceNoAttr = xmlCctopInvoice.getSequenceNoAttr();
 		if (sequenceNoAttr == null)
 		{
 			throw new RuntimeCamelException("sequenceNoAttr cannot be null for " + xmlCctopInvoice);

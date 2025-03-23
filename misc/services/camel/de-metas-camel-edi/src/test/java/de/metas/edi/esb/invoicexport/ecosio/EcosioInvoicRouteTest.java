@@ -26,6 +26,9 @@ import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
 import de.metas.edi.esb.jaxb.metasfresh.ObjectFactory;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBElement;
+import jakarta.xml.bind.Unmarshaller;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
@@ -33,9 +36,6 @@ import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 import org.xmlunit.assertj3.XmlAssert;
 
-import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBElement;
-import jakarta.xml.bind.Unmarshaller;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -79,7 +79,7 @@ class EcosioInvoicRouteTest extends CamelTestSupport
 	{
 		final var ediExpInvoicType = new ObjectFactory().createEDICctopInvoicVType();
 		ediExpInvoicType.setCInvoiceID(new BigInteger("1001"));
-		ediExpInvoicType.setADClientValue("ADClientValueAttr");
+		ediExpInvoicType.setADClientValueAttr("ADClientValueAttr");
 
 		template.sendBodyAndHeader(
 				EcosioInvoicRoute.EP_EDI_METASFRESH_XML_INVOIC_CONSUMER /*endpoint-URI*/,

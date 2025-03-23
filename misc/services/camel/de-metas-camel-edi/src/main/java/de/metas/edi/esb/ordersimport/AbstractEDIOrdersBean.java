@@ -40,6 +40,8 @@ import de.metas.edi.esb.jaxb.metasfresh.EDIImpCUOMLookupUOMSymbolType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIMHUPIItemProductLookupUPCVType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIMProductLookupUPCVType;
 import de.metas.edi.esb.jaxb.metasfresh.ObjectFactory;
+import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
+import de.metas.edi.esb.jaxb.metasfresh.ReplicationModeEnum;
 import de.metas.edi.esb.jaxb.metasfresh.ReplicationTypeEnum;
 import de.metas.edi.esb.ordersimport.compudata.CompuDataOrdersRoute;
 import de.metas.edi.esb.ordersimport.compudata.H100;
@@ -175,14 +177,14 @@ public abstract class AbstractEDIOrdersBean
 		final EDIImpCOLCandType olcand = AbstractEDIOrdersBean.factory.createEDIImpCOLCandType();
 
 		// set ReplicationTrx attribute
-		olcand.setTrxName(ctx.getCamelFileName());
+		olcand.setTrxNameAttr(ctx.getCamelFileName());
 
 		// configured
-		olcand.setADClientValue(ctx.getADClientValue());
-		olcand.setReplicationEvent("5"/*AfterChange*/);
-		olcand.setReplicationMode("0" /*Table*/);
-		olcand.setReplicationType(ReplicationTypeEnum.M);
-		olcand.setVersion(Constants.EXP_FORMAT_GENERIC_VERSION);
+		olcand.setADClientValueAttr(ctx.getADClientValue());
+		olcand.setReplicationEventAttr(ReplicationEventEnum.AfterChange);
+		olcand.setReplicationModeAttr(ReplicationModeEnum.Table);
+		olcand.setReplicationTypeAttr(ReplicationTypeEnum.Merge);
+		olcand.setVersionAttr(Constants.EXP_FORMAT_GENERIC_VERSION);
 
 		// AD_Org_ID no longer taken from context, but via lookup from H100.SupplierID
 		// olcand.setADOrgID(ctx.getADOrgID());

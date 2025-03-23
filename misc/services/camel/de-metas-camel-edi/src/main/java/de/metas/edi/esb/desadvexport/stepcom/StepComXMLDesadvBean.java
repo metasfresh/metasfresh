@@ -143,7 +143,7 @@ public class StepComXMLDesadvBean
 		header.setPARTNERID(settings.getPartnerId());
 		header.setOWNERID(ownerId);
 		header.setTESTINDICATOR(settings.getTestIndicator());
-		header.setMESSAGEREF(formatNumber(xmlDesadv.getSequenceNo(), decimalFormat));
+		header.setMESSAGEREF(formatNumber(xmlDesadv.getSequenceNoAttr(), decimalFormat));
 		if (!Util.isEmpty(settings.getApplicationRef()))
 		{
 			header.setAPPLICATIONREF(settings.getApplicationRef());

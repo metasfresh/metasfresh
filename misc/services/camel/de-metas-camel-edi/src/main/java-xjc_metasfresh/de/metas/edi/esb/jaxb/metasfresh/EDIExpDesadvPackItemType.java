@@ -7,16 +7,15 @@
 
 package de.metas.edi.esb.jaxb.metasfresh;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import javax.xml.datatype.XMLGregorianCalendar;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlSchemaType;
 import jakarta.xml.bind.annotation.XmlType;
-
-import javax.xml.datatype.XMLGregorianCalendar;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 
 
 /**
@@ -96,21 +95,21 @@ public class EDIExpDesadvPackItemType {
     @XmlElement(name = "Line", required = true)
     protected BigInteger line;
     @XmlAttribute(name = "AD_Client_Value")
-    protected String adClientValue;
+    protected String adClientValueAttr;
     @XmlAttribute(name = "ReplicationEvent")
-    protected String replicationEvent;
+    protected ReplicationEventEnum replicationEventAttr;
     @XmlAttribute(name = "ReplicationMode")
-    protected String replicationMode;
+    protected ReplicationModeEnum replicationModeAttr;
     @XmlAttribute(name = "ReplicationType")
-    protected ReplicationTypeEnum replicationType;
+    protected ReplicationTypeEnum replicationTypeAttr;
     @XmlAttribute(name = "Version")
-    protected String version;
+    protected String versionAttr;
     @XmlAttribute(name = "SequenceNo")
-    protected BigInteger sequenceNo;
+    protected BigInteger sequenceNoAttr;
     @XmlAttribute(name = "TrxName")
-    protected String trxName;
+    protected String trxNameAttr;
     @XmlAttribute(name = "AD_Session_ID")
-    protected BigInteger adSessionID;
+    protected BigInteger adSessionIDAttr;
 
     /**
      * Gets the value of the bestBeforeDate property.
@@ -377,199 +376,199 @@ public class EDIExpDesadvPackItemType {
     }
 
     /**
-     * Gets the value of the adClientValue property.
+     * Gets the value of the adClientValueAttr property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getADClientValue() {
-        return adClientValue;
+    public String getADClientValueAttr() {
+        return adClientValueAttr;
     }
 
     /**
-     * Sets the value of the adClientValue property.
+     * Sets the value of the adClientValueAttr property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setADClientValue(String value) {
-        this.adClientValue = value;
+    public void setADClientValueAttr(String value) {
+        this.adClientValueAttr = value;
     }
 
     /**
-     * Gets the value of the replicationEvent property.
+     * Gets the value of the replicationEventAttr property.
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link ReplicationEventEnum }
      *     
      */
-    public String getReplicationEvent() {
-        return replicationEvent;
+    public ReplicationEventEnum getReplicationEventAttr() {
+        return replicationEventAttr;
     }
 
     /**
-     * Sets the value of the replicationEvent property.
+     * Sets the value of the replicationEventAttr property.
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link ReplicationEventEnum }
      *     
      */
-    public void setReplicationEvent(String value) {
-        this.replicationEvent = value;
+    public void setReplicationEventAttr(ReplicationEventEnum value) {
+        this.replicationEventAttr = value;
     }
 
     /**
-     * Gets the value of the replicationMode property.
+     * Gets the value of the replicationModeAttr property.
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link ReplicationModeEnum }
      *     
      */
-    public String getReplicationMode() {
-        return replicationMode;
+    public ReplicationModeEnum getReplicationModeAttr() {
+        return replicationModeAttr;
     }
 
     /**
-     * Sets the value of the replicationMode property.
+     * Sets the value of the replicationModeAttr property.
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link ReplicationModeEnum }
      *     
      */
-    public void setReplicationMode(String value) {
-        this.replicationMode = value;
+    public void setReplicationModeAttr(ReplicationModeEnum value) {
+        this.replicationModeAttr = value;
     }
 
     /**
-     * Gets the value of the replicationType property.
+     * Gets the value of the replicationTypeAttr property.
      * 
      * @return
      *     possible object is
      *     {@link ReplicationTypeEnum }
      *     
      */
-    public ReplicationTypeEnum getReplicationType() {
-        return replicationType;
+    public ReplicationTypeEnum getReplicationTypeAttr() {
+        return replicationTypeAttr;
     }
 
     /**
-     * Sets the value of the replicationType property.
+     * Sets the value of the replicationTypeAttr property.
      * 
      * @param value
      *     allowed object is
      *     {@link ReplicationTypeEnum }
      *     
      */
-    public void setReplicationType(ReplicationTypeEnum value) {
-        this.replicationType = value;
+    public void setReplicationTypeAttr(ReplicationTypeEnum value) {
+        this.replicationTypeAttr = value;
     }
 
     /**
-     * Gets the value of the version property.
+     * Gets the value of the versionAttr property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getVersion() {
-        if (version == null) {
+    public String getVersionAttr() {
+        if (versionAttr == null) {
             return "*";
         } else {
-            return version;
+            return versionAttr;
         }
     }
 
     /**
-     * Sets the value of the version property.
+     * Sets the value of the versionAttr property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setVersion(String value) {
-        this.version = value;
+    public void setVersionAttr(String value) {
+        this.versionAttr = value;
     }
 
     /**
-     * Gets the value of the sequenceNo property.
+     * Gets the value of the sequenceNoAttr property.
      * 
      * @return
      *     possible object is
      *     {@link BigInteger }
      *     
      */
-    public BigInteger getSequenceNo() {
-        return sequenceNo;
+    public BigInteger getSequenceNoAttr() {
+        return sequenceNoAttr;
     }
 
     /**
-     * Sets the value of the sequenceNo property.
+     * Sets the value of the sequenceNoAttr property.
      * 
      * @param value
      *     allowed object is
      *     {@link BigInteger }
      *     
      */
-    public void setSequenceNo(BigInteger value) {
-        this.sequenceNo = value;
+    public void setSequenceNoAttr(BigInteger value) {
+        this.sequenceNoAttr = value;
     }
 
     /**
-     * Gets the value of the trxName property.
+     * Gets the value of the trxNameAttr property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getTrxName() {
-        return trxName;
+    public String getTrxNameAttr() {
+        return trxNameAttr;
     }
 
     /**
-     * Sets the value of the trxName property.
+     * Sets the value of the trxNameAttr property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setTrxName(String value) {
-        this.trxName = value;
+    public void setTrxNameAttr(String value) {
+        this.trxNameAttr = value;
     }
 
     /**
-     * Gets the value of the adSessionID property.
+     * Gets the value of the adSessionIDAttr property.
      * 
      * @return
      *     possible object is
      *     {@link BigInteger }
      *     
      */
-    public BigInteger getADSessionID() {
-        return adSessionID;
+    public BigInteger getADSessionIDAttr() {
+        return adSessionIDAttr;
     }
 
     /**
-     * Sets the value of the adSessionID property.
+     * Sets the value of the adSessionIDAttr property.
      * 
      * @param value
      *     allowed object is
      *     {@link BigInteger }
      *     
      */
-    public void setADSessionID(BigInteger value) {
-        this.adSessionID = value;
+    public void setADSessionIDAttr(BigInteger value) {
+        this.adSessionIDAttr = value;
     }
 
 }
