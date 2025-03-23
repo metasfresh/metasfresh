@@ -9,7 +9,7 @@ FROM metasfresh/metas-mvn-camel:$REFNAME as camel
 
 FROM openjdk:17-jdk-alpine
 
-RUN apk update && apk upgrade && apk add bash && apk add curl && apk add dos2unix --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/community/ --allow-untrusted
+RUN apk update && apk upgrade && apk add bash && apk add curl && apk add zip && apk add dos2unix --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/community/ --allow-untrusted
 
 WORKDIR /opt/metasfresh-esb-camel/
 
