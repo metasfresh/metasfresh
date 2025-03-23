@@ -288,7 +288,7 @@ jobs:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push
+          command: docker push metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}
       - name: push-image metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }}
         uses: nick-fields/retry@v3
         with:
