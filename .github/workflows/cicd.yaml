@@ -62,11 +62,11 @@ jobs:
         run: env
       - name: Get Pull Request Info
         id: pr
-        run: |
-          echo "::set-output name=pull_request_url::$(gh pr view --json url -q .url || echo "")"
-          echo "::set-output name=pull_request_title::$(gh pr view --json title -q .title || echo "")"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "pull_request_url=$(gh pr view --json url -q .url || echo "")" >> $GITHUB_OUTPUT
+          echo "pull_request_title=$(gh pr view --json title -q .title || echo "")" >> $GITHUB_OUTPUT
       - name: print-info
         env:
           OUT_REFNAME: ${{ steps.sanitize.outputs.refname }}
