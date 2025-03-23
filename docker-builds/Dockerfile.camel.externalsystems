@@ -3,7 +3,7 @@ FROM metasfresh/metas-mvn-camel:$REFNAME as camel
 
 FROM adoptopenjdk:14.0.2_8-jdk-hotspot
 
-RUN apt-get -y update && apt-get -y install zip curl
+RUN apt-get -y update && apt-get -y install curl
 
 WORKDIR /app
 
