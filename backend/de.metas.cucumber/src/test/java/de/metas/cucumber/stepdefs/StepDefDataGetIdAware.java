@@ -27,6 +27,8 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 
 	ImmutableSet<StepDefDataIdentifier> getIdentifiers();
 
+	void put(@NonNull final StepDefDataIdentifier identifier, @NonNull final RecordType newRecord);
+
 	//
 	// Helper methods
 	default ID getId(@NonNull final StepDefDataIdentifier identifier)
@@ -75,4 +77,17 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 	{
 		return getFirstIdentifierById(extractIdFromRecord(record));
 	}
+
+	default void putOrReplaceIfSameId(final StepDefDataIdentifier identifier, final RecordType newRecord)
+	{
+		final ID newId = extractIdFromRecord(newRecord);
+		final ID currentId = getIdOptional(identifier).orElse(null);
+		if (currentId != null && !Objects.equals(currentId, newId))
+		{
+			throw new RuntimeException("Cannot replace " + identifier + " because its current id is " + currentId + " and the new id is " + newId);
+		}
+
+		put(identifier, newRecord);
+	}
+
 }

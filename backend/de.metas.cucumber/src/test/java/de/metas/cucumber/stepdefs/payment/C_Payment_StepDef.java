@@ -22,6 +22,11 @@
 
 package de.metas.cucumber.stepdefs.payment;
 
+import de.metas.banking.BankAccountId;
+import de.metas.banking.api.IBPBankAccountDAO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.common.util.time.SystemTime;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
@@ -29,6 +34,8 @@ import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
@@ -38,15 +45,15 @@ import de.metas.cucumber.stepdefs.bankStatement.C_BankStatement_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
-import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
-import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -60,19 +67,17 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Currency;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -93,9 +98,12 @@ import static org.compiere.model.I_C_Payment.COLUMNNAME_WriteOffAmt;
 public class C_Payment_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	private final IBPBankAccountDAO bankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	private final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	private final C_BPartner_StepDefData bpartnerTable;
@@ -131,13 +139,11 @@ public class C_Payment_StepDef
 	}
 
 	@And("metasfresh contains C_Payment")
-	public void addC_Payment(@NonNull final DataTable dataTable)
+	public void createPayments(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : rows)
-		{
-			create_C_Payment(dataTableRow);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_C_Payment.COLUMNNAME_C_Payment_ID)
+				.forEach(this::createPayment);
 	}
 
 	@And("^the payment identified by (.*) is (completed|reversed)$")
@@ -163,65 +169,51 @@ public class C_Payment_StepDef
 	}
 
 	@And("validate payments")
-	public void validate_created_payments(@NonNull final DataTable table)
+	public void validateCreatedPayments(@NonNull final DataTable table)
 	{
-		final List<Map<String, String>> rows = table.asMaps();
-		for (final Map<String, String> dataTableRow : rows)
-		{
-			final String paymentIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_Payment_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final Boolean paymentIsAllocated = DataTableUtil.extractBooleanForColumnName(dataTableRow, COLUMNNAME_C_Payment_ID + "." + COLUMNNAME_IsAllocated);
-			final BigDecimal expectedAvailableAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT.OpenAmt");
-			final I_C_Payment payment = paymentTable.get(paymentIdentifier);
+		DataTableRows.of(table).forEach(this::validateCreatedPayment);
+	}
 
-			final SoftAssertions softly = new SoftAssertions();
-			softly.assertThat(payment).isNotNull();
-			InterfaceWrapperHelper.refresh(payment);
+	private void validateCreatedPayment(final DataTableRow row)
+	{
+		@NonNull final I_C_Payment payment = row.getAsIdentifier(COLUMNNAME_C_Payment_ID).lookupNotNullIn(paymentTable);
 
-			final BigDecimal paymentAvailableAmt = paymentDAO.getAvailableAmount(PaymentId.ofRepoId(payment.getC_Payment_ID()));
+		final SoftAssertions softly = new SoftAssertions();
+		softly.assertThat(payment).isNotNull();
+		InterfaceWrapperHelper.refresh(payment);
 
-			softly.assertThat(payment.isAllocated()).isEqualTo(paymentIsAllocated);
-			if (expectedAvailableAmt != null)
-			{
-				softly.assertThat(paymentAvailableAmt).isEqualTo(payment.isReceipt() ? expectedAvailableAmt : expectedAvailableAmt.negate());
-			}
+		row.getAsOptionalBoolean(COLUMNNAME_C_Payment_ID + "." + COLUMNNAME_IsAllocated)
+				.ifUnknown(() -> row.getAsOptionalBoolean(COLUMNNAME_IsAllocated))
+				.ifPresent(paymentIsAllocated -> softly.assertThat(payment.isAllocated()).isEqualTo(paymentIsAllocated));
 
-			final String invoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_Payment.COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(invoiceIdentifier))
-			{
-				final I_C_Invoice invoiceRecord = invoiceTable.get(invoiceIdentifier);
-				softly.assertThat(invoiceRecord).isNotNull();
-				softly.assertThat(payment.getC_Invoice_ID()).isEqualTo(invoiceRecord.getC_Invoice_ID());
-			}
+		row.getAsOptionalBigDecimal(COLUMNNAME_PayAmt)
+				.ifPresent(payAmt -> softly.assertThat(payment.getPayAmt()).isEqualByComparingTo(payAmt));
+		row.getAsOptionalBigDecimal("OpenAmt")
+				.ifPresent(expectedAvailableAmt -> {
+					final BigDecimal paymentAvailableAmt = paymentDAO.getAvailableAmount(PaymentId.ofRepoId(payment.getC_Payment_ID()));
+					softly.assertThat(paymentAvailableAmt).isEqualTo(payment.isReceipt() ? expectedAvailableAmt : expectedAvailableAmt.negate());
+				});
 
-			final LocalDate dateTrx = DataTableUtil.extractLocalDateOrNullForColumnName(dataTableRow, "OPT." + I_C_Payment.COLUMNNAME_DateTrx);
-			if (dateTrx != null)
-			{
-				final OrgId orgId = OrgId.ofRepoId(payment.getAD_Org_ID());
-				final ZoneId zoneId = orgDAO.getTimeZone(orgId);
-				softly.assertThat(TimeUtil.asLocalDate(payment.getDateTrx(), zoneId)).isEqualTo(dateTrx);
-			}
+		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Invoice_ID)
+				.map(invoiceTable::getId)
+				.ifPresent(expectedInvoiceId -> softly.assertThat(payment.getC_Invoice_ID()).isEqualTo(expectedInvoiceId.getRepoId()));
 
-			final String bPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_Payment.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(bPartnerIdentifier))
-			{
-				final I_C_BPartner bPartnerRecord = bpartnerTable.get(bPartnerIdentifier);
-				softly.assertThat(bPartnerRecord).isNotNull();
-				softly.assertThat(payment.getC_BPartner_ID()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
-			}
+		row.getAsOptionalLocalDate(I_C_Payment.COLUMNNAME_DateTrx)
+				.ifPresent(dateTrx -> {
+					final OrgId orgId = OrgId.ofRepoId(payment.getAD_Org_ID());
+					final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+					softly.assertThat(TimeUtil.asLocalDate(payment.getDateTrx(), zoneId)).isEqualTo(dateTrx);
+				});
 
-			final String bankAccountIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_Payment.COLUMNNAME_C_BP_BankAccount_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(bankAccountIdentifier))
-			{
-				final I_C_BP_BankAccount bankAccountRecord = bpBankAccountTable.get(bankAccountIdentifier);
-				softly.assertThat(bankAccountRecord).isNotNull();
-				softly.assertThat(payment.getC_BP_BankAccount_ID()).isEqualTo(bankAccountRecord.getC_BP_BankAccount_ID());
-			}
+		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_BPartner_ID)
+				.map(bpartnerTable::getId)
+				.ifPresent(expectedBPartnerId -> softly.assertThat(payment.getC_BPartner_ID()).isEqualTo(expectedBPartnerId.getRepoId()));
 
-			final BigDecimal payAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_PayAmt);
-			if (payAmt != null)
-			{
-				softly.assertThat(payment.getPayAmt()).isEqualByComparingTo(payAmt);
-			}
+		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_BP_BankAccount_ID)
+				.map(bpBankAccountTable::getOrgBankAccountId)
+				.ifPresent(expectedBankAccountId -> {
+					softly.assertThat(payment.getC_BP_BankAccount_ID()).isEqualTo(expectedBankAccountId.getRepoId());
+				});
 
 			final String docTypeIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_C_DocType_ID);
 			if (Check.isNotBlank(docTypeIdentifier))
@@ -268,7 +260,7 @@ public class C_Payment_StepDef
 			assertThat(jsonErrorItem.getMessage()).contains(message);
 		}
 	}
-	
+
 	private void findPayment(
 			final int timeoutSec,
 			@NonNull final Map<String, String> row) throws InterruptedException
@@ -319,62 +311,51 @@ public class C_Payment_StepDef
 		return ItemProvider.ProviderResult.resultWasFound(paymentRecord);
 	}
 
-	private void create_C_Payment(@NonNull final Map<String, String> row)
+	private void createPayment(@NonNull final DataTableRow row)
 	{
-		final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final Integer bPartnerId = bpartnerTable.getOptional(bPartnerIdentifier)
-				.map(I_C_BPartner::getC_BPartner_ID)
-				.orElseGet(() -> Integer.parseInt(bPartnerIdentifier));
+		final OrgId orgId = Env.getOrgId();
+		final BPartnerId bpartnerId = row.getAsIdentifier(COLUMNNAME_C_BPartner_ID).lookupNotNullIdIn(bpartnerTable);
+		final InvoiceId invoiceId = row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_ID).lookupIdIn(invoiceTable);
 
-		final BigDecimal paymentAmount = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_PayAmt);
+		final Money payAmt = row.getAsMoney(COLUMNNAME_PayAmt, currencyRepository::getCurrencyIdByCurrencyCode);
+		final Money discountAmt = row.getAsOptionalMoney(COLUMNNAME_DiscountAmt, currencyRepository::getCurrencyIdByCurrencyCode).orElse(payAmt.toZero());
+		final boolean isReceipt = row.getAsBoolean(COLUMNNAME_IsReceipt);
+		final LocalDate dateTrx = row.getAsOptionalLocalDate(I_C_Payment.COLUMNNAME_DateTrx).orElseGet(SystemTime::asLocalDate);
+		final LocalDate dateAcct = row.getAsOptionalLocalDate(I_C_Payment.COLUMNNAME_DateAcct).orElse(dateTrx);
 
-		final String currencyISO = DataTableUtil.extractStringForColumnName(row, I_C_Currency.Table_Name + "." + I_C_Currency.COLUMNNAME_ISO_Code);
-		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyISO));
+		final BankAccountId orgBankAccountId = row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_BP_BankAccount_ID)
+				.map(bpBankAccountTable::getOrgBankAccountId)
+				.orElseGet(() -> retrieveDefaultOrgBankAccountId(orgId, payAmt.getCurrencyId()));
 
-		final String docTypeName = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_DocType_ID + ".Name");
-		final DocTypeId docTypeId = queryBL.createQueryBuilder(I_C_DocType.class)
-				.addEqualsFilter(I_C_DocType.COLUMNNAME_Name, docTypeName)
-				.orderBy(I_C_DocType.COLUMNNAME_Name)
-				.create()
-				.firstId(DocTypeId::ofRepoId);
+		final I_C_Payment payment = (isReceipt ? paymentBL.newInboundReceiptBuilder() : paymentBL.newOutboundPaymentBuilder())
+				.adOrgId(orgId)
+				.bpartnerId(bpartnerId)
+				.invoiceId(invoiceId)
+				.orgBankAccountId(orgBankAccountId)
+				.currencyId(payAmt.getCurrencyId())
+				.payAmt(payAmt.toBigDecimal())
+				.discountAmt(discountAmt.toBigDecimal())
+				.dateTrx(dateTrx)
+				.dateAcct(dateAcct)
+				.isAutoAllocateAvailableAmt(false)
+				.createDraft();
 
-		final boolean isReceipt = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsReceipt);
+		row.getAsOptionalIdentifier().ifPresent(identifier -> paymentTable.put(identifier, payment));
+	}
 
-		final String bpBankAccountIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BP_BankAccount.Table_Name + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_BP_BankAccount bpBankAccount = bpBankAccountTable.get(bpBankAccountIdentifier);
+	@NonNull
+	public BankAccountId retrieveDefaultOrgBankAccountId(
+			@NonNull final OrgId orgId,
+			@NonNull final CurrencyId currencyId)
+	{
+		final BPartnerId orgBPartnerId = bpartnerOrgBL.retrieveLinkedBPartnerId(orgId)
+				.orElseThrow(() -> new AdempiereException("No linked BPartner found for " + orgId));
 
-		final I_C_Payment payment = InterfaceWrapperHelper.newInstance(I_C_Payment.class);
-
-		payment.setC_BPartner_ID(bPartnerId);
-		payment.setPayAmt(paymentAmount);
-		payment.setC_Currency_ID(currencyId.getRepoId());
-		payment.setC_DocType_ID(docTypeId.getRepoId());
-		payment.setC_BP_BankAccount_ID(bpBankAccount.getC_BP_BankAccount_ID());
-		payment.setIsReceipt(isReceipt);
-		payment.setIsAutoAllocateAvailableAmt(false);
-
-		final Timestamp dateTrx = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateTrx);
-		payment.setDateTrx(CoalesceUtil.coalesceNotNull(dateTrx, TimeUtil.asTimestamp(LocalDate.now())));
-
-		final Timestamp dateAcct = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateAcct);
-		payment.setDateAcct(CoalesceUtil.coalesceNotNull(dateAcct, TimeUtil.asTimestamp(LocalDate.now())));
-
-		final BigDecimal discountAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_DiscountAmt);
-		if(discountAmt != null)
-		{
-			payment.setDiscountAmt(discountAmt);
-		}
-		final String invoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if(invoiceIdentifier != null)
-		{
-			final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
-			payment.setC_Invoice_ID(invoice.getC_Invoice_ID());
-		}
-
-
-		paymentDAO.save(payment);
-
-		final String paymentIdentifier = DataTableUtil.extractStringForColumnName(row, TABLECOLUMN_IDENTIFIER);
-		paymentTable.putOrReplace(paymentIdentifier, payment);
+		return bankAccountDAO.retrieveBankAccountsForPartnerAndCurrency(orgBPartnerId, currencyId)
+				.stream()
+				.min(Comparator.comparing(I_C_BP_BankAccount::isDefault).reversed()
+						.thenComparing(I_C_BP_BankAccount::getC_BP_BankAccount_ID))
+				.map(bankAccount -> BankAccountId.ofRepoId(bankAccount.getC_BP_BankAccount_ID()))
+				.orElseThrow(() -> new AdempiereException("No C_BP_BankAccount found for " + orgBPartnerId + " and " + currencyId));
 	}
 }

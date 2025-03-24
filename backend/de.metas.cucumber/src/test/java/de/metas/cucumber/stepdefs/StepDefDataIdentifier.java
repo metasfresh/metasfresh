@@ -155,6 +155,12 @@ public final class StepDefDataIdentifier
 		{
 			return null;
 		}
+		return lookupNotNullIdIn(table);
+	}
+
+	@NonNull
+	public <ID extends RepoIdAware> ID lookupNotNullIdIn(@NonNull final StepDefDataGetIdAware<ID, ?> table)
+	{
 		return table.getId(this);
 	}
 
