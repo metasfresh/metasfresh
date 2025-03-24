@@ -53,16 +53,17 @@ public class BPBankAccountDAO implements IBPBankAccountDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	public List<BPartnerBankAccount> retrieveBankAccountsForPartnerAndCurrency(@NonNull final BPartnerId partnerID,
-																			  @Nullable final CurrencyId currencyID)
+	public List<BPartnerBankAccount> retrieveBankAccountsForPartnerAndCurrency(
+			@NonNull final BPartnerId bpartnerId,
+			@Nullable final CurrencyId currencyId)
 	{
 		final IQueryBuilder<I_C_BP_BankAccount> qb = queryBL
 				.createQueryBuilder(I_C_BP_BankAccount.class)
-				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, partnerID);
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, bpartnerId);
 
-		if (currencyID != null)
+		if (currencyId != null)
 		{
-			qb.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_Currency_ID, currencyID);
+			qb.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_Currency_ID, currencyId);
 		}
 
 		return qb.addOnlyActiveRecordsFilter()

@@ -23,12 +23,20 @@
 package de.metas.cucumber.stepdefs.paymentterm;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.payment.paymentterm.PaymentTermId;
 import org.compiere.model.I_C_PaymentTerm;
 
-public class C_PaymentTerm_StepDefData extends StepDefData<I_C_PaymentTerm>
+public class C_PaymentTerm_StepDefData extends StepDefData<I_C_PaymentTerm> implements StepDefDataGetIdAware<PaymentTermId, I_C_PaymentTerm>
 {
 	public C_PaymentTerm_StepDefData()
 	{
 		super(I_C_PaymentTerm.class);
+	}
+
+	@Override
+	public PaymentTermId extractIdFromRecord(final I_C_PaymentTerm record)
+	{
+		return PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
 	}
 }

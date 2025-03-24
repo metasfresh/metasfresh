@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs.allocation;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocateQuery;
@@ -33,7 +32,8 @@ import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
-import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.invoice.InvoiceAmtMultiplier;
@@ -58,11 +58,10 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Payment_ID;
 
@@ -94,11 +93,8 @@ public class AllocatePayments_StepDef
 	@And("^apply (.*) to invoices$")
 	public void apply_write_off_or_discount_to_invoice(final String processToApply, @NonNull final DataTable table)
 	{
-		final List<Map<String, String>> rows = table.asMaps();
-		for (final Map<String, String> dataTableRow : rows)
-		{
-			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+		DataTableRows.of(table).forEach(row -> {
+			final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
 
 			final InvoiceToAllocate invoiceToAllocate = getInvoiceToAllocate(invoice);
 
@@ -113,36 +109,24 @@ public class AllocatePayments_StepDef
 							.discountAmt(processToApply.equals(DISCOUNT_PROCESS) ? amountToDiscountOrWriteOff : null)
 							.writeOffAmt(processToApply.equals(WRITE_OFF_PROCESS) ? amountToDiscountOrWriteOff : null)
 							.build()));
-		}
+		});
 	}
 
 	@And("allocate payments to invoices")
 	public void allocate_payment_to_invoice(@NonNull final DataTable table)
 	{
-		final List<Map<String, String>> rows = table.asMaps();
+		final ArrayList<PayableDocument> payableDocuments = new ArrayList<>();
+		final ArrayList<PaymentDocument> paymentDocuments = new ArrayList<>();
 
-		final ImmutableList.Builder<PayableDocument> invoicesCollector = ImmutableList.builder();
-		final ImmutableList.Builder<PaymentDocument> paymentsCollector = ImmutableList.builder();
+		DataTableRows.of(table).forEach(row -> {
+			row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_ID)
+					.map(this::buildPayableDocument)
+					.ifPresent(payableDocuments::add);
 
-		for (final Map<String, String> dataTableRow : rows)
-		{
-			final String invoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-			if (invoiceIdentifier != null)
-			{
-				invoicesCollector.add(buildPayableDocument(invoiceIdentifier));
-			}
-
-			final String paymentIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_C_Payment_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-			if (paymentIdentifier != null)
-			{
-				paymentsCollector.add(buildPaymentDocument(paymentIdentifier));
-			}
-		}
-
-		final List<PaymentDocument> paymentDocuments = paymentsCollector.build();
-		final List<PayableDocument> payableDocuments = invoicesCollector.build();
+			row.getAsOptionalIdentifier(COLUMNNAME_C_Payment_ID)
+					.map(this::buildPaymentDocument)
+					.ifPresent(paymentDocuments::add);
+		});
 
 		PaymentAllocationBuilder.newBuilder()
 				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
@@ -158,29 +142,19 @@ public class AllocatePayments_StepDef
 	@And("^allocate invoices \\(credit memo/purchase\\) to invoices$")
 	public void allocate_credit_memo_to_invoice(@NonNull final DataTable table)
 	{
-		final List<Map<String, String>> rows = table.asMaps();
+		final ArrayList<PayableDocument> payableDocuments = new ArrayList<>();
 
-		final ImmutableList.Builder<PayableDocument> invoicesCollector = ImmutableList.builder();
-
-		for (final Map<String, String> dataTableRow : rows)
-		{
-			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-			invoicesCollector.add(buildPayableDocument(invoiceIdentifier));
-			
-			final String creditMemoIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.CreditMemo." + COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (creditMemoIdentifier != null)
-			{
-				invoicesCollector.add(buildPayableDocument(creditMemoIdentifier));
-			}
-
-			final String purchaseInvoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Purchase." + COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (purchaseInvoiceIdentifier != null)
-			{
-				invoicesCollector.add(buildPayableDocument(purchaseInvoiceIdentifier));
-			}
-		}
-
-		final List<PayableDocument> payableDocuments = invoicesCollector.build();
+		DataTableRows.of(table).forEach(row -> {
+			row.getAsOptionalIdentifier("C_Invoice_ID")
+					.map(this::buildPayableDocument)
+					.ifPresent(payableDocuments::add);
+			row.getAsOptionalIdentifier("CreditMemo.C_Invoice_ID")
+					.map(this::buildPayableDocument)
+					.ifPresent(payableDocuments::add);
+			row.getAsOptionalIdentifier("Purchase.C_Invoice_ID")
+					.map(this::buildPayableDocument)
+					.ifPresent(payableDocuments::add);
+		});
 
 		PaymentAllocationBuilder.newBuilder()
 				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
@@ -193,7 +167,7 @@ public class AllocatePayments_StepDef
 	}
 
 	@NonNull
-	private PayableDocument buildPayableDocument(@NonNull final String invoiceIdentifier)
+	private PayableDocument buildPayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier)
 	{
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
 
@@ -215,10 +189,10 @@ public class AllocatePayments_StepDef
 				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
 				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
 				.amountsToAllocate(AllocationAmounts.builder()
-										   .payAmt(payAmt)
-										   .discountAmt(discountAmt)
-										   .build()
-										   .convertToRealAmounts(invoiceToAllocate.getMultiplier()))
+						.payAmt(payAmt)
+						.discountAmt(discountAmt)
+						.build()
+						.convertToRealAmounts(invoiceToAllocate.getMultiplier()))
 				.build();
 	}
 
@@ -226,22 +200,23 @@ public class AllocatePayments_StepDef
 	private InvoiceToAllocate getInvoiceToAllocate(@NonNull final I_C_Invoice invoice)
 	{
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(invoice.getAD_Org_ID()));
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+		final List<InvoiceToAllocate> invoiceToAllocateList = paymentAllocationRepository.retrieveInvoicesToAllocate(
+				InvoiceToAllocateQuery.builder()
+						.evaluationDate(invoice.getDateInvoiced().toLocalDateTime().atZone(timeZone))
+						.onlyInvoiceId(invoiceId)
+						.build()
+		);
 
-		final InvoiceToAllocateQuery invoiceToAllocateQuery = InvoiceToAllocateQuery.builder()
-				.evaluationDate(invoice.getDateInvoiced().toLocalDateTime().atZone(timeZone))
-				.onlyInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-				.build();
-
-		final List<InvoiceToAllocate> invoiceToAllocateList = paymentAllocationRepository.retrieveInvoicesToAllocate(invoiceToAllocateQuery);
-
-		assertThat(invoiceToAllocateList.size()).isEqualTo(1)
-				.as("There should be just one 'InvoiceToAllocate' for a given C_Invoice_ID");
+		assertThat(invoiceToAllocateList)
+				.as("There should be just one 'InvoiceToAllocate' for a given C_Invoice_ID")
+				.hasSize(1);
 
 		return invoiceToAllocateList.get(0);
 	}
 
 	@NonNull
-	private PaymentDocument buildPaymentDocument(@NonNull final String paymentIdentifier)
+	private PaymentDocument buildPaymentDocument(@NonNull final StepDefDataIdentifier paymentIdentifier)
 	{
 		final I_C_Payment payment = paymentTable.get(paymentIdentifier);
 
@@ -277,8 +252,9 @@ public class AllocatePayments_StepDef
 
 		final List<PaymentToAllocate> paymentToAllocateList = paymentAllocationRepository.retrievePaymentsToAllocate(query);
 
-		assertThat(paymentToAllocateList.size()).isEqualTo(1)
-				.as("There should be just one 'PaymentToAllocate' for a given C_Payment_ID");
+		assertThat(paymentToAllocateList)
+				.as("There should be just one 'PaymentToAllocate' for a given C_Payment_ID")
+				.hasSize(1);
 
 		return paymentToAllocateList.get(0);
 	}

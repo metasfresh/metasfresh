@@ -23,15 +23,23 @@
 package de.metas.cucumber.stepdefs.docType;
 
 import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import de.metas.document.DocTypeId;
 import org.compiere.model.I_C_DocType;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
-public class C_DocType_StepDefData extends StepDefData<I_C_DocType>
+public class C_DocType_StepDefData extends StepDefData<I_C_DocType> implements StepDefDataGetIdAware<DocTypeId, I_C_DocType>
 {
 	public C_DocType_StepDefData()
 	{
 		super(I_C_DocType.class);
+	}
+
+	@Override
+	public DocTypeId extractIdFromRecord(final I_C_DocType record)
+	{
+		return DocTypeId.ofRepoId(record.getC_DocType_ID());
 	}
 }
