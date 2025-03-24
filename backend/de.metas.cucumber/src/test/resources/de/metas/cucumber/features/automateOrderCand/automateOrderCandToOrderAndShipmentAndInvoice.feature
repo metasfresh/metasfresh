@@ -13,6 +13,9 @@ Feature: Process order candidate and automatically generate shipment and invoice
     And preexisting test data is put into tableData
       | C_BPartner_ID.Identifier | C_BPartner_ID | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | M_Product_ID.Identifier | M_Product_ID |
       | bpartner_1               | 2156425       | bpartnerLocation_1                | 2205175                | product_1               | 2005577      |
+    And metasfresh contains organization bank accounts
+      | Identifier      | C_Currency_ID |
+      | org_EUR_account | EUR           |
 
   @from:cucumber
   @topic:orderCandidate
@@ -171,12 +174,9 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | C_BPartner_ID.Identifier | C_DunningLevel_ID.Identifier | OPT.M_SectionCode_ID.Identifier | Processed |
       | bpartner_1               | dunningLevel_S0150_100       | testSection_S0150_100           | N         |
 
-    And metasfresh contains C_BP_BankAccount
-      | Identifier       | C_BPartner_ID.Identifier | C_Currency.ISO_Code |
-      | bp_bank_account1 | bpartner_1               | EUR                 |
     And metasfresh contains C_Payment
-      | Identifier  | C_BPartner_ID.Identifier | PayAmt | C_Currency.ISO_Code | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier |
-      | payment_100 | bpartner_1               | 50     | EUR                 | Zahlungseingang   | true      | bp_bank_account1            |
+      | Identifier  | C_BPartner_ID | PayAmt | IsReceipt | C_BP_BankAccount_ID |
+      | payment_100 | bpartner_1    | 50 EUR | true      | org_EUR_account     |
     And the payment identified by payment_100 is completed
     And allocate payments to invoices
       | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier |
