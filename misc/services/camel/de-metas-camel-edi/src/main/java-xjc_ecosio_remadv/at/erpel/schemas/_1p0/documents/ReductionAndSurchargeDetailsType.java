@@ -7,6 +7,9 @@
 
 package at.erpel.schemas._1p0.documents;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import at.erpel.schemas._1p0.documents.ext.ReductionAndSurchargeDetailsExtensionType;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.annotation.XmlAccessType;
@@ -15,10 +18,6 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementRef;
 import jakarta.xml.bind.annotation.XmlElementRefs;
 import jakarta.xml.bind.annotation.XmlType;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**

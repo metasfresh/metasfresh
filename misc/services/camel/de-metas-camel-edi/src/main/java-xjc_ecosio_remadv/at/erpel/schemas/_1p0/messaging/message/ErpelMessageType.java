@@ -7,15 +7,14 @@
 
 package at.erpel.schemas._1p0.messaging.message;
 
+import java.util.ArrayList;
+import java.util.List;
 import at.erpel.schemas._1p0.documents.DocumentType;
 import at.erpel.schemas._1p0.messaging.header.ErpelBusinessDocumentHeaderType;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**

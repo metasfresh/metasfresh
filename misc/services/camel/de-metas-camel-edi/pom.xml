@@ -314,6 +314,7 @@
             </plugin>
 
             <plugin>
+                <!-- plugin found at https://github.com/highsource/jaxb-tools -->
                 <groupId>org.jvnet.jaxb</groupId>
                 <artifactId>jaxb-maven-plugin</artifactId>
                 <version>4.0.8</version>

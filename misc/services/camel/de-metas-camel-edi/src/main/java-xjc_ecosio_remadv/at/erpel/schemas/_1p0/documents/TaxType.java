@@ -7,14 +7,13 @@
 
 package at.erpel.schemas._1p0.documents;
 
+import java.util.ArrayList;
+import java.util.List;
 import at.erpel.schemas._1p0.documents.ext.TaxExtensionType;
 import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
