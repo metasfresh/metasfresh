@@ -2,13 +2,27 @@ package de.metas.product.impexp;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
+import de.metas.product.impexp.ProductsCache.Product;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.IUOMConversionDAO;
+import de.metas.uom.UOMConversionRate;
+import de.metas.uom.UomId;
+import de.metas.uom.UpdateUOMConversionRequest;
 import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_I_Product;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.ModelValidationEngine;
-import de.metas.product.impexp.ProductsCache.Product;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /*
@@ -33,24 +47,13 @@ import java.math.BigDecimal;
  * #L%
  */
 
-/* package */ class ProductImportHelper
+@Builder
+		/* package */ class ProductImportHelper
 {
-	public static ProductImportHelper newInstance()
-	{
-		return new ProductImportHelper();
-	}
-
-	private ProductImportProcess process;
-
-	private ProductImportHelper()
-	{
-	}
-
-	public ProductImportHelper setProcess(final ProductImportProcess process)
-	{
-		this.process = process;
-		return this;
-	}
+	@NonNull private static final Logger log = LogManager.getLogger(ProductImportHelper.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
+	@NonNull private final ProductImportProcess process;
 
 	public void importRecord(final ProductImportContext context)
 	{
@@ -73,7 +76,6 @@ import java.math.BigDecimal;
 			product = context.getCurrentProduct();
 			updateExistingProductNotSave(product.getRecord(), context.getCurrentImportRecord());
 		}
-
 
 		ModelValidationEngine.get().fireImportValidate(process, context.getCurrentImportRecord(), product.getRecord(), IImportInterceptor.TIMING_AFTER_IMPORT);
 
@@ -203,10 +205,63 @@ import java.math.BigDecimal;
 		product.setTrademark(importRecord.getTrademark());
 		product.setPZN(importRecord.getPZN());
 		product.setIsCommissioned(importRecord.isCommissioned());
-		product.setIsPurchased(importRecord.isPurchased());
 
 		return product;
 	}    // MProduct
 
+	public void createCatchWeightUOMConversion(@NonNull final I_I_Product importRecord)
+	{
+		final UomId fromUomId = UomId.ofRepoIdOrNull(importRecord.getQtyCU_UOM_ID());
+		if (fromUomId == null)
+		{
+			throw new AdempiereException(I_I_Product.COLUMNNAME_QtyCU_UOM_ID + " is mandatory for catch weight products");
+		}
 
+		final UomId toUomId = UomId.ofRepoId(importRecord.getC_UOM_ID());
+
+		if (fromUomId.equals(toUomId))
+		{
+			return;
+		}
+
+		final ProductId productId = ProductId.ofRepoId(importRecord.getM_Product_ID());
+		final UOMConversionRate productRate = uomConversionDAO.getProductConversions(productId).getRateIfExists(fromUomId, toUomId).orElse(null);
+		if (productRate != null)
+		{
+			final BigDecimal multiplierRate = extractMultiplierRate(importRecord);
+			uomConversionDAO.updateUOMConversion(UpdateUOMConversionRequest.builder()
+					.productId(productId)
+					.fromUomId(fromUomId)
+					.toUomId(toUomId)
+					.fromToMultiplier(multiplierRate != null ? multiplierRate : productRate.getFromToMultiplier())
+					.catchUOMForProduct(true) // make sure it's the catch UOM
+					.build());
+		}
+		else
+		{
+			BigDecimal multiplierRate = extractMultiplierRate(importRecord);
+			if (multiplierRate == null)
+			{
+				multiplierRate = uomConversionDAO.getGenericConversions().getRateIfExists(fromUomId, toUomId)
+						.map(UOMConversionRate::getFromToMultiplier)
+						.orElseThrow(() -> new AdempiereException("UOM Conversion rate not set and no generic conversion found for " + fromUomId + " -> " + toUomId + "!"));
+			}
+
+			uomConversionDAO.createUOMConversion(CreateUOMConversionRequest.builder()
+					.productId(productId)
+					.fromUomId(fromUomId)
+					.toUomId(toUomId)
+					.fromToMultiplier(multiplierRate)
+					.catchUOMForProduct(true) // make sure it's the catch UOM
+					.build());
+		}
+	}
+
+	@Nullable
+	private static BigDecimal extractMultiplierRate(final @NonNull I_I_Product importRecord)
+	{
+		return !InterfaceWrapperHelper.isNull(importRecord, I_I_Product.COLUMNNAME_UOM_MultiplierRate)
+				? importRecord.getUOM_MultiplierRate()
+				: null;
+	}
 }

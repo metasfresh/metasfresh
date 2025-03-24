@@ -24,6 +24,7 @@ package de.metas.cucumber;
 
 import de.metas.CommandLineParser;
 import de.metas.ServerBoot;
+import de.metas.acct.housekeeping.AddMissingAcctRecords;
 import de.metas.common.util.time.SystemTime;
 import de.metas.server.housekeep.SequenceCheckHouseKeepingTask;
 import de.metas.util.Services;
@@ -62,9 +63,9 @@ public class CucumberLifeCycleSupport
 			SystemTime.resetTimeSource();
 		}
 	}
-	
+
 	public static void beforeAll()
-			{
+	{
 		synchronized (CucumberLifeCycleSupport.class)
 		{
 			if (beforeAllMethodDone)
@@ -110,6 +111,7 @@ public class CucumberLifeCycleSupport
 			update_ReplicationProcessors();
 
 			SpringContextHolder.instance.getBean(SequenceCheckHouseKeepingTask.class).executeTask();
+			SpringContextHolder.instance.getBean(AddMissingAcctRecords.class).executeTask();
 
 			beforeAllMethodDone = true;
 		}

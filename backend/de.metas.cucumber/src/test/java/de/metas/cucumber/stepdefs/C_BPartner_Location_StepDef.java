@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationBL;
 import de.metas.util.Check;
@@ -53,6 +54,7 @@ import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID;
 
 public class C_BPartner_Location_StepDef
 {
+	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final C_Location_StepDefData locationTable;
@@ -60,7 +62,6 @@ public class C_BPartner_Location_StepDef
 	private final ILocationBL locationBL = Services.get(ILocationBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 
 	public C_BPartner_Location_StepDef(
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
@@ -143,8 +144,12 @@ public class C_BPartner_Location_StepDef
 		}
 		else
 		{
+			final CountryId countryId = row.getAsOptionalString("C_Country_ID")
+					.map(countryDAO::getCountryIdByCountryCode)
+					.orElse(StepDefConstants.COUNTRY_ID);
+
 			locationRecord = InterfaceWrapperHelper.newInstance(I_C_Location.class);
-			locationRecord.setC_Country_ID(StepDefConstants.COUNTRY_ID.getRepoId());
+			locationRecord.setC_Country_ID(countryId.getRepoId());
 		}
 
 		row.getAsOptionalString("CountryCode")
@@ -192,7 +197,7 @@ public class C_BPartner_Location_StepDef
 
 	private void load_bpartner_location(@NonNull final DataTableRow tableRow)
 	{
-		final String bpartnerLocationIdentifier = tableRow.getAsIdentifier(COLUMNNAME_C_BPartner_Location_ID+"." + StepDefDataIdentifier.SUFFIX).getAsString();
+		final String bpartnerLocationIdentifier = tableRow.getAsIdentifier(COLUMNNAME_C_BPartner_Location_ID + "." + StepDefDataIdentifier.SUFFIX).getAsString();
 
 		final int id = tableRow.getAsOptionalInt(COLUMNNAME_C_BPartner_Location_ID).orElse(-1);
 		if (id > 0)

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.frontend-testing
+ * de.metas.handlingunits.base
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,17 +20,24 @@
  * #L%
  */
 
-package de.metas.frontend_testing.masterdata.resource;
+package de.metas.handlingunits.impl;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
-@Jacksonized
-public class JsonResourceRequest
+public class CreateTUPackingInstructionsRequest
 {
-	@NonNull String manufacturingResourceTypeCode;
+	@NonNull String name;
+	@NonNull ProductId productId;
+	@Nullable BPartnerId bpartnerId;
+	@NonNull Quantity qtyCU;
+	boolean isDefault;
 }

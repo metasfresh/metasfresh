@@ -500,6 +500,16 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 	@Override
 	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull final I_M_HU_PI_Version version,
+			@Nullable HUItemType itemType,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		final List<I_M_HU_PI_Item> piItems = retrievePIItems(version, itemType != null ? itemType.getCode() : null, bpartnerId, null);
+		return !piItems.isEmpty() ? Optional.of(piItems.get(0)) : Optional.empty();
+	}
+
+	@Override
+	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
 			@NonNull final HuPackingInstructionsId piId,
 			@NonNull final HuPackingInstructionsId includedPIId,
 			@Nullable final BPartnerId bpartnerId)
@@ -1268,5 +1278,15 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.iterate(getById(huId));
 
 		return huIdAndDownstream.build();
+	}
+
+	@Override
+	public void createTUPackingInstructions(CreateTUPackingInstructionsRequest request)
+	{
+		CreateTUPackingInstructionsCommand.builder()
+				.handlingUnitsDAO(this)
+				.request(request)
+				.build()
+				.execute();
 	}
 }

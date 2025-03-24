@@ -68,6 +68,7 @@ public class JsonPickingJobLine
 	@NonNull BigDecimal qtyPickedOrRejected;
 	@NonNull BigDecimal qtyRemainingToPick;
 	@Nullable String catchWeightUOM;
+	@Nullable JsonPickFromManufacturingOrder pickFromManufacturingOrder;
 	@NonNull List<JsonPickingJobStep> steps;
 	boolean allowPickingAnyHU;
 	@NonNull JsonCompleteStatus completeStatus;
@@ -126,6 +127,9 @@ public class JsonPickingJobLine
 				.qtyPickedOrRejected(qtyPicked.add(qtyRejected))
 				.qtyRemainingToPick(qtyRemainingToPick)
 				.catchWeightUOM(line.getCatchUomId() != null ? getUOMSymbolById.apply(line.getCatchUomId()).translate(adLanguage) : null)
+				.pickFromManufacturingOrder(line.getPickFromManufacturingOrderId() != null
+						? JsonPickFromManufacturingOrder.ofPPOrderId(line.getPickFromManufacturingOrderId())
+						: null)
 				.steps(line.getSteps()
 						.stream()
 						.map(step -> JsonPickingJobStep.of(step, jsonOpts, getUOMSymbolById))

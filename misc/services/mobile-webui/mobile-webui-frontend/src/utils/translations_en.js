@@ -88,6 +88,7 @@ const translations = {
     },
     picking: {
       PickingLine: 'Picking Line',
+      PickFromManufacturingOrder: 'Manufacture',
       PickHU: 'Pick HU',
       scanQRCode: 'Scan QR',
       notEligibleHUBarcode: 'HU barcode not matching',

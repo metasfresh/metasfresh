@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.frontend-testing
+ * de.metas.business
  * %%
  * Copyright (C) 2025 metas GmbH
  * %%
@@ -20,17 +20,12 @@
  * #L%
  */
 
-package de.metas.frontend_testing.masterdata.resource;
+package de.metas.product.impexp;
 
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
+import org.compiere.model.I_I_Product;
 
-@Value
-@Builder
-@Jacksonized
-public class JsonResourceResponse
+public interface ProductImportProcessListener
 {
-	@NonNull String code;
+	void afterRecordImport(@NonNull final I_I_Product importRecord);
 }

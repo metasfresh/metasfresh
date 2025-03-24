@@ -5,6 +5,7 @@ import { ReceiptReceiveTargetScreen } from './ReceiptReceiveTargetScreen';
 import { GetQuantityDialog } from '../../picking/GetQuantityDialog';
 import { ReceiptNewHUScreen } from './ReceiptNewHUScreen';
 import { ManufacturingJobScreen } from '../ManufacturingJobScreen';
+import { ManufacturingReceiptScanScreen } from './ManufacturingReceiptScanScreen';
 
 const NAME = 'MaterialReceiptLineScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -32,10 +33,24 @@ export const MaterialReceiptLineScreen = {
         await MaterialReceiptLineScreen.waitForScreen();
     }),
 
-    receiveQty: async ({ qtyEntered, expectQtyEntered }) => await test.step(`${NAME} - Receive qty ${qtyEntered}`, async () => {
+    selectNewTUTarget: async ({ tuPIItemProductTestId }) => await test.step(`${NAME} - Select New TU target "${tuPIItemProductTestId}"`, async () => {
+        await MaterialReceiptLineScreen.clickReceiveTargetButton();
+        await ReceiptReceiveTargetScreen.clickNewHUButton();
+        await ReceiptNewHUScreen.clickTUTarget({ tuPIItemProductTestId });
+        await MaterialReceiptLineScreen.waitForScreen();
+    }),
+
+    selectExistingHUTarget: async ({ huQRCode }) => await test.step(`${NAME} - Select existing HU target`, async () => {
+        await MaterialReceiptLineScreen.clickReceiveTargetButton();
+        await ReceiptReceiveTargetScreen.clickExistingHUButton();
+        await ManufacturingReceiptScanScreen.typeQRCode(huQRCode);
+        await MaterialReceiptLineScreen.waitForScreen();
+    }),
+
+    receiveQty: async ({ qtyEntered, expectQtyEntered }) => await test.step(`${NAME} - Receive qty ${qtyEntered ? qtyEntered : ''}`, async () => {
         await page.getByTestId('receive-qty-button').tap();
         await GetQuantityDialog.fillAndPressDone({ expectQtyEntered, qtyEntered });
-        await MaterialReceiptLineScreen.waitForScreen(); // while processing
+        // await MaterialReceiptLineScreen.waitForScreen(); // while processing
         await ManufacturingJobScreen.waitForScreen(); // final screen
     }),
 };

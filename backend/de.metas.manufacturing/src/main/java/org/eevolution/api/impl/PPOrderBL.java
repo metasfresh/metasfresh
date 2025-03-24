@@ -115,6 +115,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -380,6 +381,18 @@ public class PPOrderBL implements IPPOrderBL
 		// ppOrdersRepo.save(ppOrder);
 
 		documentBL.processEx(ppOrder, X_PP_Order.DOCACTION_Close);
+	}
+
+	@Override
+	public void closeOrdersByIds(@NonNull final Set<PPOrderId> ppOrderIds)
+	{
+		if (ppOrderIds.isEmpty())
+		{
+			return;
+		}
+
+		final List<I_PP_Order> ppOrders = ppOrdersRepo.getByIds(ppOrderIds);
+		ppOrders.forEach(this::closeOrder);
 	}
 
 	@Override

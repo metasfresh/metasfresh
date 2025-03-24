@@ -7,11 +7,13 @@ import de.metas.costing.CostingMethod;
 import de.metas.costing.ICostElementRepository;
 import de.metas.costing.ICurrentCostsRepository;
 import de.metas.i18n.AdMessageKey;
+import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -21,6 +23,7 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.model.X_C_AcctSchema;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 /*
  * #%L
@@ -47,10 +50,14 @@ import org.compiere.util.Env;
 @Interceptor(I_C_AcctSchema.class)
 public class C_AcctSchema
 {
+	private static final Logger logger = LogManager.getLogger(C_AcctSchema.class);
+	
 	private final ICostElementRepository costElementRepo;
 	private final ICurrentCostsRepository currentCostsRepository;
 
 	private final static AdMessageKey MSG_ACCT_SCHEMA_HAS_ASSOCIATED_COSTS = AdMessageKey.of("de.metas.acct.AcctSchema.hasCosts");
+	
+	public static final ModelDynAttributeAccessor<I_C_AcctSchema, Boolean> DISABLE_CHECK_CURRENCY = new ModelDynAttributeAccessor<>("DISABLE_CHECK_CURRENCY", Boolean.class);
 
 	public C_AcctSchema(
 			@NonNull final ICostElementRepository costElementRepo,
@@ -120,6 +127,12 @@ public class C_AcctSchema
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_AcctSchema.COLUMNNAME_C_Currency_ID)
 	public void checkCurrency(final I_C_AcctSchema acctSchema)
 	{
+		if(DISABLE_CHECK_CURRENCY.getValue(acctSchema, Boolean.FALSE))
+		{
+			logger.debug("Skip currency check for {} because of dynamic attribute {}", acctSchema, DISABLE_CHECK_CURRENCY);
+			return;
+		}
+		
 		final PO po = InterfaceWrapperHelper.getPO(acctSchema);
 
 		final CurrencyId previousCurrencyId = CurrencyId.ofRepoIdOrNull(po.get_ValueOldAsInt(I_C_AcctSchema.COLUMNNAME_C_Currency_ID));

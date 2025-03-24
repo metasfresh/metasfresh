@@ -20,26 +20,29 @@ import ScanAndValidateActivity, {
 } from '../activities/scan/ScanAndValidateActivity';
 import { useScreenDefinition } from '../../hooks/useScreenDefinition';
 import { appLaunchersLocation } from '../../routes/launchers';
+import { useMobileLocation } from '../../hooks/useMobileLocation';
 
 const WFProcessScreen = () => {
-  const { url, applicationId, wfProcessId } = useScreenDefinition({
-    screenId: 'WFProcessScreen',
-    back: appLaunchersLocation,
-    isHomeStop: true,
-  });
-
-  const { iconClassNames: appIconClassName } = useApplicationInfo({ applicationId });
-
-  const { activities, isAllowAbort, headerProperties } = useSelector(
+  const { wfProcessId } = useMobileLocation();
+  const { parentUrl, activities, isAllowAbort, headerProperties } = useSelector(
     (state) => getPropsFromState({ state, wfProcessId }),
     shallowEqual
   );
+
+  const { url, applicationId } = useScreenDefinition({
+    screenId: 'WFProcessScreen',
+    back: parentUrl ? parentUrl : appLaunchersLocation,
+    isHomeStop: true,
+  });
+
+  const { iconClassNames: appIconClassName, caption: appCaption } = useApplicationInfo({ applicationId });
 
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(
       updateHeaderEntry({
         location: url,
+        caption: appCaption,
         values: headerProperties,
         homeIconClassName: appIconClassName,
       })
@@ -167,6 +170,7 @@ const getPropsFromState = ({ state, wfProcessId }) => {
   const wfProcess = getWfProcess(state, wfProcessId);
 
   return {
+    parentUrl: wfProcess?.parent?.url,
     headerProperties: wfProcess?.headerProperties?.entries ?? [],
     activities: wfProcess ? getActivitiesInOrder(wfProcess) : [],
     isAllowAbort: !!wfProcess?.isAllowAbort,

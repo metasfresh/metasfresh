@@ -53,6 +53,18 @@ public class JsonManufacturingOrderEvent
 
 	@Nullable ReceiveFrom receiveFrom;
 
+	@Value
+	@Builder
+	@Jacksonized
+	public static class PickTo
+	{
+		@NonNull String wfProcessId;
+		@NonNull String activityId;
+		@NonNull String lineId;
+	}
+
+	@Nullable PickTo pickTo;
+
 	@Builder
 	@Jacksonized
 	private JsonManufacturingOrderEvent(
@@ -60,7 +72,8 @@ public class JsonManufacturingOrderEvent
 			@NonNull final String wfActivityId,
 			//
 			@Nullable final IssueTo issueTo,
-			@Nullable final ReceiveFrom receiveFrom)
+			@Nullable final ReceiveFrom receiveFrom,
+			@Nullable final PickTo pickTo)
 	{
 		if (CoalesceUtil.countNotNulls(issueTo, receiveFrom) != 1)
 		{
@@ -72,5 +85,6 @@ public class JsonManufacturingOrderEvent
 
 		this.issueTo = issueTo;
 		this.receiveFrom = receiveFrom;
+		this.pickTo = pickTo;
 	}
 }
