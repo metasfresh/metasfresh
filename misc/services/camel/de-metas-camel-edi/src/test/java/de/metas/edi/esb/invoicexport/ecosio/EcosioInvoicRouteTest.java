@@ -29,9 +29,11 @@ import de.metas.edi.esb.jaxb.metasfresh.ObjectFactory;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.Unmarshaller;
+import lombok.NonNull;
 import org.apache.camel.EndpointInject;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
+import org.apache.camel.test.junit5.CamelContextConfiguration;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
 import org.xmlunit.assertj3.XmlAssert;
@@ -58,22 +60,24 @@ class EcosioInvoicRouteTest extends CamelTestSupport
 	}
 
 	@Override
-	protected Properties useOverridePropertiesWithPropertiesComponent()
+	public void configureContext(@NonNull final CamelContextConfiguration camelContextConfiguration)
 	{
-		final var properties = new Properties();
+		super.configureContext(camelContextConfiguration); // this is important
+
+		final Properties properties = new Properties();
 		try
 		{
 			properties.load(EcosioInvoicRouteTest.class.getClassLoader().getResourceAsStream("application.properties"));
 			properties.setProperty(EcosioInvoicRoute.OUTPUT_INVOIC_LOCAL, "mock:fileOutputEndpoint");
 			properties.setProperty(Constants.EP_AMQP_TO_MF, "mock:ep.rabbitmq.to.mf");
-			return properties;
 		}
 		catch (final IOException e)
 		{
 			throw new RuntimeException(e);
 		}
+		camelContextConfiguration.withUseOverridePropertiesWithPropertiesComponent(properties);
 	}
-
+	
 	@Test
 	void empty_invoic() throws Exception
 	{
