@@ -64,7 +64,7 @@ public class CompuDataInvoicRoute extends AbstractEDIRoute
 	@Override
 	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
 	{
-		final SmooksDataFormat sdf = getSDFForConfiguration("edi.smooks.config.xml.invoic");
+		final SmooksDataFormat sdf = getSDFForConfiguration("edi.smooks.config.xml.invoic.compudata");
 		sdf.setCamelContext(getContext());
 
 		// FRESH-360: provide our own converter, so we don't anymore need to rely on the system's default charset when writing the EDI data to file.
