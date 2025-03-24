@@ -15,8 +15,10 @@ public interface IDocTypeBL extends ISingletonService
 	@NonNull
 	I_C_DocType getByIdInTrx(@NonNull DocTypeId docTypeId);
 
-
 	DocTypeId getDocTypeIdOrNull(DocTypeQuery docTypeQuery);
+
+	@NonNull
+	DocTypeId getDocTypeId(DocTypeQuery docTypeQuery);
 
 	@NonNull
 	ImmutableSet<DocTypeId> getDocTypeIdsByInvoicingPoolId(@NonNull DocTypeInvoicingPoolId docTypeInvoicingPoolId);
@@ -37,6 +39,7 @@ public interface IDocTypeBL extends ISingletonService
 	 * @return true if it's a sales cost estimate
 	 */
 	boolean isSalesCostEstimate(I_C_DocType dt);
+
 	/**
 	 * @return true if it's a sales proposal (Not binding)
 	 */

@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,26 +20,24 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.doctype;
+package de.metas.cucumber.stepdefs.project;
 
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
-import de.metas.document.DocTypeId;
-import org.compiere.model.I_C_DocType;
+import de.metas.project.ProjectId;
+import org.compiere.model.I_C_Project;
 
-/**
- * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
- */
-public class C_DocType_StepDefData extends StepDefData<I_C_DocType> implements StepDefDataGetIdAware<DocTypeId, I_C_DocType>
+public class C_Project_StepDefData extends StepDefData<I_C_Project>
+		implements StepDefDataGetIdAware<ProjectId, I_C_Project>
 {
-	public C_DocType_StepDefData()
+	public C_Project_StepDefData()
 	{
-		super(I_C_DocType.class);
+		super(I_C_Project.class);
 	}
 
 	@Override
-	public DocTypeId extractIdFromRecord(final I_C_DocType record)
+	public ProjectId extractIdFromRecord(final I_C_Project record)
 	{
-		return DocTypeId.ofRepoId(record.getC_DocType_ID());
+		return ProjectId.ofRepoId(record.getC_Project_ID());
 	}
 }

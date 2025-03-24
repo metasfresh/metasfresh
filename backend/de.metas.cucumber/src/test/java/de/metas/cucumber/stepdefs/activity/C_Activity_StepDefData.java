@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2023 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,26 +20,18 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.doctype;
+package de.metas.cucumber.stepdefs.activity;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
-import de.metas.document.DocTypeId;
-import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Activity;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
-public class C_DocType_StepDefData extends StepDefData<I_C_DocType> implements StepDefDataGetIdAware<DocTypeId, I_C_DocType>
+public class C_Activity_StepDefData extends StepDefData<I_C_Activity>
 {
-	public C_DocType_StepDefData()
+	public C_Activity_StepDefData()
 	{
-		super(I_C_DocType.class);
-	}
-
-	@Override
-	public DocTypeId extractIdFromRecord(final I_C_DocType record)
-	{
-		return DocTypeId.ofRepoId(record.getC_DocType_ID());
+		super(I_C_Activity.class);
 	}
 }
