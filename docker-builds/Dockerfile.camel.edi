@@ -9,18 +9,25 @@ FROM metasfresh/metas-mvn-camel:$REFNAME as camel
 
 FROM openjdk:17-jdk-alpine
 
-RUN apk update && apk upgrade && apk add bash && apk add curl && apk add dos2unix --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/community/ --allow-untrusted
+RUN apk update && apk upgrade && apk add bash && apk add curl && apk add zip && apk add dos2unix --update-cache --repository http://dl-3.alpinelinux.org/alpine/edge/community/ --allow-untrusted
 
-COPY --from=camel /camel/de-metas-camel-edi/target/de-metas-camel-edi-exec.jar /opt/metasfresh-esb-camel/
-COPY --from=camel /camel/de-metas-camel-edi/start_esb-camel_docker.sh /opt/metasfresh-esb-camel/
+WORKDIR /opt/metasfresh-esb-camel/
+
+COPY --from=camel /camel/de-metas-camel-edi/target/de-metas-camel-edi-exec.jar .
+COPY --from=camel /camel/de-metas-camel-edi/start_esb-camel_docker.sh .
 
 # get the APM agent binary
 # the preceeding COPY created the target folder on-the-fly
 RUN curl -s -o /opt/metasfresh-esb-camel/elastic-apm-agent.jar https://repo1.maven.org/maven2/co/elastic/apm/elastic-apm-agent/1.17.0/elastic-apm-agent-1.17.0.jar
 
-RUN dos2unix /opt/metasfresh-esb-camel/start_esb-camel_docker.sh
+RUN dos2unix start_esb-camel_docker.sh
 
-RUN chmod 700 /opt/metasfresh-esb-camel/start_esb-camel_docker.sh
-RUN sh -c 'touch /opt/metasfresh-esb-camel/de-metas-edi-esb-camel.jar'
+RUN chmod 700 start_esb-camel_docker.sh
+RUN sh -c 'touch de-metas-edi-esb-camel.jar'
+
+# repackage version information
+COPY docker-builds/metadata/build-info.properties META-INF/
+COPY docker-builds/metadata/git.properties BOOT-INF/classes/
+RUN zip -g de-metas-camel-edi-exec.jar META-INF/build-info.properties BOOT-INF/classes/git.properties
 
 ENTRYPOINT ["/opt/metasfresh-esb-camel/start_esb-camel_docker.sh"]
