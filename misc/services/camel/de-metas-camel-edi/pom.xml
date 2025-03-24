@@ -202,7 +202,6 @@
             <groupId>org.apache.camel.springboot</groupId>
             <artifactId>camel-smooks-starter</artifactId>
             <version>${camel.version}</version>
-            <!-- use the same version as your Camel core version -->
         </dependency>
 
         <dependency>

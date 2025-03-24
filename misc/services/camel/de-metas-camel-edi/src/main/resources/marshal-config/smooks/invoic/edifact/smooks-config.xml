@@ -25,7 +25,6 @@
                       xmlns:core="https://www.smooks.org/xsd/smooks/smooks-core-1.6.xsd"
                       xmlns:edifact="https://www.smooks.org/xsd/smooks/edifact-2.0.xsd">
     
-    <!-- Apply a pipeline on the root event and replace the XML result produced from <edifact:parser .../> with the pipeline EDIFACT result. -->
     <core:smooks filterSourceOn="/Interchange">
         <core:action>
             <core:inline>
