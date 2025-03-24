@@ -73,27 +73,7 @@ public class C_AllocationLine_StepDef
 				.create()
 				.firstOnlyNotNull(I_C_AllocationLine.class);
 
-		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_Amount)
-				.ifPresent(amount -> assertThat(singleAllocationLine.getAmount()).isEqualTo(amount));
-		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_DiscountAmt)
-				.ifPresent(amount -> assertThat(singleAllocationLine.getDiscountAmt()).isEqualTo(amount));
-		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_WriteOffAmt)
-				.ifPresent(amount -> assertThat(singleAllocationLine.getWriteOffAmt()).isEqualTo(amount));
-		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_OverUnderAmt)
-				.ifPresent(amount -> assertThat(singleAllocationLine.getOverUnderAmt()).isEqualTo(amount));
-
-		row.getAsOptionalIdentifier(I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID)
-				.ifPresent(allocationIdentifier -> allocationHdrTable.putOrReplaceIfSameId(allocationIdentifier, singleAllocationLine.getC_AllocationHdr()));
-	}
-
-	@And("there are no allocation lines for invoice")
-	public void invoices_are_not_allocated(@NonNull final DataTable table)
-	{
-		DataTableRows.of(table).forEach(row -> {
-			final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
-			final List<I_C_AllocationLine> allocationLines = allocationDAO.retrieveAllocationLines(invoice);
-			assertThat(allocationLines).isEmpty();
-		});
+		validateAllocationLine(singleAllocationLine, row);
 	}
 
 	@And("^validate C_AllocationLines for invoice (.*)$")
@@ -110,43 +90,41 @@ public class C_AllocationLine_StepDef
 				.create()
 				.listImmutable(I_C_AllocationLine.class);
 
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (int index = 0; index < rows.size(); index++)
-		{
-			validateAllocationLine(allocationLines.get(index), rows.get(index));
-		}
+		assertThat(allocationLines).hasSameSizeAs(dataTable.asMaps());
+
+		DataTableRows.of(dataTable)
+				.forEach((row, index) -> validateAllocationLine(allocationLines.get(index), row));
+	}
+
+	@And("there are no allocation lines for invoice")
+	public void invoices_are_not_allocated(@NonNull final DataTable table)
+	{
+		DataTableRows.of(table).forEach(row -> {
+			final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
+			final List<I_C_AllocationLine> allocationLines = allocationDAO.retrieveAllocationLines(invoice);
+			assertThat(allocationLines).isEmpty();
+		});
 	}
 
 	private void validateAllocationLine(
 			@NonNull final I_C_AllocationLine allocationLine,
-			@NonNull final Map<String, String> dataTableRow)
+			@NonNull final DataTableRow row)
 	{
-		final BigDecimal amount = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_C_AllocationLine.COLUMNNAME_Amount);
-		final BigDecimal overUnderAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_C_AllocationLine.COLUMNNAME_OverUnderAmt);
-		final BigDecimal writeOffAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_C_AllocationLine.COLUMNNAME_WriteOffAmt);
-		final BigDecimal discountAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_C_AllocationLine.COLUMNNAME_DiscountAmt);
-
 		final SoftAssertions softly = new SoftAssertions();
 
-		if (amount != null)
-		{
-			softly.assertThat(allocationLine.getAmount()).isEqualTo(amount);
-		}
-
-		if (overUnderAmt != null)
-		{
-			softly.assertThat(allocationLine.getOverUnderAmt()).isEqualTo(overUnderAmt);
-		}
-
-		if (writeOffAmt != null)
-		{
-			softly.assertThat(allocationLine.getWriteOffAmt()).isEqualTo(writeOffAmt);
-		}
-		if (discountAmt != null)
-		{
-			softly.assertThat(allocationLine.getDiscountAmt()).isEqualTo(discountAmt);
-		}
+		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_Amount)
+				.ifPresent(amount -> softly.assertThat(allocationLine.getAmount()).as("Amount").isEqualTo(amount));
+		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_DiscountAmt)
+				.ifPresent(amount -> softly.assertThat(allocationLine.getDiscountAmt()).as("DiscountAmt").isEqualTo(amount));
+		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_WriteOffAmt)
+				.ifPresent(amount -> softly.assertThat(allocationLine.getWriteOffAmt()).as("WriteOffAmt").isEqualTo(amount));
+		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_OverUnderAmt)
+				.ifPresent(amount -> softly.assertThat(allocationLine.getOverUnderAmt()).as("OverUnderAmt").isEqualTo(amount));
 
 		softly.assertAll();
+
+		row.getAsOptionalIdentifier(I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID)
+				.ifPresent(allocationIdentifier -> allocationHdrTable.putOrReplaceIfSameId(allocationIdentifier, allocationLine.getC_AllocationHdr()));
+
 	}
 }

@@ -27,23 +27,35 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocateQuery;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
+import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider.ProviderResult;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
+import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
+import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -55,10 +67,9 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
@@ -67,12 +78,11 @@ import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
-import de.metas.process.PInstanceId;
 import de.metas.util.Check;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
-import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
@@ -82,7 +92,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
-import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_ConversionType;
 import org.compiere.model.I_C_Currency;
@@ -91,9 +101,9 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_Invoice;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
@@ -109,7 +119,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID;
@@ -118,6 +127,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Q
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_AD_User_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_ConversionType_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Currency_ID;
@@ -127,6 +137,7 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateAcct;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateInvoiced;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DateOrdered;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_DocStatus;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_DocumentNo;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_ExternalId;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_GrandTotal;
@@ -136,8 +147,6 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_IsSOTrx;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_POReference;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_TotalLines;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID;
-import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_PriceEntered;
-import static org.compiere.model.I_C_Order.COLUMNNAME_AD_User_ID;
 
 @RequiredArgsConstructor
 public class C_Invoice_StepDef
@@ -147,13 +156,13 @@ public class C_Invoice_StepDef
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 	private final PaymentAllocationRepository paymentAllocationRepository = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_InvoiceLine_StepDefData invoiceLineTable;
@@ -163,21 +172,16 @@ public class C_Invoice_StepDef
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final AD_User_StepDefData userTable;
+	private final C_Project_StepDefData projectTable;
+	private final C_Activity_StepDefData activityTable;
 	private final C_DocType_StepDefData docTypeTable;
 	private final M_Warehouse_StepDefData warehouseTable;
+	private final C_PaymentTerm_StepDefData paymentTermTable;
 
 	@And("validate created invoices")
 	public void validate_created_invoices(@NonNull final DataTable table)
 	{
-		final List<Map<String, String>> dataTable = table.asMaps();
-		for (final Map<String, String> row : dataTable)
-		{
-			final String identifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-			final I_C_Invoice invoice = invoiceTable.get(identifier);
-
-			validateInvoice(invoice, row);
-		}
+		DataTableRows.of(table).forEach(this::validateInvoice);
 	}
 
 	@And("^the invoice identified by (.*) is (completed|reversed|voided)$")
@@ -231,7 +235,7 @@ public class C_Invoice_StepDef
 			final I_C_Invoice invoice = InterfaceWrapperHelper.load(invoiceLine.getC_Invoice_ID(), I_C_Invoice.class);
 			assertThat(invoice).isNotNull();
 
-			final String docStatus = DataTableUtil.extractStringForColumnName(row, I_C_Invoice.COLUMNNAME_DocStatus);
+			final String docStatus = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_DocStatus);
 			assertThat(invoice.getDocStatus()).isEqualTo(docStatus);
 
 			final String orderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -255,163 +259,125 @@ public class C_Invoice_StepDef
 		}
 	}
 
-	@Deprecated
-	@Then("^enqueue candidate for invoicing and after not more than (.*)s, the invoice is found$")
-	public void generateInvoice(final int timeoutSec, @NonNull final DataTable table) throws InterruptedException
-	{
-		final Map<String, String> row = table.asMaps().get(0);
-
-		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Order.COLUMNNAME_C_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_C_Order orderRecord = orderTable.get(orderIdentifier);
-		final OrderId targetOrderId = OrderId.ofRepoId(orderRecord.getC_Order_ID());
-
-		//make sure the given invoice candidate is ready for processing
-		StepDefUtil.tryAndWait(timeoutSec, 500, () -> isInvoiceCandidateReadyToBeProcessed(targetOrderId), () -> logCurrentContext(targetOrderId));
-
-		//enqueue invoice candidate
-		final I_C_Invoice_Candidate invoiceCandidateRecord = getFirstInvoiceCandidateByOrderId(targetOrderId);
-
-		assertThat(invoiceCandidateRecord).isNotNull();
-
-		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(ImmutableList.of(invoiceCandidateRecord.getC_Invoice_Candidate_ID()), null);
-
-		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-		invoicingParams.setIgnoreInvoiceSchedule(false);
-		invoicingParams.setSupplementMissingPaymentTermIds(true);
-
-		invoiceCandBL.enqueueForInvoicing()
-				.setContext(Env.getCtx())
-				.setFailIfNothingEnqueued(true)
-				.setInvoicingParams(invoicingParams)
-				.prepareAndEnqueueSelection(invoiceCandidatesSelectionId);
-
-		//wait for the invoice to be created
-		final Supplier<Boolean> invoiceCreated = () ->
-		{
-			final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(com.google.common.collect.ImmutableList.of(targetOrderId));
-			if (invoices.isEmpty())
-			{
-				return false;
-			}
-			assertThat(invoices.size())
-					.as("There may be just 1 invoice for C_Order_ID.Identifier %s", orderIdentifier)
-					.isEqualTo(1);
-			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			invoiceTable.put(invoiceIdentifier, invoices.get(0));
-			return true;
-		};
-		StepDefUtil.tryAndWait(timeoutSec, 500, invoiceCreated);
-	}
-
 	@And("metasfresh contains C_Invoice:")
 	public void addC_Invoices(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : rows)
-		{
-			create_C_Invoice(dataTableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::create_C_Invoice);
 	}
 
 	@And("create credit memo for C_Invoice")
 	public void create_credit_memo_for_invoice(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : rows)
-		{
-			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName("CreditMemo")
+				.forEach(row -> {
+					final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
+					final BigDecimal creditMemoLineAmt = row.getAsBigDecimal("CreditMemo.PriceEntered");
+					final DocTypeId creditMemoDocTypeId = docTypeBL.getDocTypeId(
+							DocTypeQuery.builder()
+									.docBaseType(invoice.isSOTrx() ? DocBaseType.SalesCreditMemo : DocBaseType.PurchaseCreditMemo)
+									.docSubType(DocTypeQuery.DOCSUBTYPE_NONE)
+									.adClientId(invoice.getAD_Client_ID())
+									.adOrgId(invoice.getAD_Org_ID())
+									.build()
+					);
 
-			final BigDecimal creditMemoLineAmt = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, "CreditMemo." + COLUMNNAME_PriceEntered);
+					final InvoiceCreditContext creditCtx = InvoiceCreditContext.builder()
+							.docTypeId(creditMemoDocTypeId)
+							.completeAndAllocate(false)
+							.referenceOriginalOrder(false)
+							.referenceInvoice(true)
+							.creditedInvoiceReinvoicable(false).build();
 
-			final String creditMemoDocType = DataTableUtil.extractStringForColumnName(dataTableRow, "CreditMemo." + COLUMNNAME_C_DocType_ID + ".Name");
+					final I_C_Invoice creditMemo = invoiceBL.creditInvoice(InterfaceWrapperHelper.create(invoice, de.metas.adempiere.model.I_C_Invoice.class), creditCtx);
 
-			final DocTypeId creditMemoDocTypeId = queryBL.createQueryBuilder(I_C_DocType.class)
-					.addEqualsFilter(I_C_DocType.COLUMNNAME_Name, creditMemoDocType)
-					.orderBy(I_C_DocType.COLUMNNAME_Name)
-					.create()
-					.firstId(DocTypeId::ofRepoIdOrNull);
+					for (final de.metas.adempiere.model.I_C_InvoiceLine creditMemoLine : invoiceDAO.retrieveLines(InvoiceId.ofRepoId(creditMemo.getC_Invoice_ID())))
+					{
+						creditMemoLine.setPriceActual(creditMemoLineAmt);
 
-			final InvoiceCreditContext creditCtx = InvoiceCreditContext.builder()
-					.docTypeId(creditMemoDocTypeId)
-					.completeAndAllocate(false)
-					.referenceOriginalOrder(false)
-					.referenceInvoice(true)
-					.creditedInvoiceReinvoicable(false).build();
+						// dev note : manually triggering as callouts don't run in cucumber
+						invoiceLineBL.updatePrices(creditMemoLine);
+						invoiceBL.setLineNetAmt(creditMemoLine);
 
-			final I_C_Invoice creditMemo = invoiceBL.creditInvoice(InterfaceWrapperHelper.create(invoice, de.metas.adempiere.model.I_C_Invoice.class), creditCtx);
+						InterfaceWrapperHelper.save(creditMemoLine);
+					}
 
-			for (final de.metas.adempiere.model.I_C_InvoiceLine creditMemoLine : invoiceDAO.retrieveLines(InvoiceId.ofRepoId(creditMemo.getC_Invoice_ID())))
-			{
-				creditMemoLine.setPriceActual(creditMemoLineAmt);
-
-				// dev note : manually triggering as callouts don't run in cucumber
-				invoiceLineBL.updatePrices(creditMemoLine);
-				invoiceBL.setLineNetAmt(creditMemoLine);
-
-				InterfaceWrapperHelper.save(creditMemoLine);
-			}
-
-			final String creditMemoIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "CreditMemo." + TABLECOLUMN_IDENTIFIER);
-			invoiceTable.putOrReplace(creditMemoIdentifier, creditMemo);
-		}
+					row.getAsIdentifier().putOrReplace(invoiceTable, creditMemo);
+				});
 	}
 
-	private void validateInvoice(@NonNull final I_C_Invoice invoice, @NonNull final Map<String, String> row)
+	@And("^locate invoice by external id after not more than (.*)s and validate$")
+	public void locate_invoice_by_external_id(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
+		final SoftAssertions softly = new SoftAssertions();
+
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final I_C_Invoice invoice = StepDefUtil.tryAndWaitForItem(timeoutSec,
+					10000,
+					() -> findInvoiceByExternalIdAndCandidateCount(row));
+
+			final LocalDate dateInvoiced = DataTableUtil.extractLocalDateOrNullForColumnName(row, "OPT." + COLUMNNAME_DateInvoiced);
+
+			if (dateInvoiced != null)
+			{
+				softly.assertThat(TimeUtil.asLocalDate(invoice.getDateInvoiced(), ZonedDateTime.now().getZone())).as("DateInvoiced")
+						.isEqualTo(dateInvoiced);
+			}
+
+			final Integer numberOfCandidates = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT.NumberOfCandidates");
+
+			if (numberOfCandidates != null)
+			{
+				final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandDAO.retrieveInvoiceCandidates(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+
+				softly.assertThat(invoiceCandidates.size()).as("NumberOfInvoiceCandidates").isEqualTo(numberOfCandidates);
+			}
+		}
+
+		softly.assertAll();
+	}
+
+	private void validateInvoice(@NonNull final DataTableRow row)
+	{
+		final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
 		InterfaceWrapperHelper.refresh(invoice);
+		SharedTestContext.put("invoice", invoice);
 
 		final SoftAssertions softly = new SoftAssertions();
 
-		final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final Integer expectedBPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
-				.map(I_C_BPartner::getC_BPartner_ID)
-				.orElseGet(() -> Integer.parseInt(bpartnerIdentifier));
-		softly.assertThat(invoice.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(expectedBPartnerId);
+		final StepDefDataIdentifier bpartnerIdentifier = row.getAsIdentifier(COLUMNNAME_C_BPartner_ID);
+		final BPartnerId expectedBPartnerId = bpartnerTable.getIdOptional(bpartnerIdentifier)
+				.orElseGet(() -> bpartnerIdentifier.getAsId(BPartnerId.class));
+		softly.assertThat(invoice.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(expectedBPartnerId.getRepoId());
 
-		final String bpartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final StepDefDataIdentifier bpartnerLocationIdentifier = row.getAsIdentifier(COLUMNNAME_C_BPartner_Location_ID);
 		final Integer expectedBPartnerLocationId = bPartnerLocationTable.getOptional(bpartnerLocationIdentifier)
 				.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
-				.orElseGet(() -> Integer.parseInt(bpartnerLocationIdentifier));
+				.orElseGet(bpartnerLocationIdentifier::getAsInt);
 		softly.assertThat(invoice.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isEqualTo(expectedBPartnerLocationId);
 
-		final String poReference = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_POReference);
-		if (Check.isNotBlank(poReference))
-		{
-			softly.assertThat(invoice.getPOReference()).as("POReference").isEqualTo(poReference);
-		}
+		row.getAsOptionalString(COLUMNNAME_POReference)
+				.ifPresent(poReference -> softly.assertThat(invoice.getPOReference()).as("POReference").isEqualTo(poReference));
 
-		final String paymentTerm = DataTableUtil.extractStringOrNullForColumnName(row, "paymentTerm");
-		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
-		final String docStatus = DataTableUtil.extractStringForColumnName(row, "docStatus");
+		row.getAsOptionalBoolean("processed")
+				.ifPresent(processed -> softly.assertThat(invoice.isProcessed()).as("Processed").isEqualTo(processed));
+		row.getAsOptionalString("docStatus")
+				.ifPresent(docStatus -> softly.assertThat(invoice.getDocStatus()).as("DocStatus").isEqualTo(docStatus));
 
-		softly.assertThat(invoice.isProcessed()).as("Processed").isEqualTo(processed);
-		softly.assertThat(invoice.getDocStatus()).as("DocStatus").isEqualTo(docStatus);
+		extractPaymentTermId(row)
+				.ifPresent(paymentTermId -> softly.assertThat(PaymentTermId.ofRepoIdOrNull(invoice.getC_PaymentTerm_ID())).as("C_PaymentTerm_ID").isEqualTo(paymentTermId));
 
-		if (Check.isNotBlank(paymentTerm))
-		{
-			final PaymentTermQuery query = PaymentTermQuery.builder()
-					.orgId(StepDefConstants.ORG_ID)
-					.value(paymentTerm)
-					.build();
-			final PaymentTermId paymentTermId = paymentTermRepo.retrievePaymentTermId(query)
-					.orElse(null);
+		row.getAsOptionalString(I_C_DocType.COLUMNNAME_DocSubType)
+				.ifPresent(docSubType -> {
+					final int docTargetTypeId = invoice.getC_DocTypeTarget_ID();
+					final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
+							.addEqualsFilter(I_C_DocType.COLUMN_C_DocType_ID, docTargetTypeId)
+							.create()
+							.firstOnlyNotNull(I_C_DocType.class);
 
-			softly.assertThat(paymentTermId).as("C_PaymentTerm_ID").isNotNull();
-			softly.assertThat(invoice.getC_PaymentTerm_ID()).as("C_PaymentTerm_ID").isEqualTo(paymentTermId.getRepoId());
-		}
-
-		final String docSubType = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_DocType.COLUMNNAME_DocSubType);
-		if (Check.isNotBlank(docSubType))
-		{
-			final int docTargetTypeId = invoice.getC_DocTypeTarget_ID();
-			final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
-					.addEqualsFilter(I_C_DocType.COLUMN_C_DocType_ID, docTargetTypeId)
-					.create()
-					.firstOnlyNotNull(I_C_DocType.class);
-
-			softly.assertThat(docType.getDocSubType()).as("DocSubType").isEqualTo(docSubType);
-		}
+					softly.assertThat(docType.getDocSubType()).as("DocSubType").isEqualTo(docSubType);
+				});
 
 		final String bpartnerAddress = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_BPartnerAddress);
 		if (Check.isNotBlank(bpartnerAddress))
@@ -468,32 +434,27 @@ public class C_Invoice_StepDef
 			softly.assertThat(invoice.getC_Currency_ID()).as("CurrencyID").isEqualTo(currencyId.getRepoId());
 		}
 
-		final LocalDate dateInvoiced = DataTableUtil.extractLocalDateOrNullForColumnName(row, "OPT." + COLUMNNAME_DateInvoiced);
-		if (dateInvoiced != null)
-		{
-			final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
-			final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+		row.getAsOptionalLocalDate(COLUMNNAME_DateInvoiced)
+				.ifPresent(dateInvoiced -> {
+					final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
+					final ZoneId zoneId = orgDAO.getTimeZone(orgId);
 
-			softly.assertThat(TimeUtil.asLocalDate(invoice.getDateInvoiced(), zoneId)).isEqualTo(dateInvoiced);
-		}
+					softly.assertThat(TimeUtil.asLocalDate(invoice.getDateInvoiced(), zoneId)).isEqualTo(dateInvoiced);
+				});
+		row.getAsOptionalLocalDate(COLUMNNAME_DateAcct)
+				.ifPresent(dateAcct -> {
+					final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
+					final ZoneId zoneId = orgDAO.getTimeZone(orgId);
 
-		final LocalDate dateAcct = DataTableUtil.extractLocalDateOrNullForColumnName(row, "OPT." + COLUMNNAME_DateAcct);
-		if (dateAcct != null)
-		{
-			final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
-			final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+					softly.assertThat(TimeUtil.asLocalDate(invoice.getDateAcct(), zoneId)).isEqualTo(dateAcct);
+				});
+		row.getAsOptionalLocalDate(COLUMNNAME_DateOrdered)
+				.ifPresent(dateOrdered -> {
+					final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
+					final ZoneId zoneId = orgDAO.getTimeZone(orgId);
 
-			softly.assertThat(TimeUtil.asLocalDate(invoice.getDateAcct(), zoneId)).isEqualTo(dateAcct);
-		}
-
-		final LocalDate dateOrdered = DataTableUtil.extractLocalDateOrNullForColumnName(row, "OPT." + COLUMNNAME_DateOrdered);
-		if (dateOrdered != null)
-		{
-			final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
-			final ZoneId zoneId = orgDAO.getTimeZone(orgId);
-
-			softly.assertThat(TimeUtil.asLocalDate(invoice.getDateOrdered(), zoneId)).isEqualTo(dateOrdered);
-		}
+					softly.assertThat(TimeUtil.asLocalDate(invoice.getDateOrdered(), zoneId)).isEqualTo(dateOrdered);
+				});
 
 		final String externalId = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ExternalId);
 		if (Check.isNotBlank(externalId))
@@ -519,36 +480,42 @@ public class C_Invoice_StepDef
 			softly.assertThat(invoice.getC_DocTypeTarget_ID()).as(COLUMNNAME_C_DocTypeTarget_ID).isEqualTo(docTypeRecord.getC_DocType_ID());
 		}
 
-		final Boolean isSOTrx = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + COLUMNNAME_IsSOTrx);
-		if (isSOTrx != null)
+		row.getAsOptionalBoolean(COLUMNNAME_IsSOTrx)
+				.ifPresent(isSOTrx -> softly.assertThat(invoice.isSOTrx()).as(COLUMNNAME_IsSOTrx).isEqualTo(isSOTrx));
+
+		// payment related
 		{
-			softly.assertThat(invoice.isSOTrx()).as(COLUMNNAME_IsSOTrx).isEqualTo(isSOTrx);
+			row.getAsOptionalBoolean(COLUMNNAME_IsPaid)
+					.ifPresent(invoiceIsPaid -> softly.assertThat(invoice.isPaid()).as("IsPaid").isEqualTo(invoiceIsPaid));
+			row.getAsOptionalBoolean(COLUMNNAME_IsPartiallyPaid)
+					.ifPresent(invoiceIsPartiallyPaid -> softly.assertThat(invoice.isPartiallyPaid()).as("IsPartiallyPaid").isEqualTo(invoiceIsPartiallyPaid));
+			row.getAsOptionalBigDecimal("OpenAmt")
+					.ifPresent(expectedOpenAmt -> {
+						softly.assertThat(invoice.getOpenAmt()).as("C_Invoice.OpenAmt").isEqualByComparingTo(expectedOpenAmt);
+
+						final List<InvoiceToAllocate> invoiceToAllocates = paymentAllocationRepository
+								.retrieveInvoicesToAllocate(InvoiceToAllocateQuery.builder()
+										.evaluationDate(ZonedDateTime.now())
+										.onlyInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+										.build());
+						final InvoiceToAllocate invoiceToAllocate = invoiceToAllocates.isEmpty() ? null : invoiceToAllocates.get(0);
+						final BigDecimal actualOpenAmountConverted = invoiceToAllocate != null ? invoiceToAllocate.getOpenAmountConverted().getAsBigDecimal() : BigDecimal.ZERO;
+						softly.assertThat(actualOpenAmountConverted).as("OpenAmountConverted").isEqualByComparingTo(expectedOpenAmt);
+					});
 		}
 
-		{// payment related
-			final Boolean invoiceIsPaid = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_IsPaid, null);
-			if (invoiceIsPaid != null)
-			{
-				softly.assertThat(invoice.isPaid()).as("IsPaid").isEqualTo(invoiceIsPaid);
-			}
+		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(projectIdentifier))
+		{
+			final I_C_Project project = projectTable.get(projectIdentifier);
+			softly.assertThat(invoice.getC_Project_ID()).as("C_Project_ID").isEqualTo(project.getC_Project_ID());
+		}
 
-			final Boolean invoiceIsPartiallyPaid = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_IsPartiallyPaid, null);
-			if (invoiceIsPartiallyPaid != null)
-			{
-				softly.assertThat(invoice.isPartiallyPaid()).as("IsPartiallyPaid").isEqualTo(invoiceIsPartiallyPaid);
-			}
-
-			final BigDecimal invoiceOpenAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT.OpenAmt");
-			if (invoiceOpenAmt != null)
-			{
-				final InvoiceToAllocate invoiceToAllocate = paymentAllocationRepository
-						.retrieveInvoicesToAllocate(InvoiceToAllocateQuery.builder()
-															.evaluationDate(ZonedDateTime.now())
-															.onlyInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-															.build()).get(0);
-				softly.assertThat(invoiceToAllocate.getOpenAmountConverted().getAsBigDecimal()).as("OpenAmountConverted").isEqualByComparingTo(invoiceOpenAmt);
-				softly.assertThat(invoice.getOpenAmt()).as("C_Invoice.OpenAmt").isEqualByComparingTo(invoiceOpenAmt);
-			}
+		final String costCenterIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Activity_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(costCenterIdentifier))
+		{
+			final I_C_Activity activity = activityTable.get(costCenterIdentifier);
+			softly.assertThat(invoice.getC_Activity_ID()).as("C_Activity_ID").isEqualTo(activity.getC_Activity_ID());
 		}
 
 		final String expectedSalesRep_ID = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_SalesRep_ID);
@@ -573,6 +540,7 @@ public class C_Invoice_StepDef
 			final I_M_Warehouse warehouseRecord = warehouseTable.get(warehouseIdentifier);
 			softly.assertThat(invoice.getM_Warehouse_ID()).as("M_Warehouse_ID").isEqualTo(warehouseRecord.getM_Warehouse_ID());
 		}
+
 		softly.assertAll();
 	}
 
@@ -608,7 +576,7 @@ public class C_Invoice_StepDef
 				.map(InvoiceId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final String invoiceIdCandidate = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final String invoiceIdCandidate = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		final ImmutableList<String> invoiceIdentifiers = StepDefUtil.extractIdentifiers(invoiceIdCandidate);
 
@@ -623,8 +591,8 @@ public class C_Invoice_StepDef
 				.collect(ImmutableList.toImmutableList());
 
 		assertThat(invoices).isNotEmpty();
-		assertThat(invoices.size()).isEqualTo(invoiceIdentifiers.size());
-
+		assertThat(invoices).hasSameSizeAs(invoiceIdentifiers);
+		
 		for (int invoiceIndex = 0; invoiceIndex < invoices.size(); invoiceIndex++)
 		{
 			invoiceTable.putOrReplace(invoiceIdentifiers.get(invoiceIndex), invoices.get(invoiceIndex));
@@ -658,7 +626,7 @@ public class C_Invoice_StepDef
 
 			final List<I_C_Invoice> invoices = invoiceDAO.getByIdsOutOfTrx(invoiceIds);
 
-			final String invoiceStatus = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_DocStatus);
+			final String invoiceStatus = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_DocStatus);
 			final String docStatus = Optional.ofNullable(invoiceStatus)
 					.orElse(X_C_Invoice.DOCACTION_Complete);
 
@@ -701,7 +669,7 @@ public class C_Invoice_StepDef
 	{
 		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Order_ID, targetOrderId)
+				.addEqualsFilter(COLUMNNAME_C_Order_ID, targetOrderId)
 				.orderBy(COLUMNNAME_C_Invoice_Candidate_ID)
 				.create()
 				.first(I_C_Invoice_Candidate.class);
@@ -733,22 +701,21 @@ public class C_Invoice_StepDef
 
 		Optional.ofNullable(getFirstInvoiceCandidateByOrderId(targetOrderId))
 				.map(invoiceCandidateRecord ->
-							 message.append(COLUMNNAME_C_Invoice_Candidate_ID).append(" : ").append(invoiceCandidateRecord.getC_Invoice_Candidate_ID()).append(" ; ")
-									 .append(COLUMNNAME_QtyToInvoice).append(" : ").append(invoiceCandidateRecord.getQtyToInvoice()).append(" ; ")
-									 .append(COLUMNNAME_QtyToInvoice_Override).append(" : ").append(invoiceCandidateRecord.getQtyToInvoice_Override()).append(" ; ")
-									 .append("\n"))
+						message.append(COLUMNNAME_C_Invoice_Candidate_ID).append(" : ").append(invoiceCandidateRecord.getC_Invoice_Candidate_ID()).append(" ; ")
+								.append(COLUMNNAME_QtyToInvoice).append(" : ").append(invoiceCandidateRecord.getQtyToInvoice()).append(" ; ")
+								.append(COLUMNNAME_QtyToInvoice_Override).append(" : ").append(invoiceCandidateRecord.getQtyToInvoice_Override()).append(" ; ")
+								.append("\n"))
 				.orElseGet(() -> message.append("No invoice-able invoice candidate record found for ")
 						.append(COLUMNNAME_C_Order_ID).append(" : ").append(targetOrderId).append(" ; "));
 
 		return "*** Error while looking for first invoice-able invoice candidate record, see current context: \n" + message;
 	}
 
-	private void create_C_Invoice(@NonNull final Map<String, String> row)
+	private void create_C_Invoice(@NonNull final DataTableRow row)
 	{
-		final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final Integer bPartnerId = bpartnerTable.getOptional(bPartnerIdentifier)
-				.map(I_C_BPartner::getC_BPartner_ID)
-				.orElseGet(() -> Integer.parseInt(bPartnerIdentifier));
+		final StepDefDataIdentifier bpartnerIdentifier = row.getAsIdentifier(COLUMNNAME_C_BPartner_ID);
+		final BPartnerId bpartnerId = bpartnerTable.getIdOptional(bpartnerIdentifier)
+				.orElseGet(() -> bpartnerIdentifier.getAsId(BPartnerId.class));
 
 		final String docTargetName = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_DocTypeTarget_ID + "." + I_C_DocType.COLUMNNAME_Name);
 		final DocTypeId docTypeId = queryBL.createQueryBuilder(I_C_DocType.class)
@@ -775,7 +742,7 @@ public class C_Invoice_StepDef
 
 		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
 
-		invoice.setC_BPartner_ID(bPartnerId);
+		invoice.setC_BPartner_ID(bpartnerId.getRepoId());
 		invoice.setC_DocTypeTarget_ID(docTypeId.getRepoId());
 		invoice.setC_DocType_ID(docTypeId.getRepoId());
 		invoice.setDateInvoiced(dateInvoiced);
@@ -783,11 +750,22 @@ public class C_Invoice_StepDef
 		invoice.setC_ConversionType_ID(conversionTypeId.getRepoId());
 		invoice.setC_Currency_ID(currencyId.getRepoId());
 
-		final String documentNo = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_DocumentNo);
+		final String documentNo = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_DocumentNo);
 		if (Check.isNotBlank(documentNo))
 		{
 			invoice.setDocumentNo(documentNo);
 		}
+
+		final String externalId = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_ExternalId);
+		if (Check.isNotBlank(externalId))
+		{
+			invoice.setExternalId(externalId);
+		}
+
+		invoiceDAO.save(invoice);
+
+		extractPaymentTermId(row)
+				.ifPresent(paymentTermId -> invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
 
 		invoiceDAO.save(invoice);
 
@@ -795,4 +773,126 @@ public class C_Invoice_StepDef
 		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
 	}
 
+	private Optional<PaymentTermId> extractPaymentTermId(final @NonNull DataTableRow row)
+	{
+		final StepDefDataIdentifier paymentTermIdentifier = Optionals.firstPresentOfSuppliers(
+						() -> row.getAsOptionalIdentifier("paymentTerm"),
+						() -> row.getAsOptionalIdentifier(I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID)
+				)
+				.orElse(null);
+		if (paymentTermIdentifier == null)
+		{
+			return Optional.empty();
+		}
+
+		//
+		// Lookup C_PaymentTerm table
+		PaymentTermId paymentTermId = paymentTermTable.getIdOptional(paymentTermIdentifier).orElse(null);
+		if (paymentTermId != null)
+		{
+			return Optional.of(paymentTermId);
+		}
+
+		//
+		// Search by name
+		paymentTermId = paymentTermRepo.retrievePaymentTermId(
+						PaymentTermQuery.builder()
+								.orgId(StepDefConstants.ORG_ID)
+								.value(paymentTermIdentifier.getAsString())
+								.build()
+				)
+				.orElse(null);
+		if (paymentTermId != null)
+		{
+			return Optional.of(paymentTermId);
+		}
+
+		//
+		// Consider it numeric ID
+		paymentTermId = paymentTermIdentifier.getAsId(PaymentTermId.class);
+		return Optional.of(paymentTermId);
+	}
+
+	@And("update C_Invoice:")
+	public void update_C_Invoice(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			updateInvoice(row);
+		}
+	}
+
+	private void updateInvoice(@NonNull final Map<String, String> row)
+	{
+		final String invoiceIdentifier = DataTableUtil.extractRecordIdentifier(row, "C_Invoice");
+
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+
+		final Timestamp dateInvoiced = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateInvoiced);
+		if (dateInvoiced != null)
+		{
+			invoice.setDateInvoiced(dateInvoiced);
+		}
+
+		final String paymentTerm = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID);
+		if (Check.isNotBlank(paymentTerm))
+		{
+			final PaymentTermQuery query = PaymentTermQuery.builder()
+					.orgId(StepDefConstants.ORG_ID)
+					.value(paymentTerm)
+					.build();
+
+			final PaymentTermId paymentTermId = paymentTermRepo.retrievePaymentTermId(query)
+					.orElse(null);
+
+			assertThat(paymentTermId).isNotNull();
+
+			invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId());
+		}
+
+		InterfaceWrapperHelper.save(invoice);
+
+		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
+	}
+
+	@NonNull
+	private ProviderResult<I_C_Invoice> findInvoiceByExternalIdAndCandidateCount(@NonNull final Map<String, String> row)
+	{
+		final String externalId = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ExternalId);
+		final int numberOfCandidates = DataTableUtil.extractIntOrMinusOneForColumnName(row, "OPT.NumberOfCandidates");
+
+		final I_C_Invoice invoice = queryBL.createQueryBuilder(I_C_Invoice.class)
+				.addEqualsFilter(COLUMNNAME_ExternalId, externalId)
+				.addEqualsFilter(COLUMNNAME_DocStatus, DocStatus.Completed.getCode())
+				.create()
+				.firstOnlyOrNull(I_C_Invoice.class);
+
+		if (invoice != null)
+		{
+			if (numberOfCandidates >= 0)
+			{
+				final int actualNumberOfCandidates = queryBL.createQueryBuilder(I_C_InvoiceLine.class)
+						.addEqualsFilter(I_C_InvoiceLine.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID())
+						.andCollectChildren(I_C_Invoice_Line_Alloc.COLUMN_C_InvoiceLine_ID)
+						.addOnlyActiveRecordsFilter()
+						.andCollect(I_C_Invoice_Line_Alloc.COLUMN_C_Invoice_Candidate_ID)
+						.addOnlyActiveRecordsFilter()
+						.create()
+						.count();
+
+				if (numberOfCandidates == actualNumberOfCandidates)
+				{
+					return ProviderResult.resultWasFound(invoice);
+				}
+				else
+				{
+					return ProviderResult.resultWasNotFound("Not all invoice candidates were linked yet for row={0}; currentFoundCount: {1}", row, actualNumberOfCandidates);
+				}
+			}
+
+			return ProviderResult.resultWasFound(invoice);
+		}
+
+		return ProviderResult.resultWasNotFound("C_Invoice not found for row={0}", row);
+	}
 }

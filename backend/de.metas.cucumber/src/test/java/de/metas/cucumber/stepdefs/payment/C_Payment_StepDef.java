@@ -42,12 +42,14 @@ import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.bankStatement.C_BankStatementLine_StepDefData;
 import de.metas.cucumber.stepdefs.bankStatement.C_BankStatement_StepDefData;
+import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
@@ -61,6 +63,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
@@ -95,6 +98,7 @@ import static org.compiere.model.I_C_Payment.COLUMNNAME_IsReceipt;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_PayAmt;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_WriteOffAmt;
 
+@RequiredArgsConstructor
 public class C_Payment_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -115,28 +119,6 @@ public class C_Payment_StepDef
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_DocType_StepDefData docTypeTable;
 	private final TestContext testContext;
-
-	public C_Payment_StepDef(
-			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final CurrencyRepository currencyRepository,
-			@NonNull final C_Payment_StepDefData paymentTable,
-			@NonNull final C_BP_BankAccount_StepDefData bpBankAccountTable,
-			@NonNull final C_BankStatement_StepDefData bankStatementTable,
-			@NonNull final C_BankStatementLine_StepDefData bankStatementLineTable,
-			@NonNull final C_Invoice_StepDefData invoiceTable,
-			@NonNull final C_DocType_StepDefData docTypeTable,
-			@NonNull final TestContext testContext)
-	{
-		this.bpartnerTable = bpartnerTable;
-		this.currencyRepository = currencyRepository;
-		this.paymentTable = paymentTable;
-		this.bpBankAccountTable = bpBankAccountTable;
-		this.bankStatementTable = bankStatementTable;
-		this.bankStatementLineTable = bankStatementLineTable;
-		this.invoiceTable = invoiceTable;
-		this.docTypeTable = docTypeTable;
-		this.testContext = testContext;
-	}
 
 	@And("metasfresh contains C_Payment")
 	public void createPayments(@NonNull final DataTable dataTable)
@@ -193,6 +175,10 @@ public class C_Payment_StepDef
 					final BigDecimal paymentAvailableAmt = paymentDAO.getAvailableAmount(PaymentId.ofRepoId(payment.getC_Payment_ID()));
 					softly.assertThat(paymentAvailableAmt).isEqualTo(payment.isReceipt() ? expectedAvailableAmt : expectedAvailableAmt.negate());
 				});
+		row.getAsOptionalBigDecimal(COLUMNNAME_DiscountAmt)
+				.ifPresent(discountAmt -> softly.assertThat(payment.getDiscountAmt()).isEqualByComparingTo(discountAmt));
+		row.getAsOptionalBigDecimal(COLUMNNAME_WriteOffAmt)
+				.ifPresent(writeOffAmt -> softly.assertThat(payment.getWriteOffAmt()).isEqualByComparingTo(writeOffAmt));
 
 		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Invoice_ID)
 				.map(invoiceTable::getId)
@@ -211,31 +197,13 @@ public class C_Payment_StepDef
 
 		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_BP_BankAccount_ID)
 				.map(bpBankAccountTable::getOrgBankAccountId)
-				.ifPresent(expectedBankAccountId -> {
-					softly.assertThat(payment.getC_BP_BankAccount_ID()).isEqualTo(expectedBankAccountId.getRepoId());
-				});
+				.ifPresent(expectedBankAccountId -> softly.assertThat(payment.getC_BP_BankAccount_ID()).isEqualTo(expectedBankAccountId.getRepoId()));
 
-			final String docTypeIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_C_DocType_ID);
-			if (Check.isNotBlank(docTypeIdentifier))
-			{
-				final I_C_DocType docTypeRecord = docTypeTable.get(docTypeIdentifier);
+		row.getAsOptionalIdentifier(COLUMNNAME_C_DocType_ID)
+				.map(docTypeTable::getId)
+				.ifPresent(expectedDocTypeId -> softly.assertThat(payment.getC_DocType_ID()).isEqualTo(expectedDocTypeId.getRepoId()));
 
-				softly.assertThat(payment.getC_DocType_ID()).isEqualTo(docTypeRecord.getC_DocType_ID());
-			}
-
-			final BigDecimal discountAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_DiscountAmt);
-			if (discountAmt != null)
-			{
-				softly.assertThat(payment.getDiscountAmt()).isEqualByComparingTo(discountAmt);
-			}
-
-			final BigDecimal writeOffAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_WriteOffAmt);
-			if (writeOffAmt != null)
-			{
-				softly.assertThat(payment.getWriteOffAmt()).isEqualByComparingTo(writeOffAmt);
-			}
-
-			softly.assertAll();
+		softly.assertAll();
 		}
 	}
 
@@ -318,7 +286,8 @@ public class C_Payment_StepDef
 		final InvoiceId invoiceId = row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_ID).lookupIdIn(invoiceTable);
 
 		final Money payAmt = row.getAsMoney(COLUMNNAME_PayAmt, currencyRepository::getCurrencyIdByCurrencyCode);
-		final Money discountAmt = row.getAsOptionalMoney(COLUMNNAME_DiscountAmt, currencyRepository::getCurrencyIdByCurrencyCode).orElse(payAmt.toZero());
+		final Money discountAmt = row.getAsOptionalMoney(COLUMNNAME_DiscountAmt, currencyRepository::getCurrencyIdByCurrencyCode).orElse(null);
+		final CurrencyId currencyId = Money.getCommonCurrencyIdOfAll(payAmt, discountAmt);
 		final boolean isReceipt = row.getAsBoolean(COLUMNNAME_IsReceipt);
 		final LocalDate dateTrx = row.getAsOptionalLocalDate(I_C_Payment.COLUMNNAME_DateTrx).orElseGet(SystemTime::asLocalDate);
 		final LocalDate dateAcct = row.getAsOptionalLocalDate(I_C_Payment.COLUMNNAME_DateAcct).orElse(dateTrx);
@@ -327,16 +296,20 @@ public class C_Payment_StepDef
 				.map(bpBankAccountTable::getOrgBankAccountId)
 				.orElseGet(() -> retrieveDefaultOrgBankAccountId(orgId, payAmt.getCurrencyId()));
 
+		final InvoiceId invoiceId = row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Invoice_ID)
+				.map(invoiceTable::getId)
+				.orElse(null);
+
 		final I_C_Payment payment = (isReceipt ? paymentBL.newInboundReceiptBuilder() : paymentBL.newOutboundPaymentBuilder())
 				.adOrgId(orgId)
 				.bpartnerId(bpartnerId)
-				.invoiceId(invoiceId)
 				.orgBankAccountId(orgBankAccountId)
-				.currencyId(payAmt.getCurrencyId())
+				.currencyId(currencyId)
 				.payAmt(payAmt.toBigDecimal())
-				.discountAmt(discountAmt.toBigDecimal())
+				.discountAmt(discountAmt != null ? discountAmt.toBigDecimal() : null)
 				.dateTrx(dateTrx)
 				.dateAcct(dateAcct)
+				.invoiceId(invoiceId)
 				.isAutoAllocateAvailableAmt(false)
 				.createDraft();
 
