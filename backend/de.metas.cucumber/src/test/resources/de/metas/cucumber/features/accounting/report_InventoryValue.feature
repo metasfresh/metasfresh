@@ -6,6 +6,7 @@ Feature: Inventory Value report / Lagerwert
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-14T08:00:00+00:00
+    And documents are accounted immediately
     And metasfresh contains M_Products:
       | Identifier | X12DE355 |
       | P1         | PCE      |

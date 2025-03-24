@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -216,6 +217,36 @@ public class StockQtyAndUOMQty
 		{
 			return this;
 		}
+		return other;
+	}
+
+	/**
+	 * @return the minimum by looking at both stock and uom quantities.
+	 * Important: if this instance's stock and uom quantities are equal to {@code other}'s stock and uom quantities, then return {@code this}.
+	 */
+	public StockQtyAndUOMQty minStockAndUom(@NonNull final StockQtyAndUOMQty other)
+	{
+		if (this.getUOMQty() == null && other.getUOMQty() == null)
+		{
+			if (this.getStockQty().compareTo(other.getStockQty()) <= 0)
+			{
+				return this;
+			}
+			return other;
+		}
+
+		// If only one UOM quantity is null, it's an inconsistent state
+		if (this.getUOMQty() == null || other.getUOMQty() == null)
+		{
+			throw new AdempiereException("UOM quantity is missing for only one quantity !");
+		}
+
+		if (this.getStockQty().compareTo(other.getStockQty()) <= 0 &&
+				this.getUOMQty().compareTo(other.getUOMQty()) <= 0)
+		{
+			return this;
+		}
+
 		return other;
 	}
 

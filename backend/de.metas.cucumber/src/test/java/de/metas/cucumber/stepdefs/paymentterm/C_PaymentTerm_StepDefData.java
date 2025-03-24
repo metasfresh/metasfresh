@@ -20,26 +20,23 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.invoice;
+package de.metas.cucumber.stepdefs.paymentterm;
 
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
-import de.metas.invoice.InvoiceId;
-import org.compiere.model.I_C_Invoice;
+import de.metas.payment.paymentterm.PaymentTermId;
+import org.compiere.model.I_C_PaymentTerm;
 
-/**
- * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
- */
-public class C_Invoice_StepDefData extends StepDefData<I_C_Invoice> implements StepDefDataGetIdAware<InvoiceId, I_C_Invoice>
+public class C_PaymentTerm_StepDefData extends StepDefData<I_C_PaymentTerm> implements StepDefDataGetIdAware<PaymentTermId, I_C_PaymentTerm>
 {
-	public C_Invoice_StepDefData()
+	public C_PaymentTerm_StepDefData()
 	{
-		super(I_C_Invoice.class);
+		super(I_C_PaymentTerm.class);
 	}
 
 	@Override
-	public InvoiceId extractIdFromRecord(final I_C_Invoice record)
+	public PaymentTermId extractIdFromRecord(final I_C_PaymentTerm record)
 	{
-		return InvoiceId.ofRepoId(record.getC_Invoice_ID());
+		return PaymentTermId.ofRepoId(record.getC_PaymentTerm_ID());
 	}
 }

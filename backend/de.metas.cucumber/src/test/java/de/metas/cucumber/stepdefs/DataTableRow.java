@@ -40,6 +40,7 @@ import de.metas.util.text.tabular.Row;
 import de.metas.util.text.tabular.Table;
 import io.cucumber.datatable.DataTable;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import org.adempiere.exceptions.AdempiereException;
@@ -62,7 +63,7 @@ import java.util.function.Function;
 @EqualsAndHashCode
 public class DataTableRow
 {
-	private final int lineNo; // introduced to improve logging/debugging
+	@Getter private final int lineNo; // introduced to improve logging/debugging
 	@NonNull
 	private final Map<String, String> map;
 	@Nullable
@@ -442,6 +443,29 @@ public class DataTableRow
 		return X12DE355.ofCode(valueStr);
 	}
 
+	public CurrencyCode getAsCurrencyCode()
+	{
+		return getAsOptionalCurrencyCode()
+				.orElseThrow(() -> new AdempiereException("No currency code found"));
+	}
+
+	public Optional<CurrencyCode> getAsOptionalCurrencyCode()
+	{
+		return Optionals.firstPresentOfSuppliers(
+						() -> getAsOptionalString("C_Currency.ISO_Code"),
+						() -> getAsOptionalString("C_Currency_ID")
+				)
+				.map(CurrencyCode::ofThreeLetterCode);
+	}
+
+	public Money getAsMoney(
+			@NonNull final String valueColumnName,
+			@NonNull final Function<CurrencyCode, CurrencyId> currencyCodeMapper)
+	{
+		return getAsOptionalMoney(valueColumnName, currencyCodeMapper)
+				.orElseThrow(() -> new AdempiereException("No value found for " + valueColumnName));
+	}
+
 	public Optional<Money> getAsOptionalMoney(
 			@NonNull final String valueColumnName,
 			@NonNull final Function<CurrencyCode, CurrencyId> currencyCodeMapper)
@@ -465,6 +489,11 @@ public class DataTableRow
 			valueBD = parseBigDecimal(valueStr.substring(0, spaceIdx), valueColumnName);
 			final String currencyCodeStr = StringUtils.trimBlankToNull(valueStr.substring(spaceIdx));
 			currencyCode = currencyCodeStr != null ? CurrencyCode.ofThreeLetterCode(currencyCodeStr) : null;
+		}
+
+		if (currencyCode == null)
+		{
+			currencyCode = getAsOptionalCurrencyCode().orElse(null);
 		}
 
 		if (currencyCode == null)
