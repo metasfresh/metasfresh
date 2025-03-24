@@ -155,7 +155,7 @@ public class AllocationAmountsTest
 						.payAmt(euro(-1))
 						.discountAmt(euro(-2))
 						.writeOffAmt(euro(-3))
-						.invoiceProcessingFee(euro(-4))
+						.invoiceProcessingFee(euro(4))
 						.build());
 	}
 
