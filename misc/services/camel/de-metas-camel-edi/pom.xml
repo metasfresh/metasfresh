@@ -18,7 +18,7 @@
         <spring-boot.version>3.4.3</spring-boot.version>
         <camel.version>4.10.2</camel.version>
         <guava.version>33.4.5-jre</guava.version>
-        <smooks-cartridge.version>2.0.3</smooks-cartridge.version>
+        <smooks.edifact.cartridge.version>2.1.0</smooks.edifact.cartridge.version>
         <jackson.version>2.18.3</jackson.version>
         <lombok.version>1.18.36</lombok.version>
         <org.apache.poi.version>5.4.0</org.apache.poi.version>
@@ -138,11 +138,6 @@
             <version>${camel.version}</version>
         </dependency>
 
-        <!--        <dependency>-->
-        <!--            <groupId>org.apache.camel</groupId>-->
-        <!--            <artifactId>camel-spring-javaconfig</artifactId>-->
-        <!--        </dependency>-->
-
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-endpointdsl</artifactId>
@@ -221,6 +216,23 @@
             <version>2.0.3</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.smooks.cartridges.edi</groupId>
+            <artifactId>smooks-edifact-cartridge</artifactId>
+            <version>${smooks.edifact.cartridge.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.smooks.cartridges.edi</groupId>
+            <artifactId>d03b-edifact-binding</artifactId>
+            <version>${smooks.edifact.cartridge.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.smooks.cartridges.edi</groupId>
+            <artifactId>edifact-schemas</artifactId>
+            <version>${smooks.edifact.cartridge.version}</version>
+            <classifier>d03b</classifier>
+        </dependency>
+        
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>

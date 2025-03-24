@@ -80,7 +80,7 @@ public class EcosioDesadvRoute extends AbstractEDIRoute
 		{
 			jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
 		}
-		catch (JAXBException e)
+		catch (final JAXBException e)
 		{
 			throw new RuntimeException(e);
 		}
