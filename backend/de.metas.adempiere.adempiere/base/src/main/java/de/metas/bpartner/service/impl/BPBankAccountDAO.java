@@ -42,6 +42,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -51,6 +52,12 @@ import java.util.Optional;
 public class BPBankAccountDAO implements IBPBankAccountDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@Override
+	public List<I_C_BP_BankAccount> retrieveBankAccountsForPartnerAndCurrency(@NonNull final BPartnerId bpartnerId, @NonNull final CurrencyId currencyId)
+	{
+		return retrieveBankAccountsForPartnerAndCurrency(Env.getCtx(), bpartnerId.getRepoId(), currencyId.getRepoId());
+	}
 
 	@Override
 	public List<BPartnerBankAccount> retrieveBankAccountsForPartnerAndCurrency(@NonNull final BPartnerId partnerID,

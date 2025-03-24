@@ -63,4 +63,15 @@ public class FactAcctQuery
 	@Nullable String userElementString5Like;
 	@Nullable String userElementString6Like;
 	@Nullable String userElementString7Like;
+
+	@SuppressWarnings("unused")
+	public static class FactAcctQueryBuilder
+	{
+		public FactAcctQueryBuilder recordRef(@NonNull final TableRecordReference recordRef)
+		{
+			tableName(recordRef.getTableName());
+			recordId(recordRef.getRecord_ID());
+			return this;
+		}
+	}
 }
