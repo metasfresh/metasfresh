@@ -1,6 +1,7 @@
 package de.metas.cucumber.stepdefs.accounting;
 
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.accounting.FactAcctValidator.FactAcctValidatorBuilder;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -91,5 +92,10 @@ public class AccountingCucumberHelper
 	{
 		@NonNull PostingStatus status;
 		@Nullable String stackTrace;
+	}
+
+	public static FactAcctValidatorBuilder newFactAcctValidator()
+	{
+		return FactAcctValidator.builder();
 	}
 }
