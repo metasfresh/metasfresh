@@ -41,6 +41,8 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentAmtMultiplier;
 import de.metas.payment.PaymentId;
 import de.metas.util.Services;
@@ -54,10 +56,10 @@ import org.compiere.model.I_C_Payment;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
@@ -74,6 +76,7 @@ public class AllocatePayments_StepDef
 
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final C_Payment_StepDefData paymentTable;
 	private final C_Invoice_StepDefData invoiceTable;
@@ -90,9 +93,8 @@ public class AllocatePayments_StepDef
 	@And("^apply (.*) to invoices$")
 	public void apply_write_off_or_discount_to_invoice(final String processToApply, @NonNull final DataTable table)
 	{
-		final List<Map<String, String>> rows = table.asMaps();
 		DataTableRows.of(table).forEach(row -> {
-			final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupIn(invoiceTable);
+			final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
 
 			final InvoiceToAllocate invoiceToAllocate = getInvoiceToAllocate(invoice);
 
@@ -137,6 +139,33 @@ public class AllocatePayments_StepDef
 				.build();
 	}
 
+	@And("^allocate invoices \\(credit memo/purchase\\) to invoices$")
+	public void allocate_credit_memo_to_invoice(@NonNull final DataTable table)
+	{
+		final ArrayList<PayableDocument> payableDocuments = new ArrayList<>();
+
+		DataTableRows.of(table).forEach(row -> {
+			row.getAsOptionalIdentifier("C_Invoice_ID")
+					.map(this::buildPayableDocument)
+					.ifPresent(payableDocuments::add);
+			row.getAsOptionalIdentifier("CreditMemo.C_Invoice_ID")
+					.map(this::buildPayableDocument)
+					.ifPresent(payableDocuments::add);
+			row.getAsOptionalIdentifier("Purchase.C_Invoice_ID")
+					.map(this::buildPayableDocument)
+					.ifPresent(payableDocuments::add);
+		});
+
+		PaymentAllocationBuilder.newBuilder()
+				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+				.defaultDateTrx(LocalDate.now())
+				.payableDocuments(payableDocuments)
+				.allowPartialAllocations(true)
+				.allowPurchaseSalesInvoiceCompensation(true)
+				.payableRemainingOpenAmtPolicy(PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy.DO_NOTHING)
+				.build();
+	}
+
 	@NonNull
 	private PayableDocument buildPayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier)
 	{
@@ -146,6 +175,8 @@ public class AllocatePayments_StepDef
 
 		final InvoiceToAllocate invoiceToAllocate = getInvoiceToAllocate(invoice);
 		final Money invoiceOpenMoneyAmt = moneyService.toMoney(invoiceToAllocate.getOpenAmountConverted());
+		final Money discountAmt = moneyService.toMoney(invoiceToAllocate.getDiscountAmountConverted());
+		final Money payAmt = discountAmt != null ? invoiceOpenMoneyAmt.subtract(discountAmt) : invoiceOpenMoneyAmt;
 
 		return PayableDocument.builder()
 				.invoiceId(invoiceToAllocate.getInvoiceId())
@@ -158,7 +189,8 @@ public class AllocatePayments_StepDef
 				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
 				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
 				.amountsToAllocate(AllocationAmounts.builder()
-						.payAmt(invoiceOpenMoneyAmt)
+						.payAmt(payAmt)
+						.discountAmt(discountAmt)
 						.build()
 						.convertToRealAmounts(invoiceToAllocate.getMultiplier()))
 				.build();
@@ -167,16 +199,11 @@ public class AllocatePayments_StepDef
 	@NonNull
 	private InvoiceToAllocate getInvoiceToAllocate(@NonNull final I_C_Invoice invoice)
 	{
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(invoice.getAD_Org_ID()));
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
-		return getInvoiceToAllocate(invoiceId);
-	}
-
-	@NonNull
-	private InvoiceToAllocate getInvoiceToAllocate(final InvoiceId invoiceId)
-	{
 		final List<InvoiceToAllocate> invoiceToAllocateList = paymentAllocationRepository.retrieveInvoicesToAllocate(
 				InvoiceToAllocateQuery.builder()
-						.evaluationDate(ZonedDateTime.now())
+						.evaluationDate(invoice.getDateInvoiced().toLocalDateTime().atZone(timeZone))
 						.onlyInvoiceId(invoiceId)
 						.build()
 		);
