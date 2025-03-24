@@ -10,6 +10,7 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.compiere.model.I_C_BP_BankAccount;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -38,14 +39,12 @@ import java.util.Optional;
 
 public interface IBPBankAccountDAO extends ISingletonService
 {
-	List<I_C_BP_BankAccount> retrieveBankAccountsForPartnerAndCurrency(@NonNull BPartnerId bpartnerId, @NonNull CurrencyId currencyId);
-
 	/**
 	 * Retrieve all the bank accounts of the currency <code>currencyID</code> for the partner <code> partnerID</code>
 	 * In case the currencyID is not set (<=0) just retrieve all accounts of the bpartner
 	 * The bank accounts will be ordered by their IsDefault values, with true first.
 	 */
-	List<BPartnerBankAccount> retrieveBankAccountsForPartnerAndCurrency(BPartnerId partnerID, CurrencyId currencyID);
+	List<BPartnerBankAccount> retrieveBankAccountsForPartnerAndCurrency(@NonNull final BPartnerId bpartnerId, @Nullable final CurrencyId currencyId);
 
 	Optional<I_C_BP_BankAccount> retrieveDefaultBankAccountInTrx(@NonNull BPartnerId bpartnerId);
 

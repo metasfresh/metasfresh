@@ -27,9 +27,12 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.common.util.Check;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.calendar.C_Calendar_StepDefData;
 import de.metas.cucumber.stepdefs.calendar.C_Year_StepDefData;
@@ -38,6 +41,8 @@ import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -55,7 +60,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
@@ -130,11 +134,9 @@ public class C_InvoiceLine_StepDef
 	@And("metasfresh contains C_InvoiceLines")
 	public void addC_InvoiceLines(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : rows)
-		{
-			create_C_InvoiceLine(dataTableRow);
-		}
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID)
+				.forEach(this::create_C_InvoiceLine);
 	}
 
 	@And("validate created invoice lines")
@@ -469,35 +471,30 @@ public class C_InvoiceLine_StepDef
 		}
 	}
 
-	private void create_C_InvoiceLine(@NonNull final Map<String, String> row)
+	private void create_C_InvoiceLine(@NonNull final DataTableRow row)
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceLine.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final Integer productId = productTable.getOptional(productIdentifier)
-				.map(I_M_Product::getM_Product_ID)
-				.orElseGet(() -> Integer.parseInt(productIdentifier));
+		final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
 
-		final BigDecimal qtyInvoiced = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_QtyInvoiced);
+		final StepDefDataIdentifier productIdentifier = row.getAsIdentifier(I_C_InvoiceLine.COLUMNNAME_M_Product_ID);
+		final ProductId productId = productTable.getIdOptional(productIdentifier)
+				.orElseGet(() -> productIdentifier.getAsId(ProductId.class));
 
-		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
-
-		final String x12de355Code = DataTableUtil.extractStringForColumnName(row, I_C_UOM.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
-		final UomId productPriceUomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+		final Quantity qtyEntered = row.getAsQuantity(COLUMNNAME_QtyInvoiced, COLUMNNAME_C_UOM_ID, uomDAO::getByX12DE355);
 
 		final I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class);
-
-		invoiceLine.setM_Product_ID(productId);
-		invoiceLine.setQtyInvoiced(qtyInvoiced);
-		invoiceLine.setQtyEntered(qtyInvoiced);
+		invoiceLine.setAD_Org_ID(invoice.getAD_Org_ID());
 		invoiceLine.setC_Invoice_ID(invoice.getC_Invoice_ID());
-		invoiceLine.setPrice_UOM_ID(productPriceUomId.getRepoId());
+		invoiceLine.setM_Product_ID(productId.getRepoId());
+		invoiceLine.setQtyEntered(qtyEntered.toBigDecimal());
+		invoiceLine.setQtyInvoiced(qtyEntered.toBigDecimal());
+		invoiceLine.setPrice_UOM_ID(qtyEntered.getUomId().getRepoId());
 
 		invoiceLineBL.updatePrices(invoiceLine);
-		invoiceLineBL.updateLineNetAmt(invoiceLine, qtyInvoiced);
+		invoiceLineBL.updateLineNetAmt(invoiceLine, qtyEntered.toBigDecimal());
 
 		InterfaceWrapperHelper.save(invoiceLine);
 
-		final String invoiceLineIdentifier = DataTableUtil.extractStringForColumnName(row, StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		invoiceLineTable.putOrReplace(invoiceLineIdentifier, invoiceLine);
+		row.getAsOptionalIdentifier()
+				.ifPresent(identifier -> invoiceLineTable.putOrReplace(identifier, invoiceLine));
 	}
 }

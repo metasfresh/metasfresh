@@ -28,6 +28,7 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.rest_api.v2.JsonErrorItem;
 import de.metas.common.util.time.SystemTime;
@@ -68,12 +69,9 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
-import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Payment;
-import org.compiere.model.I_M_SectionCode;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -196,13 +194,10 @@ public class C_Payment_StepDef
 					final BigDecimal paymentAvailableAmt = paymentDAO.getAvailableAmount(PaymentId.ofRepoId(payment.getC_Payment_ID()));
 					softly.assertThat(paymentAvailableAmt).isEqualTo(payment.isReceipt() ? expectedAvailableAmt : expectedAvailableAmt.negate());
 				});
-
-		final String sectionCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_Dunning_Candidate.COLUMNNAME_M_SectionCode_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(sectionCodeIdentifier))
-		{
-			final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
-			softly.assertThat(payment.getM_SectionCode_ID()).isEqualTo(sectionCode.getM_SectionCode_ID());
-		}
+		row.getAsOptionalBigDecimal(COLUMNNAME_DiscountAmt)
+				.ifPresent(discountAmt -> softly.assertThat(payment.getDiscountAmt()).isEqualByComparingTo(discountAmt));
+		row.getAsOptionalBigDecimal(COLUMNNAME_WriteOffAmt)
+				.ifPresent(writeOffAmt -> softly.assertThat(payment.getWriteOffAmt()).isEqualByComparingTo(writeOffAmt));
 
 		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Invoice_ID)
 				.map(invoiceTable::getId)
@@ -221,29 +216,15 @@ public class C_Payment_StepDef
 
 		row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_BP_BankAccount_ID)
 				.map(bpBankAccountTable::getOrgBankAccountId)
-				.ifPresent(expectedBankAccountId -> {
-					softly.assertThat(payment.getC_BP_BankAccount_ID()).isEqualTo(expectedBankAccountId.getRepoId());
-				});
+				.ifPresent(expectedBankAccountId -> softly.assertThat(payment.getC_BP_BankAccount_ID()).isEqualTo(expectedBankAccountId.getRepoId()));
 
-			final String docTypeIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_C_DocType_ID);
-			if (Check.isNotBlank(docTypeIdentifier))
-			{
-				final I_C_DocType docTypeRecord = docTypeTable.get(docTypeIdentifier);
+		row.getAsOptionalIdentifier(COLUMNNAME_C_DocType_ID)
+				.map(docTypeTable::getId)
+				.ifPresent(expectedDocTypeId -> softly.assertThat(payment.getC_DocType_ID()).isEqualTo(expectedDocTypeId.getRepoId()));
 
-				softly.assertThat(payment.getC_DocType_ID()).isEqualTo(docTypeRecord.getC_DocType_ID());
-			}
-
-			final BigDecimal discountAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_DiscountAmt);
-			if (discountAmt != null)
-			{
-				softly.assertThat(payment.getDiscountAmt()).isEqualByComparingTo(discountAmt);
-			}
-
-			final BigDecimal writeOffAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_WriteOffAmt);
-			if (writeOffAmt != null)
-			{
-				softly.assertThat(payment.getWriteOffAmt()).isEqualByComparingTo(writeOffAmt);
-			}
+		row.getAsOptionalIdentifier(I_C_Dunning_Candidate.COLUMNNAME_M_SectionCode_ID)
+				.map(sectionCodeTable::getId)
+				.ifPresent(expectedSectionCodeId -> softly.assertThat(payment.getM_SectionCode_ID()).isEqualTo(expectedSectionCodeId.getRepoId()));
 
 		softly.assertAll();
 	}
@@ -269,7 +250,7 @@ public class C_Payment_StepDef
 			assertThat(jsonErrorItem.getMessage()).contains(message);
 		}
 	}
-	
+
 	private void findPayment(
 			final int timeoutSec,
 			@NonNull final Map<String, String> row) throws InterruptedException
@@ -326,7 +307,8 @@ public class C_Payment_StepDef
 		final BPartnerId bpartnerId = row.getAsIdentifier(COLUMNNAME_C_BPartner_ID).lookupNotNullIdIn(bpartnerTable);
 
 		final Money payAmt = row.getAsMoney(COLUMNNAME_PayAmt, currencyRepository::getCurrencyIdByCurrencyCode);
-		final Money discountAmt = row.getAsMoney(COLUMNNAME_DiscountAmt, currencyRepository::getCurrencyIdByCurrencyCode);
+		final Money discountAmt = row.getAsOptionalMoney(COLUMNNAME_DiscountAmt, currencyRepository::getCurrencyIdByCurrencyCode).orElse(null);
+		final CurrencyId currencyId = Money.getCommonCurrencyIdOfAll(payAmt, discountAmt);
 		final boolean isReceipt = row.getAsBoolean(COLUMNNAME_IsReceipt);
 		final LocalDate dateTrx = row.getAsOptionalLocalDate(I_C_Payment.COLUMNNAME_DateTrx).orElseGet(SystemTime::asLocalDate);
 		final LocalDate dateAcct = row.getAsOptionalLocalDate(I_C_Payment.COLUMNNAME_DateAcct).orElse(dateTrx);
@@ -334,7 +316,7 @@ public class C_Payment_StepDef
 		final BankAccountId orgBankAccountId = row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_BP_BankAccount_ID)
 				.map(bpBankAccountTable::getOrgBankAccountId)
 				.orElseGet(() -> retrieveDefaultOrgBankAccountId(orgId, payAmt.getCurrencyId()));
-		
+
 		final InvoiceId invoiceId = row.getAsOptionalIdentifier(I_C_Payment.COLUMNNAME_C_Invoice_ID)
 				.map(invoiceTable::getId)
 				.orElse(null);
@@ -343,9 +325,9 @@ public class C_Payment_StepDef
 				.adOrgId(orgId)
 				.bpartnerId(bpartnerId)
 				.orgBankAccountId(orgBankAccountId)
-				.currencyId(payAmt.getCurrencyId())
+				.currencyId(currencyId)
 				.payAmt(payAmt.toBigDecimal())
-				.discountAmt(discountAmt.toBigDecimal()) // TODO
+				.discountAmt(discountAmt != null ? discountAmt.toBigDecimal() : null)
 				.dateTrx(dateTrx)
 				.dateAcct(dateAcct)
 				.invoiceId(invoiceId)
@@ -365,9 +347,9 @@ public class C_Payment_StepDef
 
 		return bankAccountDAO.retrieveBankAccountsForPartnerAndCurrency(orgBPartnerId, currencyId)
 				.stream()
-				.min(Comparator.comparing(I_C_BP_BankAccount::isDefault).reversed()
-						.thenComparing(I_C_BP_BankAccount::getC_BP_BankAccount_ID))
-				.map(bankAccount -> BankAccountId.ofRepoId(bankAccount.getC_BP_BankAccount_ID()))
+				.min(Comparator.comparing(BPartnerBankAccount::isDefault).reversed()
+						.thenComparing(BPartnerBankAccount::getIdNotNull))
+				.map(bankAccount -> BankAccountId.ofRepoId(bankAccount.getIdNotNull().getRepoId()))
 				.orElseThrow(() -> new AdempiereException("No C_BP_BankAccount found for " + orgBPartnerId + " and " + currencyId));
 	}
 
