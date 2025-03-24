@@ -149,7 +149,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, productBOMId)
 				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID, productId)
 				.create()
-				.firstIdOnlyOptional(ProductBOMLineId::ofRepoId);
+				.firstIdOnlyOptional(ProductBOMLineId::ofRepoIdOrNull);
 	}
 
 	@Override
