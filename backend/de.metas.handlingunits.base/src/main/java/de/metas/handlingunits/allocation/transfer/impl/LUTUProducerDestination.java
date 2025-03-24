@@ -431,7 +431,11 @@ public class LUTUProducerDestination
 			final BPartnerId bpartnerId = getBPartnerId();
 
 			_luPIItem = handlingUnitsDAO.retrieveFirstPIItem(luPIId, tuPIId, bpartnerId)
-					.orElseThrow(() -> new AdempiereException("No LU Item found for " + tuPIId + " and " + bpartnerId));
+					.orElseThrow(() -> new AdempiereException("No PI-Item found to connect LU-PI \"" + _luPI.getName() + "\" to TU-PI \"" + tuPI.getName() + "\" with " + bpartnerId)
+							.appendParametersToMessage()
+							.setParameter("LU-PI_ID", _luPI.getM_HU_PI_ID())
+							.setParameter("TU-PI_ID", tuPI.getM_HU_PI_ID())
+					);
 		}
 		return _luPIItem;
 	}

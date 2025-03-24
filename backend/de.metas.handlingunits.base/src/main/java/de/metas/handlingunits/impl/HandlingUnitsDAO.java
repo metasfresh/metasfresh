@@ -1247,7 +1247,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.setOnlyTopLevelHUs()
 				.addOnlyWithAttribute(AttributeConstants.HU_ExternalLotNumber, externalLotNo)
 				.createQuery()
-				.firstIdOnlyOptional(HuId::ofRepoId);
+				.firstIdOnlyOptional(HuId::ofRepoIdOrNull);
 	}
 
 	@Override
