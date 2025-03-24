@@ -226,7 +226,7 @@ public class AllocationAmounts
 				.payAmt(this.payAmt.negate())
 				.discountAmt(this.discountAmt.negate())
 				.writeOffAmt(this.writeOffAmt.negate())
-				.invoiceProcessingFee(this.invoiceProcessingFee.negate())
+				.invoiceProcessingFee(this.invoiceProcessingFee) // never negate the fee
 				.build();
 	}
 
