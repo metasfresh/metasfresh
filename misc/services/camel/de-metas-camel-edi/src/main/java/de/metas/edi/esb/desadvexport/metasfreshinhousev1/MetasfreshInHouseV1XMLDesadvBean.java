@@ -221,10 +221,10 @@ public class MetasfreshInHouseV1XMLDesadvBean
 	{
 		final de.metas.edi.esb.jaxb.metasfreshinhousev1.EDIExpDesadvPackType target = DESADV_objectFactory.createEDIExpDesadvPackType();
 
-		target.setLine(source.getSeqNo());
-		target.setGTINLUPackingMaterial(source.getGTINPackingMaterial());
+		target.setSeqNo(source.getSeqNo());
+		target.setGTINPackingMaterial(source.getGTINPackingMaterial());
 		target.setIPASSCC18(source.getIPASSCC18());
-		target.setMHUPackagingCodeLUText(source.getMHUPackagingCodeText());
+		target.setMHUPackagingCodeText(source.getMHUPackagingCodeText());
 
 		if (source.getEDIExpDesadvPackItem() != null)
 		{
@@ -258,6 +258,7 @@ public class MetasfreshInHouseV1XMLDesadvBean
 
 		target.setGTINTUPackingMaterial(source.getGTINTUPackingMaterial());
 		target.setMHUPackagingCodeTUText(source.getMHUPackagingCodeTUText());
+		target.setLine(source.getLine());
 
 		return target;
 	}
@@ -283,10 +284,12 @@ public class MetasfreshInHouseV1XMLDesadvBean
 		target.setProductDescription(source.getProductDescription());
 		target.setProductNo(source.getProductNo());
 		target.setQtyEntered(source.getQtyEntered());
-		target.setUPC(source.getUPCCU());
+		target.setUPCCU(source.getUPCCU());
 		target.setIsSubsequentDeliveryPlanned(source.getIsSubsequentDeliveryPlanned());
 		target.setEANCU(source.getEANCU());
-		target.setGTIN(source.getGTINTU());
+		target.setGTINCU(source.getGTINCU());
+		target.setGTINTU(source.getGTINTU());
+		target.setUPCTU(source.getUPCTU());
 		target.setEANTU(source.getEANTU());
 		target.setPriceActual(source.getPriceActual());
 		target.setEanComInvoiceUOM(source.getEanComInvoiceUOM());

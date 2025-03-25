@@ -1,26 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<!--
-  ~ #%L
-  ~ de-metas-camel-edi
-  ~ %%
-  ~ Copyright (C) 2025 metas GmbH
-  ~ %%
-  ~ This program is free software: you can redistribute it and/or modify
-  ~ it under the terms of the GNU General Public License as
-  ~ published by the Free Software Foundation, either version 2 of the
-  ~ License, or (at your option) any later version.
-  ~
-  ~ This program is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-  ~ GNU General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU General Public
-  ~ License along with this program. If not, see
-  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
-  ~ #L%
-  -->
-
 <EDI_Exp_Desadv AD_Client_Value="metasfresh" ReplicationMode="1" ReplicationType="M" Version="*" SequenceNo="1017175" TrxName="">
     <C_BPartner_ID>
         <EdiRecipientGLN>1234567890123</EdiRecipientGLN>
@@ -38,9 +16,9 @@
     <MovementDate>2021-01-20+01:00</MovementDate>
     <POReference>6666666666</POReference>
     <EDI_Exp_Desadv_Pack>
-        <GTIN_LU_PackingMaterial>EURO</GTIN_LU_PackingMaterial>
+        <GTIN_PackingMaterial>EURO</GTIN_PackingMaterial>
         <IPA_SSCC18>123456789012345678</IPA_SSCC18>
-        <M_HU_PackagingCode_LU_Text>ISO</M_HU_PackagingCode_LU_Text>
+        <M_HU_PackagingCode_Text>ISO</M_HU_PackagingCode_Text>
         <EDI_Exp_Desadv_Pack_Item>
             <BestBeforeDate>2021-03-10+01:00</BestBeforeDate>
             <LotNumber>19</LotNumber>
@@ -68,8 +46,9 @@
                 <QtyEntered>1.00</QtyEntered>
                 <IsSubsequentDeliveryPlanned>N</IsSubsequentDeliveryPlanned>
                 <EAN_CU>3234567890125</EAN_CU>
+                <GTIN_CU>1234567890125</GTIN_CU>
                 <EAN_TU>4234567890125</EAN_TU>
-                <GTIN>2234567890125</GTIN>
+                <GTIN_TU>2234567890125</GTIN_TU>
                 <PriceActual>19.900</PriceActual>
                 <EanCom_Invoice_UOM>KGM</EanCom_Invoice_UOM>
                 <InvoicableQtyBasedOn>CatchWeight</InvoicableQtyBasedOn>
