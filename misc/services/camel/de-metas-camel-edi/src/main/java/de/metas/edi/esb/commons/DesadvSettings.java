@@ -32,6 +32,8 @@ import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 
+import static de.metas.edi.esb.commons.ClearingCenter.MetasfreshInHouseV2;
+
 @Value
 @Builder
 public class DesadvSettings
@@ -39,7 +41,7 @@ public class DesadvSettings
 	private static final String ANY_MEASUREMENTUNIT = "<ANY>";
 
 	/**
-	 * @param recipientGLN if null, we assume {@link ClearingCenter#ecosio}.
+	 * @param recipientGLN if null, we assume {@link ClearingCenter#MetasfreshInHouseV2}.
 	 */
 	@NonNull
 	public static DesadvSettings forReceiverGLN(
@@ -49,10 +51,10 @@ public class DesadvSettings
 		final String clearingCenterProperty = "edi.recipientGLN." + recipientGLN + ".clearingCenter";
 		if(Check.isBlank(recipientGLN))
 		{
-			return DesadvSettings.builder().clearingCenter(ClearingCenter.ecosio).build();
+			return DesadvSettings.builder().clearingCenter(ClearingCenter.MetasfreshInHouseV2).build();
 		}
 
-		final ClearingCenter clearingCenter = ClearingCenter.valueOf(Util.resolveProperty(context, clearingCenterProperty, "ecosio"));
+		final ClearingCenter clearingCenter = ClearingCenter.ofValue(Util.resolveProperty(context, clearingCenterProperty, MetasfreshInHouseV2.toString()));
 
 		final DesadvSettingsBuilder settings = DesadvSettings
 				.builder()
@@ -60,7 +62,7 @@ public class DesadvSettings
 
 		return switch (clearingCenter)
 		{
-			case ecosio -> settings.build();
+			case MetasfreshInHouseV2, MetasfreshInHouseV1 -> settings.build();
 			case STEPcom -> settings
 					.applicationRef(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.applicationRef", "DESADV"))
 					.partnerId(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.partnerId"))

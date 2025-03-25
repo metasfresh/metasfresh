@@ -22,15 +22,16 @@
 
 package de.metas.edi.esb.commons;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.camel.CamelContext;
-
 import de.metas.edi.esb.invoicexport.stepcom.qualifier.DocumentType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.apache.camel.CamelContext;
+
+import java.util.Arrays;
+import java.util.List;
+
+import static de.metas.edi.esb.commons.ClearingCenter.MetasfreshInHouseV2;
 
 @Value
 @Builder
@@ -49,7 +50,7 @@ public class InvoicSettings
 			@NonNull final String recipientGLN)
 	{
 		final String clearingCenterProperty = "edi.recipientGLN." + recipientGLN + ".clearingCenter";
-		final ClearingCenter clearingCenter = ClearingCenter.valueOf(Util.resolveProperty(context, clearingCenterProperty, "ecosio"));
+		final ClearingCenter clearingCenter = ClearingCenter.ofValue(Util.resolveProperty(context, clearingCenterProperty, MetasfreshInHouseV2.toString()));
 
 		final InvoicSettingsBuilder settings = InvoicSettings
 				.builder()
@@ -57,7 +58,7 @@ public class InvoicSettings
 
 		return switch (clearingCenter)
 				{
-					case ecosio -> settings.build();
+					case MetasfreshInHouseV2, MetasfreshInHouseV1 -> settings.build();
 					case STEPcom -> settings
 							.applicationRef(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.applicationRef", "INVOIC"))
 							.partnerId(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.partnerId"))
