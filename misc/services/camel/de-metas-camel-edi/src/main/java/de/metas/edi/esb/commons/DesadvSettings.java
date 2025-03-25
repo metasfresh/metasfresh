@@ -32,13 +32,12 @@ import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.List;
 
-import static de.metas.edi.esb.commons.ClearingCenter.MetasfreshInHouseV2;
-
 @Value
 @Builder
 public class DesadvSettings
 {
 	private static final String ANY_MEASUREMENTUNIT = "<ANY>";
+	private static final String DEFAULT_CLEARING_CENTER = "edi.desadv.default.clearingCenter";
 
 	/**
 	 * @param recipientGLN if null, we assume {@link ClearingCenter#MetasfreshInHouseV2}.
@@ -54,7 +53,8 @@ public class DesadvSettings
 			return DesadvSettings.builder().clearingCenter(ClearingCenter.MetasfreshInHouseV2).build();
 		}
 
-		final ClearingCenter clearingCenter = ClearingCenter.ofValue(Util.resolveProperty(context, clearingCenterProperty, MetasfreshInHouseV2.toString()));
+		final String defaultClearingCenter = Util.resolveProperty(context, DEFAULT_CLEARING_CENTER);
+		final ClearingCenter clearingCenter = ClearingCenter.ofValue(Util.resolveProperty(context, clearingCenterProperty, defaultClearingCenter));
 
 		final DesadvSettingsBuilder settings = DesadvSettings
 				.builder()

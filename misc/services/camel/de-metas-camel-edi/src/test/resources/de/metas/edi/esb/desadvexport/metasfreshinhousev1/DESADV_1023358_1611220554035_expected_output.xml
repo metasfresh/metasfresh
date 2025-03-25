@@ -69,7 +69,7 @@
                 <IsSubsequentDeliveryPlanned>N</IsSubsequentDeliveryPlanned>
                 <EAN_CU>3234567890125</EAN_CU>
                 <EAN_TU>4234567890125</EAN_TU>
-                <GTIN>1234567890125</GTIN>
+                <GTIN>2234567890125</GTIN>
                 <PriceActual>19.900</PriceActual>
                 <EanCom_Invoice_UOM>KGM</EanCom_Invoice_UOM>
                 <InvoicableQtyBasedOn>CatchWeight</InvoicableQtyBasedOn>

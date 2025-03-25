@@ -31,13 +31,12 @@ import org.apache.camel.CamelContext;
 import java.util.Arrays;
 import java.util.List;
 
-import static de.metas.edi.esb.commons.ClearingCenter.MetasfreshInHouseV2;
-
 @Value
 @Builder
 public class InvoicSettings
 {
 	private static final String ANY_MEASUREMENTUNIT = "<ANY>";
+	private static final String DEFAULT_CLEARING_CENTER = "edi.invoic.default.clearingCenter";
 
 	public enum InvoicLineQuantityInUOM
 	{
@@ -50,7 +49,9 @@ public class InvoicSettings
 			@NonNull final String recipientGLN)
 	{
 		final String clearingCenterProperty = "edi.recipientGLN." + recipientGLN + ".clearingCenter";
-		final ClearingCenter clearingCenter = ClearingCenter.ofValue(Util.resolveProperty(context, clearingCenterProperty, MetasfreshInHouseV2.toString()));
+
+		final String defaultClearingCenter = Util.resolveProperty(context, DEFAULT_CLEARING_CENTER);
+		final ClearingCenter clearingCenter = ClearingCenter.ofValue(Util.resolveProperty(context, clearingCenterProperty, defaultClearingCenter));
 
 		final InvoicSettingsBuilder settings = InvoicSettings
 				.builder()

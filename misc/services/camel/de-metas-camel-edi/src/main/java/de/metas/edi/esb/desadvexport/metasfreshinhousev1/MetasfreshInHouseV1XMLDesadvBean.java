@@ -286,7 +286,7 @@ public class MetasfreshInHouseV1XMLDesadvBean
 		target.setUPC(source.getUPCCU());
 		target.setIsSubsequentDeliveryPlanned(source.getIsSubsequentDeliveryPlanned());
 		target.setEANCU(source.getEANCU());
-		target.setGTIN(source.getGTINCU());
+		target.setGTIN(source.getGTINTU());
 		target.setEANTU(source.getEANTU());
 		target.setPriceActual(source.getPriceActual());
 		target.setEanComInvoiceUOM(source.getEanComInvoiceUOM());

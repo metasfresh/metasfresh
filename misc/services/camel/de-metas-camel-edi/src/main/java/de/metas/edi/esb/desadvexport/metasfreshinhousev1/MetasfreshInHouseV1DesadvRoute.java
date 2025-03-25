@@ -58,16 +58,16 @@ public class MetasfreshInHouseV1DesadvRoute extends AbstractEDIRoute
 {
 	public static final String ROUTE_ID = "MF-Desadv-In-House-V1";
 
-	public static final String EP_EDI_METASFRESH_XML_DESADV_CONSUMER = "direct:edi.desadv.in.house.v1.consumer";
+	public static final String EP_EDI_METASFRESH_XML_DESADV_CONSUMER = "direct:edi.desadv.inhouse.v1.consumer";
 
 	private final static QName EDIDesadvFeedback_QNAME = Constants.JAXB_ObjectFactory.createEDIDesadvFeedback(null).getName();
 
 	private static final String METHOD_setEDIDesadvID = "setEDIDesadvID";
 
 	@VisibleForTesting
-	static final String OUTPUT_DESADV_LOCAL = "edi.file.desadv.in.house.v1";
+	static final String OUTPUT_DESADV_LOCAL = "edi.file.desadv.inhouse.v1";
 
-	private static final String OUTPUT_DESADV_REMOTE = "edi.file.desadv.in.house.v1.remote";
+	private static final String OUTPUT_DESADV_REMOTE = "edi.file.desadv.inhouse.v1.remote";
 
 	@Override
 	public void configureEDIRoute(@NonNull final DataFormat jaxb, @NonNull final DecimalFormat decimalFormat)

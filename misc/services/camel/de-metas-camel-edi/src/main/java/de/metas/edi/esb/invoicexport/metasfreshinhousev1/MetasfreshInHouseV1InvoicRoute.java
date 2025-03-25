@@ -60,7 +60,7 @@ public class MetasfreshInHouseV1InvoicRoute extends AbstractEDIRoute
 {
 	public static final String ROUTE_ID = "MF-Invoic-To-In-House-V1";
 
-	public static final String EP_EDI_METASFRESH_XML_INVOIC_CONSUMER = "direct:edi.invoic.in.house.v1.consumer";
+	public static final String EP_EDI_METASFRESH_XML_INVOIC_CONSUMER = "direct:edi.invoic.inhouse.v1.consumer";
 
 	private static final String EDI_INVOICE_SENDER_GLN = "edi.props.000.sender.gln";
 
@@ -68,9 +68,9 @@ public class MetasfreshInHouseV1InvoicRoute extends AbstractEDIRoute
 	private static final String METHOD_setCInvoiceID = "setCInvoiceID";
 
 	@VisibleForTesting
-	static final String OUTPUT_INVOIC_LOCAL = "edi.file.invoic.in.house.v1";
+	static final String OUTPUT_INVOIC_LOCAL = "edi.file.invoic.inhouse.v1";
 
-	private static final String OUTPUT_INVOIC_REMOTE = "edi.file.invoic.in.house.v1.remote";
+	private static final String OUTPUT_INVOIC_REMOTE = "edi.file.invoic.inhouse.v1.remote";
 
 	@Override
 	public void configureEDIRoute(final DataFormat jaxb, final DecimalFormat decimalFormat)
