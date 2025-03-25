@@ -19,7 +19,7 @@ public class LayoutFactoryProvider
 		final GridTabVO mainTabVO = gridWindowVO.getTab(GridTabVO.MAIN_TabNo);
 
 		final DAOWindowUIElementsProvider windowUIElementsProvider = new DAOWindowUIElementsProvider();
-		windowUIElementsProvider.warmUp(extractAdTabIds(gridWindowVO));
+		windowUIElementsProvider.warmUp(extractTemplateTabIds(gridWindowVO));
 
 		return LayoutFactory.builder()
 				.services(supportingServices)
@@ -32,11 +32,11 @@ public class LayoutFactoryProvider
 				.build();
 	}
 
-	private static ImmutableSet<AdTabId> extractAdTabIds(final GridWindowVO gridWindowVO)
+	private static ImmutableSet<AdTabId> extractTemplateTabIds(final GridWindowVO gridWindowVO)
 	{
 		return gridWindowVO.getTabs()
 				.stream()
-				.map(GridTabVO::getAdTabId)
+				.map(LayoutFactory::extractTemplateTabId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 }

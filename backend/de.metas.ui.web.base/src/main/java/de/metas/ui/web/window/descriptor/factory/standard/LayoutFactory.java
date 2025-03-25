@@ -131,11 +131,7 @@ public class LayoutFactory
 		this.isRootTab = parentTab == null;
 		this.adWindowId = gridTabVO.getAdWindowId();
 
-		final AdTabId templateTabId = CoalesceUtil.coalesce(gridTabVO.getTemplateTabId(), gridTabVO.getAdTabId());
-		if (templateTabId == null)
-		{
-			throw new AdempiereException("No AD_Tab_ID found for " + gridTabVO);
-		}
+		final AdTabId templateTabId = extractTemplateTabId(gridTabVO);
 
 		//
 		// Pick the right UI elements provider (DAO, fallback to InMemory),
@@ -174,6 +170,17 @@ public class LayoutFactory
 				.build();
 
 		this.childAdTabIdsToSkip = extractLabelsTabIdsOfVisibleElements(labelsUIElements);
+	}
+
+	@NonNull
+	static AdTabId extractTemplateTabId(@NonNull final GridTabVO gridTabVO)
+	{
+		final AdTabId templateTabId = CoalesceUtil.coalesce(gridTabVO.getTemplateTabId(), gridTabVO.getAdTabId());
+		if (templateTabId == null)
+		{
+			throw new AdempiereException("No AD_Tab_ID found for " + gridTabVO); // shall not happen
+		}
+		return templateTabId;
 	}
 
 	private static ImmutableSet<AdTabId> extractLabelsTabIdsOfVisibleElements(final List<I_AD_UI_Element> labelsUIElements)
