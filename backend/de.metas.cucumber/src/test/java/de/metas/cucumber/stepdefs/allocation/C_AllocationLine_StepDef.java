@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.allocation;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -35,6 +36,7 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 
@@ -71,17 +73,27 @@ public class C_AllocationLine_StepDef
 				.create()
 				.firstOnlyNotNull(I_C_AllocationLine.class);
 
-		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_Amount)
-				.ifPresent(amount -> assertThat(singleAllocationLine.getAmount()).isEqualTo(amount));
-		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_DiscountAmt)
-				.ifPresent(amount -> assertThat(singleAllocationLine.getDiscountAmt()).isEqualTo(amount));
-		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_WriteOffAmt)
-				.ifPresent(amount -> assertThat(singleAllocationLine.getWriteOffAmt()).isEqualTo(amount));
-		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_OverUnderAmt)
-				.ifPresent(amount -> assertThat(singleAllocationLine.getOverUnderAmt()).isEqualTo(amount));
+		validateAllocationLine(singleAllocationLine, row);
+	}
 
-		row.getAsOptionalIdentifier(I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID)
-				.ifPresent(allocationIdentifier -> allocationHdrTable.putOrReplaceIfSameId(allocationIdentifier, singleAllocationLine.getC_AllocationHdr()));
+	@And("^validate C_AllocationLines for invoice (.*)$")
+	public void validate_C_AllocationLines_for_invoice(
+			@NonNull final String invoiceIdentifier,
+			@NonNull final DataTable dataTable)
+	{
+		final Integer invoiceId = invoiceTable.get(invoiceIdentifier).getC_Invoice_ID();
+
+		final ImmutableList<I_C_AllocationLine> allocationLines = queryBL.createQueryBuilder(I_C_AllocationLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.orderBy(I_C_AllocationLine.COLUMN_C_AllocationLine_ID)
+				.create()
+				.listImmutable(I_C_AllocationLine.class);
+
+		assertThat(allocationLines).hasSameSizeAs(dataTable.asMaps());
+
+		DataTableRows.of(dataTable)
+				.forEach((row, index) -> validateAllocationLine(allocationLines.get(index), row));
 	}
 
 	@And("there are no allocation lines for invoice")
@@ -92,5 +104,27 @@ public class C_AllocationLine_StepDef
 			final List<I_C_AllocationLine> allocationLines = allocationDAO.retrieveAllocationLines(invoice);
 			assertThat(allocationLines).isEmpty();
 		});
+	}
+
+	private void validateAllocationLine(
+			@NonNull final I_C_AllocationLine allocationLine,
+			@NonNull final DataTableRow row)
+	{
+		final SoftAssertions softly = new SoftAssertions();
+
+		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_Amount)
+				.ifPresent(amount -> softly.assertThat(allocationLine.getAmount()).as("Amount").isEqualTo(amount));
+		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_DiscountAmt)
+				.ifPresent(amount -> softly.assertThat(allocationLine.getDiscountAmt()).as("DiscountAmt").isEqualTo(amount));
+		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_WriteOffAmt)
+				.ifPresent(amount -> softly.assertThat(allocationLine.getWriteOffAmt()).as("WriteOffAmt").isEqualTo(amount));
+		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_OverUnderAmt)
+				.ifPresent(amount -> softly.assertThat(allocationLine.getOverUnderAmt()).as("OverUnderAmt").isEqualTo(amount));
+
+		softly.assertAll();
+
+		row.getAsOptionalIdentifier(I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID)
+				.ifPresent(allocationIdentifier -> allocationHdrTable.putOrReplaceIfSameId(allocationIdentifier, allocationLine.getC_AllocationHdr()));
+
 	}
 }
