@@ -779,7 +779,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: cucumber-logs
+          name: cucumber-logs-${{ matrix.profile }}
           path: cucumber.log
 
   health_check:
