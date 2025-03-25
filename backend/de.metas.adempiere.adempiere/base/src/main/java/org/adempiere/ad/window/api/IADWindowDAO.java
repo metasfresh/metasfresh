@@ -1,5 +1,6 @@
 package org.adempiere.ad.window.api;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
@@ -8,6 +9,10 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdUIColumnId;
+import org.adempiere.ad.element.api.AdUIElementGroupId;
+import org.adempiere.ad.element.api.AdUIElementId;
+import org.adempiere.ad.element.api.AdUISectionId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.model.I_AD_Tab_Callout;
@@ -38,17 +43,25 @@ public interface IADWindowDAO extends ISingletonService
 
 	AdWindowId getWindowIdByInternalName(String internalName);
 
-	List<I_AD_UI_ElementField> retrieveUIElementFields(final I_AD_UI_Element uiElement);
+	ImmutableList<I_AD_UI_ElementField> retrieveUIElementFields(Set<AdUIElementId> uiElementIds);
 
-	List<I_AD_UI_Element> retrieveUIElements(final I_AD_UI_ElementGroup uiElementGroup);
+	ImmutableList<I_AD_UI_ElementField> retrieveUIElementFields(final I_AD_UI_Element uiElement);
+
+	ImmutableList<I_AD_UI_Element> retrieveUIElements(Set<AdUIElementGroupId> uiElementGroupIds);
+
+	ImmutableList<I_AD_UI_Element> retrieveUIElements(final I_AD_UI_ElementGroup uiElementGroup);
 
 	IQueryBuilder<I_AD_UI_Element> retrieveUIElementsQueryByTabId(AdTabId adTabId);
 
-	List<I_AD_UI_ElementGroup> retrieveUIElementGroups(final I_AD_UI_Column uiColumn);
+	ImmutableList<I_AD_UI_ElementGroup> retrieveUIElementGroups(Set<AdUIColumnId> uiColumnIds);
 
-	List<I_AD_UI_Column> retrieveUIColumns(final I_AD_UI_Section uiSection);
+	ImmutableList<I_AD_UI_ElementGroup> retrieveUIElementGroups(final I_AD_UI_Column uiColumn);
 
-	List<I_AD_UI_Section> retrieveUISections(AdTabId adTabId);
+	ImmutableList<I_AD_UI_Column> retrieveUIColumns(Set<AdUISectionId> uiSectionIds);
+
+	ImmutableList<I_AD_UI_Column> retrieveUIColumns(final I_AD_UI_Section uiSection);
+
+	ImmutableList<I_AD_UI_Section> retrieveUISections(Set<AdTabId> adTabIds);
 
 	List<I_AD_UI_Section> retrieveUISections(final I_AD_Tab adTab);
 
@@ -91,7 +104,7 @@ public interface IADWindowDAO extends ISingletonService
 
 	void deleteUISectionsByTabId(AdTabId adTabId);
 
-	int getUIElementNextSeqNo(UIElementGroupId uiElementGroupId);
+	int getUIElementNextSeqNo(AdUIElementGroupId uiElementGroupId);
 
 	/**
 	 * All parameters are mandatory for now.

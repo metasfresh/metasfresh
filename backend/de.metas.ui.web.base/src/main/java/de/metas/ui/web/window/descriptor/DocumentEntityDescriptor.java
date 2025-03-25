@@ -41,6 +41,7 @@ import org.adempiere.ad.callout.api.impl.CalloutExecutor;
 import org.adempiere.ad.callout.api.impl.NullCalloutExecutor;
 import org.adempiere.ad.callout.spi.ICalloutProvider;
 import org.adempiere.ad.callout.spi.ImmutablePlainCalloutProvider;
+import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
@@ -470,6 +471,7 @@ public class DocumentEntityDescriptor
 		private ITranslatableString _description = TranslatableStrings.empty();
 
 		private final LinkedHashMap<String, DocumentFieldDescriptor.Builder> _fieldBuilders = new LinkedHashMap<>();
+		private final LinkedHashMap<AdFieldId, DocumentFieldDescriptor.Builder> _fieldBuildersByMainAdFieldId = new LinkedHashMap<>();
 		private ImmutableMap<String, DocumentFieldDescriptor> _fields = null; // will be built
 		private final LinkedHashMap<DetailId, DocumentEntityDescriptor> _includedEntitiesByDetailId = new LinkedHashMap<>();
 		private DocumentEntityDataBindingDescriptorBuilder _dataBinding = DocumentEntityDataBindingDescriptorBuilder.NULL;
@@ -629,10 +631,15 @@ public class DocumentEntityDescriptor
 
 			// Add field
 			_fieldBuilders.put(fieldBuilder.getFieldName(), fieldBuilder);
+			if (fieldBuilder.getMainAdFieldId() != null)
+			{
+				_fieldBuildersByMainAdFieldId.put(fieldBuilder.getMainAdFieldId(), fieldBuilder);
+			}
 
 			return this;
 		}
 
+		@Nullable
 		public DocumentFieldDescriptor.Builder getFieldBuilder(final String fieldName)
 		{
 			return _fieldBuilders.get(fieldName);
@@ -646,6 +653,12 @@ public class DocumentEntityDescriptor
 		public boolean hasField(final String fieldName)
 		{
 			return getFieldBuilder(fieldName) != null;
+		}
+
+		@Nullable
+		public DocumentFieldDescriptor.Builder getFieldBuilder(@NonNull final AdFieldId adFieldId)
+		{
+			return _fieldBuildersByMainAdFieldId.get(adFieldId);
 		}
 
 		public int getFieldsCount()

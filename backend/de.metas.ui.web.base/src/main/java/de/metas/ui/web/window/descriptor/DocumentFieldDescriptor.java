@@ -24,6 +24,7 @@ import de.metas.ui.web.window.model.lookup.LookupValueByIdSupplier;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -291,7 +292,7 @@ public final class DocumentFieldDescriptor
 	{
 		return forbidNewRecordCreation;
 	}
-	
+
 	public BarcodeScannerType getBarcodeScannerType()
 	{
 		return barcodeScannerType;
@@ -421,6 +422,16 @@ public final class DocumentFieldDescriptor
 		return widgetType.isBoolean();
 	}
 
+	//
+	//
+	//
+	//
+	// ------------------------------------------------------------------------------------------------------------------------
+	//
+	//
+	//
+	//
+
 	/**
 	 * Builder
 	 */
@@ -480,6 +491,8 @@ public final class DocumentFieldDescriptor
 		private DocumentFieldDefaultFilterDescriptor defaultFilterInfo = null;
 
 		private DeviceDescriptorsProvider deviceDescriptorsProvider = DeviceDescriptorsProviders.empty();
+
+		@Nullable private AdFieldId mainAdFieldId = null;
 
 		private Builder(final String fieldName)
 		{
@@ -1254,5 +1267,14 @@ public final class DocumentFieldDescriptor
 		{
 			return deviceDescriptorsProvider;
 		}
+
+		public Builder mainAdFieldId(@Nullable final AdFieldId mainAdFieldId)
+		{
+			this.mainAdFieldId = mainAdFieldId;
+			return this;
+		}
+
+		@Nullable
+		public AdFieldId getMainAdFieldId() {return mainAdFieldId;}
 	}
 }

@@ -1,5 +1,6 @@
 package org.adempiere.ad.window.api.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.common.util.CoalesceUtil;
@@ -16,12 +17,15 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
+import org.adempiere.ad.element.api.AdUIColumnId;
+import org.adempiere.ad.element.api.AdUIElementGroupId;
+import org.adempiere.ad.element.api.AdUIElementId;
+import org.adempiere.ad.element.api.AdUISectionId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.window.api.IADWindowDAO;
-import org.adempiere.ad.window.api.UIElementGroupId;
 import org.adempiere.ad.window.api.WindowCopyRequest;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.I_AD_Tab_Callout;
@@ -152,36 +156,41 @@ public class ADWindowDAO implements IADWindowDAO
 	public List<I_AD_UI_Section> retrieveUISections(final I_AD_Tab adTab)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(adTab);
-		final int AD_Tab_ID = adTab.getAD_Tab_ID();
-		return retrieveUISectionsQuery(ctx, AD_Tab_ID)
+		final AdTabId adTabId = AdTabId.ofRepoId(adTab.getAD_Tab_ID());
+		return retrieveUISectionsQuery(ctx, ImmutableSet.of(adTabId))
 				.create()
 				.list(I_AD_UI_Section.class);
 	}
 
 	@Override
-	public List<I_AD_UI_Section> retrieveUISections(@NonNull final AdTabId adTabId)
+	public ImmutableList<I_AD_UI_Section> retrieveUISections(@NonNull Set<AdTabId> adTabIds)
 	{
-		return retrieveUISectionsQuery(Env.getCtx(), adTabId.getRepoId())
+		if (adTabIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return retrieveUISectionsQuery(Env.getCtx(), adTabIds)
 				.create()
-				.list(I_AD_UI_Section.class);
+				.listImmutable(I_AD_UI_Section.class);
 	}
 
 	@Override
 	public boolean hasUISections(final I_AD_Tab adTab)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(adTab);
-		final int AD_Tab_ID = adTab.getAD_Tab_ID();
-		return retrieveUISectionsQuery(ctx, AD_Tab_ID)
+		final AdTabId adTabId = AdTabId.ofRepoId(adTab.getAD_Tab_ID());
+		return retrieveUISectionsQuery(ctx, ImmutableSet.of(adTabId))
 				.create()
 				.anyMatch();
 	}
 
-	private IQueryBuilder<I_AD_UI_Section> retrieveUISectionsQuery(final Properties ctx, final int AD_Tab_ID)
+	private IQueryBuilder<I_AD_UI_Section> retrieveUISectionsQuery(final Properties ctx, final Set<AdTabId> adTabIds)
 	{
-		return queryBL
-				.createQueryBuilder(I_AD_UI_Section.class, ctx, ITrx.TRXNAME_ThreadInherited)
+		Check.assumeNotEmpty(adTabIds, "adTabIds is not empty");
+		return queryBL.createQueryBuilder(I_AD_UI_Section.class, ctx, ITrx.TRXNAME_ThreadInherited)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_UI_Section.COLUMN_AD_Tab_ID, AD_Tab_ID)
+				.addInArrayFilter(I_AD_UI_Section.COLUMN_AD_Tab_ID, adTabIds)
 				.orderBy()
 				.addColumn(I_AD_UI_Section.COLUMN_SeqNo)
 				.addColumn(I_AD_UI_Section.COLUMN_AD_UI_Section_ID)
@@ -189,19 +198,27 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Override
-	public List<I_AD_UI_Column> retrieveUIColumns(final I_AD_UI_Section uiSection)
+	public ImmutableList<I_AD_UI_Column> retrieveUIColumns(final Set<AdUISectionId> uiSectionIds)
 	{
-		return retrieveUIColumnsQuery(uiSection)
+		return retrieveUIColumnsQuery(uiSectionIds)
 				.create()
-				.list(I_AD_UI_Column.class);
+				.listImmutable();
 	}
 
-	private IQueryBuilder<I_AD_UI_Column> retrieveUIColumnsQuery(final I_AD_UI_Section uiSection)
+	@Override
+	public ImmutableList<I_AD_UI_Column> retrieveUIColumns(final I_AD_UI_Section uiSection)
 	{
-		return queryBL
-				.createQueryBuilder(I_AD_UI_Column.class, uiSection)
+		final AdUISectionId uiSectionId = AdUISectionId.ofRepoId(uiSection.getAD_UI_Section_ID());
+		return retrieveUIColumns(ImmutableSet.of(uiSectionId));
+	}
+
+	private IQueryBuilder<I_AD_UI_Column> retrieveUIColumnsQuery(final Set<AdUISectionId> uiSectionIds)
+	{
+		Check.assumeNotEmpty(uiSectionIds, "uiSectionIds is not empty");
+
+		return queryBL.createQueryBuilder(I_AD_UI_Column.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_UI_Column.COLUMN_AD_UI_Section_ID, uiSection.getAD_UI_Section_ID())
+				.addInArrayFilter(I_AD_UI_Column.COLUMN_AD_UI_Section_ID, uiSectionIds)
 				.orderBy()
 				.addColumn(I_AD_UI_Column.COLUMN_SeqNo)
 				.addColumn(I_AD_UI_Column.COLUMN_AD_UI_Column_ID)
@@ -209,19 +226,33 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Override
-	public List<I_AD_UI_ElementGroup> retrieveUIElementGroups(final I_AD_UI_Column uiColumn)
+	public ImmutableList<I_AD_UI_ElementGroup> retrieveUIElementGroups(final Set<AdUIColumnId> uiColumnIds)
+	{
+		return retrieveUIElementGroupsQuery(uiColumnIds)
+				.create()
+				.listImmutable();
+	}
+
+	@Override
+	public ImmutableList<I_AD_UI_ElementGroup> retrieveUIElementGroups(final I_AD_UI_Column uiColumn)
 	{
 		return retrieveUIElementGroupsQuery(uiColumn)
 				.create()
-				.list(I_AD_UI_ElementGroup.class);
+				.listImmutable();
 	}
 
 	private IQueryBuilder<I_AD_UI_ElementGroup> retrieveUIElementGroupsQuery(final I_AD_UI_Column uiColumn)
 	{
+		return retrieveUIElementGroupsQuery(ImmutableSet.of(AdUIColumnId.ofRepoId(uiColumn.getAD_UI_Column_ID())));
+	}
+
+	private IQueryBuilder<I_AD_UI_ElementGroup> retrieveUIElementGroupsQuery(final Set<AdUIColumnId> uiColumnIds)
+	{
+		Check.assumeNotEmpty(uiColumnIds, "uiColumnIds is not empty");
 		return queryBL
-				.createQueryBuilder(I_AD_UI_ElementGroup.class, uiColumn)
+				.createQueryBuilder(I_AD_UI_ElementGroup.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_UI_ElementGroup.COLUMN_AD_UI_Column_ID, uiColumn.getAD_UI_Column_ID())
+				.addInArrayFilter(I_AD_UI_ElementGroup.COLUMN_AD_UI_Column_ID, uiColumnIds)
 				.orderBy()
 				.addColumn(I_AD_UI_ElementGroup.COLUMN_SeqNo)
 				.endOrderBy();
@@ -251,11 +282,19 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Override
-	public List<I_AD_UI_Element> retrieveUIElements(final I_AD_UI_ElementGroup uiElementGroup)
+	public ImmutableList<I_AD_UI_Element> retrieveUIElements(final Set<AdUIElementGroupId> uiElementGroupIds)
+	{
+		return retrieveUIElementsQuery(uiElementGroupIds)
+				.create()
+				.listImmutable();
+	}
+
+	@Override
+	public ImmutableList<I_AD_UI_Element> retrieveUIElements(final I_AD_UI_ElementGroup uiElementGroup)
 	{
 		return retrieveUIElementsQuery(uiElementGroup)
 				.create()
-				.list(I_AD_UI_Element.class);
+				.listImmutable();
 	}
 
 	private int retrieveUIElementNextSeqNo(final I_AD_UI_ElementGroup uiElementGroup)
@@ -268,10 +307,14 @@ public class ADWindowDAO implements IADWindowDAO
 
 	private IQueryBuilder<I_AD_UI_Element> retrieveUIElementsQuery(final I_AD_UI_ElementGroup uiElementGroup)
 	{
-		return queryBL
-				.createQueryBuilder(I_AD_UI_Element.class, uiElementGroup)
+		return retrieveUIElementsQuery(ImmutableSet.of(AdUIElementGroupId.ofRepoId(uiElementGroup.getAD_UI_ElementGroup_ID())));
+	}
+
+	private IQueryBuilder<I_AD_UI_Element> retrieveUIElementsQuery(final Set<AdUIElementGroupId> uiElementGroupIds)
+	{
+		return queryBL.createQueryBuilder(I_AD_UI_Element.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_UI_Element.COLUMN_AD_UI_ElementGroup_ID, uiElementGroup.getAD_UI_ElementGroup_ID())
+				.addInArrayFilter(I_AD_UI_Element.COLUMN_AD_UI_ElementGroup_ID, uiElementGroupIds)
 				.orderBy()
 				.addColumn(I_AD_UI_Element.COLUMN_SeqNo)
 				.endOrderBy();
@@ -290,19 +333,31 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Override
-	public List<I_AD_UI_ElementField> retrieveUIElementFields(final I_AD_UI_Element uiElement)
+	public ImmutableList<I_AD_UI_ElementField> retrieveUIElementFields(final Set<AdUIElementId> uiElementIds)
+	{
+		return retrieveUIElementFieldsQuery(uiElementIds)
+				.create()
+				.listImmutable();
+	}
+
+	@Override
+	public ImmutableList<I_AD_UI_ElementField> retrieveUIElementFields(final I_AD_UI_Element uiElement)
 	{
 		return retrieveUIElementFieldsQuery(uiElement)
 				.create()
-				.list(I_AD_UI_ElementField.class);
+				.listImmutable();
 	}
 
 	private IQueryBuilder<I_AD_UI_ElementField> retrieveUIElementFieldsQuery(final I_AD_UI_Element uiElement)
 	{
-		return queryBL
-				.createQueryBuilder(I_AD_UI_ElementField.class, uiElement)
+		return retrieveUIElementFieldsQuery(ImmutableSet.of(AdUIElementId.ofRepoId(uiElement.getAD_UI_Element_ID())));
+	}
+
+	private IQueryBuilder<I_AD_UI_ElementField> retrieveUIElementFieldsQuery(final Set<AdUIElementId> uiElementIds)
+	{
+		return queryBL.createQueryBuilder(I_AD_UI_ElementField.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_UI_ElementField.COLUMN_AD_UI_Element_ID, uiElement.getAD_UI_Element_ID())
+				.addInArrayFilter(I_AD_UI_ElementField.COLUMN_AD_UI_Element_ID, uiElementIds)
 				.orderBy()
 				.addColumn(I_AD_UI_ElementField.COLUMN_SeqNo)
 				.addColumn(I_AD_UI_ElementField.COLUMN_AD_UI_ElementField_ID)
@@ -418,7 +473,9 @@ public class ADWindowDAO implements IADWindowDAO
 			@NonNull final I_AD_Tab targetTab,
 			@NonNull final I_AD_Tab sourceTab)
 	{
-		final Map<String, I_AD_UI_Section> existingUISections = retrieveUISectionsQuery(Env.getCtx(), targetTab.getAD_Tab_ID()).create().map(I_AD_UI_Section.class, I_AD_UI_Section::getValue);
+		final Map<String, I_AD_UI_Section> existingUISections = retrieveUISectionsQuery(Env.getCtx(), ImmutableSet.of(AdTabId.ofRepoId(targetTab.getAD_Tab_ID())))
+				.create()
+				.map(I_AD_UI_Section.class, I_AD_UI_Section::getValue);
 		final Collection<I_AD_UI_Section> sourceUISections = retrieveUISections(sourceTab);
 
 		for (final I_AD_UI_Section sourceUISection : sourceUISections)
@@ -639,7 +696,7 @@ public class ADWindowDAO implements IADWindowDAO
 
 		for (final I_AD_UI_Element sourceUIElement : sourceUIElements)
 		{
-			if(isValidSourceUIElement(sourceUIElement))
+			if (isValidSourceUIElement(sourceUIElement))
 			{
 				final I_AD_UI_Element existingTargetElement = existingTargetUIElements.get(sourceUIElement.getName());
 				copyUIElement(copyCtx, targetUIElementGroup, existingTargetElement, sourceUIElement);
@@ -649,12 +706,12 @@ public class ADWindowDAO implements IADWindowDAO
 
 	private boolean isValidSourceUIElement(final I_AD_UI_Element sourceUIElements)
 	{
-		if(sourceUIElements.getAD_UI_ElementType().equals(X_AD_UI_Element.AD_UI_ELEMENTTYPE_Labels))
+		if (sourceUIElements.getAD_UI_ElementType().equals(X_AD_UI_Element.AD_UI_ELEMENTTYPE_Labels))
 		{
 			return sourceUIElements.getLabels_Tab_ID() > 0 && sourceUIElements.getLabels_Tab().isActive();
 		}
 
-		if(sourceUIElements.getAD_UI_ElementType().equals(X_AD_UI_Element.AD_UI_ELEMENTTYPE_InlineTab))
+		if (sourceUIElements.getAD_UI_ElementType().equals(X_AD_UI_Element.AD_UI_ELEMENTTYPE_InlineTab))
 		{
 			return sourceUIElements.getInline_Tab_ID() > 0 && sourceUIElements.getInline_Tab().isActive();
 		}
@@ -681,7 +738,7 @@ public class ADWindowDAO implements IADWindowDAO
 			final I_AD_UI_Element existingTargetElement,
 			final I_AD_UI_Element sourceElement)
 	{
-		final UIElementGroupId targetElementGroupId = UIElementGroupId.ofRepoId(targetElementGroup.getAD_UI_ElementGroup_ID());
+		final AdUIElementGroupId targetElementGroupId = AdUIElementGroupId.ofRepoId(targetElementGroup.getAD_UI_ElementGroup_ID());
 
 		final I_AD_UI_Element targetElement = existingTargetElement != null ? existingTargetElement : newInstance(I_AD_UI_Element.class);
 
@@ -696,11 +753,8 @@ public class ADWindowDAO implements IADWindowDAO
 		final AdTabId targetTabId = getTabId(targetElementGroup);
 		targetElement.setAD_Tab_ID(targetTabId.getRepoId());
 
-		final Optional<AdFieldId> targetFieldId = getTargetFieldId(sourceElement, targetTabId);
-		if (targetFieldId.isPresent())
-		{
-			targetElement.setAD_Field_ID(targetFieldId.get().getRepoId());
-		}
+		getTargetFieldId(sourceElement, targetTabId)
+				.ifPresent(adFieldId -> targetElement.setAD_Field_ID(adFieldId.getRepoId()));
 
 		//
 		// Labels
@@ -766,13 +820,13 @@ public class ADWindowDAO implements IADWindowDAO
 	}
 
 	@Override
-	public int getUIElementNextSeqNo(@NonNull final UIElementGroupId uiElementGroupId)
+	public int getUIElementNextSeqNo(@NonNull final AdUIElementGroupId uiElementGroupId)
 	{
 		final int lastSeqNo = retrieveUIElementLastSeqNo(uiElementGroupId);
 		return nextSeqNo(lastSeqNo);
 	}
 
-	private int retrieveUIElementLastSeqNo(@NonNull final UIElementGroupId uiElementGroupId)
+	private int retrieveUIElementLastSeqNo(@NonNull final AdUIElementGroupId uiElementGroupId)
 	{
 		final Integer lastSeqNo = queryBL.createQueryBuilder(I_AD_UI_Element.class)
 				.addEqualsFilter(I_AD_UI_Element.COLUMNNAME_AD_UI_ElementGroup_ID, uiElementGroupId)
@@ -787,7 +841,10 @@ public class ADWindowDAO implements IADWindowDAO
 			final I_AD_UI_Section targetUISection,
 			final I_AD_UI_Section sourceUISection)
 	{
-		final Map<Integer, I_AD_UI_Column> existingUIColumns = retrieveUIColumnsQuery(targetUISection).create().map(I_AD_UI_Column.class, I_AD_UI_Column::getSeqNo);
+		final AdUISectionId targetUISectionId = AdUISectionId.ofRepoId(targetUISection.getAD_UI_Section_ID());
+		final Map<Integer, I_AD_UI_Column> existingUIColumns = retrieveUIColumnsQuery(ImmutableSet.of(targetUISectionId))
+				.create()
+				.map(I_AD_UI_Column.class, I_AD_UI_Column::getSeqNo);
 		final Collection<I_AD_UI_Column> sourceUIColumns = retrieveUIColumns(sourceUISection);
 
 		for (final I_AD_UI_Column sourceUIColumn : sourceUIColumns)

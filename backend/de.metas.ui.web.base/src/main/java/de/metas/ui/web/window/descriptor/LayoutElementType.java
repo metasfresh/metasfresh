@@ -34,7 +34,9 @@ public enum LayoutElementType implements ReferenceListAwareEnum
 {
 	Field(X_AD_UI_Element.AD_UI_ELEMENTTYPE_Field),
 	Labels(X_AD_UI_Element.AD_UI_ELEMENTTYPE_Labels),
-	InlineTab(X_AD_UI_Element.AD_UI_ELEMENTTYPE_InlineTab);
+	InlineTab(X_AD_UI_Element.AD_UI_ELEMENTTYPE_InlineTab),
+	Attributes(X_AD_UI_Element.AD_UI_ELEMENTTYPE_Attributes),
+	;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<LayoutElementType> index = ReferenceListAwareEnums.index(values());
 
