@@ -23,6 +23,7 @@
 package de.metas.edi.esb.invoicexport.edifact;
 
 import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
 import de.metas.edi.esb.jaxb.metasfresh.ObjectFactory;
@@ -39,10 +40,12 @@ import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.util.Files.contentOf;
 
 class EdifactInvoicRouteTest extends CamelTestSupport
 {
@@ -67,7 +70,7 @@ class EdifactInvoicRouteTest extends CamelTestSupport
 		try
 		{
 			properties.load(EdifactInvoicRouteTest.class.getClassLoader().getResourceAsStream("application.properties"));
-			properties.setProperty(EdifactInvoicRoute.EDI_INVOICE_FILENAME_PATTERN, "mock:fileOutputEndpoint");
+			properties.setProperty(EdifactInvoicRoute.OUTPUT_INVOIC_LOCAL, "mock:fileOutputEndpoint");
 			properties.setProperty(Constants.EP_AMQP_TO_MF, "mock:ep.rabbitmq.to.mf");
 		}
 		catch (final IOException e)
@@ -76,47 +79,19 @@ class EdifactInvoicRouteTest extends CamelTestSupport
 		}
 		camelContextConfiguration.withUseOverridePropertiesWithPropertiesComponent(properties);
 	}
-	
+
 	@Test
-	void empty_invoic() throws Exception
+	void invoice_010() throws Exception
 	{
-		final var ediExpInvoicType = new ObjectFactory().createEDICctopInvoicVType();
-		ediExpInvoicType.setCInvoiceID(new BigInteger("1001"));
-		ediExpInvoicType.setADClientValueAttr("ADClientValueAttr");
-
-		template.sendBodyAndHeader(
-				EdifactInvoicRoute.EP_EDI_METASFRESH_XML_INVOIC_CONSUMER /*endpoint-URI*/,
-				ediExpInvoicType /*actual invoicBody*/,
-
-				EDIXmlFeedbackHelper.HEADER_OriginalXMLBody, ediExpInvoicType // this header is otherwise set by the preceeding generic route
-		);
-
-		fileOutputEndpoint.expectedMessageCount(1);
-		fileOutputEndpoint.assertIsSatisfied(1000);
-		final var invoicBody = fileOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
-		assertThat(invoicBody).isEqualToIgnoringWhitespace(
-				"EFICAT-Stuff");
-
-		feedbackOutputEndpoint.expectedMessageCount(1);
-		feedbackOutputEndpoint.assertIsSatisfied(1000);
-		final var feedBackBody = feedbackOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
-		assertThat(feedBackBody).isEqualToIgnoringWhitespace(
-				"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"
-						+ "<EDI_Invoice_Feedback AD_Client_Value=\"ADClientValueAttr\" ReplicationEvent=\"5\" ReplicationMode=\"0\" ReplicationType=\"M\" Version=\"*\">"
-						+ "    <C_Invoice_ID>1001</C_Invoice_ID>"
-						+ "    <EDI_ExportStatus>S</EDI_ExportStatus>"
-						+ "</EDI_Invoice_Feedback>");
-	}
-	@Test
-	void nonEmpty_invoic() throws Exception
-	{
+		SystemTime.setTimeSource((() -> Instant.parse("2025-01-17T14:30:00.00Z").toEpochMilli()));
+		
 		// given
-		final var inputStr = EdifactInvoicRouteTest.class.getResourceAsStream("/de/metas/edi/esb/invoicexport/edifact/INVOIC.xml");
+		final var inputStr = EdifactInvoicRouteTest.class.getResourceAsStream("/de/metas/edi/esb/invoicexport/edifact/INVOIC_010.xml");
 		assertThat(inputStr).isNotNull();
 
 		final JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
 		final Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-		final JAXBElement<EDIExpDesadvType> inputXml = (JAXBElement) unmarshaller.unmarshal(inputStr);
+		final JAXBElement<EDIExpDesadvType> inputXml = (JAXBElement)unmarshaller.unmarshal(inputStr);
 
 		// when
 		template.sendBodyAndHeader(
@@ -131,7 +106,9 @@ class EdifactInvoicRouteTest extends CamelTestSupport
 		fileOutputEndpoint.assertIsSatisfied(1000);
 		final var edifactOutput = fileOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
 
-		assertThat(edifactOutput).isEqualTo(new File("./src/test/resources/de/metas/edi/esb/invoicexport/edifact/INVOIC_expected_output.edi"));
+		final File file = new File("./src/test/resources/de/metas/edi/esb/invoicexport/edifact/INVOIC_010_expected_output.edi");
+		assertThat(edifactOutput).isEqualTo(contentOf(file, StandardCharsets.UTF_8));
+		
+		SystemTime.resetTimeSource();
 	}
-	
 }

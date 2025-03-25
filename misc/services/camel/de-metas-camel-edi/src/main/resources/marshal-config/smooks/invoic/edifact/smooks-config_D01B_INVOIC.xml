@@ -34,7 +34,7 @@
         <core:config>
             <smooks-resource-list>
                 <!-- Configure the writer to serialise the event stream into EDIFACT. -->
-                <edifact:unparser schemaUri="/d03b/EDIFACT-Messages.dfdl.xsd" unparseOnNode="*">
+                <edifact:unparser schemaUri="/d01b/EDIFACT-Messages.dfdl.xsd" unparseOnNode="*">
                     <edifact:messageTypes>
                         <edifact:messageType>INVOIC</edifact:messageType>
                     </edifact:messageTypes>

@@ -8,6 +8,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.Message;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.support.DefaultMessage;
+import org.jetbrains.annotations.Contract;
 import org.springframework.lang.Nullable;
 
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -70,7 +71,9 @@ public final class Util
 	/**
 	 * @return date converted to {@link XMLGregorianCalendar} or <code>null</code> if date was <code>null</code>.
 	 */
-	public static XMLGregorianCalendar toXMLCalendar(final Date date)
+	@Contract("!null -> !null")
+	@Nullable
+	public static XMLGregorianCalendar toXMLCalendar(@Nullable final Date date)
 	{
 		if (date != null)
 		{
@@ -88,7 +91,9 @@ public final class Util
 		return null;
 	}
 
-	public static String toFormattedStringDate(final Date date, @NonNull final String datePattern)
+	@Contract("!null, _ -> !null")
+	@Nullable
+	public static String toFormattedStringDate(@Nullable final Date date, @NonNull final String datePattern)
 	{
 		if (date == null)
 		{
@@ -98,7 +103,9 @@ public final class Util
 		return dateFormat.format(date);
 	}
 
-	public static Date toDate(final XMLGregorianCalendar xmlCalendar)
+	@Contract("!null -> !null")
+	@Nullable
+	public static Date toDate(@Nullable final XMLGregorianCalendar xmlCalendar)
 	{
 		if (xmlCalendar == null)
 		{

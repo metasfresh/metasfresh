@@ -1,0 +1,182 @@
+<?xml version='1.0' encoding='utf-8'?>
+<EDI_cctop_invoic_v AD_Client_Value="InterCheese AG" ReplicationMode="1" ReplicationType="M" Version="*" SequenceNo="1382857" TrxName="">
+    <C_BPartner_Location_ID>8636796</C_BPartner_Location_ID>
+    <C_Invoice_ID>2572135</C_Invoice_ID>
+    <DateInvoiced>2025-01-17+01:00</DateInvoiced>
+    <DateOrdered>2025-01-14+01:00</DateOrdered>
+    <eancom_doctype>380</eancom_doctype>
+    <EDI_cctop_invoic_v_ID>2572135</EDI_cctop_invoic_v_ID>
+    <GrandTotal>58.63</GrandTotal>
+    <invoice_documentno>j359531</invoice_documentno>
+    <ISO_Code>CHF</ISO_Code>
+    <MovementDate>2025-01-16+01:00</MovementDate>
+    <POReference>3755212048</POReference>
+    <receivergln>2782874883352</receivergln>
+    <sendergln>5592251874534</sendergln>
+    <shipment_documentno>A176387</shipment_documentno>
+    <EDIDesadvDocumentNo>3497946</EDIDesadvDocumentNo>
+    <TotalLines>65.96</TotalLines>
+    <totaltaxbaseamt>65.96</totaltaxbaseamt>
+    <totalvat>0.85</totalvat>
+    <EDI_cctop_000_v>
+        <C_BPartner_Location_ID>8636796</C_BPartner_Location_ID>
+        <EDI_cctop_000_v_ID>8636796</EDI_cctop_000_v_ID>
+        <GLN>2782874883352</GLN>
+    </EDI_cctop_000_v>
+    <EDI_cctop_111_v>
+        <C_Order_ID>5066958</C_Order_ID>
+        <DateOrdered>2025-01-14+01:00</DateOrdered>
+        <EDI_cctop_111_v_ID>2572135</EDI_cctop_111_v_ID>
+        <M_InOut_ID>2702104</M_InOut_ID>
+        <MovementDate>2025-01-16+01:00</MovementDate>
+        <POReference>3755212048</POReference>
+        <shipment_documentno>A176387</shipment_documentno>
+    </EDI_cctop_111_v>
+    <EDI_cctop_119_v>
+        <Address1>nJFujCCIhbMCjqMzN 26</Address1>
+        <C_BPartner_Location_ID>8978934</C_BPartner_Location_ID>
+        <C_Invoice_ID>2572135</C_Invoice_ID>
+        <City>nLoWA</City>
+        <CountryCode>CH</CountryCode>
+        <eancom_locationtype>BY</eancom_locationtype>
+        <EDI_cctop_119_v_ID>2572135</EDI_cctop_119_v_ID>
+        <GLN>4088195999332</GLN>
+        <M_InOut_ID>3</M_InOut_ID>
+        <Name>wHfi OWZPccnHfTJLtG</Name>
+        <Postal>3119</Postal>
+        <Value>71457</Value>
+        <VATaxID>SNY8648.850.303</VATaxID>
+    </EDI_cctop_119_v>
+    <EDI_cctop_119_v>
+        <Address1>CbIDM aN DW ajIsOg</Address1>
+        <Address2>LC ULuZJc</Address2>
+        <C_BPartner_Location_ID>8412055</C_BPartner_Location_ID>
+        <C_Invoice_ID>2572135</C_Invoice_ID>
+        <City>cIRcfE</City>
+        <CountryCode>CH</CountryCode>
+        <eancom_locationtype>DP</eancom_locationtype>
+        <EDI_cctop_119_v_ID>2572135</EDI_cctop_119_v_ID>
+        <GLN>2975268218281</GLN>
+        <M_InOut_ID>3</M_InOut_ID>
+        <Name>wHfi OWZPccnHfTJLtG</Name>
+        <Postal>1308</Postal>
+        <Value>71457</Value>
+        <VATaxID>SNY8648.850.303</VATaxID>
+    </EDI_cctop_119_v>
+    <EDI_cctop_119_v>
+        <Address1>Pq r vIQHAuWVBrJWnGSO</Address1>
+        <Address2>VSFWYxwF 0374</Address2>
+        <C_BPartner_Location_ID>8636796</C_BPartner_Location_ID>
+        <C_Invoice_ID>2572135</C_Invoice_ID>
+        <City>nLoWA</City>
+        <CountryCode>CH</CountryCode>
+        <eancom_locationtype>IV</eancom_locationtype>
+        <EDI_cctop_119_v_ID>2572135</EDI_cctop_119_v_ID>
+        <GLN>0832673493314</GLN>
+        <M_InOut_ID>3</M_InOut_ID>
+        <Name>wHfi OWZPccnHfTJLtG</Name>
+        <Postal>3119</Postal>
+        <Value>71457</Value>
+        <VATaxID>SNY8648.850.303</VATaxID>
+    </EDI_cctop_119_v>
+    <EDI_cctop_119_v>
+        <Address1>LPS dl ilrNCTjg 1</Address1>
+        <Address2>XADWfiX 0658 EzYfGd wrIE WPzqxcug DNEb</Address2>
+        <C_BPartner_Location_ID>650125</C_BPartner_Location_ID>
+        <C_Invoice_ID>2572135</C_Invoice_ID>
+        <City>dElgxu</City>
+        <CountryCode>CH</CountryCode>
+        <eancom_locationtype>SN</eancom_locationtype>
+        <EDI_cctop_119_v_ID>2572135</EDI_cctop_119_v_ID>
+        <GLN>3321518755522</GLN>
+        <M_InOut_ID>2702104</M_InOut_ID>
+        <Name>wHfi OWZPccnHfTJLtG</Name>
+        <Postal>5099</Postal>
+        <Value>71457</Value>
+        <VATaxID>SNY8648.850.303</VATaxID>
+        <Setup_Place_No>5938</Setup_Place_No>
+    </EDI_cctop_119_v>
+    <EDI_cctop_119_v>
+        <Address1>cSSEQxljaSyuQzbX 28</Address1>
+        <C_BPartner_Location_ID>9098496</C_BPartner_Location_ID>
+        <C_Invoice_ID>2572135</C_Invoice_ID>
+        <City>SUAxXTFUFMo</City>
+        <CountryCode>CH</CountryCode>
+        <eancom_locationtype>SU</eancom_locationtype>
+        <EDI_cctop_119_v_ID>2572135</EDI_cctop_119_v_ID>
+        <GLN>5592251874534</GLN>
+        <M_InOut_ID>3</M_InOut_ID>
+        <Name>BxxkSImalsr Sk</Name>
+        <Phone>F33 66 480 59 70</Phone>
+        <Postal>6581</Postal>
+        <Value>BxxkSImalsr Sk</Value>
+        <VATaxID>JoKD208.741.288</VATaxID>
+        <Contact>gKhyhN, RsUzM</Contact>
+    </EDI_cctop_119_v>
+    <EDI_cctop_120_v>
+        <C_Invoice_ID>2572135</C_Invoice_ID>
+        <EDI_cctop_120_v_ID>2572135</EDI_cctop_120_v_ID>
+        <ISO_Code>CHF</ISO_Code>
+        <netdate>2025-02-16+01:00</netdate>
+        <NetDays>78</NetDays>
+        <singlevat>5.0</singlevat>
+        <taxfree>N</taxfree>
+    </EDI_cctop_120_v>
+    <EDI_cctop_140_v>
+        <C_Invoice_ID>2572135</C_Invoice_ID>
+        <Discount>0</Discount>
+        <DiscountDate>2025-01-17+01:00</DiscountDate>
+        <DiscountDays>3</DiscountDays>
+        <EDI_cctop_140_v_ID>2572135</EDI_cctop_140_v_ID>
+        <Rate>5.0</Rate>
+    </EDI_cctop_140_v>
+    <EDI_cctop_invoic_500_v>
+        <C_Invoice_ID>2572135</C_Invoice_ID>
+        <EanCom_UOM>PCE</EanCom_UOM>
+        <EDI_cctop_invoic_500_v_ID>3752678</EDI_cctop_invoic_500_v_ID>
+        <ISO_Code>CHF</ISO_Code>
+        <Line>10</Line>
+        <LineNetAmt>43.98</LineNetAmt>
+        <Name>iavPKOUOW lQgNBCiL LQhJgpMs, FbtYyc</Name>
+        <Name2>235N</Name2>
+        <PriceActual>1.790</PriceActual>
+        <PriceList>3</PriceList>
+        <QtyInvoiced>10</QtyInvoiced>
+        <Rate>5.0</Rate>
+        <taxfree>N</taxfree>
+        <Value>766393</Value>
+        <CustomerProductNo>5285974</CustomerProductNo>
+        <EDI_cctop_invoic_v_ID>2572135</EDI_cctop_invoic_v_ID>
+        <ProductDescription>YgqxqZaGl YrRMvkEA mQHuyWY6, ynPxOh 387Y</ProductDescription>
+        <OrderPOReference>3755212048</OrderPOReference>
+        <OrderLine>079</OrderLine>
+        <QtyInvoicedInOrderedUOM>1</QtyInvoicedInOrderedUOM>
+        <EanCom_Ordered_UOM>COLI</EanCom_Ordered_UOM>
+        <TaxAmtInfo>0.85</TaxAmtInfo>
+        <EanCom_Price_UOM>PCE</EanCom_Price_UOM>
+        <GTIN>2152647921339</GTIN>
+        <Buyer_GTIN_TU>2152647921339</Buyer_GTIN_TU>
+        <Buyer_GTIN_CU>9342371125331</Buyer_GTIN_CU>
+        <Supplier_GTIN_CU>9342371125331</Supplier_GTIN_CU>
+        <C_UOM_BPartner_ID>
+            <Name>Kollo</Name>
+            <UOMSymbol>Kollo</UOMSymbol>
+            <X12DE355>COLI</X12DE355>
+        </C_UOM_BPartner_ID>
+        <QtyEnteredInBPartnerUOM>1</QtyEnteredInBPartnerUOM>
+        <ExternalSeqNo>100</ExternalSeqNo>
+    </EDI_cctop_invoic_500_v>
+    <EDI_cctop_901_991_v>
+        <C_Invoice_ID>2572135</C_Invoice_ID>
+        <EDI_cctop_901_991_v_ID>2572135</EDI_cctop_901_991_v_ID>
+        <Rate>5.0</Rate>
+        <TaxAmt>0.85</TaxAmt>
+        <TaxBaseAmt>65.96</TaxBaseAmt>
+        <TotalAmt>58.63</TotalAmt>
+        <ReferenceNo>39050002461945521237072092151392426764085i 251042136g</ReferenceNo>
+    </EDI_cctop_901_991_v>
+    <CountryCode>CH</CountryCode>
+    <CountryCode_3digit>fbY</CountryCode_3digit>
+    <VATaxID>JoKD208.741.288</VATaxID>
+    <InvoicableQtyBasedOn>Nominal</InvoicableQtyBasedOn>
+</EDI_cctop_invoic_v>

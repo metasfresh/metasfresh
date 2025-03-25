@@ -24,14 +24,15 @@ package de.metas.edi.esb.invoicexport.edifact;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.processor.feedback.EDIXmlSuccessFeedbackProcessor;
 import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
+import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoic500VType;
 import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIInvoiceFeedbackType;
 import jakarta.xml.bind.JAXBContext;
-import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -39,40 +40,16 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.component.rabbitmq.RabbitMQConstants;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
 import org.apache.camel.spi.DataFormat;
-import org.smooks.edifact.binding.d03b.BGMBeginningOfMessage;
-import org.smooks.edifact.binding.d03b.C002DocumentMessageName;
-import org.smooks.edifact.binding.d03b.C106DocumentMessageIdentification;
-import org.smooks.edifact.binding.d03b.C507DateTimePeriod;
-import org.smooks.edifact.binding.d03b.C516MonetaryAmount;
-import org.smooks.edifact.binding.d03b.DTMDateTimePeriod;
-import org.smooks.edifact.binding.d03b.INVOIC;
-import org.smooks.edifact.binding.d03b.Interchange;
-import org.smooks.edifact.binding.d03b.MOAMonetaryAmount;
-import org.smooks.edifact.binding.d03b.Message;
-import org.smooks.edifact.binding.service.E0001SyntaxIdentifier;
-import org.smooks.edifact.binding.service.E0051ControllingAgencyCoded;
-import org.smooks.edifact.binding.service.E0065MessageType;
-import org.smooks.edifact.binding.service.E0081SectionIdentification;
-import org.smooks.edifact.binding.service.S001SyntaxIdentifier;
-import org.smooks.edifact.binding.service.S002InterchangeSender;
-import org.smooks.edifact.binding.service.S003InterchangeRecipient;
-import org.smooks.edifact.binding.service.S004DateAndTimeOfPreparation;
-import org.smooks.edifact.binding.service.S005RecipientReferencePasswordDetails;
-import org.smooks.edifact.binding.service.S009MessageIdentifier;
-import org.smooks.edifact.binding.service.UNA;
-import org.smooks.edifact.binding.service.UNBInterchangeHeader;
-import org.smooks.edifact.binding.service.UNHMessageHeader;
-import org.smooks.edifact.binding.service.UNSSectionControl;
-import org.smooks.edifact.binding.service.UNTMessageTrailer;
-import org.smooks.edifact.binding.service.UNZInterchangeTrailer;
+import org.smooks.edifact.binding.d01b.Interchange;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.annotation.PropertySources;
 import org.springframework.stereotype.Component;
 
 import javax.xml.namespace.QName;
-import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
+import java.util.Arrays;
+import java.util.Comparator;
 
 /**
  * This route is getting its stuff from {@link de.metas.edi.esb.commons.route.exports.EDIExportCommonRoute}
@@ -84,26 +61,23 @@ import java.text.DecimalFormat;
 })
 public class EdifactInvoicRoute extends AbstractEDIRoute
 {
-	public static final String ROUTE_ID = "MF-Invoic-To-EDIFACT-Invoic";
-
-	@VisibleForTesting
-	static final String EDI_INVOICE_FILENAME_PATTERN = "edi.file.invoic.edifact.filename";
+	public static final String ROUTE_ID = "MF-Invoic-To-EDIFACT";
 
 	public static final String EP_EDI_METASFRESH_XML_INVOIC_CONSUMER = "direct:edi.invoic.edifact.consumer";
 
-	public static final String EDI_INVOIC_SENDER_GLN = "edi.props.000.sender.gln";
+	private static final String EDI_INVOIC_SENDER_GLN = "edi.props.000.sender.gln";
 
-	public final static QName EDIInvoiceFeedback_QNAME = Constants.JAXB_ObjectFactory.createEDIInvoiceFeedback(null).getName();
-	public static final String METHOD_setCInvoiceID = "setCInvoiceID";
+	private final static QName EDIInvoiceFeedback_QNAME = Constants.JAXB_ObjectFactory.createEDIInvoiceFeedback(null).getName();
+	private static final String METHOD_setCInvoiceID = "setCInvoiceID";
+	
+	@VisibleForTesting
+	static final String OUTPUT_INVOIC_LOCAL = "edi.file.invoic.edifact";
 
-	/**
-	 * The FILE folder where the EDI file will be stored
-	 */
-	public static final String EP_EDI_FILE_INVOICE = "edi.file.invoic.edifact";
+	private static final String OUTPUT_INVOIC_REMOTE = "edi.file.invoic.edifact.remote";
 
 	@Override
 	public void configureEDIRoute(
-			@NonNull final DataFormat metasfreshInhauseJaxb, 
+			@NonNull final DataFormat metasfreshFeedbackFormat, 
 			@NonNull final DecimalFormat decimalFormat)
 	{
 		// set up the format to convert edifact-java => edifact-XML
@@ -113,7 +87,7 @@ public class EdifactInvoicRoute extends AbstractEDIRoute
 			smooksEdifactJaxbContext = JAXBContext.newInstance(
 					Interchange.class, 
 					org.smooks.edifact.binding.service.ObjectFactory.class, 
-					org.smooks.edifact.binding.d03b.ObjectFactory.class);
+					org.smooks.edifact.binding.d01b.ObjectFactory.class);
 		}
 		catch (final JAXBException e)
 		{
@@ -127,15 +101,26 @@ public class EdifactInvoicRoute extends AbstractEDIRoute
 		//final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();
 		//getContext().getTypeConverterRegistry().addTypeConverters(readerTypeConverter);
 
-		final String invoiceFilenamePattern = Util.resolveProperty(getContext(), EdifactInvoicRoute.EDI_INVOICE_FILENAME_PATTERN);
 		final String feedbackMessageRoutingKey = Util.resolveProperty(getContext(), Constants.EP_AMQP_TO_MF_DURABLE_ROUTING_KEY);
-		final String senderGln = Util.resolveProperty(getContext(), EdifactInvoicRoute.EDI_INVOIC_SENDER_GLN);
+		final String senderGln = Util.resolveProperty(getContext(), EDI_INVOIC_SENDER_GLN);
 
-		from(EdifactInvoicRoute.EP_EDI_METASFRESH_XML_INVOIC_CONSUMER)
+		final String remoteEndpoint = Util.resolveProperty(getContext(), OUTPUT_INVOIC_REMOTE, "");
+		final String[] endPointURIs;
+		if (Util.isEmpty(remoteEndpoint)) // if we send everything to the remote-EP, then log what we send to file only on "TRACE" log level
+		{
+			endPointURIs = new String[] { "{{" + OUTPUT_INVOIC_LOCAL + "}}" };
+		}
+		else
+		{
+			endPointURIs = new String[] { "{{" + OUTPUT_INVOIC_LOCAL + "}}", remoteEndpoint };
+		}
+		
+		from(EP_EDI_METASFRESH_XML_INVOIC_CONSUMER)
 				.routeId(ROUTE_ID)
+				.streamCache("true")
 
 		.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
-				.setProperty(EdifactInvoicRoute.EDI_INVOIC_SENDER_GLN).constant(senderGln)
+				.setProperty(EDI_INVOIC_SENDER_GLN).constant(senderGln)
 
 		.log(LoggingLevel.INFO, "EDI: Setting EDI feedback headers...")
 		.process(exchange -> {
@@ -146,72 +131,19 @@ public class EdifactInvoicRoute extends AbstractEDIRoute
 
 			exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ADClientValueAttr, xmlCctopInvoice.getADClientValueAttr());
 			exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlCctopInvoice.getCInvoiceID().longValue());
+
+			xmlCctopInvoice.getEDICctopInvoic500V().sort(Comparator.comparing(EDICctopInvoic500VType::getLine));
+
+			final String fileName = "INVOIC_" + xmlCctopInvoice.getInvoiceDocumentno() + "_" + SystemTime.millis() + ".xml";
+			exchange.getIn().setHeader(Exchange.FILE_NAME, fileName);
 		})
 
 		.log(LoggingLevel.INFO, "EDI: Converting XML Java Object -> EDI Java Object...")
 				.process(exchange -> {
-					// convert the EDICctopInvoicVType into an edifact interchange
-
-					final EDICctopInvoicVType xmlCctopInvoice = exchange.getIn().getBody(EDICctopInvoicVType.class);
-
-					// Build Java model        
-					final Interchange interchange = new Interchange().
-							withUNA(new UNA().
-									withCompositeSeparator(":").
-									withFieldSeparator("+").
-									withDecimalSeparator(".").
-									withEscapeCharacter("?").
-									withRepeatSeparator("*").
-									withSegmentTerminator("'")).
-							withUNB(new UNBInterchangeHeader().
-									withS001(new S001SyntaxIdentifier().
-											withE0001(E0001SyntaxIdentifier.UNOC).withE0002("4")).
-									withS002(new S002InterchangeSender().
-											withE0004("5790000274017").
-											withE0007("14")).
-									withS003(new S003InterchangeRecipient().
-											withE0010("5708601000836").
-											withE0007("14")).
-									withS004(new S004DateAndTimeOfPreparation().
-											withE0017(new BigDecimal(990420)).
-											withE0019(new BigDecimal(1137))).
-									withE0020("17").
-									withS005(new S005RecipientReferencePasswordDetails().withE0022("")).
-									withE0026("INVOIC").
-									withE0035(new BigDecimal(1))).
-							withMessage(new Message().
-									withContent(new JAXBElement<>(new QName("UNH"), UNHMessageHeader.class, new UNHMessageHeader().
-											withE0062("30").
-											withS009(new S009MessageIdentifier().
-													withE0065(E0065MessageType.INVOIC).
-													withE0052("D").
-													withE0054("03B").
-													withE0051(E0051ControllingAgencyCoded.UN)))).
-									withContent(new JAXBElement<>(new QName("http://www.ibm.com/dfdl/edi/un/edifact/D03B", "INVOIC", "D03B"), INVOIC.class, new INVOIC().
-											withBGM(new BGMBeginningOfMessage().
-													withC002(new C002DocumentMessageName().withE1001("380")).
-													withC106(new C106DocumentMessageIdentification().withE1004("539602"))).
-											withDTM(new DTMDateTimePeriod().
-													withC507(new C507DateTimePeriod().
-															withE2005("137").
-															withE2380("19990420").
-															withE2379("102"))).
-											withUNS(new UNSSectionControl().
-													withE0081(E0081SectionIdentification.S)).
-											withSegGrp50(new INVOIC.SegGrp50().
-													withMOA(new MOAMonetaryAmount().
-															withC516(new C516MonetaryAmount().
-																	withE5025("64").
-																	withE5004(new BigDecimal("100.95")).
-																	withE6345("GBP")))))).
-									withContent(new JAXBElement<>(new QName("UNT"), UNTMessageTrailer.class, new UNTMessageTrailer().
-											withE0074(new BigDecimal(36)).
-											withE0062("30")))).
-							withUNZ(new UNZInterchangeTrailer().
-									withE0036(new BigDecimal(1)).
-									withE0020("17"));
 					
-					exchange.getIn().setBody(interchange);
+					final EDICctopInvoicVType xmlCctopInvoice = exchange.getIn().getBody(EDICctopInvoicVType.class);
+					final Interchange edifactInvoice = new EDICctopInvoicVtoD01BConverter().convert(xmlCctopInvoice);
+					exchange.getIn().setBody(edifactInvoice);
 				})
 				
 		.log(LoggingLevel.INFO, "EDI: Marshalling EDI Java Object to XML using JAXB...")		
@@ -221,18 +153,20 @@ public class EdifactInvoicRoute extends AbstractEDIRoute
 		.log(LoggingLevel.INFO, "EDI: Marshalling EDI Java Object to EDI Format using Smooks...")
 				.to("smooks:"+getSmooksConfigurationPath("edi.smooks.config.xml.invoic.edifact"))
 				.log(LoggingLevel.INFO, "This is what we got back from smooks:${body}")
-				
-		.log(LoggingLevel.INFO, "EDI: Setting output filename pattern from properties...")
-				.setHeader(Exchange.FILE_NAME).simple(invoiceFilenamePattern)
 
-		.log(LoggingLevel.INFO, "EDI: Sending the EDI file to the FILE component...")
-				.to("{{" + EdifactInvoicRoute.EP_EDI_FILE_INVOICE + "}}")
+		.log(LoggingLevel.INFO, "Output filename=${in.headers." + Exchange.FILE_NAME + "}; endpointUri=" + Arrays.toString(endPointURIs))
+		.log(LoggingLevel.INFO, "Sending ecosio-XML to the " + endPointURIs.length + " endpoint(s):\r\n" + body())
+		.multicast()
+			.stopOnException()
+			.parallelProcessing(false)
+			.to(endPointURIs)
+		.end()
 
 		.log(LoggingLevel.INFO, "EDI: Creating metasfresh feedback XML Java Object...")
 				.process(new EDIXmlSuccessFeedbackProcessor<>(EDIInvoiceFeedbackType.class, EdifactInvoicRoute.EDIInvoiceFeedback_QNAME, EdifactInvoicRoute.METHOD_setCInvoiceID))
 
 		.log(LoggingLevel.INFO, "EDI: Marshalling XML Java Object feedback -> XML document...")
-				.marshal(metasfreshInhauseJaxb)
+				.marshal(metasfreshFeedbackFormat)
 
 		.log(LoggingLevel.INFO, "EDI: Sending success response to metasfresh...")
 		

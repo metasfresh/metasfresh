@@ -222,14 +222,14 @@
         </dependency>
         <dependency>
             <groupId>org.smooks.cartridges.edi</groupId>
-            <artifactId>d03b-edifact-binding</artifactId>
+            <artifactId>d01b-edifact-binding</artifactId>
             <version>${smooks.edifact.cartridge.version}</version>
         </dependency>
         <dependency>
             <groupId>org.smooks.cartridges.edi</groupId>
             <artifactId>edifact-schemas</artifactId>
             <version>${smooks.edifact.cartridge.version}</version>
-            <classifier>d03b</classifier>
+            <classifier>d01b</classifier>
         </dependency>
         
         <dependency>
