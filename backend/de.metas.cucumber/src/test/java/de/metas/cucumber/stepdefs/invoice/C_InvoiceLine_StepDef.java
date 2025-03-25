@@ -50,6 +50,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -88,6 +89,7 @@ import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_UOM_ID;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_Line;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
 
+@RequiredArgsConstructor
 public class C_InvoiceLine_StepDef
 {
 	private final static Logger logger = LogManager.getLogger(C_InvoiceLine_StepDef.class);
@@ -106,30 +108,6 @@ public class C_InvoiceLine_StepDef
 	private final C_Activity_StepDefData activityTable;
 	private final C_Calendar_StepDefData calendarTable;
 	private final C_Year_StepDefData yearTable;
-
-	public C_InvoiceLine_StepDef(
-			@NonNull final C_Invoice_StepDefData invoiceTable,
-			@NonNull final C_InvoiceLine_StepDefData invoiceLineTable,
-			@NonNull final M_InOutLine_StepDefData inOutLineTable,
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final C_Project_StepDefData projectTable,
-			@NonNull final C_Tax_StepDefData taxTable,
-			@NonNull final C_TaxCategory_StepDefData taxCategoryTable,
-			@NonNull final C_Activity_StepDefData activityTable,
-			@NonNull final C_Calendar_StepDefData calendarTable,
-			@NonNull final C_Year_StepDefData yearTable)
-	{
-		this.invoiceTable = invoiceTable;
-		this.invoiceLineTable = invoiceLineTable;
-		this.inOutLineTable = inOutLineTable;
-		this.productTable = productTable;
-		this.taxTable = taxTable;
-		this.taxCategoryTable = taxCategoryTable;
-		this.projectTable = projectTable;
-		this.activityTable = activityTable;
-		this.calendarTable = calendarTable;
-		this.yearTable = yearTable;
-	}
 
 	@And("metasfresh contains C_InvoiceLines")
 	public void addC_InvoiceLines(@NonNull final DataTable dataTable)
