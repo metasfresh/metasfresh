@@ -64,6 +64,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
@@ -93,6 +94,7 @@ import static org.compiere.model.I_C_Payment.COLUMNNAME_IsReceipt;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_PayAmt;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_WriteOffAmt;
 
+@RequiredArgsConstructor
 public class C_Payment_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -114,30 +116,6 @@ public class C_Payment_StepDef
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_DocType_StepDefData docTypeTable;
 	private final TestContext testContext;
-
-	public C_Payment_StepDef(
-			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final CurrencyRepository currencyRepository,
-			@NonNull final C_Payment_StepDefData paymentTable,
-			@NonNull final C_BP_BankAccount_StepDefData bpBankAccountTable,
-			@NonNull final M_SectionCode_StepDefData sectionCodeTable,
-			@NonNull final C_BankStatement_StepDefData bankStatementTable,
-			@NonNull final C_BankStatementLine_StepDefData bankStatementLineTable,
-			@NonNull final C_Invoice_StepDefData invoiceTable,
-			@NonNull final C_DocType_StepDefData docTypeTable,
-			@NonNull final TestContext testContext)
-	{
-		this.bpartnerTable = bpartnerTable;
-		this.currencyRepository = currencyRepository;
-		this.paymentTable = paymentTable;
-		this.bpBankAccountTable = bpBankAccountTable;
-		this.sectionCodeTable = sectionCodeTable;
-		this.bankStatementTable = bankStatementTable;
-		this.bankStatementLineTable = bankStatementLineTable;
-		this.invoiceTable = invoiceTable;
-		this.docTypeTable = docTypeTable;
-		this.testContext = testContext;
-	}
 
 	@And("metasfresh contains C_Payment")
 	public void createPayments(@NonNull final DataTable dataTable)
