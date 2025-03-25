@@ -1241,49 +1241,88 @@ Feature: invoice payment allocation
       | B_PaymentSelect_Acct   | 0 EUR       | 5 EUR       |
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
+
 
   @Id:S0465_320
   @from:cucumber
   Scenario: allocate a sales invoice with a purchase credit memo => no allocations
 
     Given metasfresh contains M_Products:
-      | Identifier    | Name          |
-      | product_320_1 | product_320_1 |
-      | product_320_2 | product_320_2 |
+      | Identifier |
+      | product1   |
+      | product2   |
 
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID |
-      | salesPLV               | product_320_1 | 5.00     | PCE      |
-      | purchasePLV            | product_320_2 | 5.00     | PCE      |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | salesPLV               | product1     | 5.00     | PCE      |
+      | purchasePLV            | product2     | 5.00     | PCE      |
 
 
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | inv_320_1  | bpartner2     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
-      | inv_320_2  | bpartner      | Gutschrift (Lieferant)  | 2022-05-11   | Spot                     | false   | EUR                 |
+      | Identifier          | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | salesInvoice1       | bpartner2     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
+      | purchaseCreditMemo1 | bpartner      | Gutschrift (Lieferant)  | 2022-05-11   | Spot                     | false   | EUR                 |
 
 
 
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID  | QtyInvoiced |
-      | invl_150_2 | inv_320_2    | product_320_2 | 1 PCE       |
-      | invl_150_1 | inv_320_1    | product_320_1 | 1 PCE       |
-    And the invoice identified by inv_320_1 is completed
-    And the invoice identified by inv_320_2 is completed
+      | C_Invoice_ID        | M_Product_ID | QtyInvoiced |
+      | purchaseCreditMemo1 | product2     | 1 PCE       |
+      | salesInvoice1       | product1     | 1 PCE       |
+    And the invoice identified by salesInvoice1 is completed
+    And the invoice identified by purchaseCreditMemo1 is completed
 
 
     And allocate payments to invoices
-      | OPT.C_Invoice_ID.Identifier |
-      | inv_320_1                   |
-      | inv_320_2                   |
+      | C_Invoice_ID        |
+      | salesInvoice1       |
+      | purchaseCreditMemo1 |
 
     And there are no allocation lines for invoice
-      | C_Invoice_ID |
-      | inv_320_1    |
-      | inv_320_2    |
+      | C_Invoice_ID        |
+      | salesInvoice1       |
+      | purchaseCreditMemo1 |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
 
 
   @Id:S0465_330
@@ -1291,38 +1330,38 @@ Feature: invoice payment allocation
   Scenario: allocate a sales credit memo with outbound payment
 
     Given metasfresh contains M_Products:
-      | Identifier    | Name          |
-      | product_330_1 | product_330_1 |
+      | Identifier |
+      | product1   |
 
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID |
-      | salesPLV               | product_330_1 | 5.00     | PCE      |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | salesPLV               | product1     | 5.00     | PCE      |
 
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | inv_330    | bpartner      | Gutschrift              | 2022-05-11   | Spot                     | true    | EUR                 |
+      | Identifier       | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | salesCreditMemo1 | bpartner      | Gutschrift              | 2022-05-11   | Spot                     | true    | EUR                 |
 
 
 
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID  | QtyInvoiced |
-      | invl_330   | inv_330      | product_330_1 | 1 PCE       |
+      | C_Invoice_ID     | M_Product_ID | QtyInvoiced |
+      | salesCreditMemo1 | product1     | 1 PCE       |
 
 
     When metasfresh contains C_Payment
-      | Identifier  | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID |
-      | payment_330 | bpartner      | 5.00 EUR | false     | org_EUR_account     |
+      | Identifier       | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID |
+      | outboundPayment1 | bpartner      | 5.00 EUR | false     | org_EUR_account     |
 
-    And the invoice identified by inv_330 is completed
-    And the payment identified by payment_330 is completed
+    And the invoice identified by salesCreditMemo1 is completed
+    And the payment identified by outboundPayment1 is completed
 
     And allocate payments to invoices
-      | C_Invoice_ID | C_Payment_ID |
-      | inv_330      | payment_330  |
+      | C_Invoice_ID     | C_Payment_ID     |
+      | salesCreditMemo1 | outboundPayment1 |
 
     And validate C_AllocationLines
-      | C_Invoice_ID | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
-      | inv_330      | payment_330  | -5     | -0.95        | alloc1             |
+      | C_Invoice_ID     | C_Payment_ID     | Amount | OverUnderAmt | C_AllocationHdr_ID |
+      | salesCreditMemo1 | outboundPayment1 | -5     | -0.95        | alloc1             |
 
     And Fact_Acct records are found for payment allocation alloc1
       | AccountConceptualName | AmtSourceDr | AmtSourceCr |
@@ -1330,43 +1369,65 @@ Feature: invoice payment allocation
       | B_PaymentSelect_Acct  | 0 EUR       | 5 EUR       |
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+
+
   @Id:S0465_340
   @from:cucumber
   Scenario: allocate a sales credit memo with inbound payment => no allocations
 
     Given metasfresh contains M_Products:
-      | Identifier    | Name          |
-      | product_340_1 | product_340_1 |
+      | Identifier |
+      | product1   |
 
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID |
-      | salesPLV               | product_340_1 | 5.00     | PCE      |
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | salesPLV               | product1     | 5.00     | PCE      |
 
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | inv_340    | bpartner      | Gutschrift              | 2022-05-11   | Spot                     | true    | EUR                 |
+      | Identifier       | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | salesCreditMemo1 | bpartner      | Gutschrift              | 2022-05-11   | Spot                     | true    | EUR                 |
 
 
 
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID  | QtyInvoiced |
-      | invl_340   | inv_340      | product_340_1 | 1 PCE       |
+      | C_Invoice_ID     | M_Product_ID | QtyInvoiced |
+      | salesCreditMemo1 | product1     | 1 PCE       |
 
 
     When metasfresh contains C_Payment
-      | Identifier  | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID |
-      | payment_340 | bpartner      | 5.00 EUR | true      | org_EUR_account     |
+      | Identifier      | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID |
+      | inboundPayment1 | bpartner      | 5.00 EUR | true      | org_EUR_account     |
 
-    And the invoice identified by inv_340 is completed
-    And the payment identified by payment_340 is completed
+    And the invoice identified by salesCreditMemo1 is completed
+    And the payment identified by inboundPayment1 is completed
 
     And allocate payments to invoices
-      | C_Invoice_ID | C_Payment_ID |
-      | inv_340      | payment_340  |
+      | C_Invoice_ID     | C_Payment_ID    |
+      | salesCreditMemo1 | inboundPayment1 |
 
     And there are no allocation lines for invoice
-      | C_Invoice_ID |
-      | inv_340      |
+      | C_Invoice_ID     |
+      | salesCreditMemo1 |
 
 
 
