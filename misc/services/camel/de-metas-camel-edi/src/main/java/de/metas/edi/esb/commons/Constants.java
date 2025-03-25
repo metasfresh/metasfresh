@@ -24,8 +24,8 @@ package de.metas.edi.esb.commons;
 
 import de.metas.edi.esb.commons.api.ILookupTemplate;
 import de.metas.edi.esb.commons.api.impl.LookupTemplate;
-import de.metas.edi.esb.jaxb.metasfresh.EDICBPartnerLookupBPLGLNVType;
-import de.metas.edi.esb.jaxb.metasfresh.ObjectFactory;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICBPartnerLookupBPLGLNVType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.ObjectFactory;
 
 public final class Constants
 {

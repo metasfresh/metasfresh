@@ -22,6 +22,13 @@ package de.metas.edi.esb.xls;
  * #L%
  */
 
+import de.metas.edi.esb.commons.Util;
+import de.metas.edi.esb.excelimport.Excel_OLCand_Row;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIImpCCurrencyLookupISOCodeType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIImpCUOMLookupUOMSymbolType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.XLSImpCOLCandType;
+import org.hamcrest.Matchers;
+import org.junit.Assert;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -29,15 +36,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import org.hamcrest.Matchers;
-import org.junit.Assert;
-
-import de.metas.edi.esb.excelimport.Excel_OLCand_Row;
-import de.metas.edi.esb.commons.Util;
-import de.metas.edi.esb.jaxb.metasfresh.EDIImpCCurrencyLookupISOCodeType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIImpCUOMLookupUOMSymbolType;
-import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
 
 /**
  * Defines and asserts expectations on an {@link Excel_OLCand_Row} or {@link XLSImpCOLCandType}.
