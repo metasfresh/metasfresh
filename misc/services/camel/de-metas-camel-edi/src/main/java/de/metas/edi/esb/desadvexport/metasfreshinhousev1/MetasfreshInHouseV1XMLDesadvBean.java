@@ -139,7 +139,7 @@ public class MetasfreshInHouseV1XMLDesadvBean
 			}
 		}
 
-		target.setShipmentDocumentno(source.getShipmentDocumentno());
+		target.setShipmentDocumentno(source.getShipmentDocumentNo());
 		target.setDatePromised(source.getDatePromised());
 		target.setADClientValueAttr(source.getADClientValueAttr());
 		target.setReplicationEventAttr(getReplicationEventAttr(source.getReplicationEventAttr()));
