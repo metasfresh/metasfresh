@@ -1274,5 +1274,5 @@ jobs:
           	exit 0
           fi
             
-          gh workflow run dedicated_dispatch.yaml -f "cicd_run_id=${CICD_RUN_ID}" -f "tag_fixed=${TAG_FIXED}" --repo "metasfresh/mf15-test-01"
+          gh workflow run dedicated_dispatch.yaml -f "cicd_run_id=${CICD_RUN_ID}" -f "tag_fixed=${TAG_FIXED}" --repo "metasfresh/mf15-test-01" || exit 0
           
