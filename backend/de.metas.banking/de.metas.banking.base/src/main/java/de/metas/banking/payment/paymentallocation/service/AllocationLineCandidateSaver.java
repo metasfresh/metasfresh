@@ -8,7 +8,6 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.Money;
 import de.metas.payment.PaymentId;
 import de.metas.util.Check;
@@ -53,7 +52,6 @@ final class AllocationLineCandidateSaver
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	public ImmutableMap<PaymentAllocationId,AllocationLineCandidate> save(final List<AllocationLineCandidate> candidates)
 	{
@@ -158,11 +156,6 @@ final class AllocationLineCandidateSaver
 				.writeOffAmt(writeOffAmt)
 				.build());
 
-		final I_C_Invoice payableInvoice = candidate.getPayableDocumentRef().getModel(I_C_Invoice.class);
-		// Special case: Allocations of sales credit memos and purchase invoices must always be negated. See #20395
-		final boolean negateAllocationAmount = invoiceBL.isARCreditMemo(payableInvoice) || (!payableInvoice.isSOTrx() && !invoiceBL.isCreditMemo(payableInvoice));
-
-
 		final C_AllocationHdr_Builder allocationBuilder = newC_AllocationHdr_Builder(candidate);
 
 		// Sales/Purchase invoice
@@ -173,9 +166,9 @@ final class AllocationLineCandidateSaver
 				.bpartnerId(candidate.getBpartnerId())
 				//
 				// Amounts
-				.amount(payAmt.negateIf(negateAllocationAmount).toBigDecimal())
-				.discountAmt(discountAmt.negateIf(negateAllocationAmount).toBigDecimal())
-				.writeOffAmt(writeOffAmt.negateIf(negateAllocationAmount).toBigDecimal())
+				.amount(payAmt.toBigDecimal())
+				.discountAmt(discountAmt.toBigDecimal())
+				.writeOffAmt(writeOffAmt.toBigDecimal())
 				.overUnderAmt(candidate.getPayableOverUnderAmt().toBigDecimal())
 				//
 				.invoiceId(extractInvoiceId(candidate.getPayableDocumentRef()));
