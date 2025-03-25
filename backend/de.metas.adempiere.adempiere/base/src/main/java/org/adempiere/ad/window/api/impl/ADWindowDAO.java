@@ -187,6 +187,11 @@ public class ADWindowDAO implements IADWindowDAO
 	@Override
 	public ImmutableList<I_AD_UI_Column> retrieveUIColumns(final Set<AdUISectionId> uiSectionIds)
 	{
+		if (uiSectionIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		return retrieveUIColumnsQuery(uiSectionIds)
 				.create()
 				.listImmutable();
@@ -215,6 +220,11 @@ public class ADWindowDAO implements IADWindowDAO
 	@Override
 	public ImmutableList<I_AD_UI_ElementGroup> retrieveUIElementGroups(final Set<AdUIColumnId> uiColumnIds)
 	{
+		if (uiColumnIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		return retrieveUIElementGroupsQuery(uiColumnIds)
 				.create()
 				.listImmutable();
@@ -271,6 +281,11 @@ public class ADWindowDAO implements IADWindowDAO
 	@Override
 	public ImmutableList<I_AD_UI_Element> retrieveUIElements(final Set<AdUIElementGroupId> uiElementGroupIds)
 	{
+		if (uiElementGroupIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		return retrieveUIElementsQuery(uiElementGroupIds)
 				.create()
 				.listImmutable();
@@ -310,6 +325,11 @@ public class ADWindowDAO implements IADWindowDAO
 	@Override
 	public ImmutableList<I_AD_UI_ElementField> retrieveUIElementFields(final Set<AdUIElementId> uiElementIds)
 	{
+		if (uiElementIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		return retrieveUIElementFieldsQuery(uiElementIds)
 				.create()
 				.listImmutable();
