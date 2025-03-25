@@ -101,4 +101,5 @@
         <Setup_Place_No>1234</Setup_Place_No>
     </DropShip_Location_ID>
     <InvoicableQtyBasedOn>CatchWeight</InvoicableQtyBasedOn>
+    <shipment_documentno>ShipmentDocumentNo</shipment_documentno>
 </EDI_Exp_Desadv>

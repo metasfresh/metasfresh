@@ -56,6 +56,7 @@
                 <QtyDeliveredInInvoiceUOM>5.16</QtyDeliveredInInvoiceUOM>
                 <QtyDeliveredInUOM>1</QtyDeliveredInUOM>
                 <OrderLine>100</OrderLine>
+                <IsDeliveryClosed>Y</IsDeliveryClosed>
             </EDI_DesadvLine_ID>
             <GTIN_TU_PackingMaterial>BPARTNER_GTIN</GTIN_TU_PackingMaterial>
             <M_HU_PackagingCode_TU_Text>COLI</M_HU_PackagingCode_TU_Text>
@@ -80,4 +81,5 @@
         <Setup_Place_No>1234</Setup_Place_No>
     </DropShip_Location_ID>
     <InvoicableQtyBasedOn>CatchWeight</InvoicableQtyBasedOn>
+    <ShipmentDocumentNo>ShipmentDocumentNo</ShipmentDocumentNo>
 </EDI_Exp_Desadv>

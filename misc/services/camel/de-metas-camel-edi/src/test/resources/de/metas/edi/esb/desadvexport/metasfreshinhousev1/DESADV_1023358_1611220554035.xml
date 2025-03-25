@@ -59,6 +59,7 @@
                 <QtyDeliveredInInvoiceUOM>5.16</QtyDeliveredInInvoiceUOM>
                 <QtyDeliveredInUOM>1</QtyDeliveredInUOM>
                 <OrderLine>100</OrderLine>
+                <IsDeliveryClosed>Y</IsDeliveryClosed>
             </EDI_DesadvLine_ID>
             <GTIN_TU_PackingMaterial>BPARTNER_GTIN</GTIN_TU_PackingMaterial>
         </EDI_Exp_Desadv_Pack_Item>
@@ -82,4 +83,5 @@
         <Setup_Place_No>1234</Setup_Place_No>
     </DropShip_Location_ID>
     <InvoicableQtyBasedOn>CatchWeight</InvoicableQtyBasedOn>
+    <ShipmentDocumentNo>ShipmentDocumentNo</ShipmentDocumentNo>
 </EDI_Exp_Desadv>
