@@ -6,7 +6,6 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdUIColumnId;
@@ -39,8 +38,6 @@ public interface IADWindowDAO extends ISingletonService
 	 */
 	ITranslatableString retrieveWindowName(AdWindowId adWindowId);
 
-	String retrieveInternalWindowName(AdWindowId adWindowId);
-
 	AdWindowId getWindowIdByInternalName(String internalName);
 
 	ImmutableList<I_AD_UI_ElementField> retrieveUIElementFields(Set<AdUIElementId> uiElementIds);
@@ -50,8 +47,6 @@ public interface IADWindowDAO extends ISingletonService
 	ImmutableList<I_AD_UI_Element> retrieveUIElements(Set<AdUIElementGroupId> uiElementGroupIds);
 
 	ImmutableList<I_AD_UI_Element> retrieveUIElements(final I_AD_UI_ElementGroup uiElementGroup);
-
-	IQueryBuilder<I_AD_UI_Element> retrieveUIElementsQueryByTabId(AdTabId adTabId);
 
 	ImmutableList<I_AD_UI_ElementGroup> retrieveUIElementGroups(Set<AdUIColumnId> uiColumnIds);
 

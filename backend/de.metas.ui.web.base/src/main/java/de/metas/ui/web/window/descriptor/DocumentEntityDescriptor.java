@@ -453,7 +453,7 @@ public class DocumentEntityDescriptor
 	//
 	//
 
-	@SuppressWarnings({ "OptionalAssignedToNull", "UnusedReturnValue" })
+	@SuppressWarnings({ "UnusedReturnValue" })
 	public static final class Builder
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentEntityDescriptor.Builder.class);
@@ -508,7 +508,7 @@ public class DocumentEntityDescriptor
 		private Optional<AdTabId> _adTabId = Optional.empty();
 		private Optional<String> _tableName = Optional.empty();
 		private Optional<SOTrx> _soTrx = Optional.empty();
-		private int viewPageLength;
+		@Getter private int viewPageLength;
 
 		private boolean queryIfNoFilters = true;
 
@@ -889,7 +889,6 @@ public class DocumentEntityDescriptor
 
 		public Builder setTableName(@Nullable final Optional<String> tableName)
 		{
-			//noinspection OptionalAssignedToNull
 			_tableName = tableName != null ? tableName : Optional.empty();
 			return this;
 		}
@@ -967,7 +966,6 @@ public class DocumentEntityDescriptor
 
 		public Builder setIsSOTrx(@Nullable final Optional<SOTrx> soTrx)
 		{
-			//noinspection OptionalAssignedToNull
 			_soTrx = soTrx != null ? soTrx : Optional.empty();
 			return this;
 		}
@@ -981,11 +979,6 @@ public class DocumentEntityDescriptor
 		{
 			this.viewPageLength = Math.max(viewPageLength, 0);
 			return this;
-		}
-
-		public int getViewPageLength()
-		{
-			return viewPageLength;
 		}
 
 		public Builder setAllowCreateNewLogic(final ILogicExpression allowCreateNewLogic)

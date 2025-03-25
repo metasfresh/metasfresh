@@ -67,9 +67,9 @@ public final class WindowUIElementsGenerator
 
 	private static final ModelDynAttributeAccessor<I_AD_UI_Element, Integer> DYNATTR_UIElementField_NextSeqNo = new ModelDynAttributeAccessor<>("UIElementField_NextSeqNo", Integer.class);
 	private static final Ordering<I_AD_Field> ORDERING_AD_Field_BySeqNo = Ordering.natural()
-			.onResultOf((adField) -> adField.getSeqNo());
+			.onResultOf(I_AD_Field::getSeqNo);
 	private static final Ordering<I_AD_Field> ORDERING_AD_Field_BySeqNoGrid = Ordering.natural()
-			.onResultOf((adField) -> adField.getSeqNoGrid());
+			.onResultOf(I_AD_Field::getSeqNoGrid);
 
 	private static final Map<String, String> HARDCODED_columnName2elementId = ImmutableMap.<String, String>builder()
 			//
@@ -102,6 +102,7 @@ public final class WindowUIElementsGenerator
 		this.consumer = consumer;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private void log(final String msg, final Object... msgParameters)
 	{
 		Loggables.withLogger(logger, Level.DEBUG).addLog(msg, msgParameters);

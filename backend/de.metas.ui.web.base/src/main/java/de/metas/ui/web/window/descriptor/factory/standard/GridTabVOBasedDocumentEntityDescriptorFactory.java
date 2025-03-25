@@ -883,14 +883,15 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 			@NonNull final I_AD_UI_Element labelsUIElement,
 			@NonNull final String tableName)
 	{
-		final I_AD_Tab labelsTab = labelsUIElement.getLabels_Tab();
+		final I_AD_Tab labelsTab = Check.assumeNotNull(labelsUIElement.getLabels_Tab(), "Labels_Tab_ID is set for {}", labelsUIElement);
 		final AdTableId adTableId = AdTableId.ofRepoId(labelsTab.getAD_Table_ID());
 		final String labelsTableName = TableIdsCache.instance.getTableName(adTableId);
 
 		final String linkColumnName;
 		if (labelsTab.getParent_Column_ID() > 0)
 		{
-			linkColumnName = labelsTab.getParent_Column().getColumnName();
+			final I_AD_Column parentColumn = Check.assumeNotNull(labelsTab.getParent_Column(), "Parent_Column_ID exists for {}", labelsUIElement);
+			linkColumnName = parentColumn.getColumnName();
 		}
 		else
 		{
@@ -900,14 +901,15 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 		final String labelsLinkColumnName;
 		if (labelsTab.getAD_Column_ID() > 0)
 		{
-			labelsLinkColumnName = labelsTab.getAD_Column().getColumnName();
+			final I_AD_Column adColumn = Check.assumeNotNull(labelsTab.getAD_Column(), "AD_Column_ID exists for {}", labelsTab);
+			labelsLinkColumnName = adColumn.getColumnName();
 		}
 		else
 		{
 			labelsLinkColumnName = linkColumnName;
 		}
 
-		final I_AD_Field labelsSelectorField = labelsUIElement.getLabels_Selector_Field();
+		final I_AD_Field labelsSelectorField = Check.assumeNotNull(labelsUIElement.getLabels_Selector_Field(), "Labels_Selector_Field_ID exists for {}", labelsUIElement);
 
 		final I_AD_Column labelsValueColumn = labelsSelectorField.getAD_Column();
 		final String labelsValueColumnName = labelsValueColumn.getColumnName();
@@ -1054,6 +1056,7 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 		fieldNames
 				.stream()
 				.map(this::documentField)
+				.filter(Objects::nonNull)
 				.forEach(field -> field.addCharacteristic(characteristic));
 	}
 

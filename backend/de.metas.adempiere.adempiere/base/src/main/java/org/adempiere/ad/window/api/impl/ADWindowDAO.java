@@ -96,19 +96,6 @@ public class ADWindowDAO implements IADWindowDAO
 		return InterfaceWrapperHelper.getModelTranslationMap(window).getColumnTrl(I_AD_Window.COLUMNNAME_Name, window.getName());
 	}
 
-	@Cached(cacheName = I_AD_Window.Table_Name + "#By#" + I_AD_Window.COLUMNNAME_AD_Window_ID)
-	@Override
-	public String retrieveInternalWindowName(final AdWindowId adWindowId)
-	{
-		final I_AD_Window window = queryBL
-				.createQueryBuilderOutOfTrx(I_AD_Window.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_Window.COLUMNNAME_AD_Window_ID, adWindowId)
-				.create()
-				.firstOnly(I_AD_Window.class);
-		return window.getInternalName();
-	}
-
 	@Override
 	public AdWindowId getWindowIdByInternalName(@NonNull final String internalName)
 	{
@@ -315,18 +302,6 @@ public class ADWindowDAO implements IADWindowDAO
 		return queryBL.createQueryBuilder(I_AD_UI_Element.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_AD_UI_Element.COLUMN_AD_UI_ElementGroup_ID, uiElementGroupIds)
-				.orderBy()
-				.addColumn(I_AD_UI_Element.COLUMN_SeqNo)
-				.endOrderBy();
-	}
-
-	@Override
-	public IQueryBuilder<I_AD_UI_Element> retrieveUIElementsQueryByTabId(@NonNull final AdTabId adTabId)
-	{
-		return queryBL
-				.createQueryBuilder(I_AD_UI_Element.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_AD_UI_Element.COLUMN_AD_Tab_ID, adTabId)
 				.orderBy()
 				.addColumn(I_AD_UI_Element.COLUMN_SeqNo)
 				.endOrderBy();
