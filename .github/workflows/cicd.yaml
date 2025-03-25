@@ -60,13 +60,6 @@ jobs:
           echo "matrix=$BASE_VERSION_MATRIX" >> $GITHUB_OUTPUT
       - name: print-vars
         run: env
-      - name: Get Pull Request Info
-        id: pr
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "pull_request_url=$(gh pr view --json url -q .url || echo "")" >> $GITHUB_OUTPUT
-          echo "pull_request_title=$(gh pr view --json title -q .title || echo "")" >> $GITHUB_OUTPUT
       - name: print-info
         env:
           OUT_REFNAME: ${{ steps.sanitize.outputs.refname }}
@@ -81,7 +74,6 @@ jobs:
           echo '* artifacts will be created for tag `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}`' >> $GITHUB_STEP_SUMMARY
           echo '* BASE_VERSION for instances **without** customisations will be `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}-compat`' >> $GITHUB_STEP_SUMMARY
           echo '* test results can be found after completion at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
-          echo '* Pull Request: ${{ steps.pr.outputs.pull_request_url }} - ${{ steps.pr.outputs.pull_request_title }}' >> $GITHUB_STEP_SUMMARY
       - name: testspace push build infos
         run: |
           touch github_run.txt
