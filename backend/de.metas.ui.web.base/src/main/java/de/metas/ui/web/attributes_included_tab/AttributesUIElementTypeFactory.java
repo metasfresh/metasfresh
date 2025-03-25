@@ -10,6 +10,7 @@ import de.metas.logging.LogManager;
 import de.metas.ui.web.pattribute.ASILookupDescriptor;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDefaultFilterDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
@@ -17,6 +18,7 @@ import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.util.Check;
+import de.metas.util.lang.SeqNoProvider;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -53,6 +55,7 @@ public class AttributesUIElementTypeFactory
 	// State
 	@NonNull private final AtomicBoolean executed = new AtomicBoolean();
 	@NonNull private final ArrayListMultimap<AdUIElementId, String> generatedFieldNamesByUIElementId = ArrayListMultimap.create();
+	@NonNull private final SeqNoProvider defaultFilterSeqNoProvider = SeqNoProvider.ofInt(900000);
 
 	@Builder
 	private AttributesUIElementTypeFactory(
@@ -255,7 +258,13 @@ public class AttributesUIElementTypeFactory
 				.setLookupDescriptorProvider(LookupDescriptorProviders.ofNullableInstance(fieldBinding.getLookupDescriptor()))
 				.setReadonlyLogic(false)
 				.setVirtualField(fieldBinding.isVirtualColumn())
-				.setDataBinding(fieldBinding);
+				.setDataBinding(fieldBinding)
+				.setDefaultFilterInfo(DocumentFieldDefaultFilterDescriptor.builder()
+						.defaultFilter(true)
+						.defaultFilterSeqNo(defaultFilterSeqNoProvider.getAndIncrement().toInt())
+						.operator(DocumentFieldDefaultFilterDescriptor.FilterOperator.EQUALS_OR_ILIKE)
+						.build())
+				;
 	}
 
 	public List<String> getGeneratedFieldNames(final AdUIElementId uiElementId)
