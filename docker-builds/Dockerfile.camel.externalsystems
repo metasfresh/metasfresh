@@ -1,7 +1,9 @@
 ARG REFNAME=local
 FROM metasfresh/metas-mvn-camel:$REFNAME as camel
 
-FROM openjdk:17-jdk-alpine
+FROM eclipse-temurin:17.0.5_8-jdk
+
+RUN apt-get -y update && apt-get -y install curl
 
 WORKDIR /app
 
