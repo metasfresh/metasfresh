@@ -116,8 +116,10 @@ services:
 
   external:
     image: $mfregistry/metas-externalsystems:$mfversion
+    ports:
+      - "8095:8095"
     healthcheck:
-      test: "curl localhost:8095 || exit 1"
+      test: 'curl --header "X-Auth-Token: Ty59e2qkM7GEUZcMbAIIOjACIC6ziw5R" localhost:8095/actuator/health | grep UP || exit 1'
       interval: 10s
       timeout: 10s
       start_period: 60s
@@ -184,6 +186,8 @@ services:
 
   edi:
     image: $mfregistry/metas-edi:$mfversion
+    ports:
+      - "8184:8184"
     healthcheck:
       test: "curl localhost:8184 || exit 1"
       interval: 10s
