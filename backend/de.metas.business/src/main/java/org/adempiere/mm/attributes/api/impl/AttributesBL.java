@@ -109,7 +109,7 @@ public class AttributesBL implements IAttributesBL
 		final IAttributeValueGenerator generator = getAttributeValueGeneratorOrNull(attributeParam);
 		if (generator == null)
 		{
-			throw new AdempiereException(AttributesBL.MSG_NoAttributeGenerator, new Object[] { attributeParam.getName() });
+			throw new AdempiereException(AttributesBL.MSG_NoAttributeGenerator, attributeParam.getName());
 		}
 
 		return generator;
@@ -170,8 +170,7 @@ public class AttributesBL implements IAttributesBL
 			return null;
 		}
 
-		final IAttributeValueHandler handler = javaClassBL.newInstance(javaClassDef);
-		return handler;
+		return javaClassBL.newInstance(javaClassDef);
 	}
 
 	@Nullable
@@ -255,25 +254,20 @@ public class AttributesBL implements IAttributesBL
 	public ImmutableList<I_M_Attribute> getAttributesMandatoryOnPicking(final ProductId productId)
 	{
 		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
-		final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
+		return attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
 				.filter(attribute -> isMandatoryOnPicking(productId,
 						AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
 				.collect(ImmutableList.toImmutableList());
-
-		return attributesMandatoryOnPicking;
 	}
 
 	@Override
 	public ImmutableList<I_M_Attribute> getAttributesMandatoryOnShipment(final ProductId productId)
 	{
 		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
-
-		final ImmutableList<I_M_Attribute> attributesMandatoryOnShipment = attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
+		return attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
 				.filter(attribute -> isMandatoryOnShipment(productId,
 						AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
 				.collect(ImmutableList.toImmutableList());
-
-		return attributesMandatoryOnShipment;
 	}
 
 	@Override
@@ -339,8 +333,7 @@ public class AttributesBL implements IAttributesBL
 
 		//
 		// Calculate the Best-Before date
-		final Date bestBeforeDate = TimeUtil.addDays(dateReceipt, bestBeforeDays);
-		return bestBeforeDate;
+		return TimeUtil.addDays(dateReceipt, bestBeforeDays);
 	}
 
 	@Override
