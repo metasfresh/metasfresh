@@ -138,7 +138,7 @@ public class AttributesBL implements IAttributesBL
 		// Second try: check if our attribute is of type list, in which case we are dealing with standard M_AttributeValues
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_List.equals(attribute.getAttributeValueType()))
 		{
-			return new DefaultAttributeValuesProvider(attribute);
+			return new DefaultAttributeValuesProvider(attributesRepo, attribute);
 		}
 		//
 		// Fallback: there is no IAttributeValuesProvider because attribute does not support Lists
