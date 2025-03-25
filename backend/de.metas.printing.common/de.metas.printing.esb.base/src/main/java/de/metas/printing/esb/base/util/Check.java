@@ -22,8 +22,6 @@ package de.metas.printing.esb.base.util;
  * #L%
  */
 
-import com.sun.istack.internal.NotNull;
-
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
@@ -33,7 +31,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  *
  */
 public final class Check
@@ -53,7 +50,6 @@ public final class Check
 
 	/**
 	 * Set the class of exceptions to be thrown by this classe's methods. Usually ADempiere will call this method on startup, setting <code>org.adempiere.exceptions.AdempiereException</code>.
-	 *
 	 */
 	public static void setDefaultExClass(final Class<? extends RuntimeException> clazz)
 	{
@@ -63,7 +59,6 @@ public final class Check
 	/**
 	 * Decides if an exception shall be thrown on a failed assumption. Note that if this is set to <code>false</code>, then also {@link #setLogger(Logger)} needs to be called to set a logger.
 	 * Otherwise the <code>false</code> parameter will be ingored.
-	 *
 	 */
 	public static void setThrowException(final boolean throwException)
 	{
@@ -72,7 +67,6 @@ public final class Check
 
 	/**
 	 * If an exception is thrown and a message was set with this method, then that message plus a line-break is prepended to the exception message.
-	 *
 	 */
 	public static void setExceptionHeaderMessage(final String exceptionHeaderMessage)
 	{
@@ -81,7 +75,6 @@ public final class Check
 
 	/**
 	 * Set a logger to be used by this class to <b>log</b> exceptions instead of throwing them, if {@link #setThrowException(boolean)} was called with <code>false</code>.
-	 *
 	 */
 	public static void setLogger(final Logger logger)
 	{
@@ -139,7 +132,6 @@ public final class Check
 
 	/**
 	 * Like {@link #assume(boolean, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
-	 *
 	 */
 	public static void assume(final boolean cond, final Class<? extends RuntimeException> exceptionClass, final String errMsg, final Object... params)
 	{
@@ -164,7 +156,6 @@ public final class Check
 	/**
 	 * Like {@link #assumeInstanceOfOrNull(Object, Class, String)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in
 	 * {@link #setDefaultExClass(Class)}.
-	 *
 	 */
 	public static void assumeInstanceOfOrNull(final Object obj, final Class<?> interfaceClass, final String objectName, final Class<? extends RuntimeException> exceptionClass)
 	{
@@ -195,7 +186,6 @@ public final class Check
 
 	/**
 	 * Like {@link #assumeInstanceOf(Object, Class, String)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
-	 *
 	 */
 	public static void assumeInstanceOf(final Object obj, final Class<?> interfaceClass, final String objectName, final Class<? extends RuntimeException> exceptionClass)
 	{
@@ -205,11 +195,10 @@ public final class Check
 
 	/**
 	 * Assumes that given <code>object</code> is not null
-
+	 *
 	 * @param params message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
-	@NotNull
 	public static <T> T assumeNotNull(final T object, final String assumptionMessage, final Object... params)
 	{
 		return assumeNotNull(object, defaultExClazz, assumptionMessage, params);
@@ -218,7 +207,6 @@ public final class Check
 	/**
 	 * Like {@link #assumeNotNull(Object, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
 	 */
-	@NotNull
 	public static <T> T assumeNotNull(final T object, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
 		if (object == null)
@@ -233,7 +221,7 @@ public final class Check
 	 * Assumes that given <code>object</code> is null
 	 *
 	 * @param assumptionMessage message
-	 * @param params message parameters (@see {@link MessageFormat})
+	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
 	public static void assumeNull(final Object object, final String assumptionMessage, final Object... params)
@@ -243,7 +231,6 @@ public final class Check
 
 	/**
 	 * Like {@link #assumeNotNull(Object, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
-	 *
 	 */
 	public static void assumeNull(final Object object, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
@@ -255,7 +242,7 @@ public final class Check
 	 * Assumes that given <code>str</code> string is not empty. When checking, whitespaces will be discarded, so a string which contains only whitespaces will be considered as empty.
 	 *
 	 * @param assumptionMessage message
-	 * @param params message parameters (@see {@link MessageFormat})
+	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 * @see #isEmpty(String, boolean)
 	 */
@@ -266,7 +253,6 @@ public final class Check
 
 	/**
 	 * Like {@link #assumeNotEmpty(String, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
-	 *
 	 */
 	public static void assumeNotEmpty(final String str, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
@@ -280,7 +266,7 @@ public final class Check
 	 * Assumes that given <code>collection</code> is not null or empty.
 	 *
 	 * @param assumptionMessage message
-	 * @param params message parameters (@see {@link MessageFormat})
+	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
 	public static void assumeNotEmpty(final Collection<? extends Object> collection, final String assumptionMessage, final Object... params)
@@ -291,7 +277,6 @@ public final class Check
 	/**
 	 * Like {@link #assumeNotEmpty(Collection, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in
 	 * {@link #setDefaultExClass(Class)}.
-	 *
 	 */
 	public static void assumeNotEmpty(final Collection<? extends Object> collection, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
@@ -304,7 +289,7 @@ public final class Check
 	 * Assumes that given <code>array</code> is not null or empty.
 	 *
 	 * @param assumptionMessage message
-	 * @param params message parameters (@see {@link MessageFormat})
+	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
 	public static <T> void assumeNotEmpty(final T[] array, final String assumptionMessage, final Object... params)
@@ -314,7 +299,6 @@ public final class Check
 
 	/**
 	 * Like {@link #assumeNotEmpty(Object[], String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
-	 *
 	 */
 	public static <T> void assumeNotEmpty(final T[] array, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
@@ -327,7 +311,7 @@ public final class Check
 	 * Assumes that given <code>map</code> is not null or empty.
 	 *
 	 * @param assumptionMessage message
-	 * @param params message parameters (@see {@link MessageFormat})
+	 * @param params            message parameters (@see {@link MessageFormat})
 	 * @see #assume(boolean, String, Object...)
 	 */
 	public static void assumeNotEmpty(final Map<?, ?> map, final String assumptionMessage, final Object... params)
@@ -337,7 +321,6 @@ public final class Check
 
 	/**
 	 * Like {@link #assumeNotEmpty(Map, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
-	 *
 	 */
 	public static void assumeNotEmpty(final Map<?, ?> map, final Class<? extends RuntimeException> exceptionClass, final String assumptionMessage, final Object... params)
 	{
@@ -349,7 +332,6 @@ public final class Check
 	 * This method similar to {@link #assume(boolean, String, Object...)}, but the message should be formulated in terms of an error message instead of an assumption.
 	 * <p>
 	 * Example: instead of "parameter 'xy' is not null" (description of the assumption that was violated), one should write "parameter 'xy' is null" (description of the error).
-	 *
 	 */
 	public static void errorUnless(final boolean cond, final String errMsg, final Object... params)
 	{
@@ -358,7 +340,6 @@ public final class Check
 
 	/**
 	 * Like {@link #errorUnless(boolean, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
-	 *
 	 */
 	public static void errorUnless(final boolean cond, final Class<? extends RuntimeException> exceptionClass, final String errMsg, final Object... params)
 	{
@@ -374,7 +355,6 @@ public final class Check
 	 * of an assumption.
 	 * <p>
 	 * Example: instead of "parameter 'xy' is not null" (description of the assumption that was violated), one should write "parameter 'xy' is null" (description of the error).
-	 *
 	 */
 	public static void errorIf(final boolean cond, final String errMsg, final Object... params)
 	{
@@ -383,7 +363,6 @@ public final class Check
 
 	/**
 	 * Like {@link #errorIf(boolean, String, Object...)}, but throws an instance of the given <code>exceptionClass</code> instead of the one which was set in {@link #setDefaultExClass(Class)}.
-	 *
 	 */
 	public static void errorIf(final boolean cond, final Class<? extends RuntimeException> exceptionClass, final String errMsg, final Object... params)
 	{
@@ -402,7 +381,7 @@ public final class Check
 	/**
 	 * Is String Empty
 	 *
-	 * @param str string
+	 * @param str             string
 	 * @param trimWhitespaces trim whitespaces
 	 * @return true if >= 1 char
 	 */
@@ -420,10 +399,9 @@ public final class Check
 		{
 			return str.isEmpty();
 		}
-	}	// isEmpty
+	}    // isEmpty
 
 	/**
-	 *
 	 * @return true if bd is null or bd.signum() is zero
 	 */
 	public static boolean isEmpty(final BigDecimal bd)
@@ -437,7 +415,6 @@ public final class Check
 	}
 
 	/**
-	 *
 	 * @return true if given collection is <code>null</code> or it has no elements
 	 */
 	public static <T> boolean isEmpty(final Collection<T> collection)
@@ -482,7 +459,7 @@ public final class Check
 			{
 				return false;
 			}
-			for (int j = as.length; --j >= 0;)
+			for (int j = as.length; --j >= 0; )
 			{
 				if (!equals(as[j], bs[j]))
 				{
@@ -499,7 +476,7 @@ public final class Check
 			{
 				return false;
 			}
-			for (int j = as.length; --j >= 0;)
+			for (int j = as.length; --j >= 0; )
 			{
 				if (as[j] != bs[j])
 				{
@@ -516,7 +493,7 @@ public final class Check
 			{
 				return false;
 			}
-			for (int j = as.length; --j >= 0;)
+			for (int j = as.length; --j >= 0; )
 			{
 				if (as[j] != bs[j])
 				{
@@ -533,7 +510,7 @@ public final class Check
 			{
 				return false;
 			}
-			for (int j = as.length; --j >= 0;)
+			for (int j = as.length; --j >= 0; )
 			{
 				if (as[j] != bs[j])
 				{
@@ -550,7 +527,7 @@ public final class Check
 			{
 				return false;
 			}
-			for (int j = as.length; --j >= 0;)
+			for (int j = as.length; --j >= 0; )
 			{
 				if (as[j] != bs[j])
 				{
@@ -567,7 +544,7 @@ public final class Check
 			{
 				return false;
 			}
-			for (int j = as.length; --j >= 0;)
+			for (int j = as.length; --j >= 0; )
 			{
 				if (as[j] != bs[j])
 				{
@@ -584,7 +561,7 @@ public final class Check
 			{
 				return false;
 			}
-			for (int j = as.length; --j >= 0;)
+			for (int j = as.length; --j >= 0; )
 			{
 				if (as[j] != bs[j])
 				{
@@ -601,7 +578,7 @@ public final class Check
 			{
 				return false;
 			}
-			for (int j = as.length; --j >= 0;)
+			for (int j = as.length; --j >= 0; )
 			{
 				if (as[j] != bs[j])
 				{
@@ -618,7 +595,7 @@ public final class Check
 			{
 				return false;
 			}
-			for (int j = as.length; --j >= 0;)
+			for (int j = as.length; --j >= 0; )
 			{
 				if (as[j] != bs[j])
 				{

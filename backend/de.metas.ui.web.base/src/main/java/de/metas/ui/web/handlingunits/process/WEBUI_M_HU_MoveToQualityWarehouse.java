@@ -1,24 +1,22 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.util.List;
-
-import de.metas.handlingunits.movement.generate.HUMovementGeneratorResult;
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Warehouse;
 import de.metas.handlingunits.movement.api.IHUMovementBL;
-import de.metas.printing.esb.base.util.Check;
+import de.metas.handlingunits.movement.generate.HUMovementGeneratorResult;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
-import de.metas.util.Services;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
+
+import java.util.List;
 
 /*
  * #%L
