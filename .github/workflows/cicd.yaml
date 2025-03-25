@@ -1247,6 +1247,7 @@ jobs:
 
   cicd-dispatch-workflow-test:
     runs-on: ubuntu-latest
+    continue-on-error: true
     needs: [init, compatibility-images]
     steps:
       - name: dispatch-workflow-test
@@ -1256,7 +1257,7 @@ jobs:
           TAG_FIXED: ${{ needs.init.outputs.tag-fixed }}
           GH_TOKEN: ${{ secrets.MF15_KUBERNETES_PAT }}
         run: |
-          # Quick matching for now to generate test data on valid cicd runs. Will create dedicated mapping for production later.
+          # Quick matching for now to generate test data on cicd runs for valid branches. Will create dedicated mapping for production later.
           case "$GIT_REF" in
             *"_hotfix")
               test_dispatch="true"
@@ -1270,9 +1271,9 @@ jobs:
           esac 
 
           if [[ "$test_dispatch" == "false" ]]; then
-          	echo "Not a matching branch. Skipping the dispatch"
+          	echo "Not a matching branch. Skipping the dispatch."
           	exit 0
           fi
             
-          gh workflow run dedicated_dispatch.yaml -f "cicd_run_id=${CICD_RUN_ID}" -f "tag_fixed=${TAG_FIXED}" --repo "metasfresh/mf15-test-01" || exit 0
+          gh workflow run dedicated_dispatch.yaml --repo "metasfresh/mf15-test-01" -f "cicd_run_id=${CICD_RUN_ID}" -f "tag_fixed=${TAG_FIXED}" || exit 0
           
