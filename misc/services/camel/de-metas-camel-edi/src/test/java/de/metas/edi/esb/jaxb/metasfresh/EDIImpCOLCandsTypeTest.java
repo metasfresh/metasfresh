@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-edi
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +22,8 @@
 
 package de.metas.edi.esb.jaxb.metasfresh;
 
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIImpCOLCandsType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.ObjectFactory;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
 import org.apache.camel.test.junit5.CamelTestSupport;

@@ -25,7 +25,7 @@ package de.metas.edi.esb.excelimport;
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
-import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.XLSImpCOLCandType;
 import jakarta.xml.bind.JAXBElement;
 import lombok.NonNull;
 import org.apache.camel.CamelContext;
