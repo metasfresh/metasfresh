@@ -356,7 +356,6 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- needed at least for RunCucumberTest discovery -->
         <dependency>
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
