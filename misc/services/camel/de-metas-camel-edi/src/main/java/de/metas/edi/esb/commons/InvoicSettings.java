@@ -50,7 +50,7 @@ public class InvoicSettings
 	{
 		final String clearingCenterProperty = "edi.recipientGLN." + recipientGLN + ".clearingCenter";
 
-		final String defaultClearingCenter = Util.resolveProperty(context, DEFAULT_CLEARING_CENTER);
+		final String defaultClearingCenter = Util.resolveProperty(context, DEFAULT_CLEARING_CENTER, ClearingCenter.MetasfreshInHouseV2.toString());
 		final ClearingCenter clearingCenter = ClearingCenter.ofValue(Util.resolveProperty(context, clearingCenterProperty, defaultClearingCenter));
 
 		final InvoicSettingsBuilder settings = InvoicSettings

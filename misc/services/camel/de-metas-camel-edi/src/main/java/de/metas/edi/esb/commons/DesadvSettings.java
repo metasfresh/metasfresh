@@ -47,13 +47,13 @@ public class DesadvSettings
 			@NonNull final CamelContext context,
 			@Nullable final String recipientGLN)
 	{
-		final String clearingCenterProperty = "edi.recipientGLN." + recipientGLN + ".clearingCenter";
+		final String defaultClearingCenter = Util.resolveProperty(context, DEFAULT_CLEARING_CENTER, ClearingCenter.MetasfreshInHouseV2.toString());
 		if(Check.isBlank(recipientGLN))
 		{
-			return DesadvSettings.builder().clearingCenter(ClearingCenter.MetasfreshInHouseV2).build();
+			return DesadvSettings.builder().clearingCenter(ClearingCenter.ofValue(defaultClearingCenter)).build();
 		}
 
-		final String defaultClearingCenter = Util.resolveProperty(context, DEFAULT_CLEARING_CENTER);
+		final String clearingCenterProperty = "edi.recipientGLN." + recipientGLN + ".clearingCenter";
 		final ClearingCenter clearingCenter = ClearingCenter.ofValue(Util.resolveProperty(context, clearingCenterProperty, defaultClearingCenter));
 
 		final DesadvSettingsBuilder settings = DesadvSettings
