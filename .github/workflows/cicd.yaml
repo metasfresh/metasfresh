@@ -1244,3 +1244,35 @@ jobs:
       - name: dispatching-redeploy
         run: |
           curl -X "POST" -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ secrets.MF15_KUBERNETES_PAT }}" -d '{"event_type":"update_base_version","client_payload":{"version":"${{ needs.init.outputs.tag-fixed }}"}}' https://api.github.com/repos/metasfresh/${{ matrix.project }}/dispatches
+
+  cicd-dispatch-workflow-test:
+    runs-on: ubuntu-latest
+    needs: [init, compatibility-images]
+    steps:
+      - name: dispatch-workflow-test
+        env:
+          GIT_REF: ${{ github.ref_name }}
+          CICD_RUN_ID: ${{ github.run_id }}
+          TAG_FIXED: ${{ needs.init.outputs.tag-fixed }}
+          GH_TOKEN: ${{ secrets.MF15_KUBERNETES_PAT }}
+        run: |
+          # Quick matching for now to generate test data on valid cicd runs. Will create dedicated mapping for production later.
+          case "$GIT_REF" in
+            *"_hotfix")
+              test_dispatch="true"
+              ;;
+            *"_uat")
+              test_dispatch="true"
+              ;;
+            *)
+              test_dispatch="false"
+              ;;
+          esac 
+
+          if [[ "$test_dispatch" == "false" ]]; then
+          	echo "Not a matching branch. Skipping the dispatch"
+          	exit 0
+          fi
+            
+          gh workflow run dedicated_dispatch.yaml -f "cicd_run_id=${CICD_RUN_ID}" -f "tag_fixed=${TAG_FIXED}" --repo "metasfresh/mf15-test-01"
+          
