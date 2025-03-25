@@ -128,11 +128,11 @@ public class MetasfreshInHouseV1DesadvRoute extends AbstractEDIRoute
 				.stopOnException().parallelProcessing(false).to(endPointURIs)
 				.end()
 
-				.log(LoggingLevel.INFO, "Creating metasfresh success feedback XML Java Object...")
+				.log(LoggingLevel.INFO, "Creating MetasfreshInHouseV1 success feedback XML Java Object...")
 				.process(new EDIXmlSuccessFeedbackProcessor<>(EDIDesadvFeedbackType.class, MetasfreshInHouseV1DesadvRoute.EDIDesadvFeedback_QNAME, MetasfreshInHouseV1DesadvRoute.METHOD_setEDIDesadvID))
-				.log(LoggingLevel.INFO, "Marshalling metasfresh feedback XML Java Object -> XML...")
+				.log(LoggingLevel.INFO, "Marshalling MetasfreshInHouseV1 feedback XML Java Object -> XML...")
 				.marshal(jaxb)
-				.log(LoggingLevel.INFO, "Sending success response to metasfresh...")
+				.log(LoggingLevel.INFO, "Sending success response to MetasfreshInHouseV1...")
 				.setHeader(RabbitMQConstants.ROUTING_KEY).simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
 				.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
 				.to("{{" + Constants.EP_AMQP_TO_MF + "}}");

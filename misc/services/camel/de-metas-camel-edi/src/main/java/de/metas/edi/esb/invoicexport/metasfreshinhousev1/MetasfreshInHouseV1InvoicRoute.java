@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-edi-esb-camel
+ * de-metas-camel-edi
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -129,15 +129,15 @@ public class MetasfreshInHouseV1InvoicRoute extends AbstractEDIRoute
 				.marshal(dataFormat)
 
 				.log(LoggingLevel.INFO, "Output filename=${in.headers." + Exchange.FILE_NAME + "}; endpointUri=" + Arrays.toString(endPointURIs))
-				.log(LoggingLevel.INFO, "Sending ecosio-XML to the " + endPointURIs.length + " endpoint(s):\r\n" + body())
+				.log(LoggingLevel.INFO, "Sending MetasfreshInHouseV1-XML to the " + endPointURIs.length + " endpoint(s):\r\n" + body())
 				.multicast().stopOnException().parallelProcessing(false).to(endPointURIs)
 				.end()
 
-				.log(LoggingLevel.INFO, "Creating ecosio feedback XML Java Object...")
+				.log(LoggingLevel.INFO, "Creating MetasfreshInHouseV1 feedback XML Java Object...")
 				.process(new EDIXmlSuccessFeedbackProcessor<>(EDIInvoiceFeedbackType.class, EDIInvoiceFeedback_QNAME, METHOD_setCInvoiceID))
 				.log(LoggingLevel.INFO, "Marshalling XML Java Object feedback -> XML document...")
 				.marshal(jaxb)
-				.log(LoggingLevel.INFO, "Sending success response to ecosio...")
+				.log(LoggingLevel.INFO, "Sending success response to MetasfreshInHouseV1...")
 				.setHeader(RabbitMQConstants.ROUTING_KEY).simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
 				.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
 				.to("{{" + Constants.EP_AMQP_TO_MF + "}}");
