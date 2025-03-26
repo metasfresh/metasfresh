@@ -86,10 +86,14 @@ Feature: invoice payment allocation
     And validate C_AllocationLines
       | C_Invoice_ID | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
       | inv_100      | payment_100  | 5.95   | 0            | alloc1             |
-    And Fact_Acct records are found for payment allocation alloc1
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr |
-      | B_UnallocatedCash_Acct | 5.95 EUR    |             |
-      | C_Receivable_Acct      |             | 5.95 EUR    |
+    And Fact_Acct records of alloc1 are fully matching, Fact_Acct records of inv_100,payment_100 are partial matching
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID   |
+#      | *                      |             |             | payment_100 |
+      | B_UnallocatedCash_Acct |             | 5.95 EUR    | payment_100 |
+      | B_UnallocatedCash_Acct | 5.95 EUR    |             | alloc1      |
+      | C_Receivable_Acct      |             | 5.95 EUR    | alloc1      |
+      | C_Receivable_Acct      | 5.95 EUR    |             | inv_100     |
+#      | *                      |             |             | inv_100     |
     
 
 
