@@ -120,7 +120,7 @@ public class AllocatePayments_StepDef
 
 		DataTableRows.of(table).forEach(row -> {
 			row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_ID)
-					.map(this::buildPayableDocument)
+					.map(invoice -> buildPayableDocument(invoice, false))
 					.ifPresent(payableDocuments::add);
 
 			row.getAsOptionalIdentifier(COLUMNNAME_C_Payment_ID)
@@ -146,7 +146,7 @@ public class AllocatePayments_StepDef
 
 		DataTableRows.of(table).forEach(row -> {
 			row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_ID)
-					.map(this::buildPayableDocumentForARCorAPI)
+					.map(invoice -> buildPayableDocument(invoice, true))
 					.ifPresent(payableDocuments::add);
 
 		});
@@ -169,13 +169,13 @@ public class AllocatePayments_StepDef
 
 		DataTableRows.of(table).forEach(row -> {
 			row.getAsOptionalIdentifier("C_Invoice_ID")
-					.map(this::buildPayableDocument)
+					.map(invoice -> buildPayableDocument(invoice, false))
 					.ifPresent(payableDocuments::add);
 			row.getAsOptionalIdentifier("CreditMemo.C_Invoice_ID")
-					.map(this::buildPayableDocument)
+					.map(invoice -> buildPayableDocument(invoice, false))
 					.ifPresent(payableDocuments::add);
 			row.getAsOptionalIdentifier("Purchase.C_Invoice_ID")
-					.map(this::buildPayableDocument)
+					.map(invoice -> buildPayableDocument(invoice, false))
 					.ifPresent(payableDocuments::add);
 		});
 
@@ -190,7 +190,7 @@ public class AllocatePayments_StepDef
 	}
 
 	@NonNull
-	private PayableDocument buildPayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier)
+	private PayableDocument buildPayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier, final boolean allowAllocateAgainstDifferentSignumPayment)
 	{
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
 
@@ -216,37 +216,7 @@ public class AllocatePayments_StepDef
 						.discountAmt(discountAmt)
 						.build()
 						.convertToRealAmounts(invoiceToAllocate.getMultiplier()))
-				.build();
-	}
-
-	@NonNull
-	private PayableDocument buildPayableDocumentForARCorAPI(@NonNull final StepDefDataIdentifier invoiceIdentifier)
-	{
-		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
-
-		assertThat(invoice).isNotNull();
-
-		final InvoiceToAllocate invoiceToAllocate = getInvoiceToAllocate(invoice);
-		final Money invoiceOpenMoneyAmt = moneyService.toMoney(invoiceToAllocate.getOpenAmountConverted());
-		final Money discountAmt = moneyService.toMoney(invoiceToAllocate.getDiscountAmountConverted());
-		final Money payAmt = discountAmt != null ? invoiceOpenMoneyAmt.subtract(discountAmt) : invoiceOpenMoneyAmt;
-
-		return PayableDocument.builder()
-				.invoiceId(invoiceToAllocate.getInvoiceId())
-				.bpartnerId(invoiceToAllocate.getBpartnerId())
-				.documentNo(invoiceToAllocate.getDocumentNo())
-				.soTrx(invoiceToAllocate.getDocBaseType().getSoTrx())
-				.creditMemo(invoiceToAllocate.getDocBaseType().isCreditMemo())
-				.openAmt(invoiceOpenMoneyAmt.negateIf(!invoice.isSOTrx()))
-				.date(invoiceToAllocate.getDateInvoiced())
-				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
-				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
-				.amountsToAllocate(AllocationAmounts.builder()
-										   .payAmt(payAmt)
-										   .discountAmt(discountAmt)
-										   .build()
-										   .convertToRealAmounts(invoiceToAllocate.getMultiplier()))
-				.allowAllocateAgainstDifferentSignumPayment(true)
+				.allowAllocateAgainstDifferentSignumPayment(allowAllocateAgainstDifferentSignumPayment)
 				.build();
 	}
 

@@ -1467,7 +1467,7 @@ Feature: invoice payment allocation
 
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
-      | purchasePLV            | product1     | 100      | PCE      |
+      | purchasePLV            | product1     | 5.00     | PCE      |
       | salesPLV               | product2     | 5.00     | PCE      |
 
 
@@ -1485,21 +1485,23 @@ Feature: invoice payment allocation
     And the invoice identified by vendorInvoice1 is completed
     And the invoice identified by customerCreditMemo1 is completed
 
-    # TODO correct expectations
-
-    And allocate vendor invoice to customer credit memo
-      | Vendor_Invoice_ID | Customer_CreditMemo_ID | Amount  | Discount | WriteOff | OverUnder | C_AllocationHdr_ID |
-      | vendorInvoice1    | customerCreditMemo1    | 100 EUR | 7.48 EUR | 0    EUR | 50  EUR   | alloc1             |
+    And allocate sales credit memo to purchase invoice
+      | C_Invoice_ID        |
+      | vendorInvoice1      |
+      | customerCreditMemo1 |
 
 
     # TODO correct expectations
     And validate C_AllocationLines
       | C_Invoice_ID        | Amount | OverUnderAmt | C_AllocationHdr_ID |
-      | vendorInvoice1      | -100   | -50          | alloc1             |
-      | customerCreditMemo1 | -100   | 0            | alloc1             |
+      | vendorInvoice1      | -5.95  | -11.9        | alloc1             |
+      | customerCreditMemo1 | -5.95  | -53.55       | alloc1             |
 
 
-
+    And Fact_Acct records are found for payment allocation alloc1
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr |
+      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       |
+      | C_Receivable_Acct     | 0 EUR       | 5.95 EUR    |
 
 
 
