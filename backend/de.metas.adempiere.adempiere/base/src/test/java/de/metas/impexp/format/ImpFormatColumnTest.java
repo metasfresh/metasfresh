@@ -10,7 +10,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 class ImpFormatColumnTest
 {
-	private static final Timestamp EXPECTED_TIMESTAMP = Timestamp.valueOf("2025-03-21 00:00:00");
 	private ImpFormatColumn impFormatColumn;
 
 	@BeforeEach
@@ -24,29 +23,11 @@ class ImpFormatColumnTest
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = { "21.03.25" })
-	void testParseCellValue_TwoDigitYear_ShouldParseTo2025(final String testDate) throws Exception
-	{
-		assertThat(impFormatColumn.parseCellValue(testDate))
-				.isInstanceOf(Timestamp.class)
-				.isEqualTo(EXPECTED_TIMESTAMP);
-	}
-
-	@ParameterizedTest
-	@ValueSource(strings = { "21.03.2025" })
-	void testParseCellValue_FourDigitYear_ShouldParseTo2025(final String testDate) throws Exception
-	{
-		assertThat(impFormatColumn.parseCellValue(testDate))
-				.isInstanceOf(Timestamp.class)
-				.isEqualTo(EXPECTED_TIMESTAMP);
-	}
-
-	@ParameterizedTest
 	@ValueSource(strings = { "21.03.25", "21.03.2025" })
 	void testParseCellValue_HandlesBothTwoAndFourDigitYears(final String testDate) throws Exception
 	{
 		assertThat(impFormatColumn.parseCellValue(testDate))
 				.isInstanceOf(Timestamp.class)
-				.isEqualTo(EXPECTED_TIMESTAMP);
+				.isEqualTo(Timestamp.valueOf("2025-03-21 00:00:00"));
 	}
 }
