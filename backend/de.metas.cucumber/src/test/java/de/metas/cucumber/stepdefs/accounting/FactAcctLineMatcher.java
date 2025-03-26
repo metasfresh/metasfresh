@@ -17,6 +17,7 @@ import org.compiere.model.I_Fact_Acct;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.List;
 
 @Builder
 public class FactAcctLineMatcher
@@ -29,7 +30,49 @@ public class FactAcctLineMatcher
 	@Nullable private final Money amtSourceDr;
 	@Nullable private final Money amtSourceCr;
 	@Nullable private final Quantity qty;
-	@Nullable @Getter private final TableRecordReference documentRef;
+	@NonNull @Getter private final TableRecordReference documentRef;
+
+	@Override
+	public String toString() {return row.toTabularString();}
+
+	Row toTabularRow() {return row.toTabularRow();}
+
+	public boolean isWildcardMatcher()
+	{
+		return accountConceptualName == null;
+	}
+
+	void assertMatching(
+			@NonNull final SoftAssertions softly,
+			@NonNull final FactAcctRecordsToMatch records)
+	{
+		for (int recordIndex = 0; recordIndex < records.size(); recordIndex++)
+		{
+			if (records.isMatched(recordIndex))
+			{
+				continue;
+			}
+
+			final I_Fact_Acct record = records.get(recordIndex);
+
+			if (isMatching(record))
+			{
+				records.markAsMatched(recordIndex);
+				return;
+			}
+		}
+
+		softly.fail("Expected Fact_Acct record was not found:"
+				+ "\n" + this);
+	}
+
+	public boolean isMatching(@NonNull final I_Fact_Acct record)
+	{
+		final SoftAssertions recordSoftly = new SoftAssertions();
+		assertMatching(record, recordSoftly, ContextAwareDescription.newInstance());
+		final List<AssertionError> errors = recordSoftly.assertionErrorsCollected();
+		return errors.isEmpty();
+	}
 
 	public void assertMatching(
 			@NonNull final I_Fact_Acct record,
@@ -91,9 +134,4 @@ public class FactAcctLineMatcher
 					.isEqualTo(documentRef.getRecord_ID());
 		}
 	}
-
-	@Override
-	public String toString() {return row.toTabularString();}
-
-	Row toTabularRow() {return row.toTabularRow();}
 }

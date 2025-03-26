@@ -8,6 +8,7 @@ import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_Fact_Acct;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -48,4 +49,6 @@ public class FactAcctRecords
 	{
 		return isEmpty() ? this : toBuilder().list(ImmutableList.of()).build();
 	}
+
+	public ArrayList<I_Fact_Acct> toArrayList() {return new ArrayList<>(list);}
 }

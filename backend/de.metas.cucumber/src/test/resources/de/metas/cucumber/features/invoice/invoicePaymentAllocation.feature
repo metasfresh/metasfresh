@@ -86,14 +86,14 @@ Feature: invoice payment allocation
     And validate C_AllocationLines
       | C_Invoice_ID | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
       | inv_100      | payment_100  | 5.95   | 0            | alloc1             |
-    And Fact_Acct records of alloc1 are fully matching, Fact_Acct records of inv_100,payment_100 are partial matching
+    And Fact_Acct records are matching
       | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID   |
-#      | *                      |             |             | payment_100 |
+      | *                      |             |             | payment_100 |
       | B_UnallocatedCash_Acct |             | 5.95 EUR    | payment_100 |
       | B_UnallocatedCash_Acct | 5.95 EUR    |             | alloc1      |
       | C_Receivable_Acct      |             | 5.95 EUR    | alloc1      |
       | C_Receivable_Acct      | 5.95 EUR    |             | inv_100     |
-#      | *                      |             |             | inv_100     |
+      | *                      |             |             | inv_100     |
     
 
 
@@ -155,14 +155,22 @@ Feature: invoice payment allocation
       | C_Invoice_ID | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
       | inv_110_1    | payment_110  | 5.95   | 0            | alloc1             |
       | inv_110_2    | payment_110  | 5.95   | 0            | alloc2             |
-    And Fact_Acct records are found for payment allocation alloc1
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr |
-      | B_UnallocatedCash_Acct | 5.95 EUR    |             |
-      | C_Receivable_Acct      |             | 5.95 EUR    |
-    And Fact_Acct records are found for payment allocation alloc2
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr |
-      | B_UnallocatedCash_Acct | 5.95 EUR    |             |
-      | C_Receivable_Acct      |             | 5.95 EUR    |
+    And Fact_Acct records are matching
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID   |
+      | *                      |             |             | payment_110 |
+      | B_UnallocatedCash_Acct |             | 5.95 EUR    | payment_110 |
+      | B_UnallocatedCash_Acct | 5.95 EUR    |             | alloc1      |
+      | C_Receivable_Acct      |             | 5.95 EUR    | alloc1      |
+      | C_Receivable_Acct      | 5.95 EUR    |             | inv_110_1   |
+      | *                      |             |             | inv_110_1   |
+    And Fact_Acct records are matching
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID   |
+      | *                      |             |             | payment_110 |
+      | B_UnallocatedCash_Acct |             | 5.95 EUR    | payment_110 |
+      | B_UnallocatedCash_Acct | 5.95 EUR    |             | alloc2      |
+      | C_Receivable_Acct      |             | 5.95 EUR    | alloc2      |
+      | C_Receivable_Acct      | 5.95 EUR    |             | inv_110_2   |
+      | *                      |             |             | inv_110_2   |
 
 
 

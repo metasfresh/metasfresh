@@ -47,7 +47,7 @@ public class FactAcctMatchers
 				documentRecords = records.toEmpty();
 			}
 
-			docMatcher.assertValid(softly, documentRecords);
+			docMatcher.assertMatching(softly, documentRecords);
 		}
 
 		softly.assertThat(recordsByDocumentRef.values()).as("All records were matched").isEmpty();

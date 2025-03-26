@@ -1,7 +1,6 @@
 package de.metas.cucumber.stepdefs.accounting;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.cucumber.stepdefs.context.ContextAwareDescription;
 import de.metas.util.text.tabular.Table;
 import lombok.Builder;
 import lombok.Getter;
@@ -11,8 +10,6 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_Fact_Acct;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
 
 public class FactAcctDocMatcher
 {
@@ -40,81 +37,62 @@ public class FactAcctDocMatcher
 				.build();
 	}
 
-	public void assertValid(@NonNull final SoftAssertions softly, @NonNull final FactAcctRecords records)
+	public void assertMatching(@NonNull final SoftAssertions softly, @NonNull final FactAcctRecords records)
 	{
-		if (partialMatch)
-		{
-			assertValid_PartialMatch(softly, records);
-		}
-		else
-		{
-			assertValid_FullyMatch(softly, records);
-		}
+		final FactAcctRecordsToMatch recordsToMatch = new FactAcctRecordsToMatch(records);
+		assertNonWildcardRulesAreMatching(softly, recordsToMatch);
+		assertRemainingRecordsAreMatchingWildcardRules(softly, recordsToMatch);
 	}
 
-	private void assertValid_FullyMatch(@NonNull final SoftAssertions softly, @NonNull final FactAcctRecords records)
+	private void assertNonWildcardRulesAreMatching(final @NonNull SoftAssertions softly, final @NonNull FactAcctRecordsToMatch records)
 	{
-		if (records.size() != matchers.size())
-		{
-			softly.fail("Actual records count is not equal to the number of expectation rows:"
-					+ "\nExpectations: \n" + matchers
-					+ "\nActual:\n" + records);
-			return;
-		}
-
-		for (int i = 0; i < matchers.size(); i++)
-		{
-			final FactAcctLineMatcher matcher = matchers.get(i);
-			final I_Fact_Acct record = records.get(i);
-
-			final ContextAwareDescription description = ContextAwareDescription.newInstance();
-			description.put("expectation", "\n" + matcher);
-			description.put("actual", "\n" + records.toSingleRowTableString(i));
-
-			matcher.assertMatching(record, softly, description);
-		}
-		softly.assertAll();
-	}
-
-	private void assertValid_PartialMatch(@NonNull final SoftAssertions softly, @NonNull final FactAcctRecords records)
-	{
-		final HashSet<Integer> matchedRecordIndexes = new HashSet<>();
 		for (FactAcctLineMatcher matcher : matchers)
 		{
-			assertValid_PartialMatch(softly, records, matcher, matchedRecordIndexes);
-		}
-	}
-
-	private static void assertValid_PartialMatch(
-			final SoftAssertions softly,
-			final FactAcctRecords records,
-			final FactAcctLineMatcher matcher,
-			final HashSet<Integer> matchedRecordIndexes)
-	{
-		for (int recordIndex = 0; recordIndex < records.size(); recordIndex++)
-		{
-			if (matchedRecordIndexes.contains(recordIndex))
+			if (matcher.isWildcardMatcher())
 			{
 				continue;
 			}
 
-			final I_Fact_Acct record = records.get(recordIndex);
+			matcher.assertMatching(softly, records);
+		}
+	}
 
-			final ContextAwareDescription description = ContextAwareDescription.newInstance();
-			description.put("expectation", "\n" + matcher);
-			description.put("actual", "\n" + records.toSingleRowTableString(recordIndex));
-
-			final SoftAssertions recordSoftly = new SoftAssertions();
-			matcher.assertMatching(record, recordSoftly, description);
-			final List<AssertionError> errors = recordSoftly.assertionErrorsCollected();
-			if (errors.isEmpty())
+	private void assertRemainingRecordsAreMatchingWildcardRules(@NonNull final SoftAssertions softly, @NonNull final FactAcctRecordsToMatch records)
+	{
+		for (int recordIndex = 0; recordIndex < records.size(); recordIndex++)
+		{
+			if (records.isMatched(recordIndex))
 			{
-				matchedRecordIndexes.add(recordIndex);
-				return;
+				continue;
+			}
+
+			matchByWildcardRules(records, recordIndex);
+
+			if (!records.isMatched(recordIndex))
+			{
+				softly.fail("Fact_Acct record was not expected:"
+						+ "\n" + records.toSingleRowTableString(recordIndex));
 			}
 		}
+	}
 
-		softly.fail("No record matched the matcher\n" + matcher);
+	private void matchByWildcardRules(final @NonNull FactAcctRecordsToMatch records, final int recordIndex)
+	{
+		final I_Fact_Acct record = records.get(recordIndex);
+
+		for (FactAcctLineMatcher matcher : matchers)
+		{
+			if (!matcher.isWildcardMatcher())
+			{
+				continue;
+			}
+
+			if (matcher.isMatching(record))
+			{
+				records.markAsMatched(recordIndex);
+				break;
+			}
+		}
 	}
 
 	@Override
@@ -130,6 +108,5 @@ public class FactAcctDocMatcher
 		matchers.forEach(matcher -> table.addRow(matcher.toTabularRow()));
 		table.updateHeaderFromRows();
 		return table;
-
 	}
 }
