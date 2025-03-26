@@ -124,7 +124,7 @@ public class AllocationLineCandidate
 	{
 		public AllocationLineCandidateBuilder payableDocument(@NonNull final PayableDocument payableDocument)
 		{
-			// payableDocumentRef(payableDocument.getReference()); TODO remove
+			payableDocumentRef(payableDocument.getReference());
 			payableDocumentIsCreditMemo(payableDocument.isCreditMemo());
 			return this;
 		}
