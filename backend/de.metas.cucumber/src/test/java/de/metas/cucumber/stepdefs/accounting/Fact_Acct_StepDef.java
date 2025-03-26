@@ -9,8 +9,6 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
-import javax.annotation.Nullable;
-
 import static de.metas.cucumber.stepdefs.accounting.AccountingCucumberHelper.newFactAcctValidator;
 
 public class Fact_Acct_StepDef
@@ -36,6 +34,7 @@ public class Fact_Acct_StepDef
 				.uomDAO(uomDAO)
 				.moneyService(moneyService)
 				.bpartnerTable(bpartnerTable)
+				.identifiersResolver(identifiersResolver)
 				.build();
 	}
 
@@ -49,20 +48,7 @@ public class Fact_Acct_StepDef
 				.validate();
 	}
 
-	@And("^Fact_Acct records are found for payment allocation (.*)$")
-	@Deprecated
-	public void validatePaymentAllocationFactAccts(
-			@NonNull final String commaSeparatedIdentifiers,
-			@NonNull final DataTable table) throws Throwable
-	{
-		newFactAcctValidator()
-				.factAcctTabularStringConverter(factAcctTabularStringConverter)
-				.matchers(factAcctMatchersFactory.ofDataTable(table))
-				.validate();
-	}
-
 	@And("^no Fact_Acct records are found for documents (.*)$")
-	@And("^no Fact_Acct records are found for payment allocation (.*)$")
 	public void assertNoFactAccts(@NonNull final String identifiersStr) throws Throwable
 	{
 		newFactAcctValidator()

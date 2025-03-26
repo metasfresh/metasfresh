@@ -1,10 +1,13 @@
 package de.metas.cucumber.stepdefs.accounting;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.allocation.C_AllocationHdr_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
+import de.metas.invoice.InvoiceId;
+import de.metas.payment.PaymentId;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +20,7 @@ import org.compiere.model.I_C_Payment;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 public class IdentifiersResolver
@@ -70,6 +74,22 @@ public class IdentifiersResolver
 		else
 		{
 			return result.get(0);
+		}
+	}
+
+	public Optional<StepDefDataIdentifier> getIdentifier(final TableRecordReference documentRef)
+	{
+		final String tableName = documentRef.getTableName();
+		switch (tableName)
+		{
+			case I_C_Invoice.Table_Name:
+				return invoiceTable.getFirstIdentifierById(InvoiceId.ofRepoId(documentRef.getRecord_ID()));
+			case I_C_Payment.Table_Name:
+				return paymentTable.getFirstIdentifierById(PaymentId.ofRepoId(documentRef.getRecord_ID()));
+			case I_C_AllocationHdr.Table_Name:
+				return allocationTable.getFirstIdentifierById(PaymentAllocationId.ofRepoId(documentRef.getRecord_ID()));
+			default:
+				return Optional.empty();
 		}
 	}
 }

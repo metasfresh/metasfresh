@@ -16,6 +16,7 @@ import de.metas.util.text.tabular.Table;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.PO;
@@ -30,6 +31,7 @@ public class FactAcctToTabularStringConverter
 	@NonNull private final IUOMDAO uomDAO;
 	@NonNull private final MoneyService moneyService;
 	@Nullable private final C_BPartner_StepDefData bpartnerTable;
+	@Nullable private final IdentifiersResolver identifiersResolver;
 
 	@NonNull private static final ImmutableSet<String> poColumnNamesToIgnore = ImmutableSet.of(
 			I_Fact_Acct.COLUMNNAME_AD_Client_ID,
@@ -95,7 +97,31 @@ public class FactAcctToTabularStringConverter
 				continue;
 			}
 
-			final Object value = po.get_Value(i);
+			final Object value;
+			if (I_Fact_Acct.COLUMNNAME_AD_Table_ID.equals(columnName))
+			{
+				// see Record_ID
+				continue;
+			}
+			else if (I_Fact_Acct.COLUMNNAME_Record_ID.equals(columnName))
+			{
+				final TableRecordReference documentRef = TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID());
+				if (identifiersResolver != null)
+				{
+					value = identifiersResolver.getIdentifier(documentRef)
+							.map(StepDefDataIdentifier::getAsString)
+							.orElseGet(documentRef::toString);
+				}
+				else
+				{
+					value = documentRef.toString();
+				}
+			}
+			else
+			{
+				value = po.get_Value(i);
+			}
+
 			row.put(columnName, value);
 		}
 
