@@ -57,12 +57,13 @@ public interface IAsyncBatchBL extends ISingletonService
 	boolean updateProcessedOutOfTrx(AsyncBatchId asyncBatchId);
 
 	/**
-	 * Enqueue batch for the de.metas.async.processor.impl.CheckProcessedAsynBatchWorkpackageProcessor processor. Call
-	 * {@link IWorkPackageQueue#enqueueWorkPackage(I_C_Queue_WorkPackage, IWorkpackagePrioStrategy)} with priority = <code>null</code>.
+	 * Enqueue batch for the de.metas.async.processor.impl.CheckProcessedAsynBatchWorkpackageProcessor processor.
+	 * <p>
+	 * Call {@link IWorkPackageQueue#enqueueWorkPackage(I_C_Queue_WorkPackage, IWorkpackagePrioStrategy)} with priority = <code>null</code>.
 	 * This is OK because we assume that there is a dedicated queue/thread
 	 * for CheckProcessedAsynBatchWorkpackageProcessor
 	 */
-	void enqueueAsyncBatch(AsyncBatchId asyncBatchId);
+	 void enqueueAsyncBatch(@NonNull AsyncBatchId asyncBatchId);
 
 	/**
 	 * check if the keep alive time has expired for the current batch

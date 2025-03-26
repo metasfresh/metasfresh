@@ -1,6 +1,7 @@
 package de.metas.printing.async.spi.impl;
 
-import de.metas.async.Async_Constants;
+import de.metas.async.AsyncBatchId;
+import de.metas.async.AsyncHelper;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -185,13 +186,12 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		pinstance.setIsProcessing(true);
 		InterfaceWrapperHelper.save(pinstance);
 
-		final StringBuffer msg = new StringBuffer();
-		msg.append(Services.get(IMsgBL.class)
-				.getMsg(ctx, PDFPrintJob_Done, new Object[] { index, countExpected, noInvoices }));
+		final String msg = Services.get(IMsgBL.class)
+				.getMsg(ctx, PDFPrintJob_Done, new Object[] { index, countExpected, noInvoices });
 
 		final List<ProcessInfoParameter> piParams = new ArrayList<>();
 		piParams.add(ProcessInfoParameter.ofValueObject(X_C_Print_Job_Instructions.COLUMNNAME_C_Print_Job_Instructions_ID, jobInstructions.getC_Print_Job_Instructions_ID()));
-		piParams.add(ProcessInfoParameter.ofValueObject("Title", msg.toString()));
+		piParams.add(ProcessInfoParameter.ofValueObject("Title", msg));
 		Services.get(IADPInstanceDAO.class).saveParameterToDB(PInstanceId.ofRepoId(pinstance.getAD_PInstance_ID()), piParams);
 
 		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
@@ -227,7 +227,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 				.recordRef(printPackageRef)
 				.build());
 
-		final I_AD_Archive archive = archiveResult.getArchiveRecord();
+		final I_AD_Archive archive = Check.assumeNotNull(archiveResult.getArchiveRecord(), "archiveResult.getArchiveRecord()!=null for archiveResult={}", archiveResult);
 
 		final de.metas.printing.model.I_AD_Archive directArchive = InterfaceWrapperHelper.create(archive, de.metas.printing.model.I_AD_Archive.class);
 		directArchive.setIsDirectEnqueue(true);
@@ -240,7 +240,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 
 		//
 		// set async batch
-		InterfaceWrapperHelper.setDynAttribute(archive, Async_Constants.C_Async_Batch, asyncBatch);
+		AsyncHelper.setAsyncBatchId(archive, AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID()));
 		InterfaceWrapperHelper.save(directArchive);
 
 	}
