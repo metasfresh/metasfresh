@@ -246,7 +246,10 @@ public class PaymentAllocationBuilder
 
 		//
 		// Try to allocate credit memos to regular invoices
-		allocationCandidates.addAll(createAllocationLineCandidates_CreditMemosToInvoices(payableDocuments));
+		if(allowInvoiceToCreditMemoAllocation)
+		{
+			allocationCandidates.addAll(createAllocationLineCandidates_CreditMemosToInvoices(payableDocuments));
+		}
 
 		//
 		// Try to allocate purchase invoices to sales invoices
@@ -417,10 +420,6 @@ public class PaymentAllocationBuilder
 	private List<AllocationLineCandidate> createAllocationLineCandidates_CreditMemosToInvoices(
 			@NonNull final List<PayableDocument> payableDocuments)
 	{
-		if(!allowInvoiceToCreditMemoAllocation)
-		{
-			return ImmutableList.of();
-		}
 		if (payableDocuments.isEmpty())
 		{
 			return ImmutableList.of();
