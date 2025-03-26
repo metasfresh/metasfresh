@@ -70,7 +70,6 @@ public class AllocationLineCandidate
 			//
 			// Amounts
 			@NonNull final AllocationAmounts amounts,
-			@Nullable final Money paymentAmountOverride,
 			@Nullable final Money payableOverUnderAmt,
 			@Nullable final Money paymentOverUnderAmt,
 			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation)
@@ -125,7 +124,7 @@ public class AllocationLineCandidate
 	{
 		public AllocationLineCandidateBuilder payableDocument(@NonNull final PayableDocument payableDocument)
 		{
-			payableDocumentRef(payableDocument.getReference());
+			// payableDocumentRef(payableDocument.getReference()); TODO remove
 			payableDocumentIsCreditMemo(payableDocument.isCreditMemo());
 			return this;
 		}

@@ -45,5 +45,6 @@ public class PaymentAllocationCriteria
 	@NonNull
 	private final Instant dateTrx;
 	private final boolean allowPartialAllocations;
+	private final boolean allowInvoiceToCreditMemoAllocation;
 
 }

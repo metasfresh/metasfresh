@@ -34,7 +34,6 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
-import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -83,7 +82,7 @@ public class PaymentAllocationBuilder
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final AllocationLineCandidateSaver candidatesSaver = new AllocationLineCandidateSaver();
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	private InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
 	// Parameters
 	private LocalDate _defaultDateTrx;
 	private ImmutableList<PayableDocument> _payableDocuments = ImmutableList.of();
@@ -92,11 +91,12 @@ public class PaymentAllocationBuilder
 	private boolean allowPurchaseSalesInvoiceCompensation;
 	private PayableRemainingOpenAmtPolicy payableRemainingOpenAmtPolicy = PayableRemainingOpenAmtPolicy.DO_NOTHING;
 	private boolean dryRun = false;
-	private InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
 	/**
 	 * @see #allocatePayableAmountsAsIs(boolean)
 	 */
 	private boolean allocatePayableAmountsAsIs = false;
+	private boolean allowInvoiceToCreditMemoAllocation = true;
+
 
 	// Status
 	private boolean _built = false;
@@ -202,8 +202,14 @@ public class PaymentAllocationBuilder
 
 		if (candidate.isPayableDocumentIsCreditMemo())
 		{
-			// TODO
-			return ....;
+			return candidate.toBuilder()
+					.type(AllocationLineCandidateType.SalesCreditMemoToPurchaseInvoice)
+					.amounts(amounts.toBuilder()
+									 .payAmt(amounts.getInvoiceProcessingFee())
+									 .invoiceProcessingFee(null)
+									 .build())
+					.paymentDocumentRef(TableRecordReference.of(I_C_Invoice.Table_Name, serviceVendorInvoiceId))
+					.build();
 		}
 		else
 		{
@@ -413,6 +419,10 @@ public class PaymentAllocationBuilder
 	private List<AllocationLineCandidate> createAllocationLineCandidates_CreditMemosToInvoices(
 			@NonNull final List<PayableDocument> payableDocuments)
 	{
+		if(!allowInvoiceToCreditMemoAllocation)
+		{
+			return ImmutableList.of();
+		}
 		if (payableDocuments.isEmpty())
 		{
 			return ImmutableList.of();
@@ -904,6 +914,13 @@ public class PaymentAllocationBuilder
 	{
 		assertNotBuilt();
 		this.allowPartialAllocations = allowPartialAllocations;
+		return this;
+	}
+
+	public PaymentAllocationBuilder allowInvoiceToCreditMemoAllocation(final boolean allowInvoiceToCreditMemoAllocation)
+	{
+		assertNotBuilt();
+		this.allowInvoiceToCreditMemoAllocation = allowInvoiceToCreditMemoAllocation;
 		return this;
 	}
 

@@ -53,21 +53,21 @@ final class AllocationLineCandidateSaver
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
-	public ImmutableMap<PaymentAllocationId, AllocationLineCandidate> save(final List<AllocationLineCandidate> candidates)
+	public ImmutableMap<PaymentAllocationId,AllocationLineCandidate> save(final List<AllocationLineCandidate> candidates)
 	{
 		return trxManager.callInThreadInheritedTrx(() -> saveInTrx(candidates));
 	}
 
-	private ImmutableMap<PaymentAllocationId, AllocationLineCandidate> saveInTrx(final List<AllocationLineCandidate> candidates)
+	private ImmutableMap<PaymentAllocationId,AllocationLineCandidate> saveInTrx(final List<AllocationLineCandidate> candidates)
 	{
-		final ImmutableMap.Builder<PaymentAllocationId, AllocationLineCandidate> candidatesByPaymentId = ImmutableMap.builder();
+		final ImmutableMap.Builder<PaymentAllocationId,AllocationLineCandidate> candidatesByPaymentId = ImmutableMap.builder();
 
 		for (final AllocationLineCandidate candidate : candidates)
 		{
 			final PaymentAllocationId paymentAllocationId = saveCandidate(candidate);
 			if (paymentAllocationId != null)
 			{
-				candidatesByPaymentId.put(paymentAllocationId, candidate);
+				candidatesByPaymentId.put(paymentAllocationId,candidate);
 			}
 		}
 
@@ -186,7 +186,7 @@ final class AllocationLineCandidateSaver
 				.bpartnerId(candidate.getBpartnerId())
 				//
 				// Amounts
-				.amount(payAmt.negateIf(!candidate.isKeepPaymentAmtAsItIs()).toBigDecimal())
+				.amount(payAmt.negate().toBigDecimal())
 				.overUnderAmt(candidate.getPaymentOverUnderAmt().toBigDecimal())
 				//
 				.invoiceId(extractInvoiceId(candidate.getPaymentDocumentRef()));
@@ -197,6 +197,47 @@ final class AllocationLineCandidateSaver
 	@Nullable
 	private PaymentAllocationId saveCandidate_SalesCreditMemoToPurchaseInvoice(@NonNull final AllocationLineCandidate candidate)
 	{
+		final Money payAmt = candidate.getAmounts().getPayAmt();
+		final Money discountAmt = candidate.getAmounts().getDiscountAmt();
+		final Money writeOffAmt = candidate.getAmounts().getWriteOffAmt();
+
+		Check.assumeEquals(candidate.getAmounts(), AllocationAmounts.builder()
+				.payAmt(payAmt)
+				.discountAmt(discountAmt)
+				.writeOffAmt(writeOffAmt)
+				.build());
+
+		final C_AllocationHdr_Builder allocationBuilder = newC_AllocationHdr_Builder(candidate);
+
+		// Sales credit memo
+		allocationBuilder.addLine()
+				.skipIfAllAmountsAreZero()
+				//
+				.orgId(candidate.getOrgId())
+				.bpartnerId(candidate.getBpartnerId())
+				//
+				// Amounts
+				.amount(payAmt.toBigDecimal())
+				.discountAmt(discountAmt.toBigDecimal())
+				.writeOffAmt(writeOffAmt.toBigDecimal())
+				.overUnderAmt(candidate.getPayableOverUnderAmt().toBigDecimal())
+				//
+				.invoiceId(extractInvoiceId(candidate.getPayableDocumentRef()));
+
+		// Purchase invoice
+		allocationBuilder.addLine()
+				.skipIfAllAmountsAreZero()
+				//
+				.orgId(candidate.getOrgId())
+				.bpartnerId(candidate.getBpartnerId())
+				//
+				// Amounts
+				.amount(payAmt.toBigDecimal())
+				.overUnderAmt(candidate.getPaymentOverUnderAmt().toBigDecimal())
+				//
+				.invoiceId(extractInvoiceId(candidate.getPaymentDocumentRef()));
+
+		return createAndComplete(allocationBuilder);
 	}
 
 	private PaymentAllocationId saveCandidate_InvoiceDiscountOrWriteOff(@NonNull final AllocationLineCandidate candidate)
