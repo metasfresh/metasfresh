@@ -650,12 +650,12 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 
 	private boolean isARC()
 	{
-		return isCreditMemoInvoice() && !isSOTrxInvoice();
+		return isSOTrxInvoice() && isCreditMemoInvoice();
 	}
 
 	private boolean isAPI()
 	{
-		return isSOTrxInvoice() && !isCreditMemoInvoice();
+		return !isSOTrxInvoice() && !isCreditMemoInvoice();
 	}
 
 }    // DocLine_Allocation
