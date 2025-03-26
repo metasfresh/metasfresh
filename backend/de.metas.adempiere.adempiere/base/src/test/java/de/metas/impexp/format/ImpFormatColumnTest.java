@@ -5,11 +5,12 @@ import static org.assertj.core.api.Assertions.*;
 import java.sql.Timestamp;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class ImpFormatColumnTest
 {
-
+	private static final Timestamp EXPECTED_TIMESTAMP = Timestamp.valueOf("2025-03-21 00:00:00");
 	private ImpFormatColumn impFormatColumn;
 
 	@BeforeEach
@@ -18,49 +19,34 @@ class ImpFormatColumnTest
 		impFormatColumn = ImpFormatColumn.builder()
 				.columnName("testColumn")
 				.dataType(ImpFormatColumnDataType.Date)
-				.dataFormat("dd.MM.yy") // Using 2-digit year format
+				.dataFormat("dd.MM.yy")
 				.build();
 	}
 
-	@Test
-	void testParseCellValue_TwoDigitYear_ShouldParseTo2025() throws Exception
+	@ParameterizedTest
+	@ValueSource(strings = { "21.03.25" })
+	void testParseCellValue_TwoDigitYear_ShouldParseTo2025(final String testDate) throws Exception
 	{
-		final String inputDate = "21.03.25"; // 2-digit year
-		final Timestamp expectedTimestamp = Timestamp.valueOf("2025-03-21 00:00:00");
-
-		assertThat(impFormatColumn.parseCellValue(inputDate))
+		assertThat(impFormatColumn.parseCellValue(testDate))
 				.isInstanceOf(Timestamp.class)
-				.isEqualTo(expectedTimestamp);
+				.isEqualTo(EXPECTED_TIMESTAMP);
 	}
 
-	@Test
-	void testParseCellValue_FourDigitYear_ShouldParseTo2025() throws Exception
+	@ParameterizedTest
+	@ValueSource(strings = { "21.03.2025" })
+	void testParseCellValue_FourDigitYear_ShouldParseTo2025(final String testDate) throws Exception
 	{
-		final String inputDate = "21.03.2025"; // 4-digit year
-		final Timestamp expectedTimestamp = Timestamp.valueOf("2025-03-21 00:00:00");
-
-		assertThat(impFormatColumn.parseCellValue(inputDate))
+		assertThat(impFormatColumn.parseCellValue(testDate))
 				.isInstanceOf(Timestamp.class)
-				.isEqualTo(expectedTimestamp);
+				.isEqualTo(EXPECTED_TIMESTAMP);
 	}
 
-	@Test
-	void testParseCellValue_HandlesBothTwoAndFourDigitYears() throws Exception
+	@ParameterizedTest
+	@ValueSource(strings = { "21.03.25", "21.03.2025" })
+	void testParseCellValue_HandlesBothTwoAndFourDigitYears(final String testDate) throws Exception
 	{
-		impFormatColumn = ImpFormatColumn.builder()
-				.columnName("testColumn")
-				.dataType(ImpFormatColumnDataType.Date)
-				.dataFormat("dd.MM.yy") // 2-digit format, but should still accept 4-digit input
-				.build();
-
-		final String[] testDates = { "21.03.25", "21.03.2025" };
-		final Timestamp expectedTimestamp = Timestamp.valueOf("2025-03-21 00:00:00");
-
-		for (final String inputDate : testDates)
-		{
-			assertThat(impFormatColumn.parseCellValue(inputDate))
-					.isInstanceOf(Timestamp.class)
-					.isEqualTo(expectedTimestamp);
-		}
+		assertThat(impFormatColumn.parseCellValue(testDate))
+				.isInstanceOf(Timestamp.class)
+				.isEqualTo(EXPECTED_TIMESTAMP);
 	}
 }
