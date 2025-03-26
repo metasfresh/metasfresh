@@ -330,7 +330,8 @@ public class PaymentAllocationBuilderTest
 			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation,
 			@Nullable final String overUnderAmt,
 			@Nullable final String paymentOverUnderAmt,
-			@Nullable final CurrencyId currency
+			@Nullable final CurrencyId currency,
+			boolean payableDocumentIsCreditMemo
 	)
 	{
 		return AllocationLineCandidate.builder()
@@ -339,6 +340,7 @@ public class PaymentAllocationBuilderTest
 				.bpartnerId(bpartnerId)
 				//
 				.payableDocumentRef(payableRef)
+				.payableDocumentIsCreditMemo(payableDocumentIsCreditMemo)
 				.paymentDocumentRef(paymentRef)
 				//
 				.dateTrx(LocalDate.parse(date))
@@ -481,12 +483,12 @@ public class PaymentAllocationBuilderTest
 		{
 			createConversionRates(3);
 
-			final PayableDocument invoice1, invoice2;
+			final PayableDocument customerInvoice1, customerCreditMemo1;
 			final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 					// Invoices
 					ImmutableList.of(
-							invoice1 = invoice().type(CustomerInvoice).currency(chfCurrencyId).open("5000").pay("999").date("2021-01-05").build(),
-							invoice2 = invoice().type(CustomerCreditMemo).currency(euroCurrencyId).open("-333").pay("-333").date("2021-01-06").build())
+							customerInvoice1 = invoice().type(CustomerInvoice).currency(chfCurrencyId).open("5000").pay("999").date("2021-01-05").build(),
+							customerCreditMemo1 = invoice().type(CustomerCreditMemo).currency(euroCurrencyId).open("-333").pay("-333").date("2021-01-06").build())
 					// Payments
 					, ImmutableList.of());
 
@@ -495,8 +497,8 @@ public class PaymentAllocationBuilderTest
 			final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 					allocation().type(InvoiceToCreditMemo)
 							.currency(chfCurrencyId)
-							.payableRef(invoice1.getReference())
-							.paymentRef(invoice2.getReference())
+							.payableRef(customerInvoice1.getReference())
+							.paymentRef(customerCreditMemo1.getReference())
 							.allocatedAmt("999")
 							.overUnderAmt("4001")
 							.date("2021-01-06")
@@ -506,11 +508,11 @@ public class PaymentAllocationBuilderTest
 			// Check
 			assertExpected(candidatesExpected, builder);
 			//
-			assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), +999);
-			assertInvoicePaymentStatus(invoice1, InvoicePaymentStatus.PARTIALLY_PAID, "4001");
+			assertInvoiceAllocatedAmt(customerInvoice1.getInvoiceId(), +999);
+			assertInvoicePaymentStatus(customerInvoice1, InvoicePaymentStatus.PARTIALLY_PAID, "4001");
 			//
-			assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), -333);
-			assertInvoicePaymentStatus(invoice2, InvoicePaymentStatus.FULLY_PAID, "0");
+			assertInvoiceAllocatedAmt(customerCreditMemo1.getInvoiceId(), -333);
+			assertInvoicePaymentStatus(customerCreditMemo1, InvoicePaymentStatus.FULLY_PAID, "0");
 		}
 
 		@Test
@@ -590,17 +592,17 @@ public class PaymentAllocationBuilderTest
 	@Test
 	public void test_OneVendorInvoice_NoPayments_JustDiscountAndWriteOff()
 	{
-		final PayableDocument invoice1;
+		final PayableDocument vendorInvoice1;
 		final PaymentAllocationBuilder builder = PaymentAllocationBuilder.newBuilder()
 				.defaultDateTrx(LocalDate.parse("2021-01-31"))
 				.payableDocuments(ImmutableList.of(
-						invoice1 = invoice().type(VendorInvoice).open("-8000").pay("0").discount("-100").writeOff("-200").date("2021-01-22").build()));
+						vendorInvoice1 = invoice().type(VendorInvoice).open("-8000").pay("0").discount("-100").writeOff("-200").date("2021-01-22").build()));
 
 		//
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				allocation().type(InvoiceDiscountOrWriteOff)
-						.payableRef(invoice1.getReference())
+						.payableRef(vendorInvoice1.getReference())
 						.discountAmt("-100").writeOffAmt("-200").overUnderAmt("-7700")
 						.date("2021-01-31")
 						.build());
@@ -608,29 +610,29 @@ public class PaymentAllocationBuilderTest
 		//
 		// Check
 		assertExpected(candidatesExpected, builder);
-		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), -(100 + 200));
-		assertInvoicePaymentStatus(invoice1, InvoicePaymentStatus.PARTIALLY_PAID, "7700");
+		assertInvoiceAllocatedAmt(vendorInvoice1.getInvoiceId(), -(100 + 200));
+		assertInvoicePaymentStatus(vendorInvoice1, InvoicePaymentStatus.PARTIALLY_PAID, "7700");
 	}
 
 	@Test
 	public void test_OneVendorInvoice_OneVendorPayment()
 	{
-		final PaymentDocument payment1;
-		final PayableDocument invoice1;
+		final PaymentDocument outboundPayment1;
+		final PayableDocument vendorInvoice1;
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
 				ImmutableList.of(
-						invoice1 = invoice().type(VendorInvoice).open("-8000").pay("-5000").discount("-100").writeOff("-200").date("2021-02-10").build())
+						vendorInvoice1 = invoice().type(VendorInvoice).open("-8000").pay("-5000").discount("-100").writeOff("-200").date("2021-02-10").build())
 				// Payments
 				, ImmutableList.of(
-						payment1 = payment().direction(OUTBOUND).open("-5000").amtToAllocate("-5000").date("2021-02-11").build()));
+						outboundPayment1 = payment().direction(OUTBOUND).open("-5000").amtToAllocate("-5000").date("2021-02-11").build()));
 
 		//
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				allocation().type(InvoiceToPayment)
-						.payableRef(invoice1.getReference())
-						.paymentRef(payment1.getReference())
+						.payableRef(vendorInvoice1.getReference())
+						.paymentRef(outboundPayment1.getReference())
 						.allocatedAmt("-5000").discountAmt("-100").writeOffAmt("-200").overUnderAmt("-2700")
 						.date("2021-02-11")
 						.build());
@@ -638,9 +640,9 @@ public class PaymentAllocationBuilderTest
 		//
 		// Check
 		assertExpected(candidatesExpected, builder);
-		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), -(5000 + 100 + 200));
-		assertInvoicePaymentStatus(invoice1, InvoicePaymentStatus.PARTIALLY_PAID, "2700");
-		assertPaymentAllocatedAmt(payment1.getPaymentId(), -5000);
+		assertInvoiceAllocatedAmt(vendorInvoice1.getInvoiceId(), -(5000 + 100 + 200));
+		assertInvoicePaymentStatus(vendorInvoice1, InvoicePaymentStatus.PARTIALLY_PAID, "2700");
+		assertPaymentAllocatedAmt(outboundPayment1.getPaymentId(), -5000);
 	}
 
 	@Test
@@ -713,12 +715,12 @@ public class PaymentAllocationBuilderTest
 	@Test
 	public void test_CustomerInvoiceAndCreditMemo_NoPayments()
 	{
-		final PayableDocument invoice1, invoice2;
+		final PayableDocument customerInvoice1, customerCreditMemo1;
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
 				ImmutableList.of(
-						invoice1 = invoice().type(CustomerInvoice).open("5000").pay("1000").date("2021-01-11").build(),
-						invoice2 = invoice().type(CustomerCreditMemo).open("-1000").pay("-1000").date("2021-01-12").build()),
+						customerInvoice1 = invoice().type(CustomerInvoice).open("5000").pay("1000").date("2021-01-11").build(),
+						customerCreditMemo1 = invoice().type(CustomerCreditMemo).open("-1000").pay("-1000").date("2021-01-12").build()),
 				// Payments
 				ImmutableList.of());
 
@@ -726,8 +728,8 @@ public class PaymentAllocationBuilderTest
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				allocation().type(InvoiceToCreditMemo)
-						.payableRef(invoice1.getReference())
-						.paymentRef(invoice2.getReference())
+						.payableRef(customerInvoice1.getReference())
+						.paymentRef(customerCreditMemo1.getReference())
 						.allocatedAmt("1000")
 						.overUnderAmt("4000")
 						.date("2021-01-12")
@@ -737,22 +739,22 @@ public class PaymentAllocationBuilderTest
 		// Check
 		assertExpected(candidatesExpected, builder);
 		//
-		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), +1000);
-		assertInvoicePaymentStatus(invoice1, InvoicePaymentStatus.PARTIALLY_PAID, "4000");
+		assertInvoiceAllocatedAmt(customerInvoice1.getInvoiceId(), +1000);
+		assertInvoicePaymentStatus(customerInvoice1, InvoicePaymentStatus.PARTIALLY_PAID, "4000");
 		//
-		assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), -1000);
-		assertInvoicePaymentStatus(invoice2, InvoicePaymentStatus.FULLY_PAID, "0");
+		assertInvoiceAllocatedAmt(customerCreditMemo1.getInvoiceId(), -1000);
+		assertInvoicePaymentStatus(customerCreditMemo1, InvoicePaymentStatus.FULLY_PAID, "0");
 	}
 
 	@Test
 	public void test_VendorInvoiceAndCreditMemo_NoPayments()
 	{
-		final PayableDocument invoice, creditMemo;
+		final PayableDocument vendorInvoice, vendorCreditMemo;
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
 				ImmutableList.of(
-						invoice = invoice().type(VendorInvoice).open("-5000").pay("-1000").date("2021-01-11").build(),
-						creditMemo = invoice().type(VendorCreditMemo).open("1000").pay("1000").date("2021-01-12").build()),
+						vendorInvoice = invoice().type(VendorInvoice).open("-5000").pay("-1000").date("2021-01-11").build(),
+						vendorCreditMemo = invoice().type(VendorCreditMemo).open("1000").pay("1000").date("2021-01-12").build()),
 				// Payments
 				ImmutableList.of());
 
@@ -760,8 +762,8 @@ public class PaymentAllocationBuilderTest
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				allocation().type(InvoiceToCreditMemo)
-						.payableRef(invoice.getReference())
-						.paymentRef(creditMemo.getReference())
+						.payableRef(vendorInvoice.getReference())
+						.paymentRef(vendorCreditMemo.getReference())
 						.allocatedAmt("-1000")
 						.overUnderAmt("-4000")
 						.date("2021-01-12")
@@ -771,18 +773,18 @@ public class PaymentAllocationBuilderTest
 		// Check
 		assertExpected(candidatesExpected, builder);
 		//
-		assertInvoiceAllocatedAmt(invoice.getInvoiceId(), -1000);
-		assertInvoicePaymentStatus(invoice, InvoicePaymentStatus.PARTIALLY_PAID, "4000");
+		assertInvoiceAllocatedAmt(vendorInvoice.getInvoiceId(), -1000);
+		assertInvoicePaymentStatus(vendorInvoice, InvoicePaymentStatus.PARTIALLY_PAID, "4000");
 		//
-		assertInvoiceAllocatedAmt(creditMemo.getInvoiceId(), +1000);
-		assertInvoicePaymentStatus(creditMemo, InvoicePaymentStatus.FULLY_PAID, "0");
+		assertInvoiceAllocatedAmt(vendorCreditMemo.getInvoiceId(), +1000);
+		assertInvoicePaymentStatus(vendorCreditMemo, InvoicePaymentStatus.FULLY_PAID, "0");
 	}
 
 	@Nested
 	public class test_SalesInvoiceAndPurchaseInvoice_NoPayments
 	{
-		private PayableDocument invoice1;
-		private PayableDocument invoice2;
+		private PayableDocument customerInvoice1;
+		private PayableDocument vendorInvoice1;
 		private PaymentAllocationBuilder builder;
 
 		@BeforeEach
@@ -791,8 +793,8 @@ public class PaymentAllocationBuilderTest
 			builder = newPaymentAllocationBuilder(
 					// Invoices
 					ImmutableList.of(
-							invoice1 = invoice().type(CustomerInvoice).open("5000").pay("1000").date("2021-01-21").build(),
-							invoice2 = invoice().type(VendorInvoice).open("-1000").pay("-1000").date("2021-01-22").build()),
+							customerInvoice1 = invoice().type(CustomerInvoice).open("5000").pay("1000").date("2021-01-21").build(),
+							vendorInvoice1 = invoice().type(VendorInvoice).open("-1000").pay("-1000").date("2021-01-22").build()),
 					// Payments
 					ImmutableList.of());
 		}
@@ -806,8 +808,8 @@ public class PaymentAllocationBuilderTest
 			// Define expected candidates
 			final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 					allocation().type(SalesInvoiceToPurchaseInvoice)
-							.payableRef(invoice1.getReference())
-							.paymentRef(invoice2.getReference())
+							.payableRef(customerInvoice1.getReference())
+							.paymentRef(vendorInvoice1.getReference())
 							.allocatedAmt("1000")
 							.overUnderAmt("4000")
 							.date("2021-01-22")
@@ -817,11 +819,11 @@ public class PaymentAllocationBuilderTest
 			// Check
 			assertExpected(candidatesExpected, builder);
 			//
-			assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), +1000);
-			assertInvoicePaymentStatus(invoice1, InvoicePaymentStatus.PARTIALLY_PAID, "4000");
+			assertInvoiceAllocatedAmt(customerInvoice1.getInvoiceId(), +1000);
+			assertInvoicePaymentStatus(customerInvoice1, InvoicePaymentStatus.PARTIALLY_PAID, "4000");
 			//
-			assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), -1000);
-			assertInvoicePaymentStatus(invoice2, InvoicePaymentStatus.FULLY_PAID, "0");
+			assertInvoiceAllocatedAmt(vendorInvoice1.getInvoiceId(), -1000);
+			assertInvoicePaymentStatus(vendorInvoice1, InvoicePaymentStatus.FULLY_PAID, "0");
 		}
 
 		@Test
@@ -861,50 +863,50 @@ public class PaymentAllocationBuilderTest
 	@Test
 	public void test_Sales_MultiInvoice_MultiPayment()
 	{
-		final PaymentDocument payment1, payment2;
-		final PayableDocument invoice1, invoice2, invoice3, invoice4;
+		final PaymentDocument inboundPayment1, inboundPayment2;
+		final PayableDocument customerInvoice1, customerInvoice2, customerInvoice3, customerCreditMemo1;
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
 				ImmutableList.of(
-						invoice1 = invoice().type(CustomerInvoice).open("8000").pay("6000").discount("1599").writeOff("1").date("2021-01-11").build(),
-						invoice2 = invoice().type(CustomerInvoice).open("7100").pay("3000").discount("50").writeOff("50").date("2021-01-12").build(),
-						invoice3 = invoice().type(CustomerInvoice).open("1600").pay("1500").discount("100").date("2021-01-13").build(),
-						invoice4 = invoice().type(CustomerCreditMemo).open("-500").pay("-500").date("2021-01-14").build())
+						customerInvoice1 = invoice().type(CustomerInvoice).open("8000").pay("6000").discount("1599").writeOff("1").date("2021-01-11").build(),
+						customerInvoice2 = invoice().type(CustomerInvoice).open("7100").pay("3000").discount("50").writeOff("50").date("2021-01-12").build(),
+						customerInvoice3 = invoice().type(CustomerInvoice).open("1600").pay("1500").discount("100").date("2021-01-13").build(),
+						customerCreditMemo1 = invoice().type(CustomerCreditMemo).open("-500").pay("-500").date("2021-01-14").build())
 				// Payments
 				, ImmutableList.of(
-						payment1 = payment().direction(INBOUND).open("5000").amtToAllocate("5000").date("2021-01-21").build(),
-						payment2 = payment().direction(INBOUND).open("5000").amtToAllocate("5000").date("2021-01-22").build()));
+						inboundPayment1 = payment().direction(INBOUND).open("5000").amtToAllocate("5000").date("2021-01-21").build(),
+						inboundPayment2 = payment().direction(INBOUND).open("5000").amtToAllocate("5000").date("2021-01-22").build()));
 
 		//
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				allocation().type(InvoiceToCreditMemo)
-						.payableRef(invoice3.getReference()) // smallest invoice first
-						.paymentRef(invoice4.getReference()) // prefer allocating against creditMemos over allocating against payments
+						.payableRef(customerInvoice3.getReference()) // smallest invoice first
+						.paymentRef(customerCreditMemo1.getReference()) // prefer allocating against creditMemos over allocating against payments
 						.allocatedAmt("500").discountAmt("100").writeOffAmt("0").overUnderAmt("1000")
 						.date("2021-01-14")
 						.build(),
 				allocation().type(InvoiceToPayment) // what's lef to allocate is allocated against payment1
-						.payableRef(invoice3.getReference()) 
-						.paymentRef(payment1.getReference())
+						.payableRef(customerInvoice3.getReference())
+						.paymentRef(inboundPayment1.getReference())
 						.allocatedAmt("1000").discountAmt("0").writeOffAmt("0").overUnderAmt("0").paymentOverUnderAmt("4000")
 						.date("2021-01-21")
 						.build(),
 				allocation().type(InvoiceToPayment)
-						.payableRef(invoice2.getReference())
-						.paymentRef(payment1.getReference())
+						.payableRef(customerInvoice2.getReference())
+						.paymentRef(inboundPayment1.getReference())
 						.allocatedAmt("3000").discountAmt("50").writeOffAmt("50").overUnderAmt("4000").paymentOverUnderAmt("1000")
 						.date("2021-01-21")
 						.build(),
 				allocation().type(InvoiceToPayment)
-						.payableRef(invoice1.getReference())
-						.paymentRef(payment1.getReference())
+						.payableRef(customerInvoice1.getReference())
+						.paymentRef(inboundPayment1.getReference())
 						.allocatedAmt("1000").discountAmt("1599").writeOffAmt("1").overUnderAmt("5400").paymentOverUnderAmt("0")
 						.date("2021-01-21")
 						.build(),
 				allocation().type(InvoiceToPayment)
-						.payableRef(invoice1.getReference())
-						.paymentRef(payment2.getReference())
+						.payableRef(customerInvoice1.getReference())
+						.paymentRef(inboundPayment2.getReference())
 						.allocatedAmt("5000").discountAmt("0").writeOffAmt("0").overUnderAmt("400").paymentOverUnderAmt("0")
 						.date("2021-01-22")
 						.build());
@@ -913,41 +915,42 @@ public class PaymentAllocationBuilderTest
 		// Check
 		assertExpected(candidatesExpected, builder);
 		//
-		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), 500 + 1599 + 1 + 5000 + 500);
-		assertInvoicePaymentStatus(invoice1, InvoicePaymentStatus.PARTIALLY_PAID, "400");
+		assertInvoiceAllocatedAmt(customerInvoice1.getInvoiceId(), 500 + 1599 + 1 + 5000 + 500);
+		assertInvoicePaymentStatus(customerInvoice1, InvoicePaymentStatus.PARTIALLY_PAID, "400");
 		//
-		assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), 3000 + 50 + 50);
-		assertInvoicePaymentStatus(invoice2, InvoicePaymentStatus.PARTIALLY_PAID, "4000");
+		assertInvoiceAllocatedAmt(customerInvoice2.getInvoiceId(), 3000 + 50 + 50);
+		assertInvoicePaymentStatus(customerInvoice2, InvoicePaymentStatus.PARTIALLY_PAID, "4000");
 		//
-		assertInvoiceAllocatedAmt(invoice3.getInvoiceId(), 1500 + 100);
-		assertInvoicePaymentStatus(invoice3, InvoicePaymentStatus.FULLY_PAID, "0");
+		assertInvoiceAllocatedAmt(customerInvoice3.getInvoiceId(), 1500 + 100);
+		assertInvoicePaymentStatus(customerInvoice3, InvoicePaymentStatus.FULLY_PAID, "0");
 		//
-		assertInvoiceAllocatedAmt(invoice4.getInvoiceId(), -500); // credit memo
-		assertInvoicePaymentStatus(invoice4, InvoicePaymentStatus.FULLY_PAID, "0");
+		assertInvoiceAllocatedAmt(customerCreditMemo1.getInvoiceId(), -500); // credit memo
+		assertInvoicePaymentStatus(customerCreditMemo1, InvoicePaymentStatus.FULLY_PAID, "0");
 		//
-		assertPaymentAllocatedAmt(payment1.getPaymentId(), 5000);
-		assertPaymentAllocatedAmt(payment2.getPaymentId(), 5000);
+		assertPaymentAllocatedAmt(inboundPayment1.getPaymentId(), 5000);
+		assertPaymentAllocatedAmt(inboundPayment2.getPaymentId(), 5000);
 	}
 
 	@Test
 	public void test_CreditMemoInvoice_Payment()
 	{
-		final PaymentDocument payment1;
-		final PayableDocument invoice1;
+		final PaymentDocument inboundPayment1;
+		final PayableDocument vendorCreditMemo1;
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
 				ImmutableList.of(
-						invoice1 = invoice().type(VendorCreditMemo).open("100").pay("30").date("2021-02-10").build())
+						vendorCreditMemo1 = invoice().type(VendorCreditMemo).open("100").pay("30").date("2021-02-10").build())
 				// Payments
 				, ImmutableList.of(
-						payment1 = payment().direction(INBOUND).open("50").amtToAllocate("30").date("2021-02-11").build()));
+						inboundPayment1 = payment().direction(INBOUND).open("50").amtToAllocate("30").date("2021-02-11").build()));
 
 		//
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				allocation().type(InvoiceToPayment)
-						.payableRef(invoice1.getReference())
-						.paymentRef(payment1.getReference())
+						.payableRef(vendorCreditMemo1.getReference())
+						.payableDocumentIsCreditMemo(true)
+						.paymentRef(inboundPayment1.getReference())
 						.allocatedAmt("30")
 						.overUnderAmt("70")
 						.paymentOverUnderAmt("20")
@@ -958,39 +961,39 @@ public class PaymentAllocationBuilderTest
 		// Check
 		assertExpected(candidatesExpected, builder);
 		//
-		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), 30); // credit memo
-		assertInvoicePaymentStatus(invoice1, InvoicePaymentStatus.PARTIALLY_PAID, "70");
+		assertInvoiceAllocatedAmt(vendorCreditMemo1.getInvoiceId(), 30); // credit memo
+		assertInvoicePaymentStatus(vendorCreditMemo1, InvoicePaymentStatus.PARTIALLY_PAID, "70");
 		//
-		assertPaymentAllocatedAmt(payment1.getPaymentId(), 30);
+		assertPaymentAllocatedAmt(inboundPayment1.getPaymentId(), 30);
 	}
 
 	@Test
 	public void test_RegularVendorInvoice_CreditMemoVendorInvoice_OutboundPayment()
 	{
-		final PaymentDocument payment1;
-		final PayableDocument invoice1;
-		final PayableDocument invoice2;
+		final PaymentDocument outboundPayment1;
+		final PayableDocument vendorInvoice1;
+		final PayableDocument vendorCreditMemo1;
 		final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 				// Invoices
 				ImmutableList.of(
-						invoice1 = invoice().type(VendorInvoice).open("-165").pay("-100").discount("-10").writeOff("-5").date("2021-02-10").build(),
-						invoice2 = invoice().type(VendorCreditMemo).open("80").pay("80").date("2021-02-11").build())
+						vendorInvoice1 = invoice().type(VendorInvoice).open("-165").pay("-100").discount("-10").writeOff("-5").date("2021-02-10").build(),
+						vendorCreditMemo1 = invoice().type(VendorCreditMemo).open("80").pay("80").date("2021-02-11").build())
 				// Payments
 				, ImmutableList.of(
-						payment1 = payment().direction(OUTBOUND).open("-20").amtToAllocate("-20").date("2021-02-12").build()));
+						outboundPayment1 = payment().direction(OUTBOUND).open("-20").amtToAllocate("-20").date("2021-02-12").build()));
 
 		//
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				allocation().type(InvoiceToCreditMemo)
-						.payableRef(invoice1.getReference())
-						.paymentRef(invoice2.getReference())
+						.payableRef(vendorInvoice1.getReference())
+						.paymentRef(vendorCreditMemo1.getReference())
 						.allocatedAmt("-80").discountAmt("-10").writeOffAmt("-5").overUnderAmt("-70")
 						.date("2021-02-11")
 						.build(),
 				allocation().type(InvoiceToPayment)
-						.payableRef(invoice1.getReference())
-						.paymentRef(payment1.getReference())
+						.payableRef(vendorInvoice1.getReference())
+						.paymentRef(outboundPayment1.getReference())
 						.allocatedAmt("-20").overUnderAmt("-50")
 						.date("2021-02-12")
 						.build());
@@ -999,13 +1002,13 @@ public class PaymentAllocationBuilderTest
 		// Check
 		assertExpected(candidatesExpected, builder);
 		//
-		assertInvoiceAllocatedAmt(invoice1.getInvoiceId(), -(100 + 10 + 5));
-		assertInvoicePaymentStatus(invoice1, InvoicePaymentStatus.PARTIALLY_PAID, "50");
+		assertInvoiceAllocatedAmt(vendorInvoice1.getInvoiceId(), -(100 + 10 + 5));
+		assertInvoicePaymentStatus(vendorInvoice1, InvoicePaymentStatus.PARTIALLY_PAID, "50");
 		//
-		assertInvoiceAllocatedAmt(invoice2.getInvoiceId(), +80); // CM
-		assertInvoicePaymentStatus(invoice2, InvoicePaymentStatus.FULLY_PAID, "0");
+		assertInvoiceAllocatedAmt(vendorCreditMemo1.getInvoiceId(), +80); // CM
+		assertInvoicePaymentStatus(vendorCreditMemo1, InvoicePaymentStatus.FULLY_PAID, "0");
 		//
-		assertPaymentAllocatedAmt(payment1.getPaymentId(), -20);
+		assertPaymentAllocatedAmt(outboundPayment1.getPaymentId(), -20);
 	}
 
 	@Test
@@ -1173,30 +1176,30 @@ public class PaymentAllocationBuilderTest
 	@Test
 	public void test_automaticallyWriteOff()
 	{
-		final PayableDocument invoice1;
-		final PaymentDocument payment1;
+		final PayableDocument customerInvoice1;
+		final PaymentDocument inboundPayment1;
 
 		final PaymentAllocationBuilder builder = PaymentAllocationBuilder.newBuilder()
 				.defaultDateTrx(LocalDate.parse("2021-02-14"))
 				.payableDocuments(ImmutableList.of(
-						invoice1 = invoice().type(CustomerInvoice).open("100").pay("100").date("2021-02-10").build()))
+						customerInvoice1 = invoice().type(CustomerInvoice).open("100").pay("100").date("2021-02-10").build()))
 				.paymentDocuments(ImmutableList.of(
-						payment1 = payment().direction(INBOUND).open("10").amtToAllocate("10").date("2021-02-11").build()))
+						inboundPayment1 = payment().direction(INBOUND).open("10").amtToAllocate("10").date("2021-02-11").build()))
 				.payableRemainingOpenAmtPolicy(PayableRemainingOpenAmtPolicy.WRITE_OFF);
 
 		//
 		// Define expected candidates
 		final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 				allocation().type(InvoiceToPayment)
-						.payableRef(invoice1.getReference())
-						.paymentRef(payment1.getReference())
+						.payableRef(customerInvoice1.getReference())
+						.paymentRef(inboundPayment1.getReference())
 						.allocatedAmt("10")
 						.overUnderAmt("90")
 						.date("2021-02-11")
 						.build(),
 
 				allocation().type(InvoiceDiscountOrWriteOff)
-						.payableRef(invoice1.getReference())
+						.payableRef(customerInvoice1.getReference())
 						.writeOffAmt("90")
 						.date("2021-02-14")
 						.build());
@@ -1270,8 +1273,8 @@ public class PaymentAllocationBuilderTest
 		@Test
 		public void salesInvoice_and_salesCreditMemo_sameAmount()
 		{
-			final PayableDocument salesInvoice;
-			final PayableDocument creditMemo;
+			final PayableDocument customerInvoice;
+			final PayableDocument customerCreditMemo;
 
 			final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = InvoiceProcessingFeeCalculation.builder()
 					.orgId(adOrgId)
@@ -1287,8 +1290,8 @@ public class PaymentAllocationBuilderTest
 			final PaymentAllocationBuilder builder = newPaymentAllocationBuilder(
 					// Invoices
 					ImmutableList.of(
-							salesInvoice = invoice().type(CustomerInvoice).open("100").pay("90").discount("0").invoiceProcessingFee("10").invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation).date("2021-01-03").build(),
-							creditMemo = invoice().type(CustomerCreditMemo).open("-100").pay("-110"/* -100 + 10*/).discount("0").invoiceProcessingFee("10").invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation).date("2021-01-04").build()
+							customerInvoice = invoice().type(CustomerInvoice).open("100").pay("90").discount("0").invoiceProcessingFee("10").invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation).date("2021-01-03").build(),
+							customerCreditMemo = invoice().type(CustomerCreditMemo).open("-100").pay("-110"/* -100 + 10*/).discount("0").invoiceProcessingFee("10").invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation).date("2021-01-04").build()
 					)
 					// Payments
 					, ImmutableList.of());
@@ -1297,22 +1300,23 @@ public class PaymentAllocationBuilderTest
 			// Define expected candidates
 			final List<AllocationLineCandidate> candidatesExpected = ImmutableList.of(
 					allocation().type(AllocationLineCandidateType.InvoiceProcessingFee)
-							.payableRef(salesInvoice.getReference())
+							.payableRef(customerInvoice.getReference())
 							.invoiceProcessingFee("10")
 							.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 							.overUnderAmt("90")
 							.date("2021-01-23")
 							.build(),
 					allocation().type(AllocationLineCandidateType.InvoiceProcessingFee)
-							.payableRef(creditMemo.getReference())
+							.payableRef(customerCreditMemo.getReference())
+							.payableDocumentIsCreditMemo(true)
 							.invoiceProcessingFee("10")
 							.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 							.overUnderAmt("-110")
 							.date("2021-01-23")
 							.build(),
 					allocation().type(InvoiceToCreditMemo)
-							.payableRef(salesInvoice.getReference())
-							.paymentRef(creditMemo.getReference())
+							.payableRef(customerInvoice.getReference())
+							.paymentRef(customerCreditMemo.getReference())
 							.allocatedAmt("90")
 							.discountAmt("0")
 							.paymentOverUnderAmt("-20")
