@@ -1,7 +1,7 @@
 package de.metas.document.archive.async.spi.impl;
 
 import de.metas.async.AsyncBatchId;
-import de.metas.async.Async_Constants;
+import de.metas.async.AsyncHelper;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -44,7 +44,7 @@ public class RecreateArchiveWorkpackageProcessor implements IWorkpackageProcesso
 			final PO po = TableModelLoader.instance.getPO(ctx, adTableDAO.retrieveTableName(docOutboundLog.getAD_Table_ID()), docOutboundLog.getRecord_ID(), trxName);
 			if (workpackage.getC_Async_Batch_ID() > 0)
 			{
-				InterfaceWrapperHelper.setDynAttribute(po, Async_Constants.DYNATTR_AsyncBatchId, AsyncBatchId.ofRepoIdOrNull(workpackage.getC_Async_Batch_ID()));
+				AsyncHelper.setAsyncBatchId(po, AsyncBatchId.ofRepoIdOrNull(workpackage.getC_Async_Batch_ID()));
 			}
 
 			DefaultModelArchiver.of(po).archive();

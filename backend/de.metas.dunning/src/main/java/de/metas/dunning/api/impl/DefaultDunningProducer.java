@@ -23,7 +23,7 @@ package de.metas.dunning.api.impl;
  */
 
 import de.metas.async.AsyncBatchId;
-import de.metas.async.Async_Constants;
+import de.metas.async.AsyncHelper;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.document.engine.IDocument;
@@ -95,7 +95,7 @@ public class DefaultDunningProducer implements IDunningProducer
 			final AsyncBatchId asyncBatchId = getDunningContext().getProperty(IDunningProducer.CONTEXT_AsyncBatchIdDunningDoc);
 			if (asyncBatchId != null)
 			{
-				InterfaceWrapperHelper.setDynAttribute(dunningDoc, Async_Constants.DYNATTR_AsyncBatchId, asyncBatchId);
+				AsyncHelper.setAsyncBatchId(dunningDoc, asyncBatchId);
 			}
 		}
 

@@ -1,7 +1,7 @@
 package de.metas.printing.async.spi.impl;
 
 import de.metas.async.AsyncBatchId;
-import de.metas.async.Async_Constants;
+import de.metas.async.AsyncHelper;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -240,7 +240,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 
 		//
 		// set async batch
-		InterfaceWrapperHelper.setDynAttribute(archive, Async_Constants.DYNATTR_AsyncBatchId, AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID()));
+		AsyncHelper.setAsyncBatchId(archive, AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID()));
 		InterfaceWrapperHelper.save(directArchive);
 
 	}

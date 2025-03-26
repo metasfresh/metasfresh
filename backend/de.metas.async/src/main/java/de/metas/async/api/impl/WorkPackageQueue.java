@@ -24,6 +24,7 @@ package de.metas.async.api.impl;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
+import de.metas.async.AsyncHelper;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
@@ -443,7 +444,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 		enqueueWorkPackage(workPackage, PRIORITY_AUTO); // default priority
 
-		final AsyncBatchId asyncBatchId = InterfaceWrapperHelper.getDynAttribute(model, Async_Constants.DYNATTR_AsyncBatchId);
+		final AsyncBatchId asyncBatchId = AsyncHelper.getAsyncBatchId(model);
 		if (asyncBatchId != null)
 		{
 			workPackage.setC_Async_Batch_ID(asyncBatchId.getRepoId());
