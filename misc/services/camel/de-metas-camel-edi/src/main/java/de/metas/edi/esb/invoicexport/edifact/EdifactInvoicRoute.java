@@ -69,7 +69,7 @@ public class EdifactInvoicRoute extends AbstractEDIRoute
 
 	private final static QName EDIInvoiceFeedback_QNAME = Constants.JAXB_ObjectFactory.createEDIInvoiceFeedback(null).getName();
 	private static final String METHOD_setCInvoiceID = "setCInvoiceID";
-	
+
 	@VisibleForTesting
 	static final String OUTPUT_INVOIC_LOCAL = "edi.file.invoic.edifact";
 
@@ -77,7 +77,7 @@ public class EdifactInvoicRoute extends AbstractEDIRoute
 
 	@Override
 	public void configureEDIRoute(
-			@NonNull final DataFormat metasfreshFeedbackFormat, 
+			@NonNull final DataFormat metasfreshFeedbackFormat,
 			@NonNull final DecimalFormat decimalFormat)
 	{
 		// set up the format to convert edifact-java => edifact-XML
@@ -85,8 +85,8 @@ public class EdifactInvoicRoute extends AbstractEDIRoute
 		try
 		{
 			smooksEdifactJaxbContext = JAXBContext.newInstance(
-					Interchange.class, 
-					org.smooks.edifact.binding.service.ObjectFactory.class, 
+					Interchange.class,
+					org.smooks.edifact.binding.service.ObjectFactory.class,
 					org.smooks.edifact.binding.d01b.ObjectFactory.class);
 		}
 		catch (final JAXBException e)
@@ -114,64 +114,64 @@ public class EdifactInvoicRoute extends AbstractEDIRoute
 		{
 			endPointURIs = new String[] { "{{" + OUTPUT_INVOIC_LOCAL + "}}", remoteEndpoint };
 		}
-		
+
 		from(EP_EDI_METASFRESH_XML_INVOIC_CONSUMER)
 				.routeId(ROUTE_ID)
 				.streamCache("true")
 
-		.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
+				.log(LoggingLevel.INFO, "EDI: Setting defaults as exchange properties...")
 				.setProperty(EDI_INVOIC_SENDER_GLN).constant(senderGln)
 
-		.log(LoggingLevel.INFO, "EDI: Setting EDI feedback headers...")
-		.process(exchange -> {
-			// i'm sure that there are better ways, but we want the EDIFeedbackRoute to identify that the error is coming from *this* route.
-			exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ROUTE_ID, ROUTE_ID);
-
-			final EDICctopInvoicVType xmlCctopInvoice = exchange.getIn().getBody(EDICctopInvoicVType.class);
-
-			exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ADClientValueAttr, xmlCctopInvoice.getADClientValueAttr());
-			exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlCctopInvoice.getCInvoiceID().longValue());
-
-			xmlCctopInvoice.getEDICctopInvoic500V().sort(Comparator.comparing(EDICctopInvoic500VType::getLine));
-
-			final String fileName = "INVOIC_" + xmlCctopInvoice.getInvoiceDocumentno() + "_" + SystemTime.millis() + ".xml";
-			exchange.getIn().setHeader(Exchange.FILE_NAME, fileName);
-		})
-
-		.log(LoggingLevel.INFO, "EDI: Converting XML Java Object -> EDI Java Object...")
+				.log(LoggingLevel.INFO, "EDI: Setting EDI feedback headers...")
 				.process(exchange -> {
-					
+					// i'm sure that there are better ways, but we want the EDIFeedbackRoute to identify that the error is coming from *this* route.
+					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ROUTE_ID, ROUTE_ID);
+
+					final EDICctopInvoicVType xmlCctopInvoice = exchange.getIn().getBody(EDICctopInvoicVType.class);
+
+					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_ADClientValueAttr, xmlCctopInvoice.getADClientValueAttr());
+					exchange.getIn().setHeader(EDIXmlFeedbackHelper.HEADER_RecordID, xmlCctopInvoice.getCInvoiceID().longValue());
+
+					xmlCctopInvoice.getEDICctopInvoic500V().sort(Comparator.comparing(EDICctopInvoic500VType::getLine));
+
+					final String fileName = "INVOIC_" + xmlCctopInvoice.getInvoiceDocumentno() + "_" + SystemTime.millis() + ".xml";
+					exchange.getIn().setHeader(Exchange.FILE_NAME, fileName);
+				})
+
+				.log(LoggingLevel.INFO, "EDI: Converting XML Java Object -> EDI Java Object...")
+				.process(exchange -> {
+
 					final EDICctopInvoicVType xmlCctopInvoice = exchange.getIn().getBody(EDICctopInvoicVType.class);
 					final Interchange edifactInvoice = new EDICctopInvoicVtoD01BConverter().convert(xmlCctopInvoice);
 					exchange.getIn().setBody(edifactInvoice);
 				})
-				
-		.log(LoggingLevel.INFO, "EDI: Marshalling EDI Java Object to XML using JAXB...")		
+
+				.log(LoggingLevel.INFO, "EDI: Marshalling EDI Java Object to XML using JAXB...")
 				.marshal(smooksEdifactJaxbDataFormat)
 				.log(LoggingLevel.INFO, "This is what we send to smooks:\n${body}")
-				
-		.log(LoggingLevel.INFO, "EDI: Marshalling EDI Java Object to EDI Format using Smooks...")
-				.to("smooks:"+getSmooksConfigurationPath("edi.smooks.config.xml.invoic.edifact"))
+
+				.log(LoggingLevel.INFO, "EDI: Marshalling EDI Java Object to EDI Format using Smooks...")
+				.to("smooks:" + getSmooksConfigurationPath("edi.smooks.config.xml.invoic.edifact"))
 				.log(LoggingLevel.INFO, "This is what we got back from smooks:${body}")
 
-		.log(LoggingLevel.INFO, "Output filename=${in.headers." + Exchange.FILE_NAME + "}; endpointUri=" + Arrays.toString(endPointURIs))
-		.log(LoggingLevel.INFO, "Sending ecosio-XML to the " + endPointURIs.length + " endpoint(s):\r\n" + body())
-		.multicast()
-			.stopOnException()
-			.parallelProcessing(false)
-			.to(endPointURIs)
-		.end()
+				.log(LoggingLevel.INFO, "Output filename=${in.headers." + Exchange.FILE_NAME + "}; endpointUri=" + Arrays.toString(endPointURIs))
+				.log(LoggingLevel.INFO, "Sending ecosio-XML to the " + endPointURIs.length + " endpoint(s):\r\n" + body())
+				.multicast()
+				.stopOnException()
+				.parallelProcessing(false)
+				.to(endPointURIs)
+				.end()
 
-		.log(LoggingLevel.INFO, "EDI: Creating metasfresh feedback XML Java Object...")
+				.log(LoggingLevel.INFO, "EDI: Creating metasfresh feedback XML Java Object...")
 				.process(new EDIXmlSuccessFeedbackProcessor<>(EDIInvoiceFeedbackType.class, EdifactInvoicRoute.EDIInvoiceFeedback_QNAME, EdifactInvoicRoute.METHOD_setCInvoiceID))
 
-		.log(LoggingLevel.INFO, "EDI: Marshalling XML Java Object feedback -> XML document...")
+				.log(LoggingLevel.INFO, "EDI: Marshalling XML Java Object feedback -> XML document...")
 				.marshal(metasfreshFeedbackFormat)
 
-		.log(LoggingLevel.INFO, "EDI: Sending success response to metasfresh...")
-		
-		.setHeader(RabbitMQConstants.ROUTING_KEY).simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
- 		.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
-		.to("{{" + Constants.EP_AMQP_TO_MF + "}}");
+				.log(LoggingLevel.INFO, "EDI: Sending success response to metasfresh...")
+
+				.setHeader(RabbitMQConstants.ROUTING_KEY).simple(feedbackMessageRoutingKey) // https://github.com/apache/camel/blob/master/components/camel-rabbitmq/src/main/docs/rabbitmq-component.adoc
+				.setHeader(RabbitMQConstants.CONTENT_ENCODING).simple(StandardCharsets.UTF_8.name())
+				.to("{{" + Constants.EP_AMQP_TO_MF + "}}");
 	}
 }
