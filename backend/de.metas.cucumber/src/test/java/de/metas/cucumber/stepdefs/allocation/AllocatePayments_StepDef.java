@@ -139,6 +139,29 @@ public class AllocatePayments_StepDef
 				.build();
 	}
 
+	@And("^allocate sales credit memo to purchase invoice$")
+	public void allocateSalesCreditMemoToPurchaseInvoice(@NonNull final DataTable table)
+	{
+		final ArrayList<PayableDocument> payableDocuments = new ArrayList<>();
+
+		DataTableRows.of(table).forEach(row -> {
+			row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_ID)
+					.map(this::buildPayableDocumentForARCorAPI)
+					.ifPresent(payableDocuments::add);
+
+		});
+
+		PaymentAllocationBuilder.newBuilder()
+				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+				.defaultDateTrx(LocalDate.now())
+				.payableDocuments(payableDocuments)
+				.allowPartialAllocations(true)
+				.payableRemainingOpenAmtPolicy(PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy.DO_NOTHING)
+				.allowPurchaseSalesInvoiceCompensation(true)
+				.build();
+	}
+
+
 	@And("^allocate invoices \\(credit memo/purchase\\) to invoices$")
 	public void allocate_credit_memo_to_invoice(@NonNull final DataTable table)
 	{
@@ -193,6 +216,37 @@ public class AllocatePayments_StepDef
 						.discountAmt(discountAmt)
 						.build()
 						.convertToRealAmounts(invoiceToAllocate.getMultiplier()))
+				.build();
+	}
+
+	@NonNull
+	private PayableDocument buildPayableDocumentForARCorAPI(@NonNull final StepDefDataIdentifier invoiceIdentifier)
+	{
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+
+		assertThat(invoice).isNotNull();
+
+		final InvoiceToAllocate invoiceToAllocate = getInvoiceToAllocate(invoice);
+		final Money invoiceOpenMoneyAmt = moneyService.toMoney(invoiceToAllocate.getOpenAmountConverted());
+		final Money discountAmt = moneyService.toMoney(invoiceToAllocate.getDiscountAmountConverted());
+		final Money payAmt = discountAmt != null ? invoiceOpenMoneyAmt.subtract(discountAmt) : invoiceOpenMoneyAmt;
+
+		return PayableDocument.builder()
+				.invoiceId(invoiceToAllocate.getInvoiceId())
+				.bpartnerId(invoiceToAllocate.getBpartnerId())
+				.documentNo(invoiceToAllocate.getDocumentNo())
+				.soTrx(invoiceToAllocate.getDocBaseType().getSoTrx())
+				.creditMemo(invoiceToAllocate.getDocBaseType().isCreditMemo())
+				.openAmt(invoiceOpenMoneyAmt.negateIf(!invoice.isSOTrx()))
+				.date(invoiceToAllocate.getDateInvoiced())
+				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
+				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
+				.amountsToAllocate(AllocationAmounts.builder()
+										   .payAmt(payAmt)
+										   .discountAmt(discountAmt)
+										   .build()
+										   .convertToRealAmounts(invoiceToAllocate.getMultiplier()))
+				.allowAllocateAgainstDifferentSignumPayment(true)
 				.build();
 	}
 
