@@ -47,7 +47,7 @@ public class RecreateInvoiceEnqueuer
 				.setContext(getCtx())
 				.setC_Async_Batch_Type(C_Async_Batch_InternalName_VoidAndRecreateInvoice)
 				.setName(C_Async_Batch_InternalName_VoidAndRecreateInvoice)
-				.build();
+				.buildAndEnqueue();
 
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), RecreateInvoiceWorkpackageProcessor.class);
 		queue.newWorkPackage()

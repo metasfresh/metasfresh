@@ -22,12 +22,11 @@ package de.metas.document.archive.async.spi.impl;
  * #L%
  */
 
-import de.metas.async.AsyncBatchId;
 import ch.qos.logback.classic.Level;
+import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
@@ -97,7 +96,7 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		final List<Object> records = queueDAO.retrieveAllItems(workpackage, Object.class);
 		for (final Object record : records)
 		{
-			InterfaceWrapperHelper.setDynAttribute(record, Async_Constants.AsyncBatchId, asyncBatchId);
+			InterfaceWrapperHelper.setDynAttribute(record, Async_Constants.DYNATTR_AsyncBatchId, asyncBatchId);
 			try (final IAutoCloseable ignored = asyncBatchBL.assignTempAsyncBatchIdToModel(record, asyncBatchId))
 			{
 				generateOutboundDocument(record, userId);

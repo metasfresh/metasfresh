@@ -45,7 +45,7 @@ public final class Async_Constants
 	 */
 	public static final int DEFAULT_RETRY_TIMEOUT_MILLIS = 5000;
 
-	public static final String AsyncBatchId = "AsyncBatchId";
+	public static final String DYNATTR_AsyncBatchId = "AsyncBatchId";
 
 	public static final Topic WORKPACKAGE_ERROR_USER_NOTIFICATIONS_TOPIC = Topic.builder()
 			.name("de.metas.async.UserNotifications.WorkpackageProcessingErrors")

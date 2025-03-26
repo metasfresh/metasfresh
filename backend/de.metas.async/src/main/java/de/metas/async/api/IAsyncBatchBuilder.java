@@ -42,7 +42,7 @@ public interface IAsyncBatchBuilder
 	 *
 	 * @return built {@link I_C_Async_Batch}
 	 */
-	AsyncBatchId build();
+	AsyncBatchId buildAndEnqueue();
 
 	IAsyncBatchBuilder setContext(Properties ctx);
 

@@ -71,19 +71,17 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 	}
 
 	@Override
-	public AsyncBatchId build()
+	public AsyncBatchId buildAndEnqueue()
 	{
-		final I_C_Async_Batch asyncBatchRecord = build0();
-
 		// the order is very important: first enque and then set the batch
 		// otherwise, will be counted also the workpackage for the batch
-		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(asyncBatchRecord.getC_Async_Batch_ID());
+		final AsyncBatchId asyncBatchId = build0();
 		asyncBatchBL.enqueueAsyncBatch(asyncBatchId);
 
 		return asyncBatchId;
 	}
 
-	private I_C_Async_Batch build0()
+	private AsyncBatchId build0()
 	{
 		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.create(getCtx(), I_C_Async_Batch.class, ITrx.TRXNAME_None);
 		asyncBatch.setAD_PInstance_ID(PInstanceId.toRepoId(getAD_PInstance_Creator_ID()));
@@ -102,7 +100,7 @@ class AsyncBatchBuilder implements IAsyncBatchBuilder
 		asyncBatch.setC_Async_Batch_Type(getC_Async_Batch_Type());
 		queueDAO.save(asyncBatch);
 
-		return asyncBatch;
+		return AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
 	}
 
 	@Override

@@ -112,7 +112,7 @@ public class PrintJobBL implements IPrintJobBL
 		return maxLinesPerJob;
 	}
 
-	public void setMaxLinesPerJob(int maxLinesPerJob)
+	public void setMaxLinesPerJob(final int maxLinesPerJob)
 	{
 		this.maxLinesPerJob = maxLinesPerJob;
 	}
@@ -122,7 +122,7 @@ public class PrintJobBL implements IPrintJobBL
 	{
 		final PrintingQueueProcessingInfo printingQueueProcessingInfo = source.getProcessingInfo();
 
-		int printJobCount = 0;
+		final int printJobCount = 0;
 		final List<I_C_Print_Job_Instructions> pdfPrintingJobInstructions = new ArrayList<>();
 
 		try
@@ -243,7 +243,7 @@ public class PrintJobBL implements IPrintJobBL
 
 		final Mutable<List<I_C_Print_Job_Instructions>> instructionsMutable = new Mutable<>();
 
-		trxManager.run(ITrx.TRXNAME_ThreadInherited, (TrxRunnable)localTrxName -> instructionsMutable.setValue(createPrintJobInstructionsAndPrintJobs0(source, items, printingQueueProcessingInfo, localTrxName)));
+		trxManager.run(ITrx.TRXNAME_ThreadInherited, localTrxName -> instructionsMutable.setValue(createPrintJobInstructionsAndPrintJobs0(source, items, printingQueueProcessingInfo, localTrxName)));
 
 		if (instructionsMutable.getValue() == null)
 		{
@@ -277,7 +277,7 @@ public class PrintJobBL implements IPrintJobBL
 		ContextForAsyncProcessing printJobContext;
 	}
 
-	private void enqueuePrintJobInstructionsForPDFPrintingIfNeeded(@NonNull final List<I_C_Print_Job_Instructions> printJobInstructions, @NonNull PrintingAsyncBatch printingAsyncBatch)
+	private void enqueuePrintJobInstructionsForPDFPrintingIfNeeded(@NonNull final List<I_C_Print_Job_Instructions> printJobInstructions, @NonNull final PrintingAsyncBatch printingAsyncBatch)
 	{
 		if (printJobInstructions.isEmpty())
 		{
@@ -290,7 +290,7 @@ public class PrintJobBL implements IPrintJobBL
 		printJobInstructions.forEach(pji -> enqueuePrintJobInstructions(pji, asyncBatchId));
 	}
 
-	private AsyncBatchId createAsyncBatchForPDFPrinting(@NonNull final Properties ctx, @NonNull PrintingAsyncBatch printingAsyncBatch)
+	private AsyncBatchId createAsyncBatchForPDFPrinting(@NonNull final Properties ctx, @NonNull final PrintingAsyncBatch printingAsyncBatch)
 	{
 		final String name = Check.isEmpty(printingAsyncBatch.getName(), true) ? "Print to pdf" : printingAsyncBatch.getName();
 		final int printJobCount = printingAsyncBatch.getPrintJobCount();
@@ -304,10 +304,10 @@ public class PrintJobBL implements IPrintJobBL
 				.setParentAsyncBatchId(AsyncBatchId.ofRepoIdOrNull(parentAsyncBatchId))
 				.setCountExpected(printJobCount)
 				.setName(name)
-				.build();
+				.buildAndEnqueue();
 	}
 
-	private PInstanceId getAdPInstanceId(@NonNull PrintingAsyncBatch printingAsyncBatch)
+	private PInstanceId getAdPInstanceId(@NonNull final PrintingAsyncBatch printingAsyncBatch)
 	{
 		final I_C_Async_Batch parentAsyncBatch = getParentAsyncPatchIfExists(printingAsyncBatch.getParentAsyncBatchId());
 		return parentAsyncBatch == null ? printingAsyncBatch.getAdPInstanceId() : PInstanceId.ofRepoIdOrNull(parentAsyncBatch.getAD_PInstance_ID());

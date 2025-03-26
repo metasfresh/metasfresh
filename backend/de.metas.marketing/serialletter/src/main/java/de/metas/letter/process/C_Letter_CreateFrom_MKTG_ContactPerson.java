@@ -11,7 +11,6 @@ import de.metas.marketing.base.model.I_MKTG_Campaign_ContactPerson;
 import de.metas.process.JavaProcess;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
@@ -82,7 +81,7 @@ public class C_Letter_CreateFrom_MKTG_ContactPerson extends JavaProcess
 				.setC_Async_Batch_Type(LetterConstants.C_Async_Batch_InternalName_CreateLettersAsync)
 				.setAD_PInstance_Creator_ID(getPinstanceId())
 				.setName("Create Letters for Campaign " + campaignId)
-				.build();
+				.buildAndEnqueue();
 	}
 
 	private void enqueue(

@@ -44,7 +44,7 @@ public class RecreateArchiveWorkpackageProcessor implements IWorkpackageProcesso
 			final PO po = TableModelLoader.instance.getPO(ctx, adTableDAO.retrieveTableName(docOutboundLog.getAD_Table_ID()), docOutboundLog.getRecord_ID(), trxName);
 			if (workpackage.getC_Async_Batch_ID() > 0)
 			{
-				InterfaceWrapperHelper.setDynAttribute(po, Async_Constants.AsyncBatchId, AsyncBatchId.ofRepoIdOrNull(workpackage.getC_Async_Batch_ID()));
+				InterfaceWrapperHelper.setDynAttribute(po, Async_Constants.DYNATTR_AsyncBatchId, AsyncBatchId.ofRepoIdOrNull(workpackage.getC_Async_Batch_ID()));
 			}
 
 			DefaultModelArchiver.of(po).archive();

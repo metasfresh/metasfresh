@@ -22,11 +22,8 @@ package de.metas.dunning.process;
  * #L%
  */
 
-import java.util.Iterator;
-
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.api.IAsyncBatchBuilder;
 import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.dunning.Dunning_Constants;
@@ -40,7 +37,8 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
+
+import java.util.Iterator;
 
 /**
  * Process responsible for creating <code>C_DunningDocs</code> from dunning candidates
@@ -67,7 +65,7 @@ public class C_Dunning_Candidate_Process extends JavaProcess
 	@Override
 	protected void prepare()
 	{
-		for (ProcessInfoParameter para : getParametersAsArray())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			if (para.getParameter() == null)
 			{
@@ -104,14 +102,14 @@ public class C_Dunning_Candidate_Process extends JavaProcess
 		Check.assumeNotNull(asyncBatchType, "Defined Async Batch type should not be null for internal name ", m_asyncBatchType);
 
 		// Create Async Batch for tracking
-		final IAsyncBatchBuilder asyncBatchBuilder = asyncBatchBL.newAsyncBatch()
+		final AsyncBatchId asyncBatchId =  asyncBatchBL.newAsyncBatch()
 				.setContext(getCtx())
 				.setC_Async_Batch_Type(asyncBatchType.getInternalName())
 				.setAD_PInstance_Creator_ID(getPinstanceId())
 				.setName(m_AsyncBatchName)
-				.setDescription(m_AsyncBatchDesc);
+				.setDescription(m_AsyncBatchDesc)
+				.buildAndEnqueue();
 
-		final AsyncBatchId asyncBatchId = asyncBatchBuilder.build();
 		context.setProperty(IDunningProducer.CONTEXT_AsyncBatchIdDunningDoc, asyncBatchId);
 
 		final SelectedDunningCandidatesSource source = new SelectedDunningCandidatesSource(getProcessInfo().getWhereClause());

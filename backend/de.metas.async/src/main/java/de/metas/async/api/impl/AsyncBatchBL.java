@@ -166,12 +166,6 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	@Override
 	public void enqueueAsyncBatch(@NonNull final AsyncBatchId asyncBatchId)
 	{
-		enqueueAsyncBatch0(asyncBatchId);
-	}
-
-	private void enqueueAsyncBatch0(
-			@NonNull final AsyncBatchId asyncBatchId)
-	{
 		final Properties ctx = Env.getCtx();
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, CheckProcessedAsynBatchWorkpackageProcessor.class);
 
@@ -440,7 +434,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 				.setContext(getCtx())
 				.setC_Async_Batch_Type(asyncBatchType)
 				.setName(asyncBatchType)
-				.build());
+				.buildAndEnqueue());
 	}
 
 	@Override

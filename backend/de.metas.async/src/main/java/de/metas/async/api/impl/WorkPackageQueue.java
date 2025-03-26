@@ -443,7 +443,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 		enqueueWorkPackage(workPackage, PRIORITY_AUTO); // default priority
 
-		final AsyncBatchId asyncBatchId = InterfaceWrapperHelper.getDynAttribute(model, Async_Constants.AsyncBatchId);
+		final AsyncBatchId asyncBatchId = InterfaceWrapperHelper.getDynAttribute(model, Async_Constants.DYNATTR_AsyncBatchId);
 		if (asyncBatchId != null)
 		{
 			workPackage.setC_Async_Batch_ID(asyncBatchId.getRepoId());

@@ -22,25 +22,10 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Properties;
-
 import de.metas.async.AsyncBatchId;
+import de.metas.async.Async_Constants;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.user.UserId;
-import lombok.Getter;
-import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
-
-import de.metas.async.Async_Constants;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.dunning.api.IDunningContext;
@@ -55,13 +40,25 @@ import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.model.X_C_DunningDoc;
 import de.metas.dunning.spi.IDunningAggregator;
 import de.metas.logging.LogManager;
+import de.metas.user.UserId;
 import de.metas.util.Services;
+import lombok.Getter;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Properties;
 
 public class DefaultDunningProducer implements IDunningProducer
 {
-	private final static transient Logger logger = LogManager.getLogger(DefaultDunningProducer.class);
+	private final static Logger logger = LogManager.getLogger(DefaultDunningProducer.class);
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 
 	@Getter private IDunningContext dunningContext;
@@ -79,7 +76,7 @@ public class DefaultDunningProducer implements IDunningProducer
 	}
 
 	@Override
-	public void addCandidate(I_C_Dunning_Candidate candidate)
+	public void addCandidate(final I_C_Dunning_Candidate candidate)
 	{
 		if (dunningDoc != null && dunningAggregators.isNewDunningDoc(candidate))
 		{
@@ -98,7 +95,7 @@ public class DefaultDunningProducer implements IDunningProducer
 			final AsyncBatchId asyncBatchId = getDunningContext().getProperty(IDunningProducer.CONTEXT_AsyncBatchIdDunningDoc);
 			if (asyncBatchId != null)
 			{
-				InterfaceWrapperHelper.setDynAttribute(dunningDoc, Async_Constants.AsyncBatchId, asyncBatchId);
+				InterfaceWrapperHelper.setDynAttribute(dunningDoc, Async_Constants.DYNATTR_AsyncBatchId, asyncBatchId);
 			}
 		}
 
@@ -137,7 +134,7 @@ public class DefaultDunningProducer implements IDunningProducer
 			if (contextDunningLevel.getC_DunningLevel_ID() != candidate.getC_DunningLevel_ID())
 			{
 				logger.warn("Candidate {} has dunning level {} but in context we have {}. Using candidate's dunning level",
-						new Object[] { candidate, candidate.getC_DunningLevel(), contextDunningLevel });
+						candidate, candidate.getC_DunningLevel(), contextDunningLevel);
 			}
 
 			doc.setC_DunningLevel_ID(candidate.getC_DunningLevel_ID());
@@ -221,7 +218,7 @@ public class DefaultDunningProducer implements IDunningProducer
 		return source;
 	}
 
-	protected void aggregateDunningDocLine(I_C_DunningDoc_Line dunningDocLine, I_C_Dunning_Candidate candidate)
+	protected void aggregateDunningDocLine(final I_C_DunningDoc_Line dunningDocLine, final I_C_Dunning_Candidate candidate)
 	{
 		final IDunningUtil util = Services.get(IDunningUtil.class);
 
@@ -280,7 +277,7 @@ public class DefaultDunningProducer implements IDunningProducer
 
 	protected void completeDunningDocLine()
 	{
-		for (I_C_DunningDoc_Line_Source source : dunningDocLineSources)
+		for (final I_C_DunningDoc_Line_Source source : dunningDocLineSources)
 		{
 			completeDunningDocLineSource(source);
 		}

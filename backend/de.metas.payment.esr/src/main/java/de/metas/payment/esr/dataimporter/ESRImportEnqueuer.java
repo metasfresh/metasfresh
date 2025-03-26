@@ -178,7 +178,7 @@ public class ESRImportEnqueuer
 					.setAD_PInstance_Creator_ID(getPinstanceId())
 					.setName(getAsyncBatchName())
 					.setDescription(getAsyncBatchDesc())
-					.build();
+					.buildAndEnqueue();
 
 			//
 			final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, LoadESRImportFileWorkpackageProcessor.class);
@@ -230,7 +230,7 @@ public class ESRImportEnqueuer
 			{
 				createImportFileFromSingleAttachment(esrImport, unzippedFile.getData(), unzippedFile.getFilename());
 			}
-			catch (Exception ex)
+			catch (final Exception ex)
 			{
 				errors.add(String.format("Error processing file '%s': %s", unzippedFile.getFilename(), ex.getMessage()));
 			}
@@ -260,7 +260,7 @@ public class ESRImportEnqueuer
 					final ZipFileResource unzippedFile = extractResource(zipStream, zipEntry);
 					unzippedFiles.add(unzippedFile);
 				}
-				catch (Exception e)
+				catch (final Exception e)
 				{
 					// Log error for the problematic file, but continue processing
 					addLog("Failed to extract file '{}': {}", zipEntry.getName(), e.getMessage());
@@ -271,14 +271,14 @@ public class ESRImportEnqueuer
 					{
 						zipStream.closeEntry();
 					}
-					catch (IOException e)
+					catch (final IOException e)
 					{
 						addLog("Failed to close zip entry '{}': {}", zipEntry.getName(), e.getMessage());
 					}
 				}
 			}
 		}
-		catch (IOException e)
+		catch (final IOException e)
 		{
 			throw new AdempiereException("Failed to process ZIP file: " + e.getMessage(), e);
 		}

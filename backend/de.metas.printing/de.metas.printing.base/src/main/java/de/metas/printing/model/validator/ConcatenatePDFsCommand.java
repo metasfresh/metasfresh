@@ -108,7 +108,7 @@ class ConcatenatePDFsCommand
 				.setDescription(queryRequest.getQueryName())
 				.setParentAsyncBatchId(printingQueueItemsGeneratedAsyncBatchId)
 				.setOrgId(OrgId.ofRepoId(parentAsyncBatchRecord.getAD_Org_ID()))
-				.build();
+				.buildAndEnqueue();
 
 		workPackageQueueFactory
 				.getQueueForEnqueuing(ctx, PrintingQueuePDFConcatenateWorkpackageProcessor.class)
@@ -120,7 +120,7 @@ class ConcatenatePDFsCommand
 
 	private List<PrintingQueueQueryRequest> getPrintingQueueQueryBuilders()
 	{
-		Map<String, String> filtersMap = sysConfigBL.getValuesForPrefix(QUERY_PREFIX, clientAndOrgId);
+		final Map<String, String> filtersMap = sysConfigBL.getValuesForPrefix(QUERY_PREFIX, clientAndOrgId);
 		final Collection<String> keys = filtersMap.keySet();
 
 		final ArrayList<PrintingQueueQueryRequest> queries = new ArrayList<>();

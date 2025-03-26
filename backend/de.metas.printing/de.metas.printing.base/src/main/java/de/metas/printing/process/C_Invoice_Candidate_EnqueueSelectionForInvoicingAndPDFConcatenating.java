@@ -83,7 +83,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 		final IParams params = getParameterAsIParams();
 		this.invoicingParams = new InvoicingParams(params);
 
-		int selectionCount = createSelection();
+		final int selectionCount = createSelection();
 
 		if (selectionCount <= 0)
 		{
@@ -102,7 +102,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 				.setOrgId(p_OrgId)
 				.setC_Async_Batch_Type(C_Async_Batch_InternalName_InvoiceCandidate_Processing)
 				.setName(C_Async_Batch_InternalName_InvoiceCandidate_Processing)
-				.build();
+				.buildAndEnqueue();
 	}
 
 	@Override

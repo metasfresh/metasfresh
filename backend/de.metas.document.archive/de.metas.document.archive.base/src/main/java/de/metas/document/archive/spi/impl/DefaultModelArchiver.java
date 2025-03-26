@@ -5,7 +5,6 @@ import com.google.common.base.MoreObjects;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.async.spi.impl.DocOutboundCCWorkpackageProcessor;
 import de.metas.document.archive.model.I_AD_Archive;
@@ -243,10 +242,10 @@ public class DefaultModelArchiver
 
 		//
 		// forward async batch if there is one
-		final AsyncBatchId asyncBatchId = InterfaceWrapperHelper.getDynAttribute(getRecord(), Async_Constants.AsyncBatchId);
+		final AsyncBatchId asyncBatchId = InterfaceWrapperHelper.getDynAttribute(getRecord(), Async_Constants.DYNATTR_AsyncBatchId);
 		if (asyncBatchId != null)
 		{
-			InterfaceWrapperHelper.setDynAttribute(archive, Async_Constants.AsyncBatchId, asyncBatchId);
+			InterfaceWrapperHelper.setDynAttribute(archive, Async_Constants.DYNATTR_AsyncBatchId, asyncBatchId);
 		}
 
 		InterfaceWrapperHelper.save(archive);

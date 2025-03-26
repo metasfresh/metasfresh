@@ -163,7 +163,7 @@ public class AutoProcessingOrderService
 				.setC_Async_Batch_Type(C_Async_Batch_InternalName_InvoiceCandidate_Processing)
 				.setName("Process ICs for C_Order_ID=" + OrderId.toRepoId(orderId))
 				.setOrgId(OrgId.ofRepoId(orderRecord.getAD_Org_ID()))
-				.build();
+				.buildAndEnqueue();
 	}
 
 	private boolean sameShippingAndBillingAddress(

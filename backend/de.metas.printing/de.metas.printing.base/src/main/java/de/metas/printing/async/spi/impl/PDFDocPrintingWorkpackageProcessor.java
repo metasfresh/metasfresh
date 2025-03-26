@@ -186,13 +186,12 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 		pinstance.setIsProcessing(true);
 		InterfaceWrapperHelper.save(pinstance);
 
-		final StringBuffer msg = new StringBuffer();
-		msg.append(Services.get(IMsgBL.class)
-				.getMsg(ctx, PDFPrintJob_Done, new Object[] { index, countExpected, noInvoices }));
+		final String msg = Services.get(IMsgBL.class)
+				.getMsg(ctx, PDFPrintJob_Done, new Object[] { index, countExpected, noInvoices });
 
 		final List<ProcessInfoParameter> piParams = new ArrayList<>();
 		piParams.add(ProcessInfoParameter.ofValueObject(X_C_Print_Job_Instructions.COLUMNNAME_C_Print_Job_Instructions_ID, jobInstructions.getC_Print_Job_Instructions_ID()));
-		piParams.add(ProcessInfoParameter.ofValueObject("Title", msg.toString()));
+		piParams.add(ProcessInfoParameter.ofValueObject("Title", msg));
 		Services.get(IADPInstanceDAO.class).saveParameterToDB(PInstanceId.ofRepoId(pinstance.getAD_PInstance_ID()), piParams);
 
 		final ProcessInfo jasperProcessInfo = ProcessInfo.builder()
@@ -241,7 +240,7 @@ public class PDFDocPrintingWorkpackageProcessor implements IWorkpackageProcessor
 
 		//
 		// set async batch
-		InterfaceWrapperHelper.setDynAttribute(archive, Async_Constants.AsyncBatchId, AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID()));
+		InterfaceWrapperHelper.setDynAttribute(archive, Async_Constants.DYNATTR_AsyncBatchId, AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID()));
 		InterfaceWrapperHelper.save(directArchive);
 
 	}

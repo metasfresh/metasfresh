@@ -103,7 +103,6 @@ import static de.metas.async.event.WorkpackageProcessedEvent.Status.SKIPPED;
 class WorkpackageProcessorTask implements Runnable
 {
 	private static final AdMessageKey MSG_PROCESSING_ERROR_NOTIFICATION_TEXT = AdMessageKey.of("de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationText");
-	private static final AdMessageKey MSG_PROCESSING_ERROR_NOTIFICATION_TITLE = AdMessageKey.of("de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationTitle");
 	// services
 	private static final Logger logger = LogManager.getLogger(WorkpackageProcessorTask.class);
 
@@ -439,7 +438,6 @@ class WorkpackageProcessorTask implements Runnable
 	{
 		// get rid of inherited AsyncBatchId and priority
 		// actually it's not necessary, but we are doing it for safety reasons
-		//contextFactory.setThreadInheritedAsyncBatch(null);
 		contextFactory.setThreadInheritedWorkpackageAsyncBatch(null);
 		contextFactory.setThreadInheritedPriority(null);
 
