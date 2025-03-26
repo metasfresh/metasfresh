@@ -1,6 +1,6 @@
 package de.metas.ui.web.window.descriptor.sql;
 
-import de.metas.printing.esb.base.util.Check;
+import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;

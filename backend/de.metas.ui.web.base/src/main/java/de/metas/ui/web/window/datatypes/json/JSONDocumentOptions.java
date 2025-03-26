@@ -2,11 +2,11 @@ package de.metas.ui.web.window.datatypes.json;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.model.DocumentFieldChange;
 import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;

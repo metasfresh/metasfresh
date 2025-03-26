@@ -32,7 +32,7 @@ import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.eventbus.MaterialEventConverter;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
-import de.metas.printing.esb.base.util.Check;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;

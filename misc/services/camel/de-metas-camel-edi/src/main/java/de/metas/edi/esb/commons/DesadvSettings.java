@@ -37,22 +37,24 @@ import java.util.List;
 public class DesadvSettings
 {
 	private static final String ANY_MEASUREMENTUNIT = "<ANY>";
+	private static final String DEFAULT_CLEARING_CENTER = "edi.desadv.default.clearingCenter";
 
 	/**
-	 * @param recipientGLN if null, we assume {@link ClearingCenter#ecosio}.
+	 * @param recipientGLN if null, we assume {@link ClearingCenter#MetasfreshInHouseV2}.
 	 */
 	@NonNull
 	public static DesadvSettings forReceiverGLN(
 			@NonNull final CamelContext context,
 			@Nullable final String recipientGLN)
 	{
-		final String clearingCenterProperty = "edi.recipientGLN." + recipientGLN + ".clearingCenter";
+		final String defaultClearingCenter = Util.resolveProperty(context, DEFAULT_CLEARING_CENTER, ClearingCenter.MetasfreshInHouseV2.toString());
 		if(Check.isBlank(recipientGLN))
 		{
-			return DesadvSettings.builder().clearingCenter(ClearingCenter.ecosio).build();
+			return DesadvSettings.builder().clearingCenter(ClearingCenter.ofValue(defaultClearingCenter)).build();
 		}
 
-		final ClearingCenter clearingCenter = ClearingCenter.valueOf(Util.resolveProperty(context, clearingCenterProperty, "ecosio"));
+		final String clearingCenterProperty = "edi.recipientGLN." + recipientGLN + ".clearingCenter";
+		final ClearingCenter clearingCenter = ClearingCenter.ofValue(Util.resolveProperty(context, clearingCenterProperty, defaultClearingCenter));
 
 		final DesadvSettingsBuilder settings = DesadvSettings
 				.builder()
@@ -60,7 +62,7 @@ public class DesadvSettings
 
 		return switch (clearingCenter)
 				{
-					case ecosio -> settings.build();
+			case MetasfreshInHouseV2, MetasfreshInHouseV1 -> settings.build();
 					case STEPcom -> settings
 							.applicationRef(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.applicationRef", "DESADV"))
 							.partnerId(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".desadv.partnerId"))
