@@ -158,9 +158,6 @@ final class AllocationLineCandidateSaver
 				.writeOffAmt(writeOffAmt)
 				.build());
 
-		final I_C_Invoice payableInvoice = candidate.getPayableDocumentRef().getModel(I_C_Invoice.class);
-		// Special case: Allocations of sales credit memos and purchase invoices must always be negative. See #20395
-		final boolean negatePayableAllocationAmounts = payAmt.signum() > 0 && (invoiceBL.isCreditMemo(payableInvoice) ^ !payableInvoice.isSOTrx());
 
 
 		final C_AllocationHdr_Builder allocationBuilder = newC_AllocationHdr_Builder(candidate);
@@ -173,12 +170,16 @@ final class AllocationLineCandidateSaver
 				.bpartnerId(candidate.getBpartnerId())
 				//
 				// Amounts
-				.amount(payAmt.negateIf(negatePayableAllocationAmounts).toBigDecimal())
-				.discountAmt(discountAmt.negateIf(negatePayableAllocationAmounts).toBigDecimal())
-				.writeOffAmt(writeOffAmt.negateIf(negatePayableAllocationAmounts).toBigDecimal())
+				.amount(payAmt.toBigDecimal())
+				.discountAmt(discountAmt.toBigDecimal())
+				.writeOffAmt(writeOffAmt.toBigDecimal())
 				.overUnderAmt(candidate.getPayableOverUnderAmt().toBigDecimal())
 				//
 				.invoiceId(extractInvoiceId(candidate.getPayableDocumentRef()));
+
+		final I_C_Invoice paymentInvoice = candidate.getPaymentDocumentRef().getModel(I_C_Invoice.class);
+		// The allocation amount of a service fee invoice should be negative even when its counterpart is negative (i.e. sales credit memo or purchase invoice)
+		final boolean negatePaymentAmount = !(paymentInvoice.getC_DocType_ID() == 1000046 && payAmt.signum() < 0); // todo: invoicebl.isServiceInvoice
 
 		// Credit memo line
 		// or Purchase/Sales invoice line
@@ -189,7 +190,7 @@ final class AllocationLineCandidateSaver
 				.bpartnerId(candidate.getBpartnerId())
 				//
 				// Amounts
-				.amount(payAmt.negate().toBigDecimal())
+				.amount(payAmt.negateIf(negatePaymentAmount).toBigDecimal())
 				.overUnderAmt(candidate.getPaymentOverUnderAmt().toBigDecimal())
 				//
 				.invoiceId(extractInvoiceId(candidate.getPaymentDocumentRef()));

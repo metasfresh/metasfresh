@@ -202,7 +202,7 @@ public class PaymentAllocationBuilder
 		return candidate.toBuilder()
 				.type(AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice)
 				.amounts(amounts.toBuilder()
-						.payAmt(amounts.getInvoiceProcessingFee())
+						.payAmt(amounts.getInvoiceProcessingFee().negateIf(candidate.getPayableOverUnderAmt().signum()<0)) // TODO better way to find out if it's a sales credit memo or purchase invoice
 						.invoiceProcessingFee(null)
 						.build())
 				.paymentDocumentRef(TableRecordReference.of(I_C_Invoice.Table_Name, serviceInvoiceId))
