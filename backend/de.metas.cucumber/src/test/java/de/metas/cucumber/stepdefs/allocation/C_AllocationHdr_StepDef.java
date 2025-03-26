@@ -95,29 +95,42 @@ public class C_AllocationHdr_StepDef
 	{
 		final InvoiceId vendorInvoiceId = row.getAsIdentifier("Vendor_Invoice_ID").lookupNotNullIdIn(invoiceTable);
 		final InvoiceId customerCreditMemoId = row.getAsIdentifier("Customer_CreditMemo_ID").lookupNotNullIdIn(invoiceTable);
-		final Money amount = row.getAsMoney("Amount", moneyService::getCurrencyIdByCurrencyCode);
-		final Money discountAmt = row.getAsOptionalMoney("Discount", moneyService::getCurrencyIdByCurrencyCode).orElse(null);
-		final CurrencyId currencyId = Money.getCommonCurrencyIdOfAll(amount, discountAmt);
+		final Money payAmt = row.getAsMoney("Amount", moneyService::getCurrencyIdByCurrencyCode);
+		final Money discountAmt = row.getAsMoney("Discount", moneyService::getCurrencyIdByCurrencyCode);
+		final Money writeOffAmt = row.getAsMoney("WriteOff", moneyService::getCurrencyIdByCurrencyCode);
+		final Money overUnderAmt = row.getAsMoney("OverUnder", moneyService::getCurrencyIdByCurrencyCode);
+		//final CurrencyId currencyId = Money.getCommonCurrencyIdOfAll(payAmt, discountAmt); TODO : keep in case I need it
 
+		// Special case: Allocations of sales credit memos and purchase invoices must always be negative. See #20395
+		final boolean negatePayableAllocationAmounts = true;
+
+		// sync with de.metas.banking.payment.paymentallocation.service.AllocationLineCandidateSaver.saveCandidate_InvoiceToInvoice
 		final I_C_AllocationHdr allocationHdr = allocationBL
-				// TODO set more fields
 				.newBuilder()
 				//
 				.addLine()
+				.skipIfAllAmountsAreZero()
+
+				.amount(payAmt.negateIf(negatePayableAllocationAmounts).toBigDecimal())
+				.discountAmt(discountAmt.negateIf(negatePayableAllocationAmounts).toBigDecimal())
+				.writeOffAmt(writeOffAmt.negateIf(negatePayableAllocationAmounts).toBigDecimal())
+				.overUnderAmt(overUnderAmt.negateIf(negatePayableAllocationAmounts).toBigDecimal())
 				.invoiceId(customerCreditMemoId)
-				.amount(null) // TODO
-				.discountAmt(null) // TODO
 				.getParent()
 				//
 				.addLine()
+				.skipIfAllAmountsAreZero()
+				//
+				// Amounts
+				.amount(payAmt.negate().toBigDecimal())
+				.overUnderAmt(overUnderAmt.toBigDecimal())
 				.invoiceId(vendorInvoiceId)
-				.amount(null) // TODO
 				.getParent()
 				//
 				.createAndComplete();
 
 		row.getAsOptionalIdentifier("C_AllocationHdr_ID")
 				.ifPresent(allocationIdentifier -> allocationHdrTable.putOrReplaceIfSameId(allocationIdentifier, allocationHdr));
-	}
 
+	}
 }
