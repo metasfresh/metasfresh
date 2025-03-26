@@ -6,10 +6,10 @@ import { LOCATION_SEARCH_NAME } from '../constants/Constants';
 import { getViewRowsByIds, locationSearchRequest } from '../api';
 import { connectWS, disconnectWS } from '../utils/websockets';
 import { deepUnfreeze } from '../utils';
-import history from '../services/History';
 
 import { getTableId } from '../reducers/tables';
 import { getEntityRelatedId } from '../reducers/filters';
+import * as IndicatorState from '../constants/IndicatorState';
 
 import {
   addViewLocationData,
@@ -54,6 +54,7 @@ import {
 import { filtersActiveContains } from '../utils/filterHelpers';
 
 import DocumentList from '../components/app/DocumentList';
+import { requestRedirect } from '../reducers/redirect';
 
 // TODO: This can be further simplified by extracting methods that are not responsible
 // for fetching data to a child container/component (or maybe back to DocumentList component)
@@ -65,6 +66,8 @@ import DocumentList from '../components/app/DocumentList';
 class DocumentListContainer extends Component {
   constructor(props) {
     super(props);
+
+    this.fetchLayoutAndDataOnUpdate = false;
 
     this.state = {
       pageColumnInfosByFieldName: null,
@@ -156,7 +159,7 @@ class DocumentListContainer extends Component {
      */
 
     if (
-      (queryViewId && !isIncluded && nextViewId !== nextQueryViewId) || // for the case when you applied a filter and come back via browser back button
+      (queryViewId && !isIncluded && nextViewId !== nextQueryViewId) || // for the case when you applied a filter and come back via browser back button, or you clicked on breadcrumb to get a new view
       staticFilterCleared ||
       nextWindowId !== windowId ||
       (nextWindowId === windowId &&
@@ -196,13 +199,24 @@ class DocumentListContainer extends Component {
             if (included) {
               unsetIncludedView(includedView);
             }
-
-            this.fetchLayoutAndData();
           }
         );
+
+        this.fetchLayoutAndDataOnUpdate = true;
       }
     }
   }
+
+  componentDidUpdate = () => {
+    if (
+      // prevProps.windowId !== this.props.windowId ||
+      // prevProps.viewId !== this.props.viewId ||
+      this.fetchLayoutAndDataOnUpdate
+    ) {
+      this.fetchLayoutAndData();
+      this.fetchLayoutAndDataOnUpdate = false;
+    }
+  };
 
   /**
    * @summary Subscribe to websocket stream for this view
@@ -305,51 +319,46 @@ class DocumentListContainer extends Component {
    * @method fetchLayoutAndData
    * @summary ToDo: Describe the method.
    */
-  fetchLayoutAndData = (isNewFilter, locationAreaSearch) => {
-    const {
-      windowId,
-      type,
-      viewProfileId,
-      setModalTitle,
-      viewId,
-      fetchLayout,
-      updateRawModal,
-      setModalDescription,
-      isModal,
-    } = this.props;
+  fetchLayoutAndData = ({ isNewFilter = false, locationAreaSearch } = {}) => {
+    const { windowId, type, viewProfileId, isModal, fetchLayout } = this.props;
 
     fetchLayout(windowId, type, viewProfileId, isModal)
       .then((response) => {
-        if (this.mounted) {
-          const { allowedCloseActions } = response;
+        if (!this.mounted) {
+          console.log('Skip updating because no longer mounted');
+        }
 
-          // TODO: Check if we still need to do this
-          if (isModal) {
-            if (allowedCloseActions) {
-              updateRawModal(windowId, { allowedCloseActions });
-            }
+        const { viewId, setModalTitle, updateRawModal, setModalDescription } =
+          this.props;
+
+        const { allowedCloseActions } = response;
+
+        // TODO: Check if we still need to do this
+        if (isModal) {
+          if (allowedCloseActions) {
+            updateRawModal(windowId, { allowedCloseActions });
           }
+        }
 
-          if (viewId) {
-            this.connectWebSocket(viewId);
+        if (viewId) {
+          this.connectWebSocket(viewId);
 
-            if (!isNewFilter) {
-              this.browseView();
-            } else {
-              this.filterCurrentView(locationAreaSearch);
-            }
+          if (!isNewFilter) {
+            this.browseView();
           } else {
-            this.createNewView();
+            this.filterCurrentView(locationAreaSearch);
           }
+        } else {
+          this.createNewView();
+        }
 
-          if (response.data) {
-            if (response.data.caption) {
-              setModalTitle && setModalTitle(response.data.caption);
-            }
-            if (response.data.description) {
-              setModalDescription &&
-                setModalDescription(response.data.description);
-            }
+        if (response.data) {
+          if (response.data.caption) {
+            setModalTitle && setModalTitle(response.data.caption);
+          }
+          if (response.data.description) {
+            setModalDescription &&
+              setModalDescription(response.data.description);
           }
         }
       })
@@ -371,25 +380,28 @@ class DocumentListContainer extends Component {
       sort,
       filters: { filtersActive },
     } = this.props;
+
+    // in case of redirect from a notification, first call will have viewId empty
+    if (!viewId) {
+      return;
+    }
+
     const locationSearchFilter = filtersActiveContains({
       filtersActive,
       key: LOCATION_SEARCH_NAME,
     });
 
-    // in case of redirect from a notification, first call will have viewId empty
-    if (viewId) {
-      this.getData(
-        viewId,
-        page,
-        sort,
-        locationSearchFilter,
-        websocketRefresh
-      ).catch((err) => {
-        if (err.response && err.response.status === 404) {
-          this.createNewView();
-        }
-      });
-    }
+    this.getData(
+      viewId,
+      page,
+      sort,
+      locationSearchFilter,
+      websocketRefresh
+    ).catch((err) => {
+      if (err.response && err.response.status === 404) {
+        this.createNewView();
+      }
+    });
   };
 
   /**
@@ -522,17 +534,9 @@ class DocumentListContainer extends Component {
       filters: { filtersActive },
     } = this.props;
 
-    if (updateUri) {
-      const updateQuery = {
-        viewId: id,
-        page,
-        sort: sortingQuery,
-      };
+    updateUri?.({ viewId: id, page, sort: sortingQuery });
 
-      updateUri(updateQuery);
-    }
-
-    indicatorState({ state: 'pending', isModal });
+    indicatorState({ state: IndicatorState.PENDING, isModal });
     return fetchDocument({
       windowId,
       viewId: id,
@@ -590,7 +594,7 @@ class DocumentListContainer extends Component {
         console.error(e);
       })
       .finally(() => {
-        indicatorState({ state: 'saved', isModal });
+        indicatorState({ state: IndicatorState.SAVED, isModal });
       });
   };
 
@@ -672,7 +676,10 @@ class DocumentListContainer extends Component {
       key: LOCATION_SEARCH_NAME,
     });
 
-    this.fetchLayoutAndData(true, locationSearchFilter);
+    this.fetchLayoutAndData({
+      isNewFilter: true,
+      locationAreaSearch: locationSearchFilter,
+    });
   };
 
   /**
@@ -700,13 +707,14 @@ class DocumentListContainer extends Component {
       setListSorting,
       setListPagination,
       setListId,
+      requestRedirect,
     } = this.props;
 
     if (isModal) {
       return;
     }
 
-    history.push(`/window/${windowId}/${id}`);
+    requestRedirect(`/window/${windowId}/${id}`);
 
     if (!isSideListShow) {
       // Caching last settings
@@ -722,8 +730,9 @@ class DocumentListContainer extends Component {
    */
   redirectToNewDocument = () => {
     const { windowId } = this.props;
+    const { requestRedirect } = this.props;
 
-    history.push(`/window/${windowId}/new`);
+    requestRedirect(`/window/${windowId}/new`);
   };
 
   /**
@@ -826,6 +835,7 @@ export default connect(
     fetchQuickActions,
     deleteQuickActions,
     addViewLocationData,
+    requestRedirect,
   },
   null,
   { forwardRef: true }

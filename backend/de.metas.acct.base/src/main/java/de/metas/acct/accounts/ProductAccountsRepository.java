@@ -7,11 +7,14 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.cache.CCache;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_M_Product_Acct;
+import org.compiere.util.DB;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -92,5 +95,12 @@ public class ProductAccountsRepository
 				.P_Overhead_Acct(Account.of(AccountId.ofRepoId(record.getP_Overhead_Acct()), ProductAcctType.P_Overhead_Acct))
 				.P_Scrap_Acct(Account.of(AccountId.ofRepoId(record.getP_Scrap_Acct()), ProductAcctType.P_Scrap_Acct))
 				.build();
+	}
+
+	public void addMissingAcctRecords()
+	{
+		// NOTE: a step forward would be to use POAccountingInfo and do something similar to PO.insert_Accounting
+		DB.executeFunctionCallEx(ITrx.TRXNAME_None, "select createM_Product_Acct()", null);
+		Loggables.addLog("Added missing M_Product_Acct records");
 	}
 }

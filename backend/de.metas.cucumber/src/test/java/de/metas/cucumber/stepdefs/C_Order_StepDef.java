@@ -34,6 +34,7 @@ import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -50,6 +51,7 @@ import de.metas.order.process.C_Order_CreatePOFromSOs;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfo;
+import de.metas.util.Optionals;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -155,8 +157,12 @@ public class C_Order_StepDef
 				.forEach(tableRow -> {
 					final String poReference = tableRow.getAsOptionalName(I_C_Order.COLUMNNAME_POReference).orElse(null);
 					final int paymentTermId = tableRow.getAsOptionalInt(I_C_Order.COLUMNNAME_C_PaymentTerm_ID).orElse(-1);
-					final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
-					final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocBaseType);
+					final StepDefDataIdentifier pricingSystemIdentifier = tableRow.getAsOptionalIdentifier(COLUMNNAME_M_PricingSystem_ID).orElse(null);
+					final boolean isSOTrx = tableRow.getAsBoolean(I_C_Order.COLUMNNAME_IsSOTrx);
+					final DocBaseType docBaseType = Optionals.firstPresentOfSuppliers(
+							() -> tableRow.getAsOptionalEnum(COLUMNNAME_DocBaseType, DocBaseType.class),
+							() -> !isSOTrx ? Optional.of(DocBaseType.PurchaseOrder) : Optional.empty() // if we don't do this, MOrder.beforeSave will automatically set IsSOTrx=true because C_DocTypeTarget_ID is not set 
+					).orElse(null);
 
 					final int dropShipPartnerId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + COLUMNNAME_DropShip_BPartner_ID);
 					final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
@@ -172,7 +178,7 @@ public class C_Order_StepDef
 
 					final I_C_Order order = newInstance(I_C_Order.class);
 					order.setC_BPartner_ID(bpartnerId.getRepoId());
-					order.setIsSOTrx(tableRow.getAsBoolean(I_C_Order.COLUMNNAME_IsSOTrx));
+					order.setIsSOTrx(isSOTrx);
 					order.setDateOrdered(tableRow.getAsLocalDateTimestamp(I_C_Order.COLUMNNAME_DateOrdered));
 					order.setDropShip_BPartner_ID(dropShipPartnerId);
 					order.setIsDropShip(isDropShip);
@@ -209,10 +215,10 @@ public class C_Order_StepDef
 						order.setBill_Location_ID(billBPartnerLocation.getC_BPartner_Location_ID());
 					}
 
-					final String deliveryRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DeliveryRule);
+					final String deliveryRule = tableRow.getAsOptionalString(I_C_Order.COLUMNNAME_DeliveryRule).orElse(null);
 					if (Check.isNotBlank(deliveryRule))
 					{
-				// note that IF the C_BPartner has a deliveryRule set (not-mandatory there), this values will be overwritten by it
+						// note that IF the C_BPartner has a deliveryRule set (not-mandatory there), this values will be overwritten by it
 						order.setDeliveryRule(deliveryRule);
 					}
 
@@ -265,7 +271,7 @@ public class C_Order_StepDef
 						order.setPOReference(poReference);
 					}
 
-					if (EmptyUtil.isNotBlank(pricingSystemIdentifier))
+					if (pricingSystemIdentifier != null)
 					{
 						final I_M_PricingSystem pricingSystem = pricingSystemDataTable.get(pricingSystemIdentifier);
 						assertThat(pricingSystem).isNotNull();
@@ -273,7 +279,7 @@ public class C_Order_StepDef
 
 					}
 
-					if (EmptyUtil.isNotBlank(docBaseType))
+					if (docBaseType != null)
 					{
 						final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocSubType);
 
@@ -349,9 +355,10 @@ public class C_Order_StepDef
 				order.setDocAction(IDocument.ACTION_Complete);
 				documentBL.processEx(order, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
 				break;
-			default: throw new AdempiereException("Unhandled C_Order action")
-					.appendParametersToMessage()
-					.setParameter("action:", action);
+			default:
+				throw new AdempiereException("Unhandled C_Order action")
+						.appendParametersToMessage()
+						.setParameter("action:", action);
 		}
 	}
 
@@ -450,7 +457,7 @@ public class C_Order_StepDef
 
 	@Then("a PurchaseOrder with externalId {string} is created after not more than {int} seconds and has values")
 	public void verifyOrder(final String externalId, final int timeoutSec,
-			@NonNull final DataTable dataTable) throws InterruptedException
+							@NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final Map<String, String> dataTableRow = dataTable.asMaps().get(0);
 
@@ -741,7 +748,7 @@ public class C_Order_StepDef
 
 	@Then("the following group compensation order lines were created for externalHeaderId: {string}")
 	public void verifyOrderLines(final String externalHeaderId,
-			@NonNull final DataTable dataTable)
+								 @NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)

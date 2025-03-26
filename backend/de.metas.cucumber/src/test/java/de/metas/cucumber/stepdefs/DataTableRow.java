@@ -22,7 +22,10 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.currency.CurrencyCode;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.quantity.Quantity;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
@@ -37,6 +40,7 @@ import de.metas.util.text.tabular.Row;
 import de.metas.util.text.tabular.Table;
 import io.cucumber.datatable.DataTable;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import org.adempiere.exceptions.AdempiereException;
@@ -59,7 +63,7 @@ import java.util.function.Function;
 @EqualsAndHashCode
 public class DataTableRow
 {
-	private final int lineNo; // introduced to improve logging/debugging
+	@Getter private final int lineNo; // introduced to improve logging/debugging
 	@NonNull
 	private final Map<String, String> map;
 	@Nullable
@@ -437,6 +441,68 @@ public class DataTableRow
 			throw new AdempiereException("No value found for " + columnName);
 		}
 		return X12DE355.ofCode(valueStr);
+	}
+
+	public CurrencyCode getAsCurrencyCode()
+	{
+		return getAsOptionalCurrencyCode()
+				.orElseThrow(() -> new AdempiereException("No currency code found"));
+	}
+
+	public Optional<CurrencyCode> getAsOptionalCurrencyCode()
+	{
+		return Optionals.firstPresentOfSuppliers(
+						() -> getAsOptionalString("C_Currency.ISO_Code"),
+						() -> getAsOptionalString("C_Currency_ID")
+				)
+				.map(CurrencyCode::ofThreeLetterCode);
+	}
+
+	public Money getAsMoney(
+			@NonNull final String valueColumnName,
+			@NonNull final Function<CurrencyCode, CurrencyId> currencyCodeMapper)
+	{
+		return getAsOptionalMoney(valueColumnName, currencyCodeMapper)
+				.orElseThrow(() -> new AdempiereException("No value found for " + valueColumnName));
+	}
+
+	public Optional<Money> getAsOptionalMoney(
+			@NonNull final String valueColumnName,
+			@NonNull final Function<CurrencyCode, CurrencyId> currencyCodeMapper)
+	{
+		final String valueStr = getAsOptionalString(valueColumnName).map(StringUtils::trimBlankToNull).orElse(null);
+		if (valueStr == null)
+		{
+			return Optional.empty();
+		}
+
+		final int spaceIdx = valueStr.indexOf(" ");
+		final BigDecimal valueBD;
+		CurrencyCode currencyCode;
+		if (spaceIdx <= 0)
+		{
+			valueBD = parseBigDecimal(valueStr, valueColumnName);
+			currencyCode = null;
+		}
+		else
+		{
+			valueBD = parseBigDecimal(valueStr.substring(0, spaceIdx), valueColumnName);
+			final String currencyCodeStr = StringUtils.trimBlankToNull(valueStr.substring(spaceIdx));
+			currencyCode = currencyCodeStr != null ? CurrencyCode.ofThreeLetterCode(currencyCodeStr) : null;
+		}
+
+		if (currencyCode == null)
+		{
+			currencyCode = getAsOptionalCurrencyCode().orElse(null);
+		}
+
+		if (currencyCode == null)
+		{
+			throw new AdempiereException("No currency code incorporated into `" + valueColumnName + "`: " + valueStr);
+		}
+
+		final CurrencyId currencyId = currencyCodeMapper.apply(currencyCode);
+		return Optional.of(Money.of(valueBD, currencyId));
 	}
 
 	public LocalDate getAsLocalDate(@NonNull final String columnName)
