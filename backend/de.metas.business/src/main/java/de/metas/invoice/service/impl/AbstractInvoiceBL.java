@@ -1583,15 +1583,6 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 	}
 
 	@Override
-	public final boolean isAPIorARC(final org.compiere.model.I_C_Invoice invoice)
-	{
-		final I_C_DocType docType = getC_DocType(invoice);
-		final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofCode(docType.getDocBaseType());
-		return invoiceDocBaseType.isVendorInvoice() || invoiceDocBaseType.isCustomerCreditMemo();
-	}
-
-
-	@Override
 	public final boolean isAdjustmentCharge(final org.compiere.model.I_C_Invoice invoice)
 	{
 		final I_C_DocType docType = getC_DocType(invoice);
