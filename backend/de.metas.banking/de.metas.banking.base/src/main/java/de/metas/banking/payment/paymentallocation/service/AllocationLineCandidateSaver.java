@@ -8,7 +8,6 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.allocation.api.PaymentAllocationId;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.Money;
 import de.metas.payment.PaymentId;
 import de.metas.util.Check;
@@ -53,7 +52,6 @@ final class AllocationLineCandidateSaver
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	public ImmutableMap<PaymentAllocationId,AllocationLineCandidate> save(final List<AllocationLineCandidate> candidates)
 	{
@@ -177,10 +175,6 @@ final class AllocationLineCandidateSaver
 				//
 				.invoiceId(extractInvoiceId(candidate.getPayableDocumentRef()));
 
-		final I_C_Invoice paymentInvoice = candidate.getPaymentDocumentRef().getModel(I_C_Invoice.class);
-		// The allocation amount of a service fee invoice should be negative even when its counterpart is negative (i.e. sales credit memo or purchase invoice)
-		final boolean negatePaymentAmount = !(paymentInvoice.getC_DocType_ID() == 1000046 && payAmt.signum() < 0); // todo: invoicebl.isServiceInvoice
-
 		// Credit memo line
 		// or Purchase/Sales invoice line
 		allocationBuilder.addLine()
@@ -190,7 +184,7 @@ final class AllocationLineCandidateSaver
 				.bpartnerId(candidate.getBpartnerId())
 				//
 				// Amounts
-				.amount(payAmt.negateIf(negatePaymentAmount).toBigDecimal())
+				.amount(payAmt.negateIf(!candidate.isKeepPaymentAmtAsItIs()).toBigDecimal())
 				.overUnderAmt(candidate.getPaymentOverUnderAmt().toBigDecimal())
 				//
 				.invoiceId(extractInvoiceId(candidate.getPaymentDocumentRef()));

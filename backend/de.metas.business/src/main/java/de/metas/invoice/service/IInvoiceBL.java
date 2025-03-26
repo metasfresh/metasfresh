@@ -128,6 +128,8 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	boolean isARCreditMemo(I_C_Invoice invoice);
 
+	boolean isAPIorARC(I_C_Invoice payableInvoice);
+
 	/**
 	 * Writes off the given openAmt from the given invoice.
 	 *

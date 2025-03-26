@@ -34,6 +34,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
+import de.metas.invoice.service.IInvoiceBL;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -66,23 +67,13 @@ import java.util.List;
  */
 public class PaymentAllocationBuilder
 {
-	public enum PayableRemainingOpenAmtPolicy
-	{
-		DO_NOTHING, WRITE_OFF, DISCOUNT
-	}
-
-	public static PaymentAllocationBuilder newBuilder()
-	{
-		return new PaymentAllocationBuilder();
-	}
-
 	// services
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final AllocationLineCandidateSaver candidatesSaver = new AllocationLineCandidateSaver();
-
+	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	// Parameters
 	private LocalDate _defaultDateTrx;
 	private ImmutableList<PayableDocument> _payableDocuments = ImmutableList.of();
@@ -93,15 +84,51 @@ public class PaymentAllocationBuilder
 	private boolean dryRun = false;
 	private InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService;
 	/**
-	 * @see #allocatePayableAmountsAsIs(boolean) 
+	 * @see #allocatePayableAmountsAsIs(boolean)
 	 */
 	private boolean allocatePayableAmountsAsIs = false;
-
 	// Status
 	private boolean _built = false;
-
 	private PaymentAllocationBuilder()
 	{
+	}
+
+	public static PaymentAllocationBuilder newBuilder()
+	{
+		return new PaymentAllocationBuilder();
+	}
+
+	/**
+	 * Check if given payment document can be allocated to payable document.
+	 *
+	 * @return true if the invoice and payment are compatible, and we could try to do an allocation
+	 */
+	private static boolean isCompatible(@NonNull final PayableDocument payable, @NonNull final IPaymentDocument payment)
+	{
+		// Given payment does not support payable's type
+		if (!payment.canPay(payable))
+		{
+			return false;
+		}
+
+		//
+		// Check invoice-payment compatibility: same sign
+		final boolean positivePayableAmtToAllocate = payable.getAmountsToAllocateInitial().getPayAmt().signum() >= 0;
+		final boolean positivePaymentAmtToAllocate = payment.getAmountToAllocateInitial().signum() >= 0;
+		if (positivePayableAmtToAllocate != positivePaymentAmtToAllocate)
+		{
+			if (!payable.isAllowAllocateAgainstDifferentSignumPayment())
+			{
+				return false;
+			}
+		}
+
+		//
+		// Check invoice-payment compatibility: same BPartner
+		// NOTE: we don't check this because we are allowed to allocate invoice-payments of different BPartners
+		// Think about BP relations.
+
+		return true;
 	}
 
 	/**
@@ -199,13 +226,16 @@ public class PaymentAllocationBuilder
 				candidate.getInvoiceProcessingFeeCalculation(),
 				candidate.getAmounts().getInvoiceProcessingFee());
 
+		final I_C_Invoice payableInvoice = candidate.getPaymentDocumentRef().getModel(I_C_Invoice.class);
+
 		return candidate.toBuilder()
 				.type(AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice)
 				.amounts(amounts.toBuilder()
-						.payAmt(amounts.getInvoiceProcessingFee().negateIf(candidate.getPayableOverUnderAmt().signum()<0)) // TODO better way to find out if it's a sales credit memo or purchase invoice
-						.invoiceProcessingFee(null)
-						.build())
+								 .payAmt(amounts.getInvoiceProcessingFee().negateIf(invoiceBL.isAPIorARC(payableInvoice)))
+								 .invoiceProcessingFee(null)
+								 .build())
 				.paymentDocumentRef(TableRecordReference.of(I_C_Invoice.Table_Name, serviceInvoiceId))
+				.keepPaymentAmtAsItIs(true)
 				.build();
 	}
 
@@ -709,57 +739,6 @@ public class PaymentAllocationBuilder
 	}
 
 	/**
-	 * Check if given payment document can be allocated to payable document.
-	 *
-	 * @return true if the invoice and payment are compatible, and we could try to do an allocation
-	 */
-	private static boolean isCompatible(@NonNull final PayableDocument payable, @NonNull final IPaymentDocument payment)
-	{
-		// Given payment does not support payable's type
-		if (!payment.canPay(payable))
-		{
-			return false;
-		}
-
-		//
-		// Check invoice-payment compatibility: same sign
-		final boolean positivePayableAmtToAllocate = payable.getAmountsToAllocateInitial().getPayAmt().signum() >= 0;
-		final boolean positivePaymentAmtToAllocate = payment.getAmountToAllocateInitial().signum() >= 0;
-		if (positivePayableAmtToAllocate != positivePaymentAmtToAllocate)
-		{
-			if (!payable.isAllowAllocateAgainstDifferentSignumPayment())
-			{
-				return false;
-			}
-		}
-
-		//
-		// Check invoice-payment compatibility: same BPartner
-		// NOTE: we don't check this because we are allowed to allocate invoice-payments of different BPartners
-		// Think about BP relations.
-
-		return true;
-	}
-
-	/**
-	 * The amounts returned here are equal.
-	 * The only difference is that they could be represented in different currencies in case the 2 documents are in different currencies.
-	 */
-	@Value
-	@Builder
-	private static class InvoiceAndPaymentAmountsToAllocate
-	{
-		@NonNull
-		AllocationAmounts invoiceAmountsToAllocateInInvoiceCurrency;
-
-		@NonNull
-		Money payAmtInPaymentCurrency;
-
-		@NonNull
-		CurrencyRate currencyRate;
-	}
-
-	/**
 	 * @return if {@link #allocatePayableAmountsAsIs(boolean)} was set to {@code true}, then the payable's amount.
 	 * Otherwise, return how much we maximum allocate between given payable and given payment.
 	 */
@@ -780,7 +759,7 @@ public class PaymentAllocationBuilder
 		final Money paymentAmountToAllocate = currencyRate.convertAmount(payment.getAmountToAllocate());
 
 		if (allocatePayableAmountsAsIs)
-		{ 
+		{
 			// Special case: we know that in the end the payables' sum will match the payment
 			// But note that we can't know this here, because we are looking at just one payable.
 			// So, we have to trust our caller here.
@@ -791,7 +770,7 @@ public class PaymentAllocationBuilder
 					.currencyRate(currencyRate)
 					.build();
 		}
-		
+
 		if (invoicePayAmtToAllocate.signum() >= 0)
 		{
 			// Invoice(+), Payment(+)
@@ -964,6 +943,29 @@ public class PaymentAllocationBuilder
 		assertNotBuilt();
 		this.allocatePayableAmountsAsIs = allocatePayableAmountsAsIs;
 		return this;
+	}
+
+	public enum PayableRemainingOpenAmtPolicy
+	{
+		DO_NOTHING, WRITE_OFF, DISCOUNT
+	}
+
+	/**
+	 * The amounts returned here are equal.
+	 * The only difference is that they could be represented in different currencies in case the 2 documents are in different currencies.
+	 */
+	@Value
+	@Builder
+	private static class InvoiceAndPaymentAmountsToAllocate
+	{
+		@NonNull
+		AllocationAmounts invoiceAmountsToAllocateInInvoiceCurrency;
+
+		@NonNull
+		Money payAmtInPaymentCurrency;
+
+		@NonNull
+		CurrencyRate currencyRate;
 	}
 
 }
