@@ -254,9 +254,11 @@ public class PaymentAllocationBuilder
 		{
 			allocationCandidates.addAll(createAllocationLineCandidates_PurchaseInvoicesToSaleInvoices(payableDocuments));
 		}
+
 		//
 		// Try to allocate sales credit memo invoices to purchase invoices
 			allocationCandidates.addAll(createAllocationLineCandidates_SalesCreditMemoToPurchaseInvoice(payableDocuments));
+
 		//
 		// Allocate payments to invoices
 		allocationCandidates.addAll(createAllocationLineCandidates(
