@@ -22,15 +22,13 @@ package de.metas.edi.esb.xls;
  * #L%
  */
 
+import de.metas.edi.esb.excelimport.Excel_OLCand_Row;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.XLSImpCOLCandType;
+import org.junit.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import org.junit.Assert;
-
-import de.metas.edi.esb.excelimport.Excel_OLCand_Row;
-import de.metas.edi.esb.jaxb.metasfresh.XLSImpCOLCandType;
 
 public class XLS_OLCand_Row_Expectations
 {
