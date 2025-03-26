@@ -595,13 +595,12 @@ class WorkpackageProcessorTask implements Runnable
 			issueId = Services.get(IErrorManager.class).createIssue(ex);
 		}
 
-		//
-		// Allow retry processing this workpackage?
-		// Flag the workpackage as processed in order to:
+		// If we don't allow retry processing this workpackage, then flag it as processed in order to:
 		// * not allow future retries
 		// * avoid discarding items from this workpackage on future workpackages because they were enqueued here
 		// TODO shall we also release the elements lock if any?
-		workPackage.setProcessed(!workPackageProcessorWrapped.isAllowRetryOnError()); // just in case it was true
+		// Otherwise, just set it as unprocessed (even if it was marked as processed), because we're dealing with an error.
+		workPackage.setProcessed(!workPackageProcessorWrapped.isAllowRetryOnError());
 
 		workPackage.setIsError(true);
 		workPackage.setErrorMsg(ex.getLocalizedMessage());
