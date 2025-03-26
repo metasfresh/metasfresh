@@ -488,30 +488,24 @@ public class PaymentAllocationBuilder
 			return ImmutableList.of();
 		}
 
-		final List<PayableDocument> salesCreditMemos = new ArrayList<>();
-		final List<PurchaseInvoiceAsInboundPaymentDocumentWrapper> purchaseInvoices = new ArrayList<>();
+		final List<PayableDocument> arcs = new ArrayList<>();
+		final List<PurchaseInvoiceAsInboundPaymentDocumentWrapper> apis = new ArrayList<>();
 		for (final PayableDocument payable : payableDocuments)
 		{
-
-			if (!(payable.isARC() || payable.isAPI()))
-			{
-				continue;
-			}
-
 			if (payable.isARC())
 			{
-				salesCreditMemos.add(payable);
+				arcs.add(payable);
 			}
-			else
+			else if(payable.isAPI())
 			{
-				purchaseInvoices.add(PurchaseInvoiceAsInboundPaymentDocumentWrapper.wrap(payable));
+				apis.add(PurchaseInvoiceAsInboundPaymentDocumentWrapper.wrap(payable));
 			}
 		}
 
 		return createAllocationLineCandidates(
 				AllocationLineCandidateType.SalesCreditMemoToPurchaseInvoice,
-				salesCreditMemos,
-				purchaseInvoices);
+				arcs,
+				apis);
 	}
 
 	private List<AllocationLineCandidate> createAllocationLineCandidates_InboundPaymentToOutboundPayment(@NonNull final List<PaymentDocument> paymentDocuments)
