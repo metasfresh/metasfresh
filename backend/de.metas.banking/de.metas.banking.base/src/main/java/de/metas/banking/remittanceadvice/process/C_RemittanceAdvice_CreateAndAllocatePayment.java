@@ -151,7 +151,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 				.dateTrx(remittanceAdvice.getSendDate() != null ? remittanceAdvice.getSendDate() : SystemTime.asInstant())
 				.paymentAllocationPayableItems(paymentAllocationPayableItems)
 				.allowPartialAllocations(true)
-				.allowInvoiceToCreditMemoAllocation(false)
+				.allowInvoiceToCreditMemoAllocation(false) // invoices and creditmemos of the remadv must not be allocated against each other!
 				.build();
 	}
 
