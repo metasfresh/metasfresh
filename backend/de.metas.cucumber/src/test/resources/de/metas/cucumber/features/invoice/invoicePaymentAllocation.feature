@@ -1476,8 +1476,6 @@ Feature: invoice payment allocation
       | vendorInvoice1      | bpartner1     | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
       | customerCreditMemo1 | bpartner2     | Gutschrift              | 2022-05-11   | Spot                     | true    | EUR                 |
 
-
-
     And metasfresh contains C_InvoiceLines
       | C_Invoice_ID        | M_Product_ID | QtyInvoiced |
       | vendorInvoice1      | product1     | 1 PCE       |
@@ -1490,8 +1488,6 @@ Feature: invoice payment allocation
       | vendorInvoice1      |
       | customerCreditMemo1 |
 
-
-    # TODO correct expectations
     And validate C_AllocationLines
       | C_Invoice_ID        | Amount | OverUnderAmt | C_AllocationHdr_ID |
       | vendorInvoice1      | -5.95  | -11.9        | alloc1             |
