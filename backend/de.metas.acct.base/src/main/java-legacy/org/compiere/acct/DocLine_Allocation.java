@@ -632,4 +632,30 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		return paymentReceipt;
 	}
 
+	public boolean isValidPurchaseSalesCompensationAmt()
+	{
+		final BigDecimal compensationAmtSource = getAllocatedAmt();
+		final DocLine_Allocation counterLine = getCounterDocLine();
+		final BigDecimal counterLine_compensationAmtSource = counterLine.getAllocatedAmt();
+
+		if ((isAPI() && counterLine.isARC()) || (isARC() && counterLine.isAPI()))
+		{
+			return compensationAmtSource.compareTo(counterLine_compensationAmtSource) == 0;
+		}
+		else
+		{
+			return compensationAmtSource.compareTo(counterLine_compensationAmtSource.negate()) == 0;
+		}
+	}
+
+	private boolean isARC()
+	{
+		return isCreditMemoInvoice() && !isSOTrxInvoice();
+	}
+
+	private boolean isAPI()
+	{
+		return isSOTrxInvoice() && !isCreditMemoInvoice();
+	}
+
 }    // DocLine_Allocation

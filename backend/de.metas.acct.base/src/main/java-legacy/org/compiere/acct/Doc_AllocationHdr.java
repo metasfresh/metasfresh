@@ -927,7 +927,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 					.setDetailMessage("Booking the counter invoice using cash based accounting method is not supported");
 		}
 
-		if (!isValidPurchaseSalesCompensationAmt(line))
+		if (!line.isValidPurchaseSalesCompensationAmt())
 		{
 			throw newPostingException()
 					.setFact(fact)
@@ -943,7 +943,6 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 				.orgId(counterLine.getInvoiceOrgId())
 				.bPartnerAndLocationId(counterLine.getInvoiceBPartnerId(), counterLine.getInvoiceBPartnerLocationId())
 				.alsoAddZeroLine();
-
 		if (counterLine.isSOTrxInvoice())
 		{
 			factLineBuilder.setAccount(getCustomerAccount(BPartnerCustomerAccountType.C_Receivable, as));
@@ -972,32 +971,6 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		//
 		// Return how much was booked here.
 		return factLine.getAmtSourceAndAcctDrOrCr();
-	}
-
-	private static boolean isValidPurchaseSalesCompensationAmt(final DocLine_Allocation line)
-	{
-		final BigDecimal compensationAmtSource = line.getAllocatedAmt();
-		final DocLine_Allocation counterLine = line.getCounterDocLine();
-		final BigDecimal counterLine_compensationAmtSource = counterLine.getAllocatedAmt();
-
-		if ((isAPI(line) && isARC(counterLine)) || (isARC(line) && isAPI(counterLine)))
-		{
-			return compensationAmtSource.compareTo(counterLine_compensationAmtSource) == 0;
-		}
-		else
-		{
-			return compensationAmtSource.compareTo(counterLine_compensationAmtSource.negate()) == 0;
-		}
-	}
-
-	private static boolean isARC(final DocLine_Allocation line)
-	{
-		return line.isCreditMemoInvoice() && !line.isSOTrxInvoice();
-	}
-
-	private static boolean isAPI(final DocLine_Allocation line)
-	{
-		return line.isSOTrxInvoice() && !line.isCreditMemoInvoice();
 	}
 
 	/**
