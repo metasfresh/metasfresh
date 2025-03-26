@@ -196,21 +196,26 @@ public class PaymentAllocationBuilder
 				.build();
 		Check.assumeEquals(amounts, candidate.getAmounts());
 
-		final InvoiceId serviceInvoiceId = invoiceProcessingServiceCompanyService.generateServiceInvoice(
+		final InvoiceId serviceVendorInvoiceId = invoiceProcessingServiceCompanyService.generateServiceInvoice(
 				candidate.getInvoiceProcessingFeeCalculation(),
 				candidate.getAmounts().getInvoiceProcessingFee());
 
-		final I_C_Invoice payableInvoice = candidate.getPaymentDocumentRef().getModel(I_C_Invoice.class);
-
-		return candidate.toBuilder()
-				.type(AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice)
-				.amounts(amounts.toBuilder()
-						.payAmt(amounts.getInvoiceProcessingFee().negateIf(invoiceBL.isAPIorARC(payableInvoice)))
-						.invoiceProcessingFee(null)
-						.build())
-				.paymentDocumentRef(TableRecordReference.of(I_C_Invoice.Table_Name, serviceInvoiceId))
-				.keepPaymentAmtAsItIs(true)
-				.build();
+		if (candidate.isPayableDocumentIsCreditMemo())
+		{
+			// TODO
+			return ....;
+		}
+		else
+		{
+			return candidate.toBuilder()
+					.type(AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice)
+					.amounts(amounts.toBuilder()
+							.payAmt(amounts.getInvoiceProcessingFee())
+							.invoiceProcessingFee(null)
+							.build())
+					.paymentDocumentRef(TableRecordReference.of(I_C_Invoice.Table_Name, serviceVendorInvoiceId))
+					.build();
+		}
 	}
 
 	/**
@@ -337,7 +342,7 @@ public class PaymentAllocationBuilder
 						.orgId(payable.getClientAndOrgId().getOrgId())
 						.bpartnerId(payable.getBpartnerId())
 						//
-						.payableDocumentRef(payable.getReference())
+						.payableDocument(payable)
 						.paymentDocumentRef(payment.getReference())
 						//
 						.dateTrx(dateTrx)
@@ -594,7 +599,7 @@ public class PaymentAllocationBuilder
 				.orgId(payable.getClientAndOrgId().getOrgId())
 				.bpartnerId(payable.getBpartnerId())
 				//
-				.payableDocumentRef(payable.getReference())
+				.payableDocument(payable)
 				.paymentDocumentRef(null) // nop
 				//
 				.dateTrx(dateTrx)
@@ -653,7 +658,7 @@ public class PaymentAllocationBuilder
 				.orgId(orgId)
 				.bpartnerId(payable.getBpartnerId())
 				//
-				.payableDocumentRef(payable.getReference())
+				.payableDocument(payable)
 				.paymentDocumentRef(null) // nop
 				//
 				.dateTrx(dateTrx)

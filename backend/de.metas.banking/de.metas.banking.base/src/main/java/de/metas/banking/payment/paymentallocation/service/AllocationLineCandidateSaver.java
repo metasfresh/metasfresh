@@ -53,21 +53,21 @@ final class AllocationLineCandidateSaver
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
-	public ImmutableMap<PaymentAllocationId,AllocationLineCandidate> save(final List<AllocationLineCandidate> candidates)
+	public ImmutableMap<PaymentAllocationId, AllocationLineCandidate> save(final List<AllocationLineCandidate> candidates)
 	{
 		return trxManager.callInThreadInheritedTrx(() -> saveInTrx(candidates));
 	}
 
-	private ImmutableMap<PaymentAllocationId,AllocationLineCandidate> saveInTrx(final List<AllocationLineCandidate> candidates)
+	private ImmutableMap<PaymentAllocationId, AllocationLineCandidate> saveInTrx(final List<AllocationLineCandidate> candidates)
 	{
-		final ImmutableMap.Builder<PaymentAllocationId,AllocationLineCandidate> candidatesByPaymentId = ImmutableMap.builder();
+		final ImmutableMap.Builder<PaymentAllocationId, AllocationLineCandidate> candidatesByPaymentId = ImmutableMap.builder();
 
 		for (final AllocationLineCandidate candidate : candidates)
 		{
 			final PaymentAllocationId paymentAllocationId = saveCandidate(candidate);
 			if (paymentAllocationId != null)
 			{
-				candidatesByPaymentId.put(paymentAllocationId,candidate);
+				candidatesByPaymentId.put(paymentAllocationId, candidate);
 			}
 		}
 
@@ -85,6 +85,10 @@ final class AllocationLineCandidateSaver
 		else if (AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice.equals(type))
 		{
 			return saveCandidate_InvoiceToInvoice(candidate);
+		}
+		else if (AllocationLineCandidateType.SalesCreditMemoToPurchaseInvoice.equals(type))
+		{
+			return saveCandidate_SalesCreditMemoToPurchaseInvoice(candidate);
 		}
 		else if (AllocationLineCandidateType.InvoiceToCreditMemo.equals(type))
 		{
@@ -156,8 +160,6 @@ final class AllocationLineCandidateSaver
 				.writeOffAmt(writeOffAmt)
 				.build());
 
-
-
 		final C_AllocationHdr_Builder allocationBuilder = newC_AllocationHdr_Builder(candidate);
 
 		// Sales/Purchase invoice
@@ -190,6 +192,11 @@ final class AllocationLineCandidateSaver
 				.invoiceId(extractInvoiceId(candidate.getPaymentDocumentRef()));
 
 		return createAndComplete(allocationBuilder);
+	}
+
+	@Nullable
+	private PaymentAllocationId saveCandidate_SalesCreditMemoToPurchaseInvoice(@NonNull final AllocationLineCandidate candidate)
+	{
 	}
 
 	private PaymentAllocationId saveCandidate_InvoiceDiscountOrWriteOff(@NonNull final AllocationLineCandidate candidate)

@@ -27,6 +27,7 @@ public class AllocationLineCandidate
 	{
 		InvoiceToPayment, //
 		SalesInvoiceToPurchaseInvoice, //
+		SalesCreditMemoToPurchaseInvoice, //
 		InvoiceToCreditMemo, //
 		InvoiceDiscountOrWriteOff, //
 		InvoiceProcessingFee, //
@@ -38,6 +39,8 @@ public class AllocationLineCandidate
 	BPartnerId bpartnerId;
 
 	TableRecordReference payableDocumentRef;
+	boolean payableDocumentIsCreditMemo;
+
 	TableRecordReference paymentDocumentRef;
 
 	LocalDate dateTrx;
@@ -51,8 +54,6 @@ public class AllocationLineCandidate
 	Money paymentOverUnderAmt;
 	InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation;
 
-	boolean keepPaymentAmtAsItIs;
-
 	@Builder(toBuilder = true)
 	private AllocationLineCandidate(
 			@NonNull final AllocationLineCandidateType type,
@@ -61,6 +62,7 @@ public class AllocationLineCandidate
 			@Nullable final BPartnerId bpartnerId,
 			//
 			@NonNull final TableRecordReference payableDocumentRef,
+			final boolean payableDocumentIsCreditMemo,
 			@Nullable final TableRecordReference paymentDocumentRef,
 			//
 			@NonNull final LocalDate dateTrx,
@@ -68,11 +70,10 @@ public class AllocationLineCandidate
 			//
 			// Amounts
 			@NonNull final AllocationAmounts amounts,
+			@Nullable final Money paymentAmountOverride,
 			@Nullable final Money payableOverUnderAmt,
 			@Nullable final Money paymentOverUnderAmt,
-			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation,
-
-			final boolean keepPaymentAmtAsItIs)
+			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation)
 	{
 		if (!orgId.isRegular())
 		{
@@ -107,6 +108,7 @@ public class AllocationLineCandidate
 		this.bpartnerId = bpartnerId;
 
 		this.payableDocumentRef = payableDocumentRef;
+		this.payableDocumentIsCreditMemo = payableDocumentIsCreditMemo;
 		this.paymentDocumentRef = paymentDocumentRef;
 
 		this.dateTrx = dateTrx;
@@ -117,6 +119,15 @@ public class AllocationLineCandidate
 		this.payableOverUnderAmt = payableOverUnderAmt != null ? payableOverUnderAmt : Money.zero(amounts.getCurrencyId());
 		this.paymentOverUnderAmt = paymentOverUnderAmt != null ? paymentOverUnderAmt : Money.zero(amounts.getCurrencyId());
 		this.invoiceProcessingFeeCalculation = invoiceProcessingFeeCalculation;
-		this.keepPaymentAmtAsItIs = keepPaymentAmtAsItIs;
+	}
+
+	public static class AllocationLineCandidateBuilder
+	{
+		public AllocationLineCandidateBuilder payableDocument(@NonNull final PayableDocument payableDocument)
+		{
+			payableDocumentRef(payableDocument.getReference());
+			payableDocumentIsCreditMemo(payableDocument.isCreditMemo());
+			return this;
+		}
 	}
 }

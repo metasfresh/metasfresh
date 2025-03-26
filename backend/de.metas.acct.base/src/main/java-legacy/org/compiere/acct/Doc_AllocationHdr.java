@@ -927,7 +927,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 					.setDetailMessage("Booking the counter invoice using cash based accounting method is not supported");
 		}
 
-		if (!isValidPurchaseSalesCompensationAmt(line, counterLine))
+		if (!isValidPurchaseSalesCompensationAmt(line))
 		{
 			throw newPostingException()
 					.setFact(fact)
@@ -974,12 +974,13 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		return factLine.getAmtSourceAndAcctDrOrCr();
 	}
 
-	private static boolean isValidPurchaseSalesCompensationAmt(final DocLine_Allocation line, final DocLine_Allocation counterLine)
+	private static boolean isValidPurchaseSalesCompensationAmt(final DocLine_Allocation line)
 	{
 		final BigDecimal compensationAmtSource = line.getAllocatedAmt();
+		final DocLine_Allocation counterLine = line.getCounterDocLine();
 		final BigDecimal counterLine_compensationAmtSource = counterLine.getAllocatedAmt();
 
-		if (isAllocationBetweenAPIAndARC(line, counterLine))
+		if ((isAPI(line) && isARC(counterLine)) || (isARC(line) && isAPI(counterLine)))
 		{
 			return compensationAmtSource.compareTo(counterLine_compensationAmtSource) == 0;
 		}
@@ -987,16 +988,6 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		{
 			return compensationAmtSource.compareTo(counterLine_compensationAmtSource.negate()) == 0;
 		}
-	}
-
-	private static boolean isAllocationBetweenAPIAndARC(DocLine_Allocation line, DocLine_Allocation counterLine)
-	{
-		final boolean isAPILine = isAPI(line);
-		final boolean isAPICounterLine = isAPI(counterLine);
-		final boolean isARCLine = isARC(line);
-		final boolean isARCCounterLine = isARC(counterLine);
-
-		return (isAPILine && isARCCounterLine) || (isARCLine && isAPICounterLine);
 	}
 
 	private static boolean isARC(final DocLine_Allocation line)

@@ -92,6 +92,7 @@ public class PaymentAllocationService
 	public PaymentAllocationResult allocatePaymentForRemittanceAdvise(@NonNull final PaymentAllocationCriteria paymentAllocationCriteria)
 	{
 		final PaymentAllocationBuilder builder = preparePaymentAllocationBuilder(paymentAllocationCriteria)
+				.allowInvoiceToCreditMemoAllocation(false) 
 				.orElseThrow(() -> new AdempiereException("Invalid allocation")
 						.appendParametersToMessage()
 						.setParameter("paymentAllocationCriteria", paymentAllocationCriteria));
