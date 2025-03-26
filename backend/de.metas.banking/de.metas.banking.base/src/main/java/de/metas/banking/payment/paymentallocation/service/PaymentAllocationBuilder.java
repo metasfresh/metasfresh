@@ -260,6 +260,9 @@ public class PaymentAllocationBuilder
 		{
 			allocationCandidates.addAll(createAllocationLineCandidates_PurchaseInvoicesToSaleInvoices(payableDocuments));
 		}
+		//
+		// Try to allocate sales credit memo invoices to purchase invoices
+			allocationCandidates.addAll(createAllocationLineCandidates_SalesCreditMemoToPurchaseInvoice(payableDocuments));
 
 		//
 		// Allocate payments to invoices
@@ -479,6 +482,41 @@ public class PaymentAllocationBuilder
 		return createAllocationLineCandidates(
 				AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice,
 				salesInvoices,
+				purchaseInvoices);
+	}
+
+
+	private List<AllocationLineCandidate> createAllocationLineCandidates_SalesCreditMemoToPurchaseInvoice(
+			@NonNull final List<PayableDocument> payableDocuments)
+	{
+		if (payableDocuments.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final List<PayableDocument> salesCreditMemos = new ArrayList<>();
+		final List<PurchaseInvoiceAsInboundPaymentDocumentWrapper> purchaseInvoices = new ArrayList<>();
+		for (final PayableDocument payable : payableDocuments)
+		{
+
+			if (!(payable.isARC() || payable.isAPI()))
+			{
+				continue;
+			}
+
+			if (payable.isARC())
+			{
+				salesCreditMemos.add(payable);
+			}
+			else
+			{
+				purchaseInvoices.add(PurchaseInvoiceAsInboundPaymentDocumentWrapper.wrap(payable));
+			}
+		}
+
+		return createAllocationLineCandidates(
+				AllocationLineCandidateType.SalesCreditMemoToPurchaseInvoice,
+				salesCreditMemos,
 				purchaseInvoices);
 	}
 
