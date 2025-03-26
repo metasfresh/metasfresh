@@ -12,6 +12,7 @@ import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptorsProvi
 import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptorsProviders;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.DataTypes;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
 import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
@@ -27,8 +28,10 @@ import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -40,6 +43,7 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 
 /*
  * #%L
@@ -976,6 +980,38 @@ public final class DocumentFieldDescriptor
 		{
 			final LambdaDocumentFieldCallout callout = new LambdaDocumentFieldCallout(getFieldName(), lambdaCallout);
 			addCallout(callout);
+			return this;
+		}
+
+		@NonNull
+		public Builder usePreviousValueAsDefaultValue(@NonNull final Class<?> fieldValueType, @Nullable final String ctxNamePrefix)
+		{
+			final String actualPrefix = Optional.ofNullable(ctxNamePrefix)
+					.map(prefix -> prefix + "_")
+					.orElse("");
+
+			final String lastValueCtxName = "#" + actualPrefix + fieldName;
+
+			final Consumer<Object> addOldValueToContextConsumer;
+			if (fieldValueType == LookupValue.IntegerLookupValue.class)
+			{
+				addOldValueToContextConsumer = value -> {
+					final int repoId = ((LookupValue.IntegerLookupValue)value).getIdAsInt();
+					Env.setContext(Env.getCtx(), lastValueCtxName, repoId);
+				};
+			}
+			else
+			{
+				throw new IllegalArgumentException(fieldValueType.getName() + " is not supported!");
+			}
+
+			final ILambdaDocumentFieldCallout saveValueToContext = calloutField -> Optional.ofNullable(calloutField.getValue())
+					.filter(value -> fieldValueType.isAssignableFrom(value.getClass()))
+					.ifPresent(addOldValueToContextConsumer);
+
+			addCallout(new LambdaDocumentFieldCallout(getFieldName(), saveValueToContext));
+
+			setDefaultValueExpression(IStringExpression.compile("@" + lastValueCtxName + "/@"));
 			return this;
 		}
 
