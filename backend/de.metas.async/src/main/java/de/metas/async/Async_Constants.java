@@ -27,7 +27,6 @@ import de.metas.async.event.WorkpackagesProcessedWaiter;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.event.Topic;
 import de.metas.event.Type;
-import org.adempiere.model.InterfaceWrapperHelper;
 
 public final class Async_Constants
 {
@@ -47,15 +46,6 @@ public final class Async_Constants
 	public static final int DEFAULT_RETRY_TIMEOUT_MILLIS = 5000;
 
 	public static final String C_Async_Batch = "C_Async_Batch";
-
-	public static void setAsyncBatchId(final Object record, AsyncBatchId asyncBatchId)
-	{
-		InterfaceWrapperHelper.setDynAttribute(record, C_Async_Batch, asyncBatchId);
-	}
-	public static AsyncBatchId getAsyncBatchId(final Object record)
-	{
-		return InterfaceWrapperHelper.getDynAttribute(record, C_Async_Batch);
-	}
 
 	public static final Topic WORKPACKAGE_ERROR_USER_NOTIFICATIONS_TOPIC = Topic.builder()
 			.name("de.metas.async.UserNotifications.WorkpackageProcessingErrors")
