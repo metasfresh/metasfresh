@@ -1,6 +1,6 @@
 package de.metas.impexp.format;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 import java.sql.Timestamp;
 
@@ -28,11 +28,9 @@ class ImpFormatColumnTest
 		final String inputDate = "21.03.25"; // 2-digit year
 		final Timestamp expectedTimestamp = Timestamp.valueOf("2025-03-21 00:00:00");
 
-		final Object result = impFormatColumn.parseCellValue(inputDate);
-
-		assertNotNull(result);
-		assertTrue(result instanceof Timestamp);
-		assertEquals(expectedTimestamp, result);
+		assertThat(impFormatColumn.parseCellValue(inputDate))
+				.isInstanceOf(Timestamp.class)
+				.isEqualTo(expectedTimestamp);
 	}
 
 	@Test
@@ -41,11 +39,9 @@ class ImpFormatColumnTest
 		final String inputDate = "21.03.2025"; // 4-digit year
 		final Timestamp expectedTimestamp = Timestamp.valueOf("2025-03-21 00:00:00");
 
-		final Object result = impFormatColumn.parseCellValue(inputDate);
-
-		assertNotNull(result);
-		assertTrue(result instanceof Timestamp);
-		assertEquals(expectedTimestamp, result);
+		assertThat(impFormatColumn.parseCellValue(inputDate))
+				.isInstanceOf(Timestamp.class)
+				.isEqualTo(expectedTimestamp);
 	}
 
 	@Test
@@ -62,10 +58,9 @@ class ImpFormatColumnTest
 
 		for (final String inputDate : testDates)
 		{
-			final Object result = impFormatColumn.parseCellValue(inputDate);
-			assertNotNull(result);
-			assertTrue(result instanceof Timestamp);
-			assertEquals(expectedTimestamp, result, "Failed for input: " + inputDate);
+			assertThat(impFormatColumn.parseCellValue(inputDate))
+					.isInstanceOf(Timestamp.class)
+					.isEqualTo(expectedTimestamp);
 		}
 	}
 }
