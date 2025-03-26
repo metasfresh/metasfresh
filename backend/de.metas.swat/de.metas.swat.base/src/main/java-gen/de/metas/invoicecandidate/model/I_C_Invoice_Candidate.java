@@ -1831,7 +1831,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Getrennt fakturieren.
+	 * Set Separate invoicing.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1840,7 +1840,7 @@ public interface I_C_Invoice_Candidate
 	void setIsAllowSeparateInvoicing (boolean IsAllowSeparateInvoicing);
 
 	/**
-	 * Get Getrennt fakturieren.
+	 * Get Separate invoicing.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

@@ -191,7 +191,7 @@ public interface I_C_CompensationGroup_Schema_TemplateLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Getrennt fakturieren.
+	 * Set Separate invoicing.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -200,7 +200,7 @@ public interface I_C_CompensationGroup_Schema_TemplateLine
 	void setIsAllowSeparateInvoicing (boolean IsAllowSeparateInvoicing);
 
 	/**
-	 * Get Getrennt fakturieren.
+	 * Get Separate invoicing.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

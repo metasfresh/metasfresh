@@ -1160,7 +1160,7 @@ public interface I_C_OrderLine
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Getrennt fakturieren.
+	 * Set Separate invoicing.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1169,7 +1169,7 @@ public interface I_C_OrderLine
 	void setIsAllowSeparateInvoicing (boolean IsAllowSeparateInvoicing);
 
 	/**
-	 * Get Getrennt fakturieren.
+	 * Get Separate invoicing.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
