@@ -24,11 +24,11 @@ package de.metas.edi.esb.commons.route.notifyreplicationtrx;
 
 import de.metas.common.util.StringUtils;
 import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.jaxb.metasfresh.EDIReplicationTrxUpdateType;
-import de.metas.edi.esb.jaxb.metasfresh.ObjectFactory;
-import de.metas.edi.esb.jaxb.metasfresh.ReplicationEventEnum;
-import de.metas.edi.esb.jaxb.metasfresh.ReplicationModeEnum;
-import de.metas.edi.esb.jaxb.metasfresh.ReplicationTypeEnum;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIReplicationTrxUpdateType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.ObjectFactory;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.ReplicationEventEnum;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.ReplicationModeEnum;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.ReplicationTypeEnum;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;

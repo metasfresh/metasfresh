@@ -23,7 +23,7 @@
 package de.metas.edi.esb.desadvexport;
 
 import de.metas.edi.esb.desadvexport.helper.SinglePack;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvLineType;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;

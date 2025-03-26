@@ -22,21 +22,21 @@
 
 package de.metas.edi.esb.commons;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.camel.CamelContext;
-
 import de.metas.edi.esb.invoicexport.stepcom.qualifier.DocumentType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.apache.camel.CamelContext;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Value
 @Builder
 public class InvoicSettings
 {
 	private static final String ANY_MEASUREMENTUNIT = "<ANY>";
+	private static final String DEFAULT_CLEARING_CENTER = "edi.invoic.default.clearingCenter";
 
 	public enum InvoicLineQuantityInUOM
 	{
@@ -49,7 +49,9 @@ public class InvoicSettings
 			@NonNull final String recipientGLN)
 	{
 		final String clearingCenterProperty = "edi.recipientGLN." + recipientGLN + ".clearingCenter";
-		final ClearingCenter clearingCenter = ClearingCenter.valueOf(Util.resolveProperty(context, clearingCenterProperty, "ecosio"));
+
+		final String defaultClearingCenter = Util.resolveProperty(context, DEFAULT_CLEARING_CENTER, ClearingCenter.MetasfreshInHouseV2.toString());
+		final ClearingCenter clearingCenter = ClearingCenter.ofValue(Util.resolveProperty(context, clearingCenterProperty, defaultClearingCenter));
 
 		final InvoicSettingsBuilder settings = InvoicSettings
 				.builder()
@@ -57,7 +59,7 @@ public class InvoicSettings
 
 		return switch (clearingCenter)
 				{
-					case ecosio -> settings.build();
+					case MetasfreshInHouseV2, MetasfreshInHouseV1 -> settings.build();
 					case STEPcom -> settings
 							.applicationRef(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.applicationRef", "INVOIC"))
 							.partnerId(Util.resolveProperty(context, "edi.stepcom.recipientGLN." + recipientGLN + ".invoic.partnerId"))
