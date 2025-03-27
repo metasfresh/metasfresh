@@ -495,7 +495,7 @@ public class PaymentAllocationBuilder
 		}
 
 		final List<PayableDocument> arcs = new ArrayList<>();
-		final List<PurchaseInvoiceAsPaymentForSalesCreditMemoDocumentWrapper> apis = new ArrayList<>();
+		final List<PurchaseInvoiceAsInboundPaymentDocumentWrapper> apis = new ArrayList<>();
 		for (final PayableDocument payable : payableDocuments)
 		{
 			if (payable.isARC())
@@ -504,7 +504,7 @@ public class PaymentAllocationBuilder
 			}
 			else if(payable.isAPI())
 			{
-				apis.add(PurchaseInvoiceAsPaymentForSalesCreditMemoDocumentWrapper.wrap(payable));
+				apis.add(PurchaseInvoiceAsInboundPaymentDocumentWrapper.wrap(payable));
 			}
 		}
 
