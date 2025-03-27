@@ -200,21 +200,27 @@ public class PaymentAllocationBuilder
 				candidate.getInvoiceProcessingFeeCalculation(),
 				candidate.getAmounts().getInvoiceProcessingFee());
 
-		final AllocationLineCandidate.AllocationLineCandidateBuilder allocationLineCandidateBuilder = candidate.toBuilder()
-				.amounts(amounts.toBuilder()
-								 .payAmt(amounts.getInvoiceProcessingFee())
-								 .invoiceProcessingFee(null)
-								 .build())
-				.paymentDocumentRef(TableRecordReference.of(I_C_Invoice.Table_Name, serviceVendorInvoiceId));
-
 		if (candidate.isPayableDocumentIsCreditMemo())
 		{
-			return allocationLineCandidateBuilder.type(AllocationLineCandidateType.SalesCreditMemoToPurchaseInvoice).build();
+			return candidate.toBuilder()
+					.type(AllocationLineCandidateType.SalesCreditMemoToPurchaseInvoice)
+					.amounts(amounts.toBuilder()
+									 .payAmt(amounts.getInvoiceProcessingFee().negate())
+									 .invoiceProcessingFee(null)
+									 .build())
+					.paymentDocumentRef(TableRecordReference.of(I_C_Invoice.Table_Name, serviceVendorInvoiceId))
+					.build();
 		}
 		else
 		{
-
-			return allocationLineCandidateBuilder.type(AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice).build();
+			return candidate.toBuilder()
+					.type(AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice)
+					.amounts(amounts.toBuilder()
+							.payAmt(amounts.getInvoiceProcessingFee())
+							.invoiceProcessingFee(null)
+							.build())
+					.paymentDocumentRef(TableRecordReference.of(I_C_Invoice.Table_Name, serviceVendorInvoiceId))
+					.build();
 		}
 	}
 
