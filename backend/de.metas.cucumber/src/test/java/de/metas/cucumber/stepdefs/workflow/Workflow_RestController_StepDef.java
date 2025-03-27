@@ -218,10 +218,10 @@ public class Workflow_RestController_StepDef
 					.wfProcessId(workflowProcess.getAsString())
 					.wfActivityId(workflowActivity.getAsString())
 					.issueTo(JsonManufacturingOrderEvent.IssueTo.builder()
-							.issueStepId(workflowStep.getId())
-							.qtyIssued(workflowStep.getQtyToIssue())
-							.huQRCode(qrCode.getCode())
-							.build());
+									 .issueStepId(workflowStep.getId())
+									 .qtyIssued(workflowStep.getQtyToIssue())
+									 .huQRCode(qrCode.getCode())
+									 .build());
 		}
 		else if (event.equals("ReceiveFrom"))
 		{
@@ -232,17 +232,21 @@ public class Workflow_RestController_StepDef
 					.wfProcessId(workflowProcess.getAsString())
 					.wfActivityId(workflowActivity.getAsString())
 					.receiveFrom(JsonManufacturingOrderEvent.ReceiveFrom.builder()
-							.lineId(workflowLine.getId())
-							.qtyReceived(workflowLine.getQtyToReceive())
-							.aggregateToLU(JsonLUReceivingTarget.builder()
-									.newLU(JsonNewLUTarget.builder()
-											.luCaption(receivingTargetValues.getLuCaption())
-											.tuCaption(receivingTargetValues.getTuCaption())
-											.luPIItemId(HuPackingInstructionsItemId.ofRepoId(receivingTargetValues.getLuPIItemId()))
-											.tuPIItemProductId(HUPIItemProductId.ofRepoId(receivingTargetValues.getTuPIItemProductId()))
-											.build())
-									.build())
-							.build());
+										 .lineId(workflowLine.getId())
+										 .qtyReceived(workflowLine.getQtyToReceive())
+										 .aggregateToLU(JsonLUReceivingTarget.builder()
+																.newLU(JsonNewLUTarget.builder()
+																			   .luCaption(receivingTargetValues.getLuCaption())
+																			   .tuCaption(receivingTargetValues.getTuCaption())
+																			   .luPIItemId(HuPackingInstructionsItemId.ofRepoId(receivingTargetValues.getLuPIItemId()))
+																			   .tuPIItemProductId(HUPIItemProductId.ofRepoId(receivingTargetValues.getTuPIItemProductId()))
+																			   .build())
+																.build())
+										 .bestBeforeDate(row.getAsOptionalString("BestBeforeDate").orElse(null))
+										 .catchWeight(row.getAsOptionalBigDecimal("CatchWeight").orElse(null))
+										 .catchWeightUomSymbol(row.getAsOptionalString("CatchWeightUOMSymbol").orElse(null))
+										 .lotNo(row.getAsOptionalString("LotNo").orElse(null))
+										 .build());
 		}
 
 		testContext.setRequestPayload(manufacturingOrderEventBuilder.build());
