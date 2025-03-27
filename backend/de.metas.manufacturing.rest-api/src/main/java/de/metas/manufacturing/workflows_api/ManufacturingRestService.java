@@ -162,7 +162,11 @@ public class ManufacturingRestService
 							.tuReceivingTarget(receiveFrom.getAggregateToTU())
 							.build(),
 					receiveFrom.getQtyReceived(),
-					SystemTime.asZonedDateTime());
+					SystemTime.asZonedDateTime(),
+					receiveFrom.getBestBeforeDate(),
+					receiveFrom.getLotNo(),
+					receiveFrom.getCatchWeight(),
+					receiveFrom.getCatchWeightUomSymbol());
 		}
 		else
 		{

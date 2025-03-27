@@ -28,6 +28,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.allergen.ProductAllergensService;
 import de.metas.product.hazard_symbol.ProductHazardSymbolService;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
@@ -39,12 +40,14 @@ import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
 import org.adempiere.util.api.Params;
+import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class MaterialReceiptActivityHandler implements WFActivityHandler
@@ -55,6 +58,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 	private final IBPartnerBL bpartnerBL;
 	private final HUQRCodesService huQRCodeService;
 	private final ProductHazardSymbolService productHazardSymbolService;
@@ -119,6 +123,10 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 				.currentReceivingHU(JsonHUQRCodeTargetConverters.fromNullable(line.getReceivingTarget(), huQRCodeService))
 				.availableReceivingTargets(newLUTargets)
 				.availableReceivingTUTargets(tuTargetList)
+				.catchWeightUomSymbol(Optional.ofNullable(line.getCatchWeightUOMId())
+										.map(uomDao::getById)
+										.map(I_C_UOM::getUOMSymbol)
+										.orElse(null))
 				.build();
 	}
 

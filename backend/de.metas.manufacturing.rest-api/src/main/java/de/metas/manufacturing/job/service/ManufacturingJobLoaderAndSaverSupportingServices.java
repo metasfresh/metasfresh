@@ -25,6 +25,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -150,6 +151,12 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 				.collect(ImmutableList.toImmutableList());
 
 		return ValidateLocatorInfo.ofSourceLocatorList(sourceLocatorList);
+	}
+
+	@NonNull
+	public Optional<UomId> getCatchWeightUOMId(@NonNull final ProductId productId)
+	{
+		return productBL.getCatchUOMId(productId);
 	}
 
 	@NonNull

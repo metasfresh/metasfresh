@@ -10,6 +10,7 @@ import de.metas.device.accessor.DeviceId;
 import de.metas.device.websocket.DeviceWebsocketNamingStrategy;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
@@ -30,7 +31,6 @@ import de.metas.manufacturing.job.model.ManufacturingJobFacets;
 import de.metas.manufacturing.job.model.ManufacturingJobReference;
 import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
 import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
-import de.metas.manufacturing.job.model.ReceivingTarget;
 import de.metas.manufacturing.job.model.ScaleDevice;
 import de.metas.manufacturing.job.service.commands.ReceiveGoodsCommand;
 import de.metas.manufacturing.job.service.commands.SelectedReceivingTarget;
@@ -44,6 +44,8 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
 import de.metas.user.UserId;
 import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
@@ -85,6 +87,9 @@ public class ManufacturingJobService
 	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
+	private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
 	private final IHUPPOrderBL ppOrderBL;
 	private final IPPOrderBOMBL ppOrderBOMBL;
 	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
@@ -513,25 +518,32 @@ public class ManufacturingJobService
 			@NonNull final FinishedGoodsReceiveLineId lineId,
 			@NonNull final SelectedReceivingTarget receivingTarget,
 			@NonNull final BigDecimal qtyToReceiveBD,
-			@NonNull final ZonedDateTime date)
+			@NonNull final ZonedDateTime date,
+			@Nullable final String bestBeforeDate,
+			@Nullable final String lotNo,
+			@Nullable final BigDecimal catchWeight,
+			@Nullable final String catchWeightUomSymbol)
 	{
-		final ManufacturingJob changedJob = job.withChangedReceiveLine(lineId, line -> {
-			final ReceivingTarget newReceivingTarget = trxManager.callInThreadInheritedTrx(() -> ReceiveGoodsCommand.builder()
-					.handlingUnitsBL(handlingUnitsBL)
-					.ppOrderBL(ppOrderBL)
-					.ppOrderBOMBL(ppOrderBOMBL)
-					.loadingAndSavingSupportServices(loadingAndSavingSupportServices)
-					//
-					.ppOrderId(job.getPpOrderId())
-					.coProductBOMLineId(line.getCoProductBOMLineId())
-					.receivingTarget(receivingTarget)
-					.qtyToReceiveBD(qtyToReceiveBD)
-					.date(date)
-					//
-					.build().execute());
-
-			return line.withReceivingTarget(newReceivingTarget);
-		});
+		final ManufacturingJob changedJob = job.withChangedReceiveLine(lineId, line -> trxManager.callInThreadInheritedTrx(() -> ReceiveGoodsCommand.builder()
+				.handlingUnitsBL(handlingUnitsBL)
+				.ppOrderBL(ppOrderBL)
+				.ppOrderBOMBL(ppOrderBOMBL)
+				.uomDao(uomDao)
+				.uomConversionBL(uomConversionBL)
+				.huPIItemProductBL(hupiItemProductBL)
+				.loadingAndSavingSupportServices(loadingAndSavingSupportServices)
+				//
+				.ppOrderId(job.getPpOrderId())
+				.receiveLine(line)
+				.receivingTarget(receivingTarget)
+				.qtyToReceiveBD(qtyToReceiveBD)
+				.date(date)
+				.bestBeforeDate(bestBeforeDate)
+				.lotNo(lotNo)
+				.catchWeight(catchWeight)
+				.catchWeightUomSymbol(catchWeightUomSymbol)
+				//
+				.build().execute()));
 
 		saveActivityStatuses(changedJob);
 

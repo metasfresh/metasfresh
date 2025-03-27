@@ -21,6 +21,7 @@ public class JsonFinishedGoodsReceiveLine
 	boolean coproduct;
 	@NonNull String productName;
 	@NonNull String uom;
+	@Nullable String catchWeightUomSymbol;
 	@NonNull List<JsonHazardSymbol> hazardSymbols;
 	@NonNull List<JsonAllergen> allergens;
 

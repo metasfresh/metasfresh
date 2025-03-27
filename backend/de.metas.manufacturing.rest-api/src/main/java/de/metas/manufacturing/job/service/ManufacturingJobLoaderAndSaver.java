@@ -303,6 +303,7 @@ public class ManufacturingJobLoaderAndSaver
 				.qtyReceived(orderQuantities.getQtyReceived())
 				.coProductBOMLineId(null)
 				.receivingTarget(extractReceivingTarget(ppOrder))
+				.catchWeightUOMId(supportingServices.getCatchWeightUOMId(productId).orElse(null))
 				.build();
 
 	}
@@ -354,6 +355,7 @@ public class ManufacturingJobLoaderAndSaver
 				.qtyReceived(bomLineQuantities.getQtyIssuedOrReceived().negate())
 				.coProductBOMLineId(PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID()))
 				.receivingTarget(extractReceivingTarget(orderBOMLine))
+				.catchWeightUOMId(supportingServices.getCatchWeightUOMId(productId).orElse(null))
 				.build();
 	}
 
