@@ -22,11 +22,11 @@
 
 package de.metas.edi.esb.invoicexport.edifact;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
 import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctop119VType;
-import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctopInvoic500VType;
 import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctopInvoicVType;
 import jakarta.xml.bind.JAXBElement;
 import lombok.NonNull;
@@ -94,6 +94,7 @@ import org.smooks.edifact.binding.service.UNSSectionControl;
 import org.smooks.edifact.binding.service.UNTMessageTrailer;
 import org.smooks.edifact.binding.service.UNZInterchangeTrailer;
 
+import javax.annotation.Nullable;
 import javax.xml.namespace.QName;
 import java.math.BigDecimal;
 import java.util.Date;
@@ -107,314 +108,53 @@ public class EDICctopInvoicVtoD01BConverter
 	{
 		final String messageSequenceNo = xmlCctopInvoice.getSequenceNoAttr().toString();
 
-		final Date ediSendDate = SystemTime.asDate();
-		final String dateSend = Util.toFormattedStringDate(ediSendDate, "yyyyMMdd");
-		final String timeSend = Util.toFormattedStringDate(ediSendDate, "HHmm");
-
 		final String dateTimeInvoiced = Util.toFormattedStringDate(Util.toDate(xmlCctopInvoice.getDateInvoiced()), "yyyyMMddHHmmss");
 		final String dateTimeAcct = Util.toFormattedStringDate(Util.toDate(
 				CoalesceUtil.coalesceNotNull(xmlCctopInvoice.getDateAcct(), xmlCctopInvoice.getDateInvoiced())), "yyyyMMddHHmmss");
 		final String dateTimeDelivered = Util.toFormattedStringDate(Util.toDate(xmlCctopInvoice.getMovementDate()), "yyyyMMddHHmmss");
-		final String dateTimeOrdered = Util.toFormattedStringDate(Util.toDate(xmlCctopInvoice.getDateOrdered()), "yyyyMMddHHmmss");
 		final Map<String, EDICctop119VType> locationType2Address = xmlCctopInvoice.getEDICctop119V().stream()
 				.collect(Collectors.toMap(
 						EDICctop119VType::getEancomLocationtype,
 						ediCctop -> ediCctop));
 
-		final EDICctop119VType ediCctop119ByType = locationType2Address.get("BY");
-		final EDICctop119VType ediCctop11IVType = locationType2Address.get("IV");
-		final EDICctop119VType ediCctop11DPType = locationType2Address.get("DP");
-		final EDICctop119VType ediCctop11SUType = locationType2Address.get("SU");
-		final EDICctopInvoic500VType ediCctopInvoic500VType = xmlCctopInvoice.getEDICctopInvoic500V().get(0);
-		final BigDecimal testIndicator = null; // new BigDecimal("1");
-		// EANCOM = EAN + Communication 
-		final String communicationsAgreement = "EANCOM" + ediCctop119ByType.getGLN() + ediCctop11SUType.getGLN() + "503";
-		final String applicationReference = "INVOIC01BRX";
-		final String associationAssignedCode = "EAN010";
-		final String interchangeReceipientGLN = "7611937000723"; // inclear why it's not xmlCctopInvoice.getReceivergln()
-
 		return new Interchange().
-				withUNA(new UNA().
-						withCompositeSeparator(":").
-						withFieldSeparator("+").
-						withDecimalSeparator(".").
-						withEscapeCharacter("?").
-						withRepeatSeparator("*").
-						withSegmentTerminator("'")).
+				withUNA(getUNA()).
 				withUNB( // https://unece.org/trade/uncefact/unedifact/part-4-Annex-B
-						new UNBInterchangeHeader().
-								withS001(new S001SyntaxIdentifier().
-										withE0001(E0001SyntaxIdentifier.UNOC).withE0002("4")).
-								withS002(new S002InterchangeSender().
-										withE0004(xmlCctopInvoice.getSendergln()).
-										withE0007("14")).
-								withS003(new S003InterchangeRecipient().
-										withE0010(interchangeReceipientGLN).
-										withE0007("14")).
-								withS004(new S004DateAndTimeOfPreparation().
-										withE0017(new BigDecimal(dateSend)).
-										withE0019(new BigDecimal(timeSend))).
-								withE0020(messageSequenceNo).
-								withS005(new S005RecipientReferencePasswordDetails().withE0022("")).
-								withE0026(applicationReference).
-								withE0032(communicationsAgreement).
-								withE0035(testIndicator)).
+						getUNBInterchangeHeader(xmlCctopInvoice,
+								messageSequenceNo,
+								locationType2Address.get(E3035PartyFunctionCodeQualifier.BY.value()),
+								locationType2Address.get(E3035PartyFunctionCodeQualifier.SU.value()))).
 				withMessage(new Message().
 						withContent(new JAXBElement<>(new QName("UNH"), UNHMessageHeader.class, new UNHMessageHeader().
 								withE0062("1").
-								withS009(new S009MessageIdentifier().
-										withE0065(E0065MessageType.INVOIC).
-										withE0052("D").
-										withE0054("01B").
-										withE0051(E0051ControllingAgencyCoded.UN).
-										withE0057(associationAssignedCode)))).
+								withS009(getS009MessageIdentifier()))).
 						withContent(new JAXBElement<>(new QName("http://www.ibm.com/dfdl/edi/un/edifact/D01B", "INVOIC", "D01B"), INVOIC.class, new INVOIC().
 								withBGM(new BGMBeginningOfMessage() /* https://service.unece.org/trade/untdid/d01b/trsd/trsdbgm.htm */.
 										withC002(new C002DocumentMessageName().withE1001("380")).
 										withC106(new C106DocumentMessageIdentification()
 												.withE1004(xmlCctopInvoice.getInvoiceDocumentno())).
 										withE1225("9") /* Message function code = Original*/).
-								withDTM(new DTMDateTimePeriod() /* https://service.unece.org/trade/untdid/d01b/trsd/trsddtm.htm */.
-										withC507(new C507DateTimePeriod().
-												withE2005("137") /*Document/message date/time*/.
-												withE2380(dateTimeInvoiced).
-												withE2379("204") /*Date or time or period format code = CCYYMMDDHHMMSS */)).
-								withDTM(new DTMDateTimePeriod() /* https://service.unece.org/trade/untdid/d01b/trsd/trsddtm.htm */.
-										withC507(new C507DateTimePeriod().
-												withE2005("454") /*Accounting value date*/.
-												withE2380(dateTimeAcct).
-												withE2379("204") /*Date or time or period format code = CCYYMMDDHHMMSS */)).
-								withDTM(new DTMDateTimePeriod() /* https://service.unece.org/trade/untdid/d01b/trsd/trsddtm.htm */.
-										withC507(new C507DateTimePeriod().
-												withE2005("35") /*Delivery date/time, actual*/.
-												withE2380(dateTimeDelivered).
-												withE2379("204") /*Date or time or period format code = CCYYMMDDHHMMSS */)).
-								withSegGrp1(new INVOIC.SegGrp1().
-										withRFF(new RFFReference() /* https://service.unece.org/trade/untdid/d01b/trsd/trsdrff.htm */.
-												withC506(new C506Reference().
-														withE1153(E1153ReferenceCodeQualifier.ON /*Order Number*/).
-														withE1154(xmlCctopInvoice.getPOReference()))).
-										withDTM(new DTMDateTimePeriod() /* https://service.unece.org/trade/untdid/d01b/trsd/trsddtm.htm */.
-												withC507(new C507DateTimePeriod().
-														withE2005("171") /*Reference date/time*/.
-														withE2380(dateTimeOrdered).
-														withE2379("204") /*Date or time or period format code = CCYYMMDDHHMMSS */))).
-								withSegGrp2(new INVOIC.SegGrp2().
-										withNAD(new NADNameAndAddress().
-												withE3035(E3035PartyFunctionCodeQualifier.BY).
-												withC082(new C082PartyIdentificationDetails().
-														withE3039(ediCctop119ByType.getGLN()).
-														withE3055("9"))
-												.withC080(new C080PartyName().withE3036(ediCctop119ByType.getName()))
-												.withC059(new C059Street().withE3042(ediCctop119ByType.getAddress2() != null
-														? ediCctop119ByType.getAddress1().concat(ediCctop119ByType.getAddress2())
-														: ediCctop119ByType.getAddress1()))
-												.withE3164(ediCctop119ByType.getCity())
-												.withE3251(ediCctop119ByType.getPostal())
-												.withE3207(ediCctop119ByType.getCountryCode()))
-										.withSegGrp3(new INVOIC.SegGrp2.SegGrp3()
-												.withRFF(new RFFReference().
-														withC506(new C506Reference().
-																withE1153(E1153ReferenceCodeQualifier.VA).
-																withE1154(ediCctop119ByType.getVATaxID()))))).
-								withSegGrp2(new INVOIC.SegGrp2().
-										withNAD(new NADNameAndAddress().
-												withE3035(E3035PartyFunctionCodeQualifier.IV).
-												withC082(new C082PartyIdentificationDetails().
-														withE3039(ediCctop11IVType.getGLN()).
-														withE3055("9"))
-												.withC080(new C080PartyName().withE3036(ediCctop11IVType.getName()))
-												.withC059(new C059Street().withE3042(ediCctop11IVType.getAddress2() != null
-														? ediCctop11IVType.getAddress1().concat(ediCctop11IVType.getAddress2())
-														: ediCctop11IVType.getAddress1()))
-												.withE3164(ediCctop11IVType.getCity())
-												.withE3251(ediCctop11IVType.getPostal())
-												.withE3207(ediCctop11IVType.getCountryCode()))
-										.withSegGrp3(new INVOIC.SegGrp2.SegGrp3()
-												.withRFF(new RFFReference().
-														withC506(new C506Reference().
-																withE1153(E1153ReferenceCodeQualifier.VA).
-																withE1154(ediCctop11IVType.getVATaxID()))))).
-								withSegGrp2(new INVOIC.SegGrp2().
-										withNAD(new NADNameAndAddress().
-												withE3035(E3035PartyFunctionCodeQualifier.DP).
-												withC082(new C082PartyIdentificationDetails().
-														withE3039(ediCctop11DPType.getGLN()).
-														withE3055("9"))
-												.withC080(new C080PartyName().withE3036(ediCctop11DPType.getName()))
-												.withC059(new C059Street().withE3042(ediCctop11DPType.getAddress2() != null
-														? ediCctop11DPType.getAddress1().concat(ediCctop11DPType.getAddress2())
-														: ediCctop11DPType.getAddress1()))
-												.withE3164(ediCctop11DPType.getCity())
-												.withE3251(ediCctop11DPType.getPostal())
-												.withE3207(ediCctop11DPType.getCountryCode()))
-										.withSegGrp3(new INVOIC.SegGrp2.SegGrp3()
-												.withRFF(new RFFReference().
-														withC506(new C506Reference().
-																withE1153(E1153ReferenceCodeQualifier.VA).
-																withE1154(ediCctop11DPType.getVATaxID()))))).
-								withSegGrp2(new INVOIC.SegGrp2().
-										withNAD(new NADNameAndAddress().
-												withE3035(E3035PartyFunctionCodeQualifier.SU).
-												withC082(new C082PartyIdentificationDetails().
-														withE3039(ediCctop11SUType.getGLN()).
-														withE3055("9"))
-												.withC080(new C080PartyName().withE3036(ediCctop11SUType.getName()))
-												.withC059(new C059Street().withE3042(ediCctop11SUType.getAddress2() != null
-														? ediCctop11SUType.getAddress1().concat(ediCctop11SUType.getAddress2())
-														: ediCctop11SUType.getAddress1()))
-												.withE3164(ediCctop11SUType.getCity())
-												.withE3251(ediCctop11SUType.getPostal())
-												.withE3207(ediCctop11SUType.getCountryCode())).
-										withSegGrp5(new INVOIC.SegGrp2.SegGrp5().
-												withCTA(new CTAContactInformation().
-														withE3139(E3139ContactFunctionCode.IC).
-														withC056(new C056DepartmentOrEmployeeDetails().withE3412(ediCctop11SUType.getContact()))).
-												withCOM(new COMCommunicationContact().
-														withC076(new C076CommunicationContact().
-																withE3148("intercheese-billing@metasfresh.com").    // extract email from ADUser?
-																		withE3155(E3155CommunicationAddressCodeQualifier.EM))).
-												withCOM(new COMCommunicationContact().
-														withC076(new C076CommunicationContact().
-																withE3148(ediCctop11SUType.getPhone()).
-																withE3155(E3155CommunicationAddressCodeQualifier.TE))))
-										.withSegGrp3(new INVOIC.SegGrp2.SegGrp3()
-												.withRFF(new RFFReference().
-														withC506(new C506Reference().
-																withE1153(E1153ReferenceCodeQualifier.VA).
-																withE1154(ediCctop11SUType.getVATaxID()))))).
-								withSegGrp2(new INVOIC.SegGrp2().
-										withNAD(new NADNameAndAddress().
-												withE3035(E3035PartyFunctionCodeQualifier.II).    // invoice issuer
-														withC082(new C082PartyIdentificationDetails().
-														withE3039(ediCctop11SUType.getGLN()).
-														withE3055("9"))
-												.withC080(new C080PartyName().withE3036(ediCctop11SUType.getName()))
-												.withC059(new C059Street().withE3042(ediCctop11SUType.getAddress2() != null
-														? ediCctop11SUType.getAddress1().concat(ediCctop11SUType.getAddress2())
-														: ediCctop11SUType.getAddress1()))
-												.withE3164(ediCctop11SUType.getCity())
-												.withE3251(ediCctop11SUType.getPostal())
-												.withE3207(ediCctop11SUType.getCountryCode())).
-										withSegGrp5(new INVOIC.SegGrp2.SegGrp5().
-												withCTA(new CTAContactInformation().
-														withE3139(E3139ContactFunctionCode.IC).
-														withC056(new C056DepartmentOrEmployeeDetails().withE3412(ediCctop11SUType.getContact()))).
-												withCOM(new COMCommunicationContact().
-														withC076(new C076CommunicationContact().
-																withE3148("intercheese-billing@metasfresh.com").    // extract email from ADUser?
-																		withE3155(E3155CommunicationAddressCodeQualifier.EM))).
-												withCOM(new COMCommunicationContact().
-														withC076(new C076CommunicationContact().
-																withE3148(ediCctop11SUType.getPhone()).
-																withE3155(E3155CommunicationAddressCodeQualifier.TE))))
-										.withSegGrp3(new INVOIC.SegGrp2.SegGrp3()
-												.withRFF(new RFFReference().
-														withC506(new C506Reference().
-																withE1153(E1153ReferenceCodeQualifier.VA).
-																withE1154(ediCctop11SUType.getVATaxID()))))).
-								withSegGrp6(new INVOIC.SegGrp6().
-										withTAX(new TAXDutyTaxFeeDetails().
-												withE5283("7").    // TAX TYPE CODE: 7 means Value-Added Tax (VAT)
-														withC241(new C241DutyTaxFeeType().withE5153(E5153DutyOrTaxOrFeeTypeNameCode.VAT)).
-												withC243(new C243DutyTaxFeeDetail().
-														withE5278(String.valueOf(ediCctopInvoic500VType.getRate()))).
-														withE5305(E5305DutyOrTaxOrFeeCategoryCode.S))).
-								withSegGrp7(new INVOIC.SegGrp7().
-										withCUX(new CUXCurrencies().
-												withC504(new C504CurrencyDetails().
-														withE6347("2").
-														withE6345(xmlCctopInvoice.getISOCode()).
-														withE6343("4")))).    // ISO 4217 currency qualifier - indicates the number of decimal places used
-										withSegGrp8(new INVOIC.SegGrp8().
-										withPAT(new PATPaymentTermsBasis().
-												/* Payment method code - 3 typically refers to direct debit */
-														withE4279("3")).
-										withDTM(new DTMDateTimePeriod().
-												withC507(new C507DateTimePeriod().
-														/* Date/Time qualifier - "Terms net due date" (The date by which the payment must be made) */
-																withE2005("13").
-														withE2380(dateTimeDelivered).
-														/* Date or time or period format code = CCYYMMDDHHMMSS */
-																withE2379("204")))).
-								withSegGrp26(new INVOIC.SegGrp26().
-										withLIN(new LINLineItem().
-												withE1082(String.valueOf(ediCctopInvoic500VType.getLine()))).
-										withPIA(new PIAAdditionalProductId().
-												withE4347("5").
-												withC212(new C212ItemNumberIdentification().
-														withE7140(ediCctopInvoic500VType.getCustomerProductNo()).
-														withE7143(E7143ItemTypeIdentificationCode.IN))).
-										withIMD(new IMDItemDescription().
-												withE7077(E7077DescriptionFormatCode.F).
-												withC273(new C273ItemDescription().
-														withE7009("CU").
-														withE3055("9").
-														withE7008(ediCctopInvoic500VType.getName2() != null
-																? ediCctopInvoic500VType.getName().concat(ediCctopInvoic500VType.getName2())
-																: ediCctopInvoic500VType.getName()).
-														withE3453("DE"))).
-										withQTY(new QTYQuantity().
-												withC186(new C186QuantityDetails().
-														withE6063("47") /* ORDERED QTY */.
-														withE6060(String.valueOf(ediCctopInvoic500VType.getQtyInvoiced())).
-														withE6411(ediCctopInvoic500VType.getEanComUOM()))).
-										withSegGrp27(new INVOIC.SegGrp26.SegGrp27().withMOA(new MOAMonetaryAmount().
-												withC516(new C516MonetaryAmount().
-														withE5025("203").
-														withE5004(xmlCctopInvoice.getTotalLines())))).
-										withSegGrp29(new INVOIC.SegGrp26.SegGrp29().
-												withPRI(new PRIPriceDetails().
-														withC509(new C509PriceInformation().
-																withE5125(E5125PriceCodeQualifier.AAA).
-																withE5118(ediCctopInvoic500VType.getPriceActual()).
-																withE5387(E5387PriceSpecificationCode.NTP).
-																withE5284(BigDecimal.ONE).
-																withE6411(ediCctopInvoic500VType.getEanComPriceUOM())))).
-										withSegGrp30(new INVOIC.SegGrp26.SegGrp30().withRFF(new RFFReference().
-												withC506(new C506Reference().
-														withE1153(E1153ReferenceCodeQualifier.ON).
-														withE1154(xmlCctopInvoice.getPOReference()).
-														withE1156(String.valueOf(ediCctopInvoic500VType.getExternalSeqNo()))))).
-										withSegGrp34(new INVOIC.SegGrp26.SegGrp34().
-												withTAX(new TAXDutyTaxFeeDetails().
-														withE5283("7").    // TAX TYPE CODE: 7 means Value-Added Tax (VAT)
-																withC241(new C241DutyTaxFeeType().withE5153(E5153DutyOrTaxOrFeeTypeNameCode.VAT)).
-														withC243(new C243DutyTaxFeeDetail().
-																withE5278(String.valueOf(ediCctopInvoic500VType.getRate())))).
-												withMOA(new MOAMonetaryAmount().
-														withC516(new C516MonetaryAmount().
-																withE5025("124").    // Tax Amount - Total Tax amount
-																		withE5004(xmlCctopInvoice.getTotalVat()))).
-												withMOA(new MOAMonetaryAmount().
-														withC516(new C516MonetaryAmount().
-																withE5025("125").    // Taxable Amount
-																		withE5004(xmlCctopInvoice.getTotalTaxBaseAmt()))))).
-								withSegGrp50(new INVOIC.SegGrp50().
-										withMOA(new MOAMonetaryAmount().
-												withC516(new C516MonetaryAmount().
-														withE5025("77").    // Invoice Amount - Total amount to be paid
-																withE5004(xmlCctopInvoice.getGrandTotal())))).
-								withSegGrp50(new INVOIC.SegGrp50().
-										withMOA(new MOAMonetaryAmount().
-												withC516(new C516MonetaryAmount().
-														withE5025("176").    // Invoice Tax Amount
-																withE5004(xmlCctopInvoice.getTotalVat())))).
-								withSegGrp52(new INVOIC.SegGrp52().
-										withTAX(new TAXDutyTaxFeeDetails().
-												withE5283("7").
-												withC241(new C241DutyTaxFeeType().
-														withE5153(E5153DutyOrTaxOrFeeTypeNameCode.VAT)).
-												withC243(new C243DutyTaxFeeDetail().
-														withE5278(String.valueOf(ediCctopInvoic500VType.getRate())))).
-										withMOA(new MOAMonetaryAmount().
-												withC516(new C516MonetaryAmount().
-														withE5025("124").
-														withE5004(ediCctopInvoic500VType.getTaxAmtInfo()))).
-										withMOA(new MOAMonetaryAmount().
-												withC516(new C516MonetaryAmount().
-														withE5025("125").
-														withE5004(xmlCctopInvoice.getTotalTaxBaseAmt())))).
+								withDTM(getDTMDateTimePeriod("137",    /*Document/message date/time*/
+										dateTimeInvoiced)).
+								withDTM(getDTMDateTimePeriod("454", /*Accounting value date*/
+										dateTimeAcct)).
+								withDTM(getDTMDateTimePeriod("35", /*Delivery date/time, actual*/
+										dateTimeDelivered)).
+								withSegGrp1(getSegGrp1(xmlCctopInvoice)).
+								withSegGrp2(getSegGrp2(E3035PartyFunctionCodeQualifier.BY, locationType2Address.get(E3035PartyFunctionCodeQualifier.BY.value()))).
+								withSegGrp2(getSegGrp2(E3035PartyFunctionCodeQualifier.IV, locationType2Address.get(E3035PartyFunctionCodeQualifier.IV.value()))).
+								withSegGrp2(getSegGrp2(E3035PartyFunctionCodeQualifier.DP, locationType2Address.get(E3035PartyFunctionCodeQualifier.DP.value()))).
+								withSegGrp2(getSegGrp2withSegGrp5(E3035PartyFunctionCodeQualifier.SU, locationType2Address.get(E3035PartyFunctionCodeQualifier.SU.value()))).
+								withSegGrp2(getSegGrp2withSegGrp5(E3035PartyFunctionCodeQualifier.II, locationType2Address.get(E3035PartyFunctionCodeQualifier.SU.value()))).
+								withSegGrp6(getSegGrp6(xmlCctopInvoice)).
+								withSegGrp7(getSegGrp7(xmlCctopInvoice)).
+								withSegGrp8(getSegGrp8(dateTimeDelivered)).
+								withSegGrp26(getSegGrp26(xmlCctopInvoice)).
+								withSegGrp50(getSegGrp50("77", // Invoice Amount - Total amount to be paid
+										xmlCctopInvoice.getGrandTotal())).
+								withSegGrp50(getSegGrp50("176", // Invoice Tax Amount
+										xmlCctopInvoice.getTotalVat())).
+								withSegGrp52(getSegGrp52(xmlCctopInvoice)).
 								withUNS(new UNSSectionControl().
 										withE0081(E0081SectionIdentification.S)).
 								withCNT(new CNTControlTotal().withC270(new C270Control().
@@ -427,5 +167,278 @@ public class EDICctopInvoicVtoD01BConverter
 				withUNZ(new UNZInterchangeTrailer().
 						withE0036(new BigDecimal(1)).
 						withE0020(messageSequenceNo));
+	}
+
+	@NonNull
+	private ImmutableList<INVOIC.SegGrp52> getSegGrp52(@NonNull final EDICctopInvoicVType xmlCctopInvoice)
+	{
+		return xmlCctopInvoice
+				.getEDICctopInvoic500V()
+				.stream()
+				.map(ediCctopInvoic500VType -> new INVOIC.SegGrp52().
+						withTAX(new TAXDutyTaxFeeDetails().
+								withE5283("7").
+								withC241(new C241DutyTaxFeeType().
+										withE5153(E5153DutyOrTaxOrFeeTypeNameCode.VAT)).
+								withC243(new C243DutyTaxFeeDetail().
+										withE5278(String.valueOf(ediCctopInvoic500VType.getRate())))).
+						withMOA(new MOAMonetaryAmount().
+								withC516(new C516MonetaryAmount().
+										withE5025("124").
+										withE5004(ediCctopInvoic500VType.getTaxAmtInfo()))).
+						withMOA(new MOAMonetaryAmount().
+								withC516(new C516MonetaryAmount().
+										withE5025("125").
+										withE5004(xmlCctopInvoice.getTotalTaxBaseAmt()))))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private INVOIC.SegGrp50 getSegGrp50(@NonNull final String e5025, @Nullable final BigDecimal e5004)
+	{
+		return new INVOIC.SegGrp50().
+				withMOA(new MOAMonetaryAmount().
+						withC516(new C516MonetaryAmount().
+								withE5025(e5025).
+								withE5004(e5004)));
+	}
+
+	@NonNull
+	private ImmutableList<INVOIC.SegGrp26> getSegGrp26(@NonNull final EDICctopInvoicVType xmlCctopInvoice)
+	{
+		return xmlCctopInvoice
+				.getEDICctopInvoic500V()
+				.stream()
+				.map(ediCctopInvoic500VType -> new INVOIC.SegGrp26().
+						withLIN(new LINLineItem().
+								withE1082(String.valueOf(ediCctopInvoic500VType.getLine()))).
+						withPIA(new PIAAdditionalProductId().
+								withE4347("5").
+								withC212(new C212ItemNumberIdentification().
+										withE7140(ediCctopInvoic500VType.getCustomerProductNo()).
+										withE7143(E7143ItemTypeIdentificationCode.IN))).
+						withIMD(new IMDItemDescription().
+								withE7077(E7077DescriptionFormatCode.F).
+								withC273(new C273ItemDescription().
+										withE7009("CU").
+										withE3055("9").
+										withE7008(ediCctopInvoic500VType.getName2() != null
+												? ediCctopInvoic500VType.getName().concat(ediCctopInvoic500VType.getName2())
+												: ediCctopInvoic500VType.getName()).
+										withE3453("DE"))).
+						withQTY(new QTYQuantity().
+								withC186(new C186QuantityDetails().
+										withE6063("47") /* ORDERED QTY */.
+										withE6060(String.valueOf(ediCctopInvoic500VType.getQtyInvoiced())).
+										withE6411(ediCctopInvoic500VType.getEanComUOM()))).
+						withSegGrp27(new INVOIC.SegGrp26.SegGrp27().withMOA(new MOAMonetaryAmount().
+								withC516(new C516MonetaryAmount().
+										withE5025("203").
+										withE5004(xmlCctopInvoice.getTotalLines())))).
+						withSegGrp29(new INVOIC.SegGrp26.SegGrp29().
+								withPRI(new PRIPriceDetails().
+										withC509(new C509PriceInformation().
+												withE5125(E5125PriceCodeQualifier.AAA).
+												withE5118(ediCctopInvoic500VType.getPriceActual()).
+												withE5387(E5387PriceSpecificationCode.NTP).
+												withE5284(BigDecimal.ONE).
+												withE6411(ediCctopInvoic500VType.getEanComPriceUOM())))).
+						withSegGrp30(new INVOIC.SegGrp26.SegGrp30().withRFF(new RFFReference().
+								withC506(new C506Reference().
+										withE1153(E1153ReferenceCodeQualifier.ON).
+										withE1154(xmlCctopInvoice.getPOReference()).
+										withE1156(String.valueOf(ediCctopInvoic500VType.getExternalSeqNo()))))).
+						withSegGrp34(new INVOIC.SegGrp26.SegGrp34().
+								withTAX(new TAXDutyTaxFeeDetails().
+										withE5283("7").    // TAX TYPE CODE: 7 means Value-Added Tax (VAT)
+												withC241(new C241DutyTaxFeeType().withE5153(E5153DutyOrTaxOrFeeTypeNameCode.VAT)).
+										withC243(new C243DutyTaxFeeDetail().
+												withE5278(String.valueOf(ediCctopInvoic500VType.getRate())))).
+								withMOA(new MOAMonetaryAmount().
+										withC516(new C516MonetaryAmount().
+												withE5025("124").    // Tax Amount - Total Tax amount
+														withE5004(xmlCctopInvoice.getTotalVat()))).
+								withMOA(new MOAMonetaryAmount().
+										withC516(new C516MonetaryAmount().
+												withE5025("125").    // Taxable Amount
+														withE5004(xmlCctopInvoice.getTotalTaxBaseAmt())))))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private ImmutableList<INVOIC.SegGrp6> getSegGrp6(@NonNull final EDICctopInvoicVType xmlCctopInvoice)
+	{
+		return xmlCctopInvoice
+				.getEDICctop901991V()
+				.stream()
+				.map(cctop901991V -> new INVOIC.SegGrp6().
+						withTAX(new TAXDutyTaxFeeDetails().
+								withE5283("7").    // TAX TYPE CODE: 7 means Value-Added Tax (VAT)
+										withC241(new C241DutyTaxFeeType().withE5153(E5153DutyOrTaxOrFeeTypeNameCode.VAT)).
+								withC243(new C243DutyTaxFeeDetail().
+										withE5278(String.valueOf(cctop901991V.getRate()))).
+								withE5305(E5305DutyOrTaxOrFeeCategoryCode.S)))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private INVOIC.SegGrp8 getSegGrp8(@NonNull final String e2380)
+	{
+		return new INVOIC.SegGrp8().
+				withPAT(new PATPaymentTermsBasis().
+						/* Payment method code - 3 typically refers to direct debit */
+								withE4279("3")).
+				withDTM(new DTMDateTimePeriod().
+						withC507(new C507DateTimePeriod().
+								/* Date/Time qualifier - "Terms net due date" (The date by which the payment must be made) */
+										withE2005("13").
+								withE2380(e2380).
+								/* Date or time or period format code = CCYYMMDDHHMMSS */
+										withE2379("204")));
+	}
+
+	@NonNull
+	private INVOIC.SegGrp7 getSegGrp7(@NonNull final EDICctopInvoicVType xmlCctopInvoice)
+	{
+		return new INVOIC.SegGrp7().
+				withCUX(new CUXCurrencies().
+						withC504(new C504CurrencyDetails().
+								withE6347("2").
+								withE6345(xmlCctopInvoice.getISOCode()).
+								withE6343("4")));    // ISO 4217 currency qualifier - indicates the number of decimal places used
+	}
+
+	@NonNull
+	private INVOIC.SegGrp2 getSegGrp2withSegGrp5(
+			@NonNull final E3035PartyFunctionCodeQualifier e3035,
+			@NonNull final EDICctop119VType ediCctop11SUType)
+	{
+		return getSegGrp2(e3035, ediCctop11SUType).
+				withSegGrp5(new INVOIC.SegGrp2.SegGrp5().
+						withCTA(new CTAContactInformation().
+								withE3139(E3139ContactFunctionCode.IC).
+								withC056(new C056DepartmentOrEmployeeDetails().withE3412(ediCctop11SUType.getContact()))).
+						withCOM(new COMCommunicationContact().
+								withC076(new C076CommunicationContact().
+										withE3148("intercheese-billing@metasfresh.com").    // extract email from ADUser?
+												withE3155(E3155CommunicationAddressCodeQualifier.EM))).
+						withCOM(new COMCommunicationContact().
+								withC076(new C076CommunicationContact().
+										withE3148(ediCctop11SUType.getPhone()).
+										withE3155(E3155CommunicationAddressCodeQualifier.TE))));
+	}
+
+	@NonNull
+	private INVOIC.SegGrp2 getSegGrp2(
+			@NonNull final E3035PartyFunctionCodeQualifier e3035,
+			@NonNull final EDICctop119VType ediCctop119ByType)
+	{
+		return new INVOIC.SegGrp2().
+				withNAD(new NADNameAndAddress().
+						withE3035(e3035).
+						withC082(new C082PartyIdentificationDetails().
+								withE3039(ediCctop119ByType.getGLN()).
+								withE3055("9"))
+						.withC080(new C080PartyName().withE3036(ediCctop119ByType.getName()))
+						.withC059(new C059Street().withE3042(ediCctop119ByType.getAddress2() != null
+								? ediCctop119ByType.getAddress1().concat(ediCctop119ByType.getAddress2())
+								: ediCctop119ByType.getAddress1()))
+						.withE3164(ediCctop119ByType.getCity())
+						.withE3251(ediCctop119ByType.getPostal())
+						.withE3207(ediCctop119ByType.getCountryCode()))
+				.withSegGrp3(new INVOIC.SegGrp2.SegGrp3()
+						.withRFF(new RFFReference().
+								withC506(new C506Reference().
+										withE1153(E1153ReferenceCodeQualifier.VA).
+										withE1154(ediCctop119ByType.getVATaxID()))));
+	}
+
+	@NonNull
+	private INVOIC.SegGrp1 getSegGrp1(@NonNull final EDICctopInvoicVType xmlCctopInvoice)
+	{
+		final String dateTimeOrdered = Util.toFormattedStringDate(Util.toDate(xmlCctopInvoice.getDateOrdered()), "yyyyMMddHHmmss");
+
+		return new INVOIC.SegGrp1().
+				withRFF(new RFFReference() /* https://service.unece.org/trade/untdid/d01b/trsd/trsdrff.htm */.
+						withC506(new C506Reference().
+								withE1153(E1153ReferenceCodeQualifier.ON /*Order Number*/).
+								withE1154(xmlCctopInvoice.getPOReference()))).
+				withDTM(new DTMDateTimePeriod() /* https://service.unece.org/trade/untdid/d01b/trsd/trsddtm.htm */.
+						withC507(new C507DateTimePeriod().
+								withE2005("171") /*Reference date/time*/.
+								withE2380(dateTimeOrdered).
+								withE2379("204") /*Date or time or period format code = CCYYMMDDHHMMSS */));
+	}
+
+	@NonNull
+	private DTMDateTimePeriod getDTMDateTimePeriod(
+			@NonNull final String e2005,
+			@NonNull final String e2380)
+	{
+		return new DTMDateTimePeriod().withC507(new C507DateTimePeriod().    /* https://service.unece.org/trade/untdid/d01b/trsd/trsddtm.htm */
+				withE2005(e2005) /*Document/message date/time*/.
+				withE2380(e2380).
+				withE2379("204")); /*Date or time or period format code = CCYYMMDDHHMMSS */
+	}
+
+	@NonNull
+	private UNA getUNA()
+	{
+		return new UNA().
+				withCompositeSeparator(":").
+				withFieldSeparator("+").
+				withDecimalSeparator(".").
+				withEscapeCharacter("?").
+				withRepeatSeparator("*").
+				withSegmentTerminator("'");
+	}
+
+	@NonNull
+	private UNBInterchangeHeader getUNBInterchangeHeader(
+			@NonNull final EDICctopInvoicVType xmlCctopInvoice,
+			@NonNull final String messageSequenceNo,
+			@NonNull final EDICctop119VType ediCctop119ByType,
+			@NonNull final EDICctop119VType ediCctop11SUType)
+	{
+		final Date ediSendDate = SystemTime.asDate();
+		final String dateSend = Util.toFormattedStringDate(ediSendDate, "yyyyMMdd");
+		final String timeSend = Util.toFormattedStringDate(ediSendDate, "HHmm");
+		final BigDecimal testIndicator = null; // new BigDecimal("1");
+		final String interchangeReceipientGLN = "7611937000723"; // inclear why it's not xmlCctopInvoice.getReceivergln()
+
+		// EANCOM = EAN + Communication 
+		final String communicationsAgreement = "EANCOM" + ediCctop119ByType.getGLN() + ediCctop11SUType.getGLN() + "503";
+		final String applicationReference = "INVOIC01BRX";
+
+		return new UNBInterchangeHeader().
+				withS001(new S001SyntaxIdentifier().
+						withE0001(E0001SyntaxIdentifier.UNOC).withE0002("4")).
+				withS002(new S002InterchangeSender().
+						withE0004(xmlCctopInvoice.getSendergln()).
+						withE0007("14")).
+				withS003(new S003InterchangeRecipient().
+						withE0010(interchangeReceipientGLN).
+						withE0007("14")).
+				withS004(new S004DateAndTimeOfPreparation().
+						withE0017(new BigDecimal(dateSend)).
+						withE0019(new BigDecimal(timeSend))).
+				withE0020(messageSequenceNo).
+				withS005(new S005RecipientReferencePasswordDetails().withE0022("")).
+				withE0026(applicationReference).
+				withE0032(communicationsAgreement).
+				withE0035(testIndicator);
+	}
+
+	@NonNull
+	private S009MessageIdentifier getS009MessageIdentifier()
+	{
+		final String associationAssignedCode = "EAN010";
+
+		return new S009MessageIdentifier().
+				withE0065(E0065MessageType.INVOIC).
+				withE0052("D").
+				withE0054("01B").
+				withE0051(E0051ControllingAgencyCoded.UN).
+				withE0057(associationAssignedCode);
 	}
 }
