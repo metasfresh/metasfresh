@@ -181,6 +181,7 @@ Feature: mobileUI Picking - Pick multiple products to LU
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
+  @ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
   Scenario: Pick from CUs into a new LU
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |

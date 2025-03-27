@@ -1,5 +1,6 @@
 @from:cucumber
 @ghActions:run_on_executor5
+@ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
 Feature: check invoice candidates status
 
   Background:

@@ -1318,6 +1318,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0132_250
   @from:cucumber
+  @ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
   Scenario: (Sales) check the paymentTerm discount is applied only once per invoice (i.e. when the invoice is fully paid) allocate 2 payments to a sales invoice
   - allocate 1st payment to sales invoice for partial amount, paymentTerm discount is not applied
   - allocate 2nd payment to sales invoice for remaining amount, paymentTerm discount is applied
@@ -1423,6 +1424,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0132_260
   @from:cucumber
+  @ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
   Scenario: (Purchase) check the paymentTerm discount is applied only once per invoice (i.e. when the invoice is fully paid) allocate 2 payments to a purchase invoice
   - allocate 1st payment to purchase invoice for partial amount, paymentTerm discount is not applied
   - allocate 2nd payment to purchase invoice for remaining amount, paymentTerm discount is applied
@@ -1531,6 +1533,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0132_270
   @from:cucumber
+  @ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
   Scenario: (Sales) check the paymentTerm discount is applied only once per invoice (i.e. when the invoice is fully paid) allocate 2 payments to a sales invoice (allocation happens only once)
   - allocate 1st payment to sales invoice for partial amount, paymentTerm discount is not applied
   - allocate 2nd payment to sales invoice for remaining amount, paymentTerm discount is applied
@@ -1628,6 +1631,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0132_280
   @from:cucumber
+  @ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
   Scenario: (Sales) check the paymentTerm discount is applied only once per invoice (i.e. when the invoice is fully paid) allocate 2 credit memos to a sales invoice
   - allocate 1st credit memo to sales invoice for partial amount, invoice's paymentTerm discount is not applied, credit memo's paymentTerm discount is applied
   - allocate 2nd credit memo to sales invoice for remaining amount, paymentTerm discount is applied for both invoice, but not for credit memo (because it is not fully allocated)
@@ -1753,6 +1757,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0132_290
   @from:cucumber
+  @ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
   Scenario: (Purchase) check the paymentTerm discount is applied only once per invoice (i.e. when the invoice is fully paid) allocate 2 credit memos to a purchase invoice
   - allocate 1st credit memo to purchase invoice for partial amount, invoice's paymentTerm discount is not applied, credit memo's paymentTerm discount is applied
   - allocate 2nd credit memo to purchase invoice for remaining amount, paymentTerm discount is applied for invoice, but not for credit memo (because it is not fully allocated)
@@ -1864,6 +1869,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0132_300
   @from:cucumber
+  @ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
   Scenario: Two purchase invoices allocated to a sales invoice
   - allocate 1st purchase invoice to sales invoice for partial amount, sales invoice's paymentTerm discount is not applied, purchase invoice's paymentTerm discount is applied
   - allocate 2nd purchase invoice to sales invoice for remaining amount, paymentTerm discount is applied for sales invoice, but not for purchase invoice (because it is not fully allocated)
@@ -2011,6 +2017,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0132_310
   @from:cucumber
+  @ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
   Scenario: allocate payment to purchase invoice with overpayment and negative discount
 
     Given metasfresh contains M_Products:

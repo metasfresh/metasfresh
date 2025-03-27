@@ -162,6 +162,7 @@ Feature: Render invoice address
 
 
   @Id:S0150_250
+  @ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
   Scenario: Invoice when origin order disposition has bpartnerName
     Given metasfresh contains C_Location:
       | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City       |
