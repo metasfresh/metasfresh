@@ -40,6 +40,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
@@ -1108,6 +1109,17 @@ public class FlatrateDAO implements IFlatrateDAO
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Type_Conditions, typeConditions.getCode())
 				.create()
 				.firstOnlyOptional();
+	}
+
+	@Override
+	@NonNull
+	public List<I_C_Flatrate_Term> getByOrderId(@NonNull final OrderId orderId)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Order_Term_ID, orderId)
+				.create()
+				.listImmutable();
 	}
 
 	@Override

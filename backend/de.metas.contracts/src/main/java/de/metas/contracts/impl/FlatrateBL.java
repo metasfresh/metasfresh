@@ -2651,6 +2651,13 @@ public class FlatrateBL implements IFlatrateBL
 		return flatrateDAO.getByOrderLineId(orderLineId, typeConditions);
 	}
 
+	@Override
+	@NonNull
+	public List<I_C_Flatrate_Term> getByOrderId(@NonNull final OrderId orderId)
+	{
+		return flatrateDAO.getByOrderId(orderId);
+	}
+
 	@Nullable
 	@Override
 	public ProductPrice extractPriceActualById(@NonNull final FlatrateTermId flatrateTermId)

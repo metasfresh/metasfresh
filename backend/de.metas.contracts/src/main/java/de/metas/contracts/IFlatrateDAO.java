@@ -38,6 +38,7 @@ import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.costing.ChargeId;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
@@ -159,6 +160,8 @@ public interface IFlatrateDAO extends ISingletonService
 	void save(@NonNull I_C_Flatrate_Term flatrateTerm);
 
 	I_C_Invoice_Candidate retrieveInvoiceCandidate(I_C_Flatrate_Term term);
+
+	@NonNull List<I_C_Flatrate_Term> getByOrderId(@NonNull OrderId orderId);
 
 	boolean hasOverlappingTerms(FlatrateTermOverlapCriteria flatrateTermOverlapCriteria);
 
