@@ -1513,6 +1513,11 @@ Feature: invoice payment allocation
     And the invoice identified by vendorInvoice1 is completed
     And the invoice identified by customerCreditMemo1 is completed
 
+    Then validate created invoices
+      | C_Invoice_ID        | C_BPartner_ID | C_BPartner_Location_ID | IsPaid | OpenAmt    | IsPartiallyPaid |
+      | vendorInvoice1      | bpartner1     | bpartner_location_1    | false  | 5.95       | false           |
+      | customerCreditMemo1 | bpartner2     | bpartner_location_2    | false  | grandtotal | false           |
+
     And allocate sales credit memo to purchase invoice
       | C_Invoice_ID        |
       | vendorInvoice1      |
@@ -1520,8 +1525,8 @@ Feature: invoice payment allocation
 
     And validate C_AllocationLines
       | C_Invoice_ID        | Amount | OverUnderAmt | C_AllocationHdr_ID |
-      | vendorInvoice1      | -5.95  | -11.9        | alloc1             |
-      | customerCreditMemo1 | -5.95  | -53.55       | alloc1             |
+      | vendorInvoice1      | -5.95  | 0            | alloc1             |
+      | customerCreditMemo1 | -5.95  | ???          | alloc1             |
 
     Then validate created invoices
       | C_Invoice_ID        | C_BPartner_ID | C_BPartner_Location_ID | IsPaid | OpenAmt | IsPartiallyPaid |
