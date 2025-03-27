@@ -169,7 +169,6 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	{
 		final Properties ctx = Env.getCtx();
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, CheckProcessedAsynBatchWorkpackageProcessor.class);
-		queue.setAsyncBatchIdForNewWorkpackages(asyncBatchId);
 
 		final IWorkpackagePrioStrategy prio = NullWorkpackagePrio.INSTANCE; // don't specify a particular prio. this is OK because we assume that there is a dedicated queue/thread for CheckProcessedAsynBatchWorkpackageProcessor
 
@@ -273,7 +272,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	@Nullable
 	private Timestamp computeNowTimestamp()
 	{
-		if(useMetasfreshSystemTime)
+		if (useMetasfreshSystemTime)
 		{
 			return SystemTime.asTimestamp();
 		}
@@ -432,12 +431,11 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	@Override
 	public AsyncBatchId newAsyncBatch(@NonNull final String asyncBatchType)
 	{
-		final I_C_Async_Batch asyncBatch = trxManager.callInNewTrx(() -> newAsyncBatch()
+		return trxManager.callInNewTrx(() -> newAsyncBatch()
 				.setContext(getCtx())
 				.setC_Async_Batch_Type(asyncBatchType)
 				.setName(asyncBatchType)
 				.build());
-		return AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
 	}
 
 	@Override
@@ -450,7 +448,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	public boolean isAsyncBatchTypeInternalName(@NonNull final I_C_Async_Batch asyncBatch, @NonNull final String expectedInternalName)
 	{
 		final String internalName = getAsyncBatchTypeInternalName(asyncBatch).orElse(null);
-		return internalName != null && internalName.equals(expectedInternalName);
+		return expectedInternalName.equals(internalName);
 	}
 
 	@Override

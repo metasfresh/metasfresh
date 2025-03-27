@@ -122,6 +122,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	/**
+	 *
+	 *
 	 * @see C_Order_Handler#expandRequest(InvoiceCandidateGenerateRequest)
 	 */
 	@Override
