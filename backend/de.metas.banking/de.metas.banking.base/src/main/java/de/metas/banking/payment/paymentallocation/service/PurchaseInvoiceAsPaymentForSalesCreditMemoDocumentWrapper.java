@@ -2,7 +2,7 @@
  * #%L
  * de.metas.banking.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,16 +26,10 @@ import de.metas.money.Money;
 import de.metas.util.Check;
 import lombok.NonNull;
 
-/**
- * Wraps a given purchase invoice as an inbound payment document which we will try to allocate to some other sales invoice that we issued.
- * <p>
- * In other words, if we issued a sales invoice to one of our customers,
- * but the "customer" issued an purchase invoice to us, that purchase invoice can be used to compensate our customer invoice.
- */
-final class PurchaseInvoiceAsInboundPaymentDocumentWrapper extends AbstractPurchaseInvoiceAsPaymentDocumentWrapper
+public class PurchaseInvoiceAsPaymentForSalesCreditMemoDocumentWrapper extends AbstractPurchaseInvoiceAsPaymentDocumentWrapper
 {
 
-	private PurchaseInvoiceAsInboundPaymentDocumentWrapper(@NonNull final PayableDocument purchasePayableDoc)
+	private PurchaseInvoiceAsPaymentForSalesCreditMemoDocumentWrapper(@NonNull final PayableDocument purchasePayableDoc)
 	{
 		super(purchasePayableDoc);
 		Check.assume(purchasePayableDoc.getSoTrx().isPurchase(), "is purchase document: {}", purchasePayableDoc);
@@ -43,15 +37,17 @@ final class PurchaseInvoiceAsInboundPaymentDocumentWrapper extends AbstractPurch
 
 	}
 
-	public static PurchaseInvoiceAsInboundPaymentDocumentWrapper wrap(final PayableDocument creditMemoPayableDoc)
+	public static PurchaseInvoiceAsPaymentForSalesCreditMemoDocumentWrapper wrap(final PayableDocument creditMemoPayableDoc)
 	{
-		return new PurchaseInvoiceAsInboundPaymentDocumentWrapper(creditMemoPayableDoc);
+		return new PurchaseInvoiceAsPaymentForSalesCreditMemoDocumentWrapper(creditMemoPayableDoc);
 	}
 
 	@Override
 	public Money calculateProjectedOverUnderAmt(final Money amountToAllocate)
 	{
-		return purchaseInvoicePayableDoc.computeProjectedOverUnderAmt(AllocationAmounts.ofPayAmt(amountToAllocate.negate()));
+		return purchaseInvoicePayableDoc.computeProjectedOverUnderAmt(AllocationAmounts.ofPayAmt(amountToAllocate));
 	}
 
 }
+
+
