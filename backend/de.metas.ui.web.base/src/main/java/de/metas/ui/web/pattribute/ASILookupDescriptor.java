@@ -32,7 +32,8 @@ import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor.LookupSource;
-import de.metas.ui.web.window.descriptor.LookupDescriptor;
+import de.metas.ui.web.window.descriptor.sql.ISqlLookupDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlForFetchingLookupById;
 import de.metas.ui.web.window.model.lookup.IdsToFilter;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceContext;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFetcher;
@@ -40,15 +41,21 @@ import de.metas.ui.web.window.model.lookup.LookupValueFilterPredicates.LookupVal
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.expression.api.impl.ConstantStringExpression;
+import org.adempiere.ad.table.api.ColumnNameFQ;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.impl.TableIdsCache;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
+import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValuesProvider;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.util.CtxName;
 import org.compiere.util.CtxNames;
 import org.compiere.util.NamePair;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -57,7 +64,7 @@ import java.util.Set;
 
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 @ToString
-public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSourceFetcher
+public final class ASILookupDescriptor implements ISqlLookupDescriptor, LookupDataSourceFetcher
 {
 	public static ASILookupDescriptor of(@NonNull final I_M_Attribute attribute)
 	{
@@ -70,6 +77,8 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 	{
 		return new ASILookupDescriptor(attributeValuesProvider);
 	}
+
+	@NonNull private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
 	private static final Optional<String> LookupTableName = Optional.of(I_M_AttributeValue.Table_Name);
 	private static final String CONTEXT_LookupTableName = I_M_AttributeValue.Table_Name;
@@ -173,9 +182,17 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 	public LookupValue retrieveLookupValueById(final @NonNull LookupDataSourceContext evalCtx)
 	{
 		final Object id = evalCtx.getSingleIdToFilterAsObject();
-		final TooltipType tooltipType = Services.get(IADTableDAO.class).getTooltipTypeByTableName(evalCtx.getTableName());
 		final NamePair valueNP = attributeValuesProvider.getAttributeValueOrNull(evalCtx, id);
-		return LookupValue.fromNamePair(valueNP, evalCtx.getAD_Language(), LOOKUPVALUE_NULL, tooltipType);
+		return LookupValue.fromNamePair(valueNP, evalCtx.getAD_Language(), LOOKUPVALUE_NULL, getTooltipType(evalCtx));
+	}
+
+	@NonNull
+	private static TooltipType getTooltipType(final @NotNull LookupDataSourceContext evalCtx)
+	{
+		final String tableName = evalCtx.getTableName();
+		return tableName != null
+				? TableIdsCache.instance.getTooltipType(tableName)
+				: TooltipType.DEFAULT;
 	}
 
 	@Override
@@ -214,5 +231,29 @@ public final class ASILookupDescriptor implements LookupDescriptor, LookupDataSo
 	public Optional<WindowId> getZoomIntoWindowId()
 	{
 		return Optional.empty();
+	}
+
+	@Override
+	public SqlForFetchingLookupById getSqlForFetchingLookupByIdExpression()
+	{
+		if (attributeValuesProvider instanceof DefaultAttributeValuesProvider)
+		{
+			final DefaultAttributeValuesProvider defaultAttributeValuesProvider = (DefaultAttributeValuesProvider)attributeValuesProvider;
+			final AttributeId attributeId = defaultAttributeValuesProvider.getAttributeId();
+
+			return SqlForFetchingLookupById.builder()
+					.keyColumnNameFQ(ColumnNameFQ.ofTableAndColumnName(I_M_AttributeValue.Table_Name, I_M_AttributeValue.COLUMNNAME_Value))
+					.numericKey(false)
+					.displayColumn(ConstantStringExpression.of(I_M_AttributeValue.COLUMNNAME_Name))
+					.descriptionColumn(ConstantStringExpression.of(I_M_AttributeValue.COLUMNNAME_Description))
+					.activeColumn(ColumnNameFQ.ofTableAndColumnName(I_M_AttributeValue.Table_Name, I_M_AttributeValue.COLUMNNAME_IsActive))
+					.sqlFrom(ConstantStringExpression.of(I_M_AttributeValue.Table_Name))
+					.additionalWhereClause(I_M_AttributeValue.Table_Name + "." + I_M_AttributeValue.COLUMNNAME_M_Attribute_ID + "=" + attributeId.getRepoId())
+					.build();
+		}
+		else
+		{
+			return null;
+		}
 	}
 }

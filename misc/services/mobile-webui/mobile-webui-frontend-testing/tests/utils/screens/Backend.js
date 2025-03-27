@@ -58,7 +58,7 @@ export const Backend = {
 //
 //
 
-let _backendBaseUrl = null;
+let _backendBaseUrl = process.env.BACKEND_BASE_URL ? process.env.BACKEND_BASE_URL + '/api/v2' : null;
 
 export const getBackendBaseUrl = async () => {
     if (!_backendBaseUrl) {

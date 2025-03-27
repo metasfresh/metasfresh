@@ -3,20 +3,20 @@ package org.adempiere.ad.migration.validator.sql_migration_context_info.names;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.window.api.UIElementGroupId;
+import org.adempiere.ad.element.api.AdUIElementGroupId;
 
 @Value
 @Builder
 public class ADUIElementGroupNameFQ
 {
-	@NonNull UIElementGroupId uiElementGroupId;
+	@NonNull AdUIElementGroupId uiElementGroupId;
 	String name;
 
 	ADUIColumnNameFQ uiColumnName;
 
 	boolean missing;
 
-	public static ADUIElementGroupNameFQ missing(@NonNull final UIElementGroupId uiElementGroupId)
+	public static ADUIElementGroupNameFQ missing(@NonNull final AdUIElementGroupId uiElementGroupId)
 	{
 		return builder().uiElementGroupId(uiElementGroupId).missing(true).build();
 	}
