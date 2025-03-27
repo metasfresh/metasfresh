@@ -29,6 +29,8 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 
 	void put(@NonNull final StepDefDataIdentifier identifier, @NonNull final RecordType newRecord);
 
+	void putOrReplace(@NonNull final StepDefDataIdentifier identifier, @NonNull final RecordType record);
+
 	//
 	// Helper methods
 	default ID getId(@NonNull final StepDefDataIdentifier identifier)
@@ -87,7 +89,6 @@ public interface StepDefDataGetIdAware<ID extends RepoIdAware, RecordType>
 			throw new RuntimeException("Cannot replace " + identifier + " because its current id is " + currentId + " and the new id is " + newId);
 		}
 
-		put(identifier, newRecord);
+		putOrReplace(identifier, newRecord);
 	}
-
 }

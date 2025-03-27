@@ -40,6 +40,9 @@ import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -55,7 +58,6 @@ import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Project;
-import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
@@ -87,6 +89,7 @@ public class C_InvoiceLine_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_InvoiceLine_StepDefData invoiceLineTable;
@@ -264,11 +267,10 @@ public class C_InvoiceLine_StepDef
 		}
 
 		final String taxIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
-
 		if (taxIdentifier != null)
 		{
-			final I_C_Tax taxRecord = taxTable.get(taxIdentifier);
-			softly.assertThat(invoiceLine.getC_Tax_ID()).isEqualTo(taxRecord.getC_Tax_ID());
+			final TaxId taxId = taxTable.getId(taxIdentifier);
+			softly.assertThat(invoiceLine.getC_Tax_ID()).isEqualTo(taxId.getRepoId());
 		}
 
 		final String taxCategoryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_C_TaxCategory_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -381,6 +383,13 @@ public class C_InvoiceLine_StepDef
 		invoiceLineBL.updateLineNetAmt(invoiceLine, qtyEntered.toBigDecimal());
 
 		InterfaceWrapperHelper.save(invoiceLine);
+
+		row.getAsOptionalIdentifier("C_Tax_ID")
+				.ifPresent(taxIdentifier -> {
+					final TaxId taxId = TaxId.ofRepoId(invoiceLine.getC_Tax_ID());
+					final Tax tax = taxDAO.getTaxById(taxId);
+					taxTable.putOrReplaceIfSameId(taxIdentifier, tax);
+				});
 
 		row.getAsOptionalIdentifier()
 				.ifPresent(identifier -> invoiceLineTable.putOrReplace(identifier, invoiceLine));

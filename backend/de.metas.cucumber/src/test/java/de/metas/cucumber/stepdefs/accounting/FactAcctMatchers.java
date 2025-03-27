@@ -1,39 +1,57 @@
 package de.metas.cucumber.stepdefs.accounting;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.cucumber.stepdefs.context.ContextAwareDescription;
+import com.google.common.collect.ImmutableSet;
 import de.metas.util.text.tabular.Table;
+import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.assertj.core.api.SoftAssertions;
-import org.compiere.model.I_Fact_Acct;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 
 public class FactAcctMatchers
 {
-	private final ImmutableList<FactAcctMatcher> matchers;
+	@NonNull private final ImmutableList<FactAcctDocMatcher> documentMatchers;
+	@NonNull @Getter private final ImmutableSet<TableRecordReference> documentRefs;
 
-	public FactAcctMatchers(@NonNull final ImmutableList<FactAcctMatcher> matchers)
+	public FactAcctMatchers(@NonNull final List<FactAcctDocMatcher> documentMatchers)
 	{
-		this.matchers = matchers;
+		this.documentMatchers = ImmutableList.copyOf(documentMatchers);
+		this.documentRefs = documentMatchers.stream()
+				.map(FactAcctDocMatcher::getDocumentRef)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public void assertValid(final FactAcctRecords records)
+	public static FactAcctMatchers noRecords(@NonNull final Collection<TableRecordReference> documentRefs)
 	{
-		assertThat(records.size()).as("Fact_Acct records count").isEqualTo(matchers.size());
+		final ImmutableList<FactAcctDocMatcher> documentMatchers = documentRefs.stream()
+				.distinct()
+				.map(FactAcctDocMatcher::noRecords)
+				.collect(ImmutableList.toImmutableList());
+		return new FactAcctMatchers(documentMatchers);
+	}
 
+	public void assertValid(@NonNull final FactAcctRecords records)
+	{
 		final SoftAssertions softly = new SoftAssertions();
-		for (int i = 0; i < matchers.size(); i++)
+
+		final HashMap<TableRecordReference, FactAcctRecords> recordsByDocumentRef = records.indexedByDocumentRef();
+		for (final FactAcctDocMatcher docMatcher : documentMatchers)
 		{
-			final FactAcctMatcher matcher = matchers.get(i);
-			final I_Fact_Acct record = records.get(i);
+			FactAcctRecords documentRecords = recordsByDocumentRef.remove(docMatcher.getDocumentRef());
+			if (documentRecords == null)
+			{
+				documentRecords = records.toEmpty();
+			}
 
-			final ContextAwareDescription description = ContextAwareDescription.newInstance();
-			description.put("expectation", "\n" + matcher);
-			description.put("actual", "\n" + records.toSingleRowTableString(i));
-
-			matcher.assertValid(record, softly, description);
+			docMatcher.assertMatching(softly, documentRecords);
 		}
+
+		softly.assertThat(recordsByDocumentRef.values()).as("All records were matched").isEmpty();
+
 		softly.assertAll();
 	}
 
@@ -43,7 +61,7 @@ public class FactAcctMatchers
 	private Table toTabular()
 	{
 		final Table table = new Table();
-		matchers.forEach(matcher -> table.addRow(matcher.toTabularRow()));
+		documentMatchers.forEach(docMatcher -> table.addRows(docMatcher.toTabular()));
 		table.updateHeaderFromRows();
 		return table;
 
