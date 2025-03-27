@@ -59,6 +59,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -84,7 +85,6 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
@@ -622,8 +622,8 @@ public class C_Invoice_Candidate_StepDef
 				final String taxEffectiveIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Tax_Effective_ID + "." + TABLECOLUMN_IDENTIFIER);
 				if (Check.isNotBlank(taxEffectiveIdentifier))
 				{
-					final I_C_Tax taxEffective = taxTable.get(taxEffectiveIdentifier);
-					softly.assertThat(updatedInvoiceCandidate.getC_Tax_Effective_ID()).isEqualTo(taxEffective.getC_Tax_ID());
+					final TaxId taxEffectiveId = taxTable.getId(taxEffectiveIdentifier);
+					softly.assertThat(updatedInvoiceCandidate.getC_Tax_Effective_ID()).isEqualTo(taxEffectiveId.getRepoId());
 				}
 				softly.assertAll();
 			}
@@ -855,9 +855,8 @@ public class C_Invoice_Candidate_StepDef
 
 		if (Check.isNotBlank(taxIdentifier))
 		{
-			final I_C_Tax taxRecord = taxTable.get(taxIdentifier);
-
-			invoiceCandidateRecord.setC_Tax_Override_ID(taxRecord.getC_Tax_ID());
+			final TaxId taxId = taxTable.getId(taxIdentifier);
+			invoiceCandidateRecord.setC_Tax_Override_ID(taxId.getRepoId());
 		}
 
 		if (qualityDiscountOverride != null)
