@@ -70,12 +70,10 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IProductPlanningSchemaBL productPlanningSchemaBL = Services.get(IProductPlanningSchemaBL.class);
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
-	private final CompositeProductImportProcessListener listeners;
 	private final ProductImportHelper productImporter;
 
 	public ProductImportProcess()
 	{
-		this.listeners = CompositeProductImportProcessListener.ofCollection(SpringContextHolder.instance.getBeansOfType(ProductImportProcessListener.class));
 		this.productImporter = ProductImportHelper.builder()
 				.process(this)
 				.build();
@@ -207,8 +205,6 @@ public class ProductImportProcess extends SimpleImportProcessTemplate<I_I_Produc
 			createUpdateProductPrice(importRecord);
 			productPlanningSchemaBL.createDefaultProductPlanningsForAllProducts();
 		}
-
-		listeners.afterRecordImport(importRecord);
 
 		return productImportResult;
 	}
