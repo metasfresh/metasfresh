@@ -500,7 +500,9 @@ public class C_Invoice_StepDef
 										.build());
 						final InvoiceToAllocate invoiceToAllocate = invoiceToAllocates.isEmpty() ? null : invoiceToAllocates.get(0);
 						final BigDecimal actualOpenAmountConverted = invoiceToAllocate != null ? invoiceToAllocate.getOpenAmountConverted().getAsBigDecimal() : BigDecimal.ZERO;
-						softly.assertThat(actualOpenAmountConverted).as("OpenAmountConverted").isEqualByComparingTo(expectedOpenAmt);
+
+						final BigDecimal expectedOpenAmtConverted = (invoiceToAllocate != null && invoiceToAllocate.getDocBaseType().isCreditMemo()) ? expectedOpenAmt.negate() : expectedOpenAmt;
+						softly.assertThat(actualOpenAmountConverted).as("OpenAmountConverted").isEqualByComparingTo(expectedOpenAmtConverted);
 					});
 		}
 
