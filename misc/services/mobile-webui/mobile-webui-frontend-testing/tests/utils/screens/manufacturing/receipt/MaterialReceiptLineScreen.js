@@ -49,8 +49,16 @@ export const MaterialReceiptLineScreen = {
 
     receiveQty: async ({ qtyEntered, expectQtyEntered }) => await test.step(`${NAME} - Receive qty ${qtyEntered ? qtyEntered : ''}`, async () => {
         await page.getByTestId('receive-qty-button').tap();
+
         await GetQuantityDialog.fillAndPressDone({ expectQtyEntered, qtyEntered });
         // await MaterialReceiptLineScreen.waitForScreen(); // while processing
         await ManufacturingJobScreen.waitForScreen(); // final screen
+    }),
+
+    receiveQtyWithQRCode: async ({ catchWeightQRCode }) => await test.step(`${NAME} - Receive via QrCode`, async () => {
+        await page.getByTestId('receive-qty-button').tap();
+
+        await GetQuantityDialog.fillAndPressDone({ catchWeightQRCode });
+        await ManufacturingJobScreen.waitForScreen();
     }),
 };
