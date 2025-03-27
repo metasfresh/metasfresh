@@ -2,6 +2,8 @@ package de.metas.cucumber.stepdefs.accounting;
 
 import com.google.common.collect.ImmutableListMultimap;
 import de.metas.acct.AccountConceptualName;
+import de.metas.bpartner.BPartnerId;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -15,6 +17,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_Fact_Acct;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 @Builder
 public class FactAcctMatchersFactory
@@ -22,6 +25,7 @@ public class FactAcctMatchersFactory
 	@NonNull private final IUOMDAO uomDAO;
 	@NonNull private final MoneyService moneyService;
 	@NonNull private final IdentifiersResolver identifiersResolver;
+	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final C_Tax_StepDefData taxTable;
 
 	public FactAcctMatchers ofDataTable(@NonNull final DataTable table)
@@ -66,6 +70,14 @@ public class FactAcctMatchersFactory
 				.qty(row.getAsOptionalQuantity(I_Fact_Acct.COLUMNNAME_Qty, uomDAO::getByX12DE355).orElse(null))
 				.documentRef(documentRef)
 				.taxId(row.getAsOptionalIdentifier("C_Tax_ID").map(taxTable::getId).orElse(null))
+				.bpartnerId(extractBPartnerId(row))
 				.build();
+	}
+
+	@SuppressWarnings("OptionalAssignedToNull")
+	private Optional<BPartnerId> extractBPartnerId(final @NonNull DataTableRow row)
+	{
+		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier("C_BPartner_ID").orElse(null);
+		return identifier == null ? null : Optional.ofNullable(identifier.lookupIdIn(bpartnerTable));
 	}
 }

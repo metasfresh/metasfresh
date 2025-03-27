@@ -1,6 +1,7 @@
 package de.metas.cucumber.stepdefs.accounting;
 
 import de.metas.acct.AccountConceptualName;
+import de.metas.bpartner.BPartnerId;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.context.ContextAwareDescription;
 import de.metas.money.Money;
@@ -19,8 +20,10 @@ import org.compiere.model.I_Fact_Acct;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Builder
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class FactAcctLineMatcher
 {
 	@NonNull private final DataTableRow row;
@@ -33,6 +36,7 @@ public class FactAcctLineMatcher
 	@Nullable private final Quantity qty;
 	@NonNull @Getter private final TableRecordReference documentRef;
 	@Nullable @Getter private final TaxId taxId;
+	@Nullable Optional<BPartnerId> bpartnerId;
 
 	@Override
 	public String toString() {return row.toTabularString();}
@@ -76,6 +80,7 @@ public class FactAcctLineMatcher
 		return errors.isEmpty();
 	}
 
+	@SuppressWarnings("OptionalAssignedToNull")
 	public void assertMatching(
 			@NonNull final I_Fact_Acct record,
 			@NonNull final SoftAssertions softly,
@@ -140,6 +145,10 @@ public class FactAcctLineMatcher
 			softly.assertThat(TaxId.ofRepoIdOrNull(record.getC_Tax_ID()))
 					.as(description.newWithMessage("C_Tax_ID"))
 					.isEqualTo(taxId);
+		}
+		if (bpartnerId != null)
+		{
+			softly.assertThat(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID())).isEqualTo(bpartnerId.orElse(null));
 		}
 	}
 }

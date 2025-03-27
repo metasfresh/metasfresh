@@ -87,13 +87,13 @@ Feature: invoice payment allocation
       | C_Invoice_ID | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
       | inv_100      | payment_100  | 5.95   | 0            | alloc1             |
     And Fact_Acct records are matching
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID   |
-      | *                      |             |             | payment_100 |
-      | B_UnallocatedCash_Acct |             | 5.95 EUR    | payment_100 |
-      | B_UnallocatedCash_Acct | 5.95 EUR    |             | alloc1      |
-      | C_Receivable_Acct      |             | 5.95 EUR    | alloc1      |
-      | C_Receivable_Acct      | 5.95 EUR    |             | inv_100     |
-      | *                      |             |             | inv_100     |
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID   |
+      | *                      |             |             |               | payment_100 |
+      | B_UnallocatedCash_Acct |             | 5.95 EUR    | bpartner      | payment_100 |
+      | B_UnallocatedCash_Acct | 5.95 EUR    |             | bpartner      | alloc1      |
+      | C_Receivable_Acct      |             | 5.95 EUR    | bpartner      | alloc1      |
+      | C_Receivable_Acct      | 5.95 EUR    |             | bpartner      | inv_100     |
+      | *                      |             |             |               | inv_100     |
     
 
 
@@ -243,10 +243,14 @@ Feature: invoice payment allocation
       | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID |
       | B_UnallocatedCash_Acct | 5.95 EUR    |             | alloc1    |
       | C_Receivable_Acct      |             | 5.95 EUR    | alloc1    |
+      | C_Receivable_Acct      | 5.95 EUR    |             | inv_120_1 |
+      | *                      |             |             | inv_120_1 |
     And Fact_Acct records are matching
       | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID |
       | B_UnallocatedCash_Acct | 3.05 EUR    |             | alloc2    |
       | C_Receivable_Acct      |             | 3.05 EUR    | alloc2    |
+      | C_Receivable_Acct      | 5.95 EUR    |             | inv_120_2 |
+      | *                      |             |             | inv_120_2 |
 
     And apply WRITEOFF to invoices
       | C_Invoice_ID | Amount |
@@ -512,8 +516,12 @@ Feature: invoice payment allocation
       | inv_150_2    | -5.95  | -5.95        | alloc1             |
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
-      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       | alloc1    |
-      | C_Receivable_Acct     | 0 EUR       | 5.95 EUR    | alloc1    |
+      | *                     |             |             | inv_150_2 |
+      | V_Liability_Acct      |             | 11.9 EUR    | inv_150_2 |
+      | V_Liability_Acct      | 5.95 EUR    |             | alloc1    |
+      | C_Receivable_Acct     |             | 5.95 EUR    | alloc1    |
+      | C_Receivable_Acct     | 5.95 EUR    |             | inv_150_1 |
+      | *                     |             |             | inv_150_1 |
 
     
     
