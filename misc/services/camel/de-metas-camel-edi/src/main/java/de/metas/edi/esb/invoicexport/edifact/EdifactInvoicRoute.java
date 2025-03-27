@@ -139,14 +139,9 @@ public class EdifactInvoicRoute extends AbstractEDIRoute
 				})
 
 				.log(LoggingLevel.INFO, "EDI: Converting XML Java Object -> EDI Java Object...")
-				.process(exchange -> {
+				.bean(EDICctopInvoicVtoD01BConverter.class, EDICctopInvoicVtoD01BConverter.METHOD_createEDIData)
 
-					final EDICctopInvoicVType xmlCctopInvoice = exchange.getIn().getBody(EDICctopInvoicVType.class);
-					final Interchange edifactInvoice = new EDICctopInvoicVtoD01BConverter().convert(xmlCctopInvoice);
-					exchange.getIn().setBody(edifactInvoice);
-				})
-
-				.log(LoggingLevel.INFO, "EDI: Marshalling EDI Java Object to XML using JAXB...")
+				.log(LoggingLevel.INFO, "EDI: Marshalling EDI Java Object to Smooks EdiFact using JAXB...")
 				.marshal(smooksEdifactJaxbDataFormat)
 				.log(LoggingLevel.INFO, "This is what we send to smooks:\n${body}")
 
@@ -155,7 +150,7 @@ public class EdifactInvoicRoute extends AbstractEDIRoute
 				.log(LoggingLevel.INFO, "This is what we got back from smooks:${body}")
 
 				.log(LoggingLevel.INFO, "Output filename=${in.headers." + Exchange.FILE_NAME + "}; endpointUri=" + Arrays.toString(endPointURIs))
-				.log(LoggingLevel.INFO, "Sending ecosio-XML to the " + endPointURIs.length + " endpoint(s):\r\n" + body())
+				.log(LoggingLevel.INFO, "Sending EDIFACT INVOIC to the " + endPointURIs.length + " endpoint(s):\r\n" + body())
 				.multicast()
 				.stopOnException()
 				.parallelProcessing(false)

@@ -32,7 +32,8 @@ public enum ClearingCenter
 	CompuData,
 	MetasfreshInHouseV1,
 	MetasfreshInHouseV2,
-	STEPcom
+	STEPcom,
+	Edifact
 	;
 
 	@NonNull

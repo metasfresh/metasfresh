@@ -30,6 +30,7 @@ import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctop119VType;
 import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctopInvoicVType;
 import jakarta.xml.bind.JAXBElement;
 import lombok.NonNull;
+import org.apache.camel.Exchange;
 import org.smooks.edifact.binding.d01b.BGMBeginningOfMessage;
 import org.smooks.edifact.binding.d01b.C002DocumentMessageName;
 import org.smooks.edifact.binding.d01b.C056DepartmentOrEmployeeDetails;
@@ -103,9 +104,12 @@ import java.util.stream.Collectors;
 
 public class EDICctopInvoicVtoD01BConverter
 {
-	@NonNull
-	public Interchange convert(@NonNull final EDICctopInvoicVType xmlCctopInvoice)
+	public static final String METHOD_createEDIData = "createEDIData";
+	
+	public final void createEDIData(@NonNull final Exchange exchange)
 	{
+		final EDICctopInvoicVType xmlCctopInvoice = exchange.getIn().getBody(EDICctopInvoicVType.class);
+
 		final String messageSequenceNo = xmlCctopInvoice.getSequenceNoAttr().toString();
 
 		final String dateTimeInvoiced = Util.toFormattedStringDate(Util.toDate(xmlCctopInvoice.getDateInvoiced()), "yyyyMMddHHmmss");
@@ -117,7 +121,7 @@ public class EDICctopInvoicVtoD01BConverter
 						EDICctop119VType::getEancomLocationtype,
 						ediCctop -> ediCctop));
 
-		return new Interchange().
+		final Interchange edifactInvoice = new Interchange().
 				withUNA(getUNA()).
 				withUNB( // https://unece.org/trade/uncefact/unedifact/part-4-Annex-B
 						getUNBInterchangeHeader(xmlCctopInvoice,
@@ -167,6 +171,8 @@ public class EDICctopInvoicVtoD01BConverter
 				withUNZ(new UNZInterchangeTrailer().
 						withE0036(new BigDecimal(1)).
 						withE0020(messageSequenceNo));
+
+		exchange.getIn().setBody(edifactInvoice);
 	}
 
 	@NonNull

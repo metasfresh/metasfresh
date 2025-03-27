@@ -33,6 +33,7 @@ import de.metas.edi.esb.desadvexport.metasfreshinhousev1.MetasfreshInHouseV1Desa
 import de.metas.edi.esb.desadvexport.metasfreshinhousev2.MetasfreshInHouseV2DesadvRoute;
 import de.metas.edi.esb.desadvexport.stepcom.StepComXMLDesadvRoute;
 import de.metas.edi.esb.invoicexport.compudata.CompuDataInvoicRoute;
+import de.metas.edi.esb.invoicexport.edifact.EdifactInvoicRoute;
 import de.metas.edi.esb.invoicexport.metasfreshinhousev1.MetasfreshInHouseV1InvoicRoute;
 import de.metas.edi.esb.invoicexport.metasfreshinhousev2.MetasfreshInHouseV2InvoicRoute;
 import de.metas.edi.esb.invoicexport.stepcom.StepComXMLInvoicRoute;
@@ -91,6 +92,8 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 								.to(MetasfreshInHouseV2InvoicRoute.EP_EDI_METASFRESH_XML_INVOIC_CONSUMER)
 							.when(header("ClearingCenter").isEqualTo(ClearingCenter.MetasfreshInHouseV1.toString()))
 								.to(MetasfreshInHouseV1InvoicRoute.EP_EDI_METASFRESH_XML_INVOIC_CONSUMER)
+							.when(header("ClearingCenter").isEqualTo(ClearingCenter.Edifact.toString()))
+								.to(EdifactInvoicRoute.EP_EDI_METASFRESH_XML_INVOIC_CONSUMER)
 						.endChoice()
 					.when(body().isInstanceOf(EDIExpDesadvType.class))
 						// DESADV - figure out which clearing center we shall use
