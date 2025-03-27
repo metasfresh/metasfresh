@@ -20,9 +20,18 @@ const PickQuantityButton = ({ qtyTarget, uom, catchWeightUom, caption, isDisable
     return null;
   };
 
-  const onQtyPickedChanged = ({ qtyEnteredAndValidated, catchWeight, catchWeightUom, bestBeforeDate, lotNo }) => {
-    setDialogOpen(false);
-    onClick({ qtyEnteredAndValidated, catchWeight, catchWeightUom, bestBeforeDate, lotNo });
+  const onQtyPickedChanged = ({
+    qtyEnteredAndValidated,
+    catchWeight,
+    catchWeightUom,
+    bestBeforeDate,
+    lotNo,
+    isDone = true,
+  }) => {
+    if (isDone) {
+      setDialogOpen(false);
+    }
+    onClick({ qtyEnteredAndValidated, catchWeight, catchWeightUom, bestBeforeDate, lotNo, isDone });
   };
 
   return (

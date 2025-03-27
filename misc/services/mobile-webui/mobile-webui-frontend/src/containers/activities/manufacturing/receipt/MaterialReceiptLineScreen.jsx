@@ -72,7 +72,14 @@ const MaterialReceiptLineScreen = () => {
     );
   }, []);
 
-  const handleQuantityChange = ({ qtyEnteredAndValidated, catchWeight, catchWeightUom, bestBeforeDate, lotNo }) => {
+  const handleQuantityChange = ({
+    qtyEnteredAndValidated,
+    catchWeight,
+    catchWeightUom,
+    bestBeforeDate,
+    lotNo,
+    isDone = true,
+  }) => {
     // shall not happen
     if (!aggregateToLU && !currentReceivingHU && !aggregateToTU) {
       console.log('skip receiving qty because there is no target');
@@ -93,7 +100,11 @@ const MaterialReceiptLineScreen = () => {
         lotNo,
       })
     )
-      .then(() => history.goBack())
+      .then(() => {
+        if (isDone) {
+          history.goBack();
+        }
+      })
       .catch((axiosError) => toastError({ axiosError }))
       .finally(() => setShowSpinner(false));
   };
