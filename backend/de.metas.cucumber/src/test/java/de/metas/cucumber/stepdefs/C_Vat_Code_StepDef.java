@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs;
 import de.metas.acct.model.I_C_VAT_Code;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.acctschema.C_AcctSchema_StepDefData;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -70,7 +71,7 @@ public class C_Vat_Code_StepDef
 	private void createVatCode(@NonNull final Map<String, String> tableRow)
 	{
 		final String taxIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_VAT_Code.COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final int taxId = taxTable.get(taxIdentifier).getC_Tax_ID();
+		final TaxId taxId = taxTable.get(taxIdentifier).getTaxId();
 
 		final String acctSchemaIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_VAT_Code.COLUMNNAME_C_AcctSchema_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final int acctSchemaId = acctSchemaTable.get(acctSchemaIdentifier).getC_AcctSchema_ID();
@@ -88,7 +89,7 @@ public class C_Vat_Code_StepDef
 						.firstOnly(I_C_VAT_Code.class),
 				() -> InterfaceWrapperHelper.newInstance(I_C_VAT_Code.class));
 
-		vatCodeRecord.setC_Tax_ID(taxId);
+		vatCodeRecord.setC_Tax_ID(taxId.getRepoId());
 		vatCodeRecord.setC_AcctSchema_ID(acctSchemaId);
 		vatCodeRecord.setVATCode(vatCode);
 		vatCodeRecord.setValidFrom(validFrom);

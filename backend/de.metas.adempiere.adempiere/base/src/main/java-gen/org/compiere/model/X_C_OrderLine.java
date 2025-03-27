@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2091239026L;
+	private static final long serialVersionUID = 1506736272L;
 
     /** Standard Constructor */
     public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
@@ -591,14 +591,14 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	@Override
 	public void setC_VAT_Code_ID (final int C_VAT_Code_ID)
 	{
-		if (C_VAT_Code_ID < 1) 
+		if (C_VAT_Code_ID < 1)
 			set_Value (COLUMNNAME_C_VAT_Code_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_VAT_Code_ID, C_VAT_Code_ID);
 	}
 
 	@Override
-	public int getC_VAT_Code_ID() 
+	public int getC_VAT_Code_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_VAT_Code_ID);
 	}
@@ -867,6 +867,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public void setIsAllowSeparateInvoicing (final boolean IsAllowSeparateInvoicing)
+	{
+		set_Value (COLUMNNAME_IsAllowSeparateInvoicing, IsAllowSeparateInvoicing);
+	}
+
+	@Override
+	public boolean isAllowSeparateInvoicing()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowSeparateInvoicing);
+	}
+
+	@Override
 	public void setIsCampaignPrice (final boolean IsCampaignPrice)
 	{
 		set_Value (COLUMNNAME_IsCampaignPrice, IsCampaignPrice);
@@ -1005,7 +1017,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public boolean isOnConsignment() 
+	public boolean isOnConsignment()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsOnConsignment);
 	}
@@ -1032,18 +1044,6 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public boolean isPriceEditable() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPriceEditable);
-	}
-
-	@Override
-	public void setIsSkipInvoicing (final boolean IsSkipInvoicing)
-	{
-		set_Value (COLUMNNAME_IsSkipInvoicing, IsSkipInvoicing);
-	}
-
-	@Override
-	public boolean isSkipInvoicing() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsSkipInvoicing);
 	}
 
 	@Override
@@ -1107,7 +1107,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** 
+	/**
 	 * ManualCompensationLinePosition AD_Reference_ID=541856
 	 * Reference name: ManualCompensationLinePosition
 	 */
@@ -1123,7 +1123,7 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
-	public java.lang.String getManualCompensationLinePosition() 
+	public java.lang.String getManualCompensationLinePosition()
 	{
 		return get_ValueAsString(COLUMNNAME_ManualCompensationLinePosition);
 	}
@@ -1293,14 +1293,14 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	@Override
 	public void setM_SectionCode_ID (final int M_SectionCode_ID)
 	{
-		if (M_SectionCode_ID < 1) 
+		if (M_SectionCode_ID < 1)
 			set_Value (COLUMNNAME_M_SectionCode_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_SectionCode_ID, M_SectionCode_ID);
 	}
 
 	@Override
-	public int getM_SectionCode_ID() 
+	public int getM_SectionCode_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
 	}
@@ -1637,14 +1637,14 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	@Override
 	public void setPurchase_Modular_Flatrate_Term_ID (final int Purchase_Modular_Flatrate_Term_ID)
 	{
-		if (Purchase_Modular_Flatrate_Term_ID < 1) 
+		if (Purchase_Modular_Flatrate_Term_ID < 1)
 			set_Value (COLUMNNAME_Purchase_Modular_Flatrate_Term_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_Purchase_Modular_Flatrate_Term_ID, Purchase_Modular_Flatrate_Term_ID);
 	}
 
 	@Override
-	public int getPurchase_Modular_Flatrate_Term_ID() 
+	public int getPurchase_Modular_Flatrate_Term_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_Purchase_Modular_Flatrate_Term_ID);
 	}

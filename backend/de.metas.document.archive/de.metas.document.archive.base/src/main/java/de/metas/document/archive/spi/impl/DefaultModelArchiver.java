@@ -3,9 +3,8 @@ package de.metas.document.archive.spi.impl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import de.metas.async.AsyncBatchId;
-import de.metas.async.Async_Constants;
+import de.metas.async.AsyncHelper;
 import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.document.DocTypeId;
 import de.metas.document.archive.async.spi.impl.DocOutboundCCWorkpackageProcessor;
 import de.metas.document.archive.model.I_AD_Archive;
@@ -302,10 +301,10 @@ public class DefaultModelArchiver
 
 		//
 		// forward async batch if there is one
-		final I_C_Async_Batch asyncBatch = InterfaceWrapperHelper.getDynAttribute(getRecord(), Async_Constants.C_Async_Batch);
-		if (asyncBatch != null)
+		final AsyncBatchId asyncBatchId = AsyncHelper.getAsyncBatchId(getRecord());
+		if (asyncBatchId != null)
 		{
-			InterfaceWrapperHelper.setDynAttribute(archive, Async_Constants.C_Async_Batch, asyncBatch);
+			AsyncHelper.setAsyncBatchId(archive, asyncBatchId);
 		}
 
 		InterfaceWrapperHelper.save(archive);

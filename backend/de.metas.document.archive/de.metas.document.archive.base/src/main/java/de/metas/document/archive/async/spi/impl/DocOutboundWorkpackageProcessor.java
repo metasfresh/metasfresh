@@ -24,11 +24,9 @@ package de.metas.document.archive.async.spi.impl;
 
 import ch.qos.logback.classic.Level;
 import de.metas.async.AsyncBatchId;
-import ch.qos.logback.classic.Level;
-import de.metas.async.Async_Constants;
+import de.metas.async.AsyncHelper;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
@@ -93,13 +91,13 @@ public class DocOutboundWorkpackageProcessor implements IWorkpackageProcessor
 		}
 
 		final UserId userId = UserId.ofRepoIdOrNull(workpackage.getAD_User_ID());
-		final I_C_Async_Batch asyncBatch = workpackage.getC_Async_Batch_ID() > 0 ? workpackage.getC_Async_Batch() : null;
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(workpackage.getC_Async_Batch_ID());
 
 		final List<Object> records = queueDAO.retrieveAllItems(workpackage, Object.class);
 		for (final Object record : records)
 		{
-			InterfaceWrapperHelper.setDynAttribute(record, Async_Constants.C_Async_Batch, asyncBatch);
-			try (final IAutoCloseable ignored = asyncBatchBL.assignTempAsyncBatchIdToModel(record, AsyncBatchId.ofRepoIdOrNull(asyncBatch != null ? asyncBatch.getC_Async_Batch_ID() : -1)))
+			AsyncHelper.setAsyncBatchId(record, asyncBatchId);
+			try (final IAutoCloseable ignored = asyncBatchBL.assignTempAsyncBatchIdToModel(record, asyncBatchId))
 			{
 				generateOutboundDocument(record, userId);
 			}

@@ -1,14 +1,15 @@
 package de.metas.invoicecandidate.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
 /** Generated Interface for C_Invoice_Candidate
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public interface I_C_Invoice_Candidate 
+public interface I_C_Invoice_Candidate
 {
 
 	String Table_Name = "C_Invoice_Candidate";
@@ -378,6 +379,27 @@ public interface I_C_Invoice_Candidate
 	int getC_Activity_ID();
 
 	String COLUMNNAME_C_Activity_ID = "C_Activity_ID";
+
+	/**
+	 * Set Async Batch.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Async_Batch_ID (int C_Async_Batch_ID);
+
+	/**
+	 * Get Async Batch.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Async_Batch_ID();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_C_Async_Batch_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_Async_Batch_ID", null);
+	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
 
 	/**
 	 * Set Auction.
@@ -2061,6 +2083,27 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Separate invoicing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowSeparateInvoicing (boolean IsAllowSeparateInvoicing);
+
+	/**
+	 * Get Separate invoicing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowSeparateInvoicing();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsAllowSeparateInvoicing = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsAllowSeparateInvoicing", null);
+	String COLUMNNAME_IsAllowSeparateInvoicing = "IsAllowSeparateInvoicing";
+
+	/**
 	 * Set Delivery Closed.
 	 *
 	 * <br>Type: YesNo
@@ -3627,7 +3670,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QtyPickedInUOM = "QtyPickedInUOM";
 
 	/**
-	 * Set To invoice eff.( stock unit).
+	 * Set To invoice eff. (stock unit).
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -3636,7 +3679,7 @@ public interface I_C_Invoice_Candidate
 	void setQtyToInvoice (BigDecimal QtyToInvoice);
 
 	/**
-	 * Get To invoice eff.( stock unit).
+	 * Get To invoice eff. (stock unit).
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true

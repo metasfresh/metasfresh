@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.cucumber
+ * de.metas.async
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,24 +20,28 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.async;
 
-import de.metas.tax.api.Tax;
-import de.metas.tax.api.TaxId;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+import org.adempiere.model.InterfaceWrapperHelper;
 
-/**
- * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
- */
-public class C_Tax_StepDefData extends StepDefData<Tax> implements StepDefDataGetIdAware<TaxId, Tax>
+import javax.annotation.Nullable;
+
+import static de.metas.async.Async_Constants.DYNATTR_AsyncBatchId;
+
+@UtilityClass
+public class AsyncHelper
 {
-	public C_Tax_StepDefData()
+	public static void setAsyncBatchId(final Object record, @Nullable final AsyncBatchId asyncBatchId)
 	{
-		super(Tax.class);
+		InterfaceWrapperHelper.setDynAttribute(record, DYNATTR_AsyncBatchId, asyncBatchId);
 	}
 
-	@Override
-	public TaxId extractIdFromRecord(final Tax tax)
+	@Nullable
+	public static AsyncBatchId getAsyncBatchId(@NonNull final Object record)
 	{
-		return tax.getTaxId();
+		return InterfaceWrapperHelper.getDynAttribute(record, DYNATTR_AsyncBatchId);
 	}
+
 }

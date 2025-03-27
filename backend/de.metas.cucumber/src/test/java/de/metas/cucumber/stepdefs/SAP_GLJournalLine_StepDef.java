@@ -28,10 +28,10 @@ import de.metas.acct.model.I_SAP_GLJournal;
 import de.metas.acct.model.I_SAP_GLJournalLine;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
+import de.metas.tax.api.TaxId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
-import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_SectionCode;
 
 import java.math.BigDecimal;
@@ -46,12 +46,12 @@ import static de.metas.acct.model.I_SAP_GLJournalLine.COLUMNNAME_IsTaxIncluded;
 import static de.metas.acct.model.I_SAP_GLJournalLine.COLUMNNAME_Line;
 import static de.metas.acct.model.I_SAP_GLJournalLine.COLUMNNAME_M_SectionCode_ID;
 import static de.metas.acct.model.I_SAP_GLJournalLine.COLUMNNAME_Parent_ID;
+import static de.metas.acct.model.I_SAP_GLJournalLine.COLUMNNAME_PostingSign;
 import static de.metas.acct.model.I_SAP_GLJournalLine.COLUMNNAME_SAP_GLJournal_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
-import static de.metas.acct.model.I_SAP_GLJournalLine.COLUMNNAME_PostingSign;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SAP_GLJournalLine_StepDef
 {
@@ -127,10 +127,10 @@ public class SAP_GLJournalLine_StepDef
 			final String taxIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
 			assertThat(taxIdentifier).isNotBlank();
 
-			final I_C_Tax tax = taxTable.get(taxIdentifier);
+			final TaxId tax = taxTable.getId(taxIdentifier);
 			assertThat(tax).isNotNull();
 
-			glJournalLine.setC_Tax_ID(tax.getC_Tax_ID());
+			glJournalLine.setC_Tax_ID(TaxId.toRepoId(tax));
 
 			// OPT.IsTaxIncluded
 			final boolean isTaxIncluded = DataTableUtil.extractBooleanForColumnName(tableRow, "OPT." + COLUMNNAME_IsTaxIncluded);
