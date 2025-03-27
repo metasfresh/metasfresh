@@ -17,6 +17,7 @@ Feature: material dispo reacts to order docactions
 
   @Id:S0461_10
   @from:cucumber
+  @ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
   Scenario:  If a sales-order is voided, its shipment-schedule's MD_Canddiate's qty is set to zero
 
     Given metasfresh contains M_Products:

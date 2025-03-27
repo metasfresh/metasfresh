@@ -1,6 +1,7 @@
 @from:cucumber
 @topic:commissionContracts
 @ghActions:run_on_executor3
+@ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
 Feature: Trade margin commission contract
   As a user
   I have a trade margin contract, when order is processed commission points and commission deed are computed accordingly

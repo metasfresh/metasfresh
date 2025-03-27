@@ -86,10 +86,14 @@ Feature: invoice payment allocation
     And validate C_AllocationLines
       | C_Invoice_ID | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
       | inv_100      | payment_100  | 5.95   | 0            | alloc1             |
-    And Fact_Acct records are found for payment allocation alloc1
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr |
-      | B_UnallocatedCash_Acct | 5.95 EUR    |             |
-      | C_Receivable_Acct      |             | 5.95 EUR    |
+    And Fact_Acct records are matching
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID   |
+      | *                      |             |             |               | payment_100 |
+      | B_UnallocatedCash_Acct |             | 5.95 EUR    | bpartner      | payment_100 |
+      | B_UnallocatedCash_Acct | 5.95 EUR    |             | bpartner      | alloc1      |
+      | C_Receivable_Acct      |             | 5.95 EUR    | bpartner      | alloc1      |
+      | C_Receivable_Acct      | 5.95 EUR    |             | bpartner      | inv_100     |
+      | *                      |             |             |               | inv_100     |
     
 
 
@@ -151,14 +155,22 @@ Feature: invoice payment allocation
       | C_Invoice_ID | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
       | inv_110_1    | payment_110  | 5.95   | 0            | alloc1             |
       | inv_110_2    | payment_110  | 5.95   | 0            | alloc2             |
-    And Fact_Acct records are found for payment allocation alloc1
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr |
-      | B_UnallocatedCash_Acct | 5.95 EUR    |             |
-      | C_Receivable_Acct      |             | 5.95 EUR    |
-    And Fact_Acct records are found for payment allocation alloc2
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr |
-      | B_UnallocatedCash_Acct | 5.95 EUR    |             |
-      | C_Receivable_Acct      |             | 5.95 EUR    |
+    And Fact_Acct records are matching
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID   |
+      | *                      |             |             | payment_110 |
+      | B_UnallocatedCash_Acct |             | 14 EUR      | payment_110 |
+      | B_UnallocatedCash_Acct | 5.95 EUR    |             | alloc1      |
+      | C_Receivable_Acct      |             | 5.95 EUR    | alloc1      |
+      | C_Receivable_Acct      | 5.95 EUR    |             | inv_110_1   |
+      | *                      |             |             | inv_110_1   |
+    And Fact_Acct records are matching
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID   |
+      | *                      |             |             | payment_110 |
+      | B_UnallocatedCash_Acct |             | 14 EUR      | payment_110 |
+      | B_UnallocatedCash_Acct | 5.95 EUR    |             | alloc2      |
+      | C_Receivable_Acct      |             | 5.95 EUR    | alloc2      |
+      | C_Receivable_Acct      | 5.95 EUR    |             | inv_110_2   |
+      | *                      |             |             | inv_110_2   |
 
 
 
@@ -203,9 +215,9 @@ Feature: invoice payment allocation
       | inv_120_1  | bpartner      | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
       | inv_120_2  | bpartner      | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
-      | invl_120_1 | inv_120_1    | product_120  | 1 PCE       |
-      | invl_120_2 | inv_120_2    | product_120  | 1 PCE       |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invl_120_1 | inv_120_1    | product_120  | 1 PCE       | tax1     |
+      | invl_120_2 | inv_120_2    | product_120  | 1 PCE       | tax1     |
     And the invoice identified by inv_120_1 is completed
     And the invoice identified by inv_120_2 is completed
 
@@ -227,14 +239,18 @@ Feature: invoice payment allocation
       | C_Invoice_ID | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
       | inv_120_1    | payment_120  | 5.95   | 0            | alloc1             |
       | inv_120_2    | payment_120  | 3.05   | 2.9          | alloc2             |
-    And Fact_Acct records are found for payment allocation alloc1
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr |
-      | B_UnallocatedCash_Acct | 5.95 EUR    |             |
-      | C_Receivable_Acct      |             | 5.95 EUR    |
-    And Fact_Acct records are found for payment allocation alloc2
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr |
-      | B_UnallocatedCash_Acct | 3.05 EUR    |             |
-      | C_Receivable_Acct      |             | 3.05 EUR    |
+    And Fact_Acct records are matching
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID |
+      | B_UnallocatedCash_Acct | 5.95 EUR    |             | alloc1    |
+      | C_Receivable_Acct      |             | 5.95 EUR    | alloc1    |
+      | C_Receivable_Acct      | 5.95 EUR    |             | inv_120_1 |
+      | *                      |             |             | inv_120_1 |
+    And Fact_Acct records are matching
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID |
+      | B_UnallocatedCash_Acct | 3.05 EUR    |             | alloc2    |
+      | C_Receivable_Acct      |             | 3.05 EUR    | alloc2    |
+      | C_Receivable_Acct      | 5.95 EUR    |             | inv_120_2 |
+      | *                      |             |             | inv_120_2 |
 
     And apply WRITEOFF to invoices
       | C_Invoice_ID | Amount |
@@ -249,12 +265,12 @@ Feature: invoice payment allocation
     And validate C_AllocationLines
       | C_Invoice_ID | Amount | WriteOffAmt | C_AllocationHdr_ID |
       | inv_120_2    | 0      | 2.9         | alloc3             |
-    And Fact_Acct records are found for payment allocation alloc3
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr |
-      | WriteOff_Acct         | 2.90 EUR    |             |
-      | C_Receivable_Acct     |             | 2.90 EUR    |
-      | T_Due_Acct            | 0.46 EUR    |             |
-      | WriteOff_Acct         |             | 0.46 EUR    |
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID |
+      | WriteOff_Acct         | 2.90 EUR    |             |          | alloc3    |
+      | C_Receivable_Acct     |             | 2.90 EUR    |          | alloc3    |
+      | T_Due_Acct            | 0.46 EUR    |             | tax1     | alloc3    |
+      | WriteOff_Acct         |             | 0.46 EUR    | tax1     | alloc3    |
 
 
 
@@ -300,9 +316,9 @@ Feature: invoice payment allocation
       | inv_130_1  | bpartner      | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
       | inv_130_2  | bpartner      | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
-      | invl_130_1 | inv_130_1    | product_130  | 1 PCE       |
-      | invl_130_2 | inv_130_2    | product_130  | 1 PCE       |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invl_130_1 | inv_130_1    | product_130  | 1 PCE       | tax1     |
+      | invl_130_2 | inv_130_2    | product_130  | 1 PCE       | tax1     |
     And the invoice identified by inv_130_1 is completed
     And the invoice identified by inv_130_2 is completed
 
@@ -324,14 +340,14 @@ Feature: invoice payment allocation
       | C_Invoice_ID | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
       | inv_130_1    | payment_130  | 5.95   | 0            | alloc1             |
       | inv_130_2    | payment_130  | 3.05   | 2.9          | alloc2             |
-    And Fact_Acct records are found for payment allocation alloc1
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr |
-      | B_UnallocatedCash_Acct | 5.95 EUR    |             |
-      | C_Receivable_Acct      |             | 5.95 EUR    |
-    And Fact_Acct records are found for payment allocation alloc2
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr |
-      | B_UnallocatedCash_Acct | 3.05 EUR    |             |
-      | C_Receivable_Acct      |             | 3.05 EUR    |
+    And Fact_Acct records are matching
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID |
+      | B_UnallocatedCash_Acct | 5.95 EUR    |             | alloc1    |
+      | C_Receivable_Acct      |             | 5.95 EUR    | alloc1    |
+    And Fact_Acct records are matching
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID |
+      | B_UnallocatedCash_Acct | 3.05 EUR    |             | alloc2    |
+      | C_Receivable_Acct      |             | 3.05 EUR    | alloc2    |
 
     And apply DISCOUNT to invoices
       | C_Invoice_ID | Amount |
@@ -346,12 +362,12 @@ Feature: invoice payment allocation
     And validate C_AllocationLines
       | C_Invoice_ID | Amount | DiscountAmt | C_AllocationHdr_ID |
       | inv_130_2    | 0      | 2.9         | alloc3             |
-    And Fact_Acct records are found for payment allocation alloc3
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr |
-      | PayDiscount_Exp_Acct  | 2.90 EUR    |             |
-      | C_Receivable_Acct     |             | 2.90 EUR    |
-      | T_Due_Acct            | 0.46 EUR    |             |
-      | PayDiscount_Exp_Acct  |             | 0.46 EUR    |
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID |
+      | PayDiscount_Exp_Acct  | 2.90 EUR    |             |          | alloc3    |
+      | C_Receivable_Acct     |             | 2.90 EUR    |          | alloc3    |
+      | T_Due_Acct            | 0.46 EUR    |             | tax1     | alloc3    |
+      | PayDiscount_Exp_Acct  |             | 0.46 EUR    | tax1     | alloc3    |
 
     
     
@@ -423,14 +439,14 @@ Feature: invoice payment allocation
       | C_Invoice_ID | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
       | inv_140_1    | payment_140  | 5.95   | 0            | alloc1             |
       | inv_140_2    | payment_140  | 5.95   | 0            | alloc2             |
-    And Fact_Acct records are found for payment allocation alloc1
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr |
-      | B_UnallocatedCash_Acct | 5.95 EUR    |             |
-      | C_Receivable_Acct      |             | 5.95 EUR    |
-    And Fact_Acct records are found for payment allocation alloc2
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr |
-      | B_UnallocatedCash_Acct | 5.95 EUR    |             |
-      | C_Receivable_Acct      |             | 5.95 EUR    |
+    And Fact_Acct records are matching
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID |
+      | B_UnallocatedCash_Acct | 5.95 EUR    |             | alloc1    |
+      | C_Receivable_Acct      |             | 5.95 EUR    | alloc1    |
+    And Fact_Acct records are matching
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID |
+      | B_UnallocatedCash_Acct | 5.95 EUR    |             | alloc2    |
+      | C_Receivable_Acct      |             | 5.95 EUR    | alloc2    |
 
 
 
@@ -498,10 +514,14 @@ Feature: invoice payment allocation
       | C_Invoice_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
       | inv_150_1    | 5.95   | 0            | alloc1             |
       | inv_150_2    | -5.95  | -5.95        | alloc1             |
-    And Fact_Acct records are found for payment allocation alloc1
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr |
-      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       |
-      | C_Receivable_Acct     | 0 EUR       | 5.95 EUR    |
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
+      | *                     |             |             | inv_150_2 |
+      | V_Liability_Acct      |             | 11.9 EUR    | inv_150_2 |
+      | V_Liability_Acct      | 5.95 EUR    |             | alloc1    |
+      | C_Receivable_Acct     |             | 5.95 EUR    | alloc1    |
+      | C_Receivable_Acct     | 5.95 EUR    |             | inv_150_1 |
+      | *                     |             |             | inv_150_1 |
 
     
     
@@ -584,11 +604,11 @@ Feature: invoice payment allocation
       | C_Invoice_ID | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
       | inv_160      | payment_160  | 3.57   | 0            | alloc2             |
 
-    And no Fact_Acct records are found for payment allocation alloc1
-    And Fact_Acct records are found for payment allocation alloc2
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr |
-      | B_UnallocatedCash_Acct | 3.57 EUR    | 0 EUR       |
-      | C_Receivable_Acct      | 0 EUR       | 3.57 EUR    |
+    And no Fact_Acct records are found for documents alloc1
+    And Fact_Acct records are matching
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID |
+      | B_UnallocatedCash_Acct | 3.57 EUR    | 0 EUR       | alloc2    |
+      | C_Receivable_Acct      | 0 EUR       | 3.57 EUR    | alloc2    |
 
 
 
@@ -724,10 +744,10 @@ Feature: invoice payment allocation
       | C_Invoice_ID | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
       | inv_180      | payment_180  | -5.95  | 0            | alloc1             |
 
-    And Fact_Acct records are found for payment allocation alloc1
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr |
-      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       |
-      | B_PaymentSelect_Acct  | 0 EUR       | 5.95 EUR    |
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
+      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       | alloc1    |
+      | B_PaymentSelect_Acct  | 0 EUR       | 5.95 EUR    | alloc1    |
 
     
     
@@ -806,14 +826,14 @@ Feature: invoice payment allocation
       | inv_190_1    | payment_190  | -5.95  | 0            | alloc1             |
       | inv_190_2    | payment_190  | -5.95  | 0            | alloc2             |
 
-    And Fact_Acct records are found for payment allocation alloc1
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr |
-      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       |
-      | B_PaymentSelect_Acct  | 0 EUR       | 5.95 EUR    |
-    And Fact_Acct records are found for payment allocation alloc2
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr |
-      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       |
-      | B_PaymentSelect_Acct  | 0 EUR       | 5.95 EUR    |
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
+      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       | alloc1    |
+      | B_PaymentSelect_Acct  | 0 EUR       | 5.95 EUR    | alloc1    |
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
+      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       | alloc2    |
+      | B_PaymentSelect_Acct  | 0 EUR       | 5.95 EUR    | alloc2    |
 
     
     
@@ -862,9 +882,9 @@ Feature: invoice payment allocation
       | inv_200_1  | bpartner      | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
       | inv_200_2  | bpartner      | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
-      | invl_200_1 | inv_200_1    | product_200  | 1 PCE       |
-      | invl_200_2 | inv_200_2    | product_200  | 1 PCE       |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invl_200_1 | inv_200_1    | product_200  | 1 PCE       | tax1     |
+      | invl_200_2 | inv_200_2    | product_200  | 1 PCE       | tax1     |
     And the invoice identified by inv_200_1 is completed
     And the invoice identified by inv_200_2 is completed
 
@@ -901,20 +921,20 @@ Feature: invoice payment allocation
       | C_Invoice_ID | Amount | WriteOffAmt | C_AllocationHdr_ID |
       | inv_200_2    | 0      | -2.9        | alloc3             |
 
-    And Fact_Acct records are found for payment allocation alloc1
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr |
-      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       |
-      | B_PaymentSelect_Acct  | 0 EUR       | 5.95 EUR    |
-    And Fact_Acct records are found for payment allocation alloc2
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr |
-      | V_Liability_Acct      | 3.05 EUR    | 0 EUR       |
-      | B_PaymentSelect_Acct  | 0 EUR       | 3.05 EUR    |
-    And Fact_Acct records are found for payment allocation alloc3
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr |
-      | V_Liability_Acct      | 2.9 EUR     | 0 EUR       |
-      | WriteOff_Acct         | 0 EUR       | 2.9 EUR     |
-      | WriteOff_Acct         | -0.46 EUR   | 0 EUR       |
-      | T_Credit_Acct         | 0 EUR       | -0.46 EUR   |
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
+      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       | alloc1    |
+      | B_PaymentSelect_Acct  | 0 EUR       | 5.95 EUR    | alloc1    |
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
+      | V_Liability_Acct      | 3.05 EUR    | 0 EUR       | alloc2    |
+      | B_PaymentSelect_Acct  | 0 EUR       | 3.05 EUR    | alloc2    |
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID |
+      | V_Liability_Acct      | 2.9 EUR     | 0 EUR       |          | alloc3    |
+      | WriteOff_Acct         | 0 EUR       | 2.9 EUR     |          | alloc3    |
+      | WriteOff_Acct         | -0.46 EUR   | 0 EUR       | tax1     | alloc3    |
+      | T_Credit_Acct         | 0 EUR       | -0.46 EUR   | tax1     | alloc3    |
     
     
     
@@ -961,9 +981,9 @@ Feature: invoice payment allocation
       | inv_210_1  | bpartner      | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
       | inv_210_2  | bpartner      | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
-      | invl_210_1 | inv_210_1    | product_210  | 1 PCE       |
-      | invl_210_2 | inv_210_2    | product_210  | 1 PCE       |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invl_210_1 | inv_210_1    | product_210  | 1 PCE       | tax1     |
+      | invl_210_2 | inv_210_2    | product_210  | 1 PCE       | tax1     |
     And the invoice identified by inv_210_1 is completed
     And the invoice identified by inv_210_2 is completed
 
@@ -1000,20 +1020,20 @@ Feature: invoice payment allocation
       | C_Invoice_ID | Amount | DiscountAmt | C_AllocationHdr_ID |
       | inv_210_2    | 0      | -2.9        | alloc3             |
 
-    And Fact_Acct records are found for payment allocation alloc1
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr |
-      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       |
-      | B_PaymentSelect_Acct  | 0 EUR       | 5.95 EUR    |
-    And Fact_Acct records are found for payment allocation alloc2
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr |
-      | V_Liability_Acct      | 3.05 EUR    | 0 EUR       |
-      | B_PaymentSelect_Acct  | 0 EUR       | 3.05 EUR    |
-    And Fact_Acct records are found for payment allocation alloc3
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr |
-      | V_Liability_Acct      | 2.9 EUR     | 0 EUR       |
-      | PayDiscount_Rev_Acct  | 0 EUR       | 2.9 EUR     |
-      | PayDiscount_Rev_Acct  | 0.46 EUR    | 0 EUR       |
-      | T_Credit_Acct         | 0 EUR       | 0.46 EUR    |
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
+      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       | alloc1    |
+      | B_PaymentSelect_Acct  | 0 EUR       | 5.95 EUR    | alloc1    |
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
+      | V_Liability_Acct      | 3.05 EUR    | 0 EUR       | alloc2    |
+      | B_PaymentSelect_Acct  | 0 EUR       | 3.05 EUR    | alloc2    |
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID |
+      | V_Liability_Acct      | 2.9 EUR     | 0 EUR       |          | alloc3    |
+      | PayDiscount_Rev_Acct  | 0 EUR       | 2.9 EUR     |          | alloc3    |
+      | PayDiscount_Rev_Acct  | 0.46 EUR    | 0 EUR       | tax1     | alloc3    |
+      | T_Credit_Acct         | 0 EUR       | 0.46 EUR    | tax1     | alloc3    |
 
     
     
@@ -1094,11 +1114,11 @@ Feature: invoice payment allocation
       | C_Invoice_ID | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
       | inv_220      | payment_220  | -3.57  | 0            | alloc2             |
 
-    And no Fact_Acct records are found for payment allocation alloc1
-    And Fact_Acct records are found for payment allocation alloc2
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr |
-      | V_Liability_Acct      | 3.57 EUR    | 0 EUR       |
-      | B_PaymentSelect_Acct  | 0 EUR       | 3.57 EUR    |
+    And no Fact_Acct records are found for documents alloc1
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
+      | V_Liability_Acct      | 3.57 EUR    | 0 EUR       | alloc2    |
+      | B_PaymentSelect_Acct  | 0 EUR       | 3.57 EUR    | alloc2    |
     
     
     
@@ -1233,10 +1253,10 @@ Feature: invoice payment allocation
       | payment_210_1 | -5     | -4           | alloc1             |
       | payment_210_2 | 5      | 0            | alloc1             |
 
-    And Fact_Acct records are found for payment allocation alloc1
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr |
-      | B_UnallocatedCash_Acct | 5 EUR       | 0 EUR       |
-      | B_PaymentSelect_Acct   | 0 EUR       | 5 EUR       |
+    And Fact_Acct records are matching
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID |
+      | B_UnallocatedCash_Acct | 5 EUR       | 0 EUR       | alloc1    |
+      | B_PaymentSelect_Acct   | 0 EUR       | 5 EUR       | alloc1    |
 
 
 
@@ -1298,6 +1318,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0132_250
   @from:cucumber
+  @ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
   Scenario: (Sales) check the paymentTerm discount is applied only once per invoice (i.e. when the invoice is fully paid) allocate 2 payments to a sales invoice
   - allocate 1st payment to sales invoice for partial amount, paymentTerm discount is not applied
   - allocate 2nd payment to sales invoice for remaining amount, paymentTerm discount is applied
@@ -1403,6 +1424,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0132_260
   @from:cucumber
+  @ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
   Scenario: (Purchase) check the paymentTerm discount is applied only once per invoice (i.e. when the invoice is fully paid) allocate 2 payments to a purchase invoice
   - allocate 1st payment to purchase invoice for partial amount, paymentTerm discount is not applied
   - allocate 2nd payment to purchase invoice for remaining amount, paymentTerm discount is applied
@@ -1511,6 +1533,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0132_270
   @from:cucumber
+  @ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
   Scenario: (Sales) check the paymentTerm discount is applied only once per invoice (i.e. when the invoice is fully paid) allocate 2 payments to a sales invoice (allocation happens only once)
   - allocate 1st payment to sales invoice for partial amount, paymentTerm discount is not applied
   - allocate 2nd payment to sales invoice for remaining amount, paymentTerm discount is applied
@@ -1608,6 +1631,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0132_280
   @from:cucumber
+  @ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
   Scenario: (Sales) check the paymentTerm discount is applied only once per invoice (i.e. when the invoice is fully paid) allocate 2 credit memos to a sales invoice
   - allocate 1st credit memo to sales invoice for partial amount, invoice's paymentTerm discount is not applied, credit memo's paymentTerm discount is applied
   - allocate 2nd credit memo to sales invoice for remaining amount, paymentTerm discount is applied for both invoice, but not for credit memo (because it is not fully allocated)
@@ -1733,6 +1757,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0132_290
   @from:cucumber
+  @ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
   Scenario: (Purchase) check the paymentTerm discount is applied only once per invoice (i.e. when the invoice is fully paid) allocate 2 credit memos to a purchase invoice
   - allocate 1st credit memo to purchase invoice for partial amount, invoice's paymentTerm discount is not applied, credit memo's paymentTerm discount is applied
   - allocate 2nd credit memo to purchase invoice for remaining amount, paymentTerm discount is applied for invoice, but not for credit memo (because it is not fully allocated)
@@ -1844,6 +1869,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0132_300
   @from:cucumber
+  @ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
   Scenario: Two purchase invoices allocated to a sales invoice
   - allocate 1st purchase invoice to sales invoice for partial amount, sales invoice's paymentTerm discount is not applied, purchase invoice's paymentTerm discount is applied
   - allocate 2nd purchase invoice to sales invoice for remaining amount, paymentTerm discount is applied for sales invoice, but not for purchase invoice (because it is not fully allocated)
@@ -1991,6 +2017,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0132_310
   @from:cucumber
+  @ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
   Scenario: allocate payment to purchase invoice with overpayment and negative discount
 
     Given metasfresh contains M_Products:

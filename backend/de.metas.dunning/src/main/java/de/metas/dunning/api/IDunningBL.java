@@ -83,17 +83,15 @@ public interface IDunningBL extends ISingletonService
 	/**
 	 * Process {@link I_C_Dunning_Candidate}s and produces {@link I_C_DunningDoc}s.
 	 *
-	 * @param context
 	 * @param candidates candidates source to be used
 	 */
 	void processCandidates(IDunningContext context, IDunningCandidateSource candidates);
 
 	/**
 	 * Get previous dunning levels of given dunning level.
-	 * <p>
+	 * <p/>
 	 * For determining previous levels the {@link I_C_DunningLevel#getDaysAfterDue()} + {@link I_C_DunningLevel#getDaysBetweenDunning()} is compared.
 	 *
-	 * @param level
 	 * @return list of previous dunning levels.
 	 */
 	List<I_C_DunningLevel> getPreviousLevels(I_C_DunningLevel level);

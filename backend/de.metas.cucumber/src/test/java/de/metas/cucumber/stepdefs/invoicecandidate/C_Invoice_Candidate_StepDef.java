@@ -78,13 +78,13 @@ import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_I_Invoice_Candidate;
 import de.metas.invoicecandidate.process.params.InvoicingParams;
-import de.metas.invoicecandidate.process.params.InvoicingParams;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.serviceprovider.model.I_S_Issue;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Loggables;
@@ -120,7 +120,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_Project;
-import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
@@ -709,8 +708,8 @@ public class C_Invoice_Candidate_StepDef
 				final String taxEffectiveIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Tax_Effective_ID + "." + TABLECOLUMN_IDENTIFIER);
 				if (Check.isNotBlank(taxEffectiveIdentifier))
 				{
-					final I_C_Tax taxEffective = taxTable.get(taxEffectiveIdentifier);
-					softly.assertThat(updatedInvoiceCandidate.getC_Tax_Effective_ID()).as("C_Tax_Effective_ID").isEqualTo(taxEffective.getC_Tax_ID());
+					final TaxId taxEffectiveId = taxTable.getId(taxEffectiveIdentifier);
+					softly.assertThat(updatedInvoiceCandidate.getC_Tax_Effective_ID()).isEqualTo(taxEffectiveId.getRepoId());
 				}
 
 				final String recordIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Record_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -1148,9 +1147,8 @@ public class C_Invoice_Candidate_StepDef
 
 		if (Check.isNotBlank(taxIdentifier))
 		{
-			final I_C_Tax taxRecord = taxTable.get(taxIdentifier);
-
-			invoiceCandidateRecord.setC_Tax_Override_ID(taxRecord.getC_Tax_ID());
+			final TaxId taxId = taxTable.getId(taxIdentifier);
+			invoiceCandidateRecord.setC_Tax_Override_ID(taxId.getRepoId());
 		}
 
 		if (qualityDiscountOverride != null)
@@ -1795,8 +1793,8 @@ public class C_Invoice_Candidate_StepDef
 		final String taxEffectiveIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Tax_Effective_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(taxEffectiveIdentifier))
 		{
-			final I_C_Tax taxEffective = taxTable.get(taxEffectiveIdentifier);
-			softly.assertThat(updatedInvoiceCandidate.getC_Tax_Effective_ID()).as("C_Tax_Effective_ID").isEqualTo(taxEffective.getC_Tax_ID());
+			final TaxId taxEffectiveId = taxTable.getId(taxEffectiveIdentifier);
+			softly.assertThat(updatedInvoiceCandidate.getC_Tax_Effective_ID()).as("C_Tax_Effective_ID").isEqualTo(taxEffectiveId.getRepoId());
 		}
 
 		final String activityIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_C_Activity_ID + "." + TABLECOLUMN_IDENTIFIER);

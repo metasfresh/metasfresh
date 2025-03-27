@@ -26,7 +26,9 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.location.ICountryDAO;
 import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxUtils;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -48,7 +50,7 @@ import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class C_Tax_StepDef
 {
@@ -147,7 +149,7 @@ public class C_Tax_StepDef
 		saveRecord(taxRecord);
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_C_Tax.Table_Name);
-		taxTable.putOrReplace(recordIdentifier, taxRecord);
+		taxTable.putOrReplace(recordIdentifier, TaxUtils.from(taxRecord));
 	}
 
 	private void loadTax(@NonNull final Map<String, String> tableRow)
@@ -160,15 +162,17 @@ public class C_Tax_StepDef
 		{
 			final I_C_Tax taxRecord = InterfaceWrapperHelper.load(id, I_C_Tax.class);
 
-			taxTable.putOrReplace(identifier, taxRecord);
+			taxTable.putOrReplace(identifier, TaxUtils.from(taxRecord));
 		}
 	}
 
 	private void updateTax(@NonNull final Map<String, String> tableRow)
 	{
 		final String identifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Tax.COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_Tax taxRecord = taxTable.get(identifier);
-		assertThat(taxRecord).isNotNull();
+		final Tax taxTableRecord = taxTable.get(identifier);
+		assertThat(taxTableRecord).isNotNull();
+
+		final I_C_Tax taxRecord = InterfaceWrapperHelper.load(taxTableRecord.getTaxId(), I_C_Tax.class);
 
 		final String seqNo = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Tax.COLUMNNAME_SeqNo);
 
@@ -179,6 +183,6 @@ public class C_Tax_StepDef
 
 		saveRecord(taxRecord);
 
-		taxTable.putOrReplace(identifier, taxRecord);
+		taxTable.putOrReplace(identifier, taxTableRecord);
 	}
 }

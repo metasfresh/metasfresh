@@ -122,19 +122,19 @@ class ConcatenatePDFsCommand
 
 		final I_C_Async_Batch parentAsyncBatchRecord = asyncBatchBL.getAsyncBatchById(printingQueueItemsGeneratedAsyncBatchId);
 
-		final I_C_Async_Batch asyncBatch = asyncBatchBL.newAsyncBatch()
+		final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch()
 				.setContext(ctx)
 				.setC_Async_Batch_Type(queryRequest.getAsyncBatchType())
 				.setName(queryRequest.getAsyncBatchType())
 				.setDescription(queryRequest.getQueryName())
 				.setParentAsyncBatchId(printingQueueItemsGeneratedAsyncBatchId)
 				.setOrgId(OrgId.ofRepoId(parentAsyncBatchRecord.getAD_Org_ID()))
-				.build();
+				.buildAndEnqueue();
 
 		workPackageQueueFactory
 				.getQueueForEnqueuing(ctx, PrintingQueuePDFConcatenateWorkpackageProcessor.class)
 				.newWorkPackage()
-				.setC_Async_Batch(asyncBatch)
+				.setC_Async_Batch_ID(asyncBatchId)
 				.addElements(printingQueues)
 				.buildAndEnqueue();
 	}

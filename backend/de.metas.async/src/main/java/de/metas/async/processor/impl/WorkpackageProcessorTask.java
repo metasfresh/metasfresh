@@ -107,7 +107,6 @@ import static de.metas.async.event.WorkpackageProcessedEvent.Status.SKIPPED;
 class WorkpackageProcessorTask implements Runnable
 {
 	private static final AdMessageKey MSG_PROCESSING_ERROR_NOTIFICATION_TEXT = AdMessageKey.of("de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationText");
-	private static final AdMessageKey MSG_PROCESSING_ERROR_NOTIFICATION_TITLE = AdMessageKey.of("de.metas.async.WorkpackageProcessorTask.ProcessingErrorNotificationTitle");
 	// services
 	private static final Logger logger = LogManager.getLogger(WorkpackageProcessorTask.class);
 
@@ -335,7 +334,6 @@ class WorkpackageProcessorTask implements Runnable
 	private void beforeWorkpackageProcessing()
 	{
 		// If the current workpackage's processor creates a follow-up-workpackage, the asyncBatch and priority will be forwarded.
-		contextFactory.setThreadInheritedAsyncBatch(AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID()));
 		contextFactory.setThreadInheritedWorkpackageAsyncBatch(AsyncBatchId.ofRepoIdOrNull(workPackage.getC_Async_Batch_ID()));
 
 		final String priority = workPackage.getPriority();
@@ -445,7 +443,6 @@ class WorkpackageProcessorTask implements Runnable
 	{
 		// get rid of inherited AsyncBatchId and priority
 		// actually it's not necessary, but we are doing it for safety reasons
-		contextFactory.setThreadInheritedAsyncBatch(null);
 		contextFactory.setThreadInheritedWorkpackageAsyncBatch(null);
 		contextFactory.setThreadInheritedPriority(null);
 
@@ -604,20 +601,12 @@ class WorkpackageProcessorTask implements Runnable
 			issueId = Services.get(IErrorManager.class).createIssue(ex);
 		}
 
-		//
-		// Allow retry processing this workpackage?
-		if (workPackageProcessorWrapped.isAllowRetryOnError())
-		{
-			workPackage.setProcessed(false); // just in case it was true
-		}
-		else
-		{
-			// Flag the workpackage as processed in order to:
-			// * not allow future retries
-			// * avoid discarding items from this workpackage on future workpackages because they were enqueued here
-			// TODO shall we also release the elements lock if any?
-			workPackage.setProcessed(true);
-		}
+		// If we don't allow retry processing this workpackage, then flag it as processed in order to:
+		// * not allow future retries
+		// * avoid discarding items from this workpackage on future workpackages because they were enqueued here
+		// TODO shall we also release the elements lock if any?
+		// Otherwise, just set it as unprocessed (even if it was marked as processed), because we're dealing with an error.
+		workPackage.setProcessed(!workPackageProcessorWrapped.isAllowRetryOnError());
 
 		workPackage.setIsError(true);
 		workPackage.setErrorMsg(ex.getLocalizedMessage());

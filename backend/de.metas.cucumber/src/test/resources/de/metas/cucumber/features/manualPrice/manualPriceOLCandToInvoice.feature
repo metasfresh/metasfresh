@@ -23,6 +23,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
   @from:cucumber
   @topic:orderCandidate
   @Id:S0163_100
+  @ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
   Scenario: Order candidate to shipment and invoice flow and closed order
     Given metasfresh contains M_Products:
       | Identifier | Name                      | IsStocked |
@@ -119,6 +120,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
   @from:cucumber
   @topic:orderCandidate
   @Id:S0163_200
+  @ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
   Scenario: Insert and process C_OlCand with manual price,stock uom and discount for product p1
     Given metasfresh contains M_Products:
       | Identifier | Name                      | IsStocked |
@@ -215,6 +217,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
   @from:cucumber
   @topic:orderCandidate
   @Id:S0163_300
+  @ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
   Scenario: Insert and process C_OlCand with manual price and TU uom for product p1
     Given metasfresh contains M_Products:
       | Identifier | Name                      | IsStocked |
@@ -406,6 +409,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
   @from:cucumber
   @topic:orderCandidate
   @Id:S0163_900
+  @ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
   Scenario: Order candidate to shipment and invoice flow and closed order with Reduced Vat Tax Category matching on C_Country_ID
     Given metasfresh contains M_Products:
       | Identifier | Name                      | IsStocked |

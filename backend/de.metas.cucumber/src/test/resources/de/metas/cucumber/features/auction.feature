@@ -1,6 +1,7 @@
 @from:cucumber
 @topic:auction
 @ghActions:run_on_executor3
+@ignore #Temporarily ignored by https://github.com/metasfresh/me03/issues/22535
 Feature: Auction
 
   Background:

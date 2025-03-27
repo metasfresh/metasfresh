@@ -48,6 +48,7 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderId;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -745,8 +746,8 @@ public class C_OrderLine_StepDef
 		final String taxIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(taxIdentifier))
 		{
-			final I_C_Tax tax = taxTable.get(taxIdentifier);
-			assertThat(orderLine.getC_Tax_ID()).isEqualTo(tax.getC_Tax_ID());
+			final TaxId taxId = taxTable.getId(taxIdentifier);
+			assertThat(orderLine.getC_Tax_ID()).isEqualTo(taxId.getRepoId());
 		}
 
 		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);

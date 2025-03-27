@@ -244,11 +244,8 @@ public class DunningBL implements IDunningBL
 	}
 
 	@Override
-	public void processCandidates(final IDunningContext context, final IDunningCandidateSource candidates)
+	public void processCandidates(@NonNull final IDunningContext context, @NonNull final IDunningCandidateSource candidates)
 	{
-		Check.assumeNotNull(context, "context not null");
-		Check.assumeNotNull(candidates, "candidates source not null");
-
 		final IDunningConfig config = context.getDunningConfig();
 
 		final IDunningProducer dunningProducer = config.createDunningProducer();
