@@ -776,7 +776,7 @@ public class OrderGroupRepository implements GroupRepository
 		orderLine.setQtyEntered(request.getQtyMultiplier().multiply(from.getQty().toBigDecimal()));
 		orderLine.setC_CompensationGroup_Schema_TemplateLine_ID(from.getId().getRepoId());
 		orderLine.setC_Flatrate_Conditions_ID(ConditionsId.toRepoId(request.getNewContractConditionsId()));
-		orderLine.setIsSkipInvoicing(from.isSkipInvoicing());
+		orderLine.setIsAllowSeparateInvoicing(from.isAllowSeparateInvoicing());
 
 		orderLine.setIsHideWhenPrinting(from.isHideWhenPrinting());
 		orderLineBL.save(orderLine);

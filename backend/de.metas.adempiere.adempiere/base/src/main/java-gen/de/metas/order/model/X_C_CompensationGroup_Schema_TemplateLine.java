@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_CompensationGroup_Schema_TemplateLine extends org.compiere.model.PO implements I_C_CompensationGroup_Schema_TemplateLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -619523189L;
+	private static final long serialVersionUID = 1689134861L;
 
     /** Standard Constructor */
     public X_C_CompensationGroup_Schema_TemplateLine (final Properties ctx, final int C_CompensationGroup_Schema_TemplateLine_ID, @Nullable final String trxName)
@@ -108,6 +108,18 @@ public class X_C_CompensationGroup_Schema_TemplateLine extends org.compiere.mode
 	}
 
 	@Override
+	public void setIsAllowSeparateInvoicing (final boolean IsAllowSeparateInvoicing)
+	{
+		set_Value (COLUMNNAME_IsAllowSeparateInvoicing, IsAllowSeparateInvoicing);
+	}
+
+	@Override
+	public boolean isAllowSeparateInvoicing() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowSeparateInvoicing);
+	}
+
+	@Override
 	public void setIsHideWhenPrinting (final boolean IsHideWhenPrinting)
 	{
 		set_Value (COLUMNNAME_IsHideWhenPrinting, IsHideWhenPrinting);
@@ -117,18 +129,6 @@ public class X_C_CompensationGroup_Schema_TemplateLine extends org.compiere.mode
 	public boolean isHideWhenPrinting() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsHideWhenPrinting);
-	}
-
-	@Override
-	public void setIsSkipInvoicing (final boolean IsSkipInvoicing)
-	{
-		set_Value (COLUMNNAME_IsSkipInvoicing, IsSkipInvoicing);
-	}
-
-	@Override
-	public boolean isSkipInvoicing() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsSkipInvoicing);
 	}
 
 	@Override
