@@ -45,6 +45,7 @@ public class PurchaseInvoiceAsPaymentForSalesCreditMemoDocumentWrapper extends A
 	@Override
 	public Money calculateProjectedOverUnderAmt(final Money amountToAllocate)
 	{
+		// This purchase invoice will be considered "paid" by the payable sales credit memo it is allocated to, Therefore, the amountToAllocate does not have to be negated
 		return purchaseInvoicePayableDoc.computeProjectedOverUnderAmt(AllocationAmounts.ofPayAmt(amountToAllocate));
 	}
 
