@@ -37,14 +37,15 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelContextConfiguration;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.Test;
-import org.xmlunit.assertj3.XmlAssert;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.util.Files.contentOf;
 
 class EdifactInvoicRouteTest extends CamelTestSupport
 {
@@ -106,10 +107,8 @@ class EdifactInvoicRouteTest extends CamelTestSupport
 		final var edifactOutput = fileOutputEndpoint.getExchanges().get(0).getIn().getBody(String.class);
 
 		assertThat(edifactOutput).isNotBlank();
-		XmlAssert.assertThat(edifactOutput).and(new File("./src/test/resources/de/metas/edi/esb/invoicexport/edifact/INVOIC_010_expected_output.edi"))
-				.ignoreChildNodesOrder()
-				.ignoreComments()
-				.areIdentical();
+		final File file = new File("./src/test/resources/de/metas/edi/esb/invoicexport/edifact/INVOIC_010_expected_output.edi");
+		assertThat(edifactOutput).isEqualToIgnoringWhitespace(contentOf(file, StandardCharsets.UTF_8));
 
 		SystemTime.resetTimeSource();
 	}
