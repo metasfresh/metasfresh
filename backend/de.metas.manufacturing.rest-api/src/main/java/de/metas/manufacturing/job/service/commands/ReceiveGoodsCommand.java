@@ -30,6 +30,7 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -46,6 +47,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class ReceiveGoodsCommand
 {
@@ -272,6 +274,9 @@ public class ReceiveGoodsCommand
 			locatorId = LocatorId.ofRepoId(ppOrder.getM_Warehouse_ID(), ppOrder.getM_Locator_ID());
 			huProducer = ppOrderBL.receivingMainProduct(ppOrderId);
 		}
+
+		StringUtils.trimBlankToOptional(lotNo).ifPresent(huProducer::lotNumber);
+		Optional.ofNullable(bestBeforeDate).ifPresent(huProducer::bestBeforeDate);
 
 		if (Check.isNotBlank(lotNo))
 		{
