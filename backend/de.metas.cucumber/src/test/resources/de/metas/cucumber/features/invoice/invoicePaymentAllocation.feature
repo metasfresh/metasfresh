@@ -91,10 +91,10 @@ Feature: invoice payment allocation
     And Fact_Acct records are matching
       | AccountConceptualName  | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID   |
       | *                      |             |             |               | payment_100 |
-      | B_UnallocatedCash_Acct |             | 5.95 EUR    | bpartner      | payment_100 |
-      | B_UnallocatedCash_Acct | 5.95 EUR    |             | bpartner      | alloc1      |
-      | C_Receivable_Acct      |             | 5.95 EUR    | bpartner      | alloc1      |
-      | C_Receivable_Acct      | 5.95 EUR    |             | bpartner      | inv_100     |
+      | B_UnallocatedCash_Acct |             | 5.95 EUR    | bpartner1     | payment_100 |
+      | B_UnallocatedCash_Acct | 5.95 EUR    |             | bpartner1     | alloc1      |
+      | C_Receivable_Acct      |             | 5.95 EUR    | bpartner1     | alloc1      |
+      | C_Receivable_Acct      | 5.95 EUR    |             | bpartner1     | inv_100     |
       | *                      |             |             |               | inv_100     |
     
 
@@ -213,15 +213,15 @@ Feature: invoice payment allocation
       | salesPLV               | product_120  | 5.00     | PCE      |
 
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | inv_120_1  | bpartner1     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
-      | inv_120_2  | bpartner1     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
+      | Identifier       | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | customerInvoice1 | bpartner1     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
+      | customerInvoice2 | bpartner1     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
-      | invl_120_1 | inv_120_1    | product_120  | 1 PCE       | tax1     |
-      | invl_120_2 | inv_120_2    | product_120  | 1 PCE       | tax1     |
-    And the invoice identified by inv_120_1 is completed
-    And the invoice identified by inv_120_2 is completed
+      | Identifier | C_Invoice_ID     | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invl_120_1 | customerInvoice1 | product_120  | 1 PCE       | tax1     |
+      | invl_120_2 | customerInvoice2 | product_120  | 1 PCE       | tax1     |
+    And the invoice identified by customerInvoice1 is completed
+    And the invoice identified by customerInvoice2 is completed
 
     And metasfresh contains C_Payment
       | Identifier  | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID |
@@ -229,44 +229,44 @@ Feature: invoice payment allocation
     And the payment identified by payment_120 is completed
 
     And allocate payments to invoices
-      | C_Invoice_ID | C_Payment_ID |
-      | inv_120_1    | payment_120  |
-      | inv_120_2    |              |
+      | C_Invoice_ID     | C_Payment_ID |
+      | customerInvoice1 | payment_120  |
+      | customerInvoice2 |              |
 
     Then validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | OpenAmt | IsPartiallyPaid |
-      | inv_120_1    | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   |         | false           |
-      | inv_120_2    | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | false  | 2.9     | true            |
+      | C_Invoice_ID     | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | OpenAmt | IsPartiallyPaid |
+      | customerInvoice1 | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   |         | false           |
+      | customerInvoice2 | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | false  | 2.9     | true            |
     And validate C_AllocationLines
-      | C_Invoice_ID | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
-      | inv_120_1    | payment_120  | 5.95   | 0            | alloc1             |
-      | inv_120_2    | payment_120  | 3.05   | 2.9          | alloc2             |
+      | C_Invoice_ID     | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
+      | customerInvoice1 | payment_120  | 5.95   | 0            | alloc1             |
+      | customerInvoice2 | payment_120  | 3.05   | 2.9          | alloc2             |
     And Fact_Acct records are matching
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID |
-      | B_UnallocatedCash_Acct | 5.95 EUR    |             | alloc1    |
-      | C_Receivable_Acct      |             | 5.95 EUR    | alloc1    |
-      | C_Receivable_Acct      | 5.95 EUR    |             | inv_120_1 |
-      | *                      |             |             | inv_120_1 |
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID        |
+      | B_UnallocatedCash_Acct | 5.95 EUR    |             | alloc1           |
+      | C_Receivable_Acct      |             | 5.95 EUR    | alloc1           |
+      | C_Receivable_Acct      | 5.95 EUR    |             | customerInvoice1 |
+      | *                      |             |             | customerInvoice1 |
     And Fact_Acct records are matching
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID |
-      | B_UnallocatedCash_Acct | 3.05 EUR    |             | alloc2    |
-      | C_Receivable_Acct      |             | 3.05 EUR    | alloc2    |
-      | C_Receivable_Acct      | 5.95 EUR    |             | inv_120_2 |
-      | *                      |             |             | inv_120_2 |
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID        |
+      | B_UnallocatedCash_Acct | 3.05 EUR    |             | alloc2           |
+      | C_Receivable_Acct      |             | 3.05 EUR    | alloc2           |
+      | C_Receivable_Acct      | 5.95 EUR    |             | customerInvoice2 |
+      | *                      |             |             | customerInvoice2 |
 
     And apply WRITEOFF to invoices
-      | C_Invoice_ID | Amount |
-      | inv_120_2    | 2.9    |
+      | C_Invoice_ID     | Amount |
+      | customerInvoice2 | 2.9    |
 
     Then validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | IsPartiallyPaid |
-      | inv_120_2    | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   | false           |
+      | C_Invoice_ID     | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | IsPartiallyPaid |
+      | customerInvoice2 | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   | false           |
     And validate payments
       | C_Payment_ID | IsAllocated |
       | payment_120  | true        |
     And validate C_AllocationLines
-      | C_Invoice_ID | Amount | WriteOffAmt | C_AllocationHdr_ID |
-      | inv_120_2    | 0      | 2.9         | alloc3             |
+      | C_Invoice_ID     | Amount | WriteOffAmt | C_AllocationHdr_ID |
+      | customerInvoice2 | 0      | 2.9         | alloc3             |
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID |
       | WriteOff_Acct         | 2.90 EUR    |             |          | alloc3    |
@@ -314,15 +314,15 @@ Feature: invoice payment allocation
       | salesPLV               | product_130  | 5.00     | PCE      |
 
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | inv_130_1  | bpartner1     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
-      | inv_130_2  | bpartner1     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
+      | Identifier       | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | customerInvoice1 | bpartner1     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
+      | customerInvoice2 | bpartner1     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
-      | invl_130_1 | inv_130_1    | product_130  | 1 PCE       | tax1     |
-      | invl_130_2 | inv_130_2    | product_130  | 1 PCE       | tax1     |
-    And the invoice identified by inv_130_1 is completed
-    And the invoice identified by inv_130_2 is completed
+      | Identifier | C_Invoice_ID     | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invl_130_1 | customerInvoice1 | product_130  | 1 PCE       | tax1     |
+      | invl_130_2 | customerInvoice2 | product_130  | 1 PCE       | tax1     |
+    And the invoice identified by customerInvoice1 is completed
+    And the invoice identified by customerInvoice2 is completed
 
     And metasfresh contains C_Payment
       | Identifier  | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID |
@@ -330,18 +330,18 @@ Feature: invoice payment allocation
     And the payment identified by payment_130 is completed
 
     And allocate payments to invoices
-      | C_Invoice_ID | C_Payment_ID |
-      | inv_130_1    | payment_130  |
-      | inv_130_2    |              |
+      | C_Invoice_ID     | C_Payment_ID |
+      | customerInvoice1 | payment_130  |
+      | customerInvoice2 |              |
 
     Then validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | OpenAmt | IsPartiallyPaid |
-      | inv_130_1    | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   |         | false           |
-      | inv_130_2    | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | false  | 2.9     | true            |
+      | C_Invoice_ID     | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | OpenAmt | IsPartiallyPaid |
+      | customerInvoice1 | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   |         | false           |
+      | customerInvoice2 | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | false  | 2.9     | true            |
     And validate C_AllocationLines
-      | C_Invoice_ID | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
-      | inv_130_1    | payment_130  | 5.95   | 0            | alloc1             |
-      | inv_130_2    | payment_130  | 3.05   | 2.9          | alloc2             |
+      | C_Invoice_ID     | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
+      | customerInvoice1 | payment_130  | 5.95   | 0            | alloc1             |
+      | customerInvoice2 | payment_130  | 3.05   | 2.9          | alloc2             |
     And Fact_Acct records are matching
       | AccountConceptualName  | AmtSourceDr | AmtSourceCr | Record_ID |
       | B_UnallocatedCash_Acct | 5.95 EUR    |             | alloc1    |
@@ -352,18 +352,18 @@ Feature: invoice payment allocation
       | C_Receivable_Acct      |             | 3.05 EUR    | alloc2    |
 
     And apply DISCOUNT to invoices
-      | C_Invoice_ID | Amount |
-      | inv_130_2    | 2.9    |
+      | C_Invoice_ID     | Amount |
+      | customerInvoice2 | 2.9    |
 
     Then validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | IsPartiallyPaid |
-      | inv_130_2    | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   | false           |
+      | C_Invoice_ID     | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | IsPartiallyPaid |
+      | customerInvoice2 | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   | false           |
     And validate payments
       | C_Payment_ID | C_Payment_ID.IsAllocated |
       | payment_130  | true                     |
     And validate C_AllocationLines
-      | C_Invoice_ID | Amount | DiscountAmt | C_AllocationHdr_ID |
-      | inv_130_2    | 0      | 2.9         | alloc3             |
+      | C_Invoice_ID     | Amount | DiscountAmt | C_AllocationHdr_ID |
+      | customerInvoice2 | 0      | 2.9         | alloc3             |
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID |
       | PayDiscount_Exp_Acct  | 2.90 EUR    |             |          | alloc3    |
@@ -493,37 +493,37 @@ Feature: invoice payment allocation
       | purchasePLV            | product_150_2 | 5.00     | PCE      |
 
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | inv_150_1  | bpartner1     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
-      | inv_150_2  | bpartner1     | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
+      | Identifier       | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | customerInvoice1 | bpartner1     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
+      | vendorInvoice1   | bpartner1     | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID  | QtyInvoiced |
-      | invl_150_2 | inv_150_2    | product_150_2 | 2 PCE       |
-      | invl_150_1 | inv_150_1    | product_150_1 | 1 PCE       |
-    And the invoice identified by inv_150_1 is completed
-    And the invoice identified by inv_150_2 is completed
+      | Identifier | C_Invoice_ID     | M_Product_ID  | QtyInvoiced |
+      | invl_150_2 | vendorInvoice1   | product_150_2 | 2 PCE       |
+      | invl_150_1 | customerInvoice1 | product_150_1 | 1 PCE       |
+    And the invoice identified by customerInvoice1 is completed
+    And the invoice identified by vendorInvoice1 is completed
 
     And allocate payments to invoices
-      | C_Invoice_ID |
-      | inv_150_1    |
-      | inv_150_2    |
+      | C_Invoice_ID     |
+      | customerInvoice1 |
+      | vendorInvoice1   |
 
     Then validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | OpenAmt | IsPartiallyPaid |
-      | inv_150_1    | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   |         | false           |
-      | inv_150_2    | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | false  | 5.95    | true            |
+      | C_Invoice_ID     | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | OpenAmt | IsPartiallyPaid |
+      | customerInvoice1 | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   |         | false           |
+      | vendorInvoice1   | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | false  | 5.95    | true            |
     And validate C_AllocationLines
-      | C_Invoice_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
-      | inv_150_1    | 5.95   | 0            | alloc1             |
-      | inv_150_2    | -5.95  | -5.95        | alloc1             |
+      | C_Invoice_ID     | Amount | OverUnderAmt | C_AllocationHdr_ID |
+      | customerInvoice1 | 5.95   | 0            | alloc1             |
+      | vendorInvoice1   | -5.95  | -5.95        | alloc1             |
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
-      | *                     |             |             | inv_150_2 |
-      | V_Liability_Acct      |             | 11.9 EUR    | inv_150_2 |
-      | V_Liability_Acct      | 5.95 EUR    |             | alloc1    |
-      | C_Receivable_Acct     |             | 5.95 EUR    | alloc1    |
-      | C_Receivable_Acct     | 5.95 EUR    |             | inv_150_1 |
-      | *                     |             |             | inv_150_1 |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID        |
+      | *                     |             |             | vendorInvoice1   |
+      | V_Liability_Acct      |             | 11.9 EUR    | vendorInvoice1   |
+      | V_Liability_Acct      | 5.95 EUR    |             | alloc1           |
+      | C_Receivable_Acct     |             | 5.95 EUR    | alloc1           |
+      | C_Receivable_Acct     | 5.95 EUR    |             | customerInvoice1 |
+      | *                     |             |             | customerInvoice1 |
 
     
     
@@ -837,12 +837,12 @@ Feature: invoice payment allocation
       | V_Liability_Acct      | 5.95 EUR    | 0 EUR       | alloc2    |
       | B_PaymentSelect_Acct  | 0 EUR       | 5.95 EUR    | alloc2    |
 
-    
-    
-    
-    
-    
-    
+
+
+
+
+
+
     
     
     
@@ -880,15 +880,15 @@ Feature: invoice payment allocation
       | purchasePLV            | product_200  | 5.00     | PCE      |
 
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | inv_200_1  | bpartner1     | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
-      | inv_200_2  | bpartner1     | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
+      | Identifier     | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | vendorInvoice1 | bpartner1     | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
+      | vendorInvoice2 | bpartner1     | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
-      | invl_200_1 | inv_200_1    | product_200  | 1 PCE       | tax1     |
-      | invl_200_2 | inv_200_2    | product_200  | 1 PCE       | tax1     |
-    And the invoice identified by inv_200_1 is completed
-    And the invoice identified by inv_200_2 is completed
+      | Identifier | C_Invoice_ID   | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invl_200_1 | vendorInvoice1 | product_200  | 1 PCE       | tax1     |
+      | invl_200_2 | vendorInvoice2 | product_200  | 1 PCE       | tax1     |
+    And the invoice identified by vendorInvoice1 is completed
+    And the invoice identified by vendorInvoice2 is completed
 
     And metasfresh contains C_Payment
       | Identifier  | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID |
@@ -896,32 +896,32 @@ Feature: invoice payment allocation
     And the payment identified by payment_200 is completed
 
     And allocate payments to invoices
-      | C_Invoice_ID | C_Payment_ID |
-      | inv_200_1    | payment_200  |
-      | inv_200_2    |              |
+      | C_Invoice_ID   | C_Payment_ID |
+      | vendorInvoice1 | payment_200  |
+      | vendorInvoice2 |              |
 
     Then validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | OpenAmt | IsPartiallyPaid |
-      | inv_200_1    | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   |         | false           |
-      | inv_200_2    | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | false  | 2.9     | true            |
+      | C_Invoice_ID   | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | OpenAmt | IsPartiallyPaid |
+      | vendorInvoice1 | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   |         | false           |
+      | vendorInvoice2 | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | false  | 2.9     | true            |
     And validate C_AllocationLines
-      | C_Invoice_ID | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
-      | inv_200_1    | payment_200  | -5.95  | 0            | alloc1             |
-      | inv_200_2    | payment_200  | -3.05  | -2.9         | alloc2             |
+      | C_Invoice_ID   | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
+      | vendorInvoice1 | payment_200  | -5.95  | 0            | alloc1             |
+      | vendorInvoice2 | payment_200  | -3.05  | -2.9         | alloc2             |
 
     And apply WRITEOFF to invoices
-      | C_Invoice_ID | Amount |
-      | inv_200_2    | 2.9    |
+      | C_Invoice_ID   | Amount |
+      | vendorInvoice2 | 2.9    |
 
     Then validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | IsPartiallyPaid |
-      | inv_200_2    | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   | false           |
+      | C_Invoice_ID   | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | IsPartiallyPaid |
+      | vendorInvoice2 | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   | false           |
     And validate payments
       | C_Payment_ID | IsAllocated |
       | payment_200  | true        |
     And validate C_AllocationLines
-      | C_Invoice_ID | Amount | WriteOffAmt | C_AllocationHdr_ID |
-      | inv_200_2    | 0      | -2.9        | alloc3             |
+      | C_Invoice_ID   | Amount | WriteOffAmt | C_AllocationHdr_ID |
+      | vendorInvoice2 | 0      | -2.9        | alloc3             |
 
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
@@ -979,15 +979,15 @@ Feature: invoice payment allocation
       | purchasePLV            | product_210  | 5.00     | PCE      |
 
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | inv_210_1  | bpartner1     | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
-      | inv_210_2  | bpartner1     | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
+      | Identifier     | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | vendorInvoice1 | bpartner1     | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
+      | vendorInvoice2 | bpartner1     | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
-      | invl_210_1 | inv_210_1    | product_210  | 1 PCE       | tax1     |
-      | invl_210_2 | inv_210_2    | product_210  | 1 PCE       | tax1     |
-    And the invoice identified by inv_210_1 is completed
-    And the invoice identified by inv_210_2 is completed
+      | Identifier | C_Invoice_ID   | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invl_210_1 | vendorInvoice1 | product_210  | 1 PCE       | tax1     |
+      | invl_210_2 | vendorInvoice2 | product_210  | 1 PCE       | tax1     |
+    And the invoice identified by vendorInvoice1 is completed
+    And the invoice identified by vendorInvoice2 is completed
 
     And metasfresh contains C_Payment
       | Identifier  | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID |
@@ -995,32 +995,32 @@ Feature: invoice payment allocation
     And the payment identified by payment_210 is completed
 
     And allocate payments to invoices
-      | C_Invoice_ID | C_Payment_ID |
-      | inv_210_1    | payment_210  |
-      | inv_210_2    |              |
+      | C_Invoice_ID   | C_Payment_ID |
+      | vendorInvoice1 | payment_210  |
+      | vendorInvoice2 |              |
 
     Then validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | OpenAmt | IsPartiallyPaid |
-      | inv_210_1    | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   |         | false           |
-      | inv_210_2    | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | false  | 2.9     | true            |
+      | C_Invoice_ID   | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | OpenAmt | IsPartiallyPaid |
+      | vendorInvoice1 | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   |         | false           |
+      | vendorInvoice2 | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | false  | 2.9     | true            |
     And validate C_AllocationLines
-      | C_Invoice_ID | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
-      | inv_210_1    | payment_210  | -5.95  | 0            | alloc1             |
-      | inv_210_2    | payment_210  | -3.05  | -2.9         | alloc2             |
+      | C_Invoice_ID   | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
+      | vendorInvoice1 | payment_210  | -5.95  | 0            | alloc1             |
+      | vendorInvoice2 | payment_210  | -3.05  | -2.9         | alloc2             |
 
     And apply DISCOUNT to invoices
-      | C_Invoice_ID | Amount |
-      | inv_210_2    | 2.9    |
+      | C_Invoice_ID   | Amount |
+      | vendorInvoice2 | 2.9    |
 
     Then validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | IsPartiallyPaid |
-      | inv_210_2    | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   | false           |
+      | C_Invoice_ID   | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | IsPartiallyPaid |
+      | vendorInvoice2 | bpartner1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   | false           |
     And validate payments
       | C_Payment_ID | IsAllocated |
       | payment_210  | true        |
     And validate C_AllocationLines
-      | C_Invoice_ID | Amount | DiscountAmt | C_AllocationHdr_ID |
-      | inv_210_2    | 0      | -2.9        | alloc3             |
+      | C_Invoice_ID   | Amount | DiscountAmt | C_AllocationHdr_ID |
+      | vendorInvoice2 | 0      | -2.9        | alloc3             |
 
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
@@ -1370,7 +1370,7 @@ Feature: invoice payment allocation
 
     When metasfresh contains C_Payment
       | Identifier       | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID |
-      | outboundPayment1 | bpartner1     | 5.00 EUR | false     | org_EUR_account     |
+      | outboundPayment1 | bpartner2     | 5.00 EUR | false     | org_EUR_account     |
 
     And the invoice identified by salesCreditMemo1 is completed
     And the payment identified by outboundPayment1 is completed
@@ -1379,14 +1379,24 @@ Feature: invoice payment allocation
       | C_Invoice_ID     | C_Payment_ID     |
       | salesCreditMemo1 | outboundPayment1 |
 
+    Then validate created invoices
+      | C_Invoice_ID     | C_BPartner_ID | C_BPartner_Location_ID | IsPaid | OpenAmt | IsPartiallyPaid |
+      | salesCreditMemo1 | bpartner1     | bpartner_location_1    | false  | 0.95    | true            |
+
+
     And validate C_AllocationLines
       | C_Invoice_ID     | C_Payment_ID     | Amount | OverUnderAmt | C_AllocationHdr_ID |
       | salesCreditMemo1 | outboundPayment1 | -5     | -0.95        | alloc1             |
 
-    And Fact_Acct records are found for payment allocation alloc1
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr |
-      | C_Receivable_Acct     | 5 EUR       | 0 EUR       |
-      | B_PaymentSelect_Acct  | 0 EUR       | 5 EUR       |
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID        |
+      | *                     |             |             |               | outboundPayment1 |
+      | B_PaymentSelect_Acct  | 5 EUR       |             | bpartner2     | outboundPayment1 |
+      | B_PaymentSelect_Acct  |             | 5 EUR       | bpartner2     | alloc1           |
+      | C_Receivable_Acct     | 5 EUR       |             | bpartner1     | alloc1           |
+      | C_Receivable_Acct     |             | 5.95 EUR    | bpartner1     | salesCreditMemo1 |
+      | *                     |             |             |               | salesCreditMemo1 |
+
 
 
 
@@ -1513,11 +1523,19 @@ Feature: invoice payment allocation
       | vendorInvoice1      | -5.95  | -11.9        | alloc1             |
       | customerCreditMemo1 | -5.95  | -53.55       | alloc1             |
 
+    Then validate created invoices
+      | C_Invoice_ID        | C_BPartner_ID | C_BPartner_Location_ID | IsPaid | OpenAmt | IsPartiallyPaid |
+      | vendorInvoice1      | bpartner1     | bpartner_location_1    | true   | 0       | false           |
+      | customerCreditMemo1 | bpartner2     | bpartner_location_2    | false  | 53.55   | true            |
 
-    And Fact_Acct records are found for payment allocation alloc1
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr |
-      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       |
-      | C_Receivable_Acct     | 0 EUR       | 5.95 EUR    |
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID           |
+      | *                     |             |             |               | vendorInvoice1      |
+      | V_Liability_Acct      |             | 5.95 EUR    | bpartner1     | vendorInvoice1      |
+      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       | bpartner1     | alloc1              |
+      | C_Receivable_Acct     | 0 EUR       | 5.95 EUR    | bpartner2     | alloc1              |
+      | C_Receivable_Acct     | 0 EUR       | 59.5 EUR    | bpartner2     | customerCreditMemo1 |
+      | *                     |             |             |               | customerCreditMemo1 |
 
 
 
