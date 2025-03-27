@@ -326,7 +326,7 @@ public class EDICctopInvoicVtoD01BConverter
 								withC056(new C056DepartmentOrEmployeeDetails().withE3412(ediCctop11SUType.getContact()))).
 						withCOM(new COMCommunicationContact().
 								withC076(new C076CommunicationContact().
-										withE3148("intercheese-billing@metasfresh.com").    // extract email from ADUser?
+										withE3148("support@metasfresh.com").
 												withE3155(E3155CommunicationAddressCodeQualifier.EM))).
 						withCOM(new COMCommunicationContact().
 								withC076(new C076CommunicationContact().
@@ -410,7 +410,7 @@ public class EDICctopInvoicVtoD01BConverter
 		final String dateSend = Util.toFormattedStringDate(ediSendDate, "yyyyMMdd");
 		final String timeSend = Util.toFormattedStringDate(ediSendDate, "HHmm");
 		final BigDecimal testIndicator = null; // new BigDecimal("1");
-		final String interchangeReceipientGLN = "7611937000723"; // inclear why it's not xmlCctopInvoice.getReceivergln()
+		final String interchangeReceipientGLN = xmlCctopInvoice.getReceivergln();
 
 		// EANCOM = EAN + Communication 
 		final String communicationsAgreement = "EANCOM" + ediCctop119ByType.getGLN() + ediCctop11SUType.getGLN() + "503";

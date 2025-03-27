@@ -97,10 +97,6 @@ public class EdifactInvoicRoute extends AbstractEDIRoute
 		smooksEdifactJaxbDataFormat.setCamelContext(getContext());
 		smooksEdifactJaxbDataFormat.setEncoding(StandardCharsets.UTF_8.name());
 
-		// FRESH-360: provide our own converter, so we don't anymore need to rely on the system's default charset when writing the EDI data to file.
-		//final ReaderTypeConverter readerTypeConverter = new ReaderTypeConverter();
-		//getContext().getTypeConverterRegistry().addTypeConverters(readerTypeConverter);
-
 		final String feedbackMessageRoutingKey = Util.resolveProperty(getContext(), Constants.EP_AMQP_TO_MF_DURABLE_ROUTING_KEY);
 		final String senderGln = Util.resolveProperty(getContext(), EDI_INVOIC_SENDER_GLN);
 

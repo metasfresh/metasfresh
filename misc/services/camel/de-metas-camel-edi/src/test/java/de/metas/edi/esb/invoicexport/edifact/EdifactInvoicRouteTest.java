@@ -109,7 +109,7 @@ class EdifactInvoicRouteTest extends CamelTestSupport
 		XmlAssert.assertThat(edifactOutput).and(new File("./src/test/resources/de/metas/edi/esb/invoicexport/edifact/INVOIC_010_expected_output.edi"))
 				.ignoreChildNodesOrder()
 				.ignoreComments()
-				.areSimilar();
+				.areIdentical();
 
 		SystemTime.resetTimeSource();
 	}
