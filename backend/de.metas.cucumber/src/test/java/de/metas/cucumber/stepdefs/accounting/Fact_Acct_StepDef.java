@@ -1,6 +1,7 @@
 package de.metas.cucumber.stepdefs.accounting;
 
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.money.MoneyService;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
@@ -19,7 +20,8 @@ public class Fact_Acct_StepDef
 
 	public Fact_Acct_StepDef(
 			@NonNull final IdentifiersResolver identifiersResolver,
-			@NonNull final C_BPartner_StepDefData bpartnerTable)
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_Tax_StepDefData taxTable)
 	{
 		this.identifiersResolver = identifiersResolver;
 
@@ -29,11 +31,13 @@ public class Fact_Acct_StepDef
 				.uomDAO(uomDAO)
 				.moneyService(moneyService)
 				.identifiersResolver(identifiersResolver)
+				.taxTable(taxTable)
 				.build();
 		this.factAcctTabularStringConverter = FactAcctToTabularStringConverter.builder()
 				.uomDAO(uomDAO)
 				.moneyService(moneyService)
 				.bpartnerTable(bpartnerTable)
+				.taxTable(taxTable)
 				.identifiersResolver(identifiersResolver)
 				.build();
 	}

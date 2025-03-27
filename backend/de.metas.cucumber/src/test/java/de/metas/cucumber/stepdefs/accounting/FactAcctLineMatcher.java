@@ -5,6 +5,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.context.ContextAwareDescription;
 import de.metas.money.Money;
 import de.metas.quantity.Quantity;
+import de.metas.tax.api.TaxId;
 import de.metas.util.text.tabular.Row;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,6 +32,7 @@ public class FactAcctLineMatcher
 	@Nullable private final Money amtSourceCr;
 	@Nullable private final Quantity qty;
 	@NonNull @Getter private final TableRecordReference documentRef;
+	@Nullable @Getter private final TaxId taxId;
 
 	@Override
 	public String toString() {return row.toTabularString();}
@@ -124,7 +126,7 @@ public class FactAcctLineMatcher
 					.as(description.newWithMessage("C_UOM_ID"))
 					.isEqualTo(qty.getUomId().getRepoId());
 		}
-		if (documentRef != null)
+		//if (documentRef != null)
 		{
 			softly.assertThat(TableIdsCache.instance.getTableName(AdTableId.ofRepoId(record.getAD_Table_ID())))
 					.as(description.newWithMessage("AD_Table_ID"))
@@ -132,6 +134,12 @@ public class FactAcctLineMatcher
 			softly.assertThat(record.getRecord_ID())
 					.as(description.newWithMessage("Record_ID"))
 					.isEqualTo(documentRef.getRecord_ID());
+		}
+		if (taxId != null)
+		{
+			softly.assertThat(TaxId.ofRepoIdOrNull(record.getC_Tax_ID()))
+					.as(description.newWithMessage("C_Tax_ID"))
+					.isEqualTo(taxId);
 		}
 	}
 }

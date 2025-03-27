@@ -2,6 +2,7 @@ package de.metas.cucumber.stepdefs.accounting;
 
 import com.google.common.collect.ImmutableListMultimap;
 import de.metas.acct.AccountConceptualName;
+import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -21,6 +22,7 @@ public class FactAcctMatchersFactory
 	@NonNull private final IUOMDAO uomDAO;
 	@NonNull private final MoneyService moneyService;
 	@NonNull private final IdentifiersResolver identifiersResolver;
+	@NonNull private final C_Tax_StepDefData taxTable;
 
 	public FactAcctMatchers ofDataTable(@NonNull final DataTable table)
 	{
@@ -63,7 +65,7 @@ public class FactAcctMatchersFactory
 				.amtSourceCr(row.getAsOptionalMoney(I_Fact_Acct.COLUMNNAME_AmtSourceCr, moneyService::getCurrencyIdByCurrencyCode).orElse(null))
 				.qty(row.getAsOptionalQuantity(I_Fact_Acct.COLUMNNAME_Qty, uomDAO::getByX12DE355).orElse(null))
 				.documentRef(documentRef)
+				.taxId(row.getAsOptionalIdentifier("C_Tax_ID").map(taxTable::getId).orElse(null))
 				.build();
 	}
-
 }

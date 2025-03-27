@@ -215,9 +215,9 @@ Feature: invoice payment allocation
       | inv_120_1  | bpartner      | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
       | inv_120_2  | bpartner      | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
-      | invl_120_1 | inv_120_1    | product_120  | 1 PCE       |
-      | invl_120_2 | inv_120_2    | product_120  | 1 PCE       |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invl_120_1 | inv_120_1    | product_120  | 1 PCE       | tax1     |
+      | invl_120_2 | inv_120_2    | product_120  | 1 PCE       | tax1     |
     And the invoice identified by inv_120_1 is completed
     And the invoice identified by inv_120_2 is completed
 
@@ -262,11 +262,11 @@ Feature: invoice payment allocation
       | C_Invoice_ID | Amount | WriteOffAmt | C_AllocationHdr_ID |
       | inv_120_2    | 0      | 2.9         | alloc3             |
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
-      | WriteOff_Acct         | 2.90 EUR    |             | alloc3    |
-      | C_Receivable_Acct     |             | 2.90 EUR    | alloc3    |
-      | T_Due_Acct            | 0.46 EUR    |             | alloc3    |
-      | WriteOff_Acct         |             | 0.46 EUR    | alloc3    |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID |
+      | WriteOff_Acct         | 2.90 EUR    |             |          | alloc3    |
+      | C_Receivable_Acct     |             | 2.90 EUR    |          | alloc3    |
+      | T_Due_Acct            | 0.46 EUR    |             | tax1     | alloc3    |
+      | WriteOff_Acct         |             | 0.46 EUR    | tax1     | alloc3    |
 
 
 
@@ -312,9 +312,9 @@ Feature: invoice payment allocation
       | inv_130_1  | bpartner      | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
       | inv_130_2  | bpartner      | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
-      | invl_130_1 | inv_130_1    | product_130  | 1 PCE       |
-      | invl_130_2 | inv_130_2    | product_130  | 1 PCE       |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invl_130_1 | inv_130_1    | product_130  | 1 PCE       | tax1     |
+      | invl_130_2 | inv_130_2    | product_130  | 1 PCE       | tax1     |
     And the invoice identified by inv_130_1 is completed
     And the invoice identified by inv_130_2 is completed
 
@@ -359,11 +359,11 @@ Feature: invoice payment allocation
       | C_Invoice_ID | Amount | DiscountAmt | C_AllocationHdr_ID |
       | inv_130_2    | 0      | 2.9         | alloc3             |
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
-      | PayDiscount_Exp_Acct  | 2.90 EUR    |             | alloc3    |
-      | C_Receivable_Acct     |             | 2.90 EUR    | alloc3    |
-      | T_Due_Acct            | 0.46 EUR    |             | alloc3    |
-      | PayDiscount_Exp_Acct  |             | 0.46 EUR    | alloc3    |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID |
+      | PayDiscount_Exp_Acct  | 2.90 EUR    |             |          | alloc3    |
+      | C_Receivable_Acct     |             | 2.90 EUR    |          | alloc3    |
+      | T_Due_Acct            | 0.46 EUR    |             | tax1     | alloc3    |
+      | PayDiscount_Exp_Acct  |             | 0.46 EUR    | tax1     | alloc3    |
 
     
     
@@ -874,9 +874,9 @@ Feature: invoice payment allocation
       | inv_200_1  | bpartner      | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
       | inv_200_2  | bpartner      | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
-      | invl_200_1 | inv_200_1    | product_200  | 1 PCE       |
-      | invl_200_2 | inv_200_2    | product_200  | 1 PCE       |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invl_200_1 | inv_200_1    | product_200  | 1 PCE       | tax1     |
+      | invl_200_2 | inv_200_2    | product_200  | 1 PCE       | tax1     |
     And the invoice identified by inv_200_1 is completed
     And the invoice identified by inv_200_2 is completed
 
@@ -922,11 +922,11 @@ Feature: invoice payment allocation
       | V_Liability_Acct      | 3.05 EUR    | 0 EUR       | alloc2    |
       | B_PaymentSelect_Acct  | 0 EUR       | 3.05 EUR    | alloc2    |
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
-      | V_Liability_Acct      | 2.9 EUR     | 0 EUR       | alloc3    |
-      | WriteOff_Acct         | 0 EUR       | 2.9 EUR     | alloc3    |
-      | WriteOff_Acct         | -0.46 EUR   | 0 EUR       | alloc3    |
-      | T_Credit_Acct         | 0 EUR       | -0.46 EUR   | alloc3    |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID |
+      | V_Liability_Acct      | 2.9 EUR     | 0 EUR       |          | alloc3    |
+      | WriteOff_Acct         | 0 EUR       | 2.9 EUR     |          | alloc3    |
+      | WriteOff_Acct         | -0.46 EUR   | 0 EUR       | tax1     | alloc3    |
+      | T_Credit_Acct         | 0 EUR       | -0.46 EUR   | tax1     | alloc3    |
     
     
     
@@ -973,9 +973,9 @@ Feature: invoice payment allocation
       | inv_210_1  | bpartner      | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
       | inv_210_2  | bpartner      | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
-      | invl_210_1 | inv_210_1    | product_210  | 1 PCE       |
-      | invl_210_2 | inv_210_2    | product_210  | 1 PCE       |
+      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | invl_210_1 | inv_210_1    | product_210  | 1 PCE       | tax1     |
+      | invl_210_2 | inv_210_2    | product_210  | 1 PCE       | tax1     |
     And the invoice identified by inv_210_1 is completed
     And the invoice identified by inv_210_2 is completed
 
@@ -1021,11 +1021,11 @@ Feature: invoice payment allocation
       | V_Liability_Acct      | 3.05 EUR    | 0 EUR       | alloc2    |
       | B_PaymentSelect_Acct  | 0 EUR       | 3.05 EUR    | alloc2    |
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
-      | V_Liability_Acct      | 2.9 EUR     | 0 EUR       | alloc3    |
-      | PayDiscount_Rev_Acct  | 0 EUR       | 2.9 EUR     | alloc3    |
-      | PayDiscount_Rev_Acct  | 0.46 EUR    | 0 EUR       | alloc3    |
-      | T_Credit_Acct         | 0 EUR       | 0.46 EUR    | alloc3    |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID |
+      | V_Liability_Acct      | 2.9 EUR     | 0 EUR       |          | alloc3    |
+      | PayDiscount_Rev_Acct  | 0 EUR       | 2.9 EUR     |          | alloc3    |
+      | PayDiscount_Rev_Acct  | 0.46 EUR    | 0 EUR       | tax1     | alloc3    |
+      | T_Credit_Acct         | 0 EUR       | 0.46 EUR    | tax1     | alloc3    |
 
     
     
