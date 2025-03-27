@@ -125,13 +125,20 @@ test('Receive with catch weight', async ({ page }) => {
     await RawMaterialIssueLineScreen.goBack();
 
     await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
-    await MaterialReceiptLineScreen.selectNewLUTarget({ luPIItemTestId })
+    await MaterialReceiptLineScreen.selectNewLUTarget({ luPIItemTestId });
 
     await MaterialReceiptLineScreen.receiveQtyWithQRCode({
         catchWeightQRCode: [
             '019121234559370931030008321004481124',
         ],
-    })
+    });
+    await MaterialReceiptLineScreen.expectVisible();
+    await MaterialReceiptLineScreen.receiveQtyWithQRCode({
+        catchWeightQRCode: [
+            '019121234559370931030008321004481124',
+        ],
+    });
+    await MaterialReceiptLineScreen.goBack();
 
     await ManufacturingJobScreen.complete();
 });

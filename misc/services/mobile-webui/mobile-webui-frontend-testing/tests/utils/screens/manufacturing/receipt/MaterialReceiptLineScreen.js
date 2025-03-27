@@ -1,4 +1,4 @@
-import { page } from '../../../common';
+import { ID_BACK_BUTTON, page } from '../../../common';
 import { test } from '../../../../../playwright.config';
 import { expect } from '@playwright/test';
 import { ReceiptReceiveTargetScreen } from './ReceiptReceiveTargetScreen';
@@ -59,6 +59,11 @@ export const MaterialReceiptLineScreen = {
         await page.getByTestId('receive-qty-button').tap();
 
         await GetQuantityDialog.fillAndPressDone({ catchWeightQRCode });
+    }),
+
+    goBack: async () => await test.step(`${NAME} - Go back`, async () => {
+        await MaterialReceiptLineScreen.expectVisible();
+        await page.locator(ID_BACK_BUTTON).tap();
         await ManufacturingJobScreen.waitForScreen();
     }),
 };
