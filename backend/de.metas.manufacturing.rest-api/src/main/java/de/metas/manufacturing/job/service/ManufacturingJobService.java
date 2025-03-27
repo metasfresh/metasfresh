@@ -23,7 +23,6 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
-import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
@@ -35,6 +34,7 @@ import de.metas.manufacturing.job.model.ScaleDevice;
 import de.metas.manufacturing.job.service.commands.ReceiveGoodsCommand;
 import de.metas.manufacturing.job.service.commands.SelectedReceivingTarget;
 import de.metas.manufacturing.job.service.commands.create_job.ManufacturingJobCreateCommand;
+import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.ResourceTypeId;
@@ -47,6 +47,7 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -57,6 +58,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderId;
@@ -68,7 +70,6 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -89,7 +90,7 @@ public class ManufacturingJobService
 	private final IHUPPOrderQtyBL huPPOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
-	private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IHUPPOrderBL ppOrderBL;
 	private final IPPOrderBOMBL ppOrderBOMBL;
 	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
@@ -514,21 +515,19 @@ public class ManufacturingJobService
 	}
 
 	public ManufacturingJob receiveGoods(
+			@NonNull final JsonManufacturingOrderEvent.ReceiveFrom receiveFrom,
 			@NonNull final ManufacturingJob job,
-			@NonNull final FinishedGoodsReceiveLineId lineId,
-			@NonNull final SelectedReceivingTarget receivingTarget,
-			@NonNull final BigDecimal qtyToReceiveBD,
-			@NonNull final ZonedDateTime date,
-			@Nullable final String bestBeforeDate,
-			@Nullable final String lotNo,
-			@Nullable final BigDecimal catchWeight,
-			@Nullable final String catchWeightUomSymbol)
+			@NonNull final ZonedDateTime date)
 	{
-		final ManufacturingJob changedJob = job.withChangedReceiveLine(lineId, line -> trxManager.callInThreadInheritedTrx(() -> ReceiveGoodsCommand.builder()
+		final SelectedReceivingTarget receivingTarget = SelectedReceivingTarget.builder()
+				.luReceivingTarget(receiveFrom.getAggregateToLU())
+				.tuReceivingTarget(receiveFrom.getAggregateToTU())
+				.build();
+
+		final ManufacturingJob changedJob = job.withChangedReceiveLine(receiveFrom.getFinishedGoodsReceiveLineId(), line -> trxManager.callInThreadInheritedTrx(() -> ReceiveGoodsCommand.builder()
 				.handlingUnitsBL(handlingUnitsBL)
 				.ppOrderBL(ppOrderBL)
 				.ppOrderBOMBL(ppOrderBOMBL)
-				.uomDao(uomDao)
 				.uomConversionBL(uomConversionBL)
 				.huPIItemProductBL(hupiItemProductBL)
 				.loadingAndSavingSupportServices(loadingAndSavingSupportServices)
@@ -536,12 +535,11 @@ public class ManufacturingJobService
 				.ppOrderId(job.getPpOrderId())
 				.receiveLine(line)
 				.receivingTarget(receivingTarget)
-				.qtyToReceiveBD(qtyToReceiveBD)
+				.qtyToReceiveBD(receiveFrom.getQtyReceived())
 				.date(date)
-				.bestBeforeDate(bestBeforeDate)
-				.lotNo(lotNo)
-				.catchWeight(catchWeight)
-				.catchWeightUomSymbol(catchWeightUomSymbol)
+				.bestBeforeDate(TimeUtil.asLocalDate(receiveFrom.getBestBeforeDate()))
+				.lotNo(receiveFrom.getLotNo())
+				.catchWeight(getTargetCatchWeight(receiveFrom).orElse(null))
 				//
 				.build().execute()));
 
@@ -679,5 +677,17 @@ public class ManufacturingJobService
 		}
 
 		return line.withSteps(updatedStepsListBuilder.build());
+	}
+
+	@NonNull
+	private Optional<Quantity> getTargetCatchWeight(@NonNull final JsonManufacturingOrderEvent.ReceiveFrom receiveFrom)
+	{
+		if (receiveFrom.getCatchWeight() == null || Check.isBlank(receiveFrom.getCatchWeightUomSymbol()))
+		{
+			return Optional.empty();
+		}
+
+		return uomDAO.getBySymbol(receiveFrom.getCatchWeightUomSymbol())
+				.map(uom -> Quantity.of(receiveFrom.getCatchWeight(), uom));
 	}
 }

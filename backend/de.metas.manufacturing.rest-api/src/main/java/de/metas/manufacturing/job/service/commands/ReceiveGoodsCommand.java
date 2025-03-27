@@ -28,14 +28,12 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
-import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
@@ -43,11 +41,11 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 public class ReceiveGoodsCommand
 {
@@ -57,7 +55,6 @@ public class ReceiveGoodsCommand
 	// Services
 	private final IHandlingUnitsBL handlingUnitsBL;
 	private final IUOMConversionBL uomConversionBL;
-	private final IUOMDAO uomDao;
 	private final IHUPPOrderBL ppOrderBL;
 	private final IPPOrderBOMBL ppOrderBOMBL;
 	private final IHUPIItemProductBL huPIItemProductBL;
@@ -70,7 +67,7 @@ public class ReceiveGoodsCommand
 	final @NonNull SelectedReceivingTarget receivingTarget;
 	final @NonNull BigDecimal qtyToReceiveBD;
 	final @NonNull ZonedDateTime date;
-	final @Nullable String bestBeforeDate;
+	final @Nullable LocalDate bestBeforeDate;
 	final @Nullable String lotNo;
 	final @Nullable Quantity catchWeight;
 
@@ -84,7 +81,6 @@ public class ReceiveGoodsCommand
 	private ReceiveGoodsCommand(
 			@NonNull final IHandlingUnitsBL handlingUnitsBL,
 			@NonNull final IUOMConversionBL uomConversionBL,
-			@NonNull final IUOMDAO uomDao,
 			@NonNull final IHUPPOrderBL ppOrderBL,
 			@NonNull final IPPOrderBOMBL ppOrderBOMBL,
 			@NonNull final IHUPIItemProductBL huPIItemProductBL,
@@ -95,14 +91,12 @@ public class ReceiveGoodsCommand
 			@NonNull final SelectedReceivingTarget receivingTarget,
 			@NonNull final BigDecimal qtyToReceiveBD,
 			@NonNull final ZonedDateTime date,
-			@Nullable final String bestBeforeDate,
+			@Nullable final LocalDate bestBeforeDate,
 			@Nullable final String lotNo,
-			@Nullable final BigDecimal catchWeight,
-			@Nullable final String catchWeightUomSymbol)
+			@Nullable final Quantity catchWeight)
 	{
 		this.handlingUnitsBL = handlingUnitsBL;
 		this.uomConversionBL = uomConversionBL;
-		this.uomDao = uomDao;
 		this.ppOrderBL = ppOrderBL;
 		this.ppOrderBOMBL = ppOrderBOMBL;
 		this.huPIItemProductBL = huPIItemProductBL;
@@ -115,7 +109,7 @@ public class ReceiveGoodsCommand
 		this.date = date;
 		this.bestBeforeDate = bestBeforeDate;
 		this.lotNo = lotNo;
-		this.catchWeight = getTargetCatchWeight(catchWeight, catchWeightUomSymbol).orElse(null);
+		this.catchWeight = catchWeight;
 	}
 
 	@Nullable
@@ -284,9 +278,9 @@ public class ReceiveGoodsCommand
 			huProducer.lotNumber(lotNo);
 		}
 
-		if (Check.isNotBlank(bestBeforeDate))
+		if (bestBeforeDate != null)
 		{
-			huProducer.bestBeforeDate(TimeUtil.asLocalDate(bestBeforeDate));
+			huProducer.bestBeforeDate(bestBeforeDate);
 		}
 
 		return huProducer
@@ -415,18 +409,6 @@ public class ReceiveGoodsCommand
 																					catchWeight);
 
 		weightUpdater.updatePackToHUs(receivedHUs);
-	}
-
-	@NonNull
-	private Optional<Quantity> getTargetCatchWeight(@Nullable final BigDecimal catchWeight, @Nullable final String catchWeightUomSymbol)
-	{
-		if (catchWeight == null || Check.isBlank(catchWeightUomSymbol))
-		{
-			return Optional.empty();
-		}
-
-		return uomDao.getBySymbol(catchWeightUomSymbol)
-				.map(uom -> Quantity.of(catchWeight, uom));
 	}
 
 	@NonNull
