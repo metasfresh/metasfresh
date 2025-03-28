@@ -94,6 +94,8 @@ public class ModularContractService
 	@NonNull private final ModularContractProvider contractProvider;
 
 	private static final AdMessageKey MSG_MORE_THAN_ONE_PURCHASE_MODULAR_CONTRACT_CANDIDATE = AdMessageKey.of("de.metas.contracts.modular.ModularContractService.MoreThanOneModularPurchaseContractCandidateFound");
+	private static final AdMessageKey MSG_CONTRACT_HAS_BILLABLE_LOGS = AdMessageKey.of("de.metas.contracts.modular.ModularContractService.ContractHasBillableLogs");
+	private static final AdMessageKey MSG_NOT_ELIGIBLE_PURCHASE_MODULAR_CONTRACT_CANDIDATE_SET = AdMessageKey.of("de.metas.contracts.modular.ModularContractService.NotEligibleModularContractSet");
 
 	public static ModularContractService newInstanceForJUnitTesting()
 	{
@@ -340,7 +342,7 @@ public class ModularContractService
 		}
 		else if (currentFlatrateTermId != null && !contractIds.contains(currentFlatrateTermId))
 		{
-			throw new AdempiereException("Selected contract in OrderLine isn't eligible anymore");
+			throw new AdempiereException(MSG_NOT_ELIGIBLE_PURCHASE_MODULAR_CONTRACT_CANDIDATE_SET, orderLineRecord.getLine());
 		}
 	}
 
@@ -365,11 +367,12 @@ public class ModularContractService
 					ModularContractLogQuery.builder()
 							.flatrateTermId(FlatrateTermId.ofRepoId(contract.getC_Flatrate_Term_ID()))
 							.billable(true)
-							.build());
+							.build()
+			);
 
 			if(hasBillableLogs)
 			{
-				throw new AdempiereException("Contract {0} has still billable logs"); //TODO
+				throw new AdempiereException(MSG_CONTRACT_HAS_BILLABLE_LOGS, contract.getC_Flatrate_Term_ID());
 			}
 
 			contractChangeBL.cancelContract(contract,
