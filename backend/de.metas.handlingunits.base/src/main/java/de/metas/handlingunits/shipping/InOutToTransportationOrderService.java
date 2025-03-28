@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.handlingunits.transportation;
+package de.metas.handlingunits.shipping;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHUShipperTransportationBL;
