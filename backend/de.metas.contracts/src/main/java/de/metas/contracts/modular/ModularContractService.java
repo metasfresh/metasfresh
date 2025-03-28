@@ -38,7 +38,6 @@ import de.metas.contracts.modular.computing.ContractSpecificScalePriceRequest;
 import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
-import de.metas.contracts.modular.log.ModularContractLogEntriesList;
 import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
@@ -339,6 +338,10 @@ public class ModularContractService
 		{
 			throw new AdempiereException(MSG_MORE_THAN_ONE_PURCHASE_MODULAR_CONTRACT_CANDIDATE);
 		}
+		else if (currentFlatrateTermId != null && !contractIds.contains(currentFlatrateTermId))
+		{
+			throw new AdempiereException("Selected contract in OrderLine isn't eligible anymore");
+		}
 	}
 
 	public boolean isFinalInvoiceLineForComputingMethod(
@@ -358,13 +361,13 @@ public class ModularContractService
 
 		for(final I_C_Flatrate_Term contract : contracts)
 		{
-			final ModularContractLogEntriesList logs = modularContractLogService.getModularContractLogEntries(
+			final boolean hasBillableLogs = modularContractLogService.anyMatch(
 					ModularContractLogQuery.builder()
 							.flatrateTermId(FlatrateTermId.ofRepoId(contract.getC_Flatrate_Term_ID()))
 							.billable(true)
 							.build());
 
-			if(!logs.isEmpty())
+			if(hasBillableLogs)
 			{
 				throw new AdempiereException("Contract {0} has still billable logs"); //TODO
 			}

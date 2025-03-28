@@ -58,8 +58,15 @@ public class C_OrderLine
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
-	public void updatePurchaseModularContractId(@NonNull final I_C_OrderLine orderLine)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_M_Product_ID })
+	public void updatePurchaseModularContractIdOnChange(@NonNull final I_C_OrderLine orderLine)
+	{
+		orderLine.setPurchase_Modular_Flatrate_Term_ID(-1); //prevent error if multiple eligible contracts exists and it can't be updated automatically
+		contractService.updatePurchaseModularContractId(orderLine, false);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
+	public void setPurchaseModularContractIdOnNew(@NonNull final I_C_OrderLine orderLine)
 	{
 		contractService.updatePurchaseModularContractId(orderLine, false);
 	}
