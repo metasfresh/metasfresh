@@ -16,7 +16,6 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.i18n.AdMessageKey;
-import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.ReceivingTarget;
 import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaver;
 import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaverSupportingServices;
@@ -65,7 +64,7 @@ public class ReceiveGoodsCommand
 	//
 	// Parameters
 	final @NonNull PPOrderId ppOrderId;
-	final @NonNull FinishedGoodsReceiveLine receiveLine;
+	final @Nullable PPOrderBOMLineId coProductBOMLineId;
 	final @NonNull SelectedReceivingTarget receivingTarget;
 	final @NonNull BigDecimal qtyToReceiveBD;
 	final @NonNull ZonedDateTime date;
@@ -88,14 +87,7 @@ public class ReceiveGoodsCommand
 			@NonNull final IHUPIItemProductBL huPIItemProductBL,
 			@NonNull final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices,
 			//
-			@NonNull final PPOrderId ppOrderId,
-			@NonNull final FinishedGoodsReceiveLine receiveLine,
-			@NonNull final SelectedReceivingTarget receivingTarget,
-			@NonNull final BigDecimal qtyToReceiveBD,
-			@NonNull final ZonedDateTime date,
-			@Nullable final LocalDate bestBeforeDate,
-			@Nullable final String lotNo,
-			@Nullable final Quantity catchWeight)
+			@NonNull final ReceiveGoodsRequest request)
 	{
 		this.handlingUnitsBL = handlingUnitsBL;
 		this.uomConversionBL = uomConversionBL;
@@ -104,18 +96,18 @@ public class ReceiveGoodsCommand
 		this.huPIItemProductBL = huPIItemProductBL;
 		this.loadingAndSavingSupportServices = loadingAndSavingSupportServices;
 
-		this.ppOrderId = ppOrderId;
-		this.receiveLine = receiveLine;
-		this.receivingTarget = receivingTarget;
-		this.qtyToReceiveBD = qtyToReceiveBD;
-		this.date = date;
-		this.bestBeforeDate = bestBeforeDate;
-		this.lotNo = lotNo;
-		this.catchWeight = catchWeight;
+		this.ppOrderId = request.getPpOrderId();
+		this.coProductBOMLineId = request.getCoProductBOMLineId();
+		this.receivingTarget = request.getReceivingTarget();
+		this.qtyToReceiveBD = request.getQtyToReceiveBD();
+		this.date = request.getDate();
+		this.bestBeforeDate = request.getBestBeforeDate();
+		this.lotNo = request.getLotNo();
+		this.catchWeight = request.getCatchWeight();
 	}
 
 	@Nullable
-	public FinishedGoodsReceiveLine execute()
+	public ReceiveGoodsResult execute()
 	{
 		@Nullable final ReceivingTarget receivingTarget;
 		if (this.receivingTarget.getReceiveToNewLU() != null)
@@ -139,9 +131,10 @@ public class ReceiveGoodsCommand
 		saveReceivingHUForLaterUse(receivingTarget);
 		setCatchWeightForReceivedHUs();
 
-		return receiveLine
-				.withReceivingTarget(receivingTarget)
-				.withQtyReceived(getTotalQtyReceived());
+		return ReceiveGoodsResult.builder()
+				.totalQtyReceived(getTotalQtyReceived())
+				.receivingTarget(receivingTarget)
+				.build();
 	}
 
 	@Nullable
@@ -236,12 +229,12 @@ public class ReceiveGoodsCommand
 	@Nullable
 	private I_PP_Order_BOMLine getCOProductLine()
 	{
-		if (receiveLine.getCoProductBOMLineId() != null)
+		if (coProductBOMLineId != null)
 		{
 			I_PP_Order_BOMLine coProductLine = this._coProductLine;
 			if (coProductLine == null)
 			{
-				coProductLine = this._coProductLine = ppOrderBOMBL.getOrderBOMLineById(receiveLine.getCoProductBOMLineId());
+				coProductLine = this._coProductLine = ppOrderBOMBL.getOrderBOMLineById(coProductBOMLineId);
 			}
 			return coProductLine;
 		}

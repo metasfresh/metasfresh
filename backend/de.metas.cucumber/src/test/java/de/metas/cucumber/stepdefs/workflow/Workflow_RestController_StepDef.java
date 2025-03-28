@@ -47,6 +47,8 @@ import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrder
 import de.metas.order.OrderId;
 import de.metas.picking.workflow.PickingWFProcessStartParams;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessStartRequest;
 import de.metas.workflow.rest_api.model.WFActivityId;
@@ -60,8 +62,6 @@ import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.eevolution.model.I_PP_Order;
 
@@ -69,12 +69,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @RequiredArgsConstructor
 public class Workflow_RestController_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final com.fasterxml.jackson.databind.ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	private final static String MANUFACTURING_ISSUE_TO_ACTIVITY_COMPONENT_TYPE = "manufacturing/rawMaterialsIssue";
@@ -228,6 +229,9 @@ public class Workflow_RestController_StepDef
 			final JsonWFLineManufacturingMaterialReceipt workflowLine = row.getAsIdentifier("WorkflowLine").lookupIn(materialReceiptLineTable);
 			final JsonWFManufacturingReceivingTargetValues receivingTargetValues = row.getAsIdentifier("WorkflowReceivingTargetValues").lookupIn(receivingTargetValuesTable);
 
+			final Quantity catchWeight = row.getAsOptionalQuantity("CatchWeight", uomDAO::getByX12DE355)
+					.orElse(null);
+
 			manufacturingOrderEventBuilder
 					.wfProcessId(workflowProcess.getAsString())
 					.wfActivityId(workflowActivity.getAsString())
@@ -243,8 +247,8 @@ public class Workflow_RestController_StepDef
 																			   .build())
 																.build())
 										 .bestBeforeDate(row.getAsOptionalString("BestBeforeDate").orElse(null))
-										 .catchWeight(row.getAsOptionalBigDecimal("CatchWeight").orElse(null))
-										 .catchWeightUomSymbol(row.getAsOptionalString("CatchWeightUOMSymbol").orElse(null))
+										 .catchWeight(catchWeight != null ? catchWeight.toBigDecimal() : null)
+										 .catchWeightUomSymbol(catchWeight != null ? catchWeight.getUOMSymbol() : null)
 										 .lotNo(row.getAsOptionalString("LotNo").orElse(null))
 										 .build());
 		}

@@ -7,7 +7,7 @@ import { ManufacturingJobScreen } from '../utils/screens/manufacturing/Manufactu
 import { RawMaterialIssueLineScreen } from '../utils/screens/manufacturing/issue/RawMaterialIssueLineScreen';
 import { MaterialReceiptLineScreen } from '../utils/screens/manufacturing/receipt/MaterialReceiptLineScreen';
 
-const createMasterdata = async ({ finishedProductUOMConfigs = {} }) => {
+const createMasterdata = async ({ finishedProductUOMConfigs } = {}) => {
     const response = await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -22,7 +22,7 @@ const createMasterdata = async ({ finishedProductUOMConfigs = {} }) => {
                 "COMP1": {},
                 "COMP2": {},
                 "BOM": {
-                    ...finishedProductUOMConfigs,
+                    ...(finishedProductUOMConfigs ?? {}),
                     bom: {
                         lines: [
                             { product: 'COMP1', qty: 1 },
@@ -68,7 +68,7 @@ test('Simple manufacturing test', async ({ page }) => {
         documentNo,
         comp1_huQRCode,
         comp2_huQRCode
-    } = await createMasterdata({});
+    } = await createMasterdata();
 
     await LoginScreen.login(login);
     await ApplicationsListScreen.expectVisible();

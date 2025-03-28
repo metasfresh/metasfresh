@@ -32,6 +32,8 @@ import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
 import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
 import de.metas.manufacturing.job.model.ScaleDevice;
 import de.metas.manufacturing.job.service.commands.ReceiveGoodsCommand;
+import de.metas.manufacturing.job.service.commands.ReceiveGoodsRequest;
+import de.metas.manufacturing.job.service.commands.ReceiveGoodsResult;
 import de.metas.manufacturing.job.service.commands.SelectedReceivingTarget;
 import de.metas.manufacturing.job.service.commands.create_job.ManufacturingJobCreateCommand;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
@@ -524,24 +526,30 @@ public class ManufacturingJobService
 				.tuReceivingTarget(receiveFrom.getAggregateToTU())
 				.build();
 
-		final ManufacturingJob changedJob = job.withChangedReceiveLine(receiveFrom.getFinishedGoodsReceiveLineId(), line -> trxManager.callInThreadInheritedTrx(() -> ReceiveGoodsCommand.builder()
-				.handlingUnitsBL(handlingUnitsBL)
-				.ppOrderBL(ppOrderBL)
-				.ppOrderBOMBL(ppOrderBOMBL)
-				.uomConversionBL(uomConversionBL)
-				.huPIItemProductBL(hupiItemProductBL)
-				.loadingAndSavingSupportServices(loadingAndSavingSupportServices)
-				//
-				.ppOrderId(job.getPpOrderId())
-				.receiveLine(line)
-				.receivingTarget(receivingTarget)
-				.qtyToReceiveBD(receiveFrom.getQtyReceived())
-				.date(date)
-				.bestBeforeDate(TimeUtil.asLocalDate(receiveFrom.getBestBeforeDate()))
-				.lotNo(receiveFrom.getLotNo())
-				.catchWeight(getTargetCatchWeight(receiveFrom).orElse(null))
-				//
-				.build().execute()));
+		final ManufacturingJob changedJob = job.withChangedReceiveLine(receiveFrom.getFinishedGoodsReceiveLineId(), line -> {
+			final ReceiveGoodsResult result = trxManager.callInThreadInheritedTrx(() -> ReceiveGoodsCommand.builder()
+					.handlingUnitsBL(handlingUnitsBL)
+					.ppOrderBL(ppOrderBL)
+					.ppOrderBOMBL(ppOrderBOMBL)
+					.uomConversionBL(uomConversionBL)
+					.huPIItemProductBL(hupiItemProductBL)
+					.loadingAndSavingSupportServices(loadingAndSavingSupportServices)
+					//
+					.request(ReceiveGoodsRequest.builder()
+									 .ppOrderId(job.getPpOrderId())
+									 .coProductBOMLineId(line.getCoProductBOMLineId())
+									 .receivingTarget(receivingTarget)
+									 .qtyToReceiveBD(receiveFrom.getQtyReceived())
+									 .date(date)
+									 .bestBeforeDate(TimeUtil.asLocalDate(receiveFrom.getBestBeforeDate()))
+									 .lotNo(receiveFrom.getLotNo())
+									 .catchWeight(getTargetCatchWeight(receiveFrom).orElse(null))
+									 .build())
+					//
+					.build().execute());
+			return line.withQtyReceived(result.getTotalQtyReceived())
+					.withReceivingTarget(result.getReceivingTarget());
+		});
 
 		saveActivityStatuses(changedJob);
 

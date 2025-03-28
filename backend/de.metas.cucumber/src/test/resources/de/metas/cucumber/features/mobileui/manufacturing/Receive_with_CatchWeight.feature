@@ -22,9 +22,9 @@ Feature: mobileUI Picking - Pick mixed lines
       | TU         |
       | LU         |
     And metasfresh contains M_HU_PI_Version:
-      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name | HU_UnitType | IsCurrent |
-      | TU                            | TU                    | TU   | TU          | Y         |
-      | LU                            | LU                    | LU   | LU          | Y         |
+      | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType | IsCurrent |
+      | TU                 | TU         | TU          | Y         |
+      | LU                 | LU         | LU          | Y         |
     And metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier |
       | TU                         | TU                            | 0   | MI       |                                  |
@@ -34,11 +34,11 @@ Feature: mobileUI Picking - Pick mixed lines
       | TUx2_catchWeightFP                 | TU                         | catchWeightFP           | 2   | 2000-01-01 |
 
     And metasfresh contains M_Inventories:
-      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
-      | inventory                 | 2024-03-20   | 540008         |
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | inventory      | 2024-03-20   | 540008         |
     And metasfresh contains M_InventoriesLines:
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
-      | inventory                 | line1                         | regularComponentProd    | 0       | 100      | PCE          |
+      | M_Inventory_ID | M_InventoryLine_ID | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inventory      | line1              | regularComponentProd    | 0       | 100      | PCE          |
     And complete inventory with inventoryIdentifier 'inventory'
     And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID | M_HU_ID                |
@@ -55,8 +55,8 @@ Feature: mobileUI Picking - Pick mixed lines
   @from:cucumber
   Scenario: Receive HUs with catch weight, BestBeforeDate & LotNumber
     And metasfresh contains PP_Product_BOM
-      | Identifier       | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
-      | manufacturingBOM | catchWeightFP           | 2021-01-02 | manufacturingBOMVersion              |
+      | Identifier       | M_Product_ID  | PP_Product_BOMVersions_ID |
+      | manufacturingBOM | catchWeightFP | manufacturingBOMVersion   |
     And metasfresh contains PP_Product_BOMLines
       | Identifier           | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch |
       | manufacturingBOMLine | manufacturingBOM             | regularComponentProd    | 2021-01-02 | 2        |
@@ -85,8 +85,8 @@ Feature: mobileUI Picking - Pick mixed lines
       | manufacturingWorkflow      | workflowManufacturingReceipt | workflowManufacturingReceiptLine | workflowReceivingTargetValues            |
 
     And create JsonManufacturingOrderEvent and store it in context as request payload:
-      | Event       | CatchWeightUOMSymbol | CatchWeight | BestBeforeDate | LotNo   | WorkflowProcess.Identifier | WorkflowActivity.Identifier  | WorkflowLine.Identifier          | WorkflowReceivingTargetValues.Identifier |
-      | ReceiveFrom | kg                   | 0.5         | 2025-03-03     | LotNo_1 | manufacturingWorkflow      | workflowManufacturingReceipt | workflowManufacturingReceiptLine | workflowReceivingTargetValues            |
+      | Event       | CatchWeight | BestBeforeDate | LotNo   | WorkflowProcess.Identifier | WorkflowActivity.Identifier  | WorkflowLine.Identifier          | WorkflowReceivingTargetValues.Identifier |
+      | ReceiveFrom | 0.5 KGM     | 2025-03-03     | LotNo_1 | manufacturingWorkflow      | workflowManufacturingReceipt | workflowManufacturingReceiptLine | workflowReceivingTargetValues            |
     And the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '200' status code
 
 
