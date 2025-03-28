@@ -7,6 +7,7 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { expectErrorToast } from '../../utils/common';
+import { QTY_NOT_FOUND_REASON_IGNORE } from '../../utils/screens/picking/GetQuantityDialog';
 
 const createMasterdata = async () => {
     const response = await Backend.createMasterdata({
@@ -117,4 +118,30 @@ test('Scan invalid picking slot QR code', async ({ page }) => {
     await expectErrorToast('Invalid QR code', async () => {
         await PickingJobScreen.scanPickingSlot({ qrCode: 'invalid QR code' });
     });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Test picking line complete status - draft | in progress | complete', async ({ page }) => {
+    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } = await createMasterdata();
+
+    await LoginScreen.login(login);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(documentNo);
+    await PickingJobsListScreen.startJob({ documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
+    await PickingJobScreen.setTargetLU({ lu: luPIName });
+
+    await PickingJobScreen.expectLineStatusColor({ index: 1, color: 'red' });
+
+    await PickingJobScreen.pickHU({ qrCode: huQRCode, qtyEntered: '2', expectQtyEntered: '3', qtyNotFoundReason: QTY_NOT_FOUND_REASON_IGNORE });
+
+    await PickingJobScreen.expectLineStatusColor({ index: 1, color: 'yellow' });
+
+    await PickingJobScreen.pickHU({ qrCode: huQRCode, expectQtyEntered: '1' });
+
+    await PickingJobScreen.expectLineStatusColor({ index: 1, color: 'green' });
+
+    await PickingJobScreen.complete();
 });
