@@ -5,10 +5,13 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHULockBL;
-import de.metas.handlingunits.shipping.AddTrackingInfosForInOutWithoutHUReq;
+import de.metas.handlingunits.IHUPackageDAO;
+import de.metas.handlingunits.IHUQueryBuilder;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.impl.CreatePackagesRequest;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.handlingunits.impl.ShipperTransportationRepository;
+<<<<<<< HEAD
 import de.metas.handlingunits.shipping.CreatePackagesForInOutRequest;
 import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
@@ -16,9 +19,16 @@ import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IInOutPackageDAO;
+=======
+>>>>>>> 946fada85c (introduce and use CreatePackageForHURequest)
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
+import de.metas.handlingunits.shipping.AddTrackingInfosForInOutWithoutHUReq;
+import de.metas.handlingunits.shipping.CreatePackageForHURequest;
+import de.metas.handlingunits.shipping.CreatePackagesForInOutRequest;
+import de.metas.handlingunits.shipping.IHUPackageBL;
+import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.handlingunits.shipping.InOutPackageRepository;
 import de.metas.inout.IInOutDAO;
 import de.metas.lock.api.LockOwner;
@@ -127,7 +137,12 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 			//
 			// Create M_Package
-			final I_M_Package mpackage = huPackageBL.createM_Package(hu, shipperId);
+			final I_M_Package mpackage = huPackageBL.createM_Package(
+					CreatePackageForHURequest.builder()
+							.hu(hu)
+							.shipperId(shipperId)
+							.build()
+			);
 			result.add(mpackage);
 
 			//
@@ -409,7 +424,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 
 		return request.getPackageInfos()
 				.stream()
-				.map(packageInfo ->  CreatePackagesRequest.builder()
+				.map(packageInfo -> CreatePackagesRequest.builder()
 						.inOutId(request.getShipmentId())
 						.shipperId(shipperId)
 						.processed(request.isProcessed())
