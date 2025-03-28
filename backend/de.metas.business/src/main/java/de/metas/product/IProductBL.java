@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
@@ -137,6 +138,13 @@ public interface IProductBL extends ISingletonService
 
 	Optional<UomId> getCatchUOMId(ProductId productId);
 
+<<<<<<< HEAD
+=======
+	I_C_UOM getWeightUOM(I_M_Product product);
+
+	Optional<Quantity> getWeight(ProductId productId);
+
+>>>>>>> 156d6e4759 (IProductBL.getWeight)
 	/**
 	 * Gets product standard Weight in <code>uomTo</code>.
 	 *
