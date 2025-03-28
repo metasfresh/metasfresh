@@ -14,6 +14,7 @@ import de.metas.handlingunits.IInOutPackageDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU;
+import de.metas.handlingunits.shipping.InOutPackageRepository;
 import de.metas.inout.IInOutDAO;
 import de.metas.lock.api.LockOwner;
 import de.metas.organization.OrgId;

@@ -24,6 +24,10 @@ package de.metas.shipper.gateway.dhl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.customs.CustomsInvoiceRepository;
+<<<<<<< HEAD
+=======
+import de.metas.handlingunits.shipping.InOutPackageRepository;
+>>>>>>> 37d0383ce0 (move InOutPackageService to de.metas.handlingunits.shipping)
 import de.metas.location.CountryCode;
 import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.commons.ShipperTestHelper;
