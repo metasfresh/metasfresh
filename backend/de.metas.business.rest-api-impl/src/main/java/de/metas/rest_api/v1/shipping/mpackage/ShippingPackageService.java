@@ -32,7 +32,7 @@ import de.metas.common.shipping.v1.shipment.mpackage.JsonCreateShippingPackageIn
 import de.metas.common.shipping.v1.shipment.mpackage.JsonCreateShippingPackagesRequest;
 import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.handlingunits.shipping.AddTrackingInfosForInOutWithoutHUReq;
-import de.metas.handlingunits.shipmentschedule.spi.impl.PackageInfo;
+import de.metas.handlingunits.shipping.PackageInfo;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.rest_api.v1.shipping.ShipmentService;

@@ -20,10 +20,9 @@
  * #L%
  */
 
-package de.metas.handlingunits.shipmentschedule.spi.impl;
+package de.metas.handlingunits.shipping;
 
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
