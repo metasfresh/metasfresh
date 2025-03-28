@@ -121,4 +121,9 @@ public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 	{
 		return this == CustomerCreditMemo;
 	}
+
+	public boolean isVendorInvoice()
+	{
+		return this == VendorInvoice;
+	}
 }
