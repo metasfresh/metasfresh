@@ -273,10 +273,6 @@ public class PaymentAllocationBuilder
 		}
 
 		//
-		// Try to allocate sales credit memo invoices to purchase invoices
-			allocationCandidates.addAll(createAllocationLineCandidates_SalesCreditMemoToPurchaseInvoice(payableDocuments));
-
-		//
 		// Allocate payments to invoices
 		allocationCandidates.addAll(createAllocationLineCandidates(
 				AllocationLineCandidateType.InvoiceToPayment,
@@ -491,35 +487,6 @@ public class PaymentAllocationBuilder
 				AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice,
 				salesInvoices,
 				purchaseInvoices);
-	}
-
-
-	private List<AllocationLineCandidate> createAllocationLineCandidates_SalesCreditMemoToPurchaseInvoice(
-			@NonNull final List<PayableDocument> payableDocuments)
-	{
-		if (payableDocuments.isEmpty())
-		{
-			return ImmutableList.of();
-		}
-
-		final List<PayableDocument> arcs = new ArrayList<>();
-		final List<PurchaseInvoiceAsInboundPaymentDocumentWrapper> apis = new ArrayList<>();
-		for (final PayableDocument payable : payableDocuments)
-		{
-			if (payable.isARC())
-			{
-				arcs.add(payable);
-			}
-			else if(payable.isAPI())
-			{
-				apis.add(PurchaseInvoiceAsInboundPaymentDocumentWrapper.wrap(payable));
-			}
-		}
-
-		return createAllocationLineCandidates(
-				AllocationLineCandidateType.SalesCreditMemoToPurchaseInvoice,
-				arcs,
-				apis);
 	}
 
 	private List<AllocationLineCandidate> createAllocationLineCandidates_InboundPaymentToOutboundPayment(@NonNull final List<PaymentDocument> paymentDocuments)
