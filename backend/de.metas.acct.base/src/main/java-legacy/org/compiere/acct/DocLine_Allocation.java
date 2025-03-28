@@ -297,11 +297,6 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 		{
 			return false;
 		}
-		// The invoice shall not be a credit memo
-		if (isCreditMemoInvoice())
-		{
-			return false;
-		}
 
 		// Shall have a counter line set
 		final DocLine_Allocation counterLine = getCounterDocLine();
@@ -312,12 +307,6 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 
 		// The counter line shall have a invoice set
 		if (!counterLine.hasInvoiceDocument())
-		{
-			return false;
-		}
-
-		// The counter line's invoice shall not be a credit memo
-		if (counterLine.isCreditMemoInvoice())
 		{
 			return false;
 		}
@@ -641,6 +630,32 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	{
 		Check.assumeNotNull(paymentReceipt, "payment document exists");
 		return paymentReceipt;
+	}
+
+	public boolean isValidPurchaseSalesCompensationAmt()
+	{
+		final BigDecimal compensationAmtSource = getAllocatedAmt();
+		final DocLine_Allocation counterLine = getCounterDocLine();
+		final BigDecimal counterLine_compensationAmtSource = counterLine.getAllocatedAmt();
+
+		if ((isAPI() && counterLine.isARC()) || (isARC() && counterLine.isAPI()))
+		{
+			return compensationAmtSource.compareTo(counterLine_compensationAmtSource) == 0;
+		}
+		else
+		{
+			return compensationAmtSource.compareTo(counterLine_compensationAmtSource.negate()) == 0;
+		}
+	}
+
+	private boolean isARC()
+	{
+		return isSOTrxInvoice() && isCreditMemoInvoice();
+	}
+
+	private boolean isAPI()
+	{
+		return !isSOTrxInvoice() && !isCreditMemoInvoice();
 	}
 
 }    // DocLine_Allocation
