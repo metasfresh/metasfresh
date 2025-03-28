@@ -33,12 +33,7 @@ import java.math.BigDecimal;
 @Builder
 public class PackageInfo
 {
-	@NonNull
-	String trackingNumber;
-
-	@Nullable
-	String trackingUrl;
-
-	@Nullable
-	BigDecimal weight;
+	@Nullable String trackingNumber;
+	@Nullable String trackingUrl;
+	@Nullable BigDecimal weight;
 }
