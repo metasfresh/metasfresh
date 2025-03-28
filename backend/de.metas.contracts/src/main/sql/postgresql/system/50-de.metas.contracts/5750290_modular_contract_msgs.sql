@@ -67,3 +67,27 @@ UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2025-03-28 11:0
 -- 2025-03-28T10:05:52.716Z
 UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2025-03-28 11:05:52.716','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545514
 ;
+
+-- Value: de.metas.contracts.modular.ModularContractService.NotEligibleModularContractSet
+-- 2025-03-28T10:05:52.716Z
+UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2025-03-28 11:05:52.716','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545514
+;
+
+-- Value: Different_Contracts
+-- 2025-03-28T11:03:17.162Z
+UPDATE AD_Message SET MsgText='Auswahl beinhaltet nicht modulare oder geschlossene Verträge!',Updated=TO_TIMESTAMP('2025-03-28 12:03:17.16','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Message_ID=545426
+;
+
+-- 2025-03-28T11:03:17.175Z
+UPDATE AD_Message_Trl trl SET MsgText='Auswahl beinhaltet nicht modulare oder geschlossene Verträge!' WHERE AD_Message_ID=545426 AND AD_Language='de_DE'
+;
+
+-- Value: Different_Contracts
+-- 2025-03-28T11:03:29.887Z
+UPDATE AD_Message_Trl SET MsgText='Auswahl beinhaltet nicht modulare oder geschlossene Verträge!',Updated=TO_TIMESTAMP('2025-03-28 12:03:29.887','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545426
+;
+
+-- Value: Different_Contracts
+-- 2025-03-28T11:03:43.164Z
+UPDATE AD_Message_Trl SET MsgText='Selection contains not modular types or closed contracts!',Updated=TO_TIMESTAMP('2025-03-28 12:03:43.164','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545426
+;
