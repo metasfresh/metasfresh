@@ -73,17 +73,22 @@ export const PickingJobScreen = {
         await PickingJobScreen.waitForScreen();
     }),
 
-    pickHU: async ({ qrCode, expectQtyEntered, catchWeightQRCode }) => await step(`${NAME} - Scan HU and Pick`, async () => {
+    pickHU: async ({ qrCode, qtyEntered, expectQtyEntered, catchWeightQRCode, qtyNotFoundReason }) => await step(`${NAME} - Scan HU and Pick`, async () => {
         await page.locator('#scanQRCode-button').tap(); // click Scan QR Code button
         await PickingJobScanHUScreen.waitForScreen();
         await PickingJobScanHUScreen.typeQRCode(qrCode);
-        await GetQuantityDialog.fillAndPressDone({ expectQtyEntered, catchWeightQRCode });
+        await GetQuantityDialog.fillAndPressDone({ expectQtyEntered, qtyEntered, catchWeightQRCode, qtyNotFoundReason });
         await PickingJobScreen.waitForScreen();
     }),
 
     clickLineButton: async ({ index }) => await step(`${NAME} - Click line ${index}`, async () => {
         await page.locator(`#line-0-${index - 1}-button`).tap();
         //await PickingJobLineScreen.waitForScreen();
+    }),
+
+    expectLineStatusColor: async ({ index, color }) => await step(`${NAME} - Check status for picking line: ${index}`, async () => {
+        const indicator = page.locator(`[data-testid="line-0-${index - 1}-button-Indicator"]`);
+        await expect(indicator).toHaveClass(`indicator-${color}`);
     }),
 
     abort: async () => await step(`${NAME} - Abort`, async () => {
