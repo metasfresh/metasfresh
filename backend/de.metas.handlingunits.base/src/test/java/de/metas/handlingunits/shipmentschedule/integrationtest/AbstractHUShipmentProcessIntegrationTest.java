@@ -30,7 +30,7 @@ import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPackageDAO;
-import de.metas.handlingunits.IHUShipperTransportationBL;
+import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;

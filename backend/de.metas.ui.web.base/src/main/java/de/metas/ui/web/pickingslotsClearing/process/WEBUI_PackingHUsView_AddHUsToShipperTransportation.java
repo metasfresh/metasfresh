@@ -2,7 +2,7 @@ package de.metas.ui.web.pickingslotsClearing.process;
 
 import java.util.List;
 
-import de.metas.handlingunits.IHUShipperTransportationBL;
+import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;

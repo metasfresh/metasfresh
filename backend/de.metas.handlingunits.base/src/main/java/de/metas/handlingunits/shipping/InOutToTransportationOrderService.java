@@ -23,7 +23,6 @@
 package de.metas.handlingunits.shipping;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
