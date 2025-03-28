@@ -26,6 +26,10 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.customs.CustomsInvoiceRepository;
+<<<<<<< HEAD
+=======
+import de.metas.handlingunits.shipping.IHUPackageBL;
+>>>>>>> f24b0b04bb (move IHUPackageBL to de.metas.handlingunits.shipping)
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.mpackage.PackageId;

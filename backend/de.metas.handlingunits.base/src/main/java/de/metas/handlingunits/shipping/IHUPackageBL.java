@@ -1,4 +1,4 @@
-package de.metas.handlingunits;
+package de.metas.handlingunits.shipping;
 
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;

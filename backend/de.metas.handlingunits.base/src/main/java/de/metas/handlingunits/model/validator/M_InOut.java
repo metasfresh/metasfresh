@@ -25,7 +25,7 @@ package de.metas.handlingunits.model.validator;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
-import de.metas.handlingunits.IHUPackageBL;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
