@@ -22,9 +22,12 @@
 
 package de.metas.contracts.modular;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.FlatrateTermId;
+import de.metas.contracts.IContractChangeBL;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.ModularContractSettingsId;
 import de.metas.contracts.flatrate.TypeConditions;
@@ -35,6 +38,7 @@ import de.metas.contracts.modular.computing.ContractSpecificScalePriceRequest;
 import de.metas.contracts.modular.computing.DocStatusChangedEvent;
 import de.metas.contracts.modular.computing.IComputingMethodHandler;
 import de.metas.contracts.modular.log.LogEntryContractType;
+import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.log.ModularContractLogService;
 import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.contracts.modular.settings.ModularContractSettings;
@@ -78,7 +82,8 @@ public class ModularContractService
 {
 	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	@NonNull private final IContractChangeBL contractChangeBL = Services.get(IContractChangeBL.class);
 
 	@NonNull private final ModularContractComputingMethodHandlerRegistry modularContractHandlers;
 	@NonNull private final ProcessModularLogsEnqueuer processLogsEnqueuer;
@@ -89,6 +94,8 @@ public class ModularContractService
 	@NonNull private final ModularContractProvider contractProvider;
 
 	private static final AdMessageKey MSG_MORE_THAN_ONE_PURCHASE_MODULAR_CONTRACT_CANDIDATE = AdMessageKey.of("de.metas.contracts.modular.ModularContractService.MoreThanOneModularPurchaseContractCandidateFound");
+	private static final AdMessageKey MSG_CONTRACT_HAS_BILLABLE_LOGS = AdMessageKey.of("de.metas.contracts.modular.ModularContractService.ContractHasBillableLogs");
+	private static final AdMessageKey MSG_NOT_ELIGIBLE_PURCHASE_MODULAR_CONTRACT_CANDIDATE_SET = AdMessageKey.of("de.metas.contracts.modular.ModularContractService.NotEligibleModularContractSet");
 
 	public static ModularContractService newInstanceForJUnitTesting()
 	{
@@ -174,6 +181,11 @@ public class ModularContractService
 	private boolean isModularOrInterimContract(@NonNull final FlatrateTermId flatrateTermId)
 	{
 		final I_C_Flatrate_Term flatrateTermRecord = flatrateBL.getById(flatrateTermId);
+		return isModularOrInterimContract(flatrateTermRecord);
+	}
+
+	private boolean isModularOrInterimContract(@NonNull final I_C_Flatrate_Term flatrateTermRecord)
+	{
 		final TypeConditions typeConditions = TypeConditions.ofCode(flatrateTermRecord.getType_Conditions());
 		return typeConditions.isModularOrInterim();
 	}
@@ -328,6 +340,10 @@ public class ModularContractService
 		{
 			throw new AdempiereException(MSG_MORE_THAN_ONE_PURCHASE_MODULAR_CONTRACT_CANDIDATE);
 		}
+		else if (currentFlatrateTermId != null && !contractIds.contains(currentFlatrateTermId))
+		{
+			throw new AdempiereException(MSG_NOT_ELIGIBLE_PURCHASE_MODULAR_CONTRACT_CANDIDATE_SET, orderLineRecord.getLine());
+		}
 	}
 
 	public boolean isFinalInvoiceLineForComputingMethod(
@@ -336,5 +352,36 @@ public class ModularContractService
 			@Nullable final ColumnOption columnOption)
 	{
 		return computingMethodService.isFinalInvoiceLineForComputingMethod(invoiceLineId, ImmutableSet.of(computingMethodType), columnOption);
+	}
+
+	public void cancelContractsOnOrderVoidIfNeededAndAllowed(@NonNull final OrderId orderId)
+	{
+		final ImmutableList<I_C_Flatrate_Term> contracts = flatrateBL.getByOrderId(orderId)
+				.stream()
+				.filter(this::isModularOrInterimContract)
+				.collect(ImmutableList.toImmutableList());
+
+		for(final I_C_Flatrate_Term contract : contracts)
+		{
+			final boolean hasBillableLogs = modularContractLogService.anyMatch(
+					ModularContractLogQuery.builder()
+							.flatrateTermId(FlatrateTermId.ofRepoId(contract.getC_Flatrate_Term_ID()))
+							.billable(true)
+							.build()
+			);
+
+			if(hasBillableLogs)
+			{
+				throw new AdempiereException(MSG_CONTRACT_HAS_BILLABLE_LOGS, contract.getC_Flatrate_Term_ID());
+			}
+
+			contractChangeBL.cancelContract(contract,
+					IContractChangeBL.ContractChangeParameters
+							.builder()
+							.changeDate(SystemTime.asTimestamp())
+							.isCloseInvoiceCandidate(true)
+							.action(IContractChangeBL.ChangeTerm_ACTION_VoidSingleContract)
+							.build());
+		}
 	}
 }

@@ -1462,4 +1462,10 @@ public class OrderBL implements IOrderBL
 
 		return calendarDAO.findYearByCalendarAndDate(dateOrdered, harvestingCalendarId);
 	}
+
+	@Override
+	public List<I_C_OrderLine> retrieveOrderLines(@NonNull final I_C_Order order)
+	{
+		return orderDAO.retrieveOrderLines(order);
+	}
 }

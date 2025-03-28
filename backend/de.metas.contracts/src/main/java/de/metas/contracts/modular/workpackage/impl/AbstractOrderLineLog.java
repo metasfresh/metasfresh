@@ -28,7 +28,12 @@ import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepo
 import de.metas.contracts.modular.log.LogEntryContractType;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
+import de.metas.contracts.modular.workpackage.IModularContractLogHandler;
+import de.metas.contracts.modular.workpackage.ModularContractLogHandlerHelper;
+import de.metas.document.DocTypeId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
@@ -50,14 +55,12 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
-
-import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED;
 
 public abstract class AbstractOrderLineLog extends AbstractModularContractLogHandler
 {
@@ -71,15 +74,18 @@ public abstract class AbstractOrderLineLog extends AbstractModularContractLogHan
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
+	@NonNull private final ModularContractLogDAO modularContractLogDAO;
 
 	@Getter @NonNull private final String supportedTableName = I_C_OrderLine.Table_Name;
 
 	public AbstractOrderLineLog(
 			@NonNull final ModularContractService modularContractService,
-			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository)
+			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
+			@NonNull final ModularContractLogDAO modularContractLogDAO)
 	{
 		super(modularContractService);
 		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
+		this.modularContractLogDAO = modularContractLogDAO;
 	}
 
 	@Override
@@ -136,9 +142,29 @@ public abstract class AbstractOrderLineLog extends AbstractModularContractLogHan
 	}
 
 	@Override
-	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final CreateLogRequest createLogRequest)
+	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(final @NonNull IModularContractLogHandler.CreateLogRequest request)
 	{
-		// also see de.metas.contracts.modular.computing.ComputingMethodService#validateAction
-		throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+		final TableRecordReference orderLineRef = request.getRecordRef();
+		final I_C_OrderLine orderLineRecord = orderBL.getOrderLineById(OrderLineId.ofRepoId(orderLineRef.getRecordIdAssumingTableName(getSupportedTableName())));
+		final I_C_Order orderRecord = orderBL.getById(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()));
+
+		final Quantity quantity = modularContractLogDAO.retrieveQuantityFromExistingLog(
+				ModularContractLogQuery.builder()
+						.flatrateTermId(request.getContractId())
+						.referenceSet(TableRecordReferenceSet.of(request.getRecordRef()))
+						.contractType(getLogEntryContractType())
+						.build());
+
+		final ProductId productId = ProductId.ofRepoId(orderLineRecord.getM_Product_ID());
+		final DocTypeId docTypeId = DocTypeId.ofRepoId(orderRecord.getC_DocType_ID());
+		final String description = ModularContractLogHandlerHelper.getOnReverseDescription(docTypeId, productId, quantity);
+
+		return ExplainedOptional.of(LogEntryReverseRequest.builder()
+				.referencedModel(request.getRecordRef())
+				.flatrateTermId(request.getContractId())
+				.description(description)
+				.logEntryContractType(getLogEntryContractType())
+				.contractModuleId(request.getModularContractModuleId())
+				.build());
 	}
 }

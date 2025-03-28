@@ -63,7 +63,7 @@ public interface IOrderDAO extends ISingletonService
 	/**
 	 * @return order lines for given order
 	 */
-	List<I_C_OrderLine> retrieveOrderLines(I_C_Order order);
+	List<I_C_OrderLine> retrieveOrderLines(@NonNull I_C_Order order);
 
 	/**
 	 * Similar to {@link #retrieveOrderLines(I_C_Order)}, but allows to specify which {@link org.compiere.model.I_C_OrderLine} sub-type the result shall be in.

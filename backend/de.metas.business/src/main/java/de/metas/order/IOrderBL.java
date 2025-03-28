@@ -358,4 +358,6 @@ public interface IOrderBL extends ISingletonService
 	InOutFromOrderProducer newInOutFromOrderProducer();
 
 	YearId getSuitableHarvestingYearId(@NonNull I_C_Order orderRecord);
+
+	List<de.metas.interfaces.I_C_OrderLine> retrieveOrderLines(@NonNull I_C_Order order);
 }

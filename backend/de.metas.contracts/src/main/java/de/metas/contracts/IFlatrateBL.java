@@ -38,6 +38,7 @@ import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.I_ModCntr_Settings;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoice.InvoiceId;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.process.PInstanceId;
@@ -288,6 +289,8 @@ public interface IFlatrateBL extends ISingletonService
 
 	@NonNull
 	Optional<I_C_Flatrate_Term> getByOrderLineId(@NonNull OrderLineId orderLineId, @NonNull TypeConditions typeConditions);
+
+	@NonNull List<I_C_Flatrate_Term> getByOrderId(@NonNull OrderId orderId);
 
 	@Nullable
 	ProductPrice extractPriceActualById(@NonNull FlatrateTermId flatrateTermId);

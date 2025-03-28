@@ -7,6 +7,7 @@ import de.metas.contracts.IContractChangeDAO;
 import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Contract_Change;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
@@ -187,15 +188,19 @@ public class ContractChangeBL implements IContractChangeBL
 		final Timestamp changeDate = contractChangeParameters.getChangeDate();
 		if (changeDate.before(currentTerm.getEndDate()))
 		{
-			final List<I_C_SubscriptionProgress> subscriptionProgress = Services.get(IContractsDAO.class).getSubscriptionProgress(currentTerm);
+			if (!TypeConditions.ofCode(currentTerm.getType_Conditions()).isModularOrInterim())
+			{
+				final List<I_C_SubscriptionProgress> subscriptionProgress = Services.get(IContractsDAO.class).getSubscriptionProgress(currentTerm);
 
-			final ContextForCompesationOrder compensationOrderContext = ContextForCompesationOrder.builder()
-					.changeDate(changeDate)
-					.currentTerm(currentTerm)
-					.subscriptionProgress(subscriptionProgress)
-					.build();
-			createCompesationOrderIfNeeded(compensationOrderContext);
-			deleteDeliveriesAdjustOrderLine(compensationOrderContext);
+				final ContextForCompesationOrder compensationOrderContext = ContextForCompesationOrder.builder()
+						.changeDate(changeDate)
+						.currentTerm(currentTerm)
+						.subscriptionProgress(subscriptionProgress)
+						.build();
+				createCompesationOrderIfNeeded(compensationOrderContext);
+				deleteDeliveriesAdjustOrderLine(compensationOrderContext);
+			}
+
 			currentTerm.setEndDate(computeEndDate(currentTerm, changeDate));
 		}
 	}

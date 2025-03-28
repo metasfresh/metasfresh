@@ -61,7 +61,7 @@ public class InterimContract_GenerateInterimInvoice extends JavaProcess implemen
 
 		if (!interimContractWasSelected(context.getQueryFilter(I_C_Flatrate_Term.class)))
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("No interim contract selected");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("No invoiceable interim contract selected");
 		}
 
 		return ProcessPreconditionsResolution.accept();

@@ -63,7 +63,6 @@ import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_InventoryLine;
-import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -84,7 +83,6 @@ public class ComputingMethodService
 
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	@NonNull private final IPPCostCollectorBL ppCostCollectorBL = Services.get(IPPCostCollectorBL.class);
 	@NonNull private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
 	@NonNull private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
@@ -129,8 +127,8 @@ public class ComputingMethodService
 			{
 				switch (action)
 				{
-					case COMPLETED, RECREATE_LOGS -> {}
-					case REACTIVATED, REVERSED, VOIDED -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
+					case COMPLETED, RECREATE_LOGS, VOIDED -> {}
+					case REACTIVATED, REVERSED -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_NOT_ALLOWED);
 					default -> throw new AdempiereException(ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED);
 				}
 			}

@@ -150,7 +150,7 @@ public abstract class AbstractOrderDAO implements IOrderDAO
 	}
 
 	@Override
-	public List<I_C_OrderLine> retrieveOrderLines(final I_C_Order order)
+	public List<I_C_OrderLine> retrieveOrderLines(@NonNull final I_C_Order order)
 	{
 		return retrieveOrderLines(order, I_C_OrderLine.class);
 	}

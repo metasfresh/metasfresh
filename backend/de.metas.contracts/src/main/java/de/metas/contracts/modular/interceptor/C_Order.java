@@ -37,7 +37,7 @@ import de.metas.contracts.modular.settings.ModularContractSettingsRepository;
 import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
-import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -74,10 +74,8 @@ public class C_Order
 	private static final AdMessageKey MSG_HARVESTING_DETAILS_CHANGES_NOT_ALLOWED = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_Order.HarvestingDetailsChangeNotAllowed");
 	private static final AdMessageKey MSG_HARVESTING_DETAILS_CHANGES_NOT_ALLOWED_PO = AdMessageKey.of("de.metas.contracts.modular.interceptor.C_Order.HarvestingDetailsChangeNotAllowed_PurchaseOrder");
 
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
-
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	@NonNull private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	@NonNull private final ModularContractService contractService;
 	@NonNull private final ModularContractLogDAO contractLogDAO;
@@ -100,6 +98,12 @@ public class C_Order
 	{
 		createModularContractIfRequired(orderRecord);
 		invokeHandlerForEachLine(orderRecord, COMPLETED);
+	}
+
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_VOID)
+	public void beforeVoid(@NonNull final I_C_Order orderRecord)
+	{
+		contractService.cancelContractsOnOrderVoidIfNeededAndAllowed(OrderId.ofRepoId(orderRecord.getC_Order_ID()));
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_VOID)
@@ -130,7 +134,7 @@ public class C_Order
 			return;
 		}
 
-		final boolean hasAnyModularLogs = orderDAO.retrieveOrderLines(orderRecord)
+		final boolean hasAnyModularLogs = orderBL.retrieveOrderLines(orderRecord)
 				.stream()
 				.map(record -> TableRecordReference.of(I_C_OrderLine.Table_Name, record.getC_OrderLine_ID()))
 				.anyMatch(contractLogDAO::hasAnyModularLogs);
@@ -148,7 +152,7 @@ public class C_Order
 			@NonNull final I_C_Order orderRecord,
 			@NonNull final ModelAction modelAction)
 	{
-		orderDAO.retrieveOrderLines(orderRecord)
+		orderBL.retrieveOrderLines(orderRecord)
 				.forEach(line -> contractService.scheduleLogCreation(
 						DocStatusChangedEvent.builder()
 								.tableRecordReference(TableRecordReference.of(line))
@@ -161,7 +165,7 @@ public class C_Order
 
 	private void createModularContractIfRequired(final @NonNull I_C_Order orderRecord)
 	{
-		orderDAO.retrieveOrderLines(orderRecord)
+		orderBL.retrieveOrderLines(orderRecord)
 				.forEach(line -> createModularContractIfRequiredForEachLine(line, SOTrx.ofBoolean(orderRecord.isSOTrx())));
 	}
 
@@ -207,7 +211,7 @@ public class C_Order
 			return;
 		}
 
-		final boolean hasAnyContractTerms = orderDAO.retrieveOrderLines(orderRecord)
+		final boolean hasAnyContractTerms = orderBL.retrieveOrderLines(orderRecord)
 				.stream()
 				.anyMatch(ol -> ol.getC_Flatrate_Conditions_ID() > 0);
 
