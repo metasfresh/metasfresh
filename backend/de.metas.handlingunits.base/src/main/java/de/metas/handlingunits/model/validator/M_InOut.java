@@ -94,7 +94,6 @@ public class M_InOut
 	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
 	private final IInOutDAO inoutDao = Services.get(IInOutDAO.class);
-	private final IHUMovementBL huMovementBL = Services.get(IHUMovementBL.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 	private final IHUSnapshotDAO snapshotDAO = Services.get(IHUSnapshotDAO.class);
 	private final ReturnsServiceFacade returnsServiceFacade;
