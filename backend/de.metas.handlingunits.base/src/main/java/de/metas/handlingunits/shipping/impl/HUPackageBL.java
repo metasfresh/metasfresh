@@ -1,14 +1,15 @@
 package de.metas.handlingunits.shipping.impl;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
-import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
+import de.metas.handlingunits.shipping.CreatePackageForHURequest;
+import de.metas.handlingunits.shipping.IHUPackageBL;
+import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.mpackage.PackageId;
@@ -85,16 +86,16 @@ public class HUPackageBL implements IHUPackageBL
 	}
 
 	@Override
-	public I_M_Package createM_Package(final I_M_HU hu, final ShipperId shipperId)
+	public I_M_Package createM_Package(@NonNull final CreatePackageForHURequest request)
 	{
-		Check.assumeNotNull(hu, HUException.class, "hu not null");
-		Check.assumeNotNull(shipperId, HUException.class, "shipper not null");
+		final I_M_HU hu = request.getHu();
+		final ShipperId shipperId = request.getShipperId();
 
 		Check.errorIf(hu.getC_BPartner_ID() <= 0, HUException.class, "M_HU {} has C_BPartner_ID <= 0", hu);
 		Check.errorIf(hu.getC_BPartner_Location_ID() <= 0, HUException.class, "M_HU {} has C_BPartner_Location_ID <= 0", hu);
 
 		final I_M_Package mpackage = newInstance(I_M_Package.class);
-		mpackage.setM_Shipper_ID(shipperId.getRepoId());
+		mpackage.setM_Shipper_ID(request.getShipperId().getRepoId());
 		mpackage.setShipDate(null);
 		mpackage.setC_BPartner_ID(hu.getC_BPartner_ID());
 		mpackage.setC_BPartner_Location_ID(hu.getC_BPartner_Location_ID());

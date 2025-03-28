@@ -23,6 +23,7 @@ package de.metas.handlingunits.shipping.process;
  */
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.shipping.CreatePackageForHURequest;
 import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -200,7 +201,12 @@ public class M_ShippingPackage_CreateFromPickingSlots extends JavaProcess implem
 			return;
 		}
 
-		final I_M_Package mpackage = huPackageBL.createM_Package(hu, shipperId);
+		final I_M_Package mpackage = huPackageBL.createM_Package(
+				CreatePackageForHURequest.builder()
+						.hu(hu)
+						.shipperId(shipperId)
+						.build()
+		);
 
 		final I_M_ShippingPackage shippingPackage = shipperTransportationBL.createShippingPackage(shipperTransportation, mpackage);
 		if (shippingPackage == null)
