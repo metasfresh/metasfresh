@@ -1,15 +1,19 @@
-package de.metas.handlingunits.impl;
+package de.metas.handlingunits.shipping.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHULockBL;
+import de.metas.handlingunits.shipping.AddTrackingInfosForInOutWithoutHUReq;
+import de.metas.handlingunits.impl.CreatePackagesRequest;
+import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
+import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.handlingunits.shipping.CreatePackagesForInOutRequest;
 import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.IHUShipperTransportationBL;
+import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IInOutPackageDAO;
 import de.metas.handlingunits.model.I_M_HU;
