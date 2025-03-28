@@ -25,7 +25,16 @@ const MaterialReceiptLineScreen = () => {
   const {
     activityCaption,
     userInstructions,
-    lineProps: { aggregateToLU, aggregateToTU, currentReceivingHU, productName, uom, qtyReceived, qtyToReceive },
+    lineProps: {
+      aggregateToLU,
+      aggregateToTU,
+      currentReceivingHU,
+      productName,
+      uom,
+      catchWeightUomSymbol,
+      qtyReceived,
+      qtyToReceive,
+    },
     pickTo,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }));
   const [showSpinner, setShowSpinner] = useState(false);
@@ -63,7 +72,14 @@ const MaterialReceiptLineScreen = () => {
     );
   }, []);
 
-  const handleQuantityChange = (qtyReceived) => {
+  const handleQuantityChange = ({
+    qtyEnteredAndValidated,
+    catchWeight,
+    catchWeightUom,
+    bestBeforeDate,
+    lotNo,
+    isDone = true,
+  }) => {
     // shall not happen
     if (!aggregateToLU && !currentReceivingHU && !aggregateToTU) {
       console.log('skip receiving qty because there is no target');
@@ -72,9 +88,23 @@ const MaterialReceiptLineScreen = () => {
 
     setShowSpinner(true);
     dispatch(
-      updateManufacturingReceiptQty({ wfProcessId, activityId, lineId, qtyReceived: Number(qtyReceived), pickTo })
+      updateManufacturingReceiptQty({
+        wfProcessId,
+        activityId,
+        lineId,
+        qtyReceived: Number(qtyEnteredAndValidated),
+        pickTo,
+        catchWeight,
+        catchWeightUom,
+        bestBeforeDate,
+        lotNo,
+      })
     )
-      .then(() => history.goBack())
+      .then(() => {
+        if (isDone) {
+          history.goBack();
+        }
+      })
       .catch((axiosError) => toastError({ axiosError }))
       .finally(() => setShowSpinner(false));
   };
@@ -115,6 +145,7 @@ const MaterialReceiptLineScreen = () => {
         </ButtonWithIndicator>
         <PickQuantityButton
           qtyTarget={qtyToReceive - qtyReceived}
+          catchWeightUom={catchWeightUomSymbol}
           isDisabled={!allowReceivingQty}
           onClick={handleQuantityChange}
           uom={uom}

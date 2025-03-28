@@ -1,4 +1,4 @@
-import { page } from '../../../common';
+import { ID_BACK_BUTTON, page } from '../../../common';
 import { test } from '../../../../../playwright.config';
 import { expect } from '@playwright/test';
 import { ReceiptReceiveTargetScreen } from './ReceiptReceiveTargetScreen';
@@ -49,8 +49,21 @@ export const MaterialReceiptLineScreen = {
 
     receiveQty: async ({ qtyEntered, expectQtyEntered }) => await test.step(`${NAME} - Receive qty ${qtyEntered ? qtyEntered : ''}`, async () => {
         await page.getByTestId('receive-qty-button').tap();
+
         await GetQuantityDialog.fillAndPressDone({ expectQtyEntered, qtyEntered });
         // await MaterialReceiptLineScreen.waitForScreen(); // while processing
         await ManufacturingJobScreen.waitForScreen(); // final screen
+    }),
+
+    receiveQtyWithQRCode: async ({ catchWeightQRCode }) => await test.step(`${NAME} - Receive via QrCode`, async () => {
+        await page.getByTestId('receive-qty-button').tap();
+
+        await GetQuantityDialog.fillAndPressDone({ catchWeightQRCode });
+    }),
+
+    goBack: async () => await test.step(`${NAME} - Go back`, async () => {
+        await MaterialReceiptLineScreen.expectVisible();
+        await page.locator(ID_BACK_BUTTON).tap();
+        await ManufacturingJobScreen.waitForScreen();
     }),
 };

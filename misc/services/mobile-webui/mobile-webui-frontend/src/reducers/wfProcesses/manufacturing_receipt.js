@@ -84,7 +84,7 @@ const reduceOnUpdateQtyReceived = (draftState, { wfProcessId, activityId, lineId
     const draftWFProcess = draftState[wfProcessId];
     const draftActivityLine = getLineByIdFromWFProcess(draftWFProcess, activityId, lineId);
 
-    draftActivityLine.qtyReceived += qtyReceived;
+    draftActivityLine.qtyReceived = qtyReceived;
 
     updateLineStatusAndRollup({
       draftWFProcess,
