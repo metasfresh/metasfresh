@@ -1,7 +1,7 @@
-package de.metas.handlingunits.impl;
+package de.metas.handlingunits.shipping.impl;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.IHUPackageBL;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.exceptions.HUException;

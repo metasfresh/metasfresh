@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.customs.CustomsInvoiceRepository;
-import de.metas.handlingunits.IHUPackageBL;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.mpackage.PackageId;

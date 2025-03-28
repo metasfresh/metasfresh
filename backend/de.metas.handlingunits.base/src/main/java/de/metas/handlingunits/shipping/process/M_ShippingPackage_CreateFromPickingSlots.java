@@ -23,7 +23,7 @@ package de.metas.handlingunits.shipping.process;
  */
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.IHUPackageBL;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;

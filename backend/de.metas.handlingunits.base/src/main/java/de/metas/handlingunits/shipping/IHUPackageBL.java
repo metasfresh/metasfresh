@@ -1,4 +1,4 @@
-package de.metas.handlingunits;
+package de.metas.handlingunits.shipping;
 
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
