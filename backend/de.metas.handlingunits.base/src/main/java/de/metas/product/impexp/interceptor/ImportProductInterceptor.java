@@ -81,6 +81,11 @@ public class ImportProductInterceptor implements IImportInterceptor
 			return;
 		}
 
+		if (BigDecimal.ONE.compareTo(importRecord.getQtyCU()) == 0 )
+		{
+			return;
+		}
+
 		handlingUnitsDAO.createTUPackingInstructions(
 				CreateTUPackingInstructionsRequest.builder()
 						.name(piName)
