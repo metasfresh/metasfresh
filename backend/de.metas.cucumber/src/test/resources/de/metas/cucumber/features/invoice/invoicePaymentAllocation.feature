@@ -1486,7 +1486,6 @@ Feature: invoice payment allocation
 
 
   @Id:S0465_350
-  @ignore #This scenario should mock a service fee allocation against a sales credit memo, which is atm only done in REMADV. To be fixed when we create cucumbers for REMADV.
   @from:cucumber
   Scenario: allocate a customer credit memo with a vendor invoice
 
