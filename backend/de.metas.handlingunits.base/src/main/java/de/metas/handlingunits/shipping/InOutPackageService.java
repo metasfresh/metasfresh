@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.handlingunits.impl;
+package de.metas.handlingunits.shipping;
 
 import de.metas.mpackage.Package;
 import de.metas.mpackage.PackageId;

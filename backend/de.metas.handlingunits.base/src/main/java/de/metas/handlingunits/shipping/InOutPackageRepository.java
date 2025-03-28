@@ -20,9 +20,10 @@
  * #L%
  */
 
-package de.metas.handlingunits.impl;
+package de.metas.handlingunits.shipping;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.impl.CreatePackagesRequest;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.mpackage.Package;

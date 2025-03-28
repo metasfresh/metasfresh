@@ -26,7 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.currency.CurrencyRepository;
 import de.metas.customs.CustomsInvoiceRepository;
-import de.metas.handlingunits.impl.InOutPackageRepository;
+import de.metas.handlingunits.shipping.InOutPackageRepository;
 import de.metas.location.CountryCode;
 import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.commons.ShipperTestHelper;
