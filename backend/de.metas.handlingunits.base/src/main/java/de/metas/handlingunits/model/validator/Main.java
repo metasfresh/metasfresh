@@ -89,6 +89,7 @@ import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsDAO;
 import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
+import de.metas.product.impexp.interceptor.ImportProductInterceptor;
 import de.metas.storage.IStorageEngineService;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.util.Services;
@@ -106,6 +107,7 @@ import org.compiere.apps.search.dao.impl.HUInvoiceHistoryDAO;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_I_Inventory;
+import org.compiere.model.I_I_Product;
 import org.eevolution.model.I_DD_OrderLine;
 import org.springframework.stereotype.Component;
 
@@ -190,6 +192,8 @@ public final class Main extends AbstractModuleInterceptor
 
 		// https://github.com/metasfresh/metasfresh/issues/2298
 		engine.addModelValidator(de.metas.handlingunits.picking.interceptor.M_HU.INSTANCE);
+
+		engine.addImportInterceptor(I_I_Product.Table_Name, new ImportProductInterceptor());
 	}
 
 	@Override

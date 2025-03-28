@@ -4,6 +4,7 @@ import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
+import org.compiere.model.I_I_Product;
 import org.compiere.util.Env;
 
 import com.google.common.annotations.VisibleForTesting;
