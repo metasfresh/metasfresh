@@ -2,7 +2,7 @@ package de.metas.handlingunits;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.impl.AddTrackingInfosForInOutWithoutHUReq;
-import de.metas.handlingunits.impl.CreatePackagesForInOutRequest;
+import de.metas.handlingunits.shipping.CreatePackagesForInOutRequest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;

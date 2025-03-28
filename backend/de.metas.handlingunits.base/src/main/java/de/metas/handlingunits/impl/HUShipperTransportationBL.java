@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHULockBL;
+import de.metas.handlingunits.shipping.CreatePackagesForInOutRequest;
 import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHUQueryBuilder;
