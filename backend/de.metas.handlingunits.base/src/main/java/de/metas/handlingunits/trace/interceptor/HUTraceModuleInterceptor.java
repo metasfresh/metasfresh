@@ -1,6 +1,5 @@
 package de.metas.handlingunits.trace.interceptor;
 
-import de.metas.product.impexp.ImportProductInterceptor;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.service.ISysConfigBL;
@@ -64,8 +63,6 @@ public class HUTraceModuleInterceptor extends AbstractModuleInterceptor
 		engine.addModelValidator(new M_InOut());
 		engine.addModelValidator(new M_Movement());
 		// engine.addModelValidator(new M_ShipmentSchedule_QtyPicked()); this one is now a spring component
-
-		engine.addImportInterceptor(I_I_Product.Table_Name, ImportProductInterceptor.instance);
 	}
 
 	/**

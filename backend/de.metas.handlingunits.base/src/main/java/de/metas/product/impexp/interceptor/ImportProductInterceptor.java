@@ -23,7 +23,7 @@
 /**
  *
  */
-package de.metas.product.impexp;
+package de.metas.product.impexp.interceptor;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -52,13 +52,6 @@ public class ImportProductInterceptor implements IImportInterceptor
 {
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
-	public static final ImportProductInterceptor instance = new ImportProductInterceptor();
-
-	private ImportProductInterceptor()
-	{
-
-	}
 
 	@Override
 	public void onImport(IImportProcess<?> process, Object importModel, Object targetModel, int timing)
