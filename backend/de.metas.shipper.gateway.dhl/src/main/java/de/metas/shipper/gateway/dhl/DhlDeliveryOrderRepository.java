@@ -57,6 +57,14 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
+<<<<<<< HEAD
+=======
+import java.util.NoSuchElementException;
+import java.util.Objects;
+import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+>>>>>>> c3f4e747b6 (bugfix: don't use the overall weight of the whole to delivery to each delivery package)
 
 @Repository
 public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
@@ -257,6 +265,7 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 
 		for (final DeliveryPosition deliveryPosition : deliveryOrder.getDeliveryPositions()) // only a single delivery position should exist
 		{
+<<<<<<< HEAD
 			final ImmutableList<PackageId> packageIdsAsList = deliveryPosition.getPackageIds().asList();
 			for (int i = 0; i < deliveryPosition.getNumberOfPackages(); i++)
 			{
@@ -336,37 +345,119 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 
 				//				{
 				//					// (2.2.6) Export Document - only for international shipments
-				//
-				//					//noinspection ConstantConditions
-				//					final DhlCustomDeliveryData dhlCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
-				//					final DhlCustomDeliveryDataDetail deliveryDataDetail = dhlCustomDeliveryData.getDetailByPackageId(packageIdsAsList.get(i));
-				//					if (deliveryDataDetail.isInternationalDelivery())
-				//					{
-				//						final DhlCustomsDocument customsDocument = deliveryDataDetail.getCustomsDocument();
-				//
-				//						//noinspection ConstantConditions
-				//						shipmentOrder.setExportType(customsDocument.getExportType());
-				//						shipmentOrder.setExportTypeDescription(customsDocument.getExportTypeDescription());
-				//						shipmentOrder.setAdditionalFee(customsDocument.getAdditionalFee());
-				//						// (2.2.6.9)
-				//						shipmentOrder.setElectronicExportNotification(customsDocument.getElectronicExportNotification());
-				//						// (2.2.6.10)
-				//						shipmentOrder.setPackageDescription(customsDocument.getPackageDescription());
-				//						shipmentOrder.setCustomsTariffNumber(customsDocument.getCustomsTariffNumber());
-				//						shipmentOrder.setCustomsAmount(customsDocument.getCustomsAmount().intValue());
-				//						shipmentOrder.setNetWeightKg(customsDocument.getNetWeightInKg());
-				//						shipmentOrder.setCustomsValue(customsDocument.getCustomsValue());
-				//						shipmentOrder.setC_Customs_Invoice_ID(customsDocument.getInvoiceId().getRepoId());
-				//						shipmentOrder.setC_Customs_Invoice_Line_ID(customsDocument.getInvoiceLineId().getRepoId());
-				//					}
-				//				}
+=======
+			final ContactPerson deliveryContact = deliveryOrder.getDeliveryContact();
 
-				InterfaceWrapperHelper.save(shipmentOrder);
+			final I_DHL_ShipmentOrder shipmentOrder = InterfaceWrapperHelper.newInstance(I_DHL_ShipmentOrder.class);
+			shipmentOrder.setDHL_ShipmentOrderRequest_ID(shipmentOrderRequest.getDHL_ShipmentOrderRequest_ID()); // save to parent
+			{
+>>>>>>> c3f4e747b6 (bugfix: don't use the overall weight of the whole to delivery to each delivery package)
+				//
+				// Misc which doesn't fit dhl structure
+				final Address deliveryAddress = deliveryOrder.getDeliveryAddress();
+
+				shipmentOrder.setPackageId(deliveryOrderLine.getPackageId().getRepoId());
+				shipmentOrder.setC_BPartner_ID(deliveryAddress.getBpartnerId());
+				shipmentOrder.setM_Shipper_ID(deliveryOrder.getShipperId().getRepoId());
+				shipmentOrder.setM_ShipperTransportation_ID(deliveryOrder.getShipperTransportationId().getRepoId());
+				shipmentOrder.setInternationalDelivery(!Objects.equals(deliveryOrder.getDeliveryAddress().getCountry(), deliveryOrder.getPickupAddress().getCountry()));
+			}
+
+			{
+				// (2.2.1) Shipment Details aka PackageDetails
+				shipmentOrder.setDHL_Product(deliveryOrder.getShipperProduct().getCode());
+				//noinspection ConstantConditions
+				shipmentOrder.setCustomerReference(deliveryOrder.getCustomerReference());
+				shipmentOrder.setDHL_ShipmentDate(deliveryOrder.getPickupDate().getDate().format(DateTimeFormatter.ISO_LOCAL_DATE));
+				// (2.2.1.8)
+				final PackageDimensions packageDimensions = deliveryOrderLine.getPackageDimensions();
+				if (packageDimensions != null)
 				{
-					// (2.1) The id column (I_DHL_ShipmentOrder_ID) is used as ShipmentOrder.sequenceNumber since it's unique
-					// nothing to persist here, but must be filled when retrieving the PO
+					shipmentOrder.setDHL_HeightInCm(packageDimensions.getHeightInCM());
+					shipmentOrder.setDHL_LengthInCm(packageDimensions.getLengthInCM());
+					shipmentOrder.setDHL_WidthInCm(packageDimensions.getWidthInCM());
 				}
+<<<<<<< HEAD
 			} // fori loop
+=======
+				shipmentOrder.setDHL_WeightInKg(deliveryOrderLine.getGrossWeightKg());
+				// (2.2.1.10)
+				//noinspection ConstantConditions
+				shipmentOrder.setDHL_RecipientEmailAddress(deliveryContact != null ? deliveryContact.getEmailAddress() : null);
+			}
+
+			{
+				// (2.2.4) Receiver aka Delivery
+				final Address deliveryAddress = deliveryOrder.getDeliveryAddress();
+
+				shipmentOrder.setDHL_Receiver_Name1(deliveryAddress.getCompanyName1());
+				// (2.2.4.2)
+				shipmentOrder.setDHL_Receiver_Name2(deliveryAddress.getCompanyName2());
+				shipmentOrder.setDHL_Receiver_StreetName1(deliveryAddress.getStreet1());
+				shipmentOrder.setDHL_Receiver_StreetName2(deliveryAddress.getStreet2());
+				shipmentOrder.setDHL_Receiver_StreetNumber(deliveryAddress.getHouseNo());
+				shipmentOrder.setDHL_Receiver_ZipCode(deliveryAddress.getZipCode());
+				shipmentOrder.setDHL_Receiver_City(deliveryAddress.getCity());
+				// (2.2.4.2.10)
+				shipmentOrder.setDHL_Receiver_CountryISO2Code(deliveryAddress.getCountry().getAlpha2());
+				shipmentOrder.setDHL_Receiver_CountryISO3Code(deliveryAddress.getCountry().getAlpha3());
+				// (2.2.4.2)
+				//noinspection ConstantConditions
+				shipmentOrder.setDHL_Receiver_Email(deliveryContact != null ? deliveryContact.getEmailAddress() : null);
+				//noinspection ConstantConditions
+				shipmentOrder.setDHL_Receiver_Phone(deliveryContact != null ? deliveryContact.getPhoneAsStringOrNull() : null);
+			}
+
+			{
+				// (2.2.2) Shipper aka Pickup
+				final Address pickupAddress = deliveryOrder.getPickupAddress();
+				// (2.2.2.1)
+				shipmentOrder.setDHL_Shipper_Name1(pickupAddress.getCompanyName1());
+				shipmentOrder.setDHL_Shipper_Name2(pickupAddress.getCompanyName2());
+				// (2.2.2.2)
+				shipmentOrder.setDHL_Shipper_StreetName1(pickupAddress.getStreet1());
+				shipmentOrder.setDHL_Shipper_StreetName2(pickupAddress.getStreet2());
+				shipmentOrder.setDHL_Shipper_StreetNumber(pickupAddress.getHouseNo());
+				shipmentOrder.setDHL_Shipper_ZipCode(pickupAddress.getZipCode());
+				shipmentOrder.setDHL_Shipper_City(pickupAddress.getCity());
+				// (2.2.2.2.8)
+				shipmentOrder.setDHL_Shipper_CountryISO2Code(pickupAddress.getCountry().getAlpha2());
+				shipmentOrder.setDHL_Shipper_CountryISO3Code(pickupAddress.getCountry().getAlpha3());
+			}
+
+			//				{
+			//					// (2.2.6) Export Document - only for international shipments
+			//
+			//					//noinspection ConstantConditions
+			//					final DhlCustomDeliveryData dhlCustomDeliveryData = DhlCustomDeliveryData.cast(deliveryOrder.getCustomDeliveryData());
+			//					final DhlCustomDeliveryDataDetail deliveryDataDetail = dhlCustomDeliveryData.getDetailByPackageId(packageIdsAsList.get(i));
+			//					if (deliveryDataDetail.isInternationalDelivery())
+			//					{
+			//						final DhlCustomsDocument customsDocument = deliveryDataDetail.getCustomsDocument();
+			//
+			//						//noinspection ConstantConditions
+			//						shipmentOrder.setExportType(customsDocument.getExportType());
+			//						shipmentOrder.setExportTypeDescription(customsDocument.getExportTypeDescription());
+			//						shipmentOrder.setAdditionalFee(customsDocument.getAdditionalFee());
+			//						// (2.2.6.9)
+			//						shipmentOrder.setElectronicExportNotification(customsDocument.getElectronicExportNotification());
+			//						// (2.2.6.10)
+			//						shipmentOrder.setPackageDescription(customsDocument.getPackageDescription());
+			//						shipmentOrder.setCustomsTariffNumber(customsDocument.getCustomsTariffNumber());
+			//						shipmentOrder.setCustomsAmount(customsDocument.getCustomsAmount().intValue());
+			//						shipmentOrder.setNetWeightKg(customsDocument.getNetWeightInKg());
+			//						shipmentOrder.setCustomsValue(customsDocument.getCustomsValue());
+			//						shipmentOrder.setC_Customs_Invoice_ID(customsDocument.getInvoiceId().getRepoId());
+			//						shipmentOrder.setC_Customs_Invoice_Line_ID(customsDocument.getInvoiceLineId().getRepoId());
+			//					}
+			//				}
+
+			InterfaceWrapperHelper.save(shipmentOrder);
+			{
+				// (2.1) The id column (I_DHL_ShipmentOrder_ID) is used as ShipmentOrder.sequenceNumber since it's unique
+				// nothing to persist here, but must be filled when retrieving the PO
+			}
+>>>>>>> c3f4e747b6 (bugfix: don't use the overall weight of the whole to delivery to each delivery package)
 		}
 		return shipmentOrderRequest;
 	}
@@ -418,4 +509,14 @@ public class DhlDeliveryOrderRepository implements DeliveryOrderRepository
 				.create()
 				.first();
 	}
+
+	public Optional<I_DHL_ShipmentOrder> getShipmentOrderByPackageId(@NonNull final PackageId packageId)
+	{
+		return queryBL.createQueryBuilder(I_DHL_ShipmentOrder.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_DHL_ShipmentOrder.COLUMNNAME_PackageId, packageId)
+				.create()
+				.firstOnlyOptional();
+	}
+
 }

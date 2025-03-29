@@ -1,10 +1,14 @@
 package de.metas.shipper.gateway.go;
 
+<<<<<<< HEAD
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 import java.time.LocalDate;
 import java.util.Set;
 
+=======
+import de.metas.bpartner.service.IBPartnerOrgBL;
+>>>>>>> c3f4e747b6 (bugfix: don't use the overall weight of the whole to delivery to each delivery package)
 import de.metas.mpackage.PackageId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -50,6 +54,8 @@ import lombok.NonNull;
 @Service
 public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
+	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
+
 	@Override
 	public String getShipperGatewayId()
 	{
@@ -60,7 +66,7 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	public DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
-		final Set<PackageId> mpackageIds = request.getMpackageIds();
+		final Set<PackageId> mpackageIds = request.getPackageIds();
 
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(deliveryOrderKey.getFromOrgId());
@@ -109,8 +115,13 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(mpackageIds.size())
 						.packageIds(mpackageIds)
+<<<<<<< HEAD
 						.grossWeightKg(Math.max(request.getAllPackagesGrossWeightInKg(), 1))
 						.content(request.getAllPackagesContentDescription())
+=======
+						.grossWeightKg(request.getAllPackagesGrossWeightInKg().orElse(DEFAULT_PackageWeightInKg))
+						.content(request.getAllPackagesContentDescription().orElse("-"))
+>>>>>>> c3f4e747b6 (bugfix: don't use the overall weight of the whole to delivery to each delivery package)
 						.build())
 				// .customerReference(null)
 				//

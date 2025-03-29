@@ -1,6 +1,7 @@
 package de.metas.handlingunits.shipping;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 
@@ -16,6 +17,15 @@ import de.metas.mpackage.PackageId;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.ISingletonService;
 
+=======
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_Package_HU;
+import de.metas.shipping.model.I_M_ShippingPackage;
+import de.metas.util.ISingletonService;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Package;
+
+>>>>>>> c3f4e747b6 (bugfix: don't use the overall weight of the whole to delivery to each delivery package)
 public interface IHUPackageBL extends ISingletonService
 {
 	/**
@@ -41,10 +51,13 @@ public interface IHUPackageBL extends ISingletonService
 <<<<<<< HEAD
 =======
 
+<<<<<<< HEAD
 	/**
 	 * @return the {@code POReference}-values of the given  {@code M_Packages}, separated by comma.
 	 */
 	@NonNull
 	String getPOReference(@NonNull Collection<PackageId> packageIds);
 >>>>>>> 946fada85c (introduce and use CreatePackageForHURequest)
+=======
+>>>>>>> c3f4e747b6 (bugfix: don't use the overall weight of the whole to delivery to each delivery package)
 }

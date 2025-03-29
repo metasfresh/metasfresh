@@ -23,9 +23,14 @@
 package de.metas.shipper.gateway.dhl;
 
 import com.google.common.collect.ImmutableList;
+<<<<<<< HEAD
 import de.metas.customs.CustomsInvoiceRepository;
 <<<<<<< HEAD
 =======
+=======
+import com.google.common.collect.ImmutableSet;
+import de.metas.currency.CurrencyRepository;
+>>>>>>> c3f4e747b6 (bugfix: don't use the overall weight of the whole to delivery to each delivery package)
 import de.metas.handlingunits.shipping.InOutPackageRepository;
 >>>>>>> 37d0383ce0 (move InOutPackageService to de.metas.handlingunits.shipping)
 import de.metas.location.CountryCode;
@@ -39,6 +44,7 @@ import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
 import de.metas.shipper.gateway.dhl.model.DhlShipperProduct;
 import de.metas.shipper.gateway.dhl.model.I_Dhl_ShipmentOrder_Log;
+import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
@@ -57,8 +63,11 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Location;
 
 import java.time.LocalDate;
+<<<<<<< HEAD
 import java.util.Set;
 import java.util.stream.Stream;
+=======
+>>>>>>> c3f4e747b6 (bugfix: don't use the overall weight of the whole to delivery to each delivery package)
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -236,7 +245,7 @@ class DhlTestHelper
 		// create all structures
 
 		final DhlClientConfigRepository clientConfigRepository = new DhlClientConfigRepository();
-		final DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DhlDraftDeliveryOrderCreator(clientConfigRepository, new CustomsInvoiceRepository());
+		final DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DhlDraftDeliveryOrderCreator(clientConfigRepository);
 		final DhlDeliveryOrderRepository orderRepository = new DhlDeliveryOrderRepository();
 
 		final UomId dummyUom = UomId.ofRepoId(1);
@@ -362,7 +371,14 @@ class DhlTestHelper
 		final DeliveryPosition deliveryPosition = deliveryOrder.getDeliveryPositions().get(0);
 
 		//
+<<<<<<< HEAD
 		final Set<PackageId> mpackageIds = deliveryPosition.getPackageIds();
+=======
+		final CreateDraftDeliveryOrderRequest.PackageInfo packageInfo = CreateDraftDeliveryOrderRequest.PackageInfo.builder()
+				.packageId(firstDeliveryOrderLine.getPackageId())
+				.weightInKg(firstDeliveryOrderLine.getGrossWeightKg())
+				.build();
+>>>>>>> c3f4e747b6 (bugfix: don't use the overall weight of the whole to delivery to each delivery package)
 
 		//
 		final I_C_BPartner pickupFromBPartner = ShipperTestHelper.createBPartner(deliveryOrder.getPickupAddress());
@@ -379,7 +395,10 @@ class DhlTestHelper
 
 		//
 		final DhlShipperProduct detectedServiceType = (DhlShipperProduct)deliveryOrder.getShipperProduct();
+<<<<<<< HEAD
 		final int grossWeightInKg = deliveryPosition.getGrossWeightKg();
+=======
+>>>>>>> c3f4e747b6 (bugfix: don't use the overall weight of the whole to delivery to each delivery package)
 		final ShipperId shipperId = deliveryOrder.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrder.getShipperTransportationId();
 		final PackageDimensions packageDimensions = deliveryPosition.getPackageDimensions();
@@ -390,7 +409,11 @@ class DhlTestHelper
 
 		//noinspection ConstantConditions
 		return draftDeliveryOrderCreator.createDeliveryOrderFromParams(
+<<<<<<< HEAD
 				mpackageIds,
+=======
+				ImmutableSet.of(packageInfo),
+>>>>>>> c3f4e747b6 (bugfix: don't use the overall weight of the whole to delivery to each delivery package)
 				pickupFromBPartner,
 				pickupFromLocation,
 				pickupDate,
@@ -399,7 +422,6 @@ class DhlTestHelper
 				deliverToLocation,
 				deliverToPhoneNumber,
 				detectedServiceType,
-				grossWeightInKg,
 				shipperId,
 				customerReference,
 				shipperTransportationId,

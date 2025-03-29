@@ -2,12 +2,12 @@ package de.metas.shipper.gateway.commons;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.commons.async.DeliveryOrderWorkpackageProcessor;
 import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest;
+import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest.PackageInfo;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.DeliveryOrderKey;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
@@ -17,8 +17,10 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
 import org.springframework.stereotype.Service;
@@ -30,8 +32,8 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -117,6 +119,7 @@ public class ShipperGatewayFacade
 				.build();
 	}
 
+<<<<<<< HEAD
 	/**
 	 * In case the weight is <= 0, return the default value.
 	 */
@@ -128,18 +131,17 @@ public class ShipperGatewayFacade
 				.reduce(BigDecimal.ZERO, BigDecimal::add)
 				.setScale(0, RoundingMode.UP)
 				.intValueExact();
-
-		return CoalesceUtil.firstGreaterThanZero(weightInKg, defaultValue);
-	}
-
-	private static String computePackagesContentDescription(final Collection<I_M_Package> mpackages)
+=======
+	private Optional<BigDecimal> extractWeightInKg(@NonNull final I_M_Package mpackage)
 	{
-		final String content = mpackages.stream()
-				.map(I_M_Package::getDescription)
-				.filter(desc -> !Check.isEmpty(desc, true))
-				.map(String::trim)
-				.collect(Collectors.joining(", "));
-		return !Check.isEmpty(content, true) ? content : "-";
+		if (InterfaceWrapperHelper.isNull(mpackage, I_M_Package.COLUMNNAME_PackageWeight))
+		{
+			return Optional.empty();
+		}
+>>>>>>> c3f4e747b6 (bugfix: don't use the overall weight of the whole to delivery to each delivery package)
+
+		final BigDecimal weightInKg = kgPrecision.round(mpackage.getPackageWeight()); // TODO: we assume it's in Kg
+		return weightInKg.signum() > 0 ? Optional.of(weightInKg) : Optional.empty();
 	}
 
 	private void createAndSendDeliveryOrder(
@@ -150,13 +152,24 @@ public class ShipperGatewayFacade
 		final String shipperGatewayId = retrieveShipperGatewayId(shipperId);
 		final DeliveryOrderRepository deliveryOrderRepository = shipperRegistry.getDeliveryOrderRepository(shipperGatewayId);
 
-		final ImmutableSet<PackageId> packageIds = mpackages.stream().map(mpackage -> PackageId.ofRepoId(mpackage.getM_Package_ID())).collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<PackageInfo> packageInfos = mpackages.stream()
+				.map(mpackage -> PackageInfo.builder()
+						.packageId(PackageId.ofRepoId(mpackage.getM_Package_ID()))
+						.poReference(mpackage.getPOReference())
+						.description(StringUtils.trimBlankToNull(mpackage.getDescription()))
+						.weightInKg(extractWeightInKg(mpackage).orElse(null))
+						.build())
+				.collect(ImmutableSet.toImmutableSet());
 
 		final CreateDraftDeliveryOrderRequest request = CreateDraftDeliveryOrderRequest.builder()
 				.deliveryOrderKey(deliveryOrderKey)
+<<<<<<< HEAD
 				.allPackagesGrossWeightInKg(computeGrossWeightInKg(mpackages, 1))
 				.mpackageIds(packageIds)
 				.allPackagesContentDescription(computePackagesContentDescription(mpackages))
+=======
+				.packageInfos(packageInfos)
+>>>>>>> c3f4e747b6 (bugfix: don't use the overall weight of the whole to delivery to each delivery package)
 				.build();
 
 		final DraftDeliveryOrderCreator shipperGatewayService = shipperRegistry.getShipperGatewayService(shipperGatewayId);

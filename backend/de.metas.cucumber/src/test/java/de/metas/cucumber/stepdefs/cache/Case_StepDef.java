@@ -22,14 +22,34 @@
 
 package de.metas.cucumber.stepdefs.cache;
 
+<<<<<<< HEAD:backend/de.metas.cucumber/src/test/java/de/metas/cucumber/stepdefs/cache/Case_StepDef.java
 import de.metas.cache.CacheMgt;
 import io.cucumber.java.en.Then;
 
 public class Case_StepDef
+=======
+import de.metas.mpackage.PackageId;
+import org.compiere.model.I_M_Package;
+
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
+public class M_Package_StepDefData extends StepDefData<I_M_Package> implements StepDefDataGetIdAware<PackageId, I_M_Package>
+>>>>>>> c3f4e747b6 (bugfix: don't use the overall weight of the whole to delivery to each delivery package):backend/de.metas.cucumber/src/test/java/de/metas/cucumber/stepdefs/M_Package_StepDefData.java
 {
 	@Then("the metasfresh cache is reset")
 	public void processMetasfreshResponse()
 	{
 		CacheMgt.get().reset();
 	}
+<<<<<<< HEAD:backend/de.metas.cucumber/src/test/java/de/metas/cucumber/stepdefs/cache/Case_StepDef.java
 }
+=======
+
+	@Override
+	public PackageId extractIdFromRecord(final I_M_Package record)
+	{
+		return PackageId.ofRepoId(record.getM_Package_ID());
+	}
+}
+>>>>>>> c3f4e747b6 (bugfix: don't use the overall weight of the whole to delivery to each delivery package):backend/de.metas.cucumber/src/test/java/de/metas/cucumber/stepdefs/M_Package_StepDefData.java

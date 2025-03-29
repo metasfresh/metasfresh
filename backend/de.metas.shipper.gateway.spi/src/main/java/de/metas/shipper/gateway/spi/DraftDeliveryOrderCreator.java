@@ -1,11 +1,13 @@
 package de.metas.shipper.gateway.spi;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -13,7 +15,10 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -47,19 +52,57 @@ public interface DraftDeliveryOrderCreator
 	@Builder
 	class CreateDraftDeliveryOrderRequest
 	{
-		DeliveryOrderKey deliveryOrderKey;
+		@NonNull DeliveryOrderKey deliveryOrderKey;
+		@NonNull Set<PackageInfo> packageInfos;
 
+<<<<<<< HEAD
 		int allPackagesGrossWeightInKg;
 		String allPackagesContentDescription;
 		Set<PackageId> mpackageIds;
+=======
+		public Set<PackageId> getPackageIds() {return packageInfos.stream().map(PackageInfo::getPackageId).collect(ImmutableSet.toImmutableSet());}
+
+		public Optional<BigDecimal> getAllPackagesGrossWeightInKg()
+		{
+			final BigDecimal weightInKg = packageInfos.stream()
+					.map(PackageInfo::getWeightInKg)
+					.filter(weight -> weight != null && weight.signum() > 0)
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+			return weightInKg.signum() > 0 ? Optional.of(weightInKg) : Optional.empty();
+		}
+
+		@NonNull
+		public Optional<String> getAllPackagesContentDescription()
+		{
+			final String description = packageInfos.stream()
+					.map(PackageInfo::getDescription)
+					.map(StringUtils::trimBlankToNull)
+					.filter(Objects::nonNull)
+					.collect(Collectors.joining(", "));
+			return StringUtils.trimBlankToOptional(description);
+		}
+
+		@Value
+		@Builder
+		public static class PackageInfo
+		{
+			@NonNull PackageId packageId;
+			@Nullable String poReference;
+			@Nullable String description;
+			@Nullable BigDecimal weightInKg;
+
+			public BigDecimal getWeightInKgOr(BigDecimal defaultValue) {return weightInKg != null ? weightInKg : defaultValue;}
+		}
+>>>>>>> c3f4e747b6 (bugfix: don't use the overall weight of the whole to delivery to each delivery package)
 	}
 
 	@Value
-  	class DeliveryOrderKey
+	class DeliveryOrderKey
 	{
 		ShipperId shipperId;
 		ShipperTransportationId shipperTransportationId;
-		int fromOrgId;				
+		int fromOrgId;
 		int deliverToBPartnerId;
 		int deliverToBPartnerLocationId;
 		LocalDate pickupDate;
