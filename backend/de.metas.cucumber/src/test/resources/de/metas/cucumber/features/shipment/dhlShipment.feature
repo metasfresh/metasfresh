@@ -4,7 +4,7 @@ Feature: Dhl Shipment
 
   Background:
     Given infrastructure and metasfresh are running
-    And metasfresh has date and time 2022-12-12T12:12:12+01:00[Europe/Bucharest]
+    And metasfresh has date and time 2022-12-12T12:12:12+01:00[Europe/Berlin]
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And ensure product accounts exist
     And load M_Shipper:
@@ -29,7 +29,7 @@ Feature: Dhl Shipment
     # Create product
     And metasfresh contains M_Products:
       | Identifier          | Name                | IsStocked | Weight |
-      | test_product_dhl_01 | test_product_dhl_01 | true      | 11     |
+      | test_product_dhl_01 | test_product_dhl_01 | true      | 0.150  |
     And metasfresh contains M_PricingSystems
       | Identifier | Name           | Value          |
       | ps_dhl_1   | pricing_system | pricing_system |
@@ -107,7 +107,7 @@ Feature: Dhl Shipment
       "orderDocType": "SalesOrder",
       "paymentTerm": "val-1000002",
       "productIdentifier": "val-test_product_dhl_01",
-      "qty": 1,
+      "qty": 11,
       "currencyCode": "EUR",
       "discount": 0,
       "poReference": "ref_12301",
@@ -142,8 +142,8 @@ Feature: Dhl Shipment
 
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1               | order_1               | 2022-02-02  | test_product_dhl_01     | 1            | 1          | 1           | 10.0  | 0        | EUR          | true      |
-      | orderLine_2               | order_1               | 2022-02-02  | packing_product_1       | 0            | 1          | 0           | 0.0   | 0        | EUR          | true      |
+      | orderLine_1               | order_1               | 2022-02-02  | test_product_dhl_01     | 11           | 11         | 11          | 10.0  | 0        | EUR          | true      |
+      | orderLine_2               | order_1               | 2022-02-02  | packing_product_1       | 0            | 11         | 0           | 0.0   | 0        | EUR          | true      |
 
     And validate the created shipments
       | M_InOut_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | poreference | processed | docStatus |
@@ -151,8 +151,8 @@ Feature: Dhl Shipment
 
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed |
-      | line1                     | shipment_1            | test_product_dhl_01     | 1           | true      |
-      | line2                     | shipment_1            | packing_product_1       | 1           | true      |
+      | line1                     | shipment_1            | test_product_dhl_01     | 11          | true      |
+      | line2                     | shipment_1            | packing_product_1       | 11          | true      |
 
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference | paymentTerm | processed | docStatus | OPT.BPartnerAddress                         |
@@ -160,8 +160,8 @@ Feature: Dhl Shipment
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
-      | il2                         | invoice_1               | packing_product_1       | 1           | true      |
-      | il1                         | invoice_1               | test_product_dhl_01     | 1           | true      |
+      | il2                         | invoice_1               | packing_product_1       | 11          | true      |
+      | il1                         | invoice_1               | test_product_dhl_01     | 11          | true      |
     And load Transportation Order from Shipment
       | M_InOut_ID.Identifier | M_ShipperTransportation_ID.Identifier |
       | shipment_1            | shipTransp_1                          |
@@ -175,15 +175,30 @@ Feature: Dhl Shipment
     And validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
       | shipTransp_1                          | shipper_DHL             | orgBP                          | orgBPLocation                  | DR            |
-    And load M_Package for M_ShipperTransportation: shipTransp_1
-      | M_Package_ID.Identifier | OPT.M_InOut_ID.Identifier |
-      | packageDI               | shipment_1                |
-    And validate M_Package:
-      | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | PackageWeight |
-      | packageDI               | shipper_DHL             | dhl_customer                 | dhl_location                          | 11            |
-    And load DHL_ShipmentOrder:
-      | DHL_ShipmentOrder_ID.Identifier | M_Package_ID.Identifier |
-      | shippingPackageDI               | packageDI               |
+    And validate M_Packages for shipment shipment_1
+      | M_Shipper_ID | C_BPartner_ID | C_BPartner_Location_ID | PackageWeight | M_Package_ID |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 0.150         | package1     |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 0.150         | package2     |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 0.150         | package3     |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 0.150         | package4     |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 0.150         | package5     |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 0.150         | package6     |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 0.150         | package7     |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 0.150         | package8     |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 0.150         | package9     |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 0.150         | package10    |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 0.150         | package11    |
     And validate DHL_ShipmentOrder:
-      | DHL_ShipmentOrder_ID.Identifier | C_BPartner_ID.Identifier | DHL_LengthInCm | DHL_WidthInCm | DHL_HeightInCm | DHL_WeightInKg |
-      | shippingPackageDI               | dhl_customer             | 30             | 20            | 10             | 11             |
+      | M_Package_ID | C_BPartner_ID | DHL_LengthInCm | DHL_WidthInCm | DHL_HeightInCm | DHL_WeightInKg |
+      | package1     | dhl_customer  | 30             | 20            | 10             | 0.150          |
+      | package2     | dhl_customer  | 30             | 20            | 10             | 0.150          |
+      | package3     | dhl_customer  | 30             | 20            | 10             | 0.150          |
+      | package4     | dhl_customer  | 30             | 20            | 10             | 0.150          |
+      | package5     | dhl_customer  | 30             | 20            | 10             | 0.150          |
+      | package6     | dhl_customer  | 30             | 20            | 10             | 0.150          |
+      | package7     | dhl_customer  | 30             | 20            | 10             | 0.150          |
+      | package8     | dhl_customer  | 30             | 20            | 10             | 0.150          |
+      | package9     | dhl_customer  | 30             | 20            | 10             | 0.150          |
+      | package10    | dhl_customer  | 30             | 20            | 10             | 0.150          |
+      | package11    | dhl_customer  | 30             | 20            | 10             | 0.150          |
+    

@@ -25,7 +25,6 @@ package de.metas.shipper.gateway.dhl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.currency.CurrencyRepository;
-import de.metas.customs.CustomsInvoiceRepository;
 import de.metas.handlingunits.shipping.InOutPackageRepository;
 import de.metas.location.CountryCode;
 import de.metas.mpackage.PackageId;
@@ -38,6 +37,7 @@ import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlSequenceNumber;
 import de.metas.shipper.gateway.dhl.model.DhlShipperProduct;
 import de.metas.shipper.gateway.dhl.model.I_Dhl_ShipmentOrder_Log;
+import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest;
 import de.metas.shipper.gateway.spi.model.Address;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
@@ -59,7 +59,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -230,7 +229,7 @@ class DhlTestHelper
 		// create all structures
 
 		final DhlClientConfigRepository clientConfigRepository = new DhlClientConfigRepository();
-		final DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DhlDraftDeliveryOrderCreator(clientConfigRepository, new CustomsInvoiceRepository());
+		final DhlDraftDeliveryOrderCreator draftDeliveryOrderCreator = new DhlDraftDeliveryOrderCreator(clientConfigRepository);
 		final DhlDeliveryOrderRepository orderRepository = new DhlDeliveryOrderRepository();
 		final DhlDeliveryOrderService orderService = new DhlDeliveryOrderService(new InOutPackageRepository(), new CurrencyRepository(), orderRepository);
 
@@ -355,7 +354,10 @@ class DhlTestHelper
 		final DeliveryOrderLine firstDeliveryOrderLine = deliveryOrder.getDeliveryOrderLines().get(0);
 
 		//
-		final Set<PackageId> packageIds = ImmutableSet.of(firstDeliveryOrderLine.getPackageId());
+		final CreateDraftDeliveryOrderRequest.PackageInfo packageInfo = CreateDraftDeliveryOrderRequest.PackageInfo.builder()
+				.packageId(firstDeliveryOrderLine.getPackageId())
+				.weightInKg(firstDeliveryOrderLine.getGrossWeightKg())
+				.build();
 
 		//
 		final I_C_BPartner pickupFromBPartner = ShipperTestHelper.createBPartner(deliveryOrder.getPickupAddress());
@@ -372,7 +374,6 @@ class DhlTestHelper
 
 		//
 		final DhlShipperProduct detectedServiceType = (DhlShipperProduct)deliveryOrder.getShipperProduct();
-		final BigDecimal grossWeightInKg = firstDeliveryOrderLine.getGrossWeightKg();
 		final ShipperId shipperId = deliveryOrder.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrder.getShipperTransportationId();
 		final PackageDimensions packageDimensions = firstDeliveryOrderLine.getPackageDimensions();
@@ -383,7 +384,7 @@ class DhlTestHelper
 
 		//noinspection ConstantConditions
 		return draftDeliveryOrderCreator.createDeliveryOrderFromParams(
-				packageIds,
+				ImmutableSet.of(packageInfo),
 				pickupFromBPartner,
 				pickupFromLocation,
 				pickupDate,
@@ -392,7 +393,6 @@ class DhlTestHelper
 				deliverToLocation,
 				deliverToPhoneNumber,
 				detectedServiceType,
-				grossWeightInKg,
 				shipperId,
 				customerReference,
 				shipperTransportationId,

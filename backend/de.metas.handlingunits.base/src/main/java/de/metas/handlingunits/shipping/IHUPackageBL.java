@@ -2,14 +2,10 @@ package de.metas.handlingunits.shipping;
 
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Package_HU;
-import de.metas.mpackage.PackageId;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.ISingletonService;
-import lombok.NonNull;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
-
-import java.util.Collection;
 
 public interface IHUPackageBL extends ISingletonService
 {
@@ -34,9 +30,4 @@ public interface IHUPackageBL extends ISingletonService
 	 */
 	void unassignShipmentFromPackages(I_M_InOut shipment);
 
-	/**
-	 * @return the {@code POReference}-values of the given  {@code M_Packages}, separated by comma.
-	 */
-	@NonNull
-	String getPOReference(@NonNull Collection<PackageId> packageIds);
 }

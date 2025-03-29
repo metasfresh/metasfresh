@@ -12,7 +12,6 @@ import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
-import de.metas.mpackage.PackageId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShippingPackage;
@@ -22,13 +21,11 @@ import lombok.NonNull;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -240,16 +237,4 @@ public class HUPackageBL implements IHUPackageBL
 
 		return Optional.of(inOutIds.iterator().next());
 	}
-
-	@Override
-	@NonNull
-	public String getPOReference(@NonNull final Collection<PackageId> packageIds)
-	{
-		return huPackageDAO.retrievePackages(packageIds).stream()
-				.map(I_M_Package::getPOReference)
-				.filter(Objects::nonNull)
-				.distinct()
-				.collect(Collectors.joining(", "));
-	}
-
 }
