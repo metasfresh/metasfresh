@@ -4,12 +4,12 @@ Feature: Dhl Shipment
 
   Background:
     Given infrastructure and metasfresh are running
-    And metasfresh has date and time 2022-12-12T12:12:12+01:00[Europe/Berlin]
+    And metasfresh has date and time 2022-12-12T12:12:12+01:00[Europe/Bucharest]
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And ensure product accounts exist
     And load M_Shipper:
       | Identifier  | Name |
-      | shipper_DHL             | Dhl      |
+      | shipper_DHL | Dhl  |
     And load C_UOM:
       | C_UOM_ID.Identifier | X12DE355 |
       | cm                  | CM       |
@@ -28,8 +28,8 @@ Feature: Dhl Shipment
 
     # Create product
     And metasfresh contains M_Products:
-      | Identifier          | Name                | IsStocked |
-      | test_product_dhl_01 | test_product_dhl_01 | true      |
+      | Identifier          | Name                | IsStocked | Weight |
+      | test_product_dhl_01 | test_product_dhl_01 | true      | 11     |
     And metasfresh contains M_PricingSystems
       | Identifier | Name           | Value          |
       | ps_dhl_1   | pricing_system | pricing_system |
@@ -179,11 +179,11 @@ Feature: Dhl Shipment
       | M_Package_ID.Identifier | OPT.M_InOut_ID.Identifier |
       | packageDI               | shipment_1                |
     And validate M_Package:
-      | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | packageDI               | shipper_DHL             | dhl_customer                 | dhl_location                          |
+      | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | PackageWeight |
+      | packageDI               | shipper_DHL             | dhl_customer                 | dhl_location                          | 11            |
     And load DHL_ShipmentOrder:
       | DHL_ShipmentOrder_ID.Identifier | M_Package_ID.Identifier |
       | shippingPackageDI               | packageDI               |
     And validate DHL_ShipmentOrder:
       | DHL_ShipmentOrder_ID.Identifier | C_BPartner_ID.Identifier | DHL_LengthInCm | DHL_WidthInCm | DHL_HeightInCm | DHL_WeightInKg |
-      | shippingPackageDI               | dhl_customer             | 30             | 20            | 10             | 1              |
+      | shippingPackageDI               | dhl_customer             | 30             | 20            | 10             | 11             |

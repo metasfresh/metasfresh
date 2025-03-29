@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrder;
 import de.metas.util.Services;
@@ -73,28 +74,25 @@ public class DHL_ShipmentOrder_StepDef
 	@And("validate DHL_ShipmentOrder:")
 	public void validate_DHL_ShipmentOrder(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final SoftAssertions softly = new SoftAssertions();
+		DataTableRows.of(dataTable)
+				.forEach(row -> {
+					final SoftAssertions softly = new SoftAssertions();
 
-			final String dhlShipmentOrderIdentifier = DataTableUtil.extractStringForColumnName(row, I_DHL_ShipmentOrder.COLUMNNAME_DHL_ShipmentOrder_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_DHL_ShipmentOrder dhlShipmentOrder = dhlShipmentOrderTable.get(dhlShipmentOrderIdentifier);
+					final I_DHL_ShipmentOrder dhlShipmentOrder = row.getAsIdentifier(I_DHL_ShipmentOrder.COLUMNNAME_DHL_ShipmentOrder_ID).lookupNotNullIn( dhlShipmentOrderTable);
 
-			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_DHL_ShipmentOrder.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner bPartner = bpartnerTable.get(bpartnerIdentifier);
+					final BPartnerId bpartnerId = row.getAsIdentifier(I_DHL_ShipmentOrder.COLUMNNAME_C_BPartner_ID).lookupNotNullIdIn(bpartnerTable);
+					softly.assertThat(BPartnerId.ofRepoIdOrNull(dhlShipmentOrder.getC_BPartner_ID())).isEqualTo(bpartnerId);
 
-			softly.assertThat(bPartner.getC_BPartner_ID()).isEqualTo(dhlShipmentOrder.getC_BPartner_ID());
+					row.getAsOptionalInt(I_DHL_ShipmentOrder.COLUMNNAME_DHL_LengthInCm)
+							.ifPresent(lengthInCm -> softly.assertThat(dhlShipmentOrder.getDHL_LengthInCm()).as("LengthInCm").isEqualTo(lengthInCm));
+					row.getAsOptionalInt(I_DHL_ShipmentOrder.COLUMNNAME_DHL_HeightInCm)
+							.ifPresent(heightInCm -> softly.assertThat(dhlShipmentOrder.getDHL_HeightInCm()).as("HeightInCm").isEqualTo(heightInCm));
+					row.getAsOptionalInt(I_DHL_ShipmentOrder.COLUMNNAME_DHL_WidthInCm)
+							.ifPresent(widthInCm -> softly.assertThat(dhlShipmentOrder.getDHL_WidthInCm()).as("WidthInCm").isEqualTo(widthInCm));
+					row.getAsOptionalBigDecimal(I_DHL_ShipmentOrder.COLUMNNAME_DHL_WeightInKg)
+							.ifPresent(weightInKg -> softly.assertThat(dhlShipmentOrder.getDHL_WeightInKg()).as("WeightInKg").isEqualByComparingTo(weightInKg));
 
-			final Integer lengthInCm = DataTableUtil.extractIntForColumnName(row, I_DHL_ShipmentOrder.COLUMNNAME_DHL_LengthInCm);
-			softly.assertThat(lengthInCm).as("lengthInCm").isEqualTo(dhlShipmentOrder.getDHL_LengthInCm());
-			final Integer heightInCm = DataTableUtil.extractIntForColumnName(row, I_DHL_ShipmentOrder.COLUMNNAME_DHL_HeightInCm);
-			softly.assertThat(heightInCm).as("heightInCm").isEqualTo(dhlShipmentOrder.getDHL_HeightInCm());
-			final Integer widthInCm = DataTableUtil.extractIntForColumnName(row, I_DHL_ShipmentOrder.COLUMNNAME_DHL_WidthInCm);
-			softly.assertThat(widthInCm).as("widthInCm").isEqualTo(dhlShipmentOrder.getDHL_WidthInCm());
-			final BigDecimal weightInKg = DataTableUtil.extractBigDecimalForColumnName(row, I_DHL_ShipmentOrder.COLUMNNAME_DHL_WeightInKg);
-			softly.assertThat(weightInKg).as("weightInKg").isEqualTo(dhlShipmentOrder.getDHL_WeightInKg());
-
-			softly.assertAll();
-		}
+					softly.assertAll();
+				});
 	}
 }
