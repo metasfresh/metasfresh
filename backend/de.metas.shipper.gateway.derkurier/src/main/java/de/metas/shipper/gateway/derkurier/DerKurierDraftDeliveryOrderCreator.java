@@ -126,7 +126,7 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(mpackageIds.size())
 						.packageIds(mpackageIds)
-						.grossWeightKg(request.getAllPackagesGrossWeightInKg().orElse(DEFAULT_PackageWeightInKg))
+						.grossWeightKg(request.getAllPackagesGrossWeightInKg(DEFAULT_PackageWeightInKg).intValue())
 						.content(request.getAllPackagesContentDescription().orElse("-"))
 						.customDeliveryData(derKurierDeliveryData)
 						.build())

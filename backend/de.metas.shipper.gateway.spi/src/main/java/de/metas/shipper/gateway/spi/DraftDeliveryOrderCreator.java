@@ -58,14 +58,14 @@ public interface DraftDeliveryOrderCreator
 
 		public Set<PackageId> getPackageIds() {return packageInfos.stream().map(PackageInfo::getPackageId).collect(ImmutableSet.toImmutableSet());}
 
-		public Optional<BigDecimal> getAllPackagesGrossWeightInKg()
+		public BigDecimal getAllPackagesGrossWeightInKg(@NonNull final BigDecimal minWeightKg)
 		{
 			final BigDecimal weightInKg = packageInfos.stream()
 					.map(PackageInfo::getWeightInKg)
 					.filter(weight -> weight != null && weight.signum() > 0)
 					.reduce(BigDecimal.ZERO, BigDecimal::add);
 
-			return weightInKg.signum() > 0 ? Optional.of(weightInKg) : Optional.empty();
+			return weightInKg.max(minWeightKg);
 		}
 
 		@NonNull
@@ -88,7 +88,7 @@ public interface DraftDeliveryOrderCreator
 			@Nullable String description;
 			@Nullable BigDecimal weightInKg;
 
-			public BigDecimal getWeightInKgOr(BigDecimal defaultValue) {return weightInKg != null ? weightInKg : defaultValue;}
+			public BigDecimal getWeightInKgOr(BigDecimal minValue) {return weightInKg != null ? weightInKg.max(minValue) : minValue;}
 		}
 	}
 
