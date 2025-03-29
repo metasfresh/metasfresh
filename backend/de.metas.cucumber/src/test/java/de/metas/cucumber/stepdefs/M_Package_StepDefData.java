@@ -22,15 +22,22 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.mpackage.PackageId;
 import org.compiere.model.I_M_Package;
 
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
-public class M_Package_StepDefData extends StepDefData<I_M_Package>
+public class M_Package_StepDefData extends StepDefData<I_M_Package> implements StepDefDataGetIdAware<PackageId, I_M_Package>
 {
 	public M_Package_StepDefData()
 	{
 		super(I_M_Package.class);
+	}
+
+	@Override
+	public PackageId extractIdFromRecord(final I_M_Package record)
+	{
+		return PackageId.ofRepoId(record.getM_Package_ID());
 	}
 }

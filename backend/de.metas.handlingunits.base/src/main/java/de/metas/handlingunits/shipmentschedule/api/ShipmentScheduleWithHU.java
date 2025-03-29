@@ -31,7 +31,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUPIItemProductDAO;
-import de.metas.handlingunits.IHUPackageBL;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;

@@ -20,10 +20,9 @@
  * #L%
  */
 
-package de.metas.handlingunits.shipmentschedule.spi.impl;
+package de.metas.handlingunits.shipping;
 
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
@@ -33,12 +32,7 @@ import java.math.BigDecimal;
 @Builder
 public class PackageInfo
 {
-	@NonNull
-	String trackingNumber;
-
-	@Nullable
-	String trackingUrl;
-
-	@Nullable
-	BigDecimal weight;
+	@Nullable String trackingNumber;
+	@Nullable String trackingUrl;
+	@Nullable BigDecimal weight;
 }

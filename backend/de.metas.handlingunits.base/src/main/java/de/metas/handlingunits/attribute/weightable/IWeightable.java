@@ -24,6 +24,7 @@ package de.metas.handlingunits.attribute.weightable;
 
 import java.math.BigDecimal;
 
+import de.metas.quantity.Quantity;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.compiere.model.I_C_UOM;
 
@@ -128,6 +129,8 @@ public interface IWeightable
 	void setWeightGross(final BigDecimal weightGross);
 
 	BigDecimal getWeightGross();
+
+	Quantity getWeightGrossAsQuantity();
 
 	/**
 	 * @return true if given attribute is the attribute used for the weight tare adjust

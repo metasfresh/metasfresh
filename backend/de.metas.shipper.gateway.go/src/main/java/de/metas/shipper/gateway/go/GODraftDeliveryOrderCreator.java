@@ -1,7 +1,6 @@
 package de.metas.shipper.gateway.go;
 
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.mpackage.PackageId;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
@@ -51,6 +50,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 @Service
 public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
+	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
+
 	@Override
 	public String getShipperGatewayId()
 	{
@@ -61,7 +62,7 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	public DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
-		final Set<PackageId> mpackageIds = request.getMpackageIds();
+		final Set<PackageId> mpackageIds = request.getPackageIds();
 
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(deliveryOrderKey.getFromOrgId());
@@ -110,8 +111,8 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(mpackageIds.size())
 						.packageIds(mpackageIds)
-						.grossWeightKg(CoalesceUtil.firstGreaterThanZero(request.getAllPackagesGrossWeightInKg(), BigDecimal.ONE))
-						.content(request.getAllPackagesContentDescription())
+						.grossWeightKg(request.getAllPackagesGrossWeightInKg().orElse(DEFAULT_PackageWeightInKg))
+						.content(request.getAllPackagesContentDescription().orElse("-"))
 						.build())
 				// .customerReference(null)
 				//

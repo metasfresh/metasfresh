@@ -50,12 +50,12 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.I_M_Package;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -63,17 +63,14 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.Set;
 
 @Service
+@RequiredArgsConstructor
 public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
-	private final DpdClientConfigRepository clientConfigRepository;
+	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
 
-	public DpdDraftDeliveryOrderCreator(final DpdClientConfigRepository clientConfigRepository)
-	{
-		this.clientConfigRepository = clientConfigRepository;
-	}
+	@NonNull private final DpdClientConfigRepository clientConfigRepository;
 
 	@Override
 	public String getShipperGatewayId()
@@ -89,7 +86,6 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	public DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
-		final Set<PackageId> mpackageIds = request.getMpackageIds();
 
 		final String customerReference = ""; // there's no customer reference for now. maybe in the future?
 
@@ -130,17 +126,15 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 
 		// Order lines
 		final ImmutableList.Builder<DeliveryOrderLine> deliveryOrderLinesBuilder = ImmutableList.builder();
-		for (final PackageId packageId : mpackageIds)
+		for (final CreateDraftDeliveryOrderRequest.PackageInfo packageInfo : request.getPackageInfos())
 		{
-			final I_M_Package mPackage = InterfaceWrapperHelper.load(packageId, I_M_Package.class);
-
 			final DeliveryOrderLine deliveryOrderLine = DeliveryOrderLine.builder()
 					// .repoId()
-					.content(mPackage.getDescription())
-					.grossWeightKg(getPackageGrossWeightKg(mPackage, BigDecimal.ONE)) // same as in de.metas.shipper.gateway.commons.ShipperGatewayFacade.computeGrossWeightInKg: we assume it's in Kg
-					.packageDimensions(getPackageDimensions(packageId))
+					.content(packageInfo.getDescription())
+					.grossWeightKg(packageInfo.getWeightInKgOr(DEFAULT_PackageWeightInKg))
+					.packageDimensions(getPackageDimensions(packageInfo.getPackageId()))
 					// .customDeliveryData()
-					.packageId(packageId)
+					.packageId(packageInfo.getPackageId())
 					.build();
 
 			deliveryOrderLinesBuilder.add(deliveryOrderLine);
@@ -161,12 +155,6 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				customerReference,
 				customDeliveryData,
 				deliveryOrderLinesBuilder.build());
-	}
-
-	private BigDecimal getPackageGrossWeightKg(@NonNull final I_M_Package mPackage, @SuppressWarnings("SameParameterValue") final BigDecimal defaultValue)
-	{
-		final BigDecimal weight = mPackage.getPackageWeight();
-		return CoalesceUtil.firstGreaterThanZero(weight, defaultValue);
 	}
 
 	@VisibleForTesting

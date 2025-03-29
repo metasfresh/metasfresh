@@ -1,17 +1,17 @@
-package de.metas.handlingunits.impl;
+package de.metas.handlingunits.shipping.impl;
 
 import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
-import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
+import de.metas.handlingunits.shipping.CreatePackageForHURequest;
+import de.metas.handlingunits.shipping.IHUPackageBL;
+import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
-import de.metas.mpackage.PackageId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShippingPackage;
@@ -21,13 +21,11 @@ import lombok.NonNull;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.delete;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -85,13 +83,13 @@ public class HUPackageBL implements IHUPackageBL
 	}
 
 	@Override
-	public I_M_Package createM_Package(final I_M_HU hu, final ShipperId shipperId)
+	public I_M_Package createM_Package(@NonNull final CreatePackageForHURequest request)
 	{
-		Check.assumeNotNull(hu, HUException.class, "hu not null");
-		Check.assumeNotNull(shipperId, HUException.class, "shipper not null");
-
+		final I_M_HU hu = request.getHu();
 		Check.errorIf(hu.getC_BPartner_ID() <= 0, HUException.class, "M_HU {} has C_BPartner_ID <= 0", hu);
 		Check.errorIf(hu.getC_BPartner_Location_ID() <= 0, HUException.class, "M_HU {} has C_BPartner_Location_ID <= 0", hu);
+
+		final ShipperId shipperId = Check.assumeNotNull(request.getShipperId(), HUException.class, "Parameter shipperId is not null");
 
 		final I_M_Package mpackage = newInstance(I_M_Package.class);
 		mpackage.setM_Shipper_ID(shipperId.getRepoId());
@@ -100,6 +98,11 @@ public class HUPackageBL implements IHUPackageBL
 		mpackage.setC_BPartner_Location_ID(hu.getC_BPartner_Location_ID());
 
 		getShipmentForHU(hu).ifPresent(inOut -> updateFromInOut(mpackage, inOut));
+
+		if (request.getWeightInKg() != null)
+		{
+			mpackage.setPackageWeight(request.getWeightInKg());
+		}
 
 		save(mpackage);
 
@@ -112,7 +115,7 @@ public class HUPackageBL implements IHUPackageBL
 		return mpackage;
 	}
 
-	private void updateFromInOut(@NonNull final I_M_Package mpackage, @NonNull final I_M_InOut inOut)
+	private static void updateFromInOut(@NonNull final I_M_Package mpackage, @NonNull final I_M_InOut inOut)
 	{
 		mpackage.setM_InOut_ID(inOut.getM_InOut_ID());
 		mpackage.setPOReference(inOut.getPOReference());
@@ -234,16 +237,4 @@ public class HUPackageBL implements IHUPackageBL
 
 		return Optional.of(inOutIds.iterator().next());
 	}
-
-	@Override
-	@NonNull
-	public String getPOReference(@NonNull final Collection<PackageId> packageIds)
-	{
-		return huPackageDAO.retrievePackages(packageIds).stream()
-				.map(I_M_Package::getPOReference)
-				.filter(Objects::nonNull)
-				.distinct()
-				.collect(Collectors.joining(", "));
-	}
-
 }

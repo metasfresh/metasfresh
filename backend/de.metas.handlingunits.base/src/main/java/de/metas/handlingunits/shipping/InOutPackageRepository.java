@@ -20,9 +20,10 @@
  * #L%
  */
 
-package de.metas.handlingunits.impl;
+package de.metas.handlingunits.shipping;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.impl.CreatePackagesRequest;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.mpackage.Package;
@@ -74,7 +75,7 @@ public class InOutPackageRepository
 		mPackage.setM_InOut_ID(inOut.getM_InOut_ID());
 		mPackage.setPOReference(inOut.getPOReference());
 		mPackage.setTrackingInfo(createPackageRequest.getTrackingCode());
-		mPackage.setPackageWeight(createPackageRequest.getWeight());
+		mPackage.setPackageWeight(createPackageRequest.getWeightInKg());
 		mPackage.setTrackingURL(createPackageRequest.getTrackingURL());
 
 		InterfaceWrapperHelper.save(mPackage);

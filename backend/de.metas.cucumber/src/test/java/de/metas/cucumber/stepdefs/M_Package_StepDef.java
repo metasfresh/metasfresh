@@ -22,12 +22,17 @@
 
 package de.metas.cucumber.stepdefs;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_ShipperTransportation_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.inout.InOutId;
+import de.metas.mpackage.PackageId;
 import de.metas.product.ProductId;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.Check;
@@ -44,13 +49,16 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
 
-import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @AllArgsConstructor
 public class M_Package_StepDef
@@ -122,45 +130,128 @@ public class M_Package_StepDef
 		softly.assertAll();
 	}
 
+	@And("^validate M_Packages for shipment (.*)$")
+	public void validateMPackages(@NonNull String shipmentIdentifierStr, @NonNull final DataTable dataTable)
+	{
+		final InOutId shipmentId = shipmentTable.getId(shipmentIdentifierStr);
+		final List<I_M_Package> packageRecords = retrievePackagesByShipmentId(shipmentId)
+				.sorted(Comparator.comparing(I_M_Package::getM_Package_ID)) // creation order
+				.collect(Collectors.toList());
+
+		final DataTableRows expectations = DataTableRows.of(dataTable);
+		assertThat(packageRecords).hasSize(expectations.size());
+		expectations
+				.setAdditionalRowIdentifierColumnName(I_M_Package.COLUMNNAME_M_Package_ID)
+				.forEach((expectation, index) -> validateMPackage(packageRecords.get(index), expectation));
+	}
+
+	public void validateMPackage(@NonNull I_M_Package packageRecord, @NonNull final DataTableRow row)
+	{
+		final SoftAssertions softly = new SoftAssertions();
+
+		row.getAsOptionalIdentifier(I_M_Package.COLUMNNAME_M_Shipper_ID)
+				.map(shipperTable::getId)
+				.ifPresent(shipperId -> softly.assertThat(ShipperId.ofRepoIdOrNull(packageRecord.getM_Shipper_ID()))
+						.as("M_Shipper_ID")
+						.isEqualTo(shipperId));
+		row.getAsOptionalIdentifier(I_M_Package.COLUMNNAME_C_BPartner_ID)
+				.map(bPartnerTable::getId)
+				.ifPresent(bpartnerId -> softly.assertThat(BPartnerId.ofRepoIdOrNull(packageRecord.getC_BPartner_ID()))
+						.as("C_BPartner_ID")
+						.isEqualTo(bpartnerId));
+		row.getAsOptionalIdentifier(I_M_Package.COLUMNNAME_C_BPartner_Location_ID)
+				.map(bPartnerLocationTable::getId)
+				.ifPresent(bpartnerLocationId -> softly.assertThat(BPartnerLocationId.ofRepoIdOrNull(packageRecord.getC_BPartner_ID(), packageRecord.getC_BPartner_Location_ID()))
+						.as("C_BPartner_Location_ID")
+						.isEqualTo(bpartnerLocationId));
+		row.getAsOptionalBigDecimal(I_M_Package.COLUMNNAME_PackageWeight)
+				.ifPresent(packageWeight -> softly.assertThat(packageRecord.getPackageWeight())
+						.as("PackageWeight")
+						.isEqualByComparingTo(packageWeight));
+
+		softly.assertAll();
+
+		row.getAsOptionalIdentifier()
+				.ifPresent(packageIdentifier -> packageTable.putOrReplace(packageIdentifier, packageRecord));
+	}
+
 	@And("validate M_Package:")
 	public void validate_M_Package(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
+		DataTableRows.of(dataTable)
+				.forEach(row -> {
+					final SoftAssertions softly = new SoftAssertions();
+
+					final String packageIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Package.COLUMNNAME_M_Package_ID + "." + TABLECOLUMN_IDENTIFIER);
+					final I_M_Package packageRecord = packageTable.get(packageIdentifier);
+					softly.assertThat(packageRecord).isNotNull();
+
+					final String shipperIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Package.COLUMNNAME_M_Shipper_ID + "." + TABLECOLUMN_IDENTIFIER);
+					final I_M_Shipper shipper = shipperTable.get(shipperIdentifier);
+					softly.assertThat(shipper).isNotNull();
+					softly.assertThat(packageRecord.getM_Shipper_ID()).as(I_M_Package.COLUMNNAME_M_Shipper_ID).isEqualTo(shipper.getM_Shipper_ID());
+
+					final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Package.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+					if (Check.isNotBlank(bpartnerIdentifier))
+					{
+						final I_C_BPartner bPartner = bPartnerTable.get(bpartnerIdentifier);
+						softly.assertThat(bPartner).isNotNull();
+						softly.assertThat(packageRecord.getC_BPartner_ID()).as(I_M_Package.COLUMNNAME_C_BPartner_ID).isEqualTo(bPartner.getC_BPartner_ID());
+					}
+
+					final String bpartnerLocIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Package.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+					if (Check.isNotBlank(bpartnerLocIdentifier))
+					{
+						final I_C_BPartner_Location bPartnerLocation = bPartnerLocationTable.get(bpartnerLocIdentifier);
+						softly.assertThat(bPartnerLocation).isNotNull();
+						softly.assertThat(packageRecord.getC_BPartner_Location_ID()).as(I_M_Package.COLUMNNAME_C_BPartner_Location_ID).isEqualTo(bPartnerLocation.getC_BPartner_Location_ID());
+					}
+
+					row.getAsOptionalLocalDateTimestamp(I_M_Package.COLUMNNAME_ShipDate)
+							.ifPresent(shipDate -> softly.assertThat(packageRecord.getShipDate()).as(I_M_Package.COLUMNNAME_ShipDate).isEqualTo(shipDate));
+
+					row.getAsOptionalBigDecimal(I_M_Package.COLUMNNAME_PackageWeight)
+							.ifPresent(packageWeight -> softly.assertThat(packageRecord.getPackageWeight()).as(I_M_Package.COLUMNNAME_PackageWeight).isEqualByComparingTo(packageWeight));
+
+					softly.assertAll();
+				});
+	}
+
+	private Stream<I_M_Package> retrievePackagesByShipmentId(final InOutId shipmentId)
+	{
+		final List<I_M_ShippingPackage> shippingPackages = retrieveShippingPackagesByShipmentId(shipmentId);
+		final ImmutableSet<PackageId> packageIds = extractPackageIds(shippingPackages);
+		return streamPackagesByIds(packageIds);
+	}
+
+	private List<I_M_ShippingPackage> retrieveShippingPackagesByShipmentId(final InOutId shipmentId)
+	{
+		return queryBL.createQueryBuilder(I_M_ShippingPackage.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShippingPackage.COLUMNNAME_M_InOut_ID, shipmentId)
+				.create()
+				.list();
+	}
+
+	private static ImmutableSet<PackageId> extractPackageIds(final List<I_M_ShippingPackage> shippingPackages)
+	{
+		return shippingPackages.stream()
+				.map(shippingPackage -> PackageId.ofRepoId(shippingPackage.getM_Package_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private Stream<I_M_Package> streamPackagesByIds(final Collection<PackageId> packageIds)
+	{
+		if (packageIds.isEmpty())
 		{
-			final SoftAssertions softly = new SoftAssertions();
-
-			final String packageIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Package.COLUMNNAME_M_Package_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Package packageRecord = packageTable.get(packageIdentifier);
-			softly.assertThat(packageRecord).isNotNull();
-
-			final String shipperIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Package.COLUMNNAME_M_Shipper_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Shipper shipper = shipperTable.get(shipperIdentifier);
-			softly.assertThat(shipper).isNotNull();
-			softly.assertThat(packageRecord.getM_Shipper_ID()).as(I_M_Package.COLUMNNAME_M_Shipper_ID).isEqualTo(shipper.getM_Shipper_ID());
-
-			final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Package.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(bpartnerIdentifier))
-			{
-				final I_C_BPartner bPartner = bPartnerTable.get(bpartnerIdentifier);
-				softly.assertThat(bPartner).isNotNull();
-				softly.assertThat(packageRecord.getC_BPartner_ID()).as(I_M_Package.COLUMNNAME_C_BPartner_ID).isEqualTo(bPartner.getC_BPartner_ID());
-			}
-
-			final String bpartnerLocIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Package.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(bpartnerLocIdentifier))
-			{
-				final I_C_BPartner_Location bPartnerLocation = bPartnerLocationTable.get(bpartnerLocIdentifier);
-				softly.assertThat(bPartnerLocation).isNotNull();
-				softly.assertThat(packageRecord.getC_BPartner_Location_ID()).as(I_M_Package.COLUMNNAME_C_BPartner_Location_ID).isEqualTo(bPartnerLocation.getC_BPartner_Location_ID());
-			}
-
-			final Timestamp shipDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + I_M_Package.COLUMNNAME_ShipDate);
-			if (shipDate != null)
-			{
-				softly.assertThat(packageRecord.getShipDate()).as(I_M_Package.COLUMNNAME_ShipDate).isEqualTo(shipDate);
-			}
-
-			softly.assertAll();
+			return Stream.empty();
 		}
+
+		return queryBL.createQueryBuilder(I_M_Package.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_Package.COLUMNNAME_M_Package_ID, packageIds)
+				.orderBy(I_M_Package.COLUMNNAME_M_Package_ID)
+				.create()
+				.stream();
 	}
 }

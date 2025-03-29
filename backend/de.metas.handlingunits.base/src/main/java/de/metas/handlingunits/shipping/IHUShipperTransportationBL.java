@@ -1,8 +1,7 @@
-package de.metas.handlingunits;
+package de.metas.handlingunits.shipping;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.impl.AddTrackingInfosForInOutWithoutHUReq;
-import de.metas.handlingunits.impl.CreatePackagesForInOutRequest;
+import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
@@ -46,7 +45,7 @@ public interface IHUShipperTransportationBL extends ISingletonService
 	 * <p>
 	 * This method adds only those HUs which are eligible (see {@link #isEligibleForAddingToShipperTransportation(I_M_HU)}).
 	 */
-	List<I_M_Package> addHUsToShipperTransportation(ShipperTransportationId shipperTransportationId, Collection<I_M_HU> hus);
+	List<I_M_Package> addHUsToShipperTransportation(ShipperTransportationId shipperTransportationId, Collection<CreatePackageForHURequest> packageRequests);
 
 	/**
 	 * Adds given list of InOuts to ShipperTransportation, by creating the needed M_Packages.
