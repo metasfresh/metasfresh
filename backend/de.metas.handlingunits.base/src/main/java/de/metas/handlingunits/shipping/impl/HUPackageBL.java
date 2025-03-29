@@ -87,18 +87,23 @@ public class HUPackageBL implements IHUPackageBL
 	public I_M_Package createM_Package(@NonNull final CreatePackageForHURequest request)
 	{
 		final I_M_HU hu = request.getHu();
-		final ShipperId shipperId = request.getShipperId();
-
 		Check.errorIf(hu.getC_BPartner_ID() <= 0, HUException.class, "M_HU {} has C_BPartner_ID <= 0", hu);
 		Check.errorIf(hu.getC_BPartner_Location_ID() <= 0, HUException.class, "M_HU {} has C_BPartner_Location_ID <= 0", hu);
 
+		final ShipperId shipperId = Check.assumeNotNull(request.getShipperId(), HUException.class, "Parameter shipperId is not null");
+
 		final I_M_Package mpackage = newInstance(I_M_Package.class);
-		mpackage.setM_Shipper_ID(request.getShipperId().getRepoId());
+		mpackage.setM_Shipper_ID(shipperId.getRepoId());
 		mpackage.setShipDate(null);
 		mpackage.setC_BPartner_ID(hu.getC_BPartner_ID());
 		mpackage.setC_BPartner_Location_ID(hu.getC_BPartner_Location_ID());
 
 		getShipmentForHU(hu).ifPresent(inOutId -> mpackage.setM_InOut_ID(inOutId.getRepoId()));
+
+		if (request.getWeightInKg() != null)
+		{
+			mpackage.setPackageWeight(request.getWeightInKg());
+		}
 
 		save(mpackage);
 
@@ -111,6 +116,15 @@ public class HUPackageBL implements IHUPackageBL
 		return mpackage;
 	}
 
+<<<<<<< HEAD
+=======
+	private static void updateFromInOut(@NonNull final I_M_Package mpackage, @NonNull final I_M_InOut inOut)
+	{
+		mpackage.setM_InOut_ID(inOut.getM_InOut_ID());
+		mpackage.setPOReference(inOut.getPOReference());
+	}
+
+>>>>>>> 43859bbd3a (prototyping)
 	@Override
 	public void assignShipmentToPackages(final I_M_HU hu, final I_M_InOut inout, final String trxName)
 	{

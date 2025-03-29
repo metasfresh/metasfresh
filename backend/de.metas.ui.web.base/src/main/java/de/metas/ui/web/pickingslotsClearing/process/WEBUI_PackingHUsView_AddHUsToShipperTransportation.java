@@ -2,6 +2,7 @@ package de.metas.ui.web.pickingslotsClearing.process;
 
 import java.util.List;
 
+import de.metas.handlingunits.shipping.CreatePackageForHURequest;
 import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
@@ -64,7 +65,7 @@ public class WEBUI_PackingHUsView_AddHUsToShipperTransportation extends PackingH
 	protected final String doIt() throws Exception
 	{
 		final List<I_M_HU> hus = retrieveEligibleHUs();
-		huShipperTransportationBL.addHUsToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportationId), hus);
+		huShipperTransportationBL.addHUsToShipperTransportation(ShipperTransportationId.ofRepoId(shipperTransportationId), CreatePackageForHURequest.ofHUsList(hus));
 
 		return MSG_OK;
 	}

@@ -45,7 +45,7 @@ public interface IHUShipperTransportationBL extends ISingletonService
 	 * <p>
 	 * This method adds only those HUs which are eligible (see {@link #isEligibleForAddingToShipperTransportation(I_M_HU)}).
 	 */
-	List<I_M_Package> addHUsToShipperTransportation(ShipperTransportationId shipperTransportationId, Collection<I_M_HU> hus);
+	List<I_M_Package> addHUsToShipperTransportation(ShipperTransportationId shipperTransportationId, Collection<CreatePackageForHURequest> packageRequests);
 
 	/**
 	 * Adds given list of InOuts to ShipperTransportation, by creating the needed M_Packages.
