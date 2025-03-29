@@ -2,36 +2,40 @@ package de.metas.shipper.gateway.commons;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.commons.async.DeliveryOrderWorkpackageProcessor;
 import de.metas.shipper.gateway.spi.DeliveryOrderRepository;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest;
+import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.CreateDraftDeliveryOrderRequest.PackageInfo;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.DeliveryOrderKey;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMPrecision;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /*
  * #%L
@@ -59,6 +63,9 @@ import java.util.stream.Collectors;
 public class ShipperGatewayFacade
 {
 	private final ShipperGatewayServicesRegistry shipperRegistry;
+
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final UOMPrecision kgPrecision = uomDAO.getStandardPrecision(uomDAO.getUomIdByX12DE355(X12DE355.KILOGRAM));
 
 	public ShipperGatewayFacade(@NonNull final ShipperGatewayServicesRegistry shipperRegistry)
 	{
@@ -117,29 +124,15 @@ public class ShipperGatewayFacade
 				.build();
 	}
 
-	/**
-	 * In case the weight is <= 0, return the default value.
-	 */
-	private static int computeGrossWeightInKg(@NonNull final Collection<I_M_Package> mpackages, @SuppressWarnings("SameParameterValue") final int defaultValue)
+	private Optional<BigDecimal> extractWeightInKg(@NonNull final I_M_Package mpackage)
 	{
-		final int weightInKg = mpackages.stream()
-				.map(I_M_Package::getPackageWeight) // TODO: we assume it's in Kg
-				.filter(weight -> weight != null && weight.signum() > 0)
-				.reduce(BigDecimal.ZERO, BigDecimal::add)
-				.setScale(0, RoundingMode.UP)
-				.intValueExact();
+		if (InterfaceWrapperHelper.isNull(mpackage, I_M_Package.COLUMNNAME_PackageWeight))
+		{
+			return Optional.empty();
+		}
 
-		return CoalesceUtil.firstGreaterThanZero(weightInKg, defaultValue);
-	}
-
-	private static String computePackagesContentDescription(final Collection<I_M_Package> mpackages)
-	{
-		final String content = mpackages.stream()
-				.map(I_M_Package::getDescription)
-				.filter(desc -> !Check.isEmpty(desc, true))
-				.map(String::trim)
-				.collect(Collectors.joining(", "));
-		return !Check.isEmpty(content, true) ? content : "-";
+		final BigDecimal weightInKg = kgPrecision.round(mpackage.getPackageWeight()); // we assume it's in Kg
+		return weightInKg.signum() > 0 ? Optional.of(weightInKg) : Optional.empty();
 	}
 
 	private void createAndSendDeliveryOrder(
@@ -150,13 +143,18 @@ public class ShipperGatewayFacade
 		final String shipperGatewayId = retrieveShipperGatewayId(shipperId);
 		final DeliveryOrderRepository deliveryOrderRepository = shipperRegistry.getDeliveryOrderRepository(shipperGatewayId);
 
-		final ImmutableSet<PackageId> packageIds = mpackages.stream().map(mpackage -> PackageId.ofRepoId(mpackage.getM_Package_ID())).collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<PackageInfo> packageInfos = mpackages.stream()
+				.map(mpackage -> PackageInfo.builder()
+						.packageId(PackageId.ofRepoId(mpackage.getM_Package_ID()))
+						//.poReference(mpackage.getPOReference())
+						.description(StringUtils.trimBlankToNull(mpackage.getDescription()))
+						.weightInKg(extractWeightInKg(mpackage).orElse(null))
+						.build())
+				.collect(ImmutableSet.toImmutableSet());
 
 		final CreateDraftDeliveryOrderRequest request = CreateDraftDeliveryOrderRequest.builder()
 				.deliveryOrderKey(deliveryOrderKey)
-				.allPackagesGrossWeightInKg(computeGrossWeightInKg(mpackages, 1))
-				.mpackageIds(packageIds)
-				.allPackagesContentDescription(computePackagesContentDescription(mpackages))
+				.packageInfos(packageInfos)
 				.build();
 
 		final DraftDeliveryOrderCreator shipperGatewayService = shipperRegistry.getShipperGatewayService(shipperGatewayId);
@@ -175,6 +173,7 @@ public class ShipperGatewayFacade
 				"The given shipper with M_Shipper_ID={} has an empty ShipperGateway value; shipper={}", shipperId, shipper);
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean hasServiceSupport(@NonNull final String shipperGatewayId)
 	{
 		return shipperRegistry.hasServiceSupport(shipperGatewayId);
