@@ -75,7 +75,7 @@ public class InOutPackageRepository
 		mPackage.setM_InOut_ID(inOut.getM_InOut_ID());
 		mPackage.setPOReference(inOut.getPOReference());
 		mPackage.setTrackingInfo(createPackageRequest.getTrackingCode());
-		mPackage.setPackageWeight(createPackageRequest.getWeight());
+		mPackage.setPackageWeight(createPackageRequest.getWeightInKg());
 		mPackage.setTrackingURL(createPackageRequest.getTrackingURL());
 
 		InterfaceWrapperHelper.save(mPackage);

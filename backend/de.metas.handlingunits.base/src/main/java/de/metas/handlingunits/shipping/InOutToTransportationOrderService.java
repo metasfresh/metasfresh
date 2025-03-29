@@ -96,7 +96,10 @@ public class InOutToTransportationOrderService
 			else
 			{
 				final ImmutableList<I_M_HU> husFiltered = selectOnlyHUsWithoutShipperTransportation(husToTest);
-				final List<I_M_Package> createdPackages = huShipperTransportationBL.addHUsToShipperTransportation(shipperTransportationId, husFiltered);
+				final List<I_M_Package> createdPackages = huShipperTransportationBL.addHUsToShipperTransportation(
+						shipperTransportationId,
+						CreatePackageForHURequest.ofHUsList(husFiltered)
+				);
 
 				final boolean anyAdded = !createdPackages.isEmpty();
 				if (anyAdded)
