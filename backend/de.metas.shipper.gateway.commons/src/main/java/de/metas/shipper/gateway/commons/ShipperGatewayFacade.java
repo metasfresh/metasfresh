@@ -131,7 +131,7 @@ public class ShipperGatewayFacade
 			return Optional.empty();
 		}
 
-		final BigDecimal weightInKg = kgPrecision.round(mpackage.getPackageWeight()); // TODO: we assume it's in Kg
+		final BigDecimal weightInKg = kgPrecision.round(mpackage.getPackageWeight()); // we assume it's in Kg
 		return weightInKg.signum() > 0 ? Optional.of(weightInKg) : Optional.empty();
 	}
 
@@ -173,6 +173,7 @@ public class ShipperGatewayFacade
 				"The given shipper with M_Shipper_ID={} has an empty ShipperGateway value; shipper={}", shipperId, shipper);
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean hasServiceSupport(@NonNull final String shipperGatewayId)
 	{
 		return shipperRegistry.hasServiceSupport(shipperGatewayId);

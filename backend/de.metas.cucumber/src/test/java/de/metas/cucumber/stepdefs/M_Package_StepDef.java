@@ -40,7 +40,6 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -50,8 +49,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
@@ -220,23 +217,6 @@ public class M_Package_StepDef
 				});
 	}
 
-	private PackageMatcher toPackageMatcher(final DataTableRow row)
-	{
-		return PackageMatcher.builder()
-				.row(row)
-				.shipperId(row.getAsOptionalIdentifier(I_M_Package.COLUMNNAME_M_Shipper_ID)
-						.map(shipperTable::getId)
-						.orElse(null))
-				.bpartnerId(row.getAsOptionalIdentifier(I_M_Package.COLUMNNAME_C_BPartner_ID)
-						.map(bPartnerTable::getId)
-						.orElse(null))
-				.bpartnerLocationId(row.getAsOptionalIdentifier(I_M_Package.COLUMNNAME_C_BPartner_Location_ID)
-						.map(bPartnerLocationTable::getId)
-						.orElse(null))
-				.packageWeight(row.getAsOptionalBigDecimal(I_M_Package.COLUMNNAME_PackageWeight).orElse(null))
-				.build();
-	}
-
 	private Stream<I_M_Package> retrievePackagesByShipmentId(final InOutId shipmentId)
 	{
 		final List<I_M_ShippingPackage> shippingPackages = retrieveShippingPackagesByShipmentId(shipmentId);
@@ -273,78 +253,5 @@ public class M_Package_StepDef
 				.orderBy(I_M_Package.COLUMNNAME_M_Package_ID)
 				.create()
 				.stream();
-	}
-
-	//
-	//
-	//
-	//
-	//
-	@Builder
-	private static class PackageMatchers
-	{
-		private final List<PackageMatcher> matchers;
-
-		public void assertExpected(final List<I_M_Package> packageRecords)
-		{
-			assertThat(packageRecords).hasSameSizeAs(matchers);
-
-			for (int i = 0; i < matchers.size(); i++)
-			{
-
-			}
-
-		}
-
-	}
-
-	//
-	//
-	//
-	//
-	//
-
-	@Builder
-	private static class PackageMatcher
-	{
-		@NonNull private final DataTableRow row;
-		@Nullable private final ShipperId shipperId;
-		@Nullable private final BPartnerId bpartnerId;
-		@Nullable private final BPartnerLocationId bpartnerLocationId;
-		@Nullable private final BigDecimal packageWeight;
-
-		public String toString() {return row.toTabularString();}
-
-		public void assertExpected(final I_M_Package packageRecord)
-		{
-			final SoftAssertions softly = new SoftAssertions();
-
-			if (shipperId != null)
-			{
-				softly.assertThat(ShipperId.ofRepoIdOrNull(packageRecord.getM_Shipper_ID()))
-						.as("M_Shipper_ID")
-						.isEqualTo(shipperId);
-			}
-			if (bpartnerId != null)
-			{
-				softly.assertThat(BPartnerId.ofRepoIdOrNull(packageRecord.getC_BPartner_ID()))
-						.as("C_BPartner_ID")
-						.isEqualTo(bpartnerId);
-			}
-			if (bpartnerLocationId != null)
-			{
-				softly.assertThat(BPartnerLocationId.ofRepoIdOrNull(packageRecord.getC_BPartner_ID(), packageRecord.getC_BPartner_Location_ID()))
-						.as("C_BPartner_Location_ID")
-						.isEqualTo(bpartnerLocationId);
-			}
-			if (packageWeight != null)
-			{
-				softly.assertThat(packageRecord.getPackageWeight())
-						.as("PackageWeight")
-						.isEqualByComparingTo(packageWeight);
-			}
-
-			softly.assertAll();
-		}
 	}
 }

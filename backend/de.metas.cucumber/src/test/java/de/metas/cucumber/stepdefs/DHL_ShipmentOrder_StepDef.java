@@ -27,12 +27,10 @@ import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.dhl.DhlDeliveryOrderRepository;
 import de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrder;
-import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
@@ -41,11 +39,8 @@ import org.compiere.SpringContextHolder;
 public class DHL_ShipmentOrder_StepDef
 {
 	@NonNull private final DhlDeliveryOrderRepository dhlDeliveryOrderRepository = SpringContextHolder.instance.getBean(DhlDeliveryOrderRepository.class);
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final M_Package_StepDefData packageTable;
-	@NonNull private final DHL_ShipmentOrder_StepDefData dhlShipmentOrderTable;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
-	@NonNull private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 
 	@And("validate DHL_ShipmentOrder:")
 	public void validateDHLShipmentOrders(@NonNull final DataTable dataTable)
