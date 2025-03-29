@@ -454,6 +454,13 @@ public class DataTableRow
 		return Timestamp.valueOf(getAsLocalDate(columnName).atStartOfDay());
 	}
 
+	public Optional<Timestamp> getAsOptionalLocalDateTimestamp(@NonNull final String columnName)
+	{
+		return getAsOptionalLocalDate(columnName)
+				.map(localDate -> Timestamp.valueOf(localDate.atStartOfDay()));
+	}
+
+
 	@SuppressWarnings("unused")
 	public Timestamp getAsInstantTimestamp(@NonNull final String columnName)
 	{
