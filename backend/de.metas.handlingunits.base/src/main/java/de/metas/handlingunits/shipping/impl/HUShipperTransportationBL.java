@@ -1,5 +1,6 @@
 package de.metas.handlingunits.shipping.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.document.engine.IDocument;
@@ -84,7 +85,8 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 	private final ShipperTransportationRepository shipperTransportationRepository = SpringContextHolder.instance.getBean(ShipperTransportationRepository.class);
 	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
-	private static final String SYSCONFIG_WeightSourceTypes = "de.metas.shipping.WeightSourceTypes";
+	@VisibleForTesting
+	public static final String SYSCONFIG_WeightSourceTypes = "de.metas.shipping.WeightSourceTypes";
 	private static final LockOwner transportationLockOwner = LockOwner.newOwner(HUShipperTransportationBL.class.getName());
 
 	@Override
