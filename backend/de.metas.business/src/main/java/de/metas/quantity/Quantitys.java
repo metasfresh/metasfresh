@@ -68,6 +68,10 @@ public class Quantitys
 		return Quantity.of(qty, uomRecord);
 	}
 
+	public Quantity of(@NonNull final BigDecimal qty, @NonNull final UomId uomId) {return create(qty, uomId);}
+
+	public Quantity of(@NonNull final BigDecimal qty, @NonNull final X12DE355 x12DE355) {return create(qty, x12DE355);}
+
 	public Quantity create(
 			@NonNull final String qty, @NonNull final UomId uomId,
 			@NonNull final String sourceQty, @NonNull final UomId sourceUomId)
@@ -111,6 +115,8 @@ public class Quantitys
 
 		return Quantity.zero(stockUomRecord);
 	}
+
+	public Quantity of(@NonNull final BigDecimal qtyInStockUOM, @NonNull final ProductId productId) {return create(qtyInStockUOM, productId);}
 
 	public Quantity create(@NonNull final BigDecimal qtyInStockUOM, @NonNull final ProductId productId)
 	{

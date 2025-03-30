@@ -28,7 +28,7 @@ import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.ModelValidator;
 
-import de.metas.handlingunits.IHUPackageBL;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.Services;
 

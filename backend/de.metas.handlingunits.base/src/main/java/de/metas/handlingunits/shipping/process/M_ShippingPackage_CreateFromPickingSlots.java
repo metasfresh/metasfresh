@@ -22,17 +22,7 @@ package de.metas.handlingunits.shipping.process;
  * #L%
  */
 
-
-import java.util.List;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Package;
-import org.slf4j.Logger;
-
 import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.IHUPackageDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -40,6 +30,8 @@ import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.IQueueActionResult;
 import de.metas.handlingunits.picking.IHUPickingSlotDAO;
+import de.metas.handlingunits.shipping.CreatePackageForHURequest;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.IPickingSlotDAO;
@@ -55,6 +47,13 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_M_Package;
+import org.slf4j.Logger;
+
+import java.util.List;
 
 /**
  * Moved from branch gastro_, /de.metas.handlingunits.base/src/main/java/de/metas/shipping/process/M_ShippingPackage_CreateFromPickingSlots.java.
@@ -192,7 +191,12 @@ public class M_ShippingPackage_CreateFromPickingSlots extends JavaProcess implem
 			return;
 		}
 
-		final I_M_Package mpackage = huPackageBL.createM_Package(hu, shipperId);
+		final I_M_Package mpackage = huPackageBL.createM_Package(
+				CreatePackageForHURequest.builder()
+						.hu(hu)
+						.shipperId(shipperId)
+						.build()
+		);
 
 		final I_M_ShippingPackage shippingPackage = shipperTransportationBL.createShippingPackage(shipperTransportation, mpackage);
 		if (shippingPackage == null)

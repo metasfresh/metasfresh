@@ -22,12 +22,12 @@ package de.metas.handlingunits.attribute.weightable;
  * #L%
  */
 
-import java.math.BigDecimal;
-
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.quantity.Quantity;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.compiere.model.I_C_UOM;
 
-import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import java.math.BigDecimal;
 
 /**
  * Defines something which has weighting capabilities.
@@ -128,6 +128,8 @@ public interface IWeightable
 	void setWeightGross(final BigDecimal weightGross);
 
 	BigDecimal getWeightGross();
+
+	Quantity getWeightGrossAsQuantity();
 
 	/**
 	 * @return true if given attribute is the attribute used for the weight tare adjust

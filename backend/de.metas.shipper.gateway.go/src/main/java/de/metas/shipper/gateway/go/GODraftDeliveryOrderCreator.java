@@ -1,17 +1,7 @@
 package de.metas.shipper.gateway.go;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
-import java.time.LocalDate;
-import java.util.Set;
-
-import de.metas.mpackage.PackageId;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Location;
-import org.springframework.stereotype.Service;
-
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.mpackage.PackageId;
 import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.go.schema.GOPaidMode;
@@ -24,6 +14,16 @@ import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -50,6 +50,8 @@ import lombok.NonNull;
 @Service
 public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
+	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
+
 	@Override
 	public String getShipperGatewayId()
 	{
@@ -60,7 +62,7 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	public DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
-		final Set<PackageId> mpackageIds = request.getMpackageIds();
+		final Set<PackageId> mpackageIds = request.getPackageIds();
 
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(deliveryOrderKey.getFromOrgId());
@@ -109,8 +111,8 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(mpackageIds.size())
 						.packageIds(mpackageIds)
-						.grossWeightKg(Math.max(request.getAllPackagesGrossWeightInKg(), 1))
-						.content(request.getAllPackagesContentDescription())
+						.grossWeightKg(request.getAllPackagesGrossWeightInKg(DEFAULT_PackageWeightInKg).intValue())
+						.content(request.getAllPackagesContentDescription().orElse("-"))
 						.build())
 				// .customerReference(null)
 				//

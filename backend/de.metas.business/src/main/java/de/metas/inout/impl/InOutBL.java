@@ -36,6 +36,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -207,6 +208,13 @@ public class InOutBL implements IInOutBL
 		final IPricingContext pricingCtx = createPricingCtx(inOutLine);
 		return pricingBL.calculatePrice(pricingCtx);
 
+	}
+
+	@Override
+	public Quantity getMovementQty(@NonNull final I_M_InOutLine inoutLine)
+	{
+		final ProductId productId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
+		return Quantitys.of(inoutLine.getMovementQty(), productId);
 	}
 
 	@Override

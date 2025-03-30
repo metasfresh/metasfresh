@@ -20,9 +20,8 @@
  * #L%
  */
 
-package de.metas.handlingunits.impl;
+package de.metas.handlingunits.shipping;
 
-import de.metas.handlingunits.shipmentschedule.spi.impl.PackageInfo;
 import de.metas.inout.InOutId;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;

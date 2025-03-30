@@ -1,54 +1,35 @@
 package de.metas.handlingunits.shipmentschedule.integrationtest;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.adempiere.ad.wrapper.POJOWrapper;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Package;
-import org.junit.Assert;
-import org.slf4j.Logger;
-
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Item;
+import de.metas.handlingunits.shipping.impl.HUShipperTransportationBL;
+import de.metas.handlingunits.shipping.weighting.ShippingWeightSourceType;
 import de.metas.inout.IInOutDAO;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.IMutable;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Package;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 /**
  * Test case:
@@ -66,6 +47,14 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 	protected void initialize()
 	{
 		super.initialize();
+
+		Services.get(ISysConfigBL.class).setValue(HUShipperTransportationBL.SYSCONFIG_WeightSourceTypes, ShippingWeightSourceType.ProductWeight.toString(), ClientId.SYSTEM, OrgId.ANY);
+
+		pTomato.setWeight(BigDecimal.ONE);
+		InterfaceWrapperHelper.save(pTomato);
+
+		pSalad.setWeight(BigDecimal.ONE);
+		InterfaceWrapperHelper.save(pSalad);
 
 		// only set to trace if there are problems to debug
 		// LogManager.setLoggerLevel(LogManager.getLogger("de.metas.handlingunits.shipmentschedule"), Level.TRACE);
@@ -373,7 +362,10 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 	{
 		//
 		// Get LUs Package
-		Assert.assertEquals("Invalid generated Aggregated HU packages count", 2, mpackagesForAggregatedHUs.size());
+		assertThat(mpackagesForAggregatedHUs.size()).as("Invalid generated Aggregated HU packages count").isEqualTo(2);
+
+		assertThat(mpackagesForAggregatedHUs.get(0).getPackageWeight()).isEqualByComparingTo("30");
+		assertThat(mpackagesForAggregatedHUs.get(1).getPackageWeight()).isEqualByComparingTo("50");
 
 		for (int i = 0; i < generatedShipments.size(); i++)
 		{
@@ -387,8 +379,7 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 			// Shipper Transportation: Make sure LU's M_Package is updated
 			{
 				InterfaceWrapperHelper.refresh(mpackage_AggregatedHU);
-				Assert.assertEquals("Aggregated HU's M_Package does not have the right M_InOut_ID",
-						shipment.getM_InOut_ID(), mpackage_AggregatedHU.getM_InOut_ID());
+				assertThat(mpackage_AggregatedHU.getM_InOut_ID()).as("Aggregated HU's M_Package does not have the right M_InOut_ID").isEqualTo(shipment.getM_InOut_ID());
 			}
 		}
 	}

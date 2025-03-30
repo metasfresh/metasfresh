@@ -2,10 +2,12 @@ package de.metas.shipper.gateway.derkurier;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
 import de.metas.mpackage.PackageId;
+import lombok.RequiredArgsConstructor;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -49,16 +51,12 @@ import lombok.NonNull;
  */
 
 @Service
+@RequiredArgsConstructor
 public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
-	private final DerKurierShipperConfigRepository derKurierShipperConfigRepository;
+	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
 
-	public DerKurierDraftDeliveryOrderCreator(
-			@NonNull final DerKurierShipperConfigRepository derKurierShipperConfigRepository)
-	{
-		this.derKurierShipperConfigRepository = derKurierShipperConfigRepository;
-
-	}
+	@NonNull private final DerKurierShipperConfigRepository derKurierShipperConfigRepository;
 
 	@Override
 	public String getShipperGatewayId()
@@ -71,7 +69,7 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 			@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
-		final Set<PackageId> mpackageIds = request.getMpackageIds();
+		final Set<PackageId> mpackageIds = request.getPackageIds();
 
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(deliveryOrderKey.getFromOrgId());
@@ -129,8 +127,8 @@ public class DerKurierDraftDeliveryOrderCreator implements DraftDeliveryOrderCre
 				.deliveryPosition(DeliveryPosition.builder()
 						.numberOfPackages(mpackageIds.size())
 						.packageIds(mpackageIds)
-						.grossWeightKg(Math.max(request.getAllPackagesGrossWeightInKg(), 1))
-						.content(request.getAllPackagesContentDescription())
+						.grossWeightKg(request.getAllPackagesGrossWeightInKg(DEFAULT_PackageWeightInKg).intValue())
+						.content(request.getAllPackagesContentDescription().orElse("-"))
 						.customDeliveryData(derKurierDeliveryData)
 						.build())
 				// .customerReference(null)

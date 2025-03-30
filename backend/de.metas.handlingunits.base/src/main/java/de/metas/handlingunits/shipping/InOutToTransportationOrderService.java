@@ -20,12 +20,10 @@
  * #L%
  */
 
-package de.metas.handlingunits.transportation;
+package de.metas.handlingunits.shipping;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.impl.CreatePackagesForInOutRequest;
 import de.metas.handlingunits.inout.IHUInOutDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
@@ -98,7 +96,10 @@ public class InOutToTransportationOrderService
 			else
 			{
 				final ImmutableList<I_M_HU> husFiltered = selectOnlyHUsWithoutShipperTransportation(husToTest);
-				final List<I_M_Package> createdPackages = huShipperTransportationBL.addHUsToShipperTransportation(shipperTransportationId, husFiltered);
+				final List<I_M_Package> createdPackages = huShipperTransportationBL.addHUsToShipperTransportation(
+						shipperTransportationId,
+						CreatePackageForHURequest.ofHUsList(husFiltered)
+				);
 
 				final boolean anyAdded = !createdPackages.isEmpty();
 				if (anyAdded)

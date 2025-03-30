@@ -59,7 +59,7 @@ public class InOutPackageDAO implements IInOutPackageDAO
 		mPackage.setC_BPartner_Location_ID(inOut.getC_BPartner_Location_ID());
 		mPackage.setM_InOut_ID(inOut.getM_InOut_ID());
 		mPackage.setTrackingInfo(createPackageRequest.getTrackingCode());
-		mPackage.setPackageWeight(createPackageRequest.getWeight());
+		mPackage.setPackageWeight(createPackageRequest.getWeightInKg());
 		mPackage.setTrackingURL(createPackageRequest.getTrackingURL());
 
 		InterfaceWrapperHelper.save(mPackage);
