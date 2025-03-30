@@ -30,6 +30,7 @@ import de.metas.ean13.EAN13ProductCodes;
 import de.metas.gs1.GTIN;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
@@ -147,6 +148,8 @@ public interface IProductBL extends ISingletonService
 	Optional<UomId> getCatchUOMId(ProductId productId);
 
 	I_C_UOM getWeightUOM(I_M_Product product);
+
+	Optional<Quantity> getWeight(ProductId productId);
 
 	/**
 	 * Gets product standard Weight in <code>uomTo</code>.

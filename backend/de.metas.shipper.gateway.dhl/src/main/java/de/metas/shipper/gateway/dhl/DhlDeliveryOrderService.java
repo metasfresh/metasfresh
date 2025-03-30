@@ -27,7 +27,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
-import de.metas.handlingunits.impl.InOutPackageRepository;
+import de.metas.handlingunits.shipping.InOutPackageRepository;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.money.CurrencyId;
 import de.metas.mpackage.Package;

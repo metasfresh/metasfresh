@@ -20,25 +20,47 @@
  * #L%
  */
 
-package de.metas.handlingunits.shipmentschedule.spi.impl;
+package de.metas.handlingunits.shipping;
 
+import de.metas.inout.InOutId;
+import de.metas.inout.model.I_M_InOut;
+import de.metas.shipping.model.ShipperTransportationId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
+import java.util.List;
 
 @Value
 @Builder
-public class PackageInfo
+public class CreatePackagesForInOutRequest
 {
 	@NonNull
-	String trackingNumber;
+	I_M_InOut shipment;
+
+	boolean processed;
 
 	@Nullable
-	String trackingUrl;
+	List<PackageInfo> packageInfos;
+
+	public static CreatePackagesForInOutRequest ofShipment(@NonNull final I_M_InOut shipment)
+	{
+		return CreatePackagesForInOutRequest.builder()
+				.shipment(shipment)
+				.processed(false)
+				.packageInfos(null)
+				.build();
+	}
+
+	public InOutId getShipmentId()
+	{
+		return InOutId.ofRepoId(shipment.getM_InOut_ID());
+	}
 
 	@Nullable
-	BigDecimal weight;
+	public ShipperTransportationId getShipperTransportationId()
+	{
+		return ShipperTransportationId.ofRepoIdOrNull(shipment.getM_ShipperTransportation_ID());
+	}
 }

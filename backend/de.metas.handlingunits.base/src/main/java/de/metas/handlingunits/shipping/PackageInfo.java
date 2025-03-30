@@ -2,7 +2,7 @@
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,23 +20,19 @@
  * #L%
  */
 
-package de.metas.handlingunits.impl;
+package de.metas.handlingunits.shipping;
 
-import de.metas.mpackage.Package;
-import de.metas.mpackage.PackageId;
-import lombok.AllArgsConstructor;
-import lombok.NonNull;
-import org.springframework.stereotype.Service;
+import lombok.Builder;
+import lombok.Value;
 
-@Service
-@AllArgsConstructor
-public class InOutPackageService
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
+@Value
+@Builder
+public class PackageInfo
 {
-	private final InOutPackageRepository inOutPackageRepository;
-
-	public Package getPackageByIdIncludingDetails(@NonNull final PackageId packageId)
-	{
-		 return inOutPackageRepository.getPackageById(packageId);
-	}
-
+	@Nullable String trackingNumber;
+	@Nullable String trackingUrl;
+	@Nullable BigDecimal weight;
 }

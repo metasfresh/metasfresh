@@ -20,48 +20,26 @@
  * #L%
  */
 
-package de.metas.handlingunits.impl;
+package de.metas.handlingunits.shipping;
 
-import de.metas.handlingunits.shipmentschedule.spi.impl.PackageInfo;
 import de.metas.inout.InOutId;
-import de.metas.inout.model.I_M_InOut;
-import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
 @Builder
-public class CreatePackagesForInOutRequest
+public class AddTrackingInfosForInOutWithoutHUReq
 {
 	@NonNull
-	I_M_InOut shipment;
+	InOutId inOutId;
 
-	boolean processed;
+	@NonNull
+	ShipperId shipperId;
 
-	@Nullable
+	@NonNull
 	List<PackageInfo> packageInfos;
-
-	public static CreatePackagesForInOutRequest ofShipment(@NonNull final I_M_InOut shipment)
-	{
-		return CreatePackagesForInOutRequest.builder()
-				.shipment(shipment)
-				.processed(false)
-				.packageInfos(null)
-				.build();
-	}
-
-	public InOutId getShipmentId()
-	{
-		return InOutId.ofRepoId(shipment.getM_InOut_ID());
-	}
-
-	@Nullable
-	public ShipperTransportationId getShipperTransportationId()
-	{
-		return ShipperTransportationId.ofRepoIdOrNull(shipment.getM_ShipperTransportation_ID());
-	}
 }
