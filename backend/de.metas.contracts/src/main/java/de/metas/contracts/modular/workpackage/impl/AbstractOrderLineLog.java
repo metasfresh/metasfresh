@@ -145,7 +145,7 @@ public abstract class AbstractOrderLineLog extends AbstractModularContractLogHan
 	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(final @NonNull IModularContractLogHandler.CreateLogRequest request)
 	{
 		final TableRecordReference orderLineRef = request.getRecordRef();
-		final I_C_OrderLine orderLineRecord = orderBL.getOrderLineById(OrderLineId.ofRepoId(orderLineRef.getRecordIdAssumingTableName(getSupportedTableName())));
+		final I_C_OrderLine orderLineRecord = orderBL.getOrderLineById(orderLineRef.getIdAssumingTableName(getSupportedTableName(), OrderLineId::ofRepoId));
 		final I_C_Order orderRecord = orderBL.getById(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()));
 
 		final Quantity quantity = modularContractLogDAO.retrieveQuantityFromExistingLog(
