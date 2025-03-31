@@ -19,6 +19,7 @@ release:
   - inner_silence_hotfix
   - intensive_care_uat
   - intensive_care_hotfix
+  - intensive_care_release
   - iron_plant_uat
   - koala_yawn_uat
   - massive_entropy_uat
@@ -37,6 +38,7 @@ release:
   - release
   - soft_panda_uat
   - soft_panda_hotfix
+  - soft_panda_release
   - science_vessel_uat
   - secondary_opinion_uat
   - secondary_opinion_hotfix

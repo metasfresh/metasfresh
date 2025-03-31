@@ -57,11 +57,16 @@ pull_request_rules:
               - base=intensive_care_hotfix
               - base=mad_orange_hotfix
               - base=massive_entropy_hotfix
+              - base=memorable_shiny_hotfix
               - base=pink_rooster_hotfix
               - base=secondary_opinion_hotfix
               - base=soft_panda_hotfix
               - base=tasty_ham_hotfix
               - base=yoyo_hotfix
+          - or: &PROJECT_BRANCHES_RELEASE
+              - base=intensive_care_release
+              - base=soft_panda_release
+
     actions:
       label:
         add:
