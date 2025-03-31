@@ -147,7 +147,7 @@ public abstract class AbstractContractLog extends AbstractModularContractLogHand
 				.contractId(request.getContractId())
 				.productId(productId)
 				.productName(request.getProductName())
-				.referencedRecord(TableRecordReference.of(I_C_Flatrate_Term.Table_Name, request.getContractId()))
+				.referencedRecord(TableRecordReference.of(getSupportedTableName(), request.getContractId()))
 				.producerBPartnerId(billBPartnerId)
 				.invoicingBPartnerId(billBPartnerId)
 				.collectionPointBPartnerId(BPartnerId.ofRepoId(warehouseRecord.getC_BPartner_ID()))
@@ -173,7 +173,7 @@ public abstract class AbstractContractLog extends AbstractModularContractLogHand
 	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
 		final TableRecordReference recordRef = createLogRequest.getRecordRef();
-		final I_C_Flatrate_Term contract = flatrateBL.getById(FlatrateTermId.ofRepoId(recordRef.getRecordIdAssumingTableName(getSupportedTableName())));
+		final I_C_Flatrate_Term contract = flatrateBL.getById(recordRef.getIdAssumingTableName(getSupportedTableName(), FlatrateTermId::ofRepoId));
 
 		final boolean isInterimContract = TypeConditions.ofCode(contract.getType_Conditions()).isModularContractType();
 		final AdMessageKey msgToUse = isInterimContract ? MSG_ON_INTERIM_REVERSE_DESCRIPTION : MSG_ON_MODULAR_REVERSE_DESCRIPTION;

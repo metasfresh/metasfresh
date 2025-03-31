@@ -100,7 +100,7 @@
  {
 	 private static final AdMessageKey MSG_ERROR_DOCUMENT_LINE_DELETION = AdMessageKey.of("documentLineDeletionErrorBecauseOfRelatedModuleContractLog");
 	 private static final String PRODUCT_PRICE_NULL_ASSUMPTION_ERROR_MSG = "ProductPrices of billable modular contract logs shouldn't be null";
-	 private static final AdTableId INVOICE_LINE_TABLE_ID = AdTableId.ofRepoId(Services.get(IADTableDAO.class).retrieveTableId(I_C_InvoiceLine.Table_Name));
+	 private final AdTableId INVOICE_LINE_TABLE_ID = AdTableId.ofRepoId(Services.get(IADTableDAO.class).retrieveTableId(I_C_InvoiceLine.Table_Name));
 	 public static final String INVOICE_DETAILS_RECEIVED = "IN";
 	 public static final String INVOICE_DETAILS_SHIPPED = "OUT";
 	 public static final String INVOICE_DETAILS_FINAL_INVOICE_DATE = "finalInvoiceDate";
