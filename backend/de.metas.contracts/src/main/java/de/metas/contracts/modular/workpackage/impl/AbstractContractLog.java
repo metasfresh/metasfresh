@@ -22,6 +22,7 @@
 
 package de.metas.contracts.modular.workpackage.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.calendar.standard.YearAndCalendarId;
 import de.metas.contracts.FlatrateTermId;
@@ -33,6 +34,8 @@ import de.metas.contracts.modular.invgroup.InvoicingGroupId;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryCreateRequest;
 import de.metas.contracts.modular.log.LogEntryReverseRequest;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
+import de.metas.contracts.modular.log.ModularContractLogQuery;
 import de.metas.contracts.modular.workpackage.AbstractModularContractLogHandler;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
@@ -53,19 +56,19 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Warehouse;
 
-import static de.metas.contracts.modular.ModularContract_Constants.MSG_ERROR_DOC_ACTION_UNSUPPORTED;
-
 public abstract class AbstractContractLog extends AbstractModularContractLogHandler
 {
 	protected final static AdMessageKey MSG_ON_INTERIM_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimContractCompleteLogDescription");
 	protected final static AdMessageKey MSG_ON_MODULAR_COMPLETE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.modularContractCompleteLogDescription");
+	private final static AdMessageKey MSG_ON_INTERIM_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.interimContractReverseLogDescription");
+	private final static AdMessageKey MSG_ON_MODULAR_REVERSE_DESCRIPTION = AdMessageKey.of("de.metas.contracts.modular.modularContractReverseLogDescription");
 
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
@@ -75,14 +78,18 @@ public abstract class AbstractContractLog extends AbstractModularContractLogHand
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	@NonNull private final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository;
+	@NonNull private final ModularContractLogDAO contractLogDAO;
+
 
 	@NonNull @Getter private final String supportedTableName = I_C_Flatrate_Term.Table_Name;
 
 	public AbstractContractLog(@NonNull final ModularContractService modularContractService,
-			final @NonNull ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository)
+							   @NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
+							   @NonNull final ModularContractLogDAO contractLogDAO)
 	{
 		super(modularContractService);
 		this.modCntrInvoicingGroupRepository = modCntrInvoicingGroupRepository;
+		this.contractLogDAO = contractLogDAO;
 	}
 
 	@Override
@@ -165,6 +172,25 @@ public abstract class AbstractContractLog extends AbstractModularContractLogHand
 	@Override
 	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
-		throw new AdempiereException(MSG_ERROR_DOC_ACTION_UNSUPPORTED);
+		final TableRecordReference recordRef = createLogRequest.getRecordRef();
+		final I_C_Flatrate_Term contract = flatrateBL.getById(FlatrateTermId.ofRepoId(recordRef.getRecordIdAssumingTableName(getSupportedTableName())));
+
+		final boolean isInterimContract = TypeConditions.ofCode(contract.getType_Conditions()).isModularContractType();
+		final AdMessageKey msgToUse = isInterimContract ? MSG_ON_INTERIM_REVERSE_DESCRIPTION : MSG_ON_MODULAR_REVERSE_DESCRIPTION;
+		final Quantity quantity = contractLogDAO.retrieveQuantityFromExistingLog(ModularContractLogQuery.builder()
+				.flatrateTermId(createLogRequest.getContractId())
+				.referenceSet(TableRecordReferenceSet.of(recordRef))
+				.build());
+
+		final String description = msgBL.getMsg(msgToUse, ImmutableList.of(String.valueOf(contract.getM_Product_ID()), quantity.toString()));
+
+		return ExplainedOptional.of(
+				LogEntryReverseRequest.builder()
+						.referencedModel(createLogRequest.getRecordRef())
+						.flatrateTermId(createLogRequest.getContractId())
+						.description(description)
+						.logEntryContractType(getLogEntryContractType())
+						.contractModuleId(createLogRequest.getModularContractModuleId())
+						.build());
 	}
 }
