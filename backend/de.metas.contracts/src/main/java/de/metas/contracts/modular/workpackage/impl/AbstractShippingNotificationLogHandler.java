@@ -170,7 +170,7 @@ public abstract class AbstractShippingNotificationLogHandler extends AbstractMod
 	public @NonNull ExplainedOptional<LogEntryReverseRequest> createLogEntryReverseRequest(@NonNull final CreateLogRequest createLogRequest)
 	{
 		final TableRecordReference recordRef = createLogRequest.getRecordRef();
-		final I_M_Shipping_NotificationLine notificationLine = notificationService.getLineRecordByLineId(ShippingNotificationLineId.ofRepoId(recordRef.getRecordIdAssumingTableName(getSupportedTableName())));
+		final I_M_Shipping_NotificationLine notificationLine = notificationService.getLineRecordByLineId(recordRef.getIdAssumingTableName(getSupportedTableName(), ShippingNotificationLineId::ofRepoId));
 
 		final TableRecordReference notificationLineRef = TableRecordReference.of(notificationLine);
 

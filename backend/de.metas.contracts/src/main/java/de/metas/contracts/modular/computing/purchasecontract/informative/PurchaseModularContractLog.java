@@ -23,6 +23,7 @@ package de.metas.contracts.modular.computing.purchasecontract.informative;/*
 import de.metas.contracts.modular.ModularContractService;
 import de.metas.contracts.modular.invgroup.interceptor.ModCntrInvoicingGroupRepository;
 import de.metas.contracts.modular.log.LogEntryDocumentType;
+import de.metas.contracts.modular.log.ModularContractLogDAO;
 import de.metas.contracts.modular.workpackage.impl.AbstractContractLog;
 import lombok.Getter;
 import lombok.NonNull;
@@ -38,9 +39,10 @@ class PurchaseModularContractLog extends AbstractContractLog
 	public PurchaseModularContractLog(
 			@NonNull final ModularContractService modularContractService,
 			@NonNull final ModCntrInvoicingGroupRepository modCntrInvoicingGroupRepository,
+			@NonNull final ModularContractLogDAO contractLogDAO,
 			@NonNull final InformativeLogComputingMethod computingMethod)
 	{
-		super(modularContractService, modCntrInvoicingGroupRepository);
+		super(modularContractService, modCntrInvoicingGroupRepository, contractLogDAO);
 		this.computingMethod = computingMethod;
 	}
 }
