@@ -86,7 +86,7 @@ public class MInvoiceLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 		return !I_C_Invoice_Detail.Table_Name.equals(childTableInfo.getTableName());
 	}
 
-	static class ClonedInvoiceLinesInfo
+	public static class ClonedInvoiceLinesInfo
 	{
 		private final HashMap<InvoiceLineId, InvoiceLineId> original2targetInvoiceLineIds = new HashMap<>();
 

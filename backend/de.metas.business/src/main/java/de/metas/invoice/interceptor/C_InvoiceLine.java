@@ -16,6 +16,7 @@ import de.metas.tax.api.Tax;
 import de.metas.tax.api.VatCodeId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -26,8 +27,10 @@ import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_InvoiceLine.class)
 @Component
+@RequiredArgsConstructor
 public class C_InvoiceLine
 {
+	@NonNull
 	private final InvoiceWithDetailsService invoiceWithDetailsService;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -35,11 +38,6 @@ public class C_InvoiceLine
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	private final IBPartnerProductBL partnerProductBL = Services.get(IBPartnerProductBL.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
-
-	public C_InvoiceLine(@NonNull final InvoiceWithDetailsService invoiceWithDetailsService)
-	{
-		this.invoiceWithDetailsService = invoiceWithDetailsService;
-	}
 
 	/**
 	 * Set QtyInvoicedInPriceUOM, just to make sure is up2date.

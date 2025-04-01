@@ -46,7 +46,7 @@ public class MInvoicePOCopyRecordSupport extends GeneralCopyRecordSupport
 
 	private void onRecordAndChildrenCopied(final I_C_Invoice fromInvoice, final I_C_Invoice targetInvoice)
 	{
-		invoiceWithDetailsService.copyDetailsToClone(InvoiceDetailCloneMapperImpl.builder()
+		invoiceWithDetailsService.copyDetailsToClone(InvoiceDetailCloneMapper.builder()
 															 .originalInvoiceId(InvoiceId.ofRepoId(fromInvoice.getC_Invoice_ID()))
 															 .targetInvoiceId(InvoiceId.ofRepoId(targetInvoice.getC_Invoice_ID()))
 															 .clonedInvoiceLinesInfo(MInvoiceLinePOCopyRecordSupport.getClonedInvoiceLinesInfo(targetInvoice))
@@ -56,25 +56,5 @@ public class MInvoicePOCopyRecordSupport extends GeneralCopyRecordSupport
 	private static boolean isSuggestedChildren(@NonNull final CopyRecordSupportTableInfo childTableInfo)
 	{
 		return I_C_InvoiceLine.Table_Name.equals(childTableInfo.getTableName());
-	}
-
-	@Builder
-	private static class InvoiceDetailCloneMapperImpl implements InvoiceDetailCloneMapper
-	{
-		@NonNull @Getter private final InvoiceId originalInvoiceId;
-		@NonNull @Getter private final InvoiceId targetInvoiceId;
-		@Nullable private final MInvoiceLinePOCopyRecordSupport.ClonedInvoiceLinesInfo clonedInvoiceLinesInfo;
-
-		@NonNull
-		public InvoiceLineId getTargetInvoiceLineId(@NonNull final InvoiceLineId originalInvoiceLineId)
-		{
-			// shall not happen because this method shall not be called in case there are no invoice lines
-			if (clonedInvoiceLinesInfo == null)
-			{
-				throw new AdempiereException("No cloned invoice lines info available");
-			}
-
-			return clonedInvoiceLinesInfo.getTargetInvoiceLineId(originalInvoiceLineId);
-		}
 	}
 }

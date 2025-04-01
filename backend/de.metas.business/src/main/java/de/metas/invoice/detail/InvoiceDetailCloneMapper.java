@@ -24,14 +24,30 @@ package de.metas.invoice.detail;
 
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.service.MInvoiceLinePOCopyRecordSupport;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
-public interface InvoiceDetailCloneMapper
+import javax.annotation.Nullable;
+
+@Builder
+public class InvoiceDetailCloneMapper
 {
-	@NonNull InvoiceId getOriginalInvoiceId();
-
-	@NonNull InvoiceId getTargetInvoiceId();
+	@NonNull @Getter private final InvoiceId originalInvoiceId;
+	@NonNull @Getter private final InvoiceId targetInvoiceId;
+	@Nullable private final MInvoiceLinePOCopyRecordSupport.ClonedInvoiceLinesInfo clonedInvoiceLinesInfo;
 
 	@NonNull
-	InvoiceLineId getTargetInvoiceLineId(@NonNull final InvoiceLineId originalInvoiceLineId);
+	public InvoiceLineId getTargetInvoiceLineId(@NonNull final InvoiceLineId originalInvoiceLineId)
+	{
+		// shall not happen because this method shall not be called in case there are no invoice lines
+		if (clonedInvoiceLinesInfo == null)
+		{
+			throw new AdempiereException("No cloned invoice lines info available");
+		}
+
+		return clonedInvoiceLinesInfo.getTargetInvoiceLineId(originalInvoiceLineId);
+	}
 }
