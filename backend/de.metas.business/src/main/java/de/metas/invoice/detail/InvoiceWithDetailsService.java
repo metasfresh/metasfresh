@@ -70,9 +70,9 @@ public class InvoiceWithDetailsService
 		}
 	}
 
-	public void updateInvoiceLineId(@NonNull final InvoiceDetailCloneMapper mapper)
+	public void copyDetailsToClone(@NonNull final InvoiceDetailCloneMapper mapper)
 	{
-		invoiceWithDetailsRepository.updateInvoiceLineId(mapper.getTargetInvoiceId(), mapper.getOriginal2targetInvoiceLineIds());
+		invoiceWithDetailsRepository.copyDetailsToClone(mapper);
 	}
 
 	public void deleteReferencingInvoiceDetails(@NonNull final InvoiceId invoiceId)

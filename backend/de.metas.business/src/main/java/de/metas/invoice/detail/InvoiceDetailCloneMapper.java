@@ -22,14 +22,16 @@
 
 package de.metas.invoice.detail;
 
-import com.google.common.collect.ImmutableMap;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import lombok.NonNull;
 
 public interface InvoiceDetailCloneMapper
 {
-	@NonNull InvoiceId getTargetInvoiceId(); 
-	
-	@NonNull ImmutableMap<InvoiceLineId, InvoiceLineId> getOriginal2targetInvoiceLineIds();
+	@NonNull InvoiceId getOriginalInvoiceId();
+
+	@NonNull InvoiceId getTargetInvoiceId();
+
+	@NonNull
+	InvoiceLineId getTargetInvoiceLineId(@NonNull final InvoiceLineId originalInvoiceLineId);
 }

@@ -23,10 +23,10 @@
 package de.metas.invoice.service;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordSupportTableInfo;
 import org.adempiere.model.GeneralCopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -96,9 +96,14 @@ public class MInvoiceLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 		}
 
 		@NonNull
-		public ImmutableMap<InvoiceLineId, InvoiceLineId> getOriginal2targetInvoiceLineIds()
+		public InvoiceLineId getTargetInvoiceLineId(@NonNull final InvoiceLineId originalInvoiceLineId)
 		{
-			return ImmutableMap.copyOf(original2targetInvoiceLineIds);
+			final InvoiceLineId targetInvoiceLineId = original2targetInvoiceLineIds.get(originalInvoiceLineId);
+			if (targetInvoiceLineId == null)
+			{
+				throw new AdempiereException("No target invoice line found for " + originalInvoiceLineId);
+			}
+			return targetInvoiceLineId;
 		}
 	}
 }

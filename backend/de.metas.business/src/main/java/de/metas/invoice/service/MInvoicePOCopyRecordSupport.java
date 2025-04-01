@@ -4,7 +4,6 @@
 package de.metas.invoice.service;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.detail.InvoiceDetailCloneMapper;
@@ -12,13 +11,13 @@ import de.metas.invoice.detail.InvoiceWithDetailsService;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordSupportTableInfo;
 import org.adempiere.model.GeneralCopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_C_Invoice_Detail;
 import org.compiere.model.PO;
 
 import javax.annotation.Nullable;
@@ -40,34 +39,42 @@ public class MInvoicePOCopyRecordSupport extends GeneralCopyRecordSupport
 	@Override
 	protected void onRecordAndChildrenCopied(final PO to, final PO from)
 	{
+		final I_C_Invoice fromInvoice = InterfaceWrapperHelper.create(from, I_C_Invoice.class);
 		final I_C_Invoice toInvoice = InterfaceWrapperHelper.create(to, I_C_Invoice.class);
-		onRecordAndChildrenCopied(toInvoice);
+		onRecordAndChildrenCopied(fromInvoice, toInvoice);
 	}
 
-	private void onRecordAndChildrenCopied(final I_C_Invoice targetInvoice)
+	private void onRecordAndChildrenCopied(final I_C_Invoice fromInvoice, final I_C_Invoice targetInvoice)
 	{
-		invoiceWithDetailsService.updateInvoiceLineId(InvoiceDetailCloneMapperImpl.builder()
-															  .targetInvoiceId(InvoiceId.ofRepoId(targetInvoice.getC_Invoice_ID()))
-															  .clonedInvoiceLinesInfo(MInvoiceLinePOCopyRecordSupport.getClonedInvoiceLinesInfo(targetInvoice))
-															  .build());
+		invoiceWithDetailsService.copyDetailsToClone(InvoiceDetailCloneMapperImpl.builder()
+															 .originalInvoiceId(InvoiceId.ofRepoId(fromInvoice.getC_Invoice_ID()))
+															 .targetInvoiceId(InvoiceId.ofRepoId(targetInvoice.getC_Invoice_ID()))
+															 .clonedInvoiceLinesInfo(MInvoiceLinePOCopyRecordSupport.getClonedInvoiceLinesInfo(targetInvoice))
+															 .build());
 	}
 
 	private static boolean isSuggestedChildren(@NonNull final CopyRecordSupportTableInfo childTableInfo)
 	{
-		return I_C_InvoiceLine.Table_Name.equals(childTableInfo.getTableName()) ||
-				I_C_Invoice_Detail.Table_Name.equals(childTableInfo.getTableName());
+		return I_C_InvoiceLine.Table_Name.equals(childTableInfo.getTableName());
 	}
 
 	@Builder
 	private static class InvoiceDetailCloneMapperImpl implements InvoiceDetailCloneMapper
 	{
+		@NonNull @Getter private final InvoiceId originalInvoiceId;
 		@NonNull @Getter private final InvoiceId targetInvoiceId;
 		@Nullable private final MInvoiceLinePOCopyRecordSupport.ClonedInvoiceLinesInfo clonedInvoiceLinesInfo;
 
 		@NonNull
-		public ImmutableMap<InvoiceLineId, InvoiceLineId> getOriginal2targetInvoiceLineIds()
+		public InvoiceLineId getTargetInvoiceLineId(@NonNull final InvoiceLineId originalInvoiceLineId)
 		{
-			return clonedInvoiceLinesInfo != null ? clonedInvoiceLinesInfo.getOriginal2targetInvoiceLineIds() : ImmutableMap.of();
+			// shall not happen because this method shall not be called in case there are no invoice lines
+			if (clonedInvoiceLinesInfo == null)
+			{
+				throw new AdempiereException("No cloned invoice lines info available");
+			}
+
+			return clonedInvoiceLinesInfo.getTargetInvoiceLineId(originalInvoiceLineId);
 		}
 	}
 }

@@ -41,7 +41,6 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.List;
-import java.util.Map;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -198,28 +197,6 @@ public class InvoiceWithDetailsRepository
 				.list();
 	}
 
-	public void updateInvoiceLineId(
-			@NonNull final InvoiceId invoiceId,
-			@NonNull final Map<InvoiceLineId, InvoiceLineId> original2TargetInvoiceLineIds)
-	{
-		if (original2TargetInvoiceLineIds.isEmpty())
-		{
-			return;
-		}
-
-		queryBL
-				.createQueryBuilder(I_C_Invoice_Detail.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Invoice_Detail.COLUMNNAME_C_Invoice_ID, invoiceId)
-				.addInArrayFilter(I_C_Invoice_Detail.COLUMNNAME_C_InvoiceLine_ID, original2TargetInvoiceLineIds.keySet())
-				.forEach(invoiceDetail -> {
-					final InvoiceLineId originalInvoiceLineId = InvoiceLineId.ofRepoId(invoiceDetail.getC_InvoiceLine_ID());
-					invoiceDetail.setC_InvoiceLine_ID(InvoiceLineId.toRepoId(original2TargetInvoiceLineIds.get(originalInvoiceLineId)));
-					
-					saveRecord(invoiceDetail);
-				});
-	}
-
 	public void deleteReferencingInvoiceDetails(@NonNull final InvoiceId invoiceId)
 	{
 		queryBL.createQueryBuilder(I_C_Invoice_Detail.class)
@@ -234,5 +211,25 @@ public class InvoiceWithDetailsRepository
 				.addEqualsFilter(I_C_Invoice_Detail.COLUMNNAME_C_InvoiceLine_ID, invoiceLineId)
 				.create()
 				.delete();
+	}
+
+	public void copyDetailsToClone(@NonNull final InvoiceDetailCloneMapper mapper)
+	{
+		getInvoiceDetailsListForInvoiceId(mapper.getOriginalInvoiceId())
+				.forEach(detail -> {
+					final I_C_Invoice_Detail clonedDetail = InterfaceWrapperHelper.newInstance(I_C_Invoice_Detail.class);
+					InterfaceWrapperHelper.copyValues(detail, clonedDetail);
+
+					final InvoiceLineId originalInvoiceLineId = InvoiceLineId.ofRepoIdOrNull(detail.getC_InvoiceLine_ID());
+					if (originalInvoiceLineId != null)
+					{
+						clonedDetail.setC_InvoiceLine_ID(mapper.getTargetInvoiceLineId(originalInvoiceLineId).getRepoId());
+					}
+
+					clonedDetail.setC_Invoice_ID(mapper.getTargetInvoiceId().getRepoId());
+					clonedDetail.setC_Invoice_Candidate_ID(-1);
+					clonedDetail.setPP_Order_ID(-1);
+					saveRecord(clonedDetail);
+				});
 	}
 }
