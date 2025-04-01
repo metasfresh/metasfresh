@@ -5,6 +5,8 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductBL;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.detail.InvoiceWithDetailsService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.lang.SOTrx;
@@ -13,6 +15,7 @@ import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.VatCodeId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -25,12 +28,18 @@ import org.springframework.stereotype.Component;
 @Component
 public class C_InvoiceLine
 {
+	private final InvoiceWithDetailsService invoiceWithDetailsService;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	private final IBPartnerProductBL partnerProductBL = Services.get(IBPartnerProductBL.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+
+	public C_InvoiceLine(@NonNull final InvoiceWithDetailsService invoiceWithDetailsService)
+	{
+		this.invoiceWithDetailsService = invoiceWithDetailsService;
+	}
 
 	/**
 	 * Set QtyInvoicedInPriceUOM, just to make sure is up2date.
@@ -123,5 +132,11 @@ public class C_InvoiceLine
 		{
 			invoiceLine.setC_Tax_ID(tax.getTaxId().getRepoId());
 		}
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void deleteInvoiceDetails(@NonNull final I_C_InvoiceLine invoiceLine)
+	{
+		invoiceWithDetailsService.deleteReferencingInvoiceDetails(InvoiceLineId.ofRepoId(invoiceLine.getC_InvoiceLine_ID()));
 	}
 }

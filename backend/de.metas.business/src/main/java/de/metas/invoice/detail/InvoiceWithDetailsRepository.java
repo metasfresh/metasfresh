@@ -25,6 +25,7 @@ package de.metas.invoice.detail;
 import com.google.common.collect.ImmutableMap;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
@@ -40,6 +41,9 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
 public class InvoiceWithDetailsRepository
@@ -58,13 +62,13 @@ public class InvoiceWithDetailsRepository
 
 		final OrgId orgId = invoiceWithDetails.getOrgId();
 
-		for (InvoiceDetailItem invoiceDetailItem : invoiceWithDetails.getDetailItems())
+		for (final InvoiceDetailItem invoiceDetailItem : invoiceWithDetails.getDetailItems())
 		{
 			createOrUpdateDetailItem(orgId, invoiceWithDetails.getId(), invoiceDetailItem, detailRecords);
 		}
-		for (InvoiceLineWithDetails line : invoiceWithDetails.getLines())
+		for (final InvoiceLineWithDetails line : invoiceWithDetails.getLines())
 		{
-			for (InvoiceDetailItem invoiceDetailItem : line.getDetailItems())
+			for (final InvoiceDetailItem invoiceDetailItem : line.getDetailItems())
 			{
 				createOrUpdateDetailItem(orgId, line.getId(), invoiceDetailItem, detailRecords);
 			}
@@ -99,7 +103,7 @@ public class InvoiceWithDetailsRepository
 		final I_C_Invoice_Detail recordToSave = syncToRecord(orgId, invoiceDetailItem, existingRecordOrNull);
 
 		recordToSave.setC_Invoice_ID(invoiceId.getRepoId());
-		InterfaceWrapperHelper.saveRecord(recordToSave);
+		saveRecord(recordToSave);
 	}
 
 	private void createOrUpdateDetailItem(
@@ -114,7 +118,7 @@ public class InvoiceWithDetailsRepository
 
 		recordToSave.setC_Invoice_ID(invoiceAndLineId.getInvoiceId().getRepoId());
 		recordToSave.setC_InvoiceLine_ID(invoiceAndLineId.getRepoId());
-		InterfaceWrapperHelper.saveRecord(recordToSave);
+		saveRecord(recordToSave);
 	}
 
 	@NonNull
@@ -192,5 +196,43 @@ public class InvoiceWithDetailsRepository
 				.addEqualsFilter(I_C_Invoice_Detail.COLUMNNAME_C_Invoice_ID, invoiceId)
 				.create()
 				.list();
+	}
+
+	public void updateInvoiceLineId(
+			@NonNull final InvoiceId invoiceId,
+			@NonNull final Map<InvoiceLineId, InvoiceLineId> original2TargetInvoiceLineIds)
+	{
+		if (original2TargetInvoiceLineIds.isEmpty())
+		{
+			return;
+		}
+
+		queryBL
+				.createQueryBuilder(I_C_Invoice_Detail.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Detail.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.addInArrayFilter(I_C_Invoice_Detail.COLUMNNAME_C_InvoiceLine_ID, original2TargetInvoiceLineIds.keySet())
+				.forEach(invoiceDetail -> {
+					final InvoiceLineId originalInvoiceLineId = InvoiceLineId.ofRepoId(invoiceDetail.getC_InvoiceLine_ID());
+					invoiceDetail.setC_InvoiceLine_ID(InvoiceLineId.toRepoId(original2TargetInvoiceLineIds.get(originalInvoiceLineId)));
+					
+					saveRecord(invoiceDetail);
+				});
+	}
+
+	public void deleteReferencingInvoiceDetails(@NonNull final InvoiceId invoiceId)
+	{
+		queryBL.createQueryBuilder(I_C_Invoice_Detail.class)
+				.addEqualsFilter(I_C_Invoice_Detail.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.create()
+				.delete();
+	}
+
+	public void deleteReferencingInvoiceDetails(@NonNull final InvoiceLineId invoiceLineId)
+	{
+		queryBL.createQueryBuilder(I_C_Invoice_Detail.class)
+				.addEqualsFilter(I_C_Invoice_Detail.COLUMNNAME_C_InvoiceLine_ID, invoiceLineId)
+				.create()
+				.delete();
 	}
 }

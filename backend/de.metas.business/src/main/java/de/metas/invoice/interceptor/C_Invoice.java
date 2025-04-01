@@ -13,6 +13,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.detail.InvoiceWithDetailsService;
 import de.metas.invoice.export.async.C_Invoice_CreateExportData;
 import de.metas.invoice.location.InvoiceLocationsUpdater;
 import de.metas.invoice.sequence.InvoiceCountryIdProvider;
@@ -63,6 +64,7 @@ public class C_Invoice // 03771
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 	private final IDocumentLocationBL documentLocationBL;
+	private final InvoiceWithDetailsService invoiceWithDetailsService;
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
@@ -75,10 +77,12 @@ public class C_Invoice // 03771
 
 	public C_Invoice(
 			@NonNull final PaymentReservationService paymentReservationService,
-			@NonNull final IDocumentLocationBL documentLocationBL)
+			@NonNull final IDocumentLocationBL documentLocationBL,
+			@NonNull final InvoiceWithDetailsService invoiceWithDetailsService)
 	{
 		this.paymentReservationService = paymentReservationService;
 		this.documentLocationBL = documentLocationBL;
+		this.invoiceWithDetailsService = invoiceWithDetailsService;
 	}
 
 	@Init
@@ -280,7 +284,7 @@ public class C_Invoice // 03771
 		{
 			final I_C_Invoice parentInvoice = InterfaceWrapperHelper.create(creditMemo.getRef_Invoice(), I_C_Invoice.class);
 			final BigDecimal invoiceOpenAmt = allocationDAO.retrieveOpenAmtInInvoiceCurrency(parentInvoice,
-					false).toBigDecimal(); // creditMemoAdjusted = false
+																							 false).toBigDecimal(); // creditMemoAdjusted = false
 
 			final BigDecimal amtToAllocate = invoiceOpenAmt.min(creditMemoLeft);
 
@@ -401,12 +405,12 @@ public class C_Invoice // 03771
 		final Money grandTotal = extractGrandTotal(salesInvoice);
 
 		paymentReservationService.captureAmount(PaymentReservationCaptureRequest.builder()
-				.salesOrderId(salesOrderId)
-				.salesInvoiceId(InvoiceId.ofRepoId(salesInvoice.getC_Invoice_ID()))
-				.customerId(BPartnerId.ofRepoId(salesInvoice.getC_BPartner_ID()))
-				.dateTrx(dateTrx)
-				.amount(grandTotal)
-				.build());
+														.salesOrderId(salesOrderId)
+														.salesInvoiceId(InvoiceId.ofRepoId(salesInvoice.getC_Invoice_ID()))
+														.customerId(BPartnerId.ofRepoId(salesInvoice.getC_BPartner_ID()))
+														.dateTrx(dateTrx)
+														.amount(grandTotal)
+														.build());
 	}
 
 	private static Money extractGrandTotal(@NonNull final I_C_Invoice salesInvoice)
@@ -492,8 +496,14 @@ public class C_Invoice // 03771
 	{
 		bPartnerStatisticsUpdater
 				.updateBPartnerStatistics(IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest.builder()
-						.bpartnerId(invoice.getC_BPartner_ID())
-						.build());
+												  .bpartnerId(invoice.getC_BPartner_ID())
+												  .build());
 
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void deleteInvoiceDetails(@NonNull final I_C_Invoice invoice)
+	{
+		invoiceWithDetailsService.deleteReferencingInvoiceDetails(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
 	}
 }
