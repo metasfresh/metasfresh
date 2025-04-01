@@ -24,20 +24,20 @@ package de.metas.invoice.detail;
 
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
-import de.metas.invoice.service.MInvoiceLinePOCopyRecordSupport;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
 
 @Builder
 public class InvoiceDetailCloneMapper
 {
 	@NonNull @Getter private final InvoiceId originalInvoiceId;
 	@NonNull @Getter private final InvoiceId targetInvoiceId;
-	@Nullable private final MInvoiceLinePOCopyRecordSupport.ClonedInvoiceLinesInfo clonedInvoiceLinesInfo;
+	@Nullable private final ClonedInvoiceLinesInfo clonedInvoiceLinesInfo;
 
 	@NonNull
 	public InvoiceLineId getTargetInvoiceLineId(@NonNull final InvoiceLineId originalInvoiceLineId)
@@ -49,5 +49,26 @@ public class InvoiceDetailCloneMapper
 		}
 
 		return clonedInvoiceLinesInfo.getTargetInvoiceLineId(originalInvoiceLineId);
+	}
+
+	public static class ClonedInvoiceLinesInfo
+	{
+		private final HashMap<InvoiceLineId, InvoiceLineId> original2targetInvoiceLineIds = new HashMap<>();
+
+		public void addOriginalToClonedInvoiceLineMapping(@NonNull final InvoiceLineId originalInvoiceLineId, @NonNull final InvoiceLineId targetInvoiceLineId)
+		{
+			original2targetInvoiceLineIds.put(originalInvoiceLineId, targetInvoiceLineId);
+		}
+
+		@NonNull
+		public InvoiceLineId getTargetInvoiceLineId(@NonNull final InvoiceLineId originalInvoiceLineId)
+		{
+			final InvoiceLineId targetInvoiceLineId = original2targetInvoiceLineIds.get(originalInvoiceLineId);
+			if (targetInvoiceLineId == null)
+			{
+				throw new AdempiereException("No target invoice line found for " + originalInvoiceLineId);
+			}
+			return targetInvoiceLineId;
+		}
 	}
 }

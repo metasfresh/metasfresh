@@ -24,9 +24,9 @@ package de.metas.invoice.service;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.detail.InvoiceDetailCloneMapper;
 import de.metas.util.Check;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordSupportTableInfo;
 import org.adempiere.model.GeneralCopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -36,7 +36,6 @@ import org.compiere.model.I_C_Invoice_Detail;
 import org.compiere.model.PO;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.List;
 
 public class MInvoiceLinePOCopyRecordSupport extends GeneralCopyRecordSupport
@@ -54,14 +53,14 @@ public class MInvoiceLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 	private void onRecordAndChildrenCopied(final I_C_InvoiceLine toInvoiceLine, final I_C_InvoiceLine fromInvoiceLine)
 	{
 		InterfaceWrapperHelper
-				.computeDynAttributeIfAbsent(getTargetInvoice(), DYNATTR_ClonedInvoiceLinesInfo, MInvoiceLinePOCopyRecordSupport.ClonedInvoiceLinesInfo::new)
+				.computeDynAttributeIfAbsent(getTargetInvoice(), DYNATTR_ClonedInvoiceLinesInfo, InvoiceDetailCloneMapper.ClonedInvoiceLinesInfo::new)
 				.addOriginalToClonedInvoiceLineMapping(
 						InvoiceLineId.ofRepoId(fromInvoiceLine.getC_InvoiceLine_ID()),
 						InvoiceLineId.ofRepoId(toInvoiceLine.getC_InvoiceLine_ID()));
 	}
 
 	@Nullable
-	public static MInvoiceLinePOCopyRecordSupport.ClonedInvoiceLinesInfo getClonedInvoiceLinesInfo(@NonNull final I_C_Invoice targetInvoice)
+	public static InvoiceDetailCloneMapper.ClonedInvoiceLinesInfo getClonedInvoiceLinesInfo(@NonNull final I_C_Invoice targetInvoice)
 	{
 		return InterfaceWrapperHelper.getDynAttribute(targetInvoice, DYNATTR_ClonedInvoiceLinesInfo);
 	}
@@ -84,26 +83,5 @@ public class MInvoiceLinePOCopyRecordSupport extends GeneralCopyRecordSupport
 	private static boolean isSuggestedChildren(@NonNull final CopyRecordSupportTableInfo childTableInfo)
 	{
 		return !I_C_Invoice_Detail.Table_Name.equals(childTableInfo.getTableName());
-	}
-
-	public static class ClonedInvoiceLinesInfo
-	{
-		private final HashMap<InvoiceLineId, InvoiceLineId> original2targetInvoiceLineIds = new HashMap<>();
-
-		public void addOriginalToClonedInvoiceLineMapping(@NonNull final InvoiceLineId originalInvoiceLineId, @NonNull final InvoiceLineId targetInvoiceLineId)
-		{
-			original2targetInvoiceLineIds.put(originalInvoiceLineId, targetInvoiceLineId);
-		}
-
-		@NonNull
-		public InvoiceLineId getTargetInvoiceLineId(@NonNull final InvoiceLineId originalInvoiceLineId)
-		{
-			final InvoiceLineId targetInvoiceLineId = original2targetInvoiceLineIds.get(originalInvoiceLineId);
-			if (targetInvoiceLineId == null)
-			{
-				throw new AdempiereException("No target invoice line found for " + originalInvoiceLineId);
-			}
-			return targetInvoiceLineId;
-		}
 	}
 }
