@@ -186,7 +186,7 @@ public class ShipperDeliveryService
 	private LocalDate getPickupDate(@NonNull final I_M_ShipperTransportation shipperTransportation)
 	{
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(shipperTransportation.getAD_Org_ID()));
-		return CoalesceUtil.coalesce(
+		return CoalesceUtil.coalesceNotNull(
 				TimeUtil.asLocalDate(shipperTransportation.getDateToBeFetched(), timeZone), 
 				TimeUtil.asLocalDate(shipperTransportation.getDateDoc(), timeZone));
 	}

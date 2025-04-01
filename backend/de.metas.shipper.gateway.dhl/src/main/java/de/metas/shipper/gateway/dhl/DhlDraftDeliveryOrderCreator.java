@@ -23,7 +23,7 @@
 package de.metas.shipper.gateway.dhl;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
@@ -40,7 +40,7 @@ import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.CustomDeliveryData;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
-import de.metas.shipper.gateway.spi.model.DeliveryOrderLine;
+import de.metas.shipper.gateway.spi.model.DeliveryPosition;
 import de.metas.shipper.gateway.spi.model.PackageDimensions;
 import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.ShipperId;
@@ -59,7 +59,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Set;
 
 @Service
@@ -193,19 +192,25 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			@NonNull final PackageDimensions packageDimensions,
 			final CustomDeliveryData customDeliveryData)
 	{
-		final List<DeliveryOrderLine> deliveryOrderLines = packageInfos.stream()
-				.map(packageInfo -> DeliveryOrderLine.builder()
-						.packageDimensions(packageDimensions)
-						.packageId(packageInfo.getPackageId())
-						.grossWeightKg(packageInfo.getWeightInKgOr(DEFAULT_PackageWeightInKg).intValue())
-						.build())
-				.collect(ImmutableList.toImmutableList());
-
+		final ImmutableSet.Builder<PackageId> mpackageIds = ImmutableSet.builder();
+		int grossWeightKg = 0;
+		for(final CreateDraftDeliveryOrderRequest.PackageInfo packageInfo : packageInfos)
+		{
+			mpackageIds.add(packageInfo.getPackageId());
+			grossWeightKg += packageInfo.getWeightInKgOr(DEFAULT_PackageWeightInKg).intValue();
+		}
+		
+		final DeliveryPosition deliveryPosition = DeliveryPosition.builder()
+				.numberOfPackages(packageInfos.size())
+				.packageIds(mpackageIds.build())
+				.grossWeightKg(grossWeightKg)
+				.packageDimensions(packageDimensions)
+				.build();
+		
 		return DeliveryOrder.builder()
 				.shipperId(shipperId)
 				.shipperTransportationId(shipperTransportationId)
 				//
-
 				.shipperProduct(serviceType) // todo this should be made user-selectable. Ref: https://github.com/metasfresh/me03/issues/3128
 				.customerReference(customerReference)
 				.customDeliveryData(customDeliveryData)
@@ -231,7 +236,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 						.build())
 				//
 				// Delivery content
-				.deliveryOrderLines(deliveryOrderLines)
+				.deliveryPosition(deliveryPosition)
 				//
 				.build();
 	}
