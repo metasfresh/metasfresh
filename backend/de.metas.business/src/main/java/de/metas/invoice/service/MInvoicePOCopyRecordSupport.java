@@ -5,13 +5,9 @@ package de.metas.invoice.service;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.detail.InvoiceDetailCloneMapper;
 import de.metas.invoice.detail.InvoiceWithDetailsService;
-import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.CopyRecordSupportTableInfo;
 import org.adempiere.model.GeneralCopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -20,7 +16,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.PO;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 public class MInvoicePOCopyRecordSupport extends GeneralCopyRecordSupport
