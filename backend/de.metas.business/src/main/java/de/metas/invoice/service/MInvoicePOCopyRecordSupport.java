@@ -41,10 +41,16 @@ public class MInvoicePOCopyRecordSupport extends GeneralCopyRecordSupport
 
 	private void onRecordAndChildrenCopied(final I_C_Invoice fromInvoice, final I_C_Invoice targetInvoice)
 	{
+		final InvoiceDetailCloneMapper.ClonedInvoiceLinesInfo clonedInvoiceLinesInfo = MInvoiceLinePOCopyRecordSupport.getClonedInvoiceLinesInfo(targetInvoice);
+		if (clonedInvoiceLinesInfo == null)
+		{
+			return;
+		}
+
 		invoiceWithDetailsService.copyDetailsToClone(InvoiceDetailCloneMapper.builder()
 															 .originalInvoiceId(InvoiceId.ofRepoId(fromInvoice.getC_Invoice_ID()))
 															 .targetInvoiceId(InvoiceId.ofRepoId(targetInvoice.getC_Invoice_ID()))
-															 .clonedInvoiceLinesInfo(MInvoiceLinePOCopyRecordSupport.getClonedInvoiceLinesInfo(targetInvoice))
+															 .clonedInvoiceLinesInfo(clonedInvoiceLinesInfo)
 															 .build());
 	}
 

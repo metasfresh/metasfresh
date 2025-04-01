@@ -29,7 +29,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
-import javax.annotation.Nullable;
 import java.util.HashMap;
 
 @Builder
@@ -37,17 +36,11 @@ public class InvoiceDetailCloneMapper
 {
 	@NonNull @Getter private final InvoiceId originalInvoiceId;
 	@NonNull @Getter private final InvoiceId targetInvoiceId;
-	@Nullable private final ClonedInvoiceLinesInfo clonedInvoiceLinesInfo;
+	@NonNull private final ClonedInvoiceLinesInfo clonedInvoiceLinesInfo;
 
 	@NonNull
 	public InvoiceLineId getTargetInvoiceLineId(@NonNull final InvoiceLineId originalInvoiceLineId)
 	{
-		// shall not happen because this method shall not be called in case there are no invoice lines
-		if (clonedInvoiceLinesInfo == null)
-		{
-			throw new AdempiereException("No cloned invoice lines info available");
-		}
-
 		return clonedInvoiceLinesInfo.getTargetInvoiceLineId(originalInvoiceLineId);
 	}
 
