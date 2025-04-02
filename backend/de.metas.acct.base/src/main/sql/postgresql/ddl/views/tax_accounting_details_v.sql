@@ -65,8 +65,7 @@ FROM fact_acct fa
                                  i.c_invoice_id,
                                  inv_tax.c_tax_id
                           FROM c_invoice_v1 i
-                                   JOIN C_InvoiceTax inv_tax ON i.c_invoice_id = inv_tax.c_invoice_id
-                            ) i
+                                   JOIN C_InvoiceTax inv_tax ON i.c_invoice_id = inv_tax.c_invoice_id) i
                          ON (fa.record_id = i.c_invoice_id AND fa.ad_table_id = get_Table_Id('C_Invoice') AND i.c_tax_id = fa.c_tax_id)
     --
     -- if gl journal
@@ -91,9 +90,9 @@ FROM fact_acct fa
 
     --if SAP gl journal
          LEFT OUTER JOIN (SELECT (CASE
-                                      WHEN sap_gll.postingsign = 'C' THEN (-1) * sap_gll.amtacct::numeric
-                                      WHEN sap_gll.postingsign = 'D' THEN sap_gll.amtacct
-                                  END)                                            AS taxamt,
+                                      WHEN sap_gll.postingsign = 'C' THEN (-1)
+                                      WHEN sap_gll.postingsign = 'D' THEN 1
+                                  END) * sap_gll.amtacct::numeric                 AS taxamt,
 
                                  (CASE
                                       WHEN sap_gll.postingsign = 'C' THEN (-1)

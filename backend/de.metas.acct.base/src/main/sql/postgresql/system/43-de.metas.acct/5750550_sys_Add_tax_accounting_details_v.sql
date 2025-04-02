@@ -91,9 +91,9 @@ FROM fact_acct fa
 
     --if SAP gl journal
          LEFT OUTER JOIN (SELECT (CASE
-                                      WHEN sap_gll.postingsign = 'C' THEN (-1) * sap_gll.amtacct::numeric
-                                      WHEN sap_gll.postingsign = 'D' THEN sap_gll.amtacct
-                                  END)                                            AS taxamt,
+                                      WHEN sap_gll.postingsign = 'C' THEN (-1)
+                                      WHEN sap_gll.postingsign = 'D' THEN 1
+                                  END) * sap_gll.amtacct::numeric                 AS taxamt,
 
                                  (CASE
                                       WHEN sap_gll.postingsign = 'C' THEN (-1)
