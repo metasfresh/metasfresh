@@ -31,7 +31,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
-import de.metas.handlingunits.edi.EDIProductLookup;
+import de.metas.product.ResolvedScannedProductCode;
 import de.metas.handlingunits.edi.EDIProductLookupService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
@@ -91,7 +91,7 @@ public class ProductBarcodeFilterServicesFacade
 		return SqlAndParams.of(sql, sqlParams);
 	}
 
-	public ImmutableList<EDIProductLookup> getEDIProductLookupByUPC(@NonNull final String upc)
+	public ImmutableList<ResolvedScannedProductCode> getEDIProductLookupByUPC(@NonNull final String upc)
 	{
 		return ediProductLookupService.lookupByUPC(upc, true);
 	}

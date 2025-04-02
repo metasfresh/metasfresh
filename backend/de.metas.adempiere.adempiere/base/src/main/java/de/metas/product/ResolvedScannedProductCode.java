@@ -20,10 +20,9 @@
  * #L%
  */
 
-package de.metas.handlingunits.edi;
+package de.metas.product;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,14 +31,9 @@ import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class EDIProductLookup
+public class ResolvedScannedProductCode
 {
 	@NonNull ProductId productId;
-
-	@Nullable
-	BPartnerId bpartnerId;
-
-	String upc;
-
+	@Nullable BPartnerId bpartnerId;
 	boolean usedForCustomer;
 }

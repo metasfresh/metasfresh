@@ -22,7 +22,7 @@ public class JsonMobileApplication
 	@NonNull String caption;
 	boolean requiresWorkstation;
 	boolean requiresWorkplace;
-	boolean requiresLaunchersQRCodeFilter;
+	boolean showFilterByQRCode;
 	boolean showFilters;
 	boolean showFilterByDocumentNo;
 	boolean showInMainMenu;
@@ -36,7 +36,7 @@ public class JsonMobileApplication
 				.caption(appInfo.getCaption().translate(jsonOpts.getAdLanguage()))
 				.requiresWorkstation(appInfo.isRequiresWorkstation())
 				.requiresWorkplace(appInfo.isRequiresWorkplace())
-				.requiresLaunchersQRCodeFilter(appInfo.isRequiresLaunchersQRCodeFilter())
+				.showFilterByQRCode(appInfo.isShowFilterByQRCode())
 				.showFilters(appInfo.isShowFilters())
 				.showFilterByDocumentNo(appInfo.isShowFilterByDocumentNo())
 				.showInMainMenu(appInfo.isShowInMainMenu())
