@@ -1,5 +1,4 @@
 DROP VIEW c_invoice_v1;
-
 CREATE OR REPLACE VIEW c_invoice_v1 AS
 SELECT i.c_invoice_id,
        i.ad_client_id,
@@ -46,6 +45,7 @@ SELECT i.c_invoice_id,
        i.ispayschedulevalid,
        NULL::numeric AS c_invoicepayschedule_id,
        i.invoicecollectiontype,
+       inv_tax.c_tax_id,
        CASE
            WHEN charat(d.docbasetype::character varying, 3)::text = 'C'::text THEN i.chargeamt * (-1)::numeric
                                                                               ELSE i.chargeamt
@@ -75,8 +75,7 @@ SELECT i.c_invoice_id,
                                                                               ELSE 1
        END           AS multiplierap,
        d.docbasetype,
-       i.Posted,
-       inv_tax.c_tax_id
+       i.Posted
 FROM c_invoice i
          JOIN C_InvoiceTax inv_tax ON i.c_invoice_id = inv_tax.c_invoice_id
          JOIN c_doctype d ON i.c_doctype_id = d.c_doctype_id
