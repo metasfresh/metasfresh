@@ -71,6 +71,5 @@ SELECT i.c_invoice_id,
        d.docbasetype,
        i.Posted
 FROM c_invoice i
-         JOIN C_InvoiceTax inv_tax ON i.c_invoice_id = inv_tax.c_invoice_id
          JOIN c_doctype d ON i.c_doctype_id = d.c_doctype_id
 ;
