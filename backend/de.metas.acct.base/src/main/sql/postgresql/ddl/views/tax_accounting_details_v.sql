@@ -60,26 +60,10 @@ FROM fact_acct fa
          LEFT OUTER JOIN c_bpartner bp ON fa.c_bpartner_id = bp.c_bpartner_id
     --
     -- if invoice
-         LEFT OUTER JOIN (SELECT (CASE
-                                      WHEN charat(dt.docbasetype::character varying, 3)::text = 'C'    THEN inv_tax.taxbaseamt * (-1)::numeric
-                                      WHEN charat(dt.docbasetype::character varying, 2)::text = 'P'    THEN inv_tax.taxbaseamt * (-1)::numeric
-                                      WHEN charat(dt.docbasetype::character varying, 2)::text = 'P'
-                                          AND charat(dt.docbasetype::character varying, 3)::text = 'C' THEN inv_tax.taxbaseamt
-
-                                                                                                       ELSE inv_tax.taxbaseamt
-                                  END) AS taxbaseamt,
-
-                                 (CASE
-                                      WHEN charat(dt.docbasetype::character varying, 3)::text = 'C'    THEN inv_tax.taxamt * (-1)::numeric
-                                      WHEN charat(dt.docbasetype::character varying, 2)::text = 'P'    THEN inv_tax.taxamt * (-1)::numeric
-                                      WHEN charat(dt.docbasetype::character varying, 2)::text = 'P'
-                                          AND charat(dt.docbasetype::character varying, 3)::text = 'C' THEN inv_tax.taxamt
-                                                                                                       ELSE inv_tax.taxamt
-                                  END) AS taxamt,
-                                 i.c_invoice_id,
-                                 inv_tax.c_tax_id
-                          FROM c_invoice i
-                                   JOIN C_InvoiceTax inv_tax ON i.c_invoice_id = inv_tax.c_invoice_id
+         LEFT OUTER JOIN (SELECT i.taxbaseamt * i.multiplierap AS taxbaseamt,
+                                 i.taxamt * i.multiplierap     AS taxamt,
+                                 i.c_invoice_id
+                          FROM c_invoice_v1 i
                                    JOIN C_DocType dt ON dt.C_DocType_ID = i.C_DocTypeTarget_id) i ON (fa.record_id = i.c_invoice_id AND fa.ad_table_id = get_Table_Id('C_Invoice') AND i.c_tax_id = fa.c_tax_id)
     --
     -- if gl journal
