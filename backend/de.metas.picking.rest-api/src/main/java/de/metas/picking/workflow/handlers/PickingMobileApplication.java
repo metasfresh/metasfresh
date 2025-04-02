@@ -139,15 +139,18 @@
 		@Override
 		public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
 
-		@Override
-		public @NonNull MobileApplicationInfo customizeApplicationInfo(@NonNull final MobileApplicationInfo applicationInfo, @NonNull final UserId loggedUserId)
-		{
-			return applicationInfo.toBuilder()
-					.requiresWorkplace(true)
-					.showFilterByDocumentNo(true)
-					.showFilters(true)
-					.build();
-		}
+	@Override
+	public @NonNull MobileApplicationInfo customizeApplicationInfo(@NonNull final MobileApplicationInfo applicationInfo, @NonNull final UserId loggedUserId)
+	{
+		final MobileUIPickingUserProfile profile = mobileUIPickingUserProfileRepository.getProfile();
+
+		return applicationInfo.toBuilder()
+				.requiresWorkplace(true)
+				.showFilterByDocumentNo(true)
+				.showFilters(true)
+				.showFilterByQRCode(profile.isFilterByBarcode())
+				.build();
+	}
 
 		@Override
 		public WorkflowLaunchersList provideLaunchers(@NonNull final WorkflowLaunchersQuery query)

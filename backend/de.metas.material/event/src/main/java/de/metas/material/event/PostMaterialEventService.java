@@ -62,6 +62,6 @@ public class PostMaterialEventService
 	public void enqueueEventNow(final MaterialEvent event)
 	{
 		materialEventService.enqueueEvent(event);
-		logger.info("Posted MaterialEvent={}", event);
+		logger.debug("Posted MaterialEvent={}", event);
 	}
 }
