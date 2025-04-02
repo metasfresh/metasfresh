@@ -61,11 +61,13 @@ FROM fact_acct fa
     --
     -- if invoice
          LEFT OUTER JOIN (SELECT inv_tax.taxbaseamt * i.multiplierap * i.multipliercm AS taxbaseamt,
-                                 inv_tax.taxamt * i.multiplierap * i.multipliercm   AS taxamt,
-                                 i.c_invoice_id
+                                 inv_tax.taxamt * i.multiplierap * i.multipliercm     AS taxamt,
+                                 i.c_invoice_id,
+                                 inv_tax.c_tax_id
                           FROM c_invoice_v1 i
                                    JOIN C_InvoiceTax inv_tax ON i.c_invoice_id = inv_tax.c_invoice_id
-                                   JOIN C_DocType dt ON dt.C_DocType_ID = i.C_DocTypeTarget_id) i ON (fa.record_id = i.c_invoice_id AND fa.ad_table_id = get_Table_Id('C_Invoice') AND inv_tax.c_tax_id = fa.c_tax_id)
+                                   JOIN C_DocType dt ON dt.C_DocType_ID = i.C_DocTypeTarget_id) i
+                         ON (fa.record_id = i.c_invoice_id AND fa.ad_table_id = get_Table_Id('C_Invoice') AND i.c_tax_id = fa.c_tax_id)
     --
     -- if gl journal
          LEFT OUTER JOIN (SELECT (CASE
