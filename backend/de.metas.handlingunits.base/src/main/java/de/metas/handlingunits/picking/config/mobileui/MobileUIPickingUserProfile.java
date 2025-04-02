@@ -51,6 +51,7 @@ public class MobileUIPickingUserProfile
 					.considerSalesOrderCapacity(false)
 					.isAllowSkippingRejectedReason(false)
 					.createShipmentPolicy(CreateShipmentPolicy.DO_NOT_CREATE)
+					.isAllowCompletingPartialPickingJob(false)
 					.build())
 			.filters(PickingFiltersList.ofList(ImmutableList.of(
 					PickingFilter.of(PickingJobFacetGroup.CUSTOMER, 10),

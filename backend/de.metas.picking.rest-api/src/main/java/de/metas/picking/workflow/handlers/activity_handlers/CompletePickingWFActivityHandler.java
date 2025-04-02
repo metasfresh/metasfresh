@@ -23,8 +23,11 @@
 package de.metas.picking.workflow.handlers.activity_handlers;
 
 import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
+import de.metas.util.Services;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupport;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupportUtil;
@@ -34,6 +37,7 @@ import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
 import de.metas.workflow.rest_api.model.WFActivityType;
 import de.metas.workflow.rest_api.model.WFProcess;
+import de.metas.workflow.rest_api.model.WFProcessStatus;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
@@ -44,6 +48,10 @@ import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActi
 public class CompletePickingWFActivityHandler implements WFActivityHandler, UserConfirmationSupport
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("picking.completePicking");
+	private static final AdMessageKey NOT_ALL_LINES_ARE_COMPLETED_WARNING = AdMessageKey
+			.of("de.metas.picking.workflow.handlers.activity_handlers.NOT_ALL_LINES_ARE_COMPLETED_WARNING");
+
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final PickingJobRestService pickingJobRestService;
 
@@ -67,7 +75,7 @@ public class CompletePickingWFActivityHandler implements WFActivityHandler, User
 	{
 		return UserConfirmationSupportUtil.createUIComponent(
 				UserConfirmationSupportUtil.UIComponentProps.builderFrom(wfActivity)
-						.question("Are you sure?")
+						.question(getQuestion(wfProcess, jsonOpts.getAdLanguage()))
 						.build());
 	}
 
@@ -91,5 +99,15 @@ public class CompletePickingWFActivityHandler implements WFActivityHandler, User
 				request.getWfProcess(),
 				pickingJobRestService::complete
 		);
+	}
+
+	private String getQuestion(@NonNull final WFProcess wfProcess, @NonNull final String language)
+	{
+		if (wfProcess.getStatus() != WFProcessStatus.COMPLETED)
+		{
+			return msgBL.getMsg(language, NOT_ALL_LINES_ARE_COMPLETED_WARNING);
+		}
+
+		return "Are you sure?";
 	}
 }

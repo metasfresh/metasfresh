@@ -52,7 +52,7 @@ public final class WFProcess
 	@Getter
 	@Nullable private final UserId responsibleId;
 
-	@NonNull private final WFProcessStatus status;
+	@NonNull @Getter private final WFProcessStatus status;
 	@Getter private final boolean isAllowAbort;
 
 	@NonNull private final Object document;

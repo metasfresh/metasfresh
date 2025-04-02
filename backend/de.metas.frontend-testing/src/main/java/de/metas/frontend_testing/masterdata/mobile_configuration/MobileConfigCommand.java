@@ -96,6 +96,7 @@ public class MobileConfigCommand
 				.alwaysSplitHUsEnabled(profile.getDefaultPickingJobOptions().isAlwaysSplitHUsEnabled())
 				.pickWithNewLU(profile.getDefaultPickingJobOptions().isPickWithNewLU())
 				.allowNewTU(profile.getDefaultPickingJobOptions().isAllowNewTU())
+				.allowCompletingPartialPickingJob(profile.getDefaultPickingJobOptions().isAllowCompletingPartialPickingJob())
 				.build();
 	}
 
@@ -125,6 +126,10 @@ public class MobileConfigCommand
 		if (from.getAllowNewTU() != null)
 		{
 			builder.isAllowNewTU(from.getAllowNewTU());
+		}
+		if (from.getAllowCompletingPartialPickingJob() != null)
+		{
+			builder.isAllowCompletingPartialPickingJob(from.getAllowCompletingPartialPickingJob());
 		}
 
 		return builder.build();

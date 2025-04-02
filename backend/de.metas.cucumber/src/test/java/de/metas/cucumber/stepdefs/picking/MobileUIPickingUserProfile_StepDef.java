@@ -53,6 +53,7 @@ public class MobileUIPickingUserProfile_StepDef
 		row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsAlwaysSplitHUsEnabled).ifPresent(defaultPickingJobOptionsBuilder::isAlwaysSplitHUsEnabled);
 		row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsAllowNewTU).ifPresent(defaultPickingJobOptionsBuilder::isAllowNewTU);
 		row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsPickingWithNewLU).ifPresent(defaultPickingJobOptionsBuilder::isPickWithNewLU);
+		row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsAllowCompletingPartialPickingJob).ifPresent(defaultPickingJobOptionsBuilder::isPickWithNewLU);
 
 		final MobileUIPickingUserProfile newProfile = profile.toBuilder()
 				.defaultPickingJobOptions(defaultPickingJobOptionsBuilder.build())
