@@ -25,7 +25,7 @@ Blue: More than the expected quantity has been invoiced.', IsTranslated='Y',Upda
 -- Column SQL (old): null
 -- Column: C_Invoice_Candidate.InvoicingStatusColor_ID
 -- 2025-04-02T16:34:02.535Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,AD_Val_Rule_ID,CloningStrategy,ColumnName,ColumnSQL,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,589829,583564,0,27,540974,540270,540702,'XX','InvoicingStatusColor_ID','(CASE WHEN C_Invoice_Candidate.QtyInvoiced = 0 THEN 1000000 WHEN (C_Invoice_Candidate.QtyInvoiced > 0 AND C_Invoice_Candidate.QtyInvoiced < C_Invoice_Candidate.QtyToInvoice) THEN 1000003 WHEN (C_Invoice_Candidate.QtyInvoiced = C_Invoice_Candidate.QtyToInvoice) THEN 1000001 WHEN (C_Invoice_Candidate.QtyInvoiced > C_Invoice_Candidate.QtyToInvoice) THEN 540006 END)',TO_TIMESTAMP('2025-04-02 17:34:01','YYYY-MM-DD HH24:MI:SS'),100,'N','Rot: Es wurden keine Artikel in Rechnung gestellt. Gelb: Die Rechnungsmenge wurde teilweise berechnet. Grün: Die Gesamtmenge wurde in Rechnung gestellt. Blau: Es wurde mehr als die erwartete Menge in Rechnung gestellt.','de.metas.invoicecandidate',0,10,'Rot: Es wurden keine Artikel in Rechnung gestellt.
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,AD_Val_Rule_ID,CloningStrategy,ColumnName,ColumnSQL,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,589829,583564,0,27,540974,540270,540702,'XX','InvoicingStatusColor_ID','(CASE WHEN C_Invoice_Candidate.QtyInvoiced = 0 THEN 1000000 WHEN (C_Invoice_Candidate.QtyInvoiced > 0 AND C_Invoice_Candidate.QtyInvoiced < C_Invoice_Candidate.QtyOrdered) THEN 1000003 WHEN (C_Invoice_Candidate.QtyInvoiced = C_Invoice_Candidate.QtyOrdered) THEN 1000001 WHEN (C_Invoice_Candidate.QtyInvoiced > C_Invoice_Candidate.QtyOrdered) THEN 540006 END)',TO_TIMESTAMP('2025-04-02 17:34:01','YYYY-MM-DD HH24:MI:SS'),100,'N','Rot: Es wurden keine Artikel in Rechnung gestellt. Gelb: Die Rechnungsmenge wurde teilweise berechnet. Grün: Die Gesamtmenge wurde in Rechnung gestellt. Blau: Es wurde mehr als die erwartete Menge in Rechnung gestellt.','de.metas.invoicecandidate',0,10,'Rot: Es wurden keine Artikel in Rechnung gestellt.
 Gelb: Die Rechnungsmenge wurde teilweise berechnet.
 Grün: Die Gesamtmenge wurde in Rechnung gestellt.
 Blau: Es wurde mehr als die erwartete Menge in Rechnung gestellt.','Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N',0,'Rechnungsstatus',0,0,TO_TIMESTAMP('2025-04-02 17:34:01','YYYY-MM-DD HH24:MI:SS'),100,0)
@@ -33,6 +33,11 @@ Blau: Es wurde mehr als die erwartete Menge in Rechnung gestellt.','Y','N','Y','
 
 -- 2025-04-02T16:34:02.586Z
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=589829 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+UPDATE AD_Column
+SET ColumnSQL='C_Invoice_Candidate_InvoicingStatus_Color_ID_Compute(C_Invoice_Candidate)', Updated=TO_TIMESTAMP('2025-04-03 11:27:54', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Column_ID = 589829
 ;
 
 -- 2025-04-02T16:34:02.687Z
@@ -77,10 +82,10 @@ Grün: Die Gesamtmenge wurde in Rechnung gestellt.
 Blau: Es wurde mehr als die erwartete Menge in Rechnung gestellt.','Y','N','N','Y','N','N','N',0,'Rechnungsstatus',100,0,0,TO_TIMESTAMP('2025-04-02 17:35:25','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
--- UI Element: Rechnungsdisposition_OLD -> Rechnungskandidaten.QtyToInvoice
--- Column: C_Invoice_Candidate.QtyToInvoice
--- UI Element: Rechnungsdisposition_OLD(540092,de.metas.invoicecandidate) -> Rechnungskandidaten(540279,de.metas.invoicecandidate) -> main -> 10 -> qtyInStockingUOM.QtyToInvoice
--- Column: C_Invoice_Candidate.QtyToInvoice
+-- UI Element: Rechnungsdisposition_OLD -> Rechnungskandidaten.QtyOrdered
+-- Column: C_Invoice_Candidate.QtyOrdered
+-- UI Element: Rechnungsdisposition_OLD(540092,de.metas.invoicecandidate) -> Rechnungskandidaten(540279,de.metas.invoicecandidate) -> main -> 10 -> qtyInStockingUOM.QtyOrdered
+-- Column: C_Invoice_Candidate.QtyOrdered
 -- 2025-04-02T16:37:51.344Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=130,Updated=TO_TIMESTAMP('2025-04-02 17:37:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=548111
 ;

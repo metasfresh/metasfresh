@@ -91,7 +91,7 @@ UPDATE AD_Column SET AD_Reference_ID=27,Updated=TO_TIMESTAMP('2025-04-02 16:09:4
 -- Column: C_Invoice_Candidate.DeliveryStatusColor_ID
 -- Column SQL (old): (CASE WHEN C_Invoice_Candidate.QtyDelivered = 0 THEN 1000000 WHEN (C_Invoice_Candidate.QtyDelivered > 0 AND C_Invoice_Candidate.QtyDelivered < C_Invoice_Candidate.QtyOrdered) THEN 1000003 WHEN (C_Invoice_Candidate.QtyDelivered = C_Invoice_Candidate.QtyOrdered) THEN 1000001 WHEN (C_Invoice_Candidate.QtyDelivered > C_Invoice_Candidate.QtyOrdered) THEN 1000004 END)
 -- 2025-04-02T15:57:24.984Z
-UPDATE AD_Column SET ColumnSQL='(CASE WHEN C_Invoice_Candidate.QtyDelivered = 0 THEN 1000000 WHEN (C_Invoice_Candidate.QtyDelivered > 0 AND C_Invoice_Candidate.QtyDelivered < C_Invoice_Candidate.QtyOrdered) THEN 1000003 WHEN (C_Invoice_Candidate.QtyDelivered = C_Invoice_Candidate.QtyOrdered) THEN 1000001 WHEN (C_Invoice_Candidate.QtyDelivered > C_Invoice_Candidate.QtyOrdered) THEN 540006 END)',Updated=TO_TIMESTAMP('2025-04-02 16:57:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=589828
+UPDATE AD_Column SET ColumnSQL='C_Invoice_Candidate_DeliveryStatus_Color_ID_Compute(C_Invoice_Candidate)',Updated=TO_TIMESTAMP('2025-04-03 11:27:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=589828
 ;
 
 -- Field: Rechnungsdisposition_OLD -> Rechnungskandidaten -> Lieferstatus
