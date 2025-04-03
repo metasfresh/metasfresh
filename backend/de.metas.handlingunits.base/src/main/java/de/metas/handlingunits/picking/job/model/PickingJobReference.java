@@ -12,7 +12,6 @@ import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.warehouse.WarehouseTypeId;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;

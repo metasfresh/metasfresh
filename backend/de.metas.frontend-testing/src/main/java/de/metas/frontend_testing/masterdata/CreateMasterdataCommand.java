@@ -1,7 +1,6 @@
 package de.metas.frontend_testing.masterdata;
 
 import com.google.common.collect.ImmutableMap;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyRepository;
 import de.metas.distribution.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.ddorder.DDOrderService;
@@ -47,14 +46,10 @@ import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.mobile.MobileConfigService;
-import de.metas.picking.api.IPickingSlotBL;
-import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
-import de.metas.util.Services;
+import de.metas.product.ProductRepository;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -63,11 +58,7 @@ import java.util.function.BiFunction;
 @Builder
 public class CreateMasterdataCommand
 {
-	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
-	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	@NonNull private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
-	@NonNull private final IPickingSlotBL pickingSlotBL = Services.get(IPickingSlotBL.class);
+	@NonNull private final ProductRepository productRepository; // for C_BPartner_Product
 	@NonNull private final MobileConfigService mobileConfigService;
 	@NonNull private final MobileUIPickingUserProfileRepository mobilePickingConfigRepository;
 	@NonNull private final MobileUIDistributionConfigRepository mobileDistributionConfigRepository;
@@ -167,6 +158,7 @@ public class CreateMasterdataCommand
 	private JsonCreateProductResponse createProduct(String identifier, JsonCreateProductRequest request)
 	{
 		return CreateProductCommand.builder()
+				.productRepository(productRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))

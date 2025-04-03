@@ -30,6 +30,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocumentNoFilter;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PackageableQuery;
+import de.metas.product.ResolvedScannedProductCodes;
 import de.metas.user.UserId;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -56,6 +57,7 @@ public class PickingJobQuery
 	@NonNull @Builder.Default @Getter(AccessLevel.NONE) ImmutableSet<BPartnerId> onlyCustomerIds = ImmutableSet.of();
 	@Nullable WarehouseId warehouseId;
 	@Nullable DocumentNoFilter salesOrderDocumentNo;
+	@Nullable ResolvedScannedProductCodes scannedProductCodes;
 
 	@NonNull
 	public Set<BPartnerId> getOnlyCustomerIdsEffective()
@@ -98,6 +100,7 @@ public class PickingJobQuery
 				.includeNotLocked(true)
 				.excludeLockedForProcessing(true)
 				.excludeShipmentScheduleIds(this.getExcludeShipmentScheduleIds())
+				.scannedProductCodes(this.getScannedProductCodes())
 				.orderBys(ImmutableSet.of(
 						PackageableQuery.OrderBy.PriorityRule,
 						PackageableQuery.OrderBy.PreparationDate,
@@ -132,7 +135,6 @@ public class PickingJobQuery
 
 		return builder.build();
 	}
-
 
 	//
 	//
