@@ -73,15 +73,12 @@ public class MobileConfigCommand
 		final MobileUIPickingUserProfile profile = mobilePickingConfigRepository.getProfile();
 		final MobileUIPickingUserProfile.MobileUIPickingUserProfileBuilder newProfileBuilder = profile.toBuilder()
 				.defaultPickingJobOptions(updatePickingJobOptions(profile.getDefaultPickingJobOptions(), picking))
-				.customerConfigs(updatePickingCustomers(profile.getCustomerConfigs(), picking.getCustomers()));
+				.customerConfigs(updatePickingCustomers(profile.getCustomerConfigs(), picking.getCustomers()))
+				.isFilterByBarcode(picking.getFilterByQRCode() != null && picking.getFilterByQRCode());
 
 		if (picking.getAllowPickingAnyCustomer() != null)
 		{
 			newProfileBuilder.isAllowPickingAnyCustomer(picking.getAllowPickingAnyCustomer());
-		}
-		if(picking.getFilterByQRCode() != null)
-		{
-			newProfileBuilder.isFilterByBarcode(picking.getFilterByQRCode());
 		}
 
 		final MobileUIPickingUserProfile newProfile = newProfileBuilder.build();

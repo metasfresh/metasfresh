@@ -8,7 +8,7 @@ import { GetQuantityDialog, QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/s
 import { expectErrorToast } from '../../utils/common';
 import { PickingJobLineScreen } from '../../utils/screens/picking/PickingJobLineScreen';
 
-const createMasterdata = async () => {
+const createMasterdata = async ({ filterByQRCode } = {}) => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -23,6 +23,7 @@ const createMasterdata = async () => {
                     allowPickingAnyHU: true,
                     pickWithNewLU: true,
                     allowNewTU: true,
+                    filterByQRCode,
                     customers: [
                         { customer: "customer1" },
                         { customer: "customer2" },
@@ -192,7 +193,7 @@ test('Product based aggregation', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Filter by EAN13', async ({ page }) => {
-    const masterdata = await createMasterdata();
+    const masterdata = await createMasterdata({ filterByQRCode: true });
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
