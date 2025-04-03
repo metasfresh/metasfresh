@@ -32,14 +32,18 @@ AS
 $$
 DECLARE
     v_ColorID numeric;
+    v_Red     numeric := getColor_ID_By_SysConfig('Red_Color');
+    v_Yellow  numeric := getColor_ID_By_SysConfig('Yellow_Color');
+    v_Green   numeric := getColor_ID_By_SysConfig('Green_Color');
+    v_Blue    numeric := getColor_ID_By_SysConfig('Blue_Color');
 BEGIN
 
     SELECT (
                CASE
-                   WHEN p_Invoice_Candidate.QtyDelivered = 0                                                                         THEN getColor_ID_By_SysConfig('Red_Color')
-                   WHEN (p_Invoice_Candidate.QtyDelivered > 0 AND p_Invoice_Candidate.QtyDelivered < p_Invoice_Candidate.QtyOrdered) THEN getColor_ID_By_SysConfig('Yellow_Color')
-                   WHEN (p_Invoice_Candidate.QtyDelivered = p_Invoice_Candidate.QtyOrdered)                                          THEN getColor_ID_By_SysConfig('Green_Color')
-                   WHEN (p_Invoice_Candidate.QtyDelivered > p_Invoice_Candidate.QtyOrdered)                                          THEN getColor_ID_By_SysConfig('Blue_Color')
+                   WHEN p_Invoice_Candidate.QtyDelivered = 0                                                                         THEN v_Red
+                   WHEN (p_Invoice_Candidate.QtyDelivered > 0 AND p_Invoice_Candidate.QtyDelivered < p_Invoice_Candidate.QtyOrdered) THEN v_Yellow
+                   WHEN (p_Invoice_Candidate.QtyDelivered = p_Invoice_Candidate.QtyOrdered)                                          THEN v_Green
+                   WHEN (p_Invoice_Candidate.QtyDelivered > p_Invoice_Candidate.QtyOrdered)                                          THEN v_Blue
                END
                )
 
@@ -49,4 +53,5 @@ BEGIN
 END;
 $$
 ;
+
 
