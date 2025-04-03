@@ -31,9 +31,9 @@ const createMasterdata = async () => {
                 }
             },
             bpartners: {
-                "customer1": {},
-                "customer2": {},
-                "customer3": {},
+                "customer1": { gln: 'random' },
+                "customer2": { gln: 'random' },
+                "customer3": { gln: 'random' },
             },
             warehouses: {
                 "wh": {},
@@ -44,11 +44,11 @@ const createMasterdata = async () => {
                 slot3: {},
             },
             products: {
-                "P1": { prices: [{ price: 1 }] },
-                "P2": { prices: [{ price: 1 }] },
+                "P1": { price: 1 },
+                "P2": { price: 1, bpartners: [{ bpartner: "customer1", cu_ean: '7617027667203' }] },
             },
             packingInstructions: {
-                "P1_20x4": { lu: "LU", qtyTUsPerLU: 20, tu: "P1_4CU", product: "P1", qtyCUsPerTU: 4 },
+                "P1_20x4": { lu: "LU", qtyTUsPerLU: 20, tu: "P1_4CU", product: "P1", qtyCUsPerTU: 4, tu_ean: '7617027667210' },
                 "P2_7x3": { lu: "LU", qtyTUsPerLU: 7, tu: "P2_3CU", product: "P2", qtyCUsPerTU: 3 },
             },
             handlingUnits: {

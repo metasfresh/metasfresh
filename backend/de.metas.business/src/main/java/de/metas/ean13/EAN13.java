@@ -33,7 +33,9 @@ public class EAN13
 
 	@Override
 	@Deprecated
-	public String toString() {return barcode;}
+	public String toString() {return getAsString();}
+
+	public String getAsString() {return barcode;}
 
 	public Optional<BigDecimal> getWeightInKg()
 	{

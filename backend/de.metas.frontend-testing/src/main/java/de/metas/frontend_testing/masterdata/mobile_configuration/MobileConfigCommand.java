@@ -79,6 +79,10 @@ public class MobileConfigCommand
 		{
 			newProfileBuilder.isAllowPickingAnyCustomer(picking.getAllowPickingAnyCustomer());
 		}
+		if(picking.getFilterByQRCode() != null)
+		{
+			newProfileBuilder.isFilterByBarcode(picking.getFilterByQRCode());
+		}
 
 		final MobileUIPickingUserProfile newProfile = newProfileBuilder.build();
 		mobilePickingConfigRepository.save(newProfile);
@@ -96,6 +100,7 @@ public class MobileConfigCommand
 				.alwaysSplitHUsEnabled(profile.getDefaultPickingJobOptions().isAlwaysSplitHUsEnabled())
 				.pickWithNewLU(profile.getDefaultPickingJobOptions().isPickWithNewLU())
 				.allowNewTU(profile.getDefaultPickingJobOptions().isAllowNewTU())
+				.filterByQRCode(profile.isFilterByBarcode())
 				.build();
 	}
 

@@ -70,7 +70,6 @@ class EAN13Test
 			{
 				final ExplainedOptional<EAN13> result = EAN13.fromString("2912345005004"); // Invalid checksum (last digit)
 				assertThat(result.isPresent()).isFalse();
-				System.out.println(result.getExplanation());
 				assertThat(result.getExplanation().getDefaultValue()).contains("Invalid checksum");
 			}
 
@@ -79,7 +78,6 @@ class EAN13Test
 			{
 				final ExplainedOptional<EAN13> result = EAN13.fromString("29123450050"); // Only 12 digits
 				assertThat(result.isPresent()).isFalse();
-				System.out.println(result.getExplanation());
 				assertThat(result.getExplanation().getDefaultValue()).contains("Invalid barcode length");
 			}
 		}
@@ -97,6 +95,18 @@ class EAN13Test
 				assertThat(qrCode.getProductNo().getAsString()).isEqualTo("123412345");
 				assertThat(qrCode.getWeightInKg()).isEmpty();
 				assertThat(qrCode.getChecksum()).isEqualTo(7);
+			}
+
+			@Test
+			void happyCase2()
+			{
+				final ExplainedOptional<EAN13> result = EAN13.fromString("7617027667210");
+				assertThat(result.isPresent()).isTrue();
+				final EAN13 qrCode = result.get();
+				assertThat(qrCode.getPrefix().getAsString()).isEqualTo("761");
+				assertThat(qrCode.getProductNo().getAsString()).isEqualTo("702766721");
+				assertThat(qrCode.getWeightInKg()).isEmpty();
+				assertThat(qrCode.getChecksum()).isZero();
 			}
 		}
 	}
