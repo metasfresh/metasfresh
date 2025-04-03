@@ -131,6 +131,10 @@ public class MobileConfigCommand
 		{
 			builder.isAllowCompletingPartialPickingJob(from.getAllowCompletingPartialPickingJob());
 		}
+		if (from.getAllowSkippingRejectedReason() != null)
+		{
+			builder.isAllowSkippingRejectedReason(from.getAllowSkippingRejectedReason());
+		}
 
 		return builder.build();
 	}

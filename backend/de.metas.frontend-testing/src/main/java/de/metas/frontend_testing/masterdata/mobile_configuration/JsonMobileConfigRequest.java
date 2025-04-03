@@ -38,6 +38,7 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean allowCompletingPartialPickingJob;
 		@Nullable Boolean pickWithNewLU;
 		@Nullable Boolean allowNewTU;
+		@Nullable Boolean allowSkippingRejectedReason;
 
 		@Nullable List<Customer> customers;
 

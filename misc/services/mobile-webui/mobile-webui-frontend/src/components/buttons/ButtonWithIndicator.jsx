@@ -52,12 +52,10 @@ const ButtonWithIndicator = ({
     otherProps,
   });
 
-  const consolidatedTestId = testId ?? id;
-
   return (
     <button
       id={id}
-      data-testid={consolidatedTestId}
+      data-testid={testId}
       {...extractTestDataProps(otherProps)}
       className={cx('button is-outlined is-fullwidth complete-btn', { 'is-danger': isDanger }, additionalCssClass)}
       disabled={!!disabled}
@@ -108,7 +106,7 @@ const ButtonWithIndicator = ({
         </div>
         {indicatorClassName && (
           <div className="right-btn-side">
-            <span data-testid={`${consolidatedTestId}-Indicator`} className={indicatorClassName} />
+            <span data-testid={`${testId}-Indicator`} className={indicatorClassName} />
           </div>
         )}
       </div>

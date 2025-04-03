@@ -25,6 +25,7 @@ const createMasterdata = async () => {
                     pickWithNewLU: true,
                     allowNewTU: false,
                     allowCompletingPartialPickingJob: true,
+                    allowSkippingRejectedReason: true,
                 }
             },
             bpartners: { "BP1": {} },
