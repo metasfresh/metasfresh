@@ -1,7 +1,7 @@
 -- Run mode: SWING_CLIENT
 
 -- 2025-04-02T08:06:58.214Z
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,583562,0,'IsAllowCompletingPartialPickingJob',TO_TIMESTAMP('2025-04-02 08:06:58.086000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','Allow Partial Picking Completion','Allow Partial Picking Completion',TO_TIMESTAMP('2025-04-02 08:06:58.086000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,583562,0,'IsAllowCompletingPartialPickingJob',TO_TIMESTAMP('2025-04-02 08:06:58.086000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','Allow completing partial picking jobs','Allow completing partial picking jobs',TO_TIMESTAMP('2025-04-02 08:06:58.086000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2025-04-02T08:06:58.222Z
@@ -96,5 +96,62 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 
 -- 2025-04-02T08:12:22.412Z
 /* DDL */ SELECT public.db_alter_table('MobileUI_UserProfile_Picking','ALTER TABLE public.MobileUI_UserProfile_Picking ADD COLUMN IsAllowCompletingPartialPickingJob CHAR(1) DEFAULT ''N'' CHECK (IsAllowCompletingPartialPickingJob IN (''Y'',''N'')) NOT NULL')
+;
+
+
+-- Element: IsAllowCompletingPartialPickingJob
+-- 2025-04-02T17:32:12.378Z
+UPDATE AD_Element_Trl SET Description='Users can complete jobs on mobile without picking the full ordered quantity.', Help='Users can complete jobs on mobile without picking the full ordered quantity.',Updated=TO_TIMESTAMP('2025-04-02 17:32:12.378000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583562 AND AD_Language='en_US'
+;
+
+-- 2025-04-02T17:32:12.384Z
+UPDATE AD_Element base SET Description=trl.Description, Help=trl.Help, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-04-02T17:32:12.910Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583562,'en_US')
+;
+
+-- Element: IsAllowCompletingPartialPickingJob
+-- 2025-04-02T17:35:46.759Z
+UPDATE AD_Element_Trl SET Description='Nutzer können Aufträge fertigstellen, ohne die gesamte bestellte Menge zu kommissionieren.', Help='Nutzer können Aufträge fertigstellen, ohne die gesamte bestellte Menge zu kommissionieren.',Updated=TO_TIMESTAMP('2025-04-02 17:35:46.759000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583562 AND AD_Language='fr_CH'
+;
+
+-- 2025-04-02T17:35:46.760Z
+UPDATE AD_Element base SET Description=trl.Description, Help=trl.Help, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='fr_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-04-02T17:35:47.212Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583562,'fr_CH')
+;
+
+-- Element: IsAllowCompletingPartialPickingJob
+-- 2025-04-02T17:35:50.761Z
+UPDATE AD_Element_Trl SET Description='Nutzer können Aufträge fertigstellen, ohne die gesamte bestellte Menge zu kommissionieren.', Help='Nutzer können Aufträge fertigstellen, ohne die gesamte bestellte Menge zu kommissionieren.',Updated=TO_TIMESTAMP('2025-04-02 17:35:50.761000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583562 AND AD_Language='de_DE'
+;
+
+-- 2025-04-02T17:35:50.762Z
+UPDATE AD_Element base SET Description=trl.Description, Help=trl.Help, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_DE' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-04-02T17:35:52.347Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(583562,'de_DE')
+;
+
+-- 2025-04-02T17:35:52.352Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583562,'de_DE')
+;
+
+-- Element: IsAllowCompletingPartialPickingJob
+-- 2025-04-02T17:35:59.177Z
+UPDATE AD_Element_Trl SET Description='Nutzer können Aufträge fertigstellen, ohne die gesamte bestellte Menge zu kommissionieren.', Help='Nutzer können Aufträge fertigstellen, ohne die gesamte bestellte Menge zu kommissionieren.',Updated=TO_TIMESTAMP('2025-04-02 17:35:59.176000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=583562 AND AD_Language='de_CH'
+;
+
+-- 2025-04-02T17:35:59.178Z
+UPDATE AD_Element base SET Description=trl.Description, Help=trl.Help, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl  WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_CH' AND trl.AD_Language=getBaseLanguage()
+;
+
+-- 2025-04-02T17:35:59.675Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583562,'de_CH')
 ;
 
