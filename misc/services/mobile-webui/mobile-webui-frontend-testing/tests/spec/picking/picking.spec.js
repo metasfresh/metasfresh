@@ -9,7 +9,7 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { expectErrorToast } from '../../utils/common';
 import { QTY_NOT_FOUND_REASON_IGNORE } from '../../utils/screens/picking/GetQuantityDialog';
 
-const createMasterdata = async () => {
+const createMasterdata = async ({ allowSkippingRejectedReason, allowCompletingPartialPickingJob } = {}) => {
     const response = await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -24,8 +24,8 @@ const createMasterdata = async () => {
                     allowPickingAnyHU: true,
                     pickWithNewLU: true,
                     allowNewTU: false,
-                    allowCompletingPartialPickingJob: true,
-                    allowSkippingRejectedReason: true,
+                    allowCompletingPartialPickingJob: allowCompletingPartialPickingJob ?? false,
+                    allowSkippingRejectedReason: allowSkippingRejectedReason ?? false,
                 }
             },
             bpartners: { "BP1": {} },
@@ -124,7 +124,7 @@ test('Scan invalid picking slot QR code', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Test picking line complete status - draft | in progress | complete', async ({ page }) => {
-    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } = await createMasterdata();
+    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } = await createMasterdata({ allowSkippingRejectedReason: true });
 
     await LoginScreen.login(login);
     await ApplicationsListScreen.expectVisible();
@@ -146,4 +146,58 @@ test('Test picking line complete status - draft | in progress | complete', async
     await PickingJobScreen.expectLineStatusColor({ index: 1, color: 'green' });
 
     await PickingJobScreen.complete();
+});
+
+test.describe('Picking Job Completion', () => {
+
+    test("Should fail when partial picking and allowCompletingPartialPickingJob = N", async ({ page }) => {
+      const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } =
+        await createMasterdata({
+          allowCompletingPartialPickingJob: false,
+          allowSkippingRejectedReason: true,
+        });
+
+      await LoginScreen.login(login);
+      await ApplicationsListScreen.expectVisible();
+      await ApplicationsListScreen.startApplication("picking");
+      await PickingJobsListScreen.waitForScreen();
+      await PickingJobsListScreen.filterByDocumentNo(documentNo);
+      await PickingJobsListScreen.startJob({ documentNo });
+      await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
+      await PickingJobScreen.setTargetLU({ lu: luPIName });
+      await PickingJobScreen.pickHU({
+        qrCode: huQRCode,
+        qtyEntered: 2,
+        expectQtyEntered: "3",
+        qtyNotFoundReason: QTY_NOT_FOUND_REASON_IGNORE
+      });
+        await expectErrorToast('All steps must be completed in order to complete the job.', async () => {
+            await PickingJobScreen.complete();
+        });
+    });
+
+    test("Should succeed when partial picking and allowCompletingPartialPickingJob = Y", async ({ page }) => {
+        const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } =
+          await createMasterdata({
+            allowCompletingPartialPickingJob: true,
+            allowSkippingRejectedReason: true,
+          });
+
+        await LoginScreen.login(login);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication("picking");
+        await PickingJobsListScreen.waitForScreen();
+        await PickingJobsListScreen.filterByDocumentNo(documentNo);
+        await PickingJobsListScreen.startJob({ documentNo });
+        await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
+        await PickingJobScreen.setTargetLU({ lu: luPIName });
+        await PickingJobScreen.pickHU({
+            qrCode: huQRCode,
+            qtyEntered: 2,
+            expectQtyEntered: "3",
+            qtyNotFoundReason: QTY_NOT_FOUND_REASON_IGNORE,
+        });
+        await PickingJobScreen.complete()
+    });
+
 });
