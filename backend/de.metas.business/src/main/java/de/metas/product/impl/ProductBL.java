@@ -673,6 +673,12 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public Optional<ProductId> getProductIdByEAN13(@NonNull final EAN13 ean13)
+	{
+		return getProductIdByEAN13(ean13, null, ClientId.METASFRESH);
+	}
+
+	@Override
 	public Optional<ProductId> getProductIdByEAN13(
 			@NonNull final EAN13 ean13,
 			@Nullable final BPartnerId bpartnerId,
@@ -692,7 +698,7 @@ public final class ProductBL implements IProductBL
 		}
 		else
 		{
-			throw new AdempiereException("Unsupported EAN13 prefix: " + ean13Prefix);
+			return getProductIdByEAN13ProductCode(ean13, bpartnerId, clientId);
 		}
 	}
 

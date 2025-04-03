@@ -29,6 +29,7 @@ import de.metas.document.DocumentNoFilter;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
+import de.metas.product.ResolvedScannedProductCodes;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import lombok.Builder;
@@ -84,6 +85,8 @@ public class PackageableQuery
 
 	@Builder.Default
 	@NonNull ImmutableSet<OrderBy> orderBys = ImmutableSet.of(OrderBy.ProductName, OrderBy.PriorityRule, OrderBy.DateOrdered);
+
+	@Nullable ResolvedScannedProductCodes scannedProductCodes;
 
 	public enum OrderBy
 	{

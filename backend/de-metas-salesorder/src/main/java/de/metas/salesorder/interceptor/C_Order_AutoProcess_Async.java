@@ -82,13 +82,13 @@ public class C_Order_AutoProcess_Async
 
 		if (isEligibleForAutoProcessing(orderRecord))
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("OrderId: {} qualified for auto ship and invoice! Enqueueing order.", orderId);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("OrderId: {} qualified for auto ship and invoice! Enqueueing order.", orderId);
 			final String trxName = InterfaceWrapperHelper.getTrxName(orderRecord);
 			completeShipAndInvoiceEnqueuer.enqueue(orderId, trxName);
 		}
 		else
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("Schedule generating missing shipments for orderId: {}", orderId);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Schedule generating missing shipments for orderId: {}", orderId);
 			CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(orderRecord);
 		}
 	}

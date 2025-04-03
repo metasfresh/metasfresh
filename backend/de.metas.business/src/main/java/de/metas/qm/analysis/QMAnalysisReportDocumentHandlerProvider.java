@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.business
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,26 +20,27 @@
  * #L%
  */
 
-package de.metas.handlingunits.edi;
+package de.metas.qm.analysis;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.product.ProductId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.document.engine.DocumentHandler;
+import de.metas.document.engine.DocumentHandlerProvider;
+import org.compiere.model.I_QM_Analysis_Report;
+import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class EDIProductLookup
+@Component
+public class QMAnalysisReportDocumentHandlerProvider  implements DocumentHandlerProvider
 {
-	@NonNull ProductId productId;
 
-	@Nullable
-	BPartnerId bpartnerId;
+	@Override
+	public String getHandledTableName()
+	{
+		return I_QM_Analysis_Report.Table_Name;
+	}
 
-	String upc;
+	@Override
+	public DocumentHandler provideForDocument(final Object model)
+	{
+		return new QMAnalysisReportDocumentHandler();
+	}
 
-	boolean usedForCustomer;
 }
