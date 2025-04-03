@@ -7,9 +7,9 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { expectErrorToast } from '../../utils/common';
-import { QTY_NOT_FOUND_REASON_IGNORE } from '../../utils/screens/picking/GetQuantityDialog';
+import { QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
 
-const createMasterdata = async ({ allowSkippingRejectedReason, allowCompletingPartialPickingJob } = {}) => {
+const createMasterdata = async ({ allowCompletingPartialPickingJob } = {}) => {
     const response = await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -25,7 +25,6 @@ const createMasterdata = async ({ allowSkippingRejectedReason, allowCompletingPa
                     pickWithNewLU: true,
                     allowNewTU: false,
                     allowCompletingPartialPickingJob: allowCompletingPartialPickingJob ?? false,
-                    allowSkippingRejectedReason: allowSkippingRejectedReason ?? false,
                 }
             },
             bpartners: { "BP1": {} },
@@ -124,7 +123,7 @@ test('Scan invalid picking slot QR code', async ({ page }) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Test picking line complete status - draft | in progress | complete', async ({ page }) => {
-    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } = await createMasterdata({ allowSkippingRejectedReason: true });
+    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } = await createMasterdata();
 
     await LoginScreen.login(login);
     await ApplicationsListScreen.expectVisible();
@@ -137,11 +136,11 @@ test('Test picking line complete status - draft | in progress | complete', async
 
     await PickingJobScreen.expectLineStatusColor({ index: 1, color: 'red' });
 
-    await PickingJobScreen.pickHU({ qrCode: huQRCode, qtyEntered: '2', expectQtyEntered: '3', qtyNotFoundReason: QTY_NOT_FOUND_REASON_IGNORE });
+    await PickingJobScreen.pickHU({ qrCode: huQRCode, qtyEntered: '2', expectQtyEntered: '3', qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND });
 
     await PickingJobScreen.expectLineStatusColor({ index: 1, color: 'yellow' });
 
-    await PickingJobScreen.pickHU({ qrCode: huQRCode, expectQtyEntered: '1' });
+    await PickingJobScreen.pickHU({ qrCode: huQRCode, qtyEntered: '1', expectQtyEntered: '0' });
 
     await PickingJobScreen.expectLineStatusColor({ index: 1, color: 'green' });
 
@@ -154,7 +153,6 @@ test.describe('Picking Job Completion', () => {
       const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } =
         await createMasterdata({
           allowCompletingPartialPickingJob: false,
-          allowSkippingRejectedReason: true,
         });
 
       await LoginScreen.login(login);
@@ -169,7 +167,7 @@ test.describe('Picking Job Completion', () => {
         qrCode: huQRCode,
         qtyEntered: 2,
         expectQtyEntered: "3",
-        qtyNotFoundReason: QTY_NOT_FOUND_REASON_IGNORE
+        qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND
       });
         await expectErrorToast('All steps must be completed in order to complete the job.', async () => {
             await PickingJobScreen.complete();
@@ -180,7 +178,6 @@ test.describe('Picking Job Completion', () => {
         const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } =
           await createMasterdata({
             allowCompletingPartialPickingJob: true,
-            allowSkippingRejectedReason: true,
           });
 
         await LoginScreen.login(login);
@@ -195,7 +192,7 @@ test.describe('Picking Job Completion', () => {
             qrCode: huQRCode,
             qtyEntered: 2,
             expectQtyEntered: "3",
-            qtyNotFoundReason: QTY_NOT_FOUND_REASON_IGNORE,
+            qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND,
         });
         await PickingJobScreen.complete()
     });

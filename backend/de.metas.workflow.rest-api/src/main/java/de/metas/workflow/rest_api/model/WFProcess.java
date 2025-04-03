@@ -38,6 +38,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 @ToString
@@ -123,15 +124,17 @@ public final class WFProcess
 
 	public WFActivity getActivityById(@NonNull final WFActivityId id)
 	{
-		final WFActivity wfActivity = activitiesById.get(id);
-		if (wfActivity == null)
-		{
-			throw new AdempiereException(NO_ACTIVITY_ERROR_MSG)
-					.appendParametersToMessage()
-					.setParameter("ID", id)
-					.setParameter("WFProcess", this);
-		}
-		return wfActivity;
+		return getActivityByIdOptional(id)
+				.orElseThrow(() -> new AdempiereException(NO_ACTIVITY_ERROR_MSG)
+						.appendParametersToMessage()
+						.setParameter("ID", id)
+						.setParameter("WFProcess", this));
+	}
+
+	@NonNull
+	public Optional<WFActivity> getActivityByIdOptional(@NonNull final WFActivityId id)
+	{
+		return Optional.ofNullable(activitiesById.get(id));
 	}
 
 	public WFProcess withChangedActivityStatus(

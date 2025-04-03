@@ -9,7 +9,6 @@ const containerElement = () => page.locator('.get-qty-dialog');
 export const QTY_NOT_FOUND_REASON_NOT_FOUND = 'N';
 // noinspection JSUnusedGlobalSymbols
 export const QTY_NOT_FOUND_REASON_DAMAGED = 'D';
-export const QTY_NOT_FOUND_REASON_IGNORE = 'IgnoreReason';
 
 export const GetQuantityDialog = {
     waitForDialog: async () => await test.step(`${NAME} - Wait for dialog`, async () => {
