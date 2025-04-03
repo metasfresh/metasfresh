@@ -1200,6 +1200,13 @@ jobs:
         working-directory: docker-builds/mobiletest/
         run: |
           testspace "[mobile/playwright]playwright-report/junit/results.xml"
+      - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
+        uses: nick-fields/retry@v3
+        with:
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+          command: docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
       - name: produce-summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
