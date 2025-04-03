@@ -19,7 +19,7 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
+-- DROP VIEW de_metas_acct.documents_accounting_details_v;
 CREATE OR REPLACE VIEW de_metas_acct.documents_accounting_details_v
 AS
 SELECT fa.vatcode,
@@ -40,6 +40,7 @@ SELECT fa.vatcode,
        fa.postingtype,
        fa.IsActive,
        fa.c_currency_id,
+       fa.c_period_ID,
        fa.ad_table_id,
        fa.record_id,
        fa.ad_org_id,
@@ -80,6 +81,7 @@ FROM (SELECT fa.vatcode                        AS vatcode,
              fa.postingtype,
              fa.IsActive,
              fa.c_currency_id,
+             fa.c_period_ID,
              fa.ad_table_id,
              fa.record_id,
              fa.ad_org_id,
