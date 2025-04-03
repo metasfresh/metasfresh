@@ -1,13 +1,8 @@
--- View: Report.fresh_Attributes
-
--- DROP VIEW IF EXISTS Report.fresh_Attributes;
-
 CREATE OR REPLACE VIEW Report.fresh_Attributes AS
 SELECT *
 FROM (
          SELECT CASE
                     WHEN a.Value = '1000015' AND av.value = '01'                                          THEN NULL -- ADR & Keine/Leer
-                    WHEN a.Value = '1000015' AND (av.value IS NOT NULL AND av.value != '') THEN coalesce( nullif(trim(printvalue_override), ''), av.name) -- ADR
                     WHEN a.Value = '1000001' AND (av.value IS NOT NULL AND av.value != '')                THEN av.value -- Herkunft
                     WHEN a.Value = '1000021' AND (ai.value IS NOT NULL AND ai.value != '')                THEN ai.Value -- MHD
                     WHEN a.Value = 'HU_BestBeforeDate' AND (ai.valuedate IS NOT NULL)                     THEN 'MHD: ' || TO_CHAR(ai.valuedate, 'DD.MM.YYYY') --Best Before Date
@@ -18,7 +13,7 @@ FROM (
                                                                                                           THEN (SELECT mt.lot
                                                                                                                 FROM m_material_tracking mt
                                                                                                                 WHERE mt.m_material_tracking_id = ai.value::numeric)
-                                                                                                          ELSE av.Name -- default
+                                                                                                          ELSE coalesce( nullif(trim(printvalue_override), ''), av.name)::varchar -- default
                 END                      AS ai_Value,
                 M_AttributeSetInstance_ID,
                 a.Value                  AS at_Value,
@@ -50,9 +45,6 @@ COMMENT ON VIEW Report.fresh_Attributes IS 'retrieves Attributes in the way they
 ;
 
 
-
---DROP FUNCTION Report.fresh_attributes(IN p_M_AttributeSetInstance_ID numeric);
-
 CREATE OR REPLACE FUNCTION Report.fresh_attributes(IN p_M_AttributeSetInstance_ID numeric)
     RETURNS TABLE (
                       ai_value character varying,
@@ -72,7 +64,6 @@ SELECT att.ai_value,
 FROM (
          SELECT CASE
                     WHEN a.Value = '1000015' AND av.value = '01'                                          THEN NULL -- ADR & Keine/Leer
-                    WHEN a.Value = '1000015' AND (av.value IS NOT NULL AND av.value != '') THEN coalesce( nullif(trim(printvalue_override), ''), av.name) -- ADR
                     WHEN a.Value = '1000001' AND (av.value IS NOT NULL AND av.value != '')                THEN av.value -- Herkunft
                     WHEN a.Value = '1000021' AND (ai.value IS NOT NULL AND ai.value != '')                THEN ai.Value -- MHD
                     WHEN a.Value = 'HU_BestBeforeDate' AND (ai.valuedate IS NOT NULL)                     THEN 'MHD: ' || TO_CHAR(ai.valuedate, 'DD.MM.YYYY') --Best Before Date
@@ -83,7 +74,7 @@ FROM (
                                                                                                           THEN (SELECT mt.lot
                                                                                                                 FROM m_material_tracking mt
                                                                                                                 WHERE mt.m_material_tracking_id = ai.value::numeric)
-                                                                                                          ELSE av.Name -- default
+                                                                                                          ELSE coalesce(nullif(trim(printvalue_override), ''), av.name)::varchar  -- default
                 END                      AS ai_Value,
                 M_AttributeSetInstance_ID,
                 a.Value                  AS at_Value,
