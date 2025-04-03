@@ -22,7 +22,8 @@
 
 CREATE OR REPLACE VIEW de_metas_acct.documents_accounting_details_v
 AS
-SELECT fa.accountno,
+SELECT fa.vatcode,
+       fa.accountno,
        fa.accountname,
        fa.dateacct,
        fa.documentno,
@@ -31,10 +32,9 @@ SELECT fa.accountno,
        fa.bpName,
        fa.taxamt,
        fa.multiplier,
-       COALESCE(fa.inv_baseamt, fa.sap_gl_baseamt, fa.gl_baseamt, fa.alloc_baseamt) * fa.multiplier AS baseamt,
+       (COALESCE(fa.inv_baseamt, fa.sap_gl_baseamt, fa.gl_baseamt, fa.alloc_baseamt) * fa.multiplier) AS baseamt,
        fa.iso_code,
        fa.IsTaxLine,
-       fa.vatcode,
        fa.C_Tax_ID,
        fa.account_id,
        fa.postingtype,
@@ -45,27 +45,28 @@ SELECT fa.accountno,
        fa.ad_org_id,
        fa.ad_client_id
 
-FROM (SELECT ev.value                                              AS accountno,
-             ev.name                                               AS accountname,
+FROM (SELECT fa.vatcode                        AS vatcode,
+             ev.value                          AS accountno,
+             ev.name                           AS accountname,
              fa.dateacct,
              fa.documentno,
 
-             tax.name                                              AS taxname,
-             tax.rate                                              AS taxrate,
+             tax.name                          AS taxname,
+             tax.rate                          AS taxrate,
 
-             bp.name                                               AS bpName,
+             bp.name                           AS bpName,
 
-             (fa.AmtAcctDr - fa.AmtAcctCr)                         AS taxamt,
-             SIGN(fa.AmtAcctDr - fa.AmtAcctCr)                     AS multiplier,
-             i.taxbaseamt * SIGN(fa.AmtAcctDr - fa.AmtAcctCr)      AS inv_baseamt,
-             gl.taxbaseamt * SIGN(fa.AmtAcctDr - fa.AmtAcctCr)     AS gl_baseamt,
-             sap_gl.taxbaseamt * SIGN(fa.AmtAcctDr - fa.AmtAcctCr) AS sap_gl_baseamt,
+             (fa.AmtAcctDr - fa.AmtAcctCr)     AS taxamt,
+             SIGN(fa.AmtAcctDr - fa.AmtAcctCr) AS multiplier,
+             i.taxbaseamt                      AS inv_baseamt,
+             gl.taxbaseamt                     AS gl_baseamt,
+             sap_gl.taxbaseamt                 AS sap_gl_baseamt,
              (CASE
                   WHEN al.c_allocationline_id IS NULL THEN NULL
                   WHEN tax.IsWholeTax = 'Y'           THEN 0
                   WHEN tax.Rate = 0                   THEN 0
                                                       ELSE ROUND((fa.AmtAcctDr - fa.AmtAcctCr) * 100 / tax.Rate, 2)
-              END)                                                 AS alloc_baseamt,
+              END)                             AS alloc_baseamt,
 
              c.iso_code,
 
@@ -73,9 +74,7 @@ FROM (SELECT ev.value                                              AS accountno,
                   WHEN fa.line_id IS NULL AND fa.C_Tax_id IS NOT NULL
                       THEN 'Y'
                       ELSE 'N'
-              END)                                                 AS IsTaxLine,
-
-             fa.vatcode                                            AS vatcode,
+              END)                             AS IsTaxLine,
              fa.C_Tax_ID,
              fa.account_id,
              fa.postingtype,
