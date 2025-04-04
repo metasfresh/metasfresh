@@ -6,7 +6,6 @@ CREATE OR REPLACE VIEW Report.fresh_Attributes AS
 SELECT *
 FROM (
          SELECT CASE
-                    WHEN a.Value != 'M_Material_Tracking_ID' AND av.value IS NULL                                                                 THEN NULL
                     WHEN a.Value = '1000015' AND av.value = '01'                                          THEN NULL -- ADR & Keine/Leer
                     WHEN a.Value = '1000001' AND (av.value IS NOT NULL AND av.value != '')                THEN av.value -- Herkunft
                     WHEN a.Value = '1000021' AND (ai.value IS NOT NULL AND ai.value != '')                THEN ai.Value -- MHD
