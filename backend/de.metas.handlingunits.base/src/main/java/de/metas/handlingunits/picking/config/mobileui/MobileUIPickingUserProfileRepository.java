@@ -116,6 +116,7 @@ public class MobileUIPickingUserProfileRepository
 				.isCatchWeightTUPickingEnabled(profileRecord.isCatchWeightTUPickingEnabled())
 				.isAllowSkippingRejectedReason(profileRecord.isAllowSkippingRejectedReason())
 				.isShowConfirmationPromptWhenOverPick(profileRecord.isShowConfirmationPromptWhenOverPick())
+				.isAllowCompletingPartialPickingJob(profileRecord.isAllowCompletingPartialPickingJob())
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
 				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(profileRecord.getPickingLineGroupBy()))
 				.pickingLineSortBy(PickingLineSortBy.ofNullableCode(profileRecord.getPickingLineSortBy()))
@@ -218,6 +219,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsAlwaysSplitHUsEnabled(from.isAlwaysSplitHUsEnabled());
 		record.setIsPickingWithNewLU(from.isPickWithNewLU());
 		record.setIsAllowNewTU(from.isAllowNewTU());
+		record.setIsAllowCompletingPartialPickingJob(from.isAllowCompletingPartialPickingJob());
 		record.setIsCatchWeightTUPickingEnabled(from.isCatchWeightTUPickingEnabled());
 		record.setIsConsiderSalesOrderCapacity(from.isConsiderSalesOrderCapacity());
 		record.setIsAllowSkippingRejectedReason(from.isAllowSkippingRejectedReason());
