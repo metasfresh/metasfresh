@@ -46,18 +46,18 @@ jobs:
           GIT_ID: ${{ github.sha }}
         run: |
           echo "content=git.remote.origin.url=$GIT_URL\ngit.branch=$GIT_REF\ngit.commit.id=$GIT_ID\ngit.commit.message=$(git show -s --format=%s $GIT_ID)" >> $GITHUB_OUTPUT
-      - name: set-base-version-matrix
-        id: base-version-matrix
-        env:
-          MF_PROJECT: ${{ fromJson(vars.PROJECT_MAP)[github.ref_name] }}
-          BASE_VERSION_MATRIX: |
-            ${{
-              fromJson(vars.PROJECT_MAP)[github.ref_name] != ''
-              && format('{{ "include": [{{ "project": "{0}", "branch": "{1}" }}] }}', fromJson(vars.PROJECT_MAP)[github.ref_name], github.ref_name)
-              || ''
-            }}
-        run: |
-          echo "matrix=$BASE_VERSION_MATRIX" >> $GITHUB_OUTPUT
+      # - name: set-base-version-matrix
+      #   id: base-version-matrix
+      #   env:
+      #     MF_PROJECT: ${{ fromJson(vars.PROJECT_MAP)[github.ref_name] }}
+      #     BASE_VERSION_MATRIX: |
+      #       ${{
+      #         fromJson(vars.PROJECT_MAP)[github.ref_name] != ''
+      #         && format('{{ "include": [{{ "project": "{0}", "branch": "{1}" }}] }}', fromJson(vars.PROJECT_MAP)[github.ref_name], github.ref_name)
+      #         || ''
+      #       }}
+      #   run: |
+      #     echo "matrix=$BASE_VERSION_MATRIX" >> $GITHUB_OUTPUT
       - name: print-vars
         run: env
       - name: print-info
@@ -1231,18 +1231,18 @@ jobs:
 #        run: |
 #          curl -X "POST" -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ secrets.MF15_KUBERNETES_PAT }}" -d '{"event_type":"redeploy","client_payload":{"tag":"${{ needs.init.outputs.tag-floating }}"}}' https://api.github.com/repos/metasfresh/mf15-kubernetes/dispatches
 
-  update-base-version:
-    if: needs.init.outputs.base-version-matrix != ''
-    runs-on: ubuntu-latest
-    needs: [init, compatibility-images]
-    strategy:
-      matrix: ${{fromJSON(needs.init.outputs.base-version-matrix)}}
-    steps:
-      - name: dispatching-redeploy
-        run: |
-          curl -X "POST" -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ secrets.MF15_KUBERNETES_PAT }}" -d '{"event_type":"update_base_version","client_payload":{"version":"${{ needs.init.outputs.tag-fixed }}"}}' https://api.github.com/repos/metasfresh/${{ matrix.project }}/dispatches
+  # update-base-version:
+  #   if: needs.init.outputs.base-version-matrix != ''
+  #   runs-on: ubuntu-latest
+  #   needs: [init, compatibility-images]
+  #   strategy:
+  #     matrix: ${{fromJSON(needs.init.outputs.base-version-matrix)}}
+  #   steps:
+  #     - name: dispatching-redeploy
+  #       run: |
+  #         curl -X "POST" -H "Accept: application/vnd.github+json" -H "Authorization: token ${{ secrets.MF15_KUBERNETES_PAT }}" -d '{"event_type":"update_base_version","client_payload":{"version":"${{ needs.init.outputs.tag-fixed }}"}}' https://api.github.com/repos/metasfresh/${{ matrix.project }}/dispatches
 
-  cicd-dispatch-workflow-test:
+  cicd-dispatch:
     runs-on: ubuntu-latest
     continue-on-error: true
     needs: [init, compatibility-images]
@@ -1254,22 +1254,25 @@ jobs:
           TAG_FIXED: ${{ needs.init.outputs.tag-fixed }}
           GH_TOKEN: ${{ secrets.MF15_KUBERNETES_PAT }}
         run: |
-          # Quick matching for now to generate test data on cicd runs for valid branches. Will create dedicated mapping for production later.
+          # Quick matching. Final decision is made in the target workflow
           case "$GIT_REF" in
             *"_hotfix")
-              test_dispatch="true"
+              dispatch="true"
               ;;
             *"_uat")
-              test_dispatch="true"
+              dispatch="true"
+              ;;
+            *"_release")
+              dispatch="true"
               ;;
             *)
-              test_dispatch="false"
+              dispatch="false"
               ;;
           esac 
 
-          if [[ "$test_dispatch" == "false" ]]; then
-          	echo "branch '${GIT_REF}' is not a matching branch. Skipping the dispatch."
-          	exit 0
+          if [[ "$dispatch" == "false" ]]; then
+            echo "branch '${GIT_REF}' is not a matching branch. Skipping the dispatch."
+            exit 0
           fi
             
-          gh workflow run dedicated_dispatch.yaml --repo "metasfresh/mf15-test-01" -f "cicd_run_id=${CICD_RUN_ID}" -f "tag_fixed=${TAG_FIXED}" || exit 0
+          gh workflow run dispatch_cicd_to_customer.yaml --repo "metasfresh/me03-gh-automation" -f "cicd_run_id=${CICD_RUN_ID}" -f "tag_fixed=${TAG_FIXED}" || exit 0
