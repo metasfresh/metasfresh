@@ -203,3 +203,29 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ CREATE TABLE public.C_BPartner_Report_Text (AD_Client_ID NUMERIC(10) NOT NULL, AdditionalText VARCHAR(3000), AD_Org_ID NUMERIC(10) NOT NULL, C_BPartner_ID NUMERIC(10), C_BPartner_Report_Text_ID NUMERIC(10) NOT NULL, C_DocType_ID NUMERIC(10), Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, IsActive CHAR(1) CHECK (IsActive IN ('Y','N')) NOT NULL, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT CBPartner_CBPartnerReportText FOREIGN KEY (C_BPartner_ID) REFERENCES public.C_BPartner DEFERRABLE INITIALLY DEFERRED, CONSTRAINT C_BPartner_Report_Text_Key PRIMARY KEY (C_BPartner_Report_Text_ID), CONSTRAINT CDocType_CBPartnerReportText FOREIGN KEY (C_DocType_ID) REFERENCES public.C_DocType DEFERRABLE INITIALLY DEFERRED)
 ;
 
+-- Column: C_BPartner_Report_Text.C_BPartner_DocType_ID
+-- Column: C_BPartner_Report_Text.C_BPartner_DocType_ID
+-- 2025-04-03T19:18:51.934Z
+UPDATE AD_Column SET AD_Element_ID=583570, ColumnName='C_BPartner_DocType_ID', Description=NULL, Help=NULL, Name='Belegart',Updated=TO_TIMESTAMP('2025-04-03 19:18:51.934000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=589842
+;
+
+-- 2025-04-03T19:18:51.999Z
+UPDATE AD_Field SET Name='Belegart', Description=NULL, Help=NULL WHERE AD_Column_ID=589842
+;
+
+-- 2025-04-03T19:18:52.067Z
+/* DDL */  select update_Column_Translation_From_AD_Element(583570) 
+;
+
+-- 2025-04-03T19:19:18.786Z
+/* DDL */ SELECT public.db_alter_table('C_BPartner_Report_Text','ALTER TABLE public.C_BPartner_Report_Text ADD COLUMN C_BPartner_DocType_ID NUMERIC(10)')
+;
+
+-- 2025-04-03T19:19:18.854Z
+ALTER TABLE C_BPartner_Report_Text ADD CONSTRAINT CBPartnerDocType_CBPartnerReportText FOREIGN KEY (C_BPartner_DocType_ID) REFERENCES public.C_BPartner_DocType DEFERRABLE INITIALLY DEFERRED
+;
+
+ALTER TABLE public.C_BPartner_Report_Text
+    DROP COLUMN C_DocType_ID
+;
+
