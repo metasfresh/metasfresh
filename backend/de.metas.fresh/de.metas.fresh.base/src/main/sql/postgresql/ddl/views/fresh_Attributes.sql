@@ -18,7 +18,11 @@ FROM (
                                                                                                           THEN (SELECT mt.lot
                                                                                                                 FROM m_material_tracking mt
                                                                                                                 WHERE mt.m_material_tracking_id = ai.value::numeric)
-                                                                                                          ELSE coalesce( nullif(trim(printvalue_override), ''), av.name)::varchar -- default
+                    ELSE (
+                        CASE
+                            WHEN av.name IS NOT NULL AND av.IsNullFieldValue = 'N'
+                                THEN COALESCE(NULLIF(TRIM(printvalue_override), ''), av.name)::varchar
+                        END)
                 END                      AS ai_Value,
                 M_AttributeSetInstance_ID,
                 a.Value                  AS at_Value,
