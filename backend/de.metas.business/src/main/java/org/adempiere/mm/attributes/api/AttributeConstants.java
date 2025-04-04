@@ -71,14 +71,7 @@ public class AttributeConstants
 	public static final AttributeCode RouterPassword6 = AttributeCode.ofString("RouterPassword6");
 	public static final AttributeCode RouterPassword7 = AttributeCode.ofString("RouterPassword7");
 	public static final AttributeCode RouterPassword8 = AttributeCode.ofString("RouterPassword8");
-	public static final AttributeCode RouterMAC1 = AttributeCode.ofString("RouterMAC1");
-	public static final AttributeCode RouterMAC2 = AttributeCode.ofString("RouterMAC2");
-	public static final AttributeCode RouterMAC3 = AttributeCode.ofString("RouterMAC3");
-	public static final AttributeCode RouterMAC4 = AttributeCode.ofString("RouterMAC4");
-	public static final AttributeCode RouterMAC5 = AttributeCode.ofString("RouterMAC5");
-	public static final AttributeCode RouterMAC6 = AttributeCode.ofString("RouterMAC6");
-	public static final AttributeCode RouterMAC7 = AttributeCode.ofString("RouterMAC7");
-	public static final AttributeCode RouterMAC8 = AttributeCode.ofString("RouterMAC8");
+	public static final String ATTR_CODE_PREFIX_RouterMAC = "RouterMAC";
 
 	public static final AttributeCode WarrantyStartDate = AttributeCode.ofString("WarrantyStartDate");
 }

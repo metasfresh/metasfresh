@@ -24,16 +24,17 @@ package de.metas.manufacturing.generatedcomponents;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.DocumentNoParts;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.service.ClientId;
 import org.compiere.SpringContextHolder;
@@ -41,25 +42,18 @@ import org.compiere.SpringContextHolder;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 
+import static org.adempiere.mm.attributes.api.AttributeConstants.ATTR_CODE_PREFIX_RouterMAC;
+
 /**
  * A MAC Address looks like this: 01:23:45:67:89:AB
  */
 public class MacAddressGenerator implements IComponentGenerator
 {
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+
 	private static final int NUMBER_OF_DIGITS = 12;
 
 	private static final String EMPTY_MAC_ADDRESS = "-";
-
-	private final ImmutableList<AttributeCode> supportedAttributes = ImmutableList.of(
-			AttributeConstants.RouterMAC1,
-			AttributeConstants.RouterMAC2,
-			AttributeConstants.RouterMAC3,
-			AttributeConstants.RouterMAC4,
-			AttributeConstants.RouterMAC5,
-			AttributeConstants.RouterMAC6,
-			AttributeConstants.RouterMAC7,
-			AttributeConstants.RouterMAC8
-	);
 
 	private final IDocumentNoBuilderFactory documentNoBuilder;
 
@@ -79,9 +73,11 @@ public class MacAddressGenerator implements IComponentGenerator
 	@Override
 	public ImmutableAttributeSet generate(@NonNull final ComponentGeneratorContext context)
 	{
+		final ImmutableSet<AttributeCode> supportedAttributes = attributeDAO.getAttributeCodesThatStartWith(ATTR_CODE_PREFIX_RouterMAC);
+
 		final int qty = context.getQty();
 		Check.errorIf(qty < 1 || qty > supportedAttributes.size(),
-					  "Qty of Mac Addresses should be between 1 and {} but it was {}", supportedAttributes.size(), qty);
+				"Qty of Mac Addresses should be between 1 and {} but it was {}", supportedAttributes.size(), qty);
 
 		//
 		// Count how many attributes were already generated.

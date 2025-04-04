@@ -103,6 +103,13 @@ public class AttributeDAO implements IAttributeDAO
 		}
 	}
 
+	@Override
+	@NonNull
+	public ImmutableSet<AttributeCode> getAttributeCodesThatStartWith(@NonNull final String prefix)
+	{
+		return getAttributesMap().getAttributeCodesThatStartWith(prefix);
+	}
+
 	private AttributeSetAttributeIdsList getAttributeIdsByAttributeSetId(@NonNull final AttributeSetId attributeSetId)
 	{
 		if (attributeSetId.isNone())
@@ -1019,6 +1026,15 @@ public class AttributeDAO implements IAttributeDAO
 		public AttributeId getAttributeIdByCode(@NonNull final String attributeCode)
 		{
 			return getAttributeIdByCode(AttributeCode.ofString(attributeCode));
+		}
+
+		@NonNull
+		public ImmutableSet<AttributeCode> getAttributeCodesThatStartWith(@NonNull final String prefix)
+		{
+			return attributesByCode.keySet()
+					.stream()
+					.filter(attributeCode -> attributeCode.startsWith(prefix))
+					.collect(ImmutableSet.toImmutableSet());
 		}
 	}
 }

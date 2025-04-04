@@ -1,5 +1,6 @@
 package org.adempiere.mm.attributes.api;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.util.ISingletonService;
@@ -228,4 +229,7 @@ public interface IAttributeDAO extends ISingletonService
 	AttributeSetInstanceId copyASI(AttributeSetInstanceId asiSourceId);
 
 	boolean nullSafeASIEquals(@Nullable AttributeSetInstanceId firstASIId, @Nullable AttributeSetInstanceId secondASIId);
+
+	@NonNull
+	ImmutableSet<AttributeCode> getAttributeCodesThatStartWith(@NonNull String prefix);
 }
