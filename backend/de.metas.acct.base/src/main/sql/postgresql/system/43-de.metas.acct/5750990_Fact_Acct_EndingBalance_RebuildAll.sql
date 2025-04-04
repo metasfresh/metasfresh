@@ -50,7 +50,7 @@ BEGIN
          , fa.updated
          , fa.updatedby
     FROM TMP_Fact_Acct fa
-        WINDOW facts_previous AS (PARTITION BY fa.AD_Client_ID, fa.AD_Org_ID, fa.C_AcctSchema_ID, fa.PostingType, fa.Account_ID, fa.DateAcct ORDER BY Fact_Acct_ID);
+    WINDOW facts_previous AS (PARTITION BY fa.AD_Client_ID, fa.AD_Org_ID, fa.C_AcctSchema_ID, fa.PostingType, fa.Account_ID, fa.DateAcct ORDER BY Fact_Acct_ID);
 
 
     --

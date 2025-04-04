@@ -93,9 +93,9 @@ BEGIN
          , 0                                    AS UpdatedBy
          , 'Y'                                  AS IsActive
     FROM TMP_Fact_Acct_PerDateAcct fa
-        WINDOW
-            facts_ToDate AS (PARTITION BY fa.AD_Client_ID, fa.ad_org_id, fa.C_AcctSchema_ID, fa.PostingType, fa.Account_ID ORDER BY fa.DateAcct)
-            , facts_YearToDate AS (PARTITION BY fa.AD_Client_ID, fa.ad_org_id, fa.C_AcctSchema_ID, fa.PostingType, fa.Account_ID, fa.C_Year_ID ORDER BY fa.DateAcct);
+    WINDOW
+        facts_ToDate AS (PARTITION BY fa.AD_Client_ID, fa.ad_org_id, fa.C_AcctSchema_ID, fa.PostingType, fa.Account_ID ORDER BY fa.DateAcct)
+         , facts_YearToDate AS (PARTITION BY fa.AD_Client_ID, fa.ad_org_id, fa.C_AcctSchema_ID, fa.PostingType, fa.Account_ID, fa.C_Year_ID ORDER BY fa.DateAcct);
 
     --
     --
