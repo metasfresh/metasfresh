@@ -155,3 +155,5 @@ UPDATE AD_Element base SET Description=trl.Description, Help=trl.Help, Updated=t
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(583562,'de_CH')
 ;
 
+update MobileUI_UserProfile_Picking set IsAllowCompletingPartialPickingJob = 'Y' where 1=1
+;
