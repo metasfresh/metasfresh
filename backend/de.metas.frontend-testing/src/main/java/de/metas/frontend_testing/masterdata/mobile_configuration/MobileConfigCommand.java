@@ -98,6 +98,7 @@ public class MobileConfigCommand
 				.pickWithNewLU(profile.getDefaultPickingJobOptions().isPickWithNewLU())
 				.allowNewTU(profile.getDefaultPickingJobOptions().isAllowNewTU())
 				.filterByQRCode(profile.isFilterByBarcode())
+				.allowCompletingPartialPickingJob(profile.getDefaultPickingJobOptions().isAllowCompletingPartialPickingJob())
 				.build();
 	}
 
@@ -127,6 +128,14 @@ public class MobileConfigCommand
 		if (from.getAllowNewTU() != null)
 		{
 			builder.isAllowNewTU(from.getAllowNewTU());
+		}
+		if (from.getAllowCompletingPartialPickingJob() != null)
+		{
+			builder.isAllowCompletingPartialPickingJob(from.getAllowCompletingPartialPickingJob());
+		}
+		if (from.getAllowSkippingRejectedReason() != null)
+		{
+			builder.isAllowSkippingRejectedReason(from.getAllowSkippingRejectedReason());
 		}
 
 		return builder.build();
