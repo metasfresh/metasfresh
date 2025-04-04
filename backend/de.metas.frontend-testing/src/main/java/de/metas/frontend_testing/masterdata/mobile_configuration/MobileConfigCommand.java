@@ -96,6 +96,11 @@ public class MobileConfigCommand
 				.alwaysSplitHUsEnabled(profile.getDefaultPickingJobOptions().isAlwaysSplitHUsEnabled())
 				.pickWithNewLU(profile.getDefaultPickingJobOptions().isPickWithNewLU())
 				.allowNewTU(profile.getDefaultPickingJobOptions().isAllowNewTU())
+<<<<<<< HEAD
+=======
+				.filterByQRCode(profile.isFilterByBarcode())
+				.allowCompletingPartialPickingJob(profile.getDefaultPickingJobOptions().isAllowCompletingPartialPickingJob())
+>>>>>>> 99b3360b24 (MobileUI Picking - fix picking line stauts (#20480))
 				.build();
 	}
 
@@ -125,6 +130,14 @@ public class MobileConfigCommand
 		if (from.getAllowNewTU() != null)
 		{
 			builder.isAllowNewTU(from.getAllowNewTU());
+		}
+		if (from.getAllowCompletingPartialPickingJob() != null)
+		{
+			builder.isAllowCompletingPartialPickingJob(from.getAllowCompletingPartialPickingJob());
+		}
+		if (from.getAllowSkippingRejectedReason() != null)
+		{
+			builder.isAllowSkippingRejectedReason(from.getAllowSkippingRejectedReason());
 		}
 
 		return builder.build();

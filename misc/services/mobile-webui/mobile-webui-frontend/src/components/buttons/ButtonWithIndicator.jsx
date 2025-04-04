@@ -106,7 +106,7 @@ const ButtonWithIndicator = ({
         </div>
         {indicatorClassName && (
           <div className="right-btn-side">
-            <span className={indicatorClassName} />
+            <span data-testid={`${testId}-Indicator`} className={indicatorClassName} />
           </div>
         )}
       </div>

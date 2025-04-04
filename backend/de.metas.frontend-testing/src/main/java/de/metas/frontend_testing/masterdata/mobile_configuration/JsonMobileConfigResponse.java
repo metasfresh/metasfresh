@@ -35,6 +35,11 @@ public class JsonMobileConfigResponse
 		@Nullable Boolean alwaysSplitHUsEnabled;
 		@Nullable Boolean pickWithNewLU;
 		@Nullable Boolean allowNewTU;
+<<<<<<< HEAD
+=======
+		@Nullable Boolean filterByQRCode;
+		@Nullable Boolean allowCompletingPartialPickingJob;
+>>>>>>> 99b3360b24 (MobileUI Picking - fix picking line stauts (#20480))
 	}
 
 	//
