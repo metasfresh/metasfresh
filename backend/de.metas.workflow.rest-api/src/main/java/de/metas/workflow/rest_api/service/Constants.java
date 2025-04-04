@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.workflow.rest-api
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,26 +20,11 @@
  * #L%
  */
 
-package de.metas.handlingunits.edi;
+package de.metas.workflow.rest_api.service;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.product.ProductId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.i18n.AdMessageKey;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class EDIProductLookup
+public interface Constants
 {
-	@NonNull ProductId productId;
-
-	@Nullable
-	BPartnerId bpartnerId;
-
-	String upc;
-
-	boolean usedForCustomer;
+	AdMessageKey ARE_YOU_SURE = AdMessageKey.of("de.metas.workflow.rest_api.service.ARE_YOU_SURE");
 }

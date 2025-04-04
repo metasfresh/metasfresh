@@ -131,7 +131,7 @@ public class DisplayValueProvider
 
 	private static ImmutableSet<BPartnerLocationId> extractDeliveryLocationIds(final @NonNull ImmutableList<Context> contexts)
 	{
-		return contexts.stream().map(Context::getDeliveryLocationId).filter(Objects::isNull).collect(ImmutableSet.toImmutableSet());
+		return contexts.stream().map(Context::getDeliveryLocationId).filter(Objects::nonNull).collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull

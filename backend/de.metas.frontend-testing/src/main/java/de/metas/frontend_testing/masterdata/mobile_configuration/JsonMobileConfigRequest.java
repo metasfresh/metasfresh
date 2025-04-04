@@ -35,8 +35,11 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean allowPickingAnyHU;
 		@Nullable CreateShipmentPolicy createShipmentPolicy;
 		@Nullable Boolean alwaysSplitHUsEnabled;
+		@Nullable Boolean allowCompletingPartialPickingJob;
 		@Nullable Boolean pickWithNewLU;
 		@Nullable Boolean allowNewTU;
+		@Nullable Boolean allowSkippingRejectedReason;
+		@Nullable Boolean filterByQRCode;
 
 		@Nullable List<Customer> customers;
 

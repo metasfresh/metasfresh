@@ -73,7 +73,8 @@ public class MobileConfigCommand
 		final MobileUIPickingUserProfile profile = mobilePickingConfigRepository.getProfile();
 		final MobileUIPickingUserProfile.MobileUIPickingUserProfileBuilder newProfileBuilder = profile.toBuilder()
 				.defaultPickingJobOptions(updatePickingJobOptions(profile.getDefaultPickingJobOptions(), picking))
-				.customerConfigs(updatePickingCustomers(profile.getCustomerConfigs(), picking.getCustomers()));
+				.customerConfigs(updatePickingCustomers(profile.getCustomerConfigs(), picking.getCustomers()))
+				.isFilterByBarcode(picking.getFilterByQRCode() != null && picking.getFilterByQRCode());
 
 		if (picking.getAllowPickingAnyCustomer() != null)
 		{
@@ -96,6 +97,8 @@ public class MobileConfigCommand
 				.alwaysSplitHUsEnabled(profile.getDefaultPickingJobOptions().isAlwaysSplitHUsEnabled())
 				.pickWithNewLU(profile.getDefaultPickingJobOptions().isPickWithNewLU())
 				.allowNewTU(profile.getDefaultPickingJobOptions().isAllowNewTU())
+				.filterByQRCode(profile.isFilterByBarcode())
+				.allowCompletingPartialPickingJob(profile.getDefaultPickingJobOptions().isAllowCompletingPartialPickingJob())
 				.build();
 	}
 
@@ -125,6 +128,14 @@ public class MobileConfigCommand
 		if (from.getAllowNewTU() != null)
 		{
 			builder.isAllowNewTU(from.getAllowNewTU());
+		}
+		if (from.getAllowCompletingPartialPickingJob() != null)
+		{
+			builder.isAllowCompletingPartialPickingJob(from.getAllowCompletingPartialPickingJob());
+		}
+		if (from.getAllowSkippingRejectedReason() != null)
+		{
+			builder.isAllowSkippingRejectedReason(from.getAllowSkippingRejectedReason());
 		}
 
 		return builder.build();

@@ -143,6 +143,27 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsAllowAnyCustomer = "IsAllowAnyCustomer";
 
 	/**
+	 * Set Allow Partial Picking Completion.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowCompletingPartialPickingJob (boolean IsAllowCompletingPartialPickingJob);
+
+	/**
+	 * Get Allow Partial Picking Completion.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowCompletingPartialPickingJob();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowCompletingPartialPickingJob = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowCompletingPartialPickingJob", null);
+	String COLUMNNAME_IsAllowCompletingPartialPickingJob = "IsAllowCompletingPartialPickingJob";
+
+	/**
 	 * Set Allow new TU.
 	 *
 	 * <br>Type: YesNo
@@ -275,6 +296,27 @@ public interface I_MobileUI_UserProfile_Picking
 
 	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsConsiderSalesOrderCapacity = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsConsiderSalesOrderCapacity", null);
 	String COLUMNNAME_IsConsiderSalesOrderCapacity = "IsConsiderSalesOrderCapacity";
+
+	/**
+	 * Set Filter by Barcode.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFilterByBarcode (boolean IsFilterByBarcode);
+
+	/**
+	 * Get Filter by Barcode.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFilterByBarcode();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsFilterByBarcode = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsFilterByBarcode", null);
+	String COLUMNNAME_IsFilterByBarcode = "IsFilterByBarcode";
 
 	/**
 	 * Set Pick with LU.

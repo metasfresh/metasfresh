@@ -24,8 +24,8 @@ package de.metas.workflow.rest_api.model;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.DocumentNoFilter;
-import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.mobile.application.MobileApplicationId;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetId;
 import lombok.Builder;
@@ -45,7 +45,7 @@ public class WorkflowLaunchersQuery
 {
 	@NonNull MobileApplicationId applicationId;
 	@NonNull UserId userId;
-	@Nullable GlobalQRCode filterByQRCode;
+	@Nullable ScannedCode filterByQRCode;
 	@Nullable DocumentNoFilter filterByDocumentNo;
 	@Nullable ImmutableSet<WorkflowLaunchersFacetId> facetIds;
 

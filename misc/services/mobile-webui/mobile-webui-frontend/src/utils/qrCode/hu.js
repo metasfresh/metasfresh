@@ -43,6 +43,15 @@ import { parseEAN13CodeString } from './ean13';
 export const QRCODE_TYPE_HU = 'HU';
 export const QRCODE_TYPE_LEICH_UND_MEHL = 'LMQ';
 
+export const toQRCodeDisplayableNoFail = (qrCode) => {
+  try {
+    return toQRCodeDisplayable(qrCode);
+  } catch (error) {
+    console.debug('toQRCodeDisplayableNoFail: got error', error);
+    return `${qrCode}`;
+  }
+};
+
 export const toQRCodeDisplayable = (qrCode) => {
   //
   // Case: null/empty qrCode
@@ -121,7 +130,7 @@ export const toQRCodeObject = (qrCode) => {
     const code = `${qrCode}`;
     return {
       code,
-      displayable: toQRCodeDisplayable(code),
+      displayable: toQRCodeDisplayableNoFail(code),
     };
   }
 
@@ -158,7 +167,7 @@ export const parseQRCodeString = (string, returnFalseOnError) => {
     return false;
   } else {
     const errorMsg = result?.error ? result.error : trl('error.qrCode.invalid');
-    console.log(`parseQRCodeString: ${errorMsg}`, { string, allResults });
+    console.debug(`parseQRCodeString: ${errorMsg}`, { string, allResults });
     throw errorMsg;
   }
 };

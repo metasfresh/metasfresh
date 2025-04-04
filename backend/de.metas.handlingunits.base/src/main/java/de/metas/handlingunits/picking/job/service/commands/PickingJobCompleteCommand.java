@@ -37,7 +37,7 @@ import static de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_Qua
 public class PickingJobCompleteCommand
 {
 	private final static AdMessageKey PICKING_ON_ALL_STEPS_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.service.commands.PICKING_ON_ALL_STEPS_ERROR_MSG");
-	private final static AdMessageKey ALL_STEPS_SHALL_BE_PICKED_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.service.commands.ALL_STEPS_SHALL_BE_PICKED_ERROR_MSG");
+	private final static AdMessageKey NOTHING_HAS_BEEN_PICKED = AdMessageKey.of("de.metas.handlingunits.picking.job.service.commands.NOTHING_HAS_BEEN_PICKED");
 
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
@@ -84,22 +84,13 @@ public class PickingJobCompleteCommand
 
 	public PickingJob execute()
 	{
-		initialPickingJob0.assertNotProcessed();
-		if (!initialPickingJob0.getProgress().isDone())
-		{
-			throw new AdempiereException(PICKING_ON_ALL_STEPS_ERROR_MSG);
-		}
-
+		validateJob();
 		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
 	}
 
 	private PickingJob executeInTrx()
 	{
 		pickingJob = initialPickingJob0;
-		if (!pickingJob.getProgress().isDone())
-		{
-			throw new AdempiereException(ALL_STEPS_SHALL_BE_PICKED_ERROR_MSG);
-		}
 
 		ppOrderBL.closeOrdersByIds(pickingJob.getManufacturingOrderIds());
 
@@ -154,6 +145,21 @@ public class PickingJobCompleteCommand
 					// since we are not going to immediately create invoices, we want to move on and to not wait for shipments
 					.waitForShipments(false)
 					.build());
+		}
+	}
+
+	private void validateJob()
+	{
+		initialPickingJob0.assertNotProcessed();
+		if (initialPickingJob0.isNothingPicked())
+		{
+			throw new AdempiereException(NOTHING_HAS_BEEN_PICKED);
+		}
+
+		final PickingJobOptions options = configRepository.getPickingJobOptions(initialPickingJob0.getCustomerId());
+		if (!options.isAllowCompletingPartialPickingJob() && !initialPickingJob0.getProgress().isDone())
+		{
+			throw new AdempiereException(PICKING_ON_ALL_STEPS_ERROR_MSG);
 		}
 	}
 

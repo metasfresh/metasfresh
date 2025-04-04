@@ -96,6 +96,7 @@ public class MobileUIPickingUserProfileRepository
 		return MobileUIPickingUserProfile.builder()
 				.name(profileRecord.getName())
 				.isAllowPickingAnyCustomer(profileRecord.isAllowAnyCustomer())
+				.isFilterByBarcode(profileRecord.isFilterByBarcode())
 				.customerConfigs(retrievePickingCustomerConfigsCollection(profileId))
 				.defaultPickingJobOptions(extractPickingJobOptions(profileRecord))
 				.filters(retrieveFilters(profileId))
@@ -115,6 +116,7 @@ public class MobileUIPickingUserProfileRepository
 				.isCatchWeightTUPickingEnabled(profileRecord.isCatchWeightTUPickingEnabled())
 				.isAllowSkippingRejectedReason(profileRecord.isAllowSkippingRejectedReason())
 				.isShowConfirmationPromptWhenOverPick(profileRecord.isShowConfirmationPromptWhenOverPick())
+				.isAllowCompletingPartialPickingJob(profileRecord.isAllowCompletingPartialPickingJob())
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
 				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(profileRecord.getPickingLineGroupBy()))
 				.pickingLineSortBy(PickingLineSortBy.ofNullableCode(profileRecord.getPickingLineSortBy()))
@@ -173,6 +175,7 @@ public class MobileUIPickingUserProfileRepository
 			profileRecord.setIsActive(true);
 			profileRecord.setName(profile.getName());
 			profileRecord.setIsAllowAnyCustomer(profile.isAllowPickingAnyCustomer());
+			profileRecord.setIsFilterByBarcode(profile.isFilterByBarcode());
 			updateRecord(profileRecord, profile.getDefaultPickingJobOptions());
 			InterfaceWrapperHelper.saveRecord(profileRecord);
 			profileId = MobileUIPickingUserProfileId.ofRepoId(profileRecord.getMobileUI_UserProfile_Picking_ID());
@@ -216,6 +219,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsAlwaysSplitHUsEnabled(from.isAlwaysSplitHUsEnabled());
 		record.setIsPickingWithNewLU(from.isPickWithNewLU());
 		record.setIsAllowNewTU(from.isAllowNewTU());
+		record.setIsAllowCompletingPartialPickingJob(from.isAllowCompletingPartialPickingJob());
 		record.setIsCatchWeightTUPickingEnabled(from.isCatchWeightTUPickingEnabled());
 		record.setIsConsiderSalesOrderCapacity(from.isConsiderSalesOrderCapacity());
 		record.setIsAllowSkippingRejectedReason(from.isAllowSkippingRejectedReason());

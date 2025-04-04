@@ -234,6 +234,8 @@ public interface IProductBL extends ISingletonService
 
 	Optional<ProductId> getProductIdByValueStartsWith(@NonNull String valuePrefix, @NonNull ClientId clientId);
 
+	Optional<ProductId> getProductIdByEAN13(@NonNull EAN13 ean13);
+
 	Optional<ProductId> getProductIdByEAN13(@NonNull EAN13 ean13, @Nullable BPartnerId bpartnerId, @NonNull ClientId clientId);
 
 	boolean isValidEAN13Product(@NonNull EAN13 ean13, @NonNull ProductId expectedProductId, @Nullable BPartnerId bpartnerId);
@@ -243,5 +245,6 @@ public interface IProductBL extends ISingletonService
 			@NonNull ClientId clientId,
 			@NonNull QueryLimit limit);
 
-	@NonNull List<I_M_Product> getByIds(@NonNull Set<ProductId> productIds);
+	@NonNull
+	List<I_M_Product> getByIds(@NonNull Set<ProductId> productIds);
 }

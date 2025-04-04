@@ -53,8 +53,8 @@ Feature: mobileUI Picking - Pick catch weight products
       | PLV                    | product      | 5.0      | KGM               | CatchWeight          | Normal                        |
 
     And set mobile UI picking profile
-      | IsAllowPickingAnyHU | CreateShipmentPolicy  |
-      | Y                   | CREATE_COMPLETE_CLOSE |
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
 
     And metasfresh contains C_BPartners without locations:
       | Identifier | Name     | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
