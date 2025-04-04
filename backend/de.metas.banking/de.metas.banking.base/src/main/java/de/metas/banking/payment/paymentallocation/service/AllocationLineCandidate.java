@@ -27,7 +27,6 @@ public class AllocationLineCandidate
 	{
 		InvoiceToPayment, //
 		SalesInvoiceToPurchaseInvoice, //
-		SalesCreditMemoToPurchaseInvoice, //
 		InvoiceToCreditMemo, //
 		InvoiceDiscountOrWriteOff, //
 		InvoiceProcessingFee, //
@@ -39,8 +38,6 @@ public class AllocationLineCandidate
 	BPartnerId bpartnerId;
 
 	TableRecordReference payableDocumentRef;
-	boolean payableDocumentIsCreditMemo;
-
 	TableRecordReference paymentDocumentRef;
 
 	LocalDate dateTrx;
@@ -62,7 +59,6 @@ public class AllocationLineCandidate
 			@Nullable final BPartnerId bpartnerId,
 			//
 			@NonNull final TableRecordReference payableDocumentRef,
-			final boolean payableDocumentIsCreditMemo,
 			@Nullable final TableRecordReference paymentDocumentRef,
 			//
 			@NonNull final LocalDate dateTrx,
@@ -107,7 +103,6 @@ public class AllocationLineCandidate
 		this.bpartnerId = bpartnerId;
 
 		this.payableDocumentRef = payableDocumentRef;
-		this.payableDocumentIsCreditMemo = payableDocumentIsCreditMemo;
 		this.paymentDocumentRef = paymentDocumentRef;
 
 		this.dateTrx = dateTrx;
@@ -118,15 +113,5 @@ public class AllocationLineCandidate
 		this.payableOverUnderAmt = payableOverUnderAmt != null ? payableOverUnderAmt : Money.zero(amounts.getCurrencyId());
 		this.paymentOverUnderAmt = paymentOverUnderAmt != null ? paymentOverUnderAmt : Money.zero(amounts.getCurrencyId());
 		this.invoiceProcessingFeeCalculation = invoiceProcessingFeeCalculation;
-	}
-
-	public static class AllocationLineCandidateBuilder
-	{
-		public AllocationLineCandidateBuilder payableDocument(@NonNull final PayableDocument payableDocument)
-		{
-			payableDocumentRef(payableDocument.getReference());
-			payableDocumentIsCreditMemo(payableDocument.isCreditMemo());
-			return this;
-		}
 	}
 }

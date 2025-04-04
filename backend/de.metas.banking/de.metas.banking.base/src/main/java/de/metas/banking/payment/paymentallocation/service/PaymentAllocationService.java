@@ -162,7 +162,6 @@ public class PaymentAllocationService
 				.payableRemainingOpenAmtPolicy(PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy.DO_NOTHING)
 				.allowPurchaseSalesInvoiceCompensation(paymentAllocationBL.isPurchaseSalesInvoiceCompensationAllowed())
 				.allocatePayableAmountsAsIs(true) // no min/max computations! the sums will match in the end
-				.allowInvoiceToCreditMemoAllocation(paymentAllocationCriteria.isAllowInvoiceToCreditMemoAllocation())
 				;
 		return Optional.of(builder);
 	}
@@ -265,7 +264,7 @@ public class PaymentAllocationService
 				.invoiceProcessingFeeCalculation(invoiceProcessingFeeCalculation)
 				.date(paymentAllocationPayableItem.getDateInvoiced())
 				.clientAndOrgId(paymentAllocationPayableItem.getClientAndOrgId())
-				.creditMemo(paymentAllocationPayableItem.isInvoiceIsCreditMemo())
+				//.creditMemo(paymentAllocationPayableItem.isInvoiceIsCreditMemo()) // we want no invoices be handeld as creditMemos, because we don't want invoices and creditmemos of this remadv to be allocated against each other!
 				.allowAllocateAgainstDifferentSignumPayment(negateAmounts) // we want the invoice with negative amount to be allocated against the payment with positive amount. the credit-memo and the payment need to be added up in a way 
 				.build();
 	}

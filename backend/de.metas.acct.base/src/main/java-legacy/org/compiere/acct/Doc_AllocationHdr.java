@@ -852,14 +852,12 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		{
 			factLineBuilder.setAccount(getCustomerAccount(BPartnerCustomerAccountType.C_Receivable, as));
 
-			final DocLine_Allocation counterLine = line.getCounterDocLine();
-
-			// ARC that is not allocated against another invoice
-			if (line.isCreditMemoInvoice() && counterLine == null)
+			// ARC
+			if (line.isCreditMemoInvoice())
 			{
 				factLineBuilder.setAmtSource(allocationSource, null);
 			}
-			// ARI or ARC that is allocated against other invoice
+			// ARI
 			else
 			{
 				factLineBuilder.setAmtSource(null, allocationSource);
@@ -927,7 +925,10 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 					.setDetailMessage("Booking the counter invoice using cash based accounting method is not supported");
 		}
 
-		if (!line.isValidPurchaseSalesCompensationAmt())
+		//
+		// Make sure the compensation amount of this line and of it's counter part are matching
+		final BigDecimal counterLine_compensationAmtSource = counterLine.getAllocatedAmt();
+		if (compensationAmtSource.compareTo(counterLine_compensationAmtSource.negate()) != 0)
 		{
 			throw newPostingException()
 					.setFact(fact)
@@ -951,15 +952,7 @@ public class Doc_AllocationHdr extends Doc<DocLine_Allocation>
 		else
 		{
 			factLineBuilder.setAccount(getVendorAccount(BPartnerVendorAccountType.V_Liability, as));
-
-			if (line.isCreditMemoInvoice())
-			{
-				factLineBuilder.setAmtSource(compensationAmtSource.negate(), null);
-			}
-			else
-			{
-				factLineBuilder.setAmtSource(compensationAmtSource, null);
-			}
+			factLineBuilder.setAmtSource(compensationAmtSource, null);
 		}
 		final FactLine factLine = factLineBuilder.buildAndAdd();
 
