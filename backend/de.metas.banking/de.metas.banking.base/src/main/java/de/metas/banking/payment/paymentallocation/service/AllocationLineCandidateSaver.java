@@ -35,12 +35,12 @@ import java.util.List;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -85,10 +85,6 @@ final class AllocationLineCandidateSaver
 		else if (AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice.equals(type))
 		{
 			return saveCandidate_InvoiceToInvoice(candidate);
-		}
-		else if (AllocationLineCandidateType.SalesCreditMemoToPurchaseInvoice.equals(type))
-		{
-			return saveCandidate_SalesCreditMemoToPurchaseInvoice(candidate);
 		}
 		else if (AllocationLineCandidateType.InvoiceToCreditMemo.equals(type))
 		{
@@ -187,52 +183,6 @@ final class AllocationLineCandidateSaver
 				//
 				// Amounts
 				.amount(payAmt.negate().toBigDecimal())
-				.overUnderAmt(candidate.getPaymentOverUnderAmt().toBigDecimal())
-				//
-				.invoiceId(extractInvoiceId(candidate.getPaymentDocumentRef()));
-
-		return createAndComplete(allocationBuilder);
-	}
-
-	@Nullable
-	private PaymentAllocationId saveCandidate_SalesCreditMemoToPurchaseInvoice(@NonNull final AllocationLineCandidate candidate)
-	{
-		final Money payAmt = candidate.getAmounts().getPayAmt();
-		final Money discountAmt = candidate.getAmounts().getDiscountAmt();
-		final Money writeOffAmt = candidate.getAmounts().getWriteOffAmt();
-
-		Check.assumeEquals(candidate.getAmounts(), AllocationAmounts.builder()
-				.payAmt(payAmt)
-				.discountAmt(discountAmt)
-				.writeOffAmt(writeOffAmt)
-				.build());
-
-		final C_AllocationHdr_Builder allocationBuilder = newC_AllocationHdr_Builder(candidate);
-
-		// Sales credit memo
-		allocationBuilder.addLine()
-				.skipIfAllAmountsAreZero()
-				//
-				.orgId(candidate.getOrgId())
-				.bpartnerId(candidate.getBpartnerId())
-				//
-				// Amounts
-				.amount(payAmt.toBigDecimal())
-				.discountAmt(discountAmt.toBigDecimal())
-				.writeOffAmt(writeOffAmt.toBigDecimal())
-				.overUnderAmt(candidate.getPayableOverUnderAmt().toBigDecimal())
-				//
-				.invoiceId(extractInvoiceId(candidate.getPayableDocumentRef()));
-
-		// Purchase invoice
-		allocationBuilder.addLine()
-				.skipIfAllAmountsAreZero()
-				//
-				.orgId(candidate.getOrgId())
-				.bpartnerId(candidate.getBpartnerId())
-				//
-				// Amounts
-				.amount(payAmt.toBigDecimal())
 				.overUnderAmt(candidate.getPaymentOverUnderAmt().toBigDecimal())
 				//
 				.invoiceId(extractInvoiceId(candidate.getPaymentDocumentRef()));

@@ -155,7 +155,7 @@ public class AllocationAmountsTest
 						.payAmt(euro(-1))
 						.discountAmt(euro(-2))
 						.writeOffAmt(euro(-3))
-						.invoiceProcessingFee(euro(4)) // never negate the processing fee because it will be paid to the service provider no matter what kind of invoice it is applied to.
+						.invoiceProcessingFee(euro(-4))
 						.build());
 	}
 
