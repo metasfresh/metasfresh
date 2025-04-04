@@ -16,6 +16,7 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -139,5 +140,21 @@ public class PickingJobStepPickFromMap
 				.map(PickingJobStepPickedTo::getPickedHuIds)
 				.flatMap(List::stream)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public Optional<PickingJobStepPickedToHU> getLastPickedHU()
+	{
+		return map.values()
+				.stream()
+				.map(PickingJobStepPickFrom::getPickedTo)
+				.filter(Objects::nonNull)
+				.filter(pickedTo -> pickedTo.getQtyPicked().signum() > 0)
+				.map(PickingJobStepPickedTo::getLastPickedHu)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.min(Comparator.comparing(
+						PickingJobStepPickedToHU::getCreatedAt,
+						Comparator.nullsFirst(Comparator.reverseOrder())));
 	}
 }

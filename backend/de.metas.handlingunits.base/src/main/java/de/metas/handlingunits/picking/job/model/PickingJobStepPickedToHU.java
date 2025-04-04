@@ -8,6 +8,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 
 @Value
 @Builder
@@ -18,5 +19,6 @@ public class PickingJobStepPickedToHU
 	@NonNull HUInfo actualPickedHU;
 	@NonNull Quantity qtyPicked;
 	@Nullable Quantity catchWeight;
+	@Nullable Instant createdAt;
 	// @NonNull PickingCandidateId pickingCandidateId;
 }

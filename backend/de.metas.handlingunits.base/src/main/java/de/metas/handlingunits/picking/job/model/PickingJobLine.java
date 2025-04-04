@@ -50,6 +50,7 @@ import org.compiere.model.I_C_UOM;
 import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -264,6 +265,20 @@ public class PickingJobLine
 				.map(PickingJobStep::getPickedHUIds)
 				.flatMap(List::stream)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	public Optional<HuId> getLastPickedHUId()
+	{
+		return steps.stream()
+				.map(PickingJobStep::getLastPickedHU)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.sorted(Comparator.comparing(
+						PickingJobStepPickedToHU::getCreatedAt,
+						Comparator.nullsFirst(Comparator.reverseOrder())))
+				.map(PickingJobStepPickedToHU::getActualPickedHU)
+				.map(HUInfo::getId)
+				.findFirst();
 	}
 
 	PickingJobLine withCurrentPickingTarget(@NonNull final CurrentPickingTarget currentPickingTarget)

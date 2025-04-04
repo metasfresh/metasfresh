@@ -47,9 +47,20 @@ const PickLineScreen = () => {
     qtyToPickRemaining,
     uom,
     manuallyClosed,
+    additionalHeaderProperties,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
-  useHeaderUpdate({ url, caption, uom, pickingSlot, pickingUnit, packingItemName, qtyToPick, qtyPicked });
+  useHeaderUpdate({
+    url,
+    caption,
+    uom,
+    pickingSlot,
+    pickingUnit,
+    packingItemName,
+    qtyToPick,
+    qtyPicked,
+    additionalHeaderProperties,
+  });
 
   const onPickFromManufacturingOrderClicked = () => {
     startWorkflowRequest({
@@ -188,6 +199,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     qtyPicked: getQtyPickedOrRejectedTotalForLine({ line }),
     qtyToPickRemaining: getQtyToPickRemainingForLine({ line }),
     manuallyClosed: line?.manuallyClosed,
+    additionalHeaderProperties: line?.additionalHeaderProperties,
   };
 };
 
@@ -200,6 +212,7 @@ export const useHeaderUpdate = ({
   uom,
   qtyToPick,
   qtyPicked,
+  additionalHeaderProperties,
 }) => {
   const dispatch = useDispatch();
   useEffect(() => {
@@ -231,6 +244,7 @@ export const useHeaderUpdate = ({
             caption: trl('activities.picking.picked'),
             value: formatQtyToHumanReadableStr({ qty: qtyPicked, uom }),
           },
+          ...(additionalHeaderProperties?.entries || []),
         ],
       })
     );

@@ -53,6 +53,7 @@ public class MobileUIPickingUserProfile
 					.createShipmentPolicy(CreateShipmentPolicy.DO_NOT_CREATE)
 					.isAllowCompletingPartialPickingJob(true)
 					.build())
+			.pickingLineConfig(PickingLineConfig.DEFAULT)
 			.filters(PickingFiltersList.ofList(ImmutableList.of(
 					PickingFilter.of(PickingJobFacetGroup.CUSTOMER, 10),
 					PickingFilter.of(PickingJobFacetGroup.DELIVERY_DATE, 20)))
@@ -90,6 +91,7 @@ public class MobileUIPickingUserProfile
 	boolean isFilterByBarcode;
 	@Getter @NonNull PickingCustomerConfigsCollection customerConfigs;
 	@NonNull PickingJobOptions defaultPickingJobOptions;
+	@NonNull PickingLineConfig pickingLineConfig;
 	@Getter(AccessLevel.NONE) @NonNull PickingFiltersList filters;
 	@Getter(AccessLevel.PACKAGE) @NonNull ImmutableList<PickingJobField> fields;
 
@@ -103,6 +105,7 @@ public class MobileUIPickingUserProfile
 			final boolean isFilterByBarcode,
 			final @Nullable PickingCustomerConfigsCollection customerConfigs,
 			final @NonNull PickingJobOptions defaultPickingJobOptions,
+			final @NonNull PickingLineConfig pickingLineConfig,
 			final @Nullable PickingFiltersList filters,
 			final @NonNull ImmutableList<PickingJobField> fields)
 	{
@@ -111,6 +114,7 @@ public class MobileUIPickingUserProfile
 		this.isFilterByBarcode = isFilterByBarcode;
 		this.customerConfigs = customerConfigs != null ? customerConfigs : PickingCustomerConfigsCollection.EMPTY;
 		this.defaultPickingJobOptions = defaultPickingJobOptions;
+		this.pickingLineConfig = pickingLineConfig;
 		this.filters = filters != null ? filters : PickingFiltersList.EMPTY;
 		this.fields = Check.assumeNotEmpty(fields, "fields shall not be empty");
 

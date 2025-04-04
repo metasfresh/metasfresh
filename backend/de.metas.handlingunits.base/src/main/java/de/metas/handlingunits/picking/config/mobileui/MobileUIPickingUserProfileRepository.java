@@ -29,6 +29,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.picking.model.I_PickingProfile_Filter;
 import de.metas.picking.model.I_PickingProfile_PickingJobConfig;
+import de.metas.picking.model.I_PickingProfile_PickingJobLineConfig;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -43,6 +44,7 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @Repository
@@ -99,6 +101,7 @@ public class MobileUIPickingUserProfileRepository
 				.isFilterByBarcode(profileRecord.isFilterByBarcode())
 				.customerConfigs(retrievePickingCustomerConfigsCollection(profileId))
 				.defaultPickingJobOptions(extractPickingJobOptions(profileRecord))
+				.pickingLineConfig(retrievePickingLineConfig(profileId).orElse(PickingLineConfig.DEFAULT))
 				.filters(retrieveFilters(profileId))
 				.fields(retrieveFields(profileId))
 				.build();
@@ -184,6 +187,10 @@ public class MobileUIPickingUserProfileRepository
 		//
 		// BPartner configs
 		save_BPartnerConfigs(profile, profileId);
+
+		//
+		// PickingLineConfig
+		save_PickingLineConfig(profile.getPickingLineConfig(), profileId);
 	}
 
 	private void save_BPartnerConfigs(final @NonNull MobileUIPickingUserProfile profile, final MobileUIPickingUserProfileId profileId)
@@ -275,6 +282,33 @@ public class MobileUIPickingUserProfileRepository
 				.map(MobileUIPickingUserProfileRepository::fromRecord)
 				.collect(PickingJobOptionsCollection.collect());
 
+	}
+
+	private Optional<PickingLineConfig> retrievePickingLineConfig(@NonNull final MobileUIPickingUserProfileId profileId)
+	{
+		return retrievePickingLineConfigRecord(profileId)
+				.map(record -> PickingLineConfig.builder()
+						.showLastPickedBestBeforeDate(record.isShowLastPickedBestBeforeDate())
+						.build());
+	}
+
+	private Optional<I_PickingProfile_PickingJobLineConfig> retrievePickingLineConfigRecord(@NonNull final MobileUIPickingUserProfileId profileId)
+	{
+		return queryBL.createQueryBuilder(I_PickingProfile_PickingJobLineConfig.class)
+				.addEqualsFilter(I_PickingProfile_PickingJobLineConfig.COLUMNNAME_MobileUI_UserProfile_Picking_ID, profileId.getRepoId())
+				.create()
+				.firstOnlyOptional(I_PickingProfile_PickingJobLineConfig.class);
+	}
+
+	private void save_PickingLineConfig(final @NonNull PickingLineConfig config, final MobileUIPickingUserProfileId profileId)
+	{
+		final I_PickingProfile_PickingJobLineConfig lineConfigRecord = retrievePickingLineConfigRecord(profileId)
+				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_PickingProfile_PickingJobLineConfig.class));
+
+		lineConfigRecord.setMobileUI_UserProfile_Picking_ID(profileId.getRepoId());
+		lineConfigRecord.setIsShowLastPickedBestBeforeDate(config.isShowLastPickedBestBeforeDate());
+
+		InterfaceWrapperHelper.save(lineConfigRecord);
 	}
 
 	private static Map.Entry<PickingJobOptionsId, PickingJobOptions> fromRecord(final I_MobileUI_UserProfile_Picking_Job record)

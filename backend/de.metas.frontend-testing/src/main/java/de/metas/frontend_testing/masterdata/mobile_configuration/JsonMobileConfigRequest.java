@@ -40,6 +40,7 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean allowNewTU;
 		@Nullable Boolean allowSkippingRejectedReason;
 		@Nullable Boolean filterByQRCode;
+		@Nullable PickingLineConfig lineConfig;
 
 		@Nullable List<Customer> customers;
 
@@ -49,6 +50,14 @@ public class JsonMobileConfigRequest
 		public static class Customer
 		{
 			@NonNull Identifier customer;
+		}
+
+		@Value
+		@Builder
+		@Jacksonized
+		public static class PickingLineConfig
+		{
+			@Nullable Boolean showLastPickedBestBeforeDate;
 		}
 	}
 

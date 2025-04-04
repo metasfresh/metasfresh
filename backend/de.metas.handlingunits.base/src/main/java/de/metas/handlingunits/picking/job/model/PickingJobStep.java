@@ -42,6 +42,7 @@ import org.compiere.model.I_C_UOM;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 @Value
@@ -158,5 +159,11 @@ public class PickingJobStep
 	public List<HuId> getPickedHUIds()
 	{
 		return pickFroms.getPickedHUIds();
+	}
+
+	@NonNull
+	public Optional<PickingJobStepPickedToHU> getLastPickedHU()
+	{
+		return pickFroms.getLastPickedHU();
 	}
 }

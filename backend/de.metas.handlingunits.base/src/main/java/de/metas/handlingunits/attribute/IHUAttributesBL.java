@@ -111,4 +111,7 @@ public interface IHUAttributesBL extends ISingletonService
 
 	@Nullable
 	String getHUAttributeValue(@NonNull I_M_HU hu, @NonNull AttributeCode attributeCode);
+
+	@Nullable
+	IAttributeValue getAttributeValue(@NonNull HuId huId, @NonNull AttributeCode attributeCode);
 }

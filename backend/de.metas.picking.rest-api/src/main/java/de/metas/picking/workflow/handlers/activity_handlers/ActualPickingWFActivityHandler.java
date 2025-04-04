@@ -24,14 +24,22 @@ package de.metas.picking.workflow.handlers.activity_handlers;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.attribute.IAttributeValue;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
+import de.metas.handlingunits.picking.config.mobileui.PickingLineConfig;
 import de.metas.handlingunits.picking.config.mobileui.PickingLineGroupBy;
 import de.metas.handlingunits.picking.config.mobileui.PickingLineSortBy;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobProgress;
+import de.metas.handlingunits.rest_api.JsonHUAttributeConverters;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.organization.IOrgDAO;
 import de.metas.picking.rest_api.json.JsonPickingJob;
 import de.metas.picking.rest_api.json.JsonPickingJobLine;
 import de.metas.picking.rest_api.json.JsonRejectReasonsList;
@@ -40,12 +48,15 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
+import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.UIComponent;
 import de.metas.workflow.rest_api.model.UIComponentType;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
 import de.metas.workflow.rest_api.model.WFActivityType;
 import de.metas.workflow.rest_api.model.WFProcess;
+import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
+import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -58,8 +69,10 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.getPickingJob;
+import static org.adempiere.mm.attributes.api.AttributeConstants.ATTR_BestBeforeDate;
 
 @Component
 @RequiredArgsConstructor
@@ -67,10 +80,16 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("picking.actualPicking");
 	public static final UIComponentType COMPONENTTYPE_PICK_PRODUCTS = UIComponentType.ofString("picking/pickProducts");
+
+	private static final AdMessageKey LAST_PICKED_HU_BEST_BEFORE_DATE = AdMessageKey
+			.of("de.metas.picking.workflow.handlers.activity_handlers.LAST_PICKED_HU_BEST_BEFORE_DATE");
+
 	@VisibleForTesting
 	public static final String PROP_pickingJob = "pickingJob";
 
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final PickingJobRestService pickingJobRestService;
 
 	@Override
@@ -149,6 +168,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 		final PickingLineGroupBy groupBy = pickingJobOptions.getPickingLineGroupBy().orElse(PickingLineGroupBy.NONE);
 		final PickingLineSortBy sortBy = pickingJobOptions.getPickingLineSortBy().orElse(PickingLineSortBy.ORDER_LINE_SEQ_NO);
 		final Map<String, List<PickingJobLine>> sortedGroupedLines = groupBy.groupLines(pickingJob.getLines(), sortBy);
+		final MobileUIPickingUserProfile profile = pickingJobRestService.getPickingProfile();
 
 		final ArrayList<JsonPickingJobLine> result = new ArrayList<>();
 		for (final Map.Entry<String, List<PickingJobLine>> group : sortedGroupedLines.entrySet())
@@ -157,10 +177,46 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 					.map(line -> JsonPickingJobLine.builderFrom(line, this::getUOMSymbolById, jsonOpts)
 							.displayGroupKey(group.getKey())
 							.allowPickingAnyHU(pickingJob.isAllowPickingAnyHU())
+							.additionalHeaderProperties(JsonWFProcessHeaderProperties.of(
+									getAdditionalHeaderProperties(line, profile, jsonOpts), jsonOpts))
 							.build()
 					)
 					.forEach(result::add);
 		}
 		return ImmutableList.copyOf(result);
+	}
+
+	@NonNull
+	private WFProcessHeaderProperties getAdditionalHeaderProperties(
+			@NonNull final PickingJobLine line,
+			@NonNull final MobileUIPickingUserProfile profile,
+			@NonNull final JsonOpts opts)
+	{
+		final WFProcessHeaderProperties.WFProcessHeaderPropertiesBuilder builder = WFProcessHeaderProperties.builder();
+		getLastPickedBestBeforeDate(line, profile.getPickingLineConfig(), opts).ifPresent(builder::entry);
+		return builder.build();
+	}
+
+	private Optional<WFProcessHeaderProperty> getLastPickedBestBeforeDate(
+			@NonNull final PickingJobLine line,
+			@NonNull final PickingLineConfig pickingLineConfig,
+			@NonNull final JsonOpts opts)
+	{
+		if (!pickingLineConfig.isShowLastPickedBestBeforeDate())
+		{
+			return Optional.empty();
+		}
+
+		final String lastPickedHUBestBeforeDate = line.getLastPickedHUId()
+				.map(huId -> huAttributesBL.getAttributeValue(huId, ATTR_BestBeforeDate))
+				.map(IAttributeValue::getValueAsDate)
+				.map(date -> JsonHUAttributeConverters.toDisplayValue(date, opts.getAdLanguage()))
+				.map(String::valueOf)
+				.orElse("");
+
+		return Optional.of(WFProcessHeaderProperty.builder()
+								   .caption(msgBL.getTranslatableMsgText(LAST_PICKED_HU_BEST_BEFORE_DATE))
+								   .value(lastPickedHUBestBeforeDate)
+								   .build());
 	}
 }

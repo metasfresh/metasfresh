@@ -2,10 +2,11 @@ import { test } from "../../../../playwright.config";
 import { ID_BACK_BUTTON, page } from "../../common";
 import { PickingJobScreen } from "./PickingJobScreen";
 import { PickingJobStepScreen } from "./PickingJobStepScreen";
-import { GetQuantityDialog } from './GetQuantityDialog';
-import { ManufacturingJobScreen } from '../manufacturing/ManufacturingJobScreen';
+import { GetQuantityDialog } from "./GetQuantityDialog";
+import { ManufacturingJobScreen } from "../manufacturing/ManufacturingJobScreen";
+import { expect } from "@playwright/test";
 
-const NAME = 'PickingJobLineScreen';
+const NAME = "PickingJobLineScreen";
 /** @returns {import('@playwright/test').Locator} */
 const containerElement = () => page.locator('#PickLineScreen');
 
@@ -32,5 +33,12 @@ export const PickingJobLineScreen = {
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {
         await page.locator(ID_BACK_BUTTON).tap();
         await PickingJobScreen.waitForScreen();
+    }),
+
+    expectHeaderProperty:  async ({ caption, value }) => await test.step(`${NAME} - Check header property`, async () => {
+        const row = await page.locator(
+          `tr:has(th:has-text("${caption}")):has(td:has-text("${value}"))`
+        );
+        await expect(row).toHaveCount(1)
     }),
 };
