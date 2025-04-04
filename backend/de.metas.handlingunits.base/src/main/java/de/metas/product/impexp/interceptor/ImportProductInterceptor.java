@@ -20,11 +20,16 @@
  * #L%
  */
 
-package de.metas.product.impexp;
+/**
+ *
+ */
+package de.metas.product.impexp.interceptor;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.impl.CreateTUPackingInstructionsRequest;
+import de.metas.impexp.processing.IImportInterceptor;
+import de.metas.impexp.processing.IImportProcess;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -37,20 +42,30 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_I_Product;
-import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 
-@Service
-public class HUProductImportProcessListener implements ProductImportProcessListener
+/**
+ * @author metas-dev <dev@metasfresh.com>
+ */
+public class ImportProductInterceptor implements IImportInterceptor
 {
 	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
-	public void afterRecordImport(@NonNull final I_I_Product importRecord)
+	@Override
+	public void onImport(IImportProcess<?> process, Object importModel, Object targetModel, int timing)
 	{
-		createTUPackingInstructions(importRecord);
+		if (timing != IImportInterceptor.TIMING_AFTER_IMPORT)
+		{
+			return;
+		}
+
+		final I_I_Product iproduct = InterfaceWrapperHelper.create(importModel, I_I_Product.class);
+		createTUPackingInstructions(iproduct);
 	}
+
+
 
 	private void createTUPackingInstructions(@NonNull final I_I_Product importRecord)
 	{
@@ -62,6 +77,11 @@ public class HUProductImportProcessListener implements ProductImportProcessListe
 
 		final String piName = StringUtils.trimBlankToNull(importRecord.getM_HU_PI_Value());
 		if (piName == null)
+		{
+			return;
+		}
+
+		if (BigDecimal.ONE.compareTo(importRecord.getQtyCU()) == 0 )
 		{
 			return;
 		}

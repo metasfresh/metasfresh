@@ -87,6 +87,7 @@ public class MobileUIPickingUserProfile
 
 	@NonNull String name;
 	boolean isAllowPickingAnyCustomer;
+	boolean isFilterByBarcode;
 	@Getter @NonNull PickingCustomerConfigsCollection customerConfigs;
 	@NonNull PickingJobOptions defaultPickingJobOptions;
 	@Getter(AccessLevel.NONE) @NonNull PickingFiltersList filters;
@@ -99,19 +100,19 @@ public class MobileUIPickingUserProfile
 	private MobileUIPickingUserProfile(
 			final @NonNull String name,
 			final boolean isAllowPickingAnyCustomer,
+			final boolean isFilterByBarcode,
 			final @Nullable PickingCustomerConfigsCollection customerConfigs,
 			final @NonNull PickingJobOptions defaultPickingJobOptions,
 			final @Nullable PickingFiltersList filters,
 			final @NonNull ImmutableList<PickingJobField> fields)
 	{
-		Check.assumeNotEmpty(fields, "fields shall not be empty");
-
 		this.name = name;
 		this.isAllowPickingAnyCustomer = isAllowPickingAnyCustomer;
+		this.isFilterByBarcode = isFilterByBarcode;
 		this.customerConfigs = customerConfigs != null ? customerConfigs : PickingCustomerConfigsCollection.EMPTY;
 		this.defaultPickingJobOptions = defaultPickingJobOptions;
 		this.filters = filters != null ? filters : PickingFiltersList.EMPTY;
-		this.fields = fields;
+		this.fields = Check.assumeNotEmpty(fields, "fields shall not be empty");
 
 		this.launcherFieldsInOrder = this.fields.stream()
 				.filter(PickingJobField::isShowInSummary)

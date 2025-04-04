@@ -30,7 +30,6 @@ import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUPackageDAO;
-import de.metas.handlingunits.IHUShipperTransportationBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.expectations.HUsExpectation;
 import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
@@ -49,6 +48,8 @@ import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.shipmentschedule.api.HUShippingFacade;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.async.GenerateInOutFromHU.BillAssociatedInvoiceCandidates;
+import de.metas.handlingunits.shipping.CreatePackageForHURequest;
+import de.metas.handlingunits.shipping.IHUShipperTransportationBL;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.inout.model.I_M_InOut;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
@@ -98,7 +99,7 @@ import static de.metas.business.BusinessTestHelper.createWarehouse;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * HU Shipment Process:
@@ -163,7 +164,7 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 		Services.registerService(IShipmentScheduleInvalidateBL.class, new ShipmentScheduleInvalidateBL(new PickingBOMService()));
 
 		SpringContextHolder.registerJUnitBean(new ShipmentScheduleAllowConsolidatePredicateComposite(ImmutableList.of()));
-		
+
 		final OrderLineShipmentScheduleHandler orderLineShipmentScheduleHandler = OrderLineShipmentScheduleHandler.newInstanceWithoutExtensions();
 		Services.get(IShipmentScheduleHandlerBL.class).registerHandler(orderLineShipmentScheduleHandler);
 
@@ -351,7 +352,8 @@ public abstract class AbstractHUShipmentProcessIntegrationTest extends AbstractH
 			huShipperTransportationBL
 					.addHUsToShipperTransportation(
 							ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()),
-							Collections.singletonList(afterAggregation_HU));
+							CreatePackageForHURequest.ofHUsList(Collections.singletonList(afterAggregation_HU))
+					);
 
 			//
 			// Make sure M_Package was created and added to shipper transportation

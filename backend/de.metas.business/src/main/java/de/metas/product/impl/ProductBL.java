@@ -26,6 +26,7 @@ import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
+import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.IUOMDAO;
@@ -55,6 +56,7 @@ import org.compiere.model.I_M_Product_Category;
 import org.compiere.model.MAttributeSet;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -165,8 +167,32 @@ public final class ProductBL implements IProductBL
 	@Override
 	public I_C_UOM getWeightUOM(final I_M_Product product)
 	{
+		return getWeightUOM();
+	}
+
+	@NotNull
+	private I_C_UOM getWeightUOM()
+	{
 		// FIXME: we hardcoded the UOM for M_Product.Weight to Kilogram
 		return uomsRepo.getByX12DE355(X12DE355.KILOGRAM);
+	}
+
+	@Override
+	public Optional<Quantity> getWeight(final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		if (InterfaceWrapperHelper.isNull(product, I_M_Product.COLUMNNAME_Weight))
+		{
+			return Optional.empty();
+		}
+
+		final BigDecimal weightBD = product.getWeight();
+		if (weightBD.signum() <= 0)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(Quantity.of(weightBD, getWeightUOM()));
 	}
 
 	@Override
@@ -647,6 +673,12 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
+	public Optional<ProductId> getProductIdByEAN13(@NonNull final EAN13 ean13)
+	{
+		return getProductIdByEAN13(ean13, null, ClientId.METASFRESH);
+	}
+
+	@Override
 	public Optional<ProductId> getProductIdByEAN13(
 			@NonNull final EAN13 ean13,
 			@Nullable final BPartnerId bpartnerId,
@@ -666,7 +698,7 @@ public final class ProductBL implements IProductBL
 		}
 		else
 		{
-			throw new AdempiereException("Unsupported EAN13 prefix: " + ean13Prefix);
+			return getProductIdByEAN13ProductCode(ean13, bpartnerId, clientId);
 		}
 	}
 

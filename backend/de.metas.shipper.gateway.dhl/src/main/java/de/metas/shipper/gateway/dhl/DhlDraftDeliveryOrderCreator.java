@@ -26,8 +26,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.customs.CustomsInvoiceRepository;
-import de.metas.handlingunits.IHUPackageBL;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.mpackage.PackageId;
@@ -49,36 +47,32 @@ import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
-	private static final Logger logger = LoggerFactory.getLogger(DhlDraftDeliveryOrderCreator.class);
+	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
 
-	private final DhlClientConfigRepository clientConfigRepository;
-	private final CustomsInvoiceRepository customsInvoiceRepository;
-	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
-
-	public DhlDraftDeliveryOrderCreator(@NonNull final DhlClientConfigRepository clientConfigRepository, @NonNull final CustomsInvoiceRepository customsInvoiceRepository)
-	{
-		this.clientConfigRepository = clientConfigRepository;
-		this.customsInvoiceRepository = customsInvoiceRepository;
-	}
+	@NonNull private final DhlClientConfigRepository clientConfigRepository;
 
 	@Override
 	public String getShipperGatewayId()
@@ -98,9 +92,8 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	public DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
-		final Set<PackageId> mpackageIds = request.getMpackageIds();
 
-		final String customerReference = huPackageBL.getPOReference(mpackageIds);
+		final String customerReference = getPOReferences(request.getPackageInfos());
 
 		final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 		final I_C_BPartner pickupFromBPartner = bpartnerOrgBL.retrieveLinkedBPartner(deliveryOrderKey.getFromOrgId());
@@ -115,7 +108,6 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final I_C_Location deliverToLocation = deliverToBPLocation.getC_Location();
 		final String deliverToPhoneNumber = CoalesceUtil.firstNotEmptyTrimmed(deliverToBPLocation.getPhone(), deliverToBPLocation.getPhone2(), deliverToBPartner.getPhone2());
 
-		final BigDecimal grossWeightInKg = CoalesceUtil.firstGreaterThanZero(request.getAllPackagesGrossWeightInKg(), BigDecimal.ONE);
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 		final ShipperTransportationId shipperTransportationId = deliveryOrderKey.getShipperTransportationId();
 
@@ -123,10 +115,10 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		final DhlCustomDeliveryData.DhlCustomDeliveryDataBuilder dataBuilder = DhlCustomDeliveryData.builder();
 
 		// create the customDeliveryDataDetails
-		for (final PackageId packageId : mpackageIds)
+		for (final CreateDraftDeliveryOrderRequest.PackageInfo packageInfo : request.getPackageInfos())
 		{
 			final DhlCustomDeliveryDataDetail.DhlCustomDeliveryDataDetailBuilder dataDetailBuilder = DhlCustomDeliveryDataDetail.builder();
-			dataDetailBuilder.packageId(packageId);
+			dataDetailBuilder.packageId(packageInfo.getPackageId());
 
 			// implement handling for DE -> DE and DE -> International packages
 			// currently we only support inside-EU international shipping. For everything else dhl api will error out until the DhlCustomsDocument is properly filled!
@@ -172,7 +164,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		}
 
 		return createDeliveryOrderFromParams(
-				mpackageIds,
+				request.getPackageInfos(),
 				pickupFromBPartner,
 				pickupFromLocation,
 				pickupDate,
@@ -181,18 +173,17 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				deliverToLocation,
 				deliverToPhoneNumber,
 				detectedServiceType,
-				grossWeightInKg,
 				shipperId,
 				customerReference,
 				shipperTransportationId,
-				getPackageDimensions(mpackageIds, shipperId),
+				getPackageDimensions(request.getPackageInfos(), shipperId),
 				dataBuilder.build());
 
 	}
 
 	@VisibleForTesting
 	DeliveryOrder createDeliveryOrderFromParams(
-			@NonNull final Set<PackageId> mpackageIds,
+			@NonNull final Set<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos,
 			@NonNull final I_C_BPartner pickupFromBPartner,
 			@NonNull final I_C_Location pickupFromLocation,
 			@NonNull final LocalDate pickupDate,
@@ -200,20 +191,20 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 			@NonNull final I_C_Location deliverToLocation,
 			@Nullable final String deliverToPhoneNumber,
 			@NonNull final DhlShipperProduct serviceType,
-			final BigDecimal grossWeightKg,
 			final ShipperId shipperId,
 			final String customerReference,
 			final ShipperTransportationId shipperTransportationId,
 			@NonNull final PackageDimensions packageDimensions,
 			final CustomDeliveryData customDeliveryData)
 	{
-		final DeliveryOrderLine.DeliveryOrderLineBuilder orderLineBuilder = DeliveryOrderLine.builder()
-				.grossWeightKg(grossWeightKg)
-				.packageDimensions(packageDimensions);
-		final List<DeliveryOrderLine> deliveryOrderLines = mpackageIds.stream()
-				.map(orderLineBuilder::packageId)
-				.map(DeliveryOrderLine.DeliveryOrderLineBuilder::build)
+		final List<DeliveryOrderLine> deliveryOrderLines = packageInfos.stream()
+				.map(packageInfo -> DeliveryOrderLine.builder()
+						.packageDimensions(packageDimensions)
+						.packageId(packageInfo.getPackageId())
+						.grossWeightKg(packageInfo.getWeightInKgOr(DEFAULT_PackageWeightInKg))
+						.build())
 				.collect(ImmutableList.toImmutableList());
+
 		return DeliveryOrder.builder()
 				.shipperId(shipperId)
 				.shipperTransportationId(shipperTransportationId)
@@ -253,9 +244,9 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	 * Assume that all the packages inside a delivery position are of the same type and therefore have the same size.
 	 */
 	@NonNull
-	private PackageDimensions getPackageDimensions(@NonNull final Set<PackageId> mpackageIds, final ShipperId shipperId)
+	private PackageDimensions getPackageDimensions(@NonNull final Set<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos, final ShipperId shipperId)
 	{
-		final PackageId firstPackageId = mpackageIds.iterator().next();
+		final PackageId firstPackageId = packageInfos.iterator().next().getPackageId();
 		final DhlClientConfig clientConfig = clientConfigRepository.getByShipperId(shipperId);
 		return getPackageDimensions(firstPackageId, clientConfig.getLengthUomId());
 	}
@@ -273,4 +264,15 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 
 		return packingMaterialDAO.retrievePackageDimensions(packingMaterial, toUomId);
 	}
+
+	private static String getPOReferences(@NonNull final Collection<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos)
+	{
+		return packageInfos.stream()
+				.map(CreateDraftDeliveryOrderRequest.PackageInfo::getPoReference)
+				.map(StringUtils::trimBlankToNull)
+				.filter(Objects::nonNull)
+				.distinct()
+				.collect(Collectors.joining(", "));
+	}
+
 }

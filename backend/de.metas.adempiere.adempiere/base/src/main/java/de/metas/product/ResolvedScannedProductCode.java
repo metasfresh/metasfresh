@@ -2,7 +2,7 @@
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2021 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,27 +20,20 @@
  * #L%
  */
 
-package de.metas.handlingunits.impl;
+package de.metas.product;
 
-import de.metas.handlingunits.shipmentschedule.spi.impl.PackageInfo;
-import de.metas.inout.InOutId;
-import de.metas.shipping.ShipperId;
+import de.metas.bpartner.BPartnerId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import java.util.List;
+import javax.annotation.Nullable;
 
 @Value
 @Builder
-public class AddTrackingInfosForInOutWithoutHUReq
+public class ResolvedScannedProductCode
 {
-	@NonNull
-	InOutId inOutId;
-
-	@NonNull
-	ShipperId shipperId;
-
-	@NonNull
-	List<PackageInfo> packageInfos;
+	@NonNull ProductId productId;
+	@Nullable BPartnerId bpartnerId;
+	boolean usedForCustomer;
 }

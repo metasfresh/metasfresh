@@ -120,7 +120,7 @@ public class AllocatePayments_StepDef
 
 		DataTableRows.of(table).forEach(row -> {
 			row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_ID)
-					.map(this::buildPayableDocument)
+					.map(invoice -> buildPayableDocument(invoice, false))
 					.ifPresent(payableDocuments::add);
 
 			row.getAsOptionalIdentifier(COLUMNNAME_C_Payment_ID)
@@ -139,6 +139,29 @@ public class AllocatePayments_StepDef
 				.build();
 	}
 
+	@And("^allocate sales credit memo to purchase invoice$")
+	public void allocateSalesCreditMemoToPurchaseInvoice(@NonNull final DataTable table)
+	{
+		final ArrayList<PayableDocument> payableDocuments = new ArrayList<>();
+
+		DataTableRows.of(table).forEach(row -> {
+			row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_ID)
+					.map(invoice -> buildPayableDocument(invoice, true))
+					.ifPresent(payableDocuments::add);
+
+		});
+
+		PaymentAllocationBuilder.newBuilder()
+				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+				.defaultDateTrx(LocalDate.now())
+				.payableDocuments(payableDocuments)
+				.allowPartialAllocations(true)
+				.payableRemainingOpenAmtPolicy(PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy.DO_NOTHING)
+				.allowPurchaseSalesInvoiceCompensation(true)
+				.build();
+	}
+
+
 	@And("^allocate invoices \\(credit memo/purchase\\) to invoices$")
 	public void allocate_credit_memo_to_invoice(@NonNull final DataTable table)
 	{
@@ -146,13 +169,13 @@ public class AllocatePayments_StepDef
 
 		DataTableRows.of(table).forEach(row -> {
 			row.getAsOptionalIdentifier("C_Invoice_ID")
-					.map(this::buildPayableDocument)
+					.map(invoice -> buildPayableDocument(invoice, false))
 					.ifPresent(payableDocuments::add);
 			row.getAsOptionalIdentifier("CreditMemo.C_Invoice_ID")
-					.map(this::buildPayableDocument)
+					.map(invoice -> buildPayableDocument(invoice, false))
 					.ifPresent(payableDocuments::add);
 			row.getAsOptionalIdentifier("Purchase.C_Invoice_ID")
-					.map(this::buildPayableDocument)
+					.map(invoice -> buildPayableDocument(invoice, false))
 					.ifPresent(payableDocuments::add);
 		});
 
@@ -167,7 +190,7 @@ public class AllocatePayments_StepDef
 	}
 
 	@NonNull
-	private PayableDocument buildPayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier)
+	private PayableDocument buildPayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier, final boolean allowAllocateAgainstDifferentSignumPayment)
 	{
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
 
@@ -193,6 +216,7 @@ public class AllocatePayments_StepDef
 						.discountAmt(discountAmt)
 						.build()
 						.convertToRealAmounts(invoiceToAllocate.getMultiplier()))
+				.allowAllocateAgainstDifferentSignumPayment(allowAllocateAgainstDifferentSignumPayment)
 				.build();
 	}
 

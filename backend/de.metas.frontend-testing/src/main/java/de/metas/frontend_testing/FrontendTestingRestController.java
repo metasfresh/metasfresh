@@ -22,6 +22,7 @@ import de.metas.picking.api.IPickingSlotBL;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.api.PickingSlotQuery;
 import de.metas.picking.qrcode.PickingSlotQRCode;
+import de.metas.product.ProductRepository;
 import de.metas.security.permissions2.PermissionNotGrantedException;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -61,6 +62,7 @@ public class FrontendTestingRestController
 	@NonNull private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IPickingSlotBL pickingSlotBL = Services.get(IPickingSlotBL.class);
 	@NonNull private final UserAuthTokenFilterConfiguration userAuthTokenFilterConfiguration;
+	@NonNull private final ProductRepository productRepository;
 	@NonNull private final MobileConfigService mobileConfigService;
 	@NonNull private final MobileUIPickingUserProfileRepository mobilePickingConfigRepository;
 	@NonNull private final MobileUIDistributionConfigRepository mobileDistributionConfigRepository;
@@ -117,6 +119,7 @@ public class FrontendTestingRestController
 	{
 		return callInContext(
 				() -> CreateMasterdataCommand.builder()
+						.productRepository(productRepository)
 						.mobileConfigService(mobileConfigService)
 						.mobilePickingConfigRepository(mobilePickingConfigRepository)
 						.mobileDistributionConfigRepository(mobileDistributionConfigRepository)

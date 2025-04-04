@@ -78,7 +78,7 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public boolean isAllowCompletingPartialPickingJob() 
+	public boolean isAllowCompletingPartialPickingJob()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAllowCompletingPartialPickingJob);
 	}
@@ -153,6 +153,18 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public boolean isConsiderSalesOrderCapacity() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsConsiderSalesOrderCapacity);
+	}
+
+	@Override
+	public void setIsFilterByBarcode (final boolean IsFilterByBarcode)
+	{
+		set_Value (COLUMNNAME_IsFilterByBarcode, IsFilterByBarcode);
+	}
+
+	@Override
+	public boolean isFilterByBarcode()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFilterByBarcode);
 	}
 
 	@Override

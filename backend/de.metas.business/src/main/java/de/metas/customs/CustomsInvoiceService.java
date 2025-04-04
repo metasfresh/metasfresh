@@ -37,10 +37,8 @@ import de.metas.product.event.ProductWithNoCustomsTariffUserNotificationsProduce
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
-import de.metas.uom.X12DE355;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -303,15 +301,9 @@ public class CustomsInvoiceService
 
 	private Optional<Quantity> convertToKillogram(final Quantity qty, final ProductId productId)
 	{
-		final UomId kilogram = Services.get(IUOMDAO.class).getUomIdByX12DE355(X12DE355.KILOGRAM);
 		try
 		{
-			final Quantity quantityInKilograms = uomConversionBL.convertQuantityTo(
-					qty,
-					UOMConversionContext.of(productId),
-					kilogram);
-
-			return Optional.of(quantityInKilograms);
+			return Optional.of(uomConversionBL.convertToKilogram(qty, productId));
 		}
 		catch (final NoUOMConversionException ex)
 		{

@@ -4,6 +4,7 @@ import { ErrorToast } from './dialogs/ErrorToast';
 
 export const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || 'http://localhost:3001/mobile';
 
+export const VERY_FAST_ACTION_TIMEOUT = 1000; // 1sec
 export const FAST_ACTION_TIMEOUT = 5000; // 5sec
 export const SLOW_ACTION_TIMEOUT = 20000; // 20sec
 export const VERY_SLOW_ACTION_TIMEOUT = 40000; //40sec

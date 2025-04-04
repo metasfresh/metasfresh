@@ -219,4 +219,14 @@ public class PayableDocument
 	{
 		return amountsToAllocate.getTotalAmt().isZero();
 	}
+
+	public boolean isARC()
+	{
+		return isCreditMemo() && getSoTrx().isSales();
+	}
+
+	public boolean isAPI()
+	{
+		return !isCreditMemo() && getSoTrx().isPurchase();
+	}
 }

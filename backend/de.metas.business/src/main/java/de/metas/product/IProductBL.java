@@ -30,6 +30,7 @@ import de.metas.ean13.EAN13ProductCodes;
 import de.metas.gs1.GTIN;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
@@ -148,6 +149,8 @@ public interface IProductBL extends ISingletonService
 
 	I_C_UOM getWeightUOM(I_M_Product product);
 
+	Optional<Quantity> getWeight(ProductId productId);
+
 	/**
 	 * Gets product standard Weight in <code>uomTo</code>.
 	 *
@@ -231,6 +234,8 @@ public interface IProductBL extends ISingletonService
 
 	Optional<ProductId> getProductIdByValueStartsWith(@NonNull String valuePrefix, @NonNull ClientId clientId);
 
+	Optional<ProductId> getProductIdByEAN13(@NonNull EAN13 ean13);
+
 	Optional<ProductId> getProductIdByEAN13(@NonNull EAN13 ean13, @Nullable BPartnerId bpartnerId, @NonNull ClientId clientId);
 
 	boolean isValidEAN13Product(@NonNull EAN13 ean13, @NonNull ProductId expectedProductId, @Nullable BPartnerId bpartnerId);
@@ -240,5 +245,6 @@ public interface IProductBL extends ISingletonService
 			@NonNull ClientId clientId,
 			@NonNull QueryLimit limit);
 
-	@NonNull List<I_M_Product> getByIds(@NonNull Set<ProductId> productIds);
+	@NonNull
+	List<I_M_Product> getByIds(@NonNull Set<ProductId> productIds);
 }

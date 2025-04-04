@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.business
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,25 +20,27 @@
  * #L%
  */
 
-package de.metas.handlingunits.shipmentschedule.spi.impl;
+package de.metas.qm.analysis;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.document.engine.DocumentHandler;
+import de.metas.document.engine.DocumentHandlerProvider;
+import org.compiere.model.I_QM_Analysis_Report;
+import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
-@Value
-@Builder
-public class PackageInfo
+@Component
+public class QMAnalysisReportDocumentHandlerProvider  implements DocumentHandlerProvider
 {
-	@NonNull
-	String trackingNumber;
 
-	@Nullable
-	String trackingUrl;
+	@Override
+	public String getHandledTableName()
+	{
+		return I_QM_Analysis_Report.Table_Name;
+	}
 
-	@Nullable
-	BigDecimal weight;
+	@Override
+	public DocumentHandler provideForDocument(final Object model)
+	{
+		return new QMAnalysisReportDocumentHandler();
+	}
+
 }

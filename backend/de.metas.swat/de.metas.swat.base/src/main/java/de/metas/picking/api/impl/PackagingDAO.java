@@ -24,6 +24,7 @@ import de.metas.picking.api.Packageable;
 import de.metas.picking.api.Packageable.PackageableBuilder;
 import de.metas.picking.api.PackageableQuery;
 import de.metas.product.ProductId;
+import de.metas.product.ResolvedScannedProductCode;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
@@ -203,6 +204,22 @@ public class PackagingDAO implements IPackagingDAO
 		if (!query.getHandoverLocationIds().isEmpty())
 		{
 			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_HandOver_Location_ID, query.getHandoverLocationIds());
+		}
+		
+		//
+		if(query.getScannedProductCodes() != null)
+		{
+			final ICompositeQueryFilter<I_M_Packageable_V> productCodesFilter = queryBuilder.addCompositeQueryFilter().setJoinOr();
+			for(final ResolvedScannedProductCode scannedProductCode : query.getScannedProductCodes())
+			{
+				final ICompositeQueryFilter<I_M_Packageable_V> currentProductCodeFilter = productCodesFilter.addCompositeQueryFilter()
+						.setJoinAnd()
+						.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_M_Product_ID, scannedProductCode.getProductId());
+				if(scannedProductCode.getBpartnerId() != null)
+				{
+					currentProductCodeFilter.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID, scannedProductCode.getBpartnerId());
+				}
+			}
 		}
 
 		return queryBuilder.create();

@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2025 metas GmbH
+ * Copyright (C) 2020 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,12 +20,26 @@
  * #L%
  */
 
-package de.metas.product.impexp;
+package de.metas.handlingunits.shipping;
 
+import de.metas.inout.InOutId;
+import de.metas.shipping.ShipperId;
+import lombok.Builder;
 import lombok.NonNull;
-import org.compiere.model.I_I_Product;
+import lombok.Value;
 
-public interface ProductImportProcessListener
+import java.util.List;
+
+@Value
+@Builder
+public class AddTrackingInfosForInOutWithoutHUReq
 {
-	void afterRecordImport(@NonNull final I_I_Product importRecord);
+	@NonNull
+	InOutId inOutId;
+
+	@NonNull
+	ShipperId shipperId;
+
+	@NonNull
+	List<PackageInfo> packageInfos;
 }

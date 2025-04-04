@@ -298,6 +298,27 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsConsiderSalesOrderCapacity = "IsConsiderSalesOrderCapacity";
 
 	/**
+	 * Set Filter by Barcode.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFilterByBarcode (boolean IsFilterByBarcode);
+
+	/**
+	 * Get Filter by Barcode.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFilterByBarcode();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsFilterByBarcode = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsFilterByBarcode", null);
+	String COLUMNNAME_IsFilterByBarcode = "IsFilterByBarcode";
+
+	/**
 	 * Set Pick with LU.
 	 *
 	 * <br>Type: YesNo
