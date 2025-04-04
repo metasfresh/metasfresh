@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -633783443L;
+	private static final long serialVersionUID = 1086930713L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking (final Properties ctx, final int MobileUI_UserProfile_Picking_ID, @Nullable final String trxName)
@@ -141,6 +141,18 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public boolean isConsiderSalesOrderCapacity() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsConsiderSalesOrderCapacity);
+	}
+
+	@Override
+	public void setIsFilterByBarcode (final boolean IsFilterByBarcode)
+	{
+		set_Value (COLUMNNAME_IsFilterByBarcode, IsFilterByBarcode);
+	}
+
+	@Override
+	public boolean isFilterByBarcode() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFilterByBarcode);
 	}
 
 	@Override

@@ -37,6 +37,7 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean alwaysSplitHUsEnabled;
 		@Nullable Boolean pickWithNewLU;
 		@Nullable Boolean allowNewTU;
+		@Nullable Boolean filterByQRCode;
 
 		@Nullable List<Customer> customers;
 

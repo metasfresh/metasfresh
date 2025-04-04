@@ -11,7 +11,7 @@ import { getWFProcessScreenLocation } from '../../routes/workflow_locations';
 import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
 import { useMobileNavigation } from '../../hooks/useMobileNavigation';
 
-const TEST_PROPS = ['qtyToDeliver'];
+const TEST_PROPS = ['qtyToDeliver', 'productId', 'customerId'];
 
 const WFLauncherButton = ({ applicationId, startedWFProcessId, wfParameters, caption, showWarningSign, testId }) => {
   const dispatch = useDispatch();

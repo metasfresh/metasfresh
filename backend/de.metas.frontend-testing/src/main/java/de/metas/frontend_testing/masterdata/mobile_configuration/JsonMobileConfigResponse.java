@@ -35,6 +35,7 @@ public class JsonMobileConfigResponse
 		@Nullable Boolean alwaysSplitHUsEnabled;
 		@Nullable Boolean pickWithNewLU;
 		@Nullable Boolean allowNewTU;
+		@Nullable Boolean filterByQRCode;
 	}
 
 	//
