@@ -136,19 +136,6 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_value}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-5" mode="Transparent" x="56" y="47" width="111" height="13" uuid="6122d920-aac6-4868-bbcc-9188e732e684"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Left">
-					<font fontName="Arial" size="12" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{customer}]]></textFieldExpression>
-			</textField>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
 				<reportElement key="textField-3" mode="Transparent" x="412" y="34" width="129" height="13" uuid="26393df0-f984-4853-bb9f-4f59b48fd5c2"/>
 				<box>
@@ -163,27 +150,27 @@
 				<textFieldExpression><![CDATA[$F{account_manager}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-5" mode="Transparent" x="352" y="34" width="60" height="13" uuid="cfee9d29-d8e8-49e0-b51a-9b9558163b55"/>
+				<reportElement key="textField-5" mode="Transparent" x="310" y="34" width="102" height="13" uuid="cfee9d29-d8e8-49e0-b51a-9b9558163b55"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Left">
+				<textElement textAlignment="Right">
 					<font fontName="Arial" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Account_manager}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-5" mode="Transparent" x="352" y="47" width="60" height="13" uuid="8c1f5db6-b668-4b6b-a9b5-a3a93a66e328"/>
+				<reportElement key="textField-5" mode="Transparent" x="310" y="47" width="102" height="13" uuid="8c1f5db6-b668-4b6b-a9b5-a3a93a66e328"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
-				<textElement textAlignment="Left">
+				<textElement textAlignment="Right">
 					<font size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{email}]]></textFieldExpression>
@@ -230,6 +217,19 @@
 					<font fontName="Arial" size="10"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Reference}+": "+$F{poreference}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-5" mode="Transparent" x="56" y="47" width="111" height="13" uuid="a2d601cd-c6a7-459f-9938-c977be7c7e14"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="10"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{customer}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
