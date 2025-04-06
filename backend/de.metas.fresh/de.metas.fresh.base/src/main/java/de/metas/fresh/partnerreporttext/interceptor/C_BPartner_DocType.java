@@ -58,12 +58,11 @@ public class C_BPartner_DocType
 			{
 				final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(bPartnerDocType.getC_DocType_ID());
 				final I_C_BPartner partner = Services.get(IBPartnerDAO.class).getById(partnerReportText.getC_BPartner_ID());
-				throw new AdempiereException(MSG_C_BPartner_DocType_Unique_Record)
-						.markAsUserValidationError()
-						.appendParametersToMessage()
-						.setParameter("DocType", docType.getDocBaseType())
-						.setParameter("BPartner", partner.getValue())
-						.setParameter("ReportText", partnerReportText.getValue());
+				throw new AdempiereException(MSG_C_BPartner_DocType_Unique_Record,
+											 docType.getName(),
+											 partner.getValue(),
+											 partnerReportText.getValue())
+						.markAsUserValidationError();
 			}
 
 			trxManager.runAfterCommit(() -> {

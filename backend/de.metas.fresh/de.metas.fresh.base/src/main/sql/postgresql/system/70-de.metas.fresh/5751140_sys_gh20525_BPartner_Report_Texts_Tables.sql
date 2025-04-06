@@ -507,3 +507,9 @@ INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Ind
 -- 2025-04-05T20:14:11.835Z
 CREATE UNIQUE INDEX IDX_BPartner_DocType ON C_BPartner_DocType (C_BPartner_ID,C_DocType_ID)
 ;
+
+-- Column: C_BPartner_Report_Text.C_BPartner_ID
+-- Column: C_BPartner_Report_Text.C_BPartner_ID
+-- 2025-04-06T09:48:22.347Z
+UPDATE AD_Column SET IsExcludeFromZoomTargets='N', IsGenericZoomKeyColumn='Y', IsGenericZoomOrigin='Y',Updated=TO_TIMESTAMP('2025-04-06 09:48:22.347000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=589896
+;
