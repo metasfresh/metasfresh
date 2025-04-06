@@ -513,3 +513,14 @@ CREATE UNIQUE INDEX IDX_BPartner_DocType ON C_BPartner_DocType (C_BPartner_ID,C_
 -- 2025-04-06T09:48:22.347Z
 UPDATE AD_Column SET IsExcludeFromZoomTargets='N', IsGenericZoomKeyColumn='Y', IsGenericZoomOrigin='Y',Updated=TO_TIMESTAMP('2025-04-06 09:48:22.347000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=589896
 ;
+
+-- Name: C_DocType BPartner_Report_Text
+-- 2025-04-06T10:24:57.349Z
+INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,Description,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540705,'C_DocType.DocBaseType IN (''POO'', ''SOO'', ''MMS'', ''ARI'') AND C_DocType.AD_Org_ID IN (@AD_Org_ID/-1@, 0)',TO_TIMESTAMP('2025-04-06 10:24:57.081000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Document Types for: Purchase Order, Sales Order, Shipment, Sales Invoice','D','Y','C_DocType BPartner_Report_Text','S',TO_TIMESTAMP('2025-04-06 10:24:57.081000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- Column: C_BPartner_DocType.C_DocType_ID
+-- Column: C_BPartner_DocType.C_DocType_ID
+-- 2025-04-06T10:25:54.064Z
+UPDATE AD_Column SET AD_Val_Rule_ID=540705,Updated=TO_TIMESTAMP('2025-04-06 10:25:54.064000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=589886
+;
