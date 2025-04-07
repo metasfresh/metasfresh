@@ -53,7 +53,7 @@ SELECT i.descriptionbottom,
        i.incotermlocation,
        COALESCE(o_dr_trl.name, o_dr.name)                                                             AS deliveryrule,
        COALESCE(o_dvr_trl.name, o_dvr.name)                                                           AS deliveryviarule,
-       prt.additionaltext
+       report.Get_AdditionalText(i.C_DocTypeTarget_ID, i.c_bpartner_id)                               AS AdditionalText
 FROM C_Invoice i
          LEFT OUTER JOIN C_PaymentTerm pt ON i.C_PaymentTerm_ID = pt.C_PaymentTerm_ID
          LEFT OUTER JOIN C_PaymentTerm_Trl ptt ON i.C_PaymentTerm_ID = ptt.C_PaymentTerm_ID AND ptt.AD_Language = p_Language
@@ -69,8 +69,6 @@ FROM C_Invoice i
          LEFT OUTER JOIN AD_Ref_List_Trl o_dr_trl ON o_dr.ad_ref_list_id = o_dr_trl.ad_ref_list_id AND o_dr_trl.ad_language = p_Language
          LEFT OUTER JOIN AD_Ref_List o_dvr ON o_dvr.AD_Reference_ID = 152 AND o_dvr.value = o.deliveryviarule
          LEFT OUTER JOIN AD_Ref_List_Trl o_dvr_trl ON o_dvr.ad_ref_list_id = o_dvr_trl.ad_ref_list_id AND o_dvr_trl.ad_language = p_Language
-         LEFT OUTER JOIN C_BPartner_DocType pdt ON pdt.c_doctype_id = i.C_DocTypeTarget_ID AND pdt.c_bpartner_id = i.c_bpartner_id
-         LEFT OUTER JOIN C_BPartner_Report_Text prt ON pdt.c_bpartner_report_text_id = prt.c_bpartner_report_text_id
 
 WHERE i.C_Invoice_ID = p_Invoice_ID
 

@@ -46,7 +46,7 @@ SELECT COALESCE(reft.name, ref.name)                                          AS
        o.descriptionbottom,
        COALESCE(o_dr_trl.name, o_dr.name)                                     AS deliveryrule,
        COALESCE(o_dvr_trl.name, o_dvr.name)                                   AS deliveryviarule,
-       prt.additionaltext
+       report.Get_AdditionalText(o.C_DocTypeTarget_ID, o.c_bpartner_id)       AS AdditionalText
 
 FROM C_Order o
 
@@ -63,8 +63,6 @@ FROM C_Order o
          LEFT OUTER JOIN AD_Ref_List_Trl o_dr_trl ON o_dr.ad_ref_list_id = o_dr_trl.ad_ref_list_id AND o_dr_trl.ad_language = p_Language
          LEFT OUTER JOIN AD_Ref_List o_dvr ON o_dvr.AD_Reference_ID = 152 AND o_dvr.value = o.deliveryviarule
          LEFT OUTER JOIN AD_Ref_List_Trl o_dvr_trl ON o_dvr.ad_ref_list_id = o_dvr_trl.ad_ref_list_id AND o_dvr_trl.ad_language = p_Language
-         LEFT OUTER JOIN C_BPartner_DocType pdt ON pdt.c_doctype_id = o.C_DocTypeTarget_ID AND pdt.c_bpartner_id = o.c_bpartner_id
-         LEFT OUTER JOIN C_BPartner_Report_Text prt ON pdt.c_bpartner_report_text_id = prt.c_bpartner_report_text_id
 
 WHERE o.C_Order_ID = record_id
 

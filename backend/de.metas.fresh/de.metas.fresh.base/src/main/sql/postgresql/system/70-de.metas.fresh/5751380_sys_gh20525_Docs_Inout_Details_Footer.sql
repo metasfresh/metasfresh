@@ -40,13 +40,11 @@ FROM (
                 3                                                                                           AS pozition,
                 COALESCE(inc_trl.name, inc.name)                                                            AS Incoterms,
                 io.incotermlocation,
-                prt.additionaltext
+                report.Get_AdditionalText(io.C_DocType_ID, io.c_bpartner_id)  AS AdditionalText
          FROM m_inout io
                   LEFT JOIN c_doctype dt ON io.c_doctype_id = dt.c_doctype_id AND dt.isActive = 'Y'
                   LEFT OUTER JOIN C_Incoterms inc ON io.c_incoterms_id = inc.c_incoterms_id
                   LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = p_Language
-                  LEFT OUTER JOIN C_BPartner_DocType pdt ON pdt.c_doctype_id = io.C_DocType_ID AND pdt.c_bpartner_id = io.c_bpartner_id
-                  LEFT OUTER JOIN C_BPartner_Report_Text prt ON pdt.c_bpartner_report_text_id = prt.c_bpartner_report_text_id
 
          UNION
          ---------------------------------------------------------------------------------------------
@@ -63,13 +61,11 @@ FROM (
                 3                                AS pozition,
                 COALESCE(inc_trl.name, inc.name) AS Incoterms,
                 io.incotermlocation,
-                prt.additionaltext
+                report.Get_AdditionalText(io.C_DocType_ID, io.c_bpartner_id)  AS AdditionalText
          FROM m_inout io
                   LEFT JOIN c_doctype_trl dt ON io.c_doctype_id = dt.c_doctype_id AND dt.isActive = 'Y'
                   LEFT OUTER JOIN C_Incoterms inc ON io.c_incoterms_id = inc.c_incoterms_id
                   LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = p_Language
-                  LEFT OUTER JOIN C_BPartner_DocType pdt ON pdt.c_doctype_id = io.C_DocType_ID AND pdt.c_bpartner_id = io.c_bpartner_id
-                  LEFT OUTER JOIN C_BPartner_Report_Text prt ON pdt.c_bpartner_report_text_id = prt.c_bpartner_report_text_id
 
          UNION
          ---------------------------------------------------------------------------------------------
@@ -82,12 +78,10 @@ FROM (
                 2                                AS pozition,
                 COALESCE(inc_trl.name, inc.name) AS Incoterms,
                 io.incotermlocation,
-                prt.additionaltext
+                report.Get_AdditionalText(io.C_DocType_ID, io.c_bpartner_id)  AS AdditionalText
          FROM m_inout io
                   LEFT OUTER JOIN C_Incoterms inc ON io.c_incoterms_id = inc.c_incoterms_id
-                  LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = p_Language
-                  LEFT OUTER JOIN C_BPartner_DocType pdt ON pdt.c_doctype_id = io.C_DocType_ID AND pdt.c_bpartner_id = io.c_bpartner_id
-                  LEFT OUTER JOIN C_BPartner_Report_Text prt ON pdt.c_bpartner_report_text_id = prt.c_bpartner_report_text_id) AS footer
+                  LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = p_Language) AS footer
          INNER JOIN m_inout io ON io.m_inout_id = footer.m_inout_id
          LEFT JOIN AD_Ref_List o_dr ON o_dr.AD_Reference_ID = 151 AND o_dr.value = io.deliveryrule
          LEFT JOIN AD_Ref_List_Trl o_dr_trl ON o_dr.ad_ref_list_id = o_dr_trl.ad_ref_list_id AND o_dr_trl.ad_language = p_Language

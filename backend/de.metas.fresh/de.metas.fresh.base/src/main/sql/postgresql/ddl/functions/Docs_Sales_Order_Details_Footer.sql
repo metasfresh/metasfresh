@@ -41,7 +41,7 @@ SELECT COALESCE(reft.name, ref.name)                          AS paymentrule,
        otb.textsnippet,
        COALESCE(inc_trl.name, inc.name)                       AS Incoterms,
        o.incotermlocation,
-       prt.additionaltext
+       report.Get_AdditionalText(o.C_DocTypeTarget_ID, o.c_bpartner_id)  AS AdditionalText
 FROM C_Order o
 
          LEFT OUTER JOIN C_PaymentTerm pt ON o.C_PaymentTerm_ID = pt.C_PaymentTerm_ID
@@ -63,8 +63,6 @@ FROM C_Order o
          LEFT OUTER JOIN de_metas_endcustomer_fresh_reports.getOrderTextBoilerPlate(p_Order_ID) otb ON TRUE
          LEFT OUTER JOIN C_Incoterms inc ON o.c_incoterms_id = inc.c_incoterms_id
          LEFT OUTER JOIN C_Incoterms_trl inc_trl ON inc.c_incoterms_id = inc_trl.c_incoterms_id AND inc_trl.ad_language = p_Language
-         LEFT OUTER JOIN C_BPartner_DocType pdt ON pdt.c_doctype_id = o.C_DocTypeTarget_ID AND pdt.c_bpartner_id = o.c_bpartner_id
-         LEFT OUTER JOIN C_BPartner_Report_Text prt ON pdt.c_bpartner_report_text_id = prt.c_bpartner_report_text_id
 
 WHERE o.C_Order_ID = p_Order_ID;
 
