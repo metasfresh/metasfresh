@@ -1702,6 +1702,21 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setM_Material_Tracking_ID (final int M_Material_Tracking_ID)
+	{
+		if (M_Material_Tracking_ID < 1)
+			set_Value (COLUMNNAME_M_Material_Tracking_ID, null);
+		else
+			set_Value (COLUMNNAME_M_Material_Tracking_ID, M_Material_Tracking_ID);
+	}
+
+	@Override
+	public int getM_Material_Tracking_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Material_Tracking_ID);
+	}
+
+	@Override
 	public void setM_PriceList_Version_ID (final int M_PriceList_Version_ID)
 	{
 		if (M_PriceList_Version_ID < 1)
