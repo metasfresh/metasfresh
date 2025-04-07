@@ -30,8 +30,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
-import java.util.Objects;
-
 @Repository
 public class BPartnerReportTextRepository
 {
@@ -52,7 +50,7 @@ public class BPartnerReportTextRepository
 		return BPartnerReportText.builder()
 				.id(BPartnerReportTextId.ofRepoId(record.getC_BPartner_Report_Text_ID()))
 				.bPartnerID(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
-				.additionalText(Objects.requireNonNull(record.getAdditionalText()))
+				.additionalText(record.getAdditionalText())
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
 				.build();
 	}
