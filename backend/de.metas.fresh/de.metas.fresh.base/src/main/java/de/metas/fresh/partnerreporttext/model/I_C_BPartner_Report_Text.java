@@ -1,5 +1,6 @@
 package de.metas.fresh.partnerreporttext.model;
 
+import lombok.NonNull;
 import org.adempiere.model.ModelColumn;
 
 import javax.annotation.Nullable;
@@ -46,7 +47,7 @@ public interface I_C_BPartner_Report_Text
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable
+	@NonNull
 	String getAdditionalText();
 
 	ModelColumn<I_C_BPartner_Report_Text, Object> COLUMN_AdditionalText = new ModelColumn<>(I_C_BPartner_Report_Text.class, "AdditionalText", null);

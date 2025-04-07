@@ -1,6 +1,8 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.fresh.partnerreporttext.model;
 
+import org.jetbrains.annotations.NotNull;
+
 import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
@@ -48,7 +50,7 @@ public class X_C_BPartner_Report_Text extends org.compiere.model.PO implements I
 	}
 
 	@Override
-	public String getAdditionalText()
+	public @NotNull String getAdditionalText()
 	{
 		return get_ValueAsString(COLUMNNAME_AdditionalText);
 	}
