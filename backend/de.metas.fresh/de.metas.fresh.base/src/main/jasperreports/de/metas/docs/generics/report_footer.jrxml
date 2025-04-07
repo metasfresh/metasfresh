@@ -141,9 +141,9 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report($P{org_id})
 				<textElement textAlignment="Center">
 					<font fontName="Arial" size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{org_bank_name}.equals("") ? ("" + (($F{org_bank_swift}==null || $F{org_bank_swift}.equals("")) ? "" + ($F{org_bank_iban}.equals("") ? "" : $R{iban} + " " + $F{org_bank_iban}) : $R{swift} + " " + $F{org_bank_swift} + ($F{org_bank_iban}.equals("") ? "" : " | " + $R{iban} + " " + $F{org_bank_iban}) )+ " | " +$R{vataxid} + " " + $F{vataxid}) 
+				<textFieldExpression><![CDATA[$F{org_bank_name}.equals("") ? ("" + (($F{org_bank_swift}==null || $F{org_bank_swift}.equals("")) ? "" + ($F{org_bank_iban}.equals("") ? "" : $R{iban} + " " + $F{org_bank_iban}) : $R{swift} + " " + $F{org_bank_swift} + ($F{org_bank_iban}.equals("") ? "" : " | " + $R{iban} + " " + $F{org_bank_iban}) )+ " | " + ($F{vataxid}==null || $F{vataxid}.equals("") ? "" : " | " + $R{vataxid} + " " + $F{vataxid})) 
 
-: ($F{org_bank_name} + (($F{org_bank_swift}==null || $F{org_bank_swift}.equals("")) ? "" + ($F{org_bank_iban}.equals("") ? "" : " | " + $R{iban} + " " + $F{org_bank_iban}) : " | " + $R{swift} + " " + $F{org_bank_swift} + ($F{org_bank_iban}.equals("") ? "" : " | " + $R{iban} + " " + $F{org_bank_iban}))+ " | " +$R{vataxid} + " " + $F{vataxid})]]></textFieldExpression>
+: ($F{org_bank_name} + (($F{org_bank_swift}==null || $F{org_bank_swift}.equals("")) ? "" + ($F{org_bank_iban}.equals("") ? "" : " | " + $R{iban} + " " + $F{org_bank_iban}) : " | " + $R{swift} + " " + $F{org_bank_swift} + ($F{org_bank_iban}.equals("") ? "" : " | " + $R{iban} + " " + $F{org_bank_iban}))+ ($F{vataxid}==null || $F{vataxid}.equals("") ? "" : " | " + $R{vataxid} + " " + $F{vataxid}))]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement key="textField-8" x="125" y="1" width="344" height="12" uuid="2acced95-3851-4712-9669-aa6cefe5ee40"/>
@@ -169,7 +169,7 @@ FROM de_metas_endcustomer_fresh_reports.Docs_Generics_Footer_Report($P{org_id})
 				<textElement textAlignment="Center">
 					<font fontName="Arial" size="7"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{orgphone} + " " + $F{phone} + " | " + $R{orgfax} + " " + $F{fax} + " | " + $F{email}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{orgphone} + " " + $F{phone} + " | " + $R{orgfax} + " " + $F{fax} + " | " +  $R{orgEmail} + " " +$F{email}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>

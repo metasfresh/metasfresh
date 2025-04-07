@@ -100,7 +100,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
@@ -298,6 +300,12 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		return result;
 	}
 
+	@NonNull
+	public List<I_M_HU> retrieveIncludedHUs(@NonNull final HuId huId)
+	{
+		return retrieveIncludedHUs(getById(huId));
+	}
+
 	@Override
 	public I_M_HU_Item createHUItem(final I_M_HU hu, final I_M_HU_PI_Item piItem)
 	{
@@ -493,6 +501,16 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 	@Override
 	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull final I_M_HU_PI_Version version,
+			@Nullable HUItemType itemType,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		final List<I_M_HU_PI_Item> piItems = retrievePIItems(version, itemType != null ? itemType.getCode() : null, bpartnerId, null);
+		return !piItems.isEmpty() ? Optional.of(piItems.get(0)) : Optional.empty();
+	}
+
+	@Override
+	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
 			@NonNull final HuPackingInstructionsId piId,
 			@NonNull final HuPackingInstructionsId includedPIId,
 			@Nullable final BPartnerId bpartnerId)
@@ -653,6 +671,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		return queryBL.createQueryBuilder(I_M_HU_PI.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_HU_PI.COLUMNNAME_IsDefaultForPicking, true)
+				.orderBy(I_M_HU_PI.COLUMNNAME_M_HU_PI_ID)
 				.create()
 				.first();
 	}
@@ -1060,8 +1079,8 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public IHUQueryBuilder createHUQueryBuilder()
 	{
 		return new HUQueryBuilder(getHUReservationRepository(),
-								  getAgeAttributeService(),
-								  getDDOrderMoveScheduleRepository());
+				getAgeAttributeService(),
+				getDDOrderMoveScheduleRepository());
 	}
 
 	private HUReservationRepository getHUReservationRepository()
@@ -1134,6 +1153,19 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 			return defaultLUPIItems.get(0);
 		}
+	}
+
+	@NonNull
+	public Optional<HuPackingInstructionsItemId> retrieveDefaultParentPIItemId(
+			@NonNull final I_M_HU_PI huPI,
+			@Nullable final String huUnitType,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		final I_M_HU_PI_Item parentPIItem = retrieveDefaultParentPIItem(huPI, huUnitType, bpartnerId);
+
+		return Optional.ofNullable(parentPIItem)
+				.map(I_M_HU_PI_Item::getM_HU_PI_Item_ID)
+				.map(HuPackingInstructionsItemId::ofRepoId);
 	}
 
 	private boolean isDefaultLU(final I_M_HU_PI_Item parentPIItem)
@@ -1229,7 +1261,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.setOnlyTopLevelHUs()
 				.addOnlyWithAttribute(AttributeConstants.HU_ExternalLotNumber, externalLotNo)
 				.createQuery()
-				.firstIdOnlyOptional(HuId::ofRepoId);
+				.firstIdOnlyOptional(HuId::ofRepoIdOrNull);
 	}
 
 	@NonNull
@@ -1251,5 +1283,24 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 				.iterate(getById(huId));
 
 		return huIdAndDownstream.build();
+	}
+
+	@Override
+	public <T> Stream<T> streamByQuery(@NonNull final IQueryBuilder<I_M_HU> queryBuilder, @NonNull final Function<I_M_HU, T> mapper)
+	{
+		return queryBuilder
+				.create()
+				.iterateAndStream()
+				.map(mapper);
+	}
+
+	@Override
+	public void createTUPackingInstructions(CreateTUPackingInstructionsRequest request)
+	{
+		CreateTUPackingInstructionsCommand.builder()
+				.handlingUnitsDAO(this)
+				.request(request)
+				.build()
+				.execute();
 	}
 }

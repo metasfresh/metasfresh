@@ -25,6 +25,7 @@ package de.metas.cucumber.stepdefs.workflow;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import de.metas.JsonObjectMapperHolder;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
@@ -38,11 +39,16 @@ import de.metas.cucumber.stepdefs.workflow.dto.JsonWFManufacturingReceivingTarge
 import de.metas.cucumber.stepdefs.workflow.dto.JsonWFManufacturingStep;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonLUReceivingTarget;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonNewLUTarget;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
+import de.metas.order.OrderId;
+import de.metas.picking.workflow.PickingWFProcessStartParams;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessStartRequest;
 import de.metas.workflow.rest_api.model.WFActivityId;
@@ -56,12 +62,11 @@ import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_WF_Node;
 import org.compiere.model.I_AD_Workflow;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.eevolution.model.I_PP_Order;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
@@ -70,6 +75,7 @@ import static org.assertj.core.api.Assertions.*;
 public class Workflow_RestController_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final com.fasterxml.jackson.databind.ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	private final static String MANUFACTURING_ISSUE_TO_ACTIVITY_COMPONENT_TYPE = "manufacturing/rawMaterialsIssue";
@@ -97,15 +103,17 @@ public class Workflow_RestController_StepDef
 	public void wf_picking_process_start_set_request_payload_in_context(@NonNull final DataTable dataTable) throws JsonProcessingException
 	{
 		final DataTableRow row = DataTableRow.singleRow(dataTable);
-		final I_C_BPartner bPartner = row.getAsIdentifier(I_C_BPartner.COLUMNNAME_C_BPartner_ID).lookupIn(bPartnerTable);
-		final I_C_BPartner_Location bPartnerLocation = row.getAsIdentifier(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID).lookupIn(bPartnerLocationTable);
 		final I_C_Order salesOrder = row.getAsIdentifier(I_C_Order.COLUMNNAME_C_Order_ID).lookupIn(orderTable);
+		assertThat(salesOrder).isNotNull();
 
-		final Map<String, Object> wfParams = new HashMap<>();
+		final LinkedHashMap<String, Object> wfParams = new LinkedHashMap<>(PickingWFProcessStartParams.builder()
+				.aggregationType(PickingJobAggregationType.SALES_ORDER)
+				.salesOrderId(OrderId.ofRepoId(salesOrder.getC_Order_ID()))
+				.deliveryBPLocationId(BPartnerLocationId.ofRepoId(salesOrder.getC_BPartner_ID(), salesOrder.getC_BPartner_Location_ID()))
+				.build()
+				.toParams()
+				.toJson());
 		wfParams.put("applicationId", PickingMobileApplication.APPLICATION_ID.getAsString());
-		wfParams.put("salesOrderId", salesOrder.getC_Order_ID());
-		wfParams.put("customerId", bPartner.getC_BPartner_ID());
-		wfParams.put("customerLocationId", bPartnerLocation.getC_BPartner_Location_ID());
 		final JsonWFProcessStartRequest request = JsonWFProcessStartRequest.builder().wfParameters(wfParams).build();
 
 		testContext.setRequestPayload(request);
@@ -211,31 +219,38 @@ public class Workflow_RestController_StepDef
 					.wfProcessId(workflowProcess.getAsString())
 					.wfActivityId(workflowActivity.getAsString())
 					.issueTo(JsonManufacturingOrderEvent.IssueTo.builder()
-							.issueStepId(workflowStep.getId())
-							.qtyIssued(workflowStep.getQtyToIssue())
-							.huQRCode(qrCode.getCode())
-							.build());
+									 .issueStepId(workflowStep.getId())
+									 .qtyIssued(workflowStep.getQtyToIssue())
+									 .huQRCode(qrCode.getCode())
+									 .build());
 		}
 		else if (event.equals("ReceiveFrom"))
 		{
 			final JsonWFLineManufacturingMaterialReceipt workflowLine = row.getAsIdentifier("WorkflowLine").lookupIn(materialReceiptLineTable);
 			final JsonWFManufacturingReceivingTargetValues receivingTargetValues = row.getAsIdentifier("WorkflowReceivingTargetValues").lookupIn(receivingTargetValuesTable);
 
+			final Quantity catchWeight = row.getAsOptionalQuantity("CatchWeight", uomDAO::getByX12DE355)
+					.orElse(null);
+
 			manufacturingOrderEventBuilder
 					.wfProcessId(workflowProcess.getAsString())
 					.wfActivityId(workflowActivity.getAsString())
 					.receiveFrom(JsonManufacturingOrderEvent.ReceiveFrom.builder()
-							.lineId(workflowLine.getId())
-							.qtyReceived(workflowLine.getQtyToReceive())
-							.aggregateToLU(JsonLUReceivingTarget.builder()
-									.newLU(JsonNewLUTarget.builder()
-											.luCaption(receivingTargetValues.getLuCaption())
-											.tuCaption(receivingTargetValues.getTuCaption())
-											.luPIItemId(HuPackingInstructionsItemId.ofRepoId(receivingTargetValues.getLuPIItemId()))
-											.tuPIItemProductId(HUPIItemProductId.ofRepoId(receivingTargetValues.getTuPIItemProductId()))
-											.build())
-									.build())
-							.build());
+										 .lineId(workflowLine.getId())
+										 .qtyReceived(workflowLine.getQtyToReceive())
+										 .aggregateToLU(JsonLUReceivingTarget.builder()
+																.newLU(JsonNewLUTarget.builder()
+																			   .luCaption(receivingTargetValues.getLuCaption())
+																			   .tuCaption(receivingTargetValues.getTuCaption())
+																			   .luPIItemId(HuPackingInstructionsItemId.ofRepoId(receivingTargetValues.getLuPIItemId()))
+																			   .tuPIItemProductId(HUPIItemProductId.ofRepoId(receivingTargetValues.getTuPIItemProductId()))
+																			   .build())
+																.build())
+										 .bestBeforeDate(row.getAsOptionalString("BestBeforeDate").orElse(null))
+										 .catchWeight(catchWeight != null ? catchWeight.toBigDecimal() : null)
+										 .catchWeightUomSymbol(catchWeight != null ? catchWeight.getUOMSymbol() : null)
+										 .lotNo(row.getAsOptionalString("LotNo").orElse(null))
+										 .build());
 		}
 
 		testContext.setRequestPayload(manufacturingOrderEventBuilder.build());

@@ -7,7 +7,6 @@ import { manufacturingReducer as manufacturingIssueReducer } from './manufacturi
 import { reducer as manufacturingIssueAdjustmentReducer } from './manufacturing_issue_adjustment';
 import { manufacturingReducer as manufacturingReceiptReducer } from './manufacturing_receipt';
 import { generateHUQRCodesReducer } from './generateHUQRCodes';
-import { toQRCodeString } from '../../utils/qrCode/hu';
 import { trl } from '../../utils/translations';
 
 export const QTY_REJECTED_REASON_TO_IGNORE_KEY = 'IgnoreReason';
@@ -104,13 +103,6 @@ export const getStepByIdFromLine = (line, stepId) => {
   return line?.steps?.[stepId];
 };
 
-export const getStepByQRCodeFromActivity = (activity, lineId, qrCode) => {
-  const qrCodeNorm = toQRCodeString(qrCode);
-  const line = getLineByIdFromActivity(activity, lineId);
-  const steps = getStepsArrayFromLine(line);
-  return steps.find((step) => toQRCodeString(step.huQRCode) === qrCodeNorm);
-};
-
 export const getQtyRejectedReasonsFromActivity = (activity) => {
   let reasons = activity?.dataStored?.qtyRejectedReasons?.reasons ?? [];
 
@@ -124,6 +116,12 @@ export const getQtyRejectedReasonsFromActivity = (activity) => {
     ];
   }
   return reasons;
+};
+
+export const computeQtyToPickRemaining = ({ line }) => {
+  const stepsArray = getStepsArrayFromLine(line);
+  const qtyPicked = stepsArray.reduce((sum, step) => sum + (step.qtyPicked || 0), 0);
+  return Math.max(line.qtyToMove - qtyPicked, 0);
 };
 
 export const getScaleDeviceFromActivity = (activity) => {

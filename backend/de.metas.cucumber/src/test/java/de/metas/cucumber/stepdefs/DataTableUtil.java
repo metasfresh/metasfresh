@@ -405,6 +405,12 @@ public class DataTableUtil
 	}
 
 	@NonNull
+	public static BigDecimal extractBigDecimalForColumnName(final DataTableRow dataTableRow, final String columnName)
+	{
+		return extractBigDecimalForColumnName(dataTableRow.asMap(), columnName);
+	}
+
+	@NonNull
 	public static BigDecimal extractBigDecimalForColumnName(final Map<String, String> dataTableRow, final String columnName)
 	{
 		final String string = extractStringForColumnName(dataTableRow, columnName);

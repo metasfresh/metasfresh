@@ -14,11 +14,15 @@ import de.metas.distribution.workflows_api.facets.DistributionFacetIdsCollection
 import de.metas.distribution.workflows_api.facets.DistributionFacetsCollection;
 import de.metas.distribution.workflows_api.facets.DistributionFacetsCollector;
 import de.metas.document.engine.DocStatus;
+import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.trace.HUAccessService;
 import de.metas.order.IOrderBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.product.IProductBL;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -41,30 +45,37 @@ public class DistributionRestService
 	@NonNull private final DistributionJobHUReservationService distributionJobHUReservationService;
 	@NonNull private final DistributionJobLoaderSupportingServices loadingSupportServices;
 	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final InventoryService inventoryService;
+	@NonNull private final HUAccessService huAccessService;
 	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	@NonNull private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHUPIItemProductBL hupiItemProductBL = Services.get(IHUPIItemProductBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	public DistributionRestService(
 			final @NonNull MobileUIDistributionConfigRepository configRepository,
 			final @NonNull DDOrderService ddOrderService,
 			final @NonNull DDOrderMoveScheduleService ddOrderMoveScheduleService,
 			final @NonNull DistributionJobHUReservationService distributionJobHUReservationService,
-			final @NonNull HUQRCodesService huQRCodeService,
-			final @NonNull HUQRCodesService huQRCodesService)
+			final @NonNull HUQRCodesService huQRCodesService,
+			final @NonNull InventoryService inventoryService,
+			final @NonNull HUAccessService huAccessService)
 	{
 		this.ddOrderService = ddOrderService;
 		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
 		this.distributionJobHUReservationService = distributionJobHUReservationService;
+		this.inventoryService = inventoryService;
 		this.huQRCodesService = huQRCodesService;
+		this.huAccessService = huAccessService;
 
 		this.loadingSupportServices = DistributionJobLoaderSupportingServices.builder()
 				.configRepository(configRepository)
 				.ddOrderService(ddOrderService)
 				.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
-				.huQRCodeService(huQRCodeService)
+				.huQRCodeService(huQRCodesService)
 				.warehouseBL(warehouseBL)
 				.productBL(productBL)
 				.orgDAO(Services.get(IOrgDAO.class))
@@ -141,6 +152,7 @@ public class DistributionRestService
 				.datesPromised(activeFacetIds.getDatesPromised())
 				.productIds(activeFacetIds.getProductIds())
 				.qtysEntered(activeFacetIds.getQuantities())
+				.plantIds(activeFacetIds.getPlantIds())
 				.build();
 	}
 
@@ -228,7 +240,11 @@ public class DistributionRestService
 				.huQRCodesService(huQRCodesService)
 				.handlingUnitsBL(handlingUnitsBL)
 				.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
-				.loadingSupportServices(loadingSupportServices);
+				.loadingSupportServices(loadingSupportServices)
+				.hupiItemProductBL(hupiItemProductBL)
+				.inventoryService(inventoryService)
+				.uomConversionBL(uomConversionBL)
+				.huAccessService(huAccessService);
 	}
 
 	public DistributionJob complete(@NonNull final DistributionJob job)

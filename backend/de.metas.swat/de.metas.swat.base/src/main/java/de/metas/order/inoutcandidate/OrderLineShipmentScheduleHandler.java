@@ -49,7 +49,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.DB;
@@ -78,22 +77,29 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 @Component
 public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 {
-	private final static IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL;
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+	private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final PickingBOMService pickingBOMService;
 
 	private final OrderLineShipmentScheduleHandlerExtension extensions;
 	
 
 	public OrderLineShipmentScheduleHandler(
-			@NonNull final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL,
+			@NonNull final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL, 
+			@NonNull final PickingBOMService pickingBOMService,
 			@NonNull final Optional<List<OrderLineShipmentScheduleHandlerExtension>> extensions)
 	{
 		this.shipmentScheduleInvalidateBL = shipmentScheduleInvalidateBL;
+		this.pickingBOMService = pickingBOMService;
 		this.extensions = CompositeOrderLineShipmentScheduleHandlerExtension.of(extensions);
 	}
 
@@ -101,6 +107,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	{
 		return new OrderLineShipmentScheduleHandler(
 				Services.get(IShipmentScheduleInvalidateBL.class),
+				new PickingBOMService(),
 				Optional.empty());
 	}
 
@@ -138,8 +145,17 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		Check.errorUnless(newSched.getAD_Client_ID() == orderLine.getAD_Client_ID(),
 						  "The new M_ShipmentSchedule needs to have the same AD_Client_ID as " + orderLine + ", i.e." + newSched.getAD_Client_ID() + " == " + orderLine.getAD_Client_ID());
-
+		
 		updateShipmentScheduleFromOrderLine(newSched, orderLine);
+		
+		// Moved this from updateShipmentScheduleFromOrderLine() to here as a workaround, until we have M_ShipmentSchedule.M_AttributeSetInstance_Override_ID
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
+		if (asiId.isRegular())
+		{
+			final IAttributeSetInstanceAware asiAware = shipmentScheduleBL.toAttributeSetInstanceAware(newSched);
+			final ImmutableAttributeSet attributeSet = attributeSetInstanceBL.getImmutableAttributeSetById(asiId);
+			attributeSetInstanceBL.syncAttributesToASIAware(attributeSet, asiAware);
+		}
 
 		newSched.setPickFrom_Order_ID(PPOrderId.toRepoId(pickingOrderId));
 
@@ -151,7 +167,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 
 	private WarehouseId getWarehouseId(final I_C_OrderLine orderLine)
 	{
-		return Services.get(IWarehouseAdvisor.class).evaluateWarehouse(orderLine);
+		return warehouseAdvisor.evaluateWarehouse(orderLine);
 	}
 
 	@Override
@@ -203,13 +219,14 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		shipmentSchedule.setM_Shipper_ID(orderLine.getM_Shipper_ID());
 
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
-		if (asiId.isRegular())
-		{
-			final IAttributeSetInstanceAware asiAware = shipmentScheduleBL.toAttributeSetInstanceAware(shipmentSchedule);
-			final ImmutableAttributeSet attributeSet = attributeSetInstanceBL.getImmutableAttributeSetById(asiId);
-			attributeSetInstanceBL.syncAttributesToASIAware(attributeSet, asiAware);
-		}
+		// Moved this to createShipmentScheduleForOrderLine() as a workaround, until we have M_ShipmentSchedule.M_AttributeSetInstance_Override_ID
+		// final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(orderLine.getM_AttributeSetInstance_ID());
+		// if (asiId.isRegular())
+		// {
+		// 	final IAttributeSetInstanceAware asiAware = shipmentScheduleBL.toAttributeSetInstanceAware(shipmentSchedule);
+		// 	final ImmutableAttributeSet attributeSet = attributeSetInstanceBL.getImmutableAttributeSetById(asiId);
+		// 	attributeSetInstanceBL.syncAttributesToASIAware(attributeSet, asiAware);
+		// }
 
 		// 04290
 		shipmentSchedule.setM_Warehouse_ID(getWarehouseId(orderLine).getRepoId());
@@ -276,7 +293,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		shipmentSchedule.setM_Tour_ID(order.getM_Tour_ID());
 
 		final DocTypeId orderDocTypeId = DocTypeId.ofRepoId(order.getC_DocType_ID());
-		final DocBaseAndSubType orderDocBaseTypeAndSubType = Services.get(IDocTypeDAO.class).getDocBaseAndSubTypeById(orderDocTypeId);
+		final DocBaseAndSubType orderDocBaseTypeAndSubType = docTypeDAO.getDocBaseAndSubTypeById(orderDocTypeId);
 		shipmentSchedule.setC_DocType_ID(orderDocTypeId.getRepoId());
 		shipmentSchedule.setDocSubType(orderDocBaseTypeAndSubType.getDocSubType().getNullableCode());
 
@@ -338,7 +355,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		final String wc = " C_OrderLine_ID IN ( select C_OrderLine_ID from C_OrderLine_ID_With_Missing_ShipmentSchedule_v ) ";
 		final TypedSqlQueryFilter<I_C_OrderLine> orderLinesFilter = TypedSqlQueryFilter.of(wc);
 
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_C_OrderLine.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(orderLinesFilter)
@@ -365,10 +382,6 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	@Nullable
 	private PPOrderId createPickingOrderIfNeeded(@NonNull final I_C_OrderLine salesOrderLine)
 	{
-		final PickingBOMService pickingBOMService = SpringContextHolder.instance.getBean(PickingBOMService.class);
-		final IPPOrderBL ppOrdersService = Services.get(IPPOrderBL.class);
-		final IProductBL productsService = Services.get(IProductBL.class);
-
 		final OrgId orgId = OrgId.ofRepoId(salesOrderLine.getAD_Org_ID());
 		final WarehouseId warehouseId = getWarehouseId(salesOrderLine);
 		final ProductId productId = ProductId.ofRepoId(salesOrderLine.getM_Product_ID());
@@ -379,10 +392,10 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 			return null;
 		}
 
-		final I_C_UOM stockUOM = productsService.getStockUOM(productId);
+		final I_C_UOM stockUOM = productBL.getStockUOM(productId);
 		final Quantity qtyOrdered = Quantity.of(salesOrderLine.getQtyOrdered(), stockUOM);
 
-		final I_PP_Order ppOrder = ppOrdersService.createOrder(PPOrderCreateRequest.builder()
+		final I_PP_Order ppOrder = ppOrderBL.createOrder(PPOrderCreateRequest.builder()
 																	   .clientAndOrgId(ClientAndOrgId.ofClientAndOrg(salesOrderLine.getAD_Client_ID(), salesOrderLine.getAD_Org_ID()))
 																	   .productPlanningId(config.getProductPlanningId())
 																	   // .materialDispoGroupId(null)

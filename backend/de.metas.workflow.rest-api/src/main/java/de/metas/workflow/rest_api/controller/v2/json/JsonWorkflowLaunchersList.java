@@ -25,7 +25,7 @@ package de.metas.workflow.rest_api.controller.v2.json;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
-import de.metas.global_qrcodes.JsonDisplayableQRCode;
+import de.metas.scannable_code.JsonPrintableScannedCode;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
@@ -44,7 +44,7 @@ public class JsonWorkflowLaunchersList
 {
 	int count;
 	@Nullable ImmutableList<JsonWorkflowLauncher> launchers;
-	@Nullable JsonDisplayableQRCode filterByQRCode;
+	@Nullable JsonPrintableScannedCode filterByQRCode;
 	@NonNull Instant computedTime;
 
 	public static JsonWorkflowLaunchersList of(
@@ -62,7 +62,7 @@ public class JsonWorkflowLaunchersList
 	{
 		final JsonWorkflowLaunchersListBuilder builder = builder()
 				.count(result.size())
-				.filterByQRCode(result.getFilterByQRCode() != null ? result.getFilterByQRCode().toJsonDisplayableQRCode() : null)
+				.filterByQRCode(result.getFilterByQRCode() != null ? result.getFilterByQRCode().toJson() : null)
 				.computedTime(result.getTimestamp());
 
 		if (!countOnly)

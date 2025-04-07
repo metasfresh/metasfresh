@@ -25,6 +25,7 @@ package de.metas.picking.workflow.handlers.activity_handlers;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.qrcode.PickingSlotQRCode;
+import de.metas.picking.rest_api.json.JsonPickingJobLine;
 import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.JsonQRCode;
@@ -77,10 +78,7 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 
 	public static JsonQRCode toJsonQRCode(final PickingSlotIdAndCaption pickingSlotIdAndCaption)
 	{
-		return JsonQRCode.builder()
-				.qrCode(PickingSlotQRCode.ofPickingSlotIdAndCaption(pickingSlotIdAndCaption).toGlobalQRCodeJsonString())
-				.caption(pickingSlotIdAndCaption.getCaption())
-				.build();
+		return JsonPickingJobLine.toJsonQRCode(pickingSlotIdAndCaption);
 	}
 
 	@Override

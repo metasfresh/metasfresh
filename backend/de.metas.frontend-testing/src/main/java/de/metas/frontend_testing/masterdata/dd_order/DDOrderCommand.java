@@ -26,6 +26,7 @@ import de.metas.handlingunits.IHUDocumentHandlerFactory;
 import de.metas.handlingunits.QtyTU;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
@@ -79,6 +80,10 @@ public class DDOrderCommand
 		final WarehouseId toWarehouseId = context.getId(request.getWarehouseTo(), WarehouseId.class);
 		final WarehouseId transitWarehouseId = context.getId(request.getWarehouseInTransit(), WarehouseId.class);
 
+		final ResourceId plantId = request.getPlant() != null
+				? context.getId(request.getPlant(), ResourceId.class)
+				: MasterdataContext.DEFAULT_PLANT_ID;
+
 		final I_DD_Order ddOrder = InterfaceWrapperHelper.newInstance(I_DD_Order.class);
 		ddOrder.setAD_Org_ID(orgId.getRepoId());
 		ddOrder.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
@@ -86,7 +91,7 @@ public class DDOrderCommand
 		ddOrder.setM_Warehouse_From_ID(fromWarehouseId.getRepoId());
 		ddOrder.setM_Warehouse_To_ID(toWarehouseId.getRepoId());
 		ddOrder.setM_Warehouse_ID(transitWarehouseId.getRepoId());
-		ddOrder.setPP_Plant_ID(MasterdataContext.DEFAULT_PLANT_ID.getRepoId());
+		ddOrder.setPP_Plant_ID(plantId.getRepoId());
 		ddOrder.setIsInDispute(false);
 		ddOrder.setIsSOTrx(false);
 		ddOrder.setIsInTransit(false);
@@ -109,6 +114,7 @@ public class DDOrderCommand
 				.launcherTestId(ddOrderReference.getTestId())
 				.warehouseFromFacetId(DistributionFacetId.ofWarehouseFromId(fromWarehouseId).toWorkflowLaunchersFacetId().toJsonString())
 				.warehouseToFacetId(DistributionFacetId.ofWarehouseFromId(toWarehouseId).toWorkflowLaunchersFacetId().toJsonString())
+				.plantFacetId(DistributionFacetId.ofPlantId(plantId).toWorkflowLaunchersFacetId().toJsonString())
 				.build();
 	}
 

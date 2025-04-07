@@ -5,7 +5,6 @@ import com.google.common.base.Strings;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableSet;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.process.ADProcessService;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -43,6 +42,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentEvaluatee;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -381,11 +381,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 				.setPInstanceId(pinstanceId)
 				.build();
 
-		final Object processClassInstance = processInfo.newProcessClassInstanceOrNull();
-		if (processClassInstance == null)
-		{
-			throw new AdempiereException("No processClassInstance found: " + processInfo);
-		}
+		final Object processClassInstance = processInfo.newProcessClassInstance();
 
 		try (final IAutoCloseable ignored = JavaProcess.temporaryChangeCurrentInstance(processClassInstance))
 		{

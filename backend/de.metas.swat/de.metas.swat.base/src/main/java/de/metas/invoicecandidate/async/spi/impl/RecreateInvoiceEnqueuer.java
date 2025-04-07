@@ -22,9 +22,9 @@
 
 package de.metas.invoicecandidate.async.spi.impl;
 
+import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IWorkPackageQueue;
-import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
@@ -43,16 +43,15 @@ public class RecreateInvoiceEnqueuer
 
 	public void enqueueSelection(@NonNull final PInstanceId pInstanceId)
 	{
-		final I_C_Async_Batch asyncBatch = asyncBatchBL.newAsyncBatch()
+		final AsyncBatchId asyncBatchId = asyncBatchBL.newAsyncBatch()
 				.setContext(getCtx())
 				.setC_Async_Batch_Type(C_Async_Batch_InternalName_VoidAndRecreateInvoice)
 				.setName(C_Async_Batch_InternalName_VoidAndRecreateInvoice)
-				.build();
+				.buildAndEnqueue();
 
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), RecreateInvoiceWorkpackageProcessor.class);
-		queue
-				.newWorkPackage()
-				.setC_Async_Batch(asyncBatch)
+		queue.newWorkPackage()
+				.setC_Async_Batch_ID(asyncBatchId)
 				.parameter(I_AD_PInstance.COLUMNNAME_AD_PInstance_ID, pInstanceId)
 				.buildAndEnqueue();
 	}

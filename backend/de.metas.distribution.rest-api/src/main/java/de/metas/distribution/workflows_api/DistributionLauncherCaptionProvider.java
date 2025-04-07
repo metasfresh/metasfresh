@@ -43,7 +43,12 @@ public class DistributionLauncherCaptionProvider
 				.append(" > ")
 				.append(warehouseBL.getWarehouseName(ddOrderReference.getToWarehouseId()))
 				.append(" | ")
-				.appendDateTime(ddOrderReference.getDatePromised().toZonedDateTime(orgDAO::getTimeZone));
+				.appendDateTime(ddOrderReference.getDisplayDate().toZonedDateTime(orgDAO::getTimeZone));
+
+		if (ddOrderReference.getPlantId() != null)
+		{
+			captionBuilder.append(" | ").append(ppOrderBL.getResourceName(ddOrderReference.getPlantId()));
+		}
 
 		if (ddOrderReference.getProductId() != null)
 		{

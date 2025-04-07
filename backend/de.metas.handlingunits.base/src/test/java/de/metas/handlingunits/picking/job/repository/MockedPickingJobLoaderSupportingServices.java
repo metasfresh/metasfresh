@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.job.repository;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 import de.metas.bpartner.BPartnerId;
+import de.metas.ean13.EAN13ProductCode;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
@@ -27,11 +28,13 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.Set;
 
 public class MockedPickingJobLoaderSupportingServices implements PickingJobLoaderSupportingServices
@@ -88,6 +91,12 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	public String getProductNo(@NonNull final ProductId productId)
 	{
 		return "productNo-" + productId.getRepoId();
+	}
+
+	@Override
+	public Optional<EAN13ProductCode> getEAN13ProductCode(@NonNull final ProductId productId, @Nullable final BPartnerId customerId)
+	{
+		return Optional.empty();
 	}
 
 	@Override

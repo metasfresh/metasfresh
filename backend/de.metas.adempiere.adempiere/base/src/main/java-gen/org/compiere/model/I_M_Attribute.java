@@ -73,8 +73,7 @@ public interface I_M_Attribute
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Dynamische Validierung.
-	 * Regel für die  dynamische Validierung
+	 * Set Validation Rule.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -83,8 +82,7 @@ public interface I_M_Attribute
 	void setAD_Val_Rule_ID (int AD_Val_Rule_ID);
 
 	/**
-	 * Get Dynamische Validierung.
-	 * Regel für die  dynamische Validierung
+	 * Get Validation Rule.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -236,7 +234,7 @@ public interface I_M_Attribute
 
 	/**
 	 * Set Always Updateable.
-	 * The column is always updateable, even if the record is not active or processed
+	 * The column's field is always updateable, even if the record is not active or processed
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -246,7 +244,7 @@ public interface I_M_Attribute
 
 	/**
 	 * Get Always Updateable.
-	 * The column is always updateable, even if the record is not active or processed
+	 * The column's field is always updateable, even if the record is not active or processed
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -304,7 +302,7 @@ public interface I_M_Attribute
 	String COLUMNNAME_IsHighVolume = "IsHighVolume";
 
 	/**
-	 * Set Instanz-Attribut.
+	 * Set Instance Attribute.
 	 * The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)
 	 *
 	 * <br>Type: YesNo
@@ -314,7 +312,7 @@ public interface I_M_Attribute
 	void setIsInstanceAttribute (boolean IsInstanceAttribute);
 
 	/**
-	 * Get Instanz-Attribut.
+	 * Get Instance Attribute.
 	 * The product attribute is specific to the instance (like Serial No, Lot or Guarantee Date)
 	 *
 	 * <br>Type: YesNo
@@ -327,7 +325,7 @@ public interface I_M_Attribute
 	String COLUMNNAME_IsInstanceAttribute = "IsInstanceAttribute";
 
 	/**
-	 * Set Pflichtangabe.
+	 * Set mandatory.
 	 * Data entry is required in this column
 	 *
 	 * <br>Type: YesNo
@@ -337,7 +335,7 @@ public interface I_M_Attribute
 	void setIsMandatory (boolean IsMandatory);
 
 	/**
-	 * Get Pflichtangabe.
+	 * Get mandatory.
 	 * Data entry is required in this column
 	 *
 	 * <br>Type: YesNo
@@ -371,6 +369,29 @@ public interface I_M_Attribute
 	String COLUMNNAME_IsPricingRelevant = "IsPricingRelevant";
 
 	/**
+	 * Set Printed in document.
+	 * If ticked, the attribute will be printed on all referenced documents.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPrintedInDocument (boolean IsPrintedInDocument);
+
+	/**
+	 * Get Printed in document.
+	 * If ticked, the attribute will be printed on all referenced documents.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPrintedInDocument();
+
+	ModelColumn<I_M_Attribute, Object> COLUMN_IsPrintedInDocument = new ModelColumn<>(I_M_Attribute.class, "IsPrintedInDocument", null);
+	String COLUMNNAME_IsPrintedInDocument = "IsPrintedInDocument";
+
+	/**
 	 * Set Read Only.
 	 *
 	 * <br>Type: YesNo
@@ -393,7 +414,7 @@ public interface I_M_Attribute
 
 	/**
 	 * Set Ist HU-Bestandsrelevant.
-	 * Is used to do attibute matching between storage attributes and order line attributes (ASIs).
+	 * Is used to do attibute matching between HU storage attributes and order line attributes (ASIs).
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -403,7 +424,7 @@ public interface I_M_Attribute
 
 	/**
 	 * Get Ist HU-Bestandsrelevant.
-	 * Is used to do attibute matching between storage attributes and order line attributes (ASIs).
+	 * Is used to do attibute matching between HU storage attributes and order line attributes (ASIs).
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -415,8 +436,8 @@ public interface I_M_Attribute
 	String COLUMNNAME_IsStorageRelevant = "IsStorageRelevant";
 
 	/**
-	 * Set Merkmal.
-	 * Product Attribute
+	 * Set Attribute.
+	 * Produkt-Merkmal
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -425,8 +446,8 @@ public interface I_M_Attribute
 	void setM_Attribute_ID (int M_Attribute_ID);
 
 	/**
-	 * Get Merkmal.
-	 * Product Attribute
+	 * Get Attribute.
+	 * Produkt-Merkmal
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -438,7 +459,7 @@ public interface I_M_Attribute
 	String COLUMNNAME_M_Attribute_ID = "M_Attribute_ID";
 
 	/**
-	 * Set Merkmal-Suche.
+	 * Set Attribute Search.
 	 * Common Search Attribute
 	 *
 	 * <br>Type: TableDir
@@ -448,7 +469,7 @@ public interface I_M_Attribute
 	void setM_AttributeSearch_ID (int M_AttributeSearch_ID);
 
 	/**
-	 * Get Merkmal-Suche.
+	 * Get Attribute Search.
 	 * Common Search Attribute
 	 *
 	 * <br>Type: TableDir
@@ -486,7 +507,30 @@ public interface I_M_Attribute
 	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Get Updated.de
+	 * Set Print Value Override.
+	 * The value that we print on documents if is filled out
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPrintValue_Override (@Nullable java.lang.String PrintValue_Override);
+
+	/**
+	 * Get Print Value Override.
+	 * The value that we print on documents if is filled out
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPrintValue_Override();
+
+	ModelColumn<I_M_Attribute, Object> COLUMN_PrintValue_Override = new ModelColumn<>(I_M_Attribute.class, "PrintValue_Override", null);
+	String COLUMNNAME_PrintValue_Override = "PrintValue_Override";
+
+	/**
+	 * Get Updated.
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
@@ -534,7 +578,7 @@ public interface I_M_Attribute
 	String COLUMNNAME_Value = "Value";
 
 	/**
-	 * Set Max. Wert.
+	 * Set Max. Value.
 	 * Maximum Value for a field
 	 *
 	 * <br>Type: Amount
@@ -544,7 +588,7 @@ public interface I_M_Attribute
 	void setValueMax (@Nullable BigDecimal ValueMax);
 
 	/**
-	 * Get Max. Wert.
+	 * Get Max. Value.
 	 * Maximum Value for a field
 	 *
 	 * <br>Type: Amount
@@ -557,7 +601,7 @@ public interface I_M_Attribute
 	String COLUMNNAME_ValueMax = "ValueMax";
 
 	/**
-	 * Set Min. Wert.
+	 * Set Min. Value.
 	 * Minimum Value for a field
 	 *
 	 * <br>Type: Amount
@@ -567,7 +611,7 @@ public interface I_M_Attribute
 	void setValueMin (@Nullable BigDecimal ValueMin);
 
 	/**
-	 * Get Min. Wert.
+	 * Get Min. Value.
 	 * Minimum Value for a field
 	 *
 	 * <br>Type: Amount

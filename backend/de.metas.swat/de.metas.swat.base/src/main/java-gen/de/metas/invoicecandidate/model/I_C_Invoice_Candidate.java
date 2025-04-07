@@ -14,8 +14,8 @@ public interface I_C_Invoice_Candidate
 
 	String Table_Name = "C_Invoice_Candidate";
 
-	//	/** AD_Table_ID=540270 */
-	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=540270 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -508,6 +508,36 @@ public interface I_C_Invoice_Candidate
 	int getC_DocTypeInvoice_ID();
 
 	String COLUMNNAME_C_DocTypeInvoice_ID = "C_DocTypeInvoice_ID";
+
+	/**
+	 * Set Invoicing Pool.
+	 * An invoicing pool is used to aggregate invoices and credit memos into a single document. It contains specific document types for aggregating positive invoice amounts (e.g., purchase invoice) and negative amounts (e.g., credit memo).
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setC_DocType_Invoicing_Pool_ID (int C_DocType_Invoicing_Pool_ID);
+
+	/**
+	 * Get Invoicing Pool.
+	 * An invoicing pool is used to aggregate invoices and credit memos into a single document. It contains specific document types for aggregating positive invoice amounts (e.g., purchase invoice) and negative amounts (e.g., credit memo).
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	int getC_DocType_Invoicing_Pool_ID();
+
+	@Nullable org.compiere.model.I_C_DocType_Invoicing_Pool getC_DocType_Invoicing_Pool();
+
+	@Deprecated
+	void setC_DocType_Invoicing_Pool(@Nullable org.compiere.model.I_C_DocType_Invoicing_Pool C_DocType_Invoicing_Pool);
+
+	ModelColumn<I_C_Invoice_Candidate, org.compiere.model.I_C_DocType_Invoicing_Pool> COLUMN_C_DocType_Invoicing_Pool_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_DocType_Invoicing_Pool_ID", org.compiere.model.I_C_DocType_Invoicing_Pool.class);
+	String COLUMNNAME_C_DocType_Invoicing_Pool_ID = "C_DocType_Invoicing_Pool_ID";
 
 	/**
 	 * Set Flatrate Term.
@@ -1801,6 +1831,27 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Separate invoicing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowSeparateInvoicing (boolean IsAllowSeparateInvoicing);
+
+	/**
+	 * Get Separate invoicing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowSeparateInvoicing();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsAllowSeparateInvoicing = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsAllowSeparateInvoicing", null);
+	String COLUMNNAME_IsAllowSeparateInvoicing = "IsAllowSeparateInvoicing";
+
+	/**
 	 * Set Delivery Closed.
 	 *
 	 * <br>Type: YesNo
@@ -2994,27 +3045,6 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QtyEntered = "QtyEntered";
 
 	/**
-	 * Set Quantity TU.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setQtyEnteredTU (@Nullable BigDecimal QtyEnteredTU);
-
-	/**
-	 * Get Quantity TU.
-	 *
-	 * <br>Type: Quantity
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getQtyEnteredTU();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QtyEnteredTU = new ModelColumn<>(I_C_Invoice_Candidate.class, "QtyEnteredTU", null);
-	String COLUMNNAME_QtyEnteredTU = "QtyEnteredTU";
-
-	/**
 	 * Set Quantity Invoiced.
 	 * Invoiced quantity in the product's UOM.
 	 *
@@ -3145,7 +3175,7 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QtyPickedInUOM = "QtyPickedInUOM";
 
 	/**
-	 * Set To invoice eff.( stock unit).
+	 * Set To invoice eff. (stock unit).
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -3154,7 +3184,7 @@ public interface I_C_Invoice_Candidate
 	void setQtyToInvoice (BigDecimal QtyToInvoice);
 
 	/**
-	 * Get To invoice eff.( stock unit).
+	 * Get To invoice eff. (stock unit).
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -3420,31 +3450,6 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_QualityDiscountPercent_Override = "QualityDiscountPercent_Override";
 
 	/**
-	 * Set Quality Discount %.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setQualityDiscountPercent_ReceiptSchedule (@Nullable BigDecimal QualityDiscountPercent_ReceiptSchedule);
-
-	/**
-	 * Get Quality Discount %.
-	 *
-	 * <br>Type: Number
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	BigDecimal getQualityDiscountPercent_ReceiptSchedule();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QualityDiscountPercent_ReceiptSchedule = new ModelColumn<>(I_C_Invoice_Candidate.class, "QualityDiscountPercent_ReceiptSchedule", null);
-	String COLUMNNAME_QualityDiscountPercent_ReceiptSchedule = "QualityDiscountPercent_ReceiptSchedule";
-
-	/**
 	 * Set Rechnungspositionsart.
 	 *
 	 * <br>Type: List
@@ -3464,31 +3469,6 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QualityInvoiceLineGroupType = new ModelColumn<>(I_C_Invoice_Candidate.class, "QualityInvoiceLineGroupType", null);
 	String COLUMNNAME_QualityInvoiceLineGroupType = "QualityInvoiceLineGroupType";
-
-	/**
-	 * Set Quality Note.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setQualityNote_ReceiptSchedule (@Nullable java.lang.String QualityNote_ReceiptSchedule);
-
-	/**
-	 * Get Quality Note.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	@Nullable java.lang.String getQualityNote_ReceiptSchedule();
-
-	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_QualityNote_ReceiptSchedule = new ModelColumn<>(I_C_Invoice_Candidate.class, "QualityNote_ReceiptSchedule", null);
-	String COLUMNNAME_QualityNote_ReceiptSchedule = "QualityNote_ReceiptSchedule";
 
 	/**
 	 * Set Quality Discount Reason.

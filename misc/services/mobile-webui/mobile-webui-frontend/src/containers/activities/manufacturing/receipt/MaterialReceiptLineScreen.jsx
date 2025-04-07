@@ -6,7 +6,7 @@ import { toastError } from '../../../../utils/toast';
 import { updateManufacturingReceiptQty } from '../../../../actions/ManufacturingActions';
 import { updateHeaderEntry } from '../../../../actions/HeaderActions';
 import { manufacturingReceiptReceiveTargetScreen } from '../../../../routes/manufacturing_receipt';
-import { getActivityById, getLineByIdFromActivity } from '../../../../reducers/wfProcesses';
+import { getActivityByIdFromWFProcess, getLineByIdFromActivity, getWfProcess } from '../../../../reducers/wfProcesses';
 
 import PickQuantityButton from './PickQuantityButton';
 import { toQRCodeDisplayable } from '../../../../utils/qrCode/hu';
@@ -14,6 +14,7 @@ import ButtonWithIndicator from '../../../../components/buttons/ButtonWithIndica
 import Spinner from '../../../../components/Spinner';
 import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
 import { getWFProcessScreenLocation } from '../../../../routes/workflow_locations';
+import { APPLICATION_ID_Picking } from '../../../../apps/picking';
 
 const MaterialReceiptLineScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
@@ -24,7 +25,17 @@ const MaterialReceiptLineScreen = () => {
   const {
     activityCaption,
     userInstructions,
-    lineProps: { aggregateToLU, aggregateToTU, currentReceivingHU, productName, uom, qtyReceived, qtyToReceive },
+    lineProps: {
+      aggregateToLU,
+      aggregateToTU,
+      currentReceivingHU,
+      productName,
+      uom,
+      catchWeightUomSymbol,
+      qtyReceived,
+      qtyToReceive,
+    },
+    pickTo,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }));
   const [showSpinner, setShowSpinner] = useState(false);
 
@@ -61,7 +72,14 @@ const MaterialReceiptLineScreen = () => {
     );
   }, []);
 
-  const handleQuantityChange = (qtyReceived) => {
+  const handleQuantityChange = ({
+    qtyEnteredAndValidated,
+    catchWeight,
+    catchWeightUom,
+    bestBeforeDate,
+    lotNo,
+    isDone = true,
+  }) => {
     // shall not happen
     if (!aggregateToLU && !currentReceivingHU && !aggregateToTU) {
       console.log('skip receiving qty because there is no target');
@@ -69,8 +87,24 @@ const MaterialReceiptLineScreen = () => {
     }
 
     setShowSpinner(true);
-    dispatch(updateManufacturingReceiptQty({ wfProcessId, activityId, lineId, qtyReceived: Number(qtyReceived) }))
-      .then(() => history.goBack())
+    dispatch(
+      updateManufacturingReceiptQty({
+        wfProcessId,
+        activityId,
+        lineId,
+        qtyReceived: Number(qtyEnteredAndValidated),
+        pickTo,
+        catchWeight,
+        catchWeightUom,
+        bestBeforeDate,
+        lotNo,
+      })
+    )
+      .then(() => {
+        if (isDone) {
+          history.goBack();
+        }
+      })
       .catch((axiosError) => toastError({ axiosError }))
       .finally(() => setShowSpinner(false));
   };
@@ -111,6 +145,7 @@ const MaterialReceiptLineScreen = () => {
         </ButtonWithIndicator>
         <PickQuantityButton
           qtyTarget={qtyToReceive - qtyReceived}
+          catchWeightUom={catchWeightUomSymbol}
           isDisabled={!allowReceivingQty}
           onClick={handleQuantityChange}
           uom={uom}
@@ -122,13 +157,31 @@ const MaterialReceiptLineScreen = () => {
 };
 
 const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
-  const activity = getActivityById(state, wfProcessId, activityId);
+  const wfProcess = getWfProcess(state, wfProcessId);
+  const activity = getActivityByIdFromWFProcess(wfProcess, activityId);
   const lineProps = getLineByIdFromActivity(activity, lineId);
 
   return {
     activityCaption: activity.caption,
     userInstructions: activity.userInstructions,
     lineProps,
+    pickTo: getPickTo({ wfProcess }),
+  };
+};
+
+const getPickTo = ({ wfProcess }) => {
+  const parent = wfProcess?.parent;
+  if (!parent) {
+    return;
+  }
+  if (parent.applicationId !== APPLICATION_ID_Picking) {
+    return null;
+  }
+
+  return {
+    wfProcessId: parent.wfProcessId,
+    activityId: parent.activityId,
+    lineId: parent.lineId,
   };
 };
 

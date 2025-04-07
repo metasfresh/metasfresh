@@ -25,5 +25,4 @@ public class DDOrderCandidateQuery
 	@Nullable PPOrderCandidateId ppOrderCandidateId;
 	@Nullable DDOrderCandidateId ddOrderCandidateId;
 	@Nullable PPOrderBOMLineId ppOrderBOMLineId;
-	boolean deleteEvenIfProceed;
 }

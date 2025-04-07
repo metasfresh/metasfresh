@@ -1,4 +1,5 @@
 package de.metas.picking.api.impl;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
@@ -23,6 +24,7 @@ import de.metas.picking.api.Packageable;
 import de.metas.picking.api.Packageable.PackageableBuilder;
 import de.metas.picking.api.PackageableQuery;
 import de.metas.product.ProductId;
+import de.metas.product.ResolvedScannedProductCode;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
@@ -80,6 +82,13 @@ public class PackagingDAO implements IPackagingDAO
 	{
 		final IQueryBuilder<I_M_Packageable_V> queryBuilder = queryBL.createQueryBuilder(I_M_Packageable_V.class);
 		setQueryOrderBy(queryBuilder, query.getOrderBys());
+
+		//
+		// Filter: Product
+		if (query.getProductId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_M_Product_ID, query.getProductId());
+		}
 
 		//
 		// Filter: Customer
@@ -178,6 +187,13 @@ public class PackagingDAO implements IPackagingDAO
 		}
 
 		//
+		// Filter by onlyShipmentScheduleIds
+		if (query.getOnlyShipmentScheduleIds() != null && !query.getOnlyShipmentScheduleIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_M_ShipmentSchedule_ID, query.getOnlyShipmentScheduleIds());
+		}
+
+		//
 		// Filter by excludeShipmentScheduleIds
 		if (query.getExcludeShipmentScheduleIds() != null && !query.getExcludeShipmentScheduleIds().isEmpty())
 		{
@@ -188,6 +204,22 @@ public class PackagingDAO implements IPackagingDAO
 		if (!query.getHandoverLocationIds().isEmpty())
 		{
 			queryBuilder.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_HandOver_Location_ID, query.getHandoverLocationIds());
+		}
+		
+		//
+		if(query.getScannedProductCodes() != null)
+		{
+			final ICompositeQueryFilter<I_M_Packageable_V> productCodesFilter = queryBuilder.addCompositeQueryFilter().setJoinOr();
+			for(final ResolvedScannedProductCode scannedProductCode : query.getScannedProductCodes())
+			{
+				final ICompositeQueryFilter<I_M_Packageable_V> currentProductCodeFilter = productCodesFilter.addCompositeQueryFilter()
+						.setJoinAnd()
+						.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_M_Product_ID, scannedProductCode.getProductId());
+				if(scannedProductCode.getBpartnerId() != null)
+				{
+					currentProductCodeFilter.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_C_BPartner_Customer_ID, scannedProductCode.getBpartnerId());
+				}
+			}
 		}
 
 		return queryBuilder.create();

@@ -33,6 +33,7 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 
@@ -114,4 +115,6 @@ public interface IWarehouseBL extends ISingletonService
 
 	@NonNull
 	ImmutableSet<LocatorId> getLocatorIdsByRepoId(@NonNull Collection<Integer> locatorIds);
+
+	LocatorQRCode getLocatorQRCode(@NonNull LocatorId locatorId);
 }

@@ -22,27 +22,28 @@
 
 package de.metas.edi.esb.commons.route.exports;
 
-import java.text.DecimalFormat;
-
+import de.metas.edi.esb.commons.ClearingCenter;
+import de.metas.edi.esb.commons.Constants;
+import de.metas.edi.esb.commons.DesadvSettings;
+import de.metas.edi.esb.commons.InvoicSettings;
+import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import de.metas.edi.esb.desadvexport.compudata.CompuDataDesadvRoute;
-import de.metas.edi.esb.desadvexport.ecosio.EcosioDesadvRoute;
-import de.metas.edi.esb.commons.DesadvSettings;
+import de.metas.edi.esb.desadvexport.metasfreshinhousev1.MetasfreshInHouseV1DesadvRoute;
+import de.metas.edi.esb.desadvexport.metasfreshinhousev2.MetasfreshInHouseV2DesadvRoute;
 import de.metas.edi.esb.desadvexport.stepcom.StepComXMLDesadvRoute;
 import de.metas.edi.esb.invoicexport.compudata.CompuDataInvoicRoute;
-import de.metas.edi.esb.invoicexport.ecosio.EcosioInvoicRoute;
-import de.metas.edi.esb.commons.InvoicSettings;
-import de.metas.edi.esb.commons.ClearingCenter;
+import de.metas.edi.esb.invoicexport.metasfreshinhousev1.MetasfreshInHouseV1InvoicRoute;
+import de.metas.edi.esb.invoicexport.metasfreshinhousev2.MetasfreshInHouseV2InvoicRoute;
 import de.metas.edi.esb.invoicexport.stepcom.StepComXMLInvoicRoute;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDICctopInvoicVType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvType;
 import lombok.NonNull;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.spi.DataFormat;
 import org.springframework.stereotype.Component;
 
-import de.metas.edi.esb.commons.Constants;
-import de.metas.edi.esb.jaxb.metasfresh.EDICctopInvoicVType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
-import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
+import java.text.DecimalFormat;
 
 @Component
 public class EDIExportCommonRoute extends AbstractEDIRoute
@@ -76,7 +77,7 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 					// INVOIC - figure out which clearing center we shall use
 					.when(body().isInstanceOf(EDICctopInvoicVType.class))
 						.process(exchange -> {
-							final String receiverGLN = exchange.getIn().getBody(EDICctopInvoicVType.class).getReceiverGLN();
+							final String receiverGLN = exchange.getIn().getBody(EDICctopInvoicVType.class).getReceivergln();
 							final ClearingCenter clearingCenter = InvoicSettings.forReceiverGLN(exchange.getContext(), receiverGLN).getClearingCenter();
 							exchange.getIn().setHeader("ClearingCenter", clearingCenter.toString());
 						})
@@ -86,8 +87,10 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 								.to(StepComXMLInvoicRoute.EP_EDI_STEPCOM_XML_INVOICE_CONSUMER)
 							.when(header("ClearingCenter").isEqualTo(ClearingCenter.CompuData.toString()))
 								.to(CompuDataInvoicRoute.EP_EDI_COMPUDATA_INVOIC_CONSUMER)
-							.when(header("ClearingCenter").isEqualTo(ClearingCenter.ecosio.toString()))
-								.to(EcosioInvoicRoute.EP_EDI_METASFRESH_XML_INVOIC_CONSUMER)
+							.when(header("ClearingCenter").isEqualTo(ClearingCenter.MetasfreshInHouseV2.toString()))
+								.to(MetasfreshInHouseV2InvoicRoute.EP_EDI_METASFRESH_XML_INVOIC_CONSUMER)
+							.when(header("ClearingCenter").isEqualTo(ClearingCenter.MetasfreshInHouseV1.toString()))
+								.to(MetasfreshInHouseV1InvoicRoute.EP_EDI_METASFRESH_XML_INVOIC_CONSUMER)
 						.endChoice()
 					.when(body().isInstanceOf(EDIExpDesadvType.class))
 						// DESADV - figure out which clearing center we shall use
@@ -105,8 +108,10 @@ public class EDIExportCommonRoute extends AbstractEDIRoute
 								.to(StepComXMLDesadvRoute.EP_EDI_STEPCOM_XML_DESADV_CONSUMER)
 							.when(header("ClearingCenter").isEqualTo(ClearingCenter.CompuData.toString()))
 								.to(CompuDataDesadvRoute.EP_EDI_COMPUDATA_DESADV_CONSUMER)
-							.when(header("ClearingCenter").isEqualTo(ClearingCenter.ecosio.toString()))
-								.to(EcosioDesadvRoute.EP_EDI_METASFRESH_XML_DESADV_CONSUMER)
+							.when(header("ClearingCenter").isEqualTo(ClearingCenter.MetasfreshInHouseV2.toString()))
+								.to(MetasfreshInHouseV2DesadvRoute.EP_EDI_METASFRESH_XML_DESADV_CONSUMER)
+							.when(header("ClearingCenter").isEqualTo(ClearingCenter.MetasfreshInHouseV1.toString()))
+								.to(MetasfreshInHouseV1DesadvRoute.EP_EDI_METASFRESH_XML_DESADV_CONSUMER)
 						.endChoice()
 				.end();
 				// @formatter:on

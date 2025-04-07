@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribute, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -798493766L;
+	private static final long serialVersionUID = 353596514L;
 
     /** Standard Constructor */
     public X_M_Attribute (final Properties ctx, final int M_Attribute_ID, @Nullable final String trxName)
@@ -214,6 +214,18 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
 	}
 
 	@Override
+	public void setIsPrintedInDocument (final boolean IsPrintedInDocument)
+	{
+		set_Value (COLUMNNAME_IsPrintedInDocument, IsPrintedInDocument);
+	}
+
+	@Override
+	public boolean isPrintedInDocument() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPrintedInDocument);
+	}
+
+	@Override
 	public void setIsReadOnlyValues (final boolean IsReadOnlyValues)
 	{
 		set_Value (COLUMNNAME_IsReadOnlyValues, IsReadOnlyValues);
@@ -289,6 +301,18 @@ public class X_M_Attribute extends org.compiere.model.PO implements I_M_Attribut
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	@Override
+	public void setPrintValue_Override (final @Nullable java.lang.String PrintValue_Override)
+	{
+		set_Value (COLUMNNAME_PrintValue_Override, PrintValue_Override);
+	}
+
+	@Override
+	public java.lang.String getPrintValue_Override() 
+	{
+		return get_ValueAsString(COLUMNNAME_PrintValue_Override);
 	}
 
 	@Override

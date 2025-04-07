@@ -35,6 +35,7 @@ import de.metas.banking.payment.paymentallocation.service.PaymentAllocationServi
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.common.util.time.SystemTime;
 import de.metas.currency.Amount;
 import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceId;
@@ -81,7 +82,6 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
@@ -148,9 +148,10 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 
 		return PaymentAllocationCriteria.builder()
 				.payment(payment)
-				.dateTrx(remittanceAdvice.getSendDate() != null ? remittanceAdvice.getSendDate() : Instant.now())
+				.dateTrx(remittanceAdvice.getSendDate() != null ? remittanceAdvice.getSendDate() : SystemTime.asInstant())
 				.paymentAllocationPayableItems(paymentAllocationPayableItems)
 				.allowPartialAllocations(true)
+				.allowInvoiceToCreditMemoAllocation(false) // invoices and creditmemos of the remadv must not be allocated against each other!
 				.build();
 	}
 
@@ -158,14 +159,18 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 			@NonNull final Map<InvoiceId, RemittanceAdviceLine> remittanceAdviceLineMap,
 			@NonNull final PaymentAllocationResult paymentAllocationResult)
 	{
+		final ImmutableSet<AllocationLineCandidate.AllocationLineCandidateType> validTypes =
+				ImmutableSet.of(AllocationLineCandidate.AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice,
+								AllocationLineCandidate.AllocationLineCandidateType.SalesCreditMemoToPurchaseInvoice);
+
 		final Map<Integer, InvoiceId> serviceFeeInvoiceIdsByAssignedInvoiceId =
 				paymentAllocationResult
 						.getPaymentAllocationIds()
 						.values()
 						.stream()
-						.filter(paymentAllocationResultItem -> AllocationLineCandidate.AllocationLineCandidateType.SalesInvoiceToPurchaseInvoice.equals(paymentAllocationResultItem.getType()))
+						.filter(paymentAllocationResultItem -> validTypes.contains(paymentAllocationResultItem.getType()))
 						.collect(Collectors.toMap(paymentAllocationResultItem -> paymentAllocationResultItem.getPayableDocumentRef().getRecord_ID(),
-								paymentAllocationResultItem -> InvoiceId.ofRepoId(paymentAllocationResultItem.getPaymentDocumentRef().getRecord_ID())));
+												  paymentAllocationResultItem -> InvoiceId.ofRepoId(paymentAllocationResultItem.getPaymentDocumentRef().getRecord_ID())));
 
 		paymentAllocationResult.getCandidates()
 				.stream()
@@ -349,7 +354,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 
 			final PaymentAllocationCriteria paymentAllocationCriteria = getPaymentAllocationCriteria(remittanceAdvice, payment);
 
-			final PaymentAllocationResult paymentAllocationResult = paymentAllocationService.allocatePayment(paymentAllocationCriteria);
+			final PaymentAllocationResult paymentAllocationResult = paymentAllocationService.allocatePaymentForRemittanceAdvise(paymentAllocationCriteria);
 
 			final Map<InvoiceId, RemittanceAdviceLine> remittanceAdviceLineMap = getRemittanceAdviceLinesByInvoiceId(remittanceAdvice.getLines());
 			populateRemittanceWithAllocationData(remittanceAdviceLineMap, paymentAllocationResult);
@@ -361,7 +366,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 		else
 		{
 			Loggables.withLogger(logger, Level.INFO).addLog("Skipping Remittance Advice, RemittanceAdviceId={}, DocStatus={}, PaymentId={}",
-					remittanceAdvice.getRemittanceAdviceId(), remittanceAdvice.getDocStatus(), remittanceAdvice.getPaymentId());
+					remittanceAdvice.getRemittanceAdviceId().getRepoId(), remittanceAdvice.getDocStatus(), remittanceAdvice.getPaymentId());
 		}
 	}
 }

@@ -32,7 +32,6 @@ import org.springframework.stereotype.Service;
  * Converts {@link Event}s to {@link MaterialEvent}s and vice versa.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Service
 public class MaterialEventConverter
@@ -48,9 +47,20 @@ public class MaterialEventConverter
 
 	public MaterialEvent toMaterialEvent(@NonNull final Event metasfreshEvent)
 	{
-		final String materialEventStr = metasfreshEvent.getProperty(PROPERTY_MATERIAL_EVENT);
+		final Object materialEventObj = metasfreshEvent.getProperty(PROPERTY_MATERIAL_EVENT);
 
-		return jsonObjectMapper.readValue(materialEventStr);
+		if (materialEventObj instanceof MaterialEvent)
+		{
+			return (MaterialEvent)materialEventObj;
+		}
+
+		if (materialEventObj instanceof String)
+		{
+			// in case the Event has not been deserialized, then the material event is still a string
+			return jsonObjectMapper.readValue(materialEventObj.toString());
+		}
+
+		throw new IllegalArgumentException("Cannot convert " + materialEventObj + " to MaterialEvent");
 	}
 
 	/**
@@ -58,10 +68,10 @@ public class MaterialEventConverter
 	 */
 	public Event fromMaterialEvent(@NonNull final MaterialEvent materialEvent)
 	{
-		final String eventStr = jsonObjectMapper.writeValueAsString(materialEvent);
-
 		return Event.builder()
-				.putProperty(PROPERTY_MATERIAL_EVENT, eventStr)
+				.putProperty(PROPERTY_MATERIAL_EVENT, materialEvent)
+				.setEventName(materialEvent.getEventName())
+				.setSourceRecordReference(materialEvent.getSourceTableReference())
 				.shallBeLogged()
 				.build();
 	}

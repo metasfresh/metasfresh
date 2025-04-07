@@ -175,7 +175,7 @@ SelectAuthMethodView.propTypes = {
 const useAuthenticationMethods = () => {
   const [currentAuthMethod, setCurrentAuthMethod] = useState(KNOWN_AUTH_METHODS.UserPass);
   const [availableAuthMethods, setAvailableAuthMethods] = useState([]);
-  console.log('useAuthenticationMethods', { currentAuthMethod, availableAuthMethods });
+  //console.log('useAuthenticationMethods', { currentAuthMethod, availableAuthMethods });
 
   const { isConfigLoading } = useMobileConfiguration({
     onSuccess: (config) => {
@@ -183,7 +183,7 @@ const useAuthenticationMethods = () => {
         .map((method) => KNOWN_AUTH_METHODS[method])
         .filter((method) => !!method);
       const currentAuthMethodNew = KNOWN_AUTH_METHODS[config.defaultAuthMethod] || KNOWN_AUTH_METHODS.UserPass;
-      console.log('useAuthenticationMethods: got config', { config, availableAuthMethodsNew, currentAuthMethodNew });
+      //console.log('useAuthenticationMethods: got config', { config, availableAuthMethodsNew, currentAuthMethodNew });
       setAvailableAuthMethods(availableAuthMethodsNew);
       setCurrentAuthMethod(currentAuthMethodNew);
     },

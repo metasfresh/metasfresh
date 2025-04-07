@@ -19,10 +19,14 @@ public class JsonCreateProductRequest
 {
 	@Nullable String valuePrefix;
 	@Nullable String gtin;
+	@Nullable String ean13ProductCode;
 	@Nullable X12DE355 uom;
 	@Nullable List<UOMConversion> uomConversions;
 
+	@Nullable BigDecimal price;
 	@Nullable List<Price> prices;
+	
+	@Nullable List<BPartner> bpartners;
 
 	@Nullable BOM bom;
 
@@ -49,6 +53,15 @@ public class JsonCreateProductRequest
 		@NonNull BigDecimal price;
 		@Nullable X12DE355 uom;
 		@Nullable InvoicableQtyBasedOn invoicableQtyBasedOn;
+	}
+
+	@Value
+	@Builder
+	@Jacksonized
+	public static class BPartner
+	{
+		@NonNull Identifier bpartner;
+		@Nullable String cu_ean;
 	}
 
 	@Value

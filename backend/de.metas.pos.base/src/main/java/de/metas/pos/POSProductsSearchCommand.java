@@ -1,6 +1,7 @@
 package de.metas.pos;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.ean13.EAN13;
 import de.metas.gs1.GS1Elements;
 import de.metas.gs1.GS1Parser;
 import de.metas.gs1.GTIN;
@@ -91,13 +92,13 @@ class POSProductsSearchCommand
 			return null;
 		}
 
-		final EAN13HUQRCode ean13 = EAN13HUQRCode.fromString(queryString).orElse(null);
+		final EAN13 ean13 = EAN13HUQRCode.fromString(queryString).map(EAN13HUQRCode::unbox).orElse(null);
 		if (ean13 == null)
 		{
 			return null;
 		}
 
-		final ProductId productId = productBL.getProductIdByValueStartsWith(ean13.getProductNo(), ClientId.METASFRESH).orElse(null);
+		final ProductId productId = productBL.getProductIdByEAN13(ean13).orElse(null);
 		final POSProduct product = getPOSProduct(productId);
 		if (product == null)
 		{

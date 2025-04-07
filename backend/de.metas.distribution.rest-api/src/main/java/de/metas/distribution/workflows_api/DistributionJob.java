@@ -25,8 +25,10 @@ public class DistributionJob
 	@NonNull private final String documentNo;
 	@NonNull private final BPartnerId customerId;
 	@NonNull private final ZonedDateTime dateRequired;
+	@NonNull private final ZonedDateTime pickDate;
 	@NonNull private final WarehouseInfo pickFromWarehouse;
 	@NonNull private final WarehouseInfo dropToWarehouse;
+	@Nullable private final ResourceInfo plantInfo;
 	@Nullable private final UserId responsibleId;
 	private final boolean isClosed;
 	@Nullable private final String salesOrderDocumentNo;
@@ -42,8 +44,10 @@ public class DistributionJob
 			final @NonNull String documentNo,
 			final @NonNull BPartnerId customerId,
 			final @NonNull ZonedDateTime dateRequired,
+			final @NonNull ZonedDateTime pickDate,
 			final @NonNull WarehouseInfo pickFromWarehouse,
 			final @NonNull WarehouseInfo dropToWarehouse,
+			final @Nullable ResourceInfo plantInfo,
 			final @Nullable UserId responsibleId,
 			final boolean isClosed,
 			final @Nullable String salesOrderDocumentNo,
@@ -55,8 +59,10 @@ public class DistributionJob
 		this.documentNo = documentNo;
 		this.customerId = customerId;
 		this.dateRequired = dateRequired;
+		this.pickDate = pickDate;
 		this.pickFromWarehouse = pickFromWarehouse;
 		this.dropToWarehouse = dropToWarehouse;
+		this.plantInfo = plantInfo;
 		this.responsibleId = responsibleId;
 		this.isClosed = isClosed;
 		this.salesOrderDocumentNo = salesOrderDocumentNo;
@@ -73,6 +79,16 @@ public class DistributionJob
 	public DistributionJob withNewStep(final DistributionJobLineId lineId, final DistributionJobStep step)
 	{
 		return withChangedLine(lineId, line -> line.withNewStep(step));
+	}
+
+	public DistributionJob withChangedStep(@NonNull final DistributionJobStepId id, @NonNull final DistributionJobStep changedStep)
+	{
+		return withChangedStep(id, ignored -> changedStep);
+	}
+
+	public DistributionJob removeStep(@NonNull final DistributionJobStepId id)
+	{
+		return withChangedLines(line -> line.removeStep(id));
 	}
 
 	public DistributionJob withChangedStep(@NonNull final DistributionJobStepId id, @NonNull final UnaryOperator<DistributionJobStep> stepMapper)
@@ -104,5 +120,20 @@ public class DistributionJob
 				.filter(line -> DistributionJobLineId.equals(line.getId(), lineId))
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No line found for " + lineId));
+	}
+
+	@NonNull
+	public DistributionJobLine getLineByStepId(@NonNull final DistributionJobStepId stepId)
+	{
+		return lines.stream()
+				.filter(line -> line.getStepById(stepId).isPresent())
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No line found for " + stepId));
+	}
+
+	@Nullable
+	public String getPlantName()
+	{
+		return plantInfo != null ? plantInfo.getCaption() : null;
 	}
 }

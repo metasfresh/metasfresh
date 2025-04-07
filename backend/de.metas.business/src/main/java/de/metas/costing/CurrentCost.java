@@ -248,6 +248,11 @@ public final class CurrentCost
 		setCostPrice(getCostPrice().withOwnCostPrice(ownCostPrice));
 	}
 
+	public void clearOwnCostPrice()
+	{
+		setCostPrice(getCostPrice().withZeroOwnCostPrice());
+	}
+
 	public void addToOwnCostPrice(@NonNull final CostAmount ownCostPriceToAdd)
 	{
 		setCostPrice(getCostPrice().addToOwnCostPrice(ownCostPriceToAdd));

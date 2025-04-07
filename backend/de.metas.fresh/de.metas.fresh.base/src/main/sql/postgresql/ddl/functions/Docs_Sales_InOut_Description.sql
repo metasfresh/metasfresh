@@ -12,6 +12,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_D
                 reference     character varying,
                 bp_value      character varying,
                 eori          character varying,
+                customernoatvendor character varying,
                 cont_name     text,
                 cont_phone    character varying,
                 cont_fax      character varying,

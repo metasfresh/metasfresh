@@ -118,6 +118,8 @@ public class GroupTemplateRepository
 				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
 				.qty(Quantity.of(record.getQty(), uom))
 				.contractConditionsId(ConditionsId.ofRepoIdOrNull(record.getC_Flatrate_Conditions_ID()))
+				.isAllowSeparateInvoicing(record.isAllowSeparateInvoicing())
+				.isHideWhenPrinting(record.isHideWhenPrinting())
 				.build();
 	}
 

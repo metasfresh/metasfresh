@@ -39,6 +39,7 @@ import javax.annotation.Nullable;
 /**
  * Is a response to a {@link SupplyRequiredEvent} when the material-dispo advises to create a manufacturing order in order to fullfill the requirement.
  */
+@Getter
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class PPOrderCandidateAdvisedEvent extends AbstractPPOrderCandidateEvent
@@ -53,13 +54,11 @@ public class PPOrderCandidateAdvisedEvent extends AbstractPPOrderCandidateEvent
 	/**
 	 * If {@code true}, then this event advises the recipient to directly request an actual PP_Order to be created from the candidate.
 	 */
-	@Getter
 	private final boolean directlyCreatePPOrder;
 
 	/**
 	 * If {@code false}, then this event advises the recipient to not attempt to identify and update an existing supply candidate, but create a new one.
 	 */
-	@Getter
 	private final boolean tryUpdateExistingCandidate;
 
 	@JsonCreator
@@ -91,4 +90,8 @@ public class PPOrderCandidateAdvisedEvent extends AbstractPPOrderCandidateEvent
 		Check.errorIf(productPlanningId <= 0,
 					  "The given ppOrderCandidateAdvisedEvent event needs to have a ppOrderCandidate with a product planning Id; productPlanningId={}", productPlanningId);
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
+
 }

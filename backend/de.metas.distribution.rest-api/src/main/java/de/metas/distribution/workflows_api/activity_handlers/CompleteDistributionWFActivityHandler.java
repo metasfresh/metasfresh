@@ -3,6 +3,8 @@ package de.metas.distribution.workflows_api.activity_handlers;
 import de.metas.distribution.workflows_api.DistributionJob;
 import de.metas.distribution.workflows_api.DistributionMobileApplication;
 import de.metas.distribution.workflows_api.DistributionRestService;
+import de.metas.i18n.IMsgBL;
+import de.metas.util.Services;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupport;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationSupportUtil;
@@ -16,11 +18,14 @@ import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
+import static de.metas.workflow.rest_api.service.Constants.ARE_YOU_SURE;
+
 @Component
 public class CompleteDistributionWFActivityHandler implements WFActivityHandler, UserConfirmationSupport
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("distribution.complete");
 
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final DistributionRestService distributionRestService;
 
 	public CompleteDistributionWFActivityHandler(final DistributionRestService distributionRestService)
@@ -42,7 +47,7 @@ public class CompleteDistributionWFActivityHandler implements WFActivityHandler,
 	{
 		return UserConfirmationSupportUtil.createUIComponent(
 				UserConfirmationSupportUtil.UIComponentProps.builderFrom(wfActivity)
-						.question("Are you sure?")
+						.question(msgBL.getMsg(jsonOpts.getAdLanguage(), ARE_YOU_SURE))
 						.build());
 	}
 

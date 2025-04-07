@@ -22,106 +22,109 @@
 
 package de.metas.cucumber.stepdefs.allocation;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.allocation.api.IAllocationDAO;
-import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
+import de.metas.invoice.InvoiceId;
+import de.metas.payment.PaymentId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 
-import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Payment_ID;
 
+@RequiredArgsConstructor
 public class C_AllocationLine_StepDef
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
-
-	final C_Invoice_StepDefData invoiceTable;
-	final C_Payment_StepDefData paymentTable;
-
-	public C_AllocationLine_StepDef(
-			@NonNull final C_Invoice_StepDefData invoiceTable,
-			@NonNull final C_Payment_StepDefData paymentTable
-	)
-	{
-		this.invoiceTable = invoiceTable;
-		this.paymentTable = paymentTable;
-	}
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+	@NonNull private final C_Invoice_StepDefData invoiceTable;
+	@NonNull private final C_Payment_StepDefData paymentTable;
+	@NonNull private final C_AllocationHdr_StepDefData allocationHdrTable;
 
 	@And("validate C_AllocationLines")
 	public void validate_C_AllocationLines(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> rows = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : rows)
-		{
-			final String invoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final Integer invoiceId = Optional.ofNullable(invoiceIdentifier)
-					.map(identifier -> invoiceTable.get(identifier).getC_Invoice_ID())
-					.orElse(null);
+		DataTableRows.of(dataTable).forEach(this::validate_C_AllocationLine);
+	}
 
-			final String paymentIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_C_Payment_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final Integer paymentId = Optional.ofNullable(paymentIdentifier)
-					.map(identifier -> paymentTable.get(paymentIdentifier).getC_Payment_ID())
-					.orElse(null);
+	private void validate_C_AllocationLine(final DataTableRow row)
+	{
+		final InvoiceId invoiceId = row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_ID).map(invoiceTable::getId).orElse(null);
+		final PaymentId paymentId = row.getAsOptionalIdentifier(COLUMNNAME_C_Payment_ID).map(paymentTable::getId).orElse(null);
 
-			final I_C_AllocationLine singleAllocationLine = queryBL.createQueryBuilder(I_C_AllocationLine.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, invoiceId)
-					.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, paymentId)
-					.create()
-					.firstOnlyNotNull(I_C_AllocationLine.class);
+		final I_C_AllocationLine singleAllocationLine = queryBL.createQueryBuilder(I_C_AllocationLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, paymentId)
+				.create()
+				.firstOnlyNotNull(I_C_AllocationLine.class);
 
-			final BigDecimal amount = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_C_AllocationLine.COLUMNNAME_Amount);
-			final BigDecimal overUnderAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_C_AllocationLine.COLUMNNAME_OverUnderAmt);
-			final BigDecimal writeOffAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_C_AllocationLine.COLUMNNAME_WriteOffAmt);
-			final BigDecimal discountAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_C_AllocationLine.COLUMNNAME_DiscountAmt);
+		validateAllocationLine(singleAllocationLine, row);
+	}
 
-			if (amount != null)
-			{
-				assertThat(singleAllocationLine.getAmount()).isEqualTo(amount);
-			}
+	@And("^validate C_AllocationLines for invoice (.*)$")
+	public void validate_C_AllocationLines_for_invoice(
+			@NonNull final String invoiceIdentifier,
+			@NonNull final DataTable dataTable)
+	{
+		final Integer invoiceId = invoiceTable.get(invoiceIdentifier).getC_Invoice_ID();
 
-			if (overUnderAmt != null)
-			{
-				assertThat(singleAllocationLine.getOverUnderAmt()).isEqualTo(overUnderAmt);
-			}
+		final ImmutableList<I_C_AllocationLine> allocationLines = queryBL.createQueryBuilder(I_C_AllocationLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.orderBy(I_C_AllocationLine.COLUMN_C_AllocationLine_ID)
+				.create()
+				.listImmutable(I_C_AllocationLine.class);
 
-			if (writeOffAmt != null)
-			{
-				assertThat(singleAllocationLine.getWriteOffAmt()).isEqualTo(writeOffAmt);
-			}
-			if (discountAmt != null)
-			{
-				assertThat(singleAllocationLine.getDiscountAmt()).isEqualTo(discountAmt);
-			}
-		}
+		assertThat(allocationLines).hasSameSizeAs(dataTable.asMaps());
+
+		DataTableRows.of(dataTable)
+				.forEach((row, index) -> validateAllocationLine(allocationLines.get(index), row));
 	}
 
 	@And("there are no allocation lines for invoice")
 	public void invoices_are_not_allocated(@NonNull final DataTable table)
 	{
-		final List<Map<String, String>> rows = table.asMaps();
-		for (final Map<String, String> dataTableRow : rows)
-		{
-			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
-
+		DataTableRows.of(table).forEach(row -> {
+			final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
 			final List<I_C_AllocationLine> allocationLines = allocationDAO.retrieveAllocationLines(invoice);
+			assertThat(allocationLines).isEmpty();
+		});
+	}
 
-			assertThat(allocationLines.isEmpty()).isEqualTo(true);
-		}
+	private void validateAllocationLine(
+			@NonNull final I_C_AllocationLine allocationLine,
+			@NonNull final DataTableRow row)
+	{
+		final SoftAssertions softly = new SoftAssertions();
+
+		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_Amount)
+				.ifPresent(amount -> softly.assertThat(allocationLine.getAmount()).as("Amount").isEqualTo(amount));
+		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_DiscountAmt)
+				.ifPresent(amount -> softly.assertThat(allocationLine.getDiscountAmt()).as("DiscountAmt").isEqualTo(amount));
+		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_WriteOffAmt)
+				.ifPresent(amount -> softly.assertThat(allocationLine.getWriteOffAmt()).as("WriteOffAmt").isEqualTo(amount));
+		row.getAsOptionalBigDecimal(I_C_AllocationLine.COLUMNNAME_OverUnderAmt)
+				.ifPresent(amount -> softly.assertThat(allocationLine.getOverUnderAmt()).as("OverUnderAmt").isEqualTo(amount));
+
+		softly.assertAll();
+
+		row.getAsOptionalIdentifier(I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID)
+				.ifPresent(allocationIdentifier -> allocationHdrTable.putOrReplaceIfSameId(allocationIdentifier, allocationLine.getC_AllocationHdr()));
+
 	}
 }

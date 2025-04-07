@@ -41,6 +41,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFactory
 {
 	@NonNull private final DataEntrySubTabBindingDescriptorBuilder dataEntrySubTabBindingDescriptorBuilder;
+	@NonNull private final LayoutFactoryProvider layoutFactoryProvider;
 
 	private final CCache<WindowId, DocumentDescriptor> documentDescriptorsByWindowId = new CCache<>(I_AD_Window.Table_Name + "#DocumentDescriptor", 50);
 	private final CopyOnWriteArraySet<WindowId> unsupportedWindowIds = new CopyOnWriteArraySet<>();
@@ -71,7 +72,11 @@ public class DefaultDocumentDescriptorFactory implements DocumentDescriptorFacto
 
 	private DefaultDocumentDescriptorLoader newLoader(@NonNull final WindowId windowId)
 	{
-		return new DefaultDocumentDescriptorLoader(windowId.toAdWindowId(), dataEntrySubTabBindingDescriptorBuilder);
+		return DefaultDocumentDescriptorLoader.builder()
+				.layoutFactoryProvider(layoutFactoryProvider)
+				.dataEntrySubTabBindingDescriptorBuilder(dataEntrySubTabBindingDescriptorBuilder)
+				.adWindowId(windowId.toAdWindowId())
+				.build();
 	}
 
 	/**

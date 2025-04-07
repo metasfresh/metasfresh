@@ -14,7 +14,7 @@ public class RecordWarningRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public void createOrUpdate(@NonNull RecordWarningCreateRequest request)
+	public RecordWarningId createOrUpdate(@NonNull final RecordWarningCreateRequest request)
 	{
 		final I_AD_Record_Warning record = toSqlQuery(RecordWarningQuery.builder()
 				.recordRef(request.getRecordRef())
@@ -28,10 +28,27 @@ public class RecordWarningRepository
 		record.setRecord_ID(request.getRecordRef().getRecord_ID());
 		record.setAD_BusinessRule_ID(request.getBusinessRuleId().getRepoId());
 		record.setMsgText(request.getMessage());
+
 		InterfaceWrapperHelper.save(record);
+
+		return RecordWarningId.ofRepoId(record.getAD_Record_Warning_ID());
+	}
+	
+	public RecordWarning getById(@NonNull final RecordWarningId id)
+	{
+		final I_AD_Record_Warning record = InterfaceWrapperHelper.load(id, I_AD_Record_Warning.class);
+		return fromRecord(record);
 	}
 
-	public void deleteByRecordRef(@NonNull RecordWarningQuery query)
+	private RecordWarning fromRecord(final I_AD_Record_Warning record)
+	{
+		return RecordWarning.builder()
+				.id(RecordWarningId.ofRepoId(record.getAD_Record_Warning_ID()))
+				.msgText(record.getMsgText())
+				.build();
+	}
+
+	public void deleteByRecordRef(@NonNull final RecordWarningQuery query)
 	{
 		toSqlQuery(query).create().delete();
 	}

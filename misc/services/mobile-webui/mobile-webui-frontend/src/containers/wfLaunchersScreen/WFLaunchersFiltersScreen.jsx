@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { useRouteMatch } from 'react-router-dom';
 import { updateHeaderEntry } from '../../actions/HeaderActions';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 import WFLaunchersFilters from './WFLaunchersFilters';
@@ -10,13 +9,11 @@ import { appLaunchersLocation } from '../../routes/launchers';
 import { useScreenDefinition } from '../../hooks/useScreenDefinition';
 
 const WFLaunchersFiltersScreen = () => {
-  const { history } = useScreenDefinition({ screenId: 'WFLaunchersFiltersScreen', back: appLaunchersLocation });
+  const { url, applicationId, history } = useScreenDefinition({
+    screenId: 'WFLaunchersFiltersScreen',
+    back: appLaunchersLocation,
+  });
   const dispatch = useDispatch();
-
-  const {
-    url,
-    params: { applicationId },
-  } = useRouteMatch();
 
   const { showFilterByDocumentNo } = useApplicationInfo({ applicationId });
   const filterByDocumentNo = useSelector((state) => getApplicationLaunchersFilterByDocumentNo(state, applicationId));

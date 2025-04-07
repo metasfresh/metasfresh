@@ -23,16 +23,18 @@ export const Backend = {
         console.log(`Created master data (${language}):\n` + JSON.stringify(responseBody, null, 2));
 
         if (responseBody.errors || responseBody.stackTrace) {
-            throw "Got error while creating master data";
+            throw Error("Got error while creating master data:\n" + JSON.stringify(responseBody, null, 2));
         }
 
         return responseBody;
     }),
 
-    getFreePickingSlot: async ({ bpartnerCode }) => await test.step(`Backend: get free picking slot`, async () => {
+    getFreePickingSlot: async ({ bpartnerCode } = {}) => await test.step(`Backend: get free picking slot`, async () => {
         const backendBaseUrl = await getBackendBaseUrl();
+        const request = { bpartnerCode };
+        console.log(`Sending request":\n` + JSON.stringify(request, null, 2));
         const response = await page.request.post(`${backendBaseUrl}/frontendTesting/getFreePickingSlot`, {
-            data: { bpartnerCode },
+            data: request,
             headers: {
                 'Content-Type': 'application/json',
             }
@@ -56,7 +58,7 @@ export const Backend = {
 //
 //
 
-let _backendBaseUrl = null;
+let _backendBaseUrl = process.env.BACKEND_BASE_URL ? process.env.BACKEND_BASE_URL + '/api/v2' : null;
 
 export const getBackendBaseUrl = async () => {
     if (!_backendBaseUrl) {
@@ -82,4 +84,3 @@ export const loadConfigFromFrontendApp = async () => await test.step(`Fetching f
 
     return serverUrl + '/api/v2';
 });
-

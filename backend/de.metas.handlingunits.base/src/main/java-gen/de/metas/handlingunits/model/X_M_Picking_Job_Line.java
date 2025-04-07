@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_Picking_Job_Line, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1811058248L;
+	private static final long serialVersionUID = 1628110248L;
 
     /** Standard Constructor */
     public X_M_Picking_Job_Line (final Properties ctx, final int M_Picking_Job_Line_ID, @Nullable final String trxName)
@@ -48,6 +48,36 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	public int getCatch_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Catch_UOM_ID);
+	}
+
+	@Override
+	public void setC_BPartner_ID (final int C_BPartner_ID)
+	{
+		if (C_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
+	}
+
+	@Override
+	public int getC_BPartner_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
+	}
+
+	@Override
+	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
+	{
+		if (C_BPartner_Location_ID < 1) 
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
+	}
+
+	@Override
+	public int getC_BPartner_Location_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
 	}
 
 	@Override
@@ -120,6 +150,99 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	}
 
 	@Override
+	public de.metas.handlingunits.model.I_M_HU getCurrent_PickTo_LU()
+	{
+		return get_ValueAsPO(COLUMNNAME_Current_PickTo_LU_ID, de.metas.handlingunits.model.I_M_HU.class);
+	}
+
+	@Override
+	public void setCurrent_PickTo_LU(final de.metas.handlingunits.model.I_M_HU Current_PickTo_LU)
+	{
+		set_ValueFromPO(COLUMNNAME_Current_PickTo_LU_ID, de.metas.handlingunits.model.I_M_HU.class, Current_PickTo_LU);
+	}
+
+	@Override
+	public void setCurrent_PickTo_LU_ID (final int Current_PickTo_LU_ID)
+	{
+		if (Current_PickTo_LU_ID < 1) 
+			set_Value (COLUMNNAME_Current_PickTo_LU_ID, null);
+		else 
+			set_Value (COLUMNNAME_Current_PickTo_LU_ID, Current_PickTo_LU_ID);
+	}
+
+	@Override
+	public int getCurrent_PickTo_LU_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Current_PickTo_LU_ID);
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_HU_PI getCurrent_PickTo_LU_PI()
+	{
+		return get_ValueAsPO(COLUMNNAME_Current_PickTo_LU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class);
+	}
+
+	@Override
+	public void setCurrent_PickTo_LU_PI(final de.metas.handlingunits.model.I_M_HU_PI Current_PickTo_LU_PI)
+	{
+		set_ValueFromPO(COLUMNNAME_Current_PickTo_LU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class, Current_PickTo_LU_PI);
+	}
+
+	@Override
+	public void setCurrent_PickTo_LU_PI_ID (final int Current_PickTo_LU_PI_ID)
+	{
+		if (Current_PickTo_LU_PI_ID < 1) 
+			set_Value (COLUMNNAME_Current_PickTo_LU_PI_ID, null);
+		else 
+			set_Value (COLUMNNAME_Current_PickTo_LU_PI_ID, Current_PickTo_LU_PI_ID);
+	}
+
+	@Override
+	public int getCurrent_PickTo_LU_PI_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Current_PickTo_LU_PI_ID);
+	}
+
+	@Override
+	public void setCurrent_PickTo_LU_QRCode (final @Nullable java.lang.String Current_PickTo_LU_QRCode)
+	{
+		set_Value (COLUMNNAME_Current_PickTo_LU_QRCode, Current_PickTo_LU_QRCode);
+	}
+
+	@Override
+	public java.lang.String getCurrent_PickTo_LU_QRCode() 
+	{
+		return get_ValueAsString(COLUMNNAME_Current_PickTo_LU_QRCode);
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_HU_PI getCurrent_PickTo_TU_PI()
+	{
+		return get_ValueAsPO(COLUMNNAME_Current_PickTo_TU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class);
+	}
+
+	@Override
+	public void setCurrent_PickTo_TU_PI(final de.metas.handlingunits.model.I_M_HU_PI Current_PickTo_TU_PI)
+	{
+		set_ValueFromPO(COLUMNNAME_Current_PickTo_TU_PI_ID, de.metas.handlingunits.model.I_M_HU_PI.class, Current_PickTo_TU_PI);
+	}
+
+	@Override
+	public void setCurrent_PickTo_TU_PI_ID (final int Current_PickTo_TU_PI_ID)
+	{
+		if (Current_PickTo_TU_PI_ID < 1) 
+			set_Value (COLUMNNAME_Current_PickTo_TU_PI_ID, null);
+		else 
+			set_Value (COLUMNNAME_Current_PickTo_TU_PI_ID, Current_PickTo_TU_PI_ID);
+	}
+
+	@Override
+	public int getCurrent_PickTo_TU_PI_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Current_PickTo_TU_PI_ID);
+	}
+
+	@Override
 	public void setIsManuallyClosed (final boolean IsManuallyClosed)
 	{
 		set_Value (COLUMNNAME_IsManuallyClosed, IsManuallyClosed);
@@ -189,6 +312,21 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	}
 
 	@Override
+	public void setM_PickingSlot_ID (final int M_PickingSlot_ID)
+	{
+		if (M_PickingSlot_ID < 1) 
+			set_Value (COLUMNNAME_M_PickingSlot_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_PickingSlot_ID, M_PickingSlot_ID);
+	}
+
+	@Override
+	public int getM_PickingSlot_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_PickingSlot_ID);
+	}
+
+	@Override
 	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
@@ -216,6 +354,33 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	public int getM_ShipmentSchedule_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
+	}
+
+	@Override
+	public org.eevolution.model.I_PP_Order getPP_Order()
+	{
+		return get_ValueAsPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class);
+	}
+
+	@Override
+	public void setPP_Order(final org.eevolution.model.I_PP_Order PP_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_PP_Order_ID, org.eevolution.model.I_PP_Order.class, PP_Order);
+	}
+
+	@Override
+	public void setPP_Order_ID (final int PP_Order_ID)
+	{
+		if (PP_Order_ID < 1) 
+			set_Value (COLUMNNAME_PP_Order_ID, null);
+		else 
+			set_Value (COLUMNNAME_PP_Order_ID, PP_Order_ID);
+	}
+
+	@Override
+	public int getPP_Order_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_PP_Order_ID);
 	}
 
 	@Override

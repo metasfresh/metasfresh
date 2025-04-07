@@ -1,17 +1,26 @@
 package de.metas.frontend_testing.masterdata.mobile_configuration;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
 import de.metas.distribution.config.MobileUIDistributionConfig;
 import de.metas.distribution.config.MobileUIDistributionConfig.MobileUIDistributionConfigBuilder;
 import de.metas.distribution.config.MobileUIDistributionConfigRepository;
+import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
+import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfig;
+import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfigsCollection;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions.PickingJobOptionsBuilder;
 import de.metas.mobile.MobileConfig;
 import de.metas.mobile.MobileConfig.MobileConfigBuilder;
 import de.metas.mobile.MobileConfigService;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 @Builder
 public class MobileConfigCommand
@@ -20,6 +29,7 @@ public class MobileConfigCommand
 	@NonNull private final MobileUIPickingUserProfileRepository mobilePickingConfigRepository;
 	@NonNull private final MobileUIDistributionConfigRepository mobileDistributionConfigRepository;
 
+	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonMobileConfigRequest request;
 
 	public JsonMobileConfigResponse execute()
@@ -62,7 +72,9 @@ public class MobileConfigCommand
 
 		final MobileUIPickingUserProfile profile = mobilePickingConfigRepository.getProfile();
 		final MobileUIPickingUserProfile.MobileUIPickingUserProfileBuilder newProfileBuilder = profile.toBuilder()
-				.defaultPickingJobOptions(updatePickingJobOptions(profile.getDefaultPickingJobOptions(), picking));
+				.defaultPickingJobOptions(updatePickingJobOptions(profile.getDefaultPickingJobOptions(), picking))
+				.customerConfigs(updatePickingCustomers(profile.getCustomerConfigs(), picking.getCustomers()))
+				.isFilterByBarcode(picking.getFilterByQRCode() != null && picking.getFilterByQRCode());
 
 		if (picking.getAllowPickingAnyCustomer() != null)
 		{
@@ -78,18 +90,25 @@ public class MobileConfigCommand
 	private static JsonMobileConfigResponse.Picking toJson(final MobileUIPickingUserProfile profile)
 	{
 		return JsonMobileConfigResponse.Picking.builder()
+				.aggregationType(profile.getDefaultPickingJobOptions().getAggregationType())
 				.allowPickingAnyCustomer(profile.isAllowPickingAnyCustomer())
 				.allowPickingAnyHU(profile.getDefaultPickingJobOptions().isAllowPickingAnyHU())
 				.createShipmentPolicy(profile.getDefaultPickingJobOptions().getCreateShipmentPolicy())
 				.alwaysSplitHUsEnabled(profile.getDefaultPickingJobOptions().isAlwaysSplitHUsEnabled())
 				.pickWithNewLU(profile.getDefaultPickingJobOptions().isPickWithNewLU())
 				.allowNewTU(profile.getDefaultPickingJobOptions().isAllowNewTU())
+				.filterByQRCode(profile.isFilterByBarcode())
+				.allowCompletingPartialPickingJob(profile.getDefaultPickingJobOptions().isAllowCompletingPartialPickingJob())
 				.build();
 	}
 
 	private static PickingJobOptions updatePickingJobOptions(final PickingJobOptions pickingJobOptions, final JsonMobileConfigRequest.Picking from)
 	{
 		final PickingJobOptionsBuilder builder = pickingJobOptions.toBuilder();
+		if (from.getAggregationType() != null)
+		{
+			builder.aggregationType(from.getAggregationType());
+		}
 		if (from.getAllowPickingAnyHU() != null)
 		{
 			builder.isAllowPickingAnyHU(from.getAllowPickingAnyHU());
@@ -110,8 +129,50 @@ public class MobileConfigCommand
 		{
 			builder.isAllowNewTU(from.getAllowNewTU());
 		}
+		if (from.getAllowCompletingPartialPickingJob() != null)
+		{
+			builder.isAllowCompletingPartialPickingJob(from.getAllowCompletingPartialPickingJob());
+		}
+		if (from.getAllowSkippingRejectedReason() != null)
+		{
+			builder.isAllowSkippingRejectedReason(from.getAllowSkippingRejectedReason());
+		}
 
 		return builder.build();
+	}
+
+	private PickingCustomerConfigsCollection updatePickingCustomers(
+			@NonNull final PickingCustomerConfigsCollection customers,
+			@Nullable final List<JsonMobileConfigRequest.Picking.Customer> fromCustomersList)
+	{
+		if (fromCustomersList == null)
+		{
+			return customers;
+		}
+		else if (fromCustomersList.isEmpty())
+		{
+			return PickingCustomerConfigsCollection.EMPTY;
+		}
+
+		final ImmutableList<PickingCustomerConfig> result = CollectionUtils.<PickingCustomerConfig, JsonMobileConfigRequest.Picking.Customer, BPartnerId>syncLists()
+				.target(customers)
+				.targetKeyExtractor(PickingCustomerConfig::getCustomerId)
+				.source(fromCustomersList)
+				.sourceKeyExtractor(fromCustomer -> context.getId(fromCustomer.getCustomer(), BPartnerId.class))
+				.mergeFunction((target, from) -> {
+					if (target == null)
+					{
+						final BPartnerId customerId = context.getId(from.getCustomer(), BPartnerId.class);
+						return PickingCustomerConfig.builder().customerId(customerId).build();
+					}
+					else
+					{
+						return target;
+					}
+				})
+				.execute();
+
+		return PickingCustomerConfigsCollection.ofCollection(result);
 	}
 
 	private JsonMobileConfigResponse.Distribution updateDistributionConfig()

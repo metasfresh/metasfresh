@@ -97,7 +97,8 @@ class HUQRCodesServiceTest
 	{
 		this.helper = HUTestHelper.newInstanceOutOfTrx();
 		this.huQRCodesService = new HUQRCodesService(new HUQRCodesRepository(),
-				new GlobalQRCodeService(DoNothingMassPrintingService.instance));
+													 new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+													 new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
 
 		this.productId = BusinessTestHelper.createProductId("MyProduct", helper.uomEach);
 
@@ -320,8 +321,8 @@ class HUQRCodesServiceTest
 			assertThat(huQRCode).isInstanceOf(EAN13HUQRCode.class);
 
 			final EAN13HUQRCode ean13 = (EAN13HUQRCode)huQRCode;
-			assertThat(ean13.getPrefix()).contains(EAN13HUQRCode.PREFIX_VariableWeight);
-			assertThat(ean13.getProductNo()).contains("59414");
+			assertThat(ean13.unbox().getPrefix().getAsString()).isEqualTo("28");
+			assertThat(ean13.unbox().getProductNo().getAsString()).isEqualTo("59414");
 			assertThat(ean13.getWeightInKg()).contains(new BigDecimal("0.482"));
 			assertThat(ean13.getBestBeforeDate()).isEmpty();
 			assertThat(ean13.getLotNumber()).isEmpty();

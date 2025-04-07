@@ -1,7 +1,6 @@
 package de.metas.frontend_testing.masterdata;
 
 import com.google.common.collect.ImmutableMap;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyRepository;
 import de.metas.distribution.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.ddorder.DDOrderService;
@@ -19,12 +18,21 @@ import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigResponse;
 import de.metas.frontend_testing.masterdata.mobile_configuration.MobileConfigCommand;
+import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
+import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateResponse;
+import de.metas.frontend_testing.masterdata.picking_slot.PickingSlotCreateCommand;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderRequest;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderResponse;
 import de.metas.frontend_testing.masterdata.pp_order.PPOrderCommand;
 import de.metas.frontend_testing.masterdata.product.CreateProductCommand;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductResponse;
+import de.metas.frontend_testing.masterdata.product_planning.CreateProductPlanningCommand;
+import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningRequest;
+import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningResponse;
+import de.metas.frontend_testing.masterdata.resource.CreateResourceCommand;
+import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
+import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceResponse;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.sales_order.SalesOrderCreateCommand;
@@ -38,14 +46,10 @@ import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.mobile.MobileConfigService;
-import de.metas.picking.api.IPickingSlotBL;
-import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
-import de.metas.util.Services;
+import de.metas.product.ProductRepository;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -54,11 +58,7 @@ import java.util.function.BiFunction;
 @Builder
 public class CreateMasterdataCommand
 {
-	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
-	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-	@NonNull private final IBPartnerDAO partnerDAO = Services.get(IBPartnerDAO.class);
-	@NonNull private final IPickingSlotBL pickingSlotBL = Services.get(IPickingSlotBL.class);
+	@NonNull private final ProductRepository productRepository; // for C_BPartner_Product
 	@NonNull private final MobileConfigService mobileConfigService;
 	@NonNull private final MobileUIPickingUserProfileRepository mobilePickingConfigRepository;
 	@NonNull private final MobileUIDistributionConfigRepository mobileDistributionConfigRepository;
@@ -79,8 +79,11 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonLoginUserResponse> login = createLoginUsers();
 		final ImmutableMap<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
 		final ImmutableMap<String, JsonCreateProductResponse> products = createProducts();
+		final ImmutableMap<String, JsonCreateResourceResponse> resources = createResources();
 		final ImmutableMap<String, JsonWarehouseResponse> warehouses = createWarehouses();
+		final ImmutableMap<String, JsonCreateProductPlanningResponse> productPlannings = createProductPlannings();
 		final Map<String, JsonPackingInstructionsResponse> packingInstructions = createPackingInstructions();
+		final ImmutableMap<String, JsonPickingSlotCreateResponse> pickingSlots = createPickingSlots();
 		final JsonMobileConfigResponse mobileConfig = createMobileConfiguration();
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
 		final ImmutableMap<String, JsonSalesOrderCreateResponse> salesOrders = createSalesOrders();
@@ -92,12 +95,16 @@ public class CreateMasterdataCommand
 				.login(login)
 				.bpartners(bpartners)
 				.products(products)
+				.resources(resources)
+				.productPlannings(productPlannings)
+				.pickingSlots(pickingSlots)
 				.warehouses(warehouses)
 				.packingInstructions(packingInstructions)
 				.handlingUnits(hus)
 				.salesOrders(salesOrders)
 				.distributionOrders(distributionOrders)
 				.manufacturingOrders(manufacturingOrders)
+				.resources(resources)
 				.build();
 	}
 
@@ -151,11 +158,56 @@ public class CreateMasterdataCommand
 	private JsonCreateProductResponse createProduct(String identifier, JsonCreateProductRequest request)
 	{
 		return CreateProductCommand.builder()
+				.productRepository(productRepository)
 				.context(context)
 				.request(request)
 				.identifier(Identifier.ofString(identifier))
 				.build()
 				.execute();
+	}
+
+	private ImmutableMap<String, JsonCreateResourceResponse> createResources()
+	{
+		return process(request.getResources(), this::createResource);
+	}
+
+	private JsonCreateResourceResponse createResource(String identifier, JsonCreateResourceRequest request)
+	{
+		return CreateResourceCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonCreateProductPlanningResponse> createProductPlannings()
+	{
+		return process(request.getProductPlannings(), this::createProductPlanning);
+	}
+
+	private JsonCreateProductPlanningResponse createProductPlanning(String identifier, JsonCreateProductPlanningRequest request)
+	{
+		return CreateProductPlanningCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
+	private ImmutableMap<String, JsonPickingSlotCreateResponse> createPickingSlots()
+	{
+		return process(request.getPickingSlots(), this::createPickingSlot);
+	}
+
+	private JsonPickingSlotCreateResponse createPickingSlot(String identifier, JsonPickingSlotCreateRequest request)
+	{
+		return PickingSlotCreateCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build().execute();
 	}
 
 	private ImmutableMap<String, JsonWarehouseResponse> createWarehouses()
@@ -199,6 +251,7 @@ public class CreateMasterdataCommand
 				.mobilePickingConfigRepository(mobilePickingConfigRepository)
 				.mobileDistributionConfigRepository(mobileDistributionConfigRepository)
 				//
+				.context(context)
 				.request(request.getMobileConfig())
 				//
 				.build().execute();
@@ -265,5 +318,4 @@ public class CreateMasterdataCommand
 				.build()
 				.execute();
 	}
-
 }

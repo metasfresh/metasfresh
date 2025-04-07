@@ -4,9 +4,11 @@ import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.location.CountryId;
+import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ResourceId;
+import de.metas.resource.ResourceTypeId;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
@@ -17,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class MasterdataContext
@@ -30,7 +33,9 @@ public class MasterdataContext
 	public static final String DEFAULT_TaxCategory_InternalName = "Normal";
 	public static final BPartnerId METASFRESH_ORG_BPARTNER_ID = BPartnerId.ofRepoId(2155894);
 	public static final BPartnerLocationId METASFRESH_ORG_BPARTNER_LOCATION_ID = BPartnerLocationId.ofRepoId(METASFRESH_ORG_BPARTNER_ID, 2202690);
-	public static final ResourceId DEFAULT_PLANT_ID = ResourceId.ofRepoId(540006);
+	public static final ResourceId DEFAULT_PLANT_ID = ResourceId.ofRepoId(540006); // test
+	public static final PPRoutingId DEFAULT_ROUTING_ID = PPRoutingId.ofRepoId(540118);  // Default Workflow for mobile UI Manufacturing
+	public static final ResourceTypeId DEFAULT_MANUFACTURING_RESOURCE_TYPE_ID = ResourceTypeId.ofRepoId(1000000);  // S_ResourceType.Name = Produktionsressource
 	public static final int STANDARD_AD_PRINTER_ID = 1000000;
 	public static final int PRINT_TO_DISK_AD_PRINTERHW_ID = 540331;
 
@@ -60,18 +65,14 @@ public class MasterdataContext
 		final T id = (T)identifiers.get(typeAndIdentifier);
 		if (id == null)
 		{
-			throw new IllegalArgumentException("No identifier found for " + typeAndIdentifier);
+			throw new IllegalArgumentException("No identifier found for " + typeAndIdentifier + " in " + identifiers.keySet());
 		}
 		return id;
 	}
 
 	public <T extends RepoIdAware> T getIdOfType(@NonNull final Class<T> idClass)
 	{
-		final @NotNull List<T> result = identifiers.entrySet()
-				.stream()
-				.filter(entry -> entry.getKey().isTypeMatch(idClass))
-				.map(entry -> idClass.cast(entry.getValue()))
-				.collect(Collectors.toList());
+		final List<T> result = getIdsOfType(idClass);
 
 		if (result.isEmpty())
 		{
@@ -87,6 +88,30 @@ public class MasterdataContext
 		}
 	}
 
+	public <T extends RepoIdAware> Optional<T> getIdOfTypeIfUnique(@NonNull final Class<T> idClass)
+	{
+		final List<T> result = getIdsOfType(idClass);
+
+		if (result.size() == 1)
+		{
+			return Optional.of(result.get(0));
+		}
+		else
+		{
+			return Optional.empty();
+		}
+	}
+
+	private <T extends RepoIdAware> @NotNull List<T> getIdsOfType(final @NotNull Class<T> idClass)
+	{
+		return identifiers.entrySet()
+				.stream()
+				.filter(entry -> entry.getKey().isTypeMatch(idClass))
+				.map(entry -> idClass.cast(entry.getValue()))
+				.distinct()
+				.collect(Collectors.toList());
+	}
+
 	public void putObject(@NonNull final Identifier identifier, @NonNull final Object object)
 	{
 		final Object prevObject = objects.get(identifier);
@@ -99,16 +124,18 @@ public class MasterdataContext
 		objects.put(identifier, object);
 	}
 
-	public <T> T getObject(@NonNull final Identifier identifier)
+	public <T> T getObjectNotNull(@NonNull final Identifier identifier)
 	{
-		final Object object = objects.get(identifier);
-		if (object == null)
-		{
-			throw new IllegalArgumentException("No object found for " + identifier);
-		}
+		return this.<T>getObject(identifier)
+				.orElseThrow(() -> new IllegalArgumentException("No object found for " + identifier + ".\n"
+						+ "Available identifiers are: " + objects.keySet()));
+	}
 
+	public <T> Optional<T> getObject(@NonNull final Identifier identifier)
+	{
 		//noinspection unchecked
-		return (T)object;
+		final T object = (T)objects.get(identifier);
+		return Optional.ofNullable(object);
 	}
 
 	//

@@ -11,11 +11,13 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.movement.HUIdAndQRCode;
 import de.metas.handlingunits.movement.MoveHUCommand;
+import de.metas.handlingunits.movement.MoveHURequestItem;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFrom;
@@ -53,6 +55,7 @@ public class PickingJobUnPickCommand
 	//
 	// Params
 	@NonNull private final PickingJob initialPickingJob;
+	@NonNull private final PickingJobLineId lineId;
 	@NonNull private final ImmutableListMultimap<PickingJobStepId, StepUnpickInstructions> unpickInstructionsMap;
 	@Nullable private final HUQRCode unpickToHU;
 
@@ -67,6 +70,7 @@ public class PickingJobUnPickCommand
 			final @NonNull HUQRCodesService huQRCodesService,
 			//
 			final @NonNull PickingJob pickingJob,
+			final @NonNull PickingJobLineId lineId,
 			final @Nullable PickingJobStepId onlyPickingJobStepId,
 			final @Nullable PickingJobStepPickFromKey onlyPickFromKey,
 			final @Nullable HUQRCode unpickToHU)
@@ -76,6 +80,7 @@ public class PickingJobUnPickCommand
 		this.huQRCodesService = huQRCodesService;
 
 		this.initialPickingJob = pickingJob;
+		this.lineId = lineId;
 
 		this.unpickToHU = unpickToHU;
 
@@ -189,7 +194,7 @@ public class PickingJobUnPickCommand
 
 		MoveHUCommand.builder()
 				.huQRCodesService(huQRCodesService)
-				.husToMove(huIdAndQRCodeList)
+				.requestItems(huIdAndQRCodeList.stream().map(MoveHURequestItem::ofHUIdAndQRCode).collect(ImmutableSet.toImmutableSet()))
 				.targetQRCode(unpickToHU.toGlobalQRCode())
 				.build()
 				.execute();
@@ -232,28 +237,36 @@ public class PickingJobUnPickCommand
 	@NonNull
 	private PickingJob reinitializePickingTargetIfDestroyed(final PickingJob pickingJob)
 	{
-		final LUPickingTarget updatedLUPickingTarget = pickingJob
-				.getLuPickTarget()
-				.map(this::reinitializeLUPickingTarget)
-				.orElse(null);
-
-		return pickingJob
-				.withLuPickTarget(updatedLUPickingTarget);
+		if (isLineLevelPickTarget(pickingJob))
+		{
+			return pickingJob.withLuPickingTarget(lineId, this::reinitializeLUPickingTarget);
+		}
+		else
+		{
+			return pickingJob.withLuPickingTarget(null, this::reinitializeLUPickingTarget);
+		}
 	}
 
-	@NonNull
-	private LUPickingTarget reinitializeLUPickingTarget(@NonNull final LUPickingTarget pickingTarget)
+	private boolean isLineLevelPickTarget(final PickingJob pickingJob) {return pickingJob.isLineLevelPickTarget();}
+
+	@Nullable
+	private LUPickingTarget reinitializeLUPickingTarget(@Nullable final LUPickingTarget luPickingTarget)
 	{
-		final HuId luId = pickingTarget.getLuId();
+		if (luPickingTarget == null)
+		{
+			return null;
+		}
+
+		final HuId luId = luPickingTarget.getLuId();
 		if (luId == null)
 		{
-			return pickingTarget;
+			return luPickingTarget;
 		}
 
 		final I_M_HU lu = handlingUnitsBL.getById(luId);
 		if (!handlingUnitsBL.isDestroyedOrEmptyStorage(lu))
 		{
-			return pickingTarget;
+			return luPickingTarget;
 		}
 
 		final HuPackingInstructionsIdAndCaption luPI = handlingUnitsBL.getEffectivePackingInstructionsIdAndCaption(lu);

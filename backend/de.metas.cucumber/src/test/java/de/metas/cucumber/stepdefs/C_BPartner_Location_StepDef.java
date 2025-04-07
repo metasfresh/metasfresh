@@ -26,6 +26,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
 import de.metas.location.ILocationBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -52,6 +54,7 @@ import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID;
 
 public class C_BPartner_Location_StepDef
 {
+	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final C_Location_StepDefData locationTable;
@@ -120,16 +123,14 @@ public class C_BPartner_Location_StepDef
 		bPartnerLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
 		bPartnerLocationRecord.setGLN(gln);
 
-		final boolean isShipToDefault = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsShipToDefault, false);
-		bPartnerLocationRecord.setIsShipToDefault(isShipToDefault);
+		tableRow.getAsOptionalBoolean(I_C_BPartner_Location.COLUMNNAME_IsShipToDefault).ifPresent(bPartnerLocationRecord::setIsShipToDefault);
 
-		final boolean isShipTo = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsShipTo, isShipToDefault);
+		final boolean isShipTo = tableRow.getAsOptionalBoolean(I_C_BPartner_Location.COLUMNNAME_IsShipTo).orElse(bPartnerLocationRecord.isShipToDefault());
 		bPartnerLocationRecord.setIsShipTo(isShipTo);
 
-		final boolean isBillToDefault = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsBillToDefault, false);
-		bPartnerLocationRecord.setIsBillToDefault(isBillToDefault);
+		tableRow.getAsOptionalBoolean(I_C_BPartner_Location.COLUMNNAME_IsBillToDefault).ifPresent(bPartnerLocationRecord::setIsBillToDefault);
 
-		final boolean isBillTo = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsBillTo, isBillToDefault);
+		final boolean isBillTo = tableRow.getAsOptionalBoolean(I_C_BPartner_Location.COLUMNNAME_IsBillTo).orElse(bPartnerLocationRecord.isBillToDefault());
 		bPartnerLocationRecord.setIsBillTo(isBillTo);
 
 		final String locationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_C_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -143,8 +144,12 @@ public class C_BPartner_Location_StepDef
 		}
 		else
 		{
+			final CountryId countryId = tableRow.getAsOptionalString("C_Country_ID")
+					.map(countryDAO::getCountryIdByCountryCode)
+					.orElse(StepDefConstants.COUNTRY_ID);
+			
 			final I_C_Location locationRecord = InterfaceWrapperHelper.newInstance(I_C_Location.class);
-			locationRecord.setC_Country_ID(StepDefConstants.COUNTRY_ID.getRepoId());
+			locationRecord.setC_Country_ID(countryId.getRepoId());
 			saveRecord(locationRecord);
 
 			bPartnerLocationRecord.setC_Location_ID(locationRecord.getC_Location_ID());
@@ -188,7 +193,7 @@ public class C_BPartner_Location_StepDef
 
 	private void load_bpartner_location(@NonNull final DataTableRow tableRow)
 	{
-		final String bpartnerLocationIdentifier = tableRow.getAsIdentifier(COLUMNNAME_C_BPartner_Location_ID+"." + StepDefDataIdentifier.SUFFIX).getAsString();
+		final String bpartnerLocationIdentifier = tableRow.getAsIdentifier(COLUMNNAME_C_BPartner_Location_ID + "." + StepDefDataIdentifier.SUFFIX).getAsString();
 
 		final int id = tableRow.getAsOptionalInt(COLUMNNAME_C_BPartner_Location_ID).orElse(-1);
 		if (id > 0)

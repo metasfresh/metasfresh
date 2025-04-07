@@ -19,6 +19,7 @@ import YesNoDialog from './YesNoDialog';
 import DialogButton from './DialogButton';
 import Dialog from './Dialog';
 import * as uiTrace from './../../utils/ui_trace';
+import Spinner from '../Spinner';
 
 const GetQuantityDialog = ({
   readOnly: readOnlyParam = false,
@@ -112,8 +113,12 @@ const GetQuantityDialog = ({
   const fireOnQtyChange = useCallback(
     (payload) => {
       setProcessing(true);
-      const promise = onQtyChange(payload)?.catch?.((error) => toastErrorFromObj(error));
-      doFinally(promise, () => setProcessing(false));
+      try {
+        const promise = onQtyChange(payload)?.catch?.((error) => toastErrorFromObj(error));
+        doFinally(promise, () => setProcessing(false));
+      } finally {
+        setProcessing(false);
+      }
     },
     [onQtyChange]
   );
@@ -302,6 +307,7 @@ const GetQuantityDialog = ({
 
   return (
     <div>
+      {isProcessing && <Spinner />}
       <Dialog className="get-qty-dialog">
         {isCustomView() && getCustomView()}
         {!isCustomView() && (

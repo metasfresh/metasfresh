@@ -143,6 +143,29 @@ public interface I_MobileUI_UserProfile_Picking_Job
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Allow Partial Picking Completion.
+	 * Users can complete jobs on mobile without picking the full ordered quantity.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowCompletingPartialPickingJob (boolean IsAllowCompletingPartialPickingJob);
+
+	/**
+	 * Get Allow Partial Picking Completion.
+	 * Users can complete jobs on mobile without picking the full ordered quantity.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowCompletingPartialPickingJob();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_IsAllowCompletingPartialPickingJob = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "IsAllowCompletingPartialPickingJob", null);
+	String COLUMNNAME_IsAllowCompletingPartialPickingJob = "IsAllowCompletingPartialPickingJob";
+
+	/**
 	 * Set Allow new TU.
 	 *
 	 * <br>Type: YesNo
@@ -359,6 +382,27 @@ public interface I_MobileUI_UserProfile_Picking_Job
 
 	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_Name = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Aggregation Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPickingJobAggregationType (@Nullable java.lang.String PickingJobAggregationType);
+
+	/**
+	 * Get Aggregation Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPickingJobAggregationType();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_PickingJobAggregationType = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "PickingJobAggregationType", null);
+	String COLUMNNAME_PickingJobAggregationType = "PickingJobAggregationType";
 
 	/**
 	 * Set Picking line group by.

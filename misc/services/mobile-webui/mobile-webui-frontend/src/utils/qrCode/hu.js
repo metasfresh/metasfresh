@@ -43,6 +43,15 @@ import { parseEAN13CodeString } from './ean13';
 export const QRCODE_TYPE_HU = 'HU';
 export const QRCODE_TYPE_LEICH_UND_MEHL = 'LMQ';
 
+export const toQRCodeDisplayableNoFail = (qrCode) => {
+  try {
+    return toQRCodeDisplayable(qrCode);
+  } catch (error) {
+    console.debug('toQRCodeDisplayableNoFail: got error', error);
+    return `${qrCode}`;
+  }
+};
+
 export const toQRCodeDisplayable = (qrCode) => {
   //
   // Case: null/empty qrCode
@@ -121,7 +130,7 @@ export const toQRCodeObject = (qrCode) => {
     const code = `${qrCode}`;
     return {
       code,
-      displayable: toQRCodeDisplayable(code),
+      displayable: toQRCodeDisplayableNoFail(code),
     };
   }
 
@@ -135,7 +144,7 @@ export const toQRCodeObject = (qrCode) => {
 // de.metas.handlingunits.qrcodes.model.HUQRCode
 // de.metas.handlingunits.qrcodes.model.json.HUQRCodeJsonConverter.fromGlobalQRCode
 export const parseQRCodeString = (string, returnFalseOnError) => {
-  console.trace('parseQRCodeString', { string, returnFalseOnError });
+  //console.trace('parseQRCodeString', { string, returnFalseOnError });
   const allResults = {};
 
   let result = parseGS1CodeString(string);
@@ -158,7 +167,7 @@ export const parseQRCodeString = (string, returnFalseOnError) => {
     return false;
   } else {
     const errorMsg = result?.error ? result.error : trl('error.qrCode.invalid');
-    console.log(`parseQRCodeString: ${errorMsg}`, { string, allResults });
+    console.debug(`parseQRCodeString: ${errorMsg}`, { string, allResults });
     throw errorMsg;
   }
 };
@@ -286,4 +295,9 @@ const parseQRCodePayload_LeichMehl_v1 = (payload) => {
   }
 
   return result;
+};
+
+export const isKnownQRCodeFormat = (qrCodeString) => {
+  const returnFalseOnError = true;
+  return !!parseQRCodeString(qrCodeString, returnFalseOnError);
 };

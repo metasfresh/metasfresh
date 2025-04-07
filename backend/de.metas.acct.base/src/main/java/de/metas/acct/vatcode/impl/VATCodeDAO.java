@@ -90,7 +90,7 @@ public class VATCodeDAO implements IVATCodeDAO
 				.addEqualsFilter(I_C_VAT_Code.COLUMNNAME_VATCode, code)
 				.addInArrayFilter(I_C_VAT_Code.COLUMNNAME_AD_Org_ID, orgId, OrgId.ANY)
 				.create()
-				.firstIdOnlyOptional(VatCodeId::ofRepoId)
+				.firstIdOnlyOptional(VatCodeId::ofRepoIdOrNull)
 				.orElseThrow(() -> new AdempiereException("No C_VAT_Code found for code & org")
 						.appendParametersToMessage()
 						.setParameter("OrgId", orgId.getRepoId())

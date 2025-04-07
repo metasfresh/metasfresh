@@ -28,6 +28,8 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.DocumentNoFilter;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
+import de.metas.product.ProductId;
+import de.metas.product.ResolvedScannedProductCodes;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import lombok.Builder;
@@ -47,6 +49,7 @@ public class PackageableQuery
 {
 	public static final PackageableQuery ALL = PackageableQuery.builder().build();
 
+	@Nullable ProductId productId;
 	@NonNull @Singular ImmutableSet<BPartnerId> customerIds;
 	@NonNull @Singular ImmutableSet<BPartnerLocationId> handoverLocationIds;
 	@Nullable BPartnerLocationId deliveryBPLocationId;
@@ -77,10 +80,13 @@ public class PackageableQuery
 	 */
 	@Builder.Default boolean excludeLockedForProcessing = false; // false by default to be backward-compatibile
 
+	@Nullable Set<ShipmentScheduleId> onlyShipmentScheduleIds;
 	@Nullable Set<ShipmentScheduleId> excludeShipmentScheduleIds;
 
 	@Builder.Default
 	@NonNull ImmutableSet<OrderBy> orderBys = ImmutableSet.of(OrderBy.ProductName, OrderBy.PriorityRule, OrderBy.DateOrdered);
+
+	@Nullable ResolvedScannedProductCodes scannedProductCodes;
 
 	public enum OrderBy
 	{

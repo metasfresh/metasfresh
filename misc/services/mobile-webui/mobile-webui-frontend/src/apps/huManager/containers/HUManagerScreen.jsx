@@ -4,17 +4,24 @@ import { useDispatch, useSelector } from 'react-redux';
 import * as api from '../api';
 import { changeClearanceStatus, clearLoadedData, handlingUnitLoaded } from '../actions';
 import { getHandlingUnitInfoFromGlobalState } from '../reducers';
-import { huManagerDisposeLocation, huManagerHuLabelsLocation, huManagerMoveLocation } from '../routes';
+import {
+  huManagerBulkActionsLocation,
+  huManagerDisposeLocation,
+  huManagerHuLabelsLocation,
+  huManagerMoveLocation,
+} from '../routes';
 
 import { HUInfoComponent } from '../components/HUInfoComponent';
-import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import ClearanceDialog from '../components/ClearanceDialog';
 import { toastError } from '../../../utils/toast';
 import ChangeHUQtyDialog from '../../../components/dialogs/ChangeHUQtyDialog';
+import HUScanner from '../../../components/huSelector/HUScanner';
 import ChangeCurrentLocatorDialog from '../components/ChangeCurrentLocatorDialog';
 import { HU_ATTRIBUTE_BestBeforeDate, HU_ATTRIBUTE_LotNo } from '../../../constants/HUAttributes';
+import * as scanAnythingRoutes from '../../scanAnything/routes';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
+import { trl } from '../../../utils/translations';
 
 const MODALS = {
   CHANGE_QTY: 'CHANGE_QTY',
@@ -33,24 +40,18 @@ const HUManagerScreen = () => {
   const [currentLocatorQRCode, setCurrentLocatorQRCode] = useState();
   const [handlingUnitInfo, setHandlingUnitInfo] = useHandlingUnitInfo();
 
-  const resolveScannedBarcode = ({ scannedBarcode }) => {
-    return api.getHUByQRCode(scannedBarcode).then((handlingUnitInfo) => ({ handlingUnitInfo }));
-  };
-
-  const onResolvedResult = (result) => {
-    //console.log('onResolvedResult', { result });
-    const { handlingUnitInfo } = result;
-    setHandlingUnitInfo(handlingUnitInfo);
-  };
-
   const onDisposeClick = () => {
     history.push(huManagerDisposeLocation());
   };
   const onMoveClick = () => {
     history.push(huManagerMoveLocation());
   };
+  const onBulkActionsClick = () => {
+    history.push(huManagerBulkActionsLocation());
+  };
   const onScanAgainClick = () => {
     dispatch(clearLoadedData());
+    history.push(scanAnythingRoutes.appLocation());
   };
   const onPrintLabelsClicked = () => {
     history.push(huManagerHuLabelsLocation());
@@ -72,7 +73,9 @@ const HUManagerScreen = () => {
         setLotNo,
         lotNo,
       })
-      .then(setHandlingUnitInfo)
+      .then(() => {
+        dispatch(clearLoadedData());
+      })
       .catch((axiosError) => toastError({ axiosError }))
       .finally(() => setModalToDisplay(''));
   };
@@ -154,6 +157,10 @@ const HUManagerScreen = () => {
               testId="set-current-locator-button"
             />
           )}
+          <ButtonWithIndicator
+            caption={trl('huManager.action.bulkActions.buttonCaption')}
+            onClick={onBulkActionsClick}
+          />
           {isAllowQtyChange && (
             <ButtonWithIndicator
               captionKey="huManager.action.changeQty.buttonCaption"
@@ -175,13 +182,7 @@ const HUManagerScreen = () => {
       </>
     );
   } else {
-    return (
-      <BarcodeScannerComponent
-        continuousRunning={true}
-        resolveScannedBarcode={resolveScannedBarcode}
-        onResolvedResult={onResolvedResult}
-      />
-    );
+    return <HUScanner onResolvedBarcode={(handlingUnitInfo) => setHandlingUnitInfo(handlingUnitInfo)} />;
   }
 };
 

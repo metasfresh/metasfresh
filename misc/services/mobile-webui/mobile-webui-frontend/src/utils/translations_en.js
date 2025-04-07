@@ -80,8 +80,13 @@ const translations = {
       defaultCaption: 'Scan',
       invalidScannedBarcode: 'Scanned code is invalid',
     },
+    huManager: {
+      missingTargetQrCode: 'The target QR Code must be scanned first!',
+      scanLuOrLocator: 'Scan LU or Locator',
+    },
     picking: {
       PickingLine: 'Picking Line',
+      PickFromManufacturingOrder: 'Manufacture',
       PickHU: 'Pick HU',
       scanQRCode: 'Scan QR',
       notEligibleHUBarcode: 'HU barcode not matching',
@@ -117,6 +122,7 @@ const translations = {
       },
       overPickConfirmationPrompt: 'Do you really want to pick more than was ordered?',
       reopenLU: 'Reopen LU',
+      pickingSlot: 'Picking Slot',
     },
     distribution: {
       DistributionLine: 'Distribution Line',

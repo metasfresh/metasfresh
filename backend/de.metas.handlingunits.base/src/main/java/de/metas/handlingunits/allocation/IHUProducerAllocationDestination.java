@@ -22,6 +22,7 @@ package de.metas.handlingunits.allocation;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.ClearanceStatusInfo;
@@ -30,7 +31,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.warehouse.LocatorId;
 
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -48,7 +48,7 @@ public interface IHUProducerAllocationDestination extends IAllocationDestination
 	 *
 	 * @return created HUs so far; never return null
 	 */
-	List<I_M_HU> getCreatedHUs();
+	ImmutableList<I_M_HU> getCreatedHUs();
 
 	/**
 	 * @return how many HUs were created so far

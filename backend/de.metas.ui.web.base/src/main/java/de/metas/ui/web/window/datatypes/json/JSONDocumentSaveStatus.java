@@ -39,6 +39,7 @@ import javax.annotation.Nullable;
 public class JSONDocumentSaveStatus
 {
 	boolean saved;
+	boolean presentInDatabase;
 	boolean hasChanges;
 	boolean deleted;
 	boolean error;
@@ -49,6 +50,7 @@ public class JSONDocumentSaveStatus
 	{
 		return builder()
 				.saved(saveStatus.isSaved())
+				.presentInDatabase(saveStatus.isPresentInDatabase())
 				.hasChanges(saveStatus.isHasChangesToBeSaved())
 				.deleted(saveStatus.isDeleted())
 				.error(saveStatus.isError())
@@ -56,4 +58,5 @@ public class JSONDocumentSaveStatus
 				.exception(JSONJavaException.ofNullable(saveStatus.getException(), jsonOpts))
 				.build();
 	}
+
 }

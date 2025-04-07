@@ -12,6 +12,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -24,6 +25,7 @@ import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 class DistributionJobLoader
 {
@@ -64,6 +66,10 @@ class DistributionJobLoader
 
 		final ZonedDateTime dateRequired = InstantAndOrgId.ofTimestamp(ddOrder.getDatePromised(), ddOrder.getAD_Org_ID())
 				.toZonedDateTime(loadingSupportServices::getTimeZone);
+		final ZonedDateTime pickDate = Optional.ofNullable(ddOrder.getPickDate())
+				.map(date -> InstantAndOrgId.ofTimestamp(date, ddOrder.getAD_Org_ID()))
+				.map(instant -> instant.toZonedDateTime(loadingSupportServices::getTimeZone))
+				.orElse(dateRequired);
 
 		return DistributionJob.builder()
 				.id(DistributionJobId.ofDDOrderId(ddOrderId))
@@ -72,8 +78,12 @@ class DistributionJobLoader
 				.ppOrderDocumentNo(loadingSupportServices.getPPOrderDocNo(ddOrder))
 				.customerId(BPartnerId.ofRepoId(ddOrder.getC_BPartner_ID()))
 				.dateRequired(dateRequired)
+				.pickDate(pickDate)
 				.pickFromWarehouse(loadingSupportServices.getWarehouseInfoByRepoId(ddOrder.getM_Warehouse_From_ID()))
 				.dropToWarehouse(loadingSupportServices.getWarehouseInfoByRepoId(ddOrder.getM_Warehouse_To_ID()))
+				.plantInfo(Optional.ofNullable(ResourceId.ofRepoIdOrNull(ddOrder.getPP_Plant_ID()))
+								   .map(loadingSupportServices::getPlantInfo)
+								   .orElse(null))
 				.responsibleId(extractResponsibleId(ddOrder))
 				.isClosed(!docStatus.isCompleted()) // NOTE: we consider closed (for us) anything which is not completed
 				.allowPickingAnyHU(config.isAllowPickingAnyHU())

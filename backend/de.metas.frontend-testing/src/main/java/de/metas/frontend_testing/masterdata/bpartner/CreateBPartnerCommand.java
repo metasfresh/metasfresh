@@ -2,6 +2,8 @@ package de.metas.frontend_testing.masterdata.bpartner;
 
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.GLN;
+import de.metas.bpartner.RandomGLNGenerator;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -14,6 +16,7 @@ import de.metas.order.DeliveryRule;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -32,9 +35,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class CreateBPartnerCommand
 {
+	@NonNull private final RandomGLNGenerator randomGLNGenerator = new RandomGLNGenerator();
 	@NonNull private final CurrencyRepository currencyRepository;
 
 	@NonNull private final MasterdataContext context;
+	@NonNull final JsonCreateBPartnerRequest request;
 
 	@NonNull private final BPGroupId bpGroupId = MasterdataContext.BP_GROUP_ID;
 	@NonNull private final OrgId orgId = MasterdataContext.ORG_ID;
@@ -51,6 +56,7 @@ public class CreateBPartnerCommand
 	{
 		this.currencyRepository = currencyRepository;
 		this.context = context;
+		this.request = request;
 
 		final Identifier suggestedIdentifier = Identifier.ofNullableString(identifier);
 		if (suggestedIdentifier == null)
@@ -84,16 +90,20 @@ public class CreateBPartnerCommand
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
 		context.putIdentifier(bpIdentifier, bpartnerId);
 
-		createBPLocation(bpartnerId);
+		final I_C_BPartner_Location bpLocationRecord = createBPLocation(bpartnerId);
 
 		return JsonCreateBPartnerResponse.builder()
+				.id(BPartnerId.ofRepoId(bpartner.getC_BPartner_ID()))
 				.bpartnerCode(bpartner.getValue())
+				.gln(GLN.ofNullableString(bpLocationRecord.getGLN()))
 				.build();
 	}
 
-	private void createBPLocation(@NonNull final BPartnerId bpartnerId)
+	private I_C_BPartner_Location createBPLocation(@NonNull final BPartnerId bpartnerId)
 	{
 		final LocationId locationId = createLocation();
+
+		final GLN gln = getGLN();
 
 		final I_C_BPartner_Location bPartnerLocationRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
 		bPartnerLocationRecord.setC_BPartner_ID(bpartnerId.getRepoId());
@@ -101,7 +111,27 @@ public class CreateBPartnerCommand
 		bPartnerLocationRecord.setIsBillToDefault(true);
 		bPartnerLocationRecord.setIsShipToDefault(true);
 		bPartnerLocationRecord.setIsShipTo(true);
+		bPartnerLocationRecord.setGLN(gln != null ? gln.getCode() : null);
 		InterfaceWrapperHelper.saveRecord(bPartnerLocationRecord);
+
+		return bPartnerLocationRecord;
+	}
+
+	private GLN getGLN()
+	{
+		final String glnStr = StringUtils.trimBlankToNull(request.getGln());
+		if (glnStr == null)
+		{
+			return null;
+		}
+		else if (glnStr.equalsIgnoreCase("random"))
+		{
+			return randomGLNGenerator.next();
+		}
+		else
+		{
+			return GLN.ofString(glnStr);
+		}
 	}
 
 	private LocationId createLocation()
@@ -114,6 +144,12 @@ public class CreateBPartnerCommand
 
 	private PricingSystemId createPricingSystem()
 	{
+		final PricingSystemId existingPricingSystemId = context.getIdOfTypeIfUnique(PricingSystemId.class).orElse(null);
+		if (existingPricingSystemId != null)
+		{
+			return existingPricingSystemId;
+		}
+
 		final Identifier pricingSystemIdentifier = Identifier.unique("PS");
 		final String value = pricingSystemIdentifier.getAsString();
 
@@ -126,6 +162,7 @@ public class CreateBPartnerCommand
 		pricingSystem.setAD_Org_ID(orgId.getRepoId());
 		InterfaceWrapperHelper.saveRecord(pricingSystem);
 		PricingSystemId pricingSystemId = PricingSystemId.ofRepoId(pricingSystem.getM_PricingSystem_ID());
+		context.putIdentifier(pricingSystemIdentifier, pricingSystemId);
 
 		final I_M_PriceList priceList = InterfaceWrapperHelper.newInstance(I_M_PriceList.class);
 		priceList.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());

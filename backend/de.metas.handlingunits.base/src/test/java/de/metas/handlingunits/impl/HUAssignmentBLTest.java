@@ -11,6 +11,7 @@ import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleServic
 import de.metas.distribution.ddordercandidate.DDOrderCandidateService;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.impl.PlainEventBusFactory;
+import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
@@ -24,6 +25,10 @@ import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRep
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
 import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHURepository;
 import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
@@ -32,6 +37,7 @@ import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFi
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.ad.trx.api.ITrx;
@@ -54,7 +60,7 @@ import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class HUAssignmentBLTest
 {
@@ -82,6 +88,9 @@ public class HUAssignmentBLTest
 		// Make sure Main handling units interceptor is registered
 		final DDOrderLowLevelDAO ddOrderLowLevelDAO = new DDOrderLowLevelDAO();
 		final HUReservationService huReservationService = new HUReservationService(new HUReservationRepository());
+		final HUQRCodesService huqrCodesService = new HUQRCodesService(new HUQRCodesRepository(),
+							 new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+							 new QRCodeConfigurationService(new QRCodeConfigurationRepository()));
 		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
@@ -91,13 +100,14 @@ public class HUAssignmentBLTest
 										   new PPOrderIssueScheduleService(
 												   new PPOrderIssueScheduleRepository(),
 												   new HUQtyService(InventoryService.newInstanceForUnitTesting())
-										   )));
+										   )), huqrCodesService);
 		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new de.metas.handlingunits.model.validator.Main(
 				ddOrderMoveScheduleService,
 				ddOrderService,
-				new PickingBOMService()));
+				new PickingBOMService(),
+				huqrCodesService));
 
 		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new DD_Order(ddOrderService, ddOrderMoveScheduleService, DDOrderCandidateService.newInstanceForUnitTesting()));
 

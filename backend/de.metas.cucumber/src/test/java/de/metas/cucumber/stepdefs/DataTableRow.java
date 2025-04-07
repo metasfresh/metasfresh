@@ -22,7 +22,10 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.currency.CurrencyCode;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.quantity.Quantity;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
@@ -33,11 +36,13 @@ import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
+import de.metas.util.text.tabular.Row;
+import de.metas.util.text.tabular.Table;
 import io.cucumber.datatable.DataTable;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 
@@ -56,10 +61,9 @@ import java.util.OptionalInt;
 import java.util.function.Function;
 
 @EqualsAndHashCode
-@ToString
 public class DataTableRow
 {
-	private final int lineNo; // introduced to improve logging/debugging
+	@Getter private final int lineNo; // introduced to improve logging/debugging
 	@NonNull
 	private final Map<String, String> map;
 	@Nullable
@@ -73,6 +77,10 @@ public class DataTableRow
 		this.lineNo = lineNo;
 		this.map = map;
 	}
+
+	@Override
+	@Deprecated
+	public String toString() {return toTabularString();}
 
 	public static DataTableRow singleRow(@NonNull final DataTable dataTable)
 	{
@@ -435,6 +443,68 @@ public class DataTableRow
 		return X12DE355.ofCode(valueStr);
 	}
 
+	public CurrencyCode getAsCurrencyCode()
+	{
+		return getAsOptionalCurrencyCode()
+				.orElseThrow(() -> new AdempiereException("No currency code found"));
+	}
+
+	public Optional<CurrencyCode> getAsOptionalCurrencyCode()
+	{
+		return Optionals.firstPresentOfSuppliers(
+						() -> getAsOptionalString("C_Currency.ISO_Code"),
+						() -> getAsOptionalString("C_Currency_ID")
+				)
+				.map(CurrencyCode::ofThreeLetterCode);
+	}
+
+	public Money getAsMoney(
+			@NonNull final String valueColumnName,
+			@NonNull final Function<CurrencyCode, CurrencyId> currencyCodeMapper)
+	{
+		return getAsOptionalMoney(valueColumnName, currencyCodeMapper)
+				.orElseThrow(() -> new AdempiereException("No value found for " + valueColumnName));
+	}
+
+	public Optional<Money> getAsOptionalMoney(
+			@NonNull final String valueColumnName,
+			@NonNull final Function<CurrencyCode, CurrencyId> currencyCodeMapper)
+	{
+		final String valueStr = getAsOptionalString(valueColumnName).map(StringUtils::trimBlankToNull).orElse(null);
+		if (valueStr == null)
+		{
+			return Optional.empty();
+		}
+
+		final int spaceIdx = valueStr.indexOf(" ");
+		final BigDecimal valueBD;
+		CurrencyCode currencyCode;
+		if (spaceIdx <= 0)
+		{
+			valueBD = parseBigDecimal(valueStr, valueColumnName);
+			currencyCode = null;
+		}
+		else
+		{
+			valueBD = parseBigDecimal(valueStr.substring(0, spaceIdx), valueColumnName);
+			final String currencyCodeStr = StringUtils.trimBlankToNull(valueStr.substring(spaceIdx));
+			currencyCode = currencyCodeStr != null ? CurrencyCode.ofThreeLetterCode(currencyCodeStr) : null;
+		}
+
+		if (currencyCode == null)
+		{
+			currencyCode = getAsOptionalCurrencyCode().orElse(null);
+		}
+
+		if (currencyCode == null)
+		{
+			throw new AdempiereException("No currency code incorporated into `" + valueColumnName + "`: " + valueStr);
+		}
+
+		final CurrencyId currencyId = currencyCodeMapper.apply(currencyCode);
+		return Optional.of(Money.of(valueBD, currencyId));
+	}
+
 	public LocalDate getAsLocalDate(@NonNull final String columnName)
 	{
 		return parseLocalDate(getAsString(columnName), columnName);
@@ -462,6 +532,13 @@ public class DataTableRow
 	{
 		return Timestamp.valueOf(getAsLocalDate(columnName).atStartOfDay());
 	}
+
+	public Optional<Timestamp> getAsOptionalLocalDateTimestamp(@NonNull final String columnName)
+	{
+		return getAsOptionalLocalDate(columnName)
+				.map(localDate -> Timestamp.valueOf(localDate.atStartOfDay()));
+	}
+
 
 	@SuppressWarnings("unused")
 	public Timestamp getAsInstantTimestamp(@NonNull final String columnName)
@@ -554,5 +631,32 @@ public class DataTableRow
 	{
 		return getAsOptionalEnum(columnName, type)
 				.orElseThrow(() -> new AdempiereException("Missing/invalid `" + type.getSimpleName() + "` of column `" + columnName + "`"));
+	}
+
+	public String toTabularString()
+	{
+		return toTabular().toTabularString();
+	}
+
+	public Table toTabular()
+	{
+		final Table table = new Table();
+		table.addRow(toTabularRow());
+		table.updateHeaderFromRows();
+		//table.removeColumnsWithBlankValues(); // to be decided by the caller
+		return table;
+
+	}
+
+	public Row toTabularRow()
+	{
+		final Row row = new Row();
+		if (lineNo > 0)
+		{
+			row.put("#", lineNo);
+		}
+		row.putAll(map);
+		return row;
+
 	}
 }

@@ -23,7 +23,7 @@
 package de.metas.edi.esb.desadvexport.helper;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvLineType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

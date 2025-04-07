@@ -42,6 +42,7 @@ import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderId;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.product.ProductId;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -59,7 +60,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
@@ -215,6 +215,16 @@ public class C_OrderLine_StepDef
 						assertThat(uomId).as("Found no C_UOM with X12DE355=%s", uomX12DE355).isNotNull();
 						orderLine.setC_UOM_ID(UomId.toRepoId(uomId));
 					}
+
+					tableRow.getAsOptionalBigDecimal("Price")
+							.ifPresent(price -> {
+								orderLine.setIsManualPrice(true);
+								orderLine.setPriceEntered(price);
+								orderLine.setPriceActual(price);
+							});
+
+					tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_Description)
+							.ifPresent(orderLine::setDescription);
 
 					saveRecord(orderLine);
 
@@ -608,8 +618,8 @@ public class C_OrderLine_StepDef
 		final String taxIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(taxIdentifier))
 		{
-			final I_C_Tax tax = taxTable.get(taxIdentifier);
-			assertThat(orderLine.getC_Tax_ID()).isEqualTo(tax.getC_Tax_ID());
+			final TaxId taxId = taxTable.getId(taxIdentifier);
+			assertThat(orderLine.getC_Tax_ID()).isEqualTo(taxId.getRepoId());
 		}
 
 		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);

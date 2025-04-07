@@ -6,8 +6,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.SetMultimap;
 import de.metas.util.Check;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.Contract;
@@ -793,7 +795,6 @@ public final class CollectionUtils
 		return Optional.ofNullable(first(collection));
 	}
 
-
 	public static <K, V> ImmutableMap<K, ImmutableList<V>> toImmutableMap(final ListMultimap<K, V> multimap)
 	{
 		if (multimap.isEmpty())
@@ -809,7 +810,6 @@ public final class CollectionUtils
 		return result.build();
 	}
 
-
 	@Nullable
 	public static <T> ImmutableSet<T> toImmutableSetOrNullIfEmpty(@Nullable final Collection<T> collection)
 	{
@@ -822,4 +822,27 @@ public final class CollectionUtils
 		return collection != null && !collection.isEmpty() ? ImmutableSet.copyOf(collection) : ImmutableSet.of();
 	}
 
+	@Builder(builderMethodName = "syncLists", builderClassName = "SyncListsBuilder", buildMethodName = "execute")
+	private static <T, S, K> ImmutableList<T> syncLists0(
+			@NonNull final Iterable<T> target,
+			@NonNull final Iterable<S> source,
+			@NonNull final Function<T, K> targetKeyExtractor,
+			@NonNull final Function<S, K> sourceKeyExtractor,
+			@NonNull final BiFunction<T, S, T> mergeFunction
+	)
+	{
+		final ImmutableMap<K, T> targetByKey = Maps.uniqueIndex(target, targetKeyExtractor::apply);
+		final ImmutableList.Builder<T> result = ImmutableList.builder();
+
+		for (final S sourceItem : source)
+		{
+			final K key = sourceKeyExtractor.apply(sourceItem);
+			T targetItem = targetByKey.get(key);
+
+			final T resultItem = mergeFunction.apply(targetItem, sourceItem);
+			result.add(resultItem);
+		}
+
+		return result.build();
+	}
 }

@@ -292,6 +292,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
+	public void setEAN13_ProductCode (final @Nullable java.lang.String EAN13_ProductCode)
+	{
+		set_Value (COLUMNNAME_EAN13_ProductCode, EAN13_ProductCode);
+	}
+
+	@Override
+	public java.lang.String getEAN13_ProductCode()
+	{
+		return get_ValueAsString(COLUMNNAME_EAN13_ProductCode);
+	}
+
+	@Override
 	public void setExternalId (final @Nullable java.lang.String ExternalId)
 	{
 		set_Value (COLUMNNAME_ExternalId, ExternalId);
@@ -1515,6 +1527,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public int getPicking_AgeTolerance_BeforeMonths()
 	{
 		return get_ValueAsInt(COLUMNNAME_Picking_AgeTolerance_BeforeMonths);
+	}
+
+	@Override
+	public void setQRCode_Configuration_ID (final int QRCode_Configuration_ID)
+	{
+		set_Value (COLUMNNAME_QRCode_Configuration_ID, QRCode_Configuration_ID);
+	}
+
+	@Override
+	public int getQRCode_Configuration_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_QRCode_Configuration_ID);
 	}
 
 }

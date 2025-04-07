@@ -46,6 +46,7 @@ import org.adempiere.warehouse.api.CreateWarehouseRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.api.Warehouse;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -343,5 +344,12 @@ public class WarehouseBL implements IWarehouseBL
 	public ImmutableSet<LocatorId> getLocatorIdsByRepoId(@NonNull final Collection<Integer> locatorIds)
 	{
 		return warehouseDAO.getLocatorIdsByRepoId(locatorIds);
+	}
+
+	@Override
+	public LocatorQRCode getLocatorQRCode(@NonNull final LocatorId locatorId)
+	{
+		final I_M_Locator locator = warehouseDAO.getLocatorById(locatorId);
+		return LocatorQRCode.ofLocator(locator);
 	}
 }

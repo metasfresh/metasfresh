@@ -15,10 +15,13 @@ import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceList;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.RenderedAddressProvider;
+import de.metas.i18n.AdMessageKey;
 import de.metas.picking.workflow.DisplayValueProvider;
 import de.metas.picking.workflow.DisplayValueProviderService;
 import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.picking.workflow.PickingWFProcessStartParams;
+import de.metas.product.ResolvedScannedProductCodes;
+import de.metas.product.ScannedProductCodeResolver;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLauncher;
@@ -33,24 +36,27 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.util.lang.SynchronizedMutable;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.List;
 
 import static de.metas.picking.workflow.handlers.PickingMobileApplication.APPLICATION_ID;
 
+@Service
 @RequiredArgsConstructor
-class PickingWorkflowLaunchersProvider
+public class PickingWorkflowLaunchersProvider
 {
+	private static final AdMessageKey INVALID_QR_CODE_ERROR_MSG = AdMessageKey.of("mobileui.picking.INVALID_QR_CODE_ERROR_MSG");
+
 	@NonNull private final PickingJobRestService pickingJobRestService;
 	@NonNull private final MobileUIPickingUserProfileRepository mobileUIPickingUserProfileRepository;
 	@NonNull private final WorkplaceService workplaceService;
 	@NonNull private final DisplayValueProviderService displayValueProviderService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
+	@NonNull private final ScannedProductCodeResolver scannedProductCodeResolver;
 
-	private final CCache<UserId, SynchronizedMutable<WorkflowLaunchersList>> launchersCache = CCache.<UserId, SynchronizedMutable<WorkflowLaunchersList>>builder()
-			.build();
+	private final CCache<UserId, SynchronizedMutable<WorkflowLaunchersList>> launchersCache = CCache.<UserId, SynchronizedMutable<WorkflowLaunchersList>>builder().build();
 
 	public WorkflowLaunchersList provideLaunchers(@NonNull final WorkflowLaunchersQuery query)
 	{
@@ -74,6 +80,18 @@ class PickingWorkflowLaunchersProvider
 
 	private WorkflowLaunchersList computeLaunchers(@NonNull final WorkflowLaunchersQuery query)
 	{
+		boolean returnNoResult = false;
+		ResolvedScannedProductCodes scannedProductCodes = null;
+		if (query.getFilterByQRCode() != null)
+		{
+			scannedProductCodes = scannedProductCodeResolver.resolve(query.getFilterByQRCode())
+					.orElse(null);
+			if (scannedProductCodes == null)
+			{
+				returnNoResult = true;
+			}
+		}
+
 		final UserId userId = query.getUserId();
 		final QueryLimit limit = query.getLimit().orElse(QueryLimit.NO_LIMIT);
 		final PickingJobQuery.Facets facets = PickingJobFacetsUtils.toPickingJobFacetsQuery(query.getFacetIds());
@@ -102,7 +120,8 @@ class PickingWorkflowLaunchersProvider
 
 		//
 		// New launchers
-		if (!limit.isLimitHitOrExceeded(currentResult))
+		if (!returnNoResult
+				&& !limit.isLimitHitOrExceeded(currentResult))
 		{
 			final ImmutableList<PickingJobCandidate> newPickingJobCandidates = pickingJobRestService.streamPickingJobCandidates(PickingJobQuery.builder()
 							.userId(userId)
@@ -111,6 +130,7 @@ class PickingWorkflowLaunchersProvider
 							.onlyCustomerIds(profile.getPickOnlyCustomerIds())
 							.warehouseId(workplaceService.getWarehouseIdByUserId(userId).orElse(null))
 							.salesOrderDocumentNo(query.getFilterByDocumentNo())
+							.scannedProductCodes(scannedProductCodes)
 							.build())
 					.limit(limit.minusSizeOf(currentResult).toIntOr(Integer.MAX_VALUE))
 					.collect(ImmutableList.toImmutableList());
@@ -122,14 +142,10 @@ class PickingWorkflowLaunchersProvider
 					.forEach(currentResult::add);
 		}
 
-		return newWorkflowLaunchersList(currentResult);
-	}
-
-	private static WorkflowLaunchersList newWorkflowLaunchersList(final List<WorkflowLauncher> currentResult)
-	{
 		return WorkflowLaunchersList.builder()
 				.launchers(ImmutableList.copyOf(currentResult))
 				.orderByField(OrderBy.descending(PickingJobFieldType.RUESTPLATZ_NR))
+				.filterByQRCode(query.getFilterByQRCode() != null ? query.getFilterByQRCode().toPrintableScannedCode() : null)
 				.timestamp(SystemTime.asInstant())
 				.build();
 	}
@@ -159,6 +175,7 @@ class PickingWorkflowLaunchersProvider
 				.applicationId(APPLICATION_ID)
 				.caption(caption)
 				.startedWFProcessId(WFProcessId.ofIdPart(APPLICATION_ID, pickingJobReference.getPickingJobId()))
+				.wfParameters(PickingWFProcessStartParams.of(pickingJobReference).toParams())
 				.build();
 	}
 
