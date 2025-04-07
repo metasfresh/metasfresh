@@ -1,8 +1,8 @@
-DROP FUNCTION IF EXISTS report.Get_AdditionalText(p_C_DocType_ID  numeric,
+DROP FUNCTION IF EXISTS report.getBPartner_CustomDocumentText(p_C_DocType_ID  numeric,
                                                   p_C_BPartner_ID numeric)
 ;
 
-CREATE OR REPLACE FUNCTION report.Get_AdditionalText(p_C_DocType_ID  numeric,
+CREATE OR REPLACE FUNCTION report.getBPartner_CustomDocumentText(p_C_DocType_ID  numeric,
                                                      p_C_BPartner_ID numeric) RETURNS text
 AS
 $BODY$

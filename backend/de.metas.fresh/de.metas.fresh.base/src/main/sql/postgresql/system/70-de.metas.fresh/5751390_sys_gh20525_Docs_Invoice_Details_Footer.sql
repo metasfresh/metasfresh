@@ -53,7 +53,7 @@ SELECT i.descriptionbottom,
        i.incotermlocation,
        COALESCE(o_dr_trl.name, o_dr.name)                                                             AS deliveryrule,
        COALESCE(o_dvr_trl.name, o_dvr.name)                                                           AS deliveryviarule,
-       report.Get_AdditionalText(i.C_DocTypeTarget_ID, i.c_bpartner_id)                               AS AdditionalText
+       report.getBPartner_CustomDocumentText(i.C_DocTypeTarget_ID, i.c_bpartner_id)                               AS AdditionalText
 FROM C_Invoice i
          LEFT OUTER JOIN C_PaymentTerm pt ON i.C_PaymentTerm_ID = pt.C_PaymentTerm_ID
          LEFT OUTER JOIN C_PaymentTerm_Trl ptt ON i.C_PaymentTerm_ID = ptt.C_PaymentTerm_ID AND ptt.AD_Language = p_Language

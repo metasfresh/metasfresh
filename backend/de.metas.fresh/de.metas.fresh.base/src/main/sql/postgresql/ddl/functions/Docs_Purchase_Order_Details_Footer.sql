@@ -46,7 +46,7 @@ SELECT COALESCE(reft.name, ref.name)                                          AS
        o.descriptionbottom,
        COALESCE(o_dr_trl.name, o_dr.name)                                     AS deliveryrule,
        COALESCE(o_dvr_trl.name, o_dvr.name)                                   AS deliveryviarule,
-       report.Get_AdditionalText(o.C_DocTypeTarget_ID, o.c_bpartner_id)       AS AdditionalText
+       report.getBPartner_CustomDocumentText(o.C_DocTypeTarget_ID, o.c_bpartner_id)       AS AdditionalText
 
 FROM C_Order o
 

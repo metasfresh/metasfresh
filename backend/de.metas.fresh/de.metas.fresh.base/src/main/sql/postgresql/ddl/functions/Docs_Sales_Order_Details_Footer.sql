@@ -41,7 +41,7 @@ SELECT COALESCE(reft.name, ref.name)                          AS paymentrule,
        otb.textsnippet,
        COALESCE(inc_trl.name, inc.name)                       AS Incoterms,
        o.incotermlocation,
-       report.Get_AdditionalText(o.C_DocTypeTarget_ID, o.c_bpartner_id)  AS AdditionalText
+       report.getBPartner_CustomDocumentText(o.C_DocTypeTarget_ID, o.c_bpartner_id)  AS AdditionalText
 FROM C_Order o
 
          LEFT OUTER JOIN C_PaymentTerm pt ON o.C_PaymentTerm_ID = pt.C_PaymentTerm_ID
