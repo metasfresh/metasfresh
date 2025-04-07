@@ -276,7 +276,7 @@ public class C_InvoiceLine_StepDef
 			softly.assertThat(invoiceLine.getC_Tax_ID()).isEqualTo(taxId.getRepoId());
 		}
 
-		final String taxCategoryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_C_TaxCategory_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String taxCategoryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_TaxCategory_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		if (Check.isNotBlank(taxCategoryIdentifier))
 		{
@@ -338,18 +338,6 @@ public class C_InvoiceLine_StepDef
 
 			softly.assertThat(invoiceLine.getC_Project_ID()).isEqualTo(projectId);
 		}
-
-		final String taxCategoryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_TaxCategory_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		if (Check.isNotBlank(taxCategoryIdentifier))
-		{
-			final Integer taxCategoryId = taxCategoryTable.getOptional(taxCategoryIdentifier)
-					.map(I_C_TaxCategory::getC_TaxCategory_ID)
-					.orElseGet(() -> Integer.parseInt(taxCategoryIdentifier));
-
-			softly.assertThat(invoiceLine.getC_TaxCategory_ID()).as("C_TaxCategory_ID").isEqualTo(taxCategoryId);
-		}
-
 
 		final String costCenterIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_C_Activity_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(costCenterIdentifier))
