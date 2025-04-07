@@ -22,37 +22,14 @@
 
 package de.metas.fresh.partnerreporttext.api;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
-import de.metas.util.NumberUtils;
 import de.metas.util.lang.RepoIdAware;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
 public class BPartnerReportTextId implements RepoIdAware
 {
-	@JsonCreator
-	@Nullable
-	public static BPartnerReportTextId ofNullableObject(@Nullable final Object obj)
-	{
-		if (obj == null)
-		{
-			return null;
-		}
-
-		try
-		{
-			final int id = NumberUtils.asInt(obj, -1);
-			return ofRepoIdOrNull(id);
-		}
-		catch (final Exception ex)
-		{
-			throw new AdempiereException("Cannot convert `" + obj + "` from " + obj.getClass() + " to " + BPartnerReportTextId.class, ex);
-		}
-	}
-
 	public static BPartnerReportTextId ofRepoId(final int repoId)
 	{
 		return new BPartnerReportTextId(repoId);

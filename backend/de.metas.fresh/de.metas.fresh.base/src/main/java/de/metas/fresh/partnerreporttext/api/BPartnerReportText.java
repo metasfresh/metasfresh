@@ -29,7 +29,6 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.time.Instant;
 
 @Value
 @Builder
@@ -37,8 +36,6 @@ public class BPartnerReportText
 {
 	@NonNull
 	BPartnerReportTextId id;
-	@NonNull
-	Instant lastModified;
 
 	@Nullable
 	String additionalText;

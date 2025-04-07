@@ -28,14 +28,13 @@ import de.metas.organization.ClientAndOrgId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class BPartnerReportTextRepository
 {
 
-	public @Nullable BPartnerReportText getById(@NonNull final BPartnerReportTextId bPartnerReportTextId)
+	public @NonNull BPartnerReportText getById(@NonNull final BPartnerReportTextId bPartnerReportTextId)
 	{
 		final I_C_BPartner_Report_Text record = InterfaceWrapperHelper.load(bPartnerReportTextId, I_C_BPartner_Report_Text.class);
 		if (record == null)
@@ -50,7 +49,6 @@ public class BPartnerReportTextRepository
 	{
 		return BPartnerReportText.builder()
 				.id(BPartnerReportTextId.ofRepoId(record.getC_BPartner_Report_Text_ID()))
-				.lastModified(record.getUpdated().toInstant())
 				.bPartnerID(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
 				.additionalText(record.getAdditionalText())
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))

@@ -48,12 +48,8 @@ public class C_BPartner_DocType
 	{
 		final BPartnerReportTextId partnerReportTextId = BPartnerReportTextId.ofRepoId(bPartnerDocType.getC_BPartner_Report_Text_ID());
 		final BPartnerReportText partnerReportText = bPartnerReportTextRepository.getById(partnerReportTextId);
-
-		if (partnerReportText != null)
-		{
-			final BPartnerId bPartnerID = partnerReportText.getBPartnerID();
-			bPartnerDocType.setC_BPartner_ID(bPartnerID.getRepoId());
-		}
+		final BPartnerId bPartnerID = partnerReportText.getBPartnerID();
+		bPartnerDocType.setC_BPartner_ID(bPartnerID.getRepoId());
 
 	}
 }
