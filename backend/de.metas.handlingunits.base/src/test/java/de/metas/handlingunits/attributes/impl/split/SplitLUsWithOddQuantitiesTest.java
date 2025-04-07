@@ -53,7 +53,7 @@ import java.util.Objects;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.xmlunit.assertj3.XmlAssert.assertThat;
+import static org.xmlunit.assertj.XmlAssert.assertThat;
 
 /**
  * Misc:
