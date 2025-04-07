@@ -56,7 +56,7 @@ FROM C_Order o
                          ON reft.AD_Ref_List_ID = ref.AD_Ref_List_ID AND reft.AD_Language = p_Language
          INNER JOIN C_Currency c ON o.C_Currency_ID = c.C_Currency_ID
 
--- take out document type notes
+    -- take out document type notes
          INNER JOIN C_DocType dt ON o.C_DocTypeTarget_ID = dt.C_DocType_ID
          LEFT OUTER JOIN C_DocType_Trl dtt
                          ON o.C_DocTypeTarget_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_Language
