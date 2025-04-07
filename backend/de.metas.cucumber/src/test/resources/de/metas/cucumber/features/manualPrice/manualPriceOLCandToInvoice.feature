@@ -13,7 +13,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
   @from:cucumber
   @topic:orderCandidate
   Scenario: Order candidate to shipment and invoice flow and closed order
-    Given metasfresh contains M_Products:
+    Given set sys config boolean value true for sys config de.metas.ordercandidate.api.OLCandOrderFactory.UseQtyUOMOnManualPrice
+    And metasfresh contains M_Products:
       | Identifier | Name                      | IsStocked |
       | p_1        | noPriceProduct_10052022_1 | true      |
 
@@ -96,3 +97,5 @@ Feature: Process order candidate and automatically generate shipment and invoice
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed | OPT.C_TaxCategory_ID.Identifier |
       | invoiceLine_1_1             | invoice_1               | p_1                     | 10          | true      | 1000009                         |
+
+    And set sys config boolean value false for sys config de.metas.ordercandidate.api.OLCandOrderFactory.UseQtyUOMOnManualPrice
