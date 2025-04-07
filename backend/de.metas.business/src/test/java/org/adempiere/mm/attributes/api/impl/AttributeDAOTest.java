@@ -22,9 +22,10 @@ package org.adempiere.mm.attributes.api.impl;
  * #L%
  */
 
-
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.test.AdempiereTestHelper;
@@ -33,14 +34,18 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
+import java.util.Set;
+
+import static org.adempiere.mm.attributes.api.AttributeConstants.ATTR_CODE_PREFIX_RouterMAC;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class AttributeDAOTest
 {
 	private AttributesTestHelper helper;
 
-	/** service under test */
+	/**
+	 * service under test
+	 */
 	private AttributeDAO attributeDAO;
 
 	@Before
@@ -91,13 +96,49 @@ public class AttributeDAOTest
 		}
 	}
 
+	@Test
+	public void test_getOrderedAttributeCodesThatStartWith()
+	{
+		final ImmutableList<String> expectedOrder = ImmutableList.of(
+				"RouterMAC1",
+				"RouterMAC2",
+				"RouterMAC3",
+				"RouterMAC4",
+				"RouterMAC5",
+				"RouterMAC6",
+				"RouterMAC7",
+				"RouterMAC8",
+				"RouterMAC9",
+				"RouterMAC10",
+				"RouterMAC11");
+
+		helper.createM_Attribute_TypeList(expectedOrder.get(1));
+		helper.createM_Attribute_TypeList(expectedOrder.get(4));
+		helper.createM_Attribute_TypeList(expectedOrder.get(0));
+		helper.createM_Attribute_TypeList(expectedOrder.get(2));
+		helper.createM_Attribute_TypeList(expectedOrder.get(5));
+		helper.createM_Attribute_TypeList(expectedOrder.get(3));
+		helper.createM_Attribute_TypeList(expectedOrder.get(6));
+		helper.createM_Attribute_TypeList(expectedOrder.get(8));
+		helper.createM_Attribute_TypeList(expectedOrder.get(7));
+		helper.createM_Attribute_TypeList(expectedOrder.get(9));
+		helper.createM_Attribute_TypeList(expectedOrder.get(10));
+
+		final ImmutableList<String> actualOrder = attributeDAO.getOrderedAttributeCodesThatStartWith(ATTR_CODE_PREFIX_RouterMAC)
+				.stream()
+				.map(AttributeCode::getCode)
+				.collect(ImmutableList.toImmutableList());
+
+		assertEquals(expectedOrder, actualOrder);
+	}
+
 	public void test_retrieveAttributeValueSubstitutes(final I_M_Attribute attribute, final String value, final String... expectedSubstitutes)
 	{
 		final Set<String> actualSubstitutes = attributeDAO.retrieveAttributeValueSubstitutes(attribute, value);
 		Assert.assertEquals("Invalid substitutes for: " + value,
 				CollectionUtils.asSet(expectedSubstitutes),
 				actualSubstitutes
-				);
+		);
 
 	}
 }
