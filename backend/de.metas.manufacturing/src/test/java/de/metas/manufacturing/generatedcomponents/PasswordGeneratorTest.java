@@ -41,6 +41,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import static de.metas.manufacturing.generatedcomponents.TestConstants.RouterMAC1;
+import static de.metas.manufacturing.generatedcomponents.TestConstants.RouterMAC2;
+import static de.metas.manufacturing.generatedcomponents.TestConstants.RouterMAC3;
+import static de.metas.manufacturing.generatedcomponents.TestConstants.RouterMAC4;
+import static de.metas.manufacturing.generatedcomponents.TestConstants.RouterMAC5;
+import static de.metas.manufacturing.generatedcomponents.TestConstants.RouterMAC6;
+import static de.metas.manufacturing.generatedcomponents.TestConstants.RouterMAC7;
+import static de.metas.manufacturing.generatedcomponents.TestConstants.RouterMAC8;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PasswordGeneratorTest
@@ -122,14 +130,14 @@ class PasswordGeneratorTest
 
 			{
 				PasswordGenerator.supportedAttributes.forEach(this::mkAttribute);
-				mkAttribute(AttributeConstants.RouterMAC1);
-				mkAttribute(AttributeConstants.RouterMAC2);
-				mkAttribute(AttributeConstants.RouterMAC3);
-				mkAttribute(AttributeConstants.RouterMAC4);
-				mkAttribute(AttributeConstants.RouterMAC5);
-				mkAttribute(AttributeConstants.RouterMAC6);
-				mkAttribute(AttributeConstants.RouterMAC7);
-				mkAttribute(AttributeConstants.RouterMAC8);
+				mkAttribute(RouterMAC1);
+				mkAttribute(RouterMAC2);
+				mkAttribute(RouterMAC3);
+				mkAttribute(RouterMAC4);
+				mkAttribute(RouterMAC5);
+				mkAttribute(RouterMAC6);
+				mkAttribute(RouterMAC7);
+				mkAttribute(RouterMAC8);
 				mkAttribute(AttributeConstants.ATTR_LotNumber);
 				mkAttribute(AttributeConstants.ATTR_SerialNo);
 				mkAttribute(AttributeConstants.ATTR_BestBeforeDate);

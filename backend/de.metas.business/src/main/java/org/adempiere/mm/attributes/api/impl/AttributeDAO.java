@@ -14,6 +14,7 @@ import de.metas.lang.SOTrx;
 import de.metas.util.Check;
 import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
@@ -101,6 +102,13 @@ public class AttributeDAO implements IAttributeDAO
 		{
 			return loadOutOfTrx(attributeSetId, I_M_AttributeSet.class);
 		}
+	}
+
+	@Override
+	@NonNull
+	public ImmutableList<AttributeCode> getOrderedAttributeCodesThatStartWith(@NonNull final String prefix)
+	{
+		return getAttributesMap().getOrderedAttributeCodesThatStartWith(prefix);
 	}
 
 	private AttributeSetAttributeIdsList getAttributeIdsByAttributeSetId(@NonNull final AttributeSetId attributeSetId)
@@ -1019,6 +1027,20 @@ public class AttributeDAO implements IAttributeDAO
 		public AttributeId getAttributeIdByCode(@NonNull final String attributeCode)
 		{
 			return getAttributeIdByCode(AttributeCode.ofString(attributeCode));
+		}
+
+		@NonNull
+		public ImmutableList<AttributeCode> getOrderedAttributeCodesThatStartWith(@NonNull final String prefix)
+		{
+			return attributesByCode.keySet()
+					.stream()
+					.filter(attributeCode -> attributeCode.startsWith(prefix))
+					.sorted(Comparator.comparing(code -> {
+						final String numericPart = code.getCode().substring(prefix.length());
+
+						return StringUtils.lpadZero(numericPart, 10, prefix);
+					}))
+					.collect(ImmutableList.toImmutableList());
 		}
 	}
 }

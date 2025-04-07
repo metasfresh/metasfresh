@@ -81,6 +81,11 @@ public final class AttributeCode implements Comparable<AttributeCode>
 	{
 		return Objects.equals(a1, a2);
 	}
+	
+	public boolean startsWith(@NonNull final String prefix)
+	{
+		return this.code.startsWith(prefix);
+	}
 
 	@Override
 	public int compareTo(final AttributeCode other)
