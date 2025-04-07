@@ -22,13 +22,29 @@
 
 package de.metas.fresh.partnerreporttext.api;
 
-import de.metas.fresh.partnerreporttext.model.I_C_BPartner_Report_Text;
-import de.metas.util.ISingletonService;
+import de.metas.bpartner.BPartnerId;
+import de.metas.organization.ClientAndOrgId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 
-public interface IBPartnerReportTextDAO extends ISingletonService
+@Value
+@Builder
+public class BPartnerReportText
 {
+	@NonNull
+	BPartnerReportTextId id;
+	@NonNull
+	Instant lastModified;
+
 	@Nullable
-	I_C_BPartner_Report_Text getById(int reportTextId);
+	String additionalText;
+	@NonNull
+	BPartnerId bPartnerID;
+
+	@NonNull
+	ClientAndOrgId clientAndOrgId;
 }
