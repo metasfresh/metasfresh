@@ -530,7 +530,17 @@ public class DataTableRow
 
 	public Timestamp getAsLocalDateTimestamp(@NonNull final String columnName)
 	{
-		return Timestamp.valueOf(getAsLocalDate(columnName).atStartOfDay());
+		return toTimestamp(getAsLocalDate(columnName));
+	}
+
+	private static Timestamp toTimestamp(final LocalDate localDate)
+	{
+		return Timestamp.valueOf(localDate.atStartOfDay());
+	}
+
+	public Optional<Timestamp> getAsOptionalLocalDateTimestamp(@NonNull final String columnName)
+	{
+		return getAsOptionalLocalDate(columnName).map(DataTableRow::toTimestamp);
 	}
 
 	@SuppressWarnings("unused")

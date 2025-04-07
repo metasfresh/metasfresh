@@ -379,6 +379,13 @@ public class C_InvoiceLine_StepDef
 		invoiceLine.setQtyInvoiced(qtyEntered.toBigDecimal());
 		invoiceLine.setPrice_UOM_ID(qtyEntered.getUomId().getRepoId());
 
+		row.getAsOptionalBigDecimal("Price")
+				.ifPresent(price -> {
+					invoiceLine.setIsManualPrice(true);
+					invoiceLine.setPriceEntered(price);
+					invoiceLine.setPriceActual(price);
+				});
+
 		invoiceLineBL.updatePrices(invoiceLine);
 		invoiceLineBL.updateLineNetAmt(invoiceLine, qtyEntered.toBigDecimal());
 
