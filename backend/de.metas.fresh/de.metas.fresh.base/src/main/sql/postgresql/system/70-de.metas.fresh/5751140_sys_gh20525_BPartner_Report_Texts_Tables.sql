@@ -524,3 +524,17 @@ INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,Crea
 -- 2025-04-06T10:25:54.064Z
 UPDATE AD_Column SET AD_Val_Rule_ID=540705,Updated=TO_TIMESTAMP('2025-04-06 10:25:54.064000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=589886
 ;
+
+-- Column: C_BPartner_DocType.C_BPartner_ID
+-- Column: C_BPartner_DocType.C_BPartner_ID
+-- 2025-04-07T12:13:09.102Z
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2025-04-07 12:13:09.102000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=589885
+;
+
+-- 2025-04-07T12:13:11.730Z
+INSERT INTO t_alter_column values('c_bpartner_doctype','C_BPartner_ID','NUMERIC(10)',null,null)
+;
+
+-- 2025-04-07T12:13:11.756Z
+INSERT INTO t_alter_column values('c_bpartner_doctype','C_BPartner_ID',null,'NOT NULL',null)
+;

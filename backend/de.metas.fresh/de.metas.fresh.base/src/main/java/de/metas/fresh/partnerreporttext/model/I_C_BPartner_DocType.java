@@ -100,7 +100,7 @@ public interface I_C_BPartner_DocType
 	 * Set Business Partner.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setC_BPartner_ID (int C_BPartner_ID);
@@ -109,7 +109,7 @@ public interface I_C_BPartner_DocType
 	 * Get Business Partner.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_BPartner_ID();
