@@ -43,7 +43,7 @@ public interface I_C_BPartner_Report_Text
 	 * Get Additional Text.
 	 *
 	 * <br>Type: Text
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	@Nullable

@@ -538,3 +538,17 @@ INSERT INTO t_alter_column values('c_bpartner_doctype','C_BPartner_ID','NUMERIC(
 -- 2025-04-07T12:13:11.756Z
 INSERT INTO t_alter_column values('c_bpartner_doctype','C_BPartner_ID',null,'NOT NULL',null)
 ;
+
+-- Column: C_BPartner_Report_Text.AdditionalText
+-- Column: C_BPartner_Report_Text.AdditionalText
+-- 2025-04-07T12:44:07.483Z
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2025-04-07 12:44:07.483000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=589897
+;
+
+-- 2025-04-07T12:45:28.680Z
+INSERT INTO t_alter_column values('c_bpartner_report_text','AdditionalText','VARCHAR(3000)',null,null)
+;
+
+-- 2025-04-07T12:45:28.683Z
+INSERT INTO t_alter_column values('c_bpartner_report_text','AdditionalText',null,'NOT NULL',null)
+;
