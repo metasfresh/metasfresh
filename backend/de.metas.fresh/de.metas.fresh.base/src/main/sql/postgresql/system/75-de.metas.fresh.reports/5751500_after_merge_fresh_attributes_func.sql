@@ -1,4 +1,24 @@
---DROP FUNCTION Report.fresh_attributes(IN p_M_AttributeSetInstance_ID numeric);
+/*
+ * #%L
+ * de.metas.fresh.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 CREATE OR REPLACE FUNCTION Report.fresh_attributes(IN p_M_AttributeSetInstance_ID numeric)
     RETURNS TABLE (
@@ -29,7 +49,7 @@ FROM (
                                                                                                           THEN (SELECT mt.lot
                                                                                                                 FROM m_material_tracking mt
                                                                                                                 WHERE mt.m_material_tracking_id = ai.value::numeric)
-                    ELSE (COALESCE(NULLIF(TRIM(printvalue_override), ''), av.name, ai.value)::varchar)
+                                                                                                          ELSE (COALESCE(NULLIF(TRIM(printvalue_override), ''), av.name, ai.value)::varchar)
                 END                      AS ai_Value,
                 M_AttributeSetInstance_ID,
                 a.Value                  AS at_Value,
@@ -54,6 +74,7 @@ $$
     LANGUAGE sql
     STABLE;
 
-COMMENT ON FUNCTION Report.fresh_attributes(IN p_M_AttributeSetIntance_ID numeric) 
+COMMENT ON FUNCTION Report.fresh_attributes(IN p_M_AttributeSetIntance_ID numeric)
     IS 'Consider using this function instead of the view Report.fresh_attributes, because using the view often causes the DB to do a sequential scan on m_attributeinstance.
     !! While we have both the view and the function, please keep them in sync !!'
+
