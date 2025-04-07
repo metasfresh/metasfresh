@@ -93,11 +93,15 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 		<property name="com.jaspersoft.studio.field.name" value="billtoaddress"/>
 		<property name="com.jaspersoft.studio.field.label" value="billtoaddress"/>
 	</field>
+	<field name="preparationdate" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="preparationdate"/>
+		<property name="com.jaspersoft.studio.field.label" value="preparationdate"/>
+	</field>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="206" splitType="Stretch">
+		<band height="201" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-5" x="352" y="98" width="88" height="13" uuid="2f7f6410-10b7-447c-a38d-ab84c20aa5cd"/>
@@ -253,7 +257,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 				<textFieldExpression><![CDATA[$F{eori}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-5" x="352" y="111" width="88" height="13" uuid="60ca9d56-6b53-4af5-a56a-6b082d62fc4f"/>
+				<reportElement key="textField-5" x="352" y="124" width="88" height="13" uuid="60ca9d56-6b53-4af5-a56a-6b082d62fc4f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -294,7 +298,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 				<textFieldExpression><![CDATA[$F{customernoatvendor}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-5" x="352" y="111" width="88" height="13" uuid="60ca9d56-6b53-4af5-a56a-6b082d62fc4f"/>
+				<reportElement key="textField-5" x="352" y="124" width="88" height="13" uuid="60ca9d56-6b53-4af5-a56a-6b082d62fc4f"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -307,7 +311,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 				<textFieldExpression><![CDATA[$R{Account_manager}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-3" x="440" y="111" width="99" height="13" uuid="86245e80-15e4-46de-b4e5-77f543bd30a0"/>
+				<reportElement key="textField-3" x="440" y="124" width="99" height="13" uuid="86245e80-15e4-46de-b4e5-77f543bd30a0"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -320,7 +324,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 				<textFieldExpression><![CDATA[$F{sr_name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-5" x="352" y="124" width="88" height="13" uuid="02331a9f-a0e1-4205-b581-1b99cddc0a73"/>
+				<reportElement key="textField-5" x="352" y="137" width="88" height="13" uuid="02331a9f-a0e1-4205-b581-1b99cddc0a73"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -333,7 +337,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 				<textFieldExpression><![CDATA[$R{email}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-3" x="380" y="124" width="159" height="13" uuid="aef044ad-2ad7-42bc-9ac8-883fe5500f5a"/>
+				<reportElement key="textField-3" x="380" y="137" width="159" height="13" uuid="aef044ad-2ad7-42bc-9ac8-883fe5500f5a"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -400,6 +404,32 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Description( $P{RECORD
 					<font fontName="Arial" size="9"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{order_docno}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField-5" x="352" y="111" width="88" height="13" uuid="fd1b9cae-ae29-4dc8-8916-398fcbe7d63c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{PreparationDate}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd.MM.yyyy" isBlankWhenNull="false">
+				<reportElement key="textField-3" x="440" y="111" width="99" height="13" uuid="9fc109a0-1f5e-494d-b30c-36992fc26d6f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{preparationdate}]]></textFieldExpression>
 			</textField>
 		</band>
 	</title>
