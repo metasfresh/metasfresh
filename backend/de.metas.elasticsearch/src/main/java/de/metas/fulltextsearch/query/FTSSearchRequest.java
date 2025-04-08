@@ -27,6 +27,7 @@ import de.metas.security.UserRolePermissionsKey;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.QueryLimit;
 
 import javax.annotation.Nullable;
 
@@ -37,6 +38,7 @@ public class FTSSearchRequest
 	@NonNull String searchId;
 	@NonNull String searchText;
 	@NonNull String esIndexName;
+	@Nullable QueryLimit limit; 
 
 	@Nullable UserRolePermissionsKey userRolePermissionsKey;
 
