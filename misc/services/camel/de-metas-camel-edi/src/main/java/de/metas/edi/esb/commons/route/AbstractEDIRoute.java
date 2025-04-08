@@ -24,12 +24,13 @@ package de.metas.edi.esb.commons.route;
 
 import de.metas.edi.esb.commons.Constants;
 import de.metas.edi.esb.commons.Util;
+import lombok.NonNull;
 import org.apache.camel.CamelContext;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.converter.jaxb.JaxbDataFormat;
+import org.apache.camel.dataformat.smooks.SmooksDataFormat;
 import org.apache.camel.spi.DataFormat;
-import org.smooks.cartridges.camel.dataformat.SmooksDataFormat;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -84,18 +85,25 @@ public abstract class AbstractEDIRoute extends RouteBuilder
 	/**
 	 * @return {@link SmooksDataFormat} data format for properties configuration
 	 */
-	protected final SmooksDataFormat getSDFForConfiguration(final String propertiesConfigurationPath)
+	protected final SmooksDataFormat getSDFForConfiguration(@NonNull final String propertiesConfigurationPath)
 	{
-		final String smooksConfigurationPath = Util.resolveProperty(getContext(), propertiesConfigurationPath);
+		final String smooksConfigurationPath = getSmooksConfigurationPath(propertiesConfigurationPath);
 
 		try
 		{
-			return new SmooksDataFormat(smooksConfigurationPath);
+			final SmooksDataFormat smooksDataFormat = new SmooksDataFormat();
+			smooksDataFormat.setSmooksConfig(smooksConfigurationPath);
+			return smooksDataFormat;
 		}
 		catch (final Exception e)
 		{
 			throw new RuntimeCamelException(e);
 		}
+	}
+
+	protected String getSmooksConfigurationPath(@NonNull final String propertiesConfigurationPath)
+	{
+		return Util.resolveProperty(getContext(), propertiesConfigurationPath);
 	}
 
 	/**
