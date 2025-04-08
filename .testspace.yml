@@ -46,5 +46,7 @@ release:
   - tasty_ham_hotfix
   - tenacious_d_uat
   - vampire_textbook_uat
+  - vampire_textbook_hotfix
+  - vampire_textbook_release
   - yoyo_uat
   - yoyo_hotfix
