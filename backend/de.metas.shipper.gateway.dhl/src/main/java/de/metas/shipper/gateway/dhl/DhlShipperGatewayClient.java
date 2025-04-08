@@ -44,6 +44,7 @@ import de.dhl.webservices.businesscustomershipping._3.ShipmentNotificationType;
 import de.dhl.webservices.businesscustomershipping._3.ShipmentOrderType;
 import de.dhl.webservices.businesscustomershipping._3.ShipperType;
 import de.dhl.webservices.businesscustomershipping._3.Version;
+import de.metas.common.util.StringUtils;
 import de.metas.mpackage.PackageId;
 import de.metas.shipper.gateway.dhl.logger.DhlClientLogEvent;
 import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
@@ -327,12 +328,12 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 					receiverType.setName1(deliveryAddress.getCompanyName1());
 					// (2.2.4.2)
 					final ReceiverNativeAddressType receiverNativeAddressType = objectFactoryCis.createReceiverNativeAddressType();
-					receiverNativeAddressType.setName2(deliveryAddress.getCompanyName2());
-					receiverNativeAddressType.setStreetName(deliveryAddress.getStreet1());
+					receiverNativeAddressType.setName2(StringUtils.trim(deliveryAddress.getCompanyName2()));
+					receiverNativeAddressType.setStreetName(StringUtils.trim(deliveryAddress.getStreet1()));
 					receiverNativeAddressType.getAddressAddition().add(deliveryAddress.getStreet2());
-					receiverNativeAddressType.setStreetNumber(deliveryAddress.getHouseNo());
-					receiverNativeAddressType.setZip(deliveryAddress.getZipCode());
-					receiverNativeAddressType.setCity(deliveryAddress.getCity());
+					receiverNativeAddressType.setStreetNumber(StringUtils.trim(deliveryAddress.getHouseNo()));
+					receiverNativeAddressType.setZip(StringUtils.trim(deliveryAddress.getZipCode()));
+					receiverNativeAddressType.setCity(StringUtils.trim(deliveryAddress.getCity()));
 					// (2.2.4.2.10)
 					final CountryType countryType = objectFactoryCis.createCountryType();
 					countryType.setCountryISOCode(deliveryAddress.getCountry().getAlpha2());
@@ -361,11 +362,11 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 					shipperType.setName(nameType);
 					// (2.2.2.2)
 					final NativeAddressType nativeAddressType = objectFactoryCis.createNativeAddressType();
-					nativeAddressType.setStreetName(pickupAddress.getStreet1());
-					nativeAddressType.getAddressAddition().add(pickupAddress.getStreet2());
-					nativeAddressType.setStreetNumber(pickupAddress.getHouseNo());
-					nativeAddressType.setZip(pickupAddress.getZipCode());
-					nativeAddressType.setCity(pickupAddress.getCity());
+					nativeAddressType.setStreetName(StringUtils.trim(pickupAddress.getStreet1()));
+					nativeAddressType.getAddressAddition().add(StringUtils.trim(pickupAddress.getStreet2()));
+					nativeAddressType.setStreetNumber(StringUtils.trim(pickupAddress.getHouseNo()));
+					nativeAddressType.setZip(StringUtils.trim(pickupAddress.getZipCode()));
+					nativeAddressType.setCity(StringUtils.trim(pickupAddress.getCity()));
 					// (2.2.2.2.8)
 					final CountryType countryType = objectFactoryCis.createCountryType();
 					countryType.setCountryISOCode(pickupAddress.getCountry().getAlpha2());
