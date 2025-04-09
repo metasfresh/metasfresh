@@ -74,7 +74,7 @@ SELECT o.description                             AS description,
        COALESCE(dtt.Description, dt.Description) AS dt_description,
        offer.documentno                          AS offer_documentno,
        REPLACE(
-               REPLACE(o.BPartnerAddress, E'\r\n', ' | '),
+               REPLACE(o.deliverytoaddress, E'\r\n', ' | '),
                E'\n', ' | '
        )                                         AS deliverytoaddress,
        CASE
@@ -85,11 +85,7 @@ SELECT o.description                             AS description,
            WHEN o.OrderType = 'ON'
                THEN o.versionno
        END                                       AS versionno,
-       CASE
-           WHEN o.c_bpartner_location_id = o.dropship_location_id
-               THEN 'N'
-               ELSE 'Y'
-       END                                       AS showdeliverytoaddress
+       o.isdropship                              AS showdeliverytoaddress
 FROM C_Order o
          INNER JOIN C_BPartner bp ON o.C_BPartner_ID = bp.C_BPartner_ID
          LEFT OUTER JOIN AD_User srep ON o.SalesRep_ID = srep.AD_User_ID AND srep.AD_User_ID <> 100
