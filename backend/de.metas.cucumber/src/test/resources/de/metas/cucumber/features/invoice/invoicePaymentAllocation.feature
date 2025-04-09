@@ -53,15 +53,13 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_100
   @from:cucumber
-  Scenario: allocate payment to sales invoice for the full amount
-
+  Scenario: sales invoice - inbound payment (full amount)
     Given metasfresh contains M_Products:
       | Identifier  |
       | product_100 |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
       | salesPLV               | product_100  | 5.00     | PCE      |
-
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
       | inv_100    | customer1     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
@@ -69,7 +67,6 @@ Feature: invoice payment allocation
       | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
       | invl_100   | inv_100      | product_100  | 1 PCE       |
     And the invoice identified by inv_100 is completed
-
     And metasfresh contains C_Payment
       | Identifier  | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID |
       | payment_100 | customer1     | 5.95 EUR | true      | org_EUR_account     |
@@ -92,8 +89,10 @@ Feature: invoice payment allocation
       | AccountConceptualName  | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID   |
       | *                      |             |             |               | payment_100 |
       | B_UnallocatedCash_Acct |             | 5.95 EUR    | customer1     | payment_100 |
+      # ----------------------------------------------------------------------------------
       | B_UnallocatedCash_Acct | 5.95 EUR    |             | customer1     | alloc1      |
       | C_Receivable_Acct      |             | 5.95 EUR    | customer1     | alloc1      |
+      # ----------------------------------------------------------------------------------
       | C_Receivable_Acct      | 5.95 EUR    |             | customer1     | inv_100     |
       | *                      |             |             |               | inv_100     |
     
@@ -115,9 +114,87 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
+  @Id:S0465_100_010
+  @from:cucumber
+  Scenario: sales invoice - inbound payment - discount (full amount)
+    Given metasfresh contains M_Products:
+      | Identifier |
+      | product1   |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | salesPLV               | product1     | 5.00     | PCE      |
+    And metasfresh contains C_Invoice:
+      | Identifier   | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | salesInvoice | customer1     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | salesInvoice | product1     | 100 PCE     | tax1     |
+    And the invoice identified by salesInvoice is completed
+    And metasfresh contains C_Payment
+      | Identifier     | C_BPartner_ID | PayAmt  | IsReceipt | C_BP_BankAccount_ID |
+      | inboundPayment | customer1     | 495 EUR | true      | org_EUR_account     |
+    And the payment identified by inboundPayment is completed
+
+    And allocate payments to invoices
+      | C_Invoice_ID | C_Payment_ID   | DiscountAmt |
+      | salesInvoice | inboundPayment | 100 EUR     |
+
+    Then validate created invoices
+      | C_Invoice_ID | C_BPartner_ID | IsPaid | IsPartiallyPaid |
+      | salesInvoice | customer1     | true   | false           |
+    And validate payments
+      | C_Payment_ID   | IsAllocated |
+      | inboundPayment | true        |
+    And validate C_AllocationLines
+      | C_Invoice_ID | C_Payment_ID   | Amount | DiscountAmt | OverUnderAmt | C_AllocationHdr_ID |
+      | salesInvoice | inboundPayment | 495    | 100         | 0            | alloc1             |
+    And Fact_Acct records are matching
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | C_BPartner_ID | C_Tax_ID | Record_ID      |
+      | B_InTransit_Acct       | 495 EUR     |             | customer1     | -        | inboundPayment |
+      | B_UnallocatedCash_Acct |             | 495 EUR     | customer1     | -        | inboundPayment |
+      # ----------------------------------------------------------------------------------
+      | B_UnallocatedCash_Acct | 495 EUR     |             | customer1     | -        | alloc1         |
+      | PayDiscount_Exp_Acct   | 100 EUR     |             | customer1     | tax1     | alloc1         |
+      | C_Receivable_Acct      |             | 595 EUR     | customer1     | -        | alloc1         |
+      | T_Due_Acct             | 15.97 EUR   |             | customer1     | tax1     | alloc1         |
+      | PayDiscount_Exp_Acct   |             | 15.97 EUR   | customer1     | tax1     | alloc1         |
+      # ----------------------------------------------------------------------------------
+      | C_Receivable_Acct      | 595 EUR     |             | customer1     | -        | salesInvoice   |
+      | T_Due_Acct             |             | 95 EUR      | customer1     | tax1     | salesInvoice   |
+      | *                      |             |             |               |          | salesInvoice   |
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
   @Id:S0465_110
   @from:cucumber
-  Scenario: allocate payment to multiple sales invoices with payment open amount left
+  Scenario: multiple sales invoices - inbound payment (partial)
     Given metasfresh contains M_Products:
       | Identifier  |
       | product_110 |
@@ -203,7 +280,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_120
   @from:cucumber
-  Scenario: allocate payment to multiple sales invoices with invoice open amount left and then apply write off
+  Scenario: multiple sales invoices - inbound payment (partial) - then apply write off
 
     Given metasfresh contains M_Products:
       | Identifier  |
@@ -304,7 +381,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_130
   @from:cucumber
-  Scenario: allocate payment to multiple sales invoices with invoice open amount left and then apply discount
+  Scenario: multiple sales invoices - inbound payment (partial) - then apply Discount
 
     Given metasfresh contains M_Products:
       | Identifier  |
@@ -400,7 +477,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_140
   @from:cucumber
-  Scenario: allocate payment to multiple sales invoices with payment open amount left and not matching on currency
+  Scenario:multiple sales invoices in CHF - inbound payment in EUR (partial alloc)
 
     Given metasfresh contains M_Products:
       | Identifier  |
@@ -560,52 +637,48 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_160
   @from:cucumber
-  Scenario: allocate payment to sales invoice that has a credit memo created
-
+  Scenario: sales invoice (with allocated sales credit memo) - inbound payment
     Given metasfresh contains M_Products:
       | Identifier  |
       | product_160 |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
       | salesPLV               | product_160  | 5.00     | PCE      |
-
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | inv_160    | customer1     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
+      | Identifier    | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | salesInvoice1 | customer1     | Ausgangsrechnung        | 2022-05-11   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
-      | invl_160   | inv_160      | product_160  | 1 PCE       |
-    And the invoice identified by inv_160 is completed
-
+      | C_Invoice_ID  | M_Product_ID | QtyInvoiced |
+      | salesInvoice1 | product_160  | 1 PCE       |
+    And the invoice identified by salesInvoice1 is completed
     And create credit memo for C_Invoice
-      | CreditMemo      | C_Invoice_ID | CreditMemo.PriceEntered |
-      | credit_memo_160 | inv_160      | 2.00                    |
-    And the invoice identified by credit_memo_160 is completed
+      | CreditMemo       | C_Invoice_ID  | CreditMemo.PriceEntered |
+      | salesCreditMemo1 | salesInvoice1 | 2.00                    |
+    And the invoice identified by salesCreditMemo1 is completed
 
     And validate C_AllocationLines
-      | C_Invoice_ID    | Amount | OverUnderAmt | C_AllocationHdr_ID |
-      | credit_memo_160 | -2.38  | 0            | alloc1             |
-      | inv_160         | 2.38   | 0            | alloc1             |
+      | C_Invoice_ID     | Amount | OverUnderAmt | C_AllocationHdr_ID |
+      | salesCreditMemo1 | -2.38  | 0            | alloc1             |
+      | salesInvoice1    | 2.38   | 0            | alloc1             |
 
     And metasfresh contains C_Payment
       | Identifier  | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID |
       | payment_160 | customer1     | 5.95 EUR | true      | org_EUR_account     |
     And the payment identified by payment_160 is completed
-
     And allocate payments to invoices
-      | C_Invoice_ID | C_Payment_ID |
-      | inv_160      | payment_160  |
+      | C_Invoice_ID  | C_Payment_ID |
+      | salesInvoice1 | payment_160  |
 
     Then validate created invoices
-      | C_Invoice_ID    | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | IsPartiallyPaid |
-      | credit_memo_160 | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   | false           |
-      | inv_160         | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   | false           |
+      | C_Invoice_ID     | IsPaid | IsPartiallyPaid |
+      | salesCreditMemo1 | true   | false           |
+      | salesInvoice1    | true   | false           |
     And validate payments
       | C_Payment_ID | IsAllocated | OpenAmt |
       | payment_160  | false       | 2.38    |
     And validate C_AllocationLines
-      | C_Invoice_ID | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
-      | inv_160      | payment_160  | 3.57   | 0            | alloc2             |
+      | C_Invoice_ID  | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
+      | salesInvoice1 | payment_160  | 3.57   | 0            | alloc2             |
 
     And no Fact_Acct records are found for documents alloc1
     And Fact_Acct records are matching
@@ -709,46 +782,128 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_180
   @from:cucumber
-  Scenario: allocate payment to purchase invoice for the full amount
-
+  Scenario: purchase invoice - outbound payment
     Given metasfresh contains M_Products:
       | Identifier  |
       | product_180 |
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
       | purchasePLV            | product_180  | 5.00     | PCE      |
-
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | inv_180    | customer1     | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
+      | Identifier      | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | purchaseInvoice | customer1     | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
-      | invl_180   | inv_180      | product_180  | 1 PCE       |
-    And the invoice identified by inv_180 is completed
+      | C_Invoice_ID    | M_Product_ID | QtyInvoiced |
+      | purchaseInvoice | product_180  | 1 PCE       |
+    And the invoice identified by purchaseInvoice is completed
 
     And metasfresh contains C_Payment
-      | Identifier  | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID |
-      | payment_180 | customer1     | 5.95 EUR | false     | org_EUR_account     |
-    And the payment identified by payment_180 is completed
+      | Identifier      | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID |
+      | outboundPayment | customer1     | 5.95 EUR | false     | org_EUR_account     |
+    And the payment identified by outboundPayment is completed
 
     And allocate payments to invoices
-      | C_Invoice_ID | C_Payment_ID |
-      | inv_180      | payment_180  |
+      | C_Invoice_ID    | C_Payment_ID    |
+      | purchaseInvoice | outboundPayment |
 
     Then validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | IsPartiallyPaid |
-      | inv_180      | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   | false           |
+      | C_Invoice_ID    | IsPaid | IsPartiallyPaid |
+      | purchaseInvoice | true   | false           |
     And validate payments
-      | C_Payment_ID | IsAllocated |
-      | payment_180  | true        |
+      | C_Payment_ID    | IsAllocated |
+      | outboundPayment | true        |
     And validate C_AllocationLines
-      | C_Invoice_ID | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
-      | inv_180      | payment_180  | -5.95  | 0            | alloc1             |
+      | C_Invoice_ID    | C_Payment_ID    | Amount | OverUnderAmt | C_AllocationHdr_ID |
+      | purchaseInvoice | outboundPayment | -5.95  | 0            | alloc1             |
 
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
-      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       | alloc1    |
-      | B_PaymentSelect_Acct  | 0 EUR       | 5.95 EUR    | alloc1    |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID       |
+      | *                     |             |             | purchaseInvoice |
+      | V_Liability_Acct      |             | 5.95 EUR    | purchaseInvoice |
+      # ---------------------------------------------------------------------
+      | V_Liability_Acct      | 5.95 EUR    |             | alloc1          |
+      | B_PaymentSelect_Acct  |             | 5.95 EUR    | alloc1          |
+      # ---------------------------------------------------------------------
+      | B_PaymentSelect_Acct  | 5.95 EUR    |             | outboundPayment |
+      | B_InTransit_Acct      |             | 5.95 EUR    | outboundPayment |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  @Id:S0465_180_010
+  @from:cucumber
+  Scenario: purchase invoice - outbound payment - discount (full amount)
+    Given metasfresh contains M_Products:
+      | Identifier |
+      | product1   |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | purchasePLV            | product1     | 5.00     | PCE      |
+    And metasfresh contains C_Invoice:
+      | Identifier      | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | purchaseInvoice | vendor1       | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID    | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | purchaseInvoice | product1     | 100 PCE     | tax1     |
+    And the invoice identified by purchaseInvoice is completed
+    And metasfresh contains C_Payment
+      | Identifier      | C_BPartner_ID | PayAmt  | IsReceipt | C_BP_BankAccount_ID |
+      | outboundPayment | vendor1       | 495 EUR | false     | org_EUR_account     |
+    And the payment identified by outboundPayment is completed
+
+    And allocate payments to invoices
+      | C_Invoice_ID    | C_Payment_ID    | DiscountAmt |
+      | purchaseInvoice | outboundPayment | 100 EUR     |
+
+    Then validate created invoices
+      | C_Invoice_ID    | C_BPartner_ID | IsPaid | IsPartiallyPaid |
+      | purchaseInvoice | vendor1       | true   | false           |
+    And validate payments
+      | C_Payment_ID    | IsAllocated |
+      | outboundPayment | true        |
+    And validate C_AllocationLines
+      | C_Invoice_ID    | C_Payment_ID    | Amount | DiscountAmt | OverUnderAmt | C_AllocationHdr_ID |
+      | purchaseInvoice | outboundPayment | -495   | -100        | 0            | alloc1             |
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | C_Tax_ID | Record_ID       |
+      | B_InTransit_Acct      |             | 495 EUR     | vendor1       | -        | outboundPayment |
+      | B_PaymentSelect_Acct  | 495 EUR     |             | vendor1       | -        | outboundPayment |
+      # ----------------------------------------------------------------------------------
+      | B_PaymentSelect_Acct  |             | 495 EUR     | vendor1       | -        | alloc1          |
+      | PayDiscount_Rev_Acct  |             | 100 EUR     | vendor1       | tax1     | alloc1          |
+      | V_Liability_Acct      | 595 EUR     |             | vendor1       | -        | alloc1          |
+      | T_Credit_Acct         |             | 15.97 EUR   | vendor1       | tax1     | alloc1          |
+      | PayDiscount_Rev_Acct  | 15.97 EUR   |             | vendor1       | tax1     | alloc1          |
+      # ----------------------------------------------------------------------------------
+      | V_Liability_Acct      |             | 595 EUR     | vendor1       | -        | purchaseInvoice |
+      | T_Credit_Acct         | 95 EUR      |             | vendor1       | tax1     | purchaseInvoice |
+      | *                     |             |             |               |          | purchaseInvoice |
 
     
     
@@ -785,7 +940,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_190
   @from:cucumber
-  Scenario: allocate payment to multiple purchase invoices with payment open amount left
+  Scenario: multiple purchase invoices - outbound payment (partial)
 
     Given metasfresh contains M_Products:
       | Identifier  |
@@ -795,45 +950,45 @@ Feature: invoice payment allocation
       | purchasePLV            | product_190  | 5.00     | PCE      |
 
     And metasfresh contains C_Invoice:
-      | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | inv_190_1  | customer1     | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
-      | inv_190_2  | customer1     | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
+      | Identifier       | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | purchaseInvoice1 | customer1     | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
+      | purchaseInvoice2 | customer1     | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | Identifier | C_Invoice_ID | M_Product_ID | QtyInvoiced |
-      | invl_190_1 | inv_190_1    | product_190  | 1 PCE       |
-      | invl_190_2 | inv_190_2    | product_190  | 1 PCE       |
-    And the invoice identified by inv_190_1 is completed
-    And the invoice identified by inv_190_2 is completed
+      | C_Invoice_ID     | M_Product_ID | QtyInvoiced |
+      | purchaseInvoice1 | product_190  | 1 PCE       |
+      | purchaseInvoice2 | product_190  | 1 PCE       |
+    And the invoice identified by purchaseInvoice1 is completed
+    And the invoice identified by purchaseInvoice2 is completed
 
     And metasfresh contains C_Payment
-      | Identifier  | C_BPartner_ID | PayAmt    | IsReceipt | C_BP_BankAccount_ID |
-      | payment_190 | customer1     | 14.00 EUR | false     | org_EUR_account     |
-    And the payment identified by payment_190 is completed
+      | Identifier      | C_BPartner_ID | PayAmt    | IsReceipt | C_BP_BankAccount_ID |
+      | outboundPayment | customer1     | 14.00 EUR | false     | org_EUR_account     |
+    And the payment identified by outboundPayment is completed
 
     And allocate payments to invoices
-      | C_Invoice_ID | C_Payment_ID |
-      | inv_190_1    | payment_190  |
-      | inv_190_2    |              |
+      | C_Invoice_ID     | C_Payment_ID    |
+      | purchaseInvoice1 | outboundPayment |
+      | purchaseInvoice2 |                 |
 
     Then validate created invoices
-      | C_Invoice_ID | C_BPartner_ID | C_BPartner_Location_ID | paymentTerm   | processed | docStatus | IsPaid | IsPartiallyPaid |
-      | inv_190_1    | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   | false           |
-      | inv_190_2    | customer1     | bpartner_location_1    | 30 Tage netto | true      | CO        | true   | false           |
+      | C_Invoice_ID     | IsPaid | IsPartiallyPaid |
+      | purchaseInvoice1 | true   | false           |
+      | purchaseInvoice2 | true   | false           |
     And validate payments
-      | C_Payment_ID | IsAllocated | OpenAmt |
-      | payment_190  | false       | 2.10    |
+      | C_Payment_ID    | IsAllocated | OpenAmt |
+      | outboundPayment | false       | 2.10    |
     And validate C_AllocationLines
-      | C_Invoice_ID | C_Payment_ID | Amount | OverUnderAmt | C_AllocationHdr_ID |
-      | inv_190_1    | payment_190  | -5.95  | 0            | alloc1             |
-      | inv_190_2    | payment_190  | -5.95  | 0            | alloc2             |
+      | C_Invoice_ID     | C_Payment_ID    | Amount | OverUnderAmt | C_AllocationHdr_ID |
+      | purchaseInvoice1 | outboundPayment | -5.95  | 0            | alloc1             |
+      | purchaseInvoice2 | outboundPayment | -5.95  | 0            | alloc2             |
 
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
-      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       | alloc1    |
-      | B_PaymentSelect_Acct  | 0 EUR       | 5.95 EUR    | alloc1    |
+      | V_Liability_Acct      | 5.95 EUR    |             | alloc1    |
+      | B_PaymentSelect_Acct  |             | 5.95 EUR    | alloc1    |
       # ---------------------------------------------------------------
-      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       | alloc2    |
-      | B_PaymentSelect_Acct  | 0 EUR       | 5.95 EUR    | alloc2    |
+      | V_Liability_Acct      | 5.95 EUR    |             | alloc2    |
+      | B_PaymentSelect_Acct  |             | 5.95 EUR    | alloc2    |
 
     
     
@@ -868,8 +1023,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_200
   @from:cucumber
-  Scenario: allocate payment to multiple purchase invoices with invoice open amount left and then apply write off
-
+  Scenario: multiple purchase invoices - outbound payment (partial) - apply write off
     Given metasfresh contains M_Products:
       | Identifier  |
       | product_200 |
@@ -922,15 +1076,13 @@ Feature: invoice payment allocation
       | inv_200_2    | 0      | -2.9        | alloc3             |
 
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
-      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       | alloc1    |
-      | B_PaymentSelect_Acct  | 0 EUR       | 5.95 EUR    | alloc1    |
-    And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | Record_ID |
-      | V_Liability_Acct      | 3.05 EUR    | 0 EUR       | alloc2    |
-      | B_PaymentSelect_Acct  | 0 EUR       | 3.05 EUR    | alloc2    |
-    And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | Record_ID |
+      | V_Liability_Acct      | 5.95 EUR    | 0 EUR       |          | alloc1    |
+      | B_PaymentSelect_Acct  | 0 EUR       | 5.95 EUR    |          | alloc1    |
+      # --------------------------------------------------------------------------
+      | V_Liability_Acct      | 3.05 EUR    | 0 EUR       |          | alloc2    |
+      | B_PaymentSelect_Acct  | 0 EUR       | 3.05 EUR    |          | alloc2    |
+      # --------------------------------------------------------------------------
       | V_Liability_Acct      | 2.9 EUR     | 0 EUR       |          | alloc3    |
       | WriteOff_Acct         | 0 EUR       | 2.9 EUR     |          | alloc3    |
       | WriteOff_Acct         | -0.46 EUR   | 0 EUR       | tax1     | alloc3    |
@@ -967,8 +1119,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_210
   @from:cucumber
-  Scenario: allocate payment to multiple purchase invoices with invoice open amount left and then apply discount
-
+  Scenario: multiple purchase invoices - outbound payment (partial) - apply discount
     Given metasfresh contains M_Products:
       | Identifier  |
       | product_210 |
@@ -1067,7 +1218,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_220
   @from:cucumber
-  Scenario: allocate payment to purchase invoice that has a credit memo created
+  Scenario: purchase invoice (with allocated purchase credit memo) - outbound payment
     Given metasfresh contains M_Products:
       | Identifier  |
       | product_220 |
@@ -1404,7 +1555,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_340
   @from:cucumber
-  Scenario: allocate a sales credit memo with inbound payment => no allocations
+  Scenario: sales credit memo - inbound payment => no allocations
 
     Given metasfresh contains M_Products:
       | Identifier |
@@ -1542,7 +1693,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_500
   @from:cucumber
-  Scenario: manually allocate API with ARC (REMADV case)
+  Scenario: sales credit memo - purchase invoice - inbound payment (REMADV case)
     # NOTE: this kind of allocation cannot be manualy done by user (because REMADV code is doing it), but the purpose of this test
     # is to make sure, that in case of such allocation the open amounts and accounting is correct
     Given metasfresh contains M_Products:

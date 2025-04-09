@@ -39,6 +39,7 @@ public class Fact_Acct_StepDef
 				.build();
 		this.factAcctTabularStringConverter = FactAcctToTabularStringConverter.builder()
 				.uomDAO(uomDAO)
+				.taxDAO(taxDAO)
 				.moneyService(moneyService)
 				.bpartnerTable(bpartnerTable)
 				.taxTable(taxTable)
