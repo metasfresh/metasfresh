@@ -35,8 +35,8 @@ public class FactAcctLineMatcher
 	@Nullable private final Money amtSourceCr;
 	@Nullable private final Quantity qty;
 	@NonNull @Getter private final TableRecordReference documentRef;
-	@Nullable @Getter private final TaxId taxId;
-	@Nullable Optional<BPartnerId> bpartnerId;
+	@Nullable private final Optional<TaxId> taxId;
+	@Nullable private final Optional<BPartnerId> bpartnerId;
 
 	@Override
 	public String toString() {return row.toTabularString();}
@@ -144,7 +144,7 @@ public class FactAcctLineMatcher
 		{
 			softly.assertThat(TaxId.ofRepoIdOrNull(record.getC_Tax_ID()))
 					.as(description.newWithMessage("C_Tax_ID"))
-					.isEqualTo(taxId);
+					.isEqualTo(taxId.orElse(null));
 		}
 		if (bpartnerId != null)
 		{
