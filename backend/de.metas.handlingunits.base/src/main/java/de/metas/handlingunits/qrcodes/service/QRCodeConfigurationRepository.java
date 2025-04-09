@@ -54,7 +54,7 @@ public class QRCodeConfigurationRepository
 			.build();
 
 	@NonNull
-	public QRCodeConfiguration getById(@NonNull final QRCodeConfigurationId id)
+	public Optional<QRCodeConfiguration> getById(@NonNull final QRCodeConfigurationId id)
 	{
 		return getConfigurationMap().getById(id);
 	}
@@ -135,10 +135,9 @@ public class QRCodeConfigurationRepository
 		}
 
 		@NonNull
-		public QRCodeConfiguration getById(@NonNull final QRCodeConfigurationId id)
+		public Optional<QRCodeConfiguration> getById(@NonNull final QRCodeConfigurationId id)
 		{
-			return Optional.ofNullable(id2Configuration.get(id))
-					.orElseThrow(() -> new AdempiereException("No QRCodeConfiguration found for id=" + id.getRepoId()));
+			return Optional.ofNullable(id2Configuration.get(id));
 		}
 
 		@NonNull

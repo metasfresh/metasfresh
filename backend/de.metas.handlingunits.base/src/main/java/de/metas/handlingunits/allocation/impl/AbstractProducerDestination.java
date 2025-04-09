@@ -22,6 +22,7 @@ import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.util.HUByIdComparator;
 import de.metas.handlingunits.util.HUListCursor;
 import de.metas.i18n.AdMessageKey;
@@ -36,6 +37,7 @@ import org.adempiere.mm.attributes.spi.impl.WeightTareAttributeValueCallout;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.LocatorId;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Util.ArrayKey;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -60,6 +62,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	protected final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	protected final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IDeveloperModeBL developerModeBL = Services.get(IDeveloperModeBL.class);
+	private final transient HUQRCodesService huQrCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 
 	/**
 	 * Error message which is thrown when the result of allocating to a new HU is ZERO
@@ -256,6 +259,12 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 		DYNATTR_Producer.setValue(hu, this);
 
 		DYNATTR_IsEmptyHU.setValue(hu, true);
+
+		if (request.getReference() != null && request.getReference().isOfType(I_M_HU.class))
+		{
+			huQrCodesService.propagateQrForSplitHUs(request.getReference().getModel(I_M_HU.class),
+													ImmutableList.of(hu));
+		}
 
 		addToCreateHUs0(hu);
 

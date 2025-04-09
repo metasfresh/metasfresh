@@ -109,6 +109,6 @@ public class QRCodeConfigurationService
 				.map(productBL::getById)
 				.map(I_M_Product::getQRCode_Configuration_ID)
 				.map(QRCodeConfigurationId::ofRepoIdOrNull)
-				.map(repository::getById);
+				.flatMap(repository::getById);
 	}
 }
