@@ -1,4 +1,8 @@
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report(date,
+                                                                            character varying)
+;
+
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.OpenItems_Report(date,
                                                                             character varying,
                                                                             numeric)
 ;
@@ -106,7 +110,7 @@ FROM (SELECT i.AD_Org_ID,
              COALESCE(
                      PaymentTermDueDays(i.C_PaymentTerm_ID, i.DateInvoiced::timestamp WITH TIME ZONE, p_Reference_Date),
                      DaysBetween(p_Reference_Date, ips.DueDate::timestamp WITH TIME ZONE)
-             )                                                                                                             AS DaysDue,
+                 )                                                                                                             AS DaysDue,
              COALESCE(AddDays(i.DateInvoiced::timestamp WITH TIME ZONE, p.DiscountDays), ips.DiscountDate)                     AS DiscountDate,
              COALESCE(ROUND(i.GrandTotal * p.Discount / 100::numeric, 2), ips.DiscountAmt)                                     AS DiscountAmt,
              COALESCE(ips.DueAmt, i.GrandTotal)                                                                                AS GrandTotal,
