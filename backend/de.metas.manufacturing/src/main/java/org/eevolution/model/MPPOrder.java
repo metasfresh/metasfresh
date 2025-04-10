@@ -60,7 +60,6 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.model.validator.PPOrderChangedEventFactory;
-import org.eevolution.productioncandidate.service.PPOrderCandidateResetRequest;
 import org.eevolution.productioncandidate.service.PPOrderCandidateService;
 
 import java.io.File;
@@ -340,10 +339,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		setDocAction(IDocument.ACTION_None);
 
 		// reset candidate
-		ppOrderCandidateService.resetByPPOrderId(PPOrderCandidateResetRequest.builder()
-				.ppOrderId(PPOrderId.ofRepoId(getPP_Order_ID()))
-				.qtyToReset(qtysOld.getQtyRequiredToProduce())
-				.build());
+		ppOrderCandidateService.resetByPPOrderId(PPOrderId.ofRepoId(getPP_Order_ID()));
 
 		final PPOrderChangedEvent changeEvent = eventFactory.inspectPPOrderAfterChange();
 

@@ -86,7 +86,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveAll;
+import static org.adempiere.model.InterfaceWrapperHelper.copy;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.eevolution.productioncandidate.service.ResourcePlanningPrecision.MINUTE;
 
 @Service
@@ -494,36 +495,44 @@ public class PPOrderCandidateService
 		}
 	}
 
-	public void resetByPPOrderId(@NonNull final PPOrderCandidateResetRequest request)
+	public void resetByPPOrderId(@NonNull final PPOrderId ppOrderId)
 	{
-		final ImmutableList<I_PP_Order_Candidate> candidates = ppOrderCandidateDAO.getByOrderId(request.getPpOrderId());
-		Quantity remainingQtyToDistribute = request.getQtyToReset();
-		for (final I_PP_Order_Candidate candidate : candidates)
-		{
-			remainingQtyToDistribute = resetPPOrderCandidate(candidate, remainingQtyToDistribute);
-		}
-		resetAllocationQtys(request.getPpOrderId());
+		// final ImmutableList<I_PP_Order_Candidate> candidates = ppOrderCandidateDAO.getByOrderId(request.getPpOrderId());
+		// Quantity remainingQtyToDistribute = request.getQtyToReset();
+		// for (final I_PP_Order_Candidate candidate : candidates)
+		// {
+		// 	remainingQtyToDistribute = resetPPOrderCandidate(candidate, remainingQtyToDistribute);
+		// }
+		ppOrderDAO.getPPOrderAllocations(ppOrderId)
+				.forEach(this::revertAllocation);
 	}
 
-	private void resetAllocationQtys(final @NonNull PPOrderId ppOrderId)
+	private void revertProductionOrderAllocation(final @NonNull PPOrderId ppOrderId)
 	{
-		final ImmutableList<I_PP_OrderCandidate_PP_Order> ppOrderAllocations = ppOrderDAO.getPPOrderAllocations(ppOrderId);
-		ppOrderAllocations.forEach(ppOrderAllocation -> ppOrderAllocation.setQtyEntered(BigDecimal.ZERO));
 
-		saveAll(ppOrderAllocations);
 	}
 
-	private Quantity resetPPOrderCandidate(@NonNull final I_PP_Order_Candidate candidate, @NonNull final Quantity remainingQtyToDistribute)
+	private void revertAllocation(@NonNull final I_PP_OrderCandidate_PP_Order iPpOrderCandidatePpOrder)
 	{
-		final BigDecimal qtyToProcess = remainingQtyToDistribute.toBigDecimal().min(candidate.getQtyProcessed());
-		candidate.setQtyToProcess(candidate.getQtyToProcess().add(qtyToProcess));
-		candidate.setQtyProcessed(candidate.getQtyProcessed().subtract(candidate.getQtyToProcess()));
-		candidate.setProcessed(candidate.getQtyToProcess().signum() >= 0);
-
-		ppOrderCandidateDAO.save(candidate);
-
-		return remainingQtyToDistribute.subtract(qtyToProcess);
+		final I_PP_OrderCandidate_PP_Order newAllocationRecord = copy()
+				.setFrom(iPpOrderCandidatePpOrder)
+				.setSkipCalculatedColumns(true)
+				.copyToNew(I_PP_OrderCandidate_PP_Order.class);
+		newAllocationRecord.setQtyEntered(newAllocationRecord.getQtyEntered().negate());
+		saveRecord(newAllocationRecord);
 	}
+
+	// private Quantity resetPPOrderCandidate(@NonNull final I_PP_Order_Candidate candidate, @NonNull final Quantity remainingQtyToDistribute)
+	// {
+	// 	final BigDecimal qtyToProcess = remainingQtyToDistribute.toBigDecimal().min(candidate.getQtyProcessed());
+	// 	candidate.setQtyToProcess(candidate.getQtyToProcess().add(qtyToProcess));
+	// 	candidate.setQtyProcessed(candidate.getQtyProcessed().subtract(candidate.getQtyToProcess()));
+	// 	candidate.setProcessed(candidate.getQtyToProcess().signum() >= 0);
+	//
+	// 	ppOrderCandidateDAO.save(candidate);
+	//
+	// 	return remainingQtyToDistribute.subtract(qtyToProcess);
+	// }
 
 	public void updateOrderCandidate(final PPOrderCandidateId ppOrderCandidateId)
 	{
@@ -544,6 +553,7 @@ public class PPOrderCandidateService
 
 		ppOrderCandidate.setQtyToProcess(BigDecimal.ZERO); // will be recalculated
 		ppOrderCandidate.setQtyProcessed(qtyProcessed.toBigDecimal());
+		ppOrderCandidate.setProcessed(qtyProcessed.signum() >= 0);
 
 		ppOrderCandidateDAO.save(ppOrderCandidate);
 	}
