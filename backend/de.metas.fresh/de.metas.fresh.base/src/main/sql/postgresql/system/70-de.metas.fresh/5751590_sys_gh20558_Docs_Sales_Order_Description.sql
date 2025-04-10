@@ -30,8 +30,7 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_D
                 offer_documentno      character varying,
                 deliverytoaddress     character varying,
                 validuntil            timestamp,
-                versionno             character varying,
-                showdeliverytoaddress character
+                versionno             character varying
             )
     STABLE
     LANGUAGE sql
@@ -73,10 +72,17 @@ SELECT o.description                             AS description,
        o.datepromised,
        COALESCE(dtt.Description, dt.Description) AS dt_description,
        offer.documentno                          AS offer_documentno,
-       REPLACE(
-               REPLACE(o.deliverytoaddress, E'\r\n', ' | '),
-               E'\n', ' | '
-       )                                         AS deliverytoaddress,
+       CASE
+           WHEN o.isdropship = 'Y'
+               THEN REPLACE(
+                   REPLACE(o.deliverytoaddress, E'\r\n', ' | '),
+                   E'\n', ' | '
+                    )
+               ELSE REPLACE(
+                       REPLACE(o.bpartneraddress, E'\r\n', ' | '),
+                       E'\n', ' | '
+                    )
+       END                                       AS deliverytoaddress,
        CASE
            WHEN o.OrderType = 'ON'
                THEN o.validuntil
@@ -84,8 +90,7 @@ SELECT o.description                             AS description,
        CASE
            WHEN o.OrderType = 'ON'
                THEN o.versionno
-       END                                       AS versionno,
-       o.isdropship                              AS showdeliverytoaddress
+       END                                       AS versionno
 FROM C_Order o
          INNER JOIN C_BPartner bp ON o.C_BPartner_ID = bp.C_BPartner_ID
          LEFT OUTER JOIN AD_User srep ON o.SalesRep_ID = srep.AD_User_ID AND srep.AD_User_ID <> 100
