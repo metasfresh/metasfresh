@@ -372,14 +372,14 @@ public class C_Invoice_StepDef
 		extractPaymentTermId(row)
 				.ifPresent(paymentTermId -> softly.assertThat(PaymentTermId.ofRepoIdOrNull(invoice.getC_PaymentTerm_ID())).as("C_PaymentTerm_ID").isEqualTo(paymentTermId));
 
+		row.getAsOptionalString(I_C_DocType.COLUMNNAME_DocBaseType)
+				.ifPresent(docBaseType -> {
+					final I_C_DocType docType = docTypeBL.getById(DocTypeId.ofRepoId(invoice.getC_DocType_ID()));
+					softly.assertThat(docType.getDocBaseType()).as("DocBaseType").isEqualTo(docBaseType);
+				});
 		row.getAsOptionalString(I_C_DocType.COLUMNNAME_DocSubType)
 				.ifPresent(docSubType -> {
-					final int docTargetTypeId = invoice.getC_DocTypeTarget_ID();
-					final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
-							.addEqualsFilter(I_C_DocType.COLUMN_C_DocType_ID, docTargetTypeId)
-							.create()
-							.firstOnlyNotNull(I_C_DocType.class);
-
+					final I_C_DocType docType = docTypeBL.getById(DocTypeId.ofRepoId(invoice.getC_DocType_ID()));
 					softly.assertThat(docType.getDocSubType()).as("DocSubType").isEqualTo(docSubType);
 				});
 
@@ -418,11 +418,11 @@ public class C_Invoice_StepDef
 			assertThat(invoice.getAD_User_ID()).isEqualTo(contact.getAD_User_ID());
 		}
 
-		final BigDecimal grandTotal = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_GrandTotal);
-		if (grandTotal != null)
-		{
-			softly.assertThat(invoice.getGrandTotal()).as("GrandTotal").isEqualByComparingTo(grandTotal);
-		}
+		row.getAsOptionalMoney(COLUMNNAME_GrandTotal, currencyRepository::getCurrencyIdByCurrencyCode)
+				.ifPresent(grandTotal -> {
+					softly.assertThat(invoice.getGrandTotal()).as("GrandTotal").isEqualByComparingTo(grandTotal.toBigDecimal());
+					softly.assertThat(invoice.getC_Currency_ID()).as("C_Currency_ID").isEqualByComparingTo(grandTotal.getCurrencyId().getRepoId());
+				});
 
 		final BigDecimal totalLines = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_TotalLines);
 		if (totalLines != null)

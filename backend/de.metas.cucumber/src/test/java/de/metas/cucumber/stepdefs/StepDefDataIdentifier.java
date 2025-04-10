@@ -108,6 +108,8 @@ public final class StepDefDataIdentifier
 		return this.equals(NULL);
 	}
 
+	public boolean isNotNullPlaceholder() {return !isNullPlaceholder();}
+
 	public String getAsString()
 	{
 		return value;

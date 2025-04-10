@@ -1868,41 +1868,35 @@ Feature: invoice payment allocation
       | M_PriceList_Version_ID | M_Product_ID         | PriceStd | C_UOM_ID |
       | salesPLV               | creditMemoProduct    | 0        | PCE      |
       | purchasePLV            | vendorServiceProduct | 0        | PCE      |
-
     And metasfresh contains C_Invoice:
-      | Identifier           | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | customerCreditMemo   | customer1     | Gutschrift              | 2022-05-11   | Spot                     | true    | EUR                 |
-      | vendorServiceInvoice | vendor1       | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
+      | Identifier         | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | customerCreditMemo | customer1     | Gutschrift              | 2022-05-11   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | C_Invoice_ID         | M_Product_ID         | QtyInvoiced | Price  | C_Tax_ID |
-      | customerCreditMemo   | creditMemoProduct    | 1 PCE       | 434.58 | tax19%   |
-      | vendorServiceInvoice | vendorServiceProduct | 1 PCE       | 6.46   | tax19%   |
+      | C_Invoice_ID       | M_Product_ID      | QtyInvoiced | Price  | C_Tax_ID |
+      | customerCreditMemo | creditMemoProduct | 1 PCE       | 434.58 | tax19%   |
     And the invoice identified by customerCreditMemo is completed
-    And the invoice identified by vendorServiceInvoice is completed
-
-    When metasfresh contains C_Payment
+    And metasfresh contains C_Payment
       | Identifier     | C_BPartner_ID | PayAmt      | IsReceipt | C_BP_BankAccount_ID |
       | inboundPayment | vendor1       | -434.97 EUR | true      | org_EUR_account     |
     And the payment identified by inboundPayment is completed
 
-    And create and complete manual payment allocations
-      | C_AllocationHdr_ID | C_Invoice_ID         | C_Payment_ID | Amount    | DiscountAmt | OverUnderAmt |
-      | alloc1             | customerCreditMemo   |              | 6.46 EUR  | 0 EUR       | -441.04 EUR  |
-      | alloc1             | vendorServiceInvoice |              | -6.46 EUR | 0 EUR       | 0 EUR        |
+    When allocate payments to invoices
+      | C_Payment_ID   | C_Invoice_ID       | DiscountAmt | InvoiceProcessing.FeeAmt | InvoiceProcessing.C_BPartner_ID | InvoiceProcessing.M_Product_ID | InvoiceProcessing.C_Invoice_ID |
+      | inboundPayment | customerCreditMemo | -6.07 EUR   | 6.46 EUR                 | vendor1                         | vendorServiceProduct           | vendorServiceInvoice           |
 
-    Then validate created invoices
-      | C_Invoice_ID         | IsPaid | IsPartiallyPaid | OpenAmt |
-      | customerCreditMemo   | false  | true            | 441.04  |
-      | vendorServiceInvoice | true   | false           | 0       |
-
-    And create and complete manual payment allocations
-      | C_AllocationHdr_ID | C_Invoice_ID       | C_Payment_ID   | Amount      | DiscountAmt | OverUnderAmt |
-      | alloc2             | customerCreditMemo | inboundPayment | -434.97 EUR | -6.07 EUR   | 0 EUR        |
-
-    Then validate created invoices
-      | C_Invoice_ID       | IsPaid | IsPartiallyPaid | OpenAmt |
-      | customerCreditMemo | true   | false           | 0       |
-
+    Then validate C_AllocationLines
+      | C_Invoice_ID         | C_Payment_ID   | Amount  | DiscountAmt | OverUnderAmt | C_AllocationHdr_ID |
+      | customerCreditMemo   | -              | 6.46    | 0           | -441.04      | alloc1             |
+      | vendorServiceInvoice | -              | -6.46   | 0           | 0            | alloc1             |
+      # --------------------------------------------------------------------------------------------------
+      | customerCreditMemo   | inboundPayment | -434.97 | -6.07       | 0            | alloc2             |
+    And validate created invoices
+      | C_Invoice_ID         | C_BPartner_ID | GrandTotal | DocBaseType | IsPaid | IsPartiallyPaid | OpenAmt |
+      | customerCreditMemo   | customer1     | 434.58 EUR | ARC         | true   | false           | 0       |
+      | vendorServiceInvoice | vendor1       | 6.46 EUR   | API         | true   | false           | 0       |
+    And validate payments
+      | C_Payment_ID   | IsAllocated |
+      | inboundPayment | true        |
     And Fact_Acct records are matching
       | AccountConceptualName  | AmtSourceDr | AmtSourceCr | C_BPartner_ID | C_Tax_ID | Record_ID            |
       | C_Receivable_Acct      |             | 434.58 EUR  | customer1     | -        | customerCreditMemo   |
