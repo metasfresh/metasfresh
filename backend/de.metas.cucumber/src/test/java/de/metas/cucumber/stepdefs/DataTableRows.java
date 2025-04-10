@@ -1,5 +1,6 @@
 package de.metas.cucumber.stepdefs;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.util.GuavaCollectors;
 import io.cucumber.datatable.DataTable;
@@ -8,11 +9,13 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.function.ThrowingConsumer;
-import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @EqualsAndHashCode
@@ -40,6 +43,11 @@ public class DataTableRows
 				.collect(GuavaCollectors.collectUsingListAccumulator(DataTableRows::new));
 	}
 
+	private static DataTableRows ofRows(@NonNull final Collection<DataTableRow> rows)
+	{
+		return new DataTableRows(ImmutableList.copyOf(rows));
+	}
+
 	public DataTableRows setAdditionalRowIdentifierColumnName(String columnName)
 	{
 		list.forEach(row -> row.setAdditionalRowIdentifierColumnName(columnName));
@@ -47,6 +55,8 @@ public class DataTableRows
 	}
 
 	public int size() {return list.size();}
+
+	public @NonNull ImmutableList<DataTableRow> toList() {return list;}
 
 	public Stream<DataTableRow> stream() {return list.stream();}
 
@@ -61,6 +71,8 @@ public class DataTableRows
 			throw new AdempiereException("Expected single row but have: " + list);
 		}
 	}
+
+	public DataTableRow getFirstRow() {return list.get(0);}
 
 	public void forEach(final ThrowingConsumer<? super DataTableRow> consumer)
 	{
@@ -109,4 +121,14 @@ public class DataTableRows
 	// 	}
 	//
 	// }
+
+	public LinkedHashMap<String, DataTableRows> groupBy(@NonNull final String columnName)
+	{
+		return list.stream()
+				.collect(Collectors.groupingBy(
+						row -> row.getAsString(columnName),
+						LinkedHashMap::new,
+						GuavaCollectors.collectUsingListAccumulator(DataTableRows::ofRows)
+				));
+	}
 }

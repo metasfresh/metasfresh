@@ -32,6 +32,7 @@ import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationBuilder;
 import de.metas.banking.payment.paymentallocation.service.PaymentDocument;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
@@ -120,7 +121,7 @@ public class AllocatePayments_StepDef
 
 		DataTableRows.of(table).forEach(row -> {
 			row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_ID)
-					.map(this::buildPayableDocument)
+					.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row))
 					.ifPresent(payableDocuments::add);
 
 			row.getAsOptionalIdentifier(COLUMNNAME_C_Payment_ID)
@@ -146,13 +147,13 @@ public class AllocatePayments_StepDef
 
 		DataTableRows.of(table).forEach(row -> {
 			row.getAsOptionalIdentifier("C_Invoice_ID")
-					.map(this::buildPayableDocument)
+					.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row))
 					.ifPresent(payableDocuments::add);
 			row.getAsOptionalIdentifier("CreditMemo.C_Invoice_ID")
-					.map(this::buildPayableDocument)
+					.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row))
 					.ifPresent(payableDocuments::add);
 			row.getAsOptionalIdentifier("Purchase.C_Invoice_ID")
-					.map(this::buildPayableDocument)
+					.map(invoiceIdentifier -> buildPayableDocument(invoiceIdentifier, row))
 					.ifPresent(payableDocuments::add);
 		});
 
@@ -167,7 +168,7 @@ public class AllocatePayments_StepDef
 	}
 
 	@NonNull
-	private PayableDocument buildPayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier)
+	private PayableDocument buildPayableDocument(@NonNull final StepDefDataIdentifier invoiceIdentifier, @NonNull final DataTableRow row)
 	{
 		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
 
@@ -175,7 +176,13 @@ public class AllocatePayments_StepDef
 
 		final InvoiceToAllocate invoiceToAllocate = getInvoiceToAllocate(invoice);
 		final Money invoiceOpenMoneyAmt = moneyService.toMoney(invoiceToAllocate.getOpenAmountConverted());
-		final Money discountAmt = moneyService.toMoney(invoiceToAllocate.getDiscountAmountConverted());
+
+		Money discountAmt = row.getAsOptionalMoney("DiscountAmt", moneyService::getCurrencyIdByCurrencyCode).orElse(null);
+		if (discountAmt == null)
+		{
+			discountAmt = moneyService.toMoney(invoiceToAllocate.getDiscountAmountConverted());
+		}
+
 		final Money payAmt = discountAmt != null ? invoiceOpenMoneyAmt.subtract(discountAmt) : invoiceOpenMoneyAmt;
 
 		return PayableDocument.builder()
