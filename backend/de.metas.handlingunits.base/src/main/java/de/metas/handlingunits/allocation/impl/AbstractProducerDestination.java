@@ -262,7 +262,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 		if (request.getReference() != null && request.getReference().isOfType(I_M_HU.class))
 		{
-			huQrCodesService.propagateQrForSplitHUs(request.getReference().getModel(I_M_HU.class),
+			huQrCodesService.propagateQrForSplitHUs(request.getReference().getIdAssumingTableName(I_M_HU.Table_Name, HuId::ofRepoId),
 													ImmutableList.of(hu));
 		}
 
