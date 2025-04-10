@@ -42,6 +42,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -89,6 +90,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveAll;
 import static org.eevolution.productioncandidate.service.ResourcePlanningPrecision.MINUTE;
 
 @Service
+@RequiredArgsConstructor
 public class PPOrderCandidateService
 {
 	private static final String SYSCONFIG_ResourcePlanningPrecision = "resource.PlanningPrecision";
@@ -108,18 +110,6 @@ public class PPOrderCandidateService
 	private final PPMaturingCandidatesViewRepo ppMaturingCandidatesViewRepo;
 
 	private static final Logger logger = LogManager.getLogger(PPOrderCandidateService.class);
-
-	public PPOrderCandidateService(
-			@NonNull final ProductPlanningService productPlanningService,
-			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO,
-			@NonNull final PPOrderAllocatorService ppOrderAllocatorBuilderService,
-			@NonNull final PPMaturingCandidatesViewRepo ppMaturingCandidatesViewRepo)
-	{
-		this.productPlanningService = productPlanningService;
-		this.ppOrderCandidateDAO = ppOrderCandidateDAO;
-		this.ppMaturingCandidatesViewRepo = ppMaturingCandidatesViewRepo;
-		this.ppOrderAllocatorBuilderService = ppOrderAllocatorBuilderService;
-	}
 
 	@NonNull
 	public I_PP_Order_Candidate createUpdateCandidate(@NonNull final PPOrderCandidateCreateUpdateRequest ppOrderCandidateCreateUpdateRequest)
@@ -533,5 +523,33 @@ public class PPOrderCandidateService
 		ppOrderCandidateDAO.save(candidate);
 
 		return remainingQtyToDistribute.subtract(qtyToProcess);
+	}
+
+	public void updateOrderCandidate(final PPOrderCandidateId ppOrderCandidateId)
+	{
+		final I_PP_Order_Candidate ppOrderCandidate = ppOrderCandidateDAO.getById(ppOrderCandidateId);
+
+		final Quantity qtyProcessed = ppOrderCandidateDAO.getOrderAllocations(ppOrderCandidateId)
+				.stream()
+				.map(PPOrderCandidateService::extractQtyEntered)
+				.reduce(Quantity::add)
+				.orElseThrow(() -> new AdempiereException("No order allocations found for " + ppOrderCandidateId));// shall not happen
+
+		final UomId ppOrderCandidateUomId = UomId.ofRepoId(ppOrderCandidate.getC_UOM_ID());
+		if (!UomId.equals(qtyProcessed.getUomId(), ppOrderCandidateUomId))
+		{
+			//dev-note: this should never happen... just a guard
+			throw new AdempiereException("QtyProcessed " + qtyProcessed + " from allocations has a different UOM than the PP_Order_Candidate's UOM: " + ppOrderCandidateUomId);
+		}
+
+		ppOrderCandidate.setQtyToProcess(BigDecimal.ZERO); // will be recalculated
+		ppOrderCandidate.setQtyProcessed(qtyProcessed.toBigDecimal());
+
+		ppOrderCandidateDAO.save(ppOrderCandidate);
+	}
+
+	private static Quantity extractQtyEntered(@NonNull final I_PP_OrderCandidate_PP_Order record)
+	{
+		return Quantitys.of(record.getQtyEntered(), UomId.ofRepoId(record.getC_UOM_ID()));
 	}
 }
