@@ -23,8 +23,10 @@
 package org.eevolution.productioncandidate.service;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
@@ -68,6 +70,7 @@ import org.eevolution.productioncandidate.model.dao.PPMaturingCandidatesViewRepo
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 import org.eevolution.productioncandidate.service.produce.PPOrderAllocatorService;
 import org.eevolution.productioncandidate.service.produce.PPOrderProducerFromCandidate;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -76,6 +79,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -155,7 +159,7 @@ public class PPOrderCandidateService
 
 	public void closeCandidate(@NonNull final I_PP_Order_Candidate ppOrderCandidate)
 	{
-		ppOrderCandidateDAO.closeCandidate(PPOrderCandidateId.ofRepoId(ppOrderCandidate.getPP_Order_Candidate_ID()));
+		ppOrderCandidateDAO.closeCandidate(extractPPOrderCandidateId(ppOrderCandidate));
 	}
 
 	public void syncLines(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
@@ -168,7 +172,7 @@ public class PPOrderCandidateService
 
 		final List<I_PP_Product_BOMLine> productBOMLines = productBOMsRepo.retrieveLines(productBOM);
 
-		final PPOrderCandidateId ppOrderCandidateId = PPOrderCandidateId.ofRepoId(ppOrderCandidateRecord.getPP_Order_Candidate_ID());
+		final PPOrderCandidateId ppOrderCandidateId = extractPPOrderCandidateId(ppOrderCandidateRecord);
 
 		final Map<I_PP_OrderLine_Candidate, Optional<I_PP_Product_BOMLine>> orderLineCandidate2BOMLine = getOrderLine2BOMLine(ppOrderCandidateId, productBOMLines);
 
@@ -511,28 +515,57 @@ public class PPOrderCandidateService
 		saveRecord(newAllocationRecord);
 	}
 
-	public void updateOrderCandidate(final PPOrderCandidateId ppOrderCandidateId)
+	public void updateOrderCandidateAfterCommit(@NonNull final PPOrderCandidateId ppOrderCandidateId)
 	{
-		final I_PP_Order_Candidate ppOrderCandidate = ppOrderCandidateDAO.getById(ppOrderCandidateId);
+		trxManager.accumulateAndProcessAfterCommit(
+				"PPOrderCandidateService.candidatesToUpdate",
+				ImmutableSet.of(ppOrderCandidateId),
+				this::updateOrderCandidatesByIds
+		);
+	}
 
-		final Quantity qtyProcessed = ppOrderCandidateDAO.getOrderAllocations(ppOrderCandidateId)
-				.stream()
-				.map(PPOrderCandidateService::extractQtyEntered)
-				.reduce(Quantity::add)
-				.orElseThrow(() -> new AdempiereException("No order allocations found for " + ppOrderCandidateId));// shall not happen
+	private void updateOrderCandidatesByIds(@NonNull final Collection<PPOrderCandidateId> ppOrderCandidateIds)
+	{
+		final ImmutableList<I_PP_Order_Candidate> ppOrderCandidates = ppOrderCandidateDAO.getByIds(ppOrderCandidateIds);
+		final ImmutableListMultimap<PPOrderCandidateId, I_PP_OrderCandidate_PP_Order> allocationsByCandidateId = Multimaps.index(
+				ppOrderCandidateDAO.getOrderAllocationsByCandidateIds(ppOrderCandidateIds),
+				PPOrderCandidateService::extractPPOrderCandidateId
+		);
 
-		final UomId ppOrderCandidateUomId = UomId.ofRepoId(ppOrderCandidate.getC_UOM_ID());
-		if (!UomId.equals(qtyProcessed.getUomId(), ppOrderCandidateUomId))
+		for (final I_PP_Order_Candidate ppOrderCandidate : ppOrderCandidates)
 		{
-			//dev-note: this should never happen... just a guard
-			throw new AdempiereException("QtyProcessed " + qtyProcessed + " from allocations has a different UOM than the PP_Order_Candidate's UOM: " + ppOrderCandidateUomId);
-		}
+			final UomId ppOrderCandidateUomId = UomId.ofRepoId(ppOrderCandidate.getC_UOM_ID());
 
-		ppOrderCandidate.setQtyToProcess(BigDecimal.ZERO); // will be recalculated
-		ppOrderCandidate.setQtyProcessed(qtyProcessed.toBigDecimal());
+			final Quantity qtyProcessed = allocationsByCandidateId.get(extractPPOrderCandidateId(ppOrderCandidate))
+					.stream()
+					.map(PPOrderCandidateService::extractQtyEntered)
+					.reduce(Quantity::add)
+					.orElseGet(() -> Quantitys.zero(ppOrderCandidateUomId));
+
+			if (!UomId.equals(qtyProcessed.getUomId(), ppOrderCandidateUomId))
+			{
+				//dev-note: this should never happen... just a guard
+				throw new AdempiereException("QtyProcessed " + qtyProcessed + " from allocations has a different UOM than the PP_Order_Candidate's UOM: " + ppOrderCandidateUomId);
+			}
+
+			ppOrderCandidate.setQtyToProcess(BigDecimal.ZERO); // will be recalculated
+			ppOrderCandidate.setQtyProcessed(qtyProcessed.toBigDecimal());
 		ppOrderCandidate.setProcessed(qtyProcessed.signum() >= 0);
 
-		ppOrderCandidateDAO.save(ppOrderCandidate);
+			ppOrderCandidateDAO.save(ppOrderCandidate);
+		}
+	}
+
+	@NotNull
+	private static PPOrderCandidateId extractPPOrderCandidateId(final I_PP_OrderCandidate_PP_Order record)
+	{
+		return PPOrderCandidateId.ofRepoId(record.getPP_Order_Candidate_ID());
+	}
+
+	@NotNull
+	private static PPOrderCandidateId extractPPOrderCandidateId(final I_PP_Order_Candidate record)
+	{
+		return PPOrderCandidateId.ofRepoId(record.getPP_Order_Candidate_ID());
 	}
 
 	private static Quantity extractQtyEntered(@NonNull final I_PP_OrderCandidate_PP_Order record)

@@ -41,9 +41,9 @@ import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
-import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -59,7 +59,7 @@ public class PPOrderCandidateDAO
 	}
 
 	@NonNull
-	public ImmutableList<I_PP_Order_Candidate> getByIds(@NonNull final Set<PPOrderCandidateId> ppOrderCandidateIds)
+	public ImmutableList<I_PP_Order_Candidate> getByIds(@NonNull final Collection<PPOrderCandidateId> ppOrderCandidateIds)
 	{
 		if (ppOrderCandidateIds.isEmpty())
 		{
@@ -123,15 +123,26 @@ public class PPOrderCandidateDAO
 	}
 
 	@NonNull
-	public ImmutableList<I_PP_OrderCandidate_PP_Order> getOrderAllocations(@NonNull final PPOrderCandidateId ppOrderCandidateId)
+	public ImmutableList<I_PP_OrderCandidate_PP_Order> getOrderAllocationsByCandidateIds(@NonNull final Collection<PPOrderCandidateId> ppOrderCandidateIds)
 	{
+		if (ppOrderCandidateIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
 		return queryBL
 				.createQueryBuilder(I_PP_OrderCandidate_PP_Order.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidateId.getRepoId())
+				.addInArrayFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidateIds)
 				.create()
 				.stream()
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public ImmutableList<I_PP_OrderCandidate_PP_Order> getOrderAllocations(@NonNull final PPOrderCandidateId ppOrderCandidateId)
+	{
+		return getOrderAllocationsByCandidateIds(ImmutableSet.of(ppOrderCandidateId));
 	}
 
 	public ImmutableSet<PPOrderId> getPPOrderIds(@NonNull final PPOrderCandidateId ppOrderCandidateId)
