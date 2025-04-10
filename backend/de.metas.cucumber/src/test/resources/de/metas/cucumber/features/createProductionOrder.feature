@@ -51,7 +51,9 @@ Feature: create production order
 # ###############################################################################################################################################
 # ###############################################################################################################################################
   @from:cucumber
-  Scenario:  The manufacturing order is created from a manufacturing order candidate, then voided (S0129.1_100) (S0129.2_100)
+  @Id:S0129.1_100
+  @Id:S0129.2_100
+  Scenario:  The manufacturing order is created from a manufacturing order candidate, then voided
     Given metasfresh contains M_Products:
       | Identifier | M_Product_Category_ID |
       | p_1        | standard_category     |
