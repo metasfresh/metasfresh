@@ -550,7 +550,6 @@ public class PPOrderCandidateService
 
 			ppOrderCandidate.setQtyToProcess(BigDecimal.ZERO); // will be recalculated
 			ppOrderCandidate.setQtyProcessed(qtyProcessed.toBigDecimal());
-		ppOrderCandidate.setProcessed(qtyProcessed.signum() >= 0);
 
 			ppOrderCandidateDAO.save(ppOrderCandidate);
 		}
