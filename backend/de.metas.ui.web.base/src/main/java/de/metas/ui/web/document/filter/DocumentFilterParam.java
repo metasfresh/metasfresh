@@ -274,6 +274,10 @@ public final class DocumentFilterParam
 		{
 			return ((LookupValue)itemObj).getIdAsInt();
 		}
+		else if (itemObj instanceof RepoIdAware)
+		{
+			return ((RepoIdAware)itemObj).getRepoId();
+		}
 		else
 		{
 			final String itemStr = itemObj.toString();
