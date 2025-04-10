@@ -33,9 +33,9 @@ import org.compiere.util.Evaluatee;
 @Value
 public class ESQueryTemplate
 {
-	public static final CtxName PARAM_query = CtxNames.parse("query");
-	public static final CtxName PARAM_queryStartsWith = CtxNames.parse("queryStartsWith");
-	public static final CtxName PARAM_orgFilter = CtxNames.parse("OrgFilter");
+	@NonNull public static final CtxName PARAM_query = CtxNames.parse("query");
+	@NonNull public static final CtxName PARAM_queryStartsWith = CtxNames.parse("queryStartsWith");
+	@NonNull public static final CtxName PARAM_orgFilter = CtxNames.parse("OrgFilter");
 
 	@NonNull IStringExpression expression;
 

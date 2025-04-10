@@ -52,8 +52,8 @@ import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.ImmutableDocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.sql.FilterSql;
+import de.metas.ui.web.document.filter.sql.FilterSqlRequest;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
 import de.metas.ui.web.document.references.service.WebuiDocumentReferencesService;
 import de.metas.ui.web.handlingunits.SqlHUEditorViewRepository.SqlHUEditorViewRepositoryBuilder;
@@ -77,7 +77,6 @@ import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
-import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -343,6 +342,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		return viewLayoutBuilder.build();
 	}
 
+	@Nullable
 	protected AttributeSourceDocument getAttributeSourceDocument()
 	{
 		return null;
@@ -547,16 +547,13 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		}
 
 		@Override
-		public FilterSql getSql(
-				@NonNull final DocumentFilter filter,
-				final SqlOptions sqlOpts_NOTUSED,
-				@NonNull final SqlDocumentFilterConverterContext context)
+		public FilterSql getSql(@NonNull final FilterSqlRequest request)
 		{
-			final String barcodeString = StringUtils.trimBlankToNull(filter.getParameterValueAsString(PARAM_Barcode, null));
+			final String barcodeString = StringUtils.trimBlankToNull(request.getFilterParameterValueAsString(PARAM_Barcode, null));
 			if (barcodeString == null)
 			{
 				// shall not happen
-				throw new AdempiereException("Barcode parameter is not set: " + filter);
+				throw new AdempiereException("Barcode parameter is not set: " + request.getFilter());
 			}
 
 			//

@@ -11,6 +11,7 @@ import com.google.common.collect.Multimaps;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -215,7 +216,7 @@ public final class GuavaCollectors
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
-	public static <K, V> ImmutableMapEntry<K, V> entry(final K key, final V value)
+	public static <K, V> ImmutableMapEntry<K, V> entry(@Nullable final K key, @Nullable final V value)
 	{
 		return ImmutableMapEntry.of(key, value);
 	}

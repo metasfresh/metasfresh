@@ -43,9 +43,12 @@ import de.metas.security.UserRolePermissionsKey;
 import de.metas.security.permissions.Access;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.util.CtxName;
+import org.compiere.util.CtxNames;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.elasticsearch.action.search.SearchRequest;
@@ -54,14 +57,14 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchModule;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.xcontent.DeprecationHandler;
 import org.elasticsearch.xcontent.NamedXContentRegistry;
 import org.elasticsearch.xcontent.XContentFactory;
 import org.elasticsearch.xcontent.XContentParser;
 import org.elasticsearch.xcontent.XContentType;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchModule;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -70,6 +73,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -170,6 +174,35 @@ public class FTSSearchService
 			builder.put(ESQueryTemplate.PARAM_orgFilter, buildOrgIdsFilterPart(request.getUserRolePermissionsKey()));
 		}
 
+		if (request.hasDefaultFilterParams())
+		{
+			for(final Map.Entry<String, Object> entry : request.getDefaultFilterParams().entrySet() )
+			{
+				final CtxName fieldName = CtxNames.parseNotNull(entry.getKey());
+				if (jsonQueryTemplate.isParameterRequired(fieldName))
+				{
+					if(entry.getValue() instanceof Boolean)
+					{
+						builder.put(fieldName, buildBooleanFilterPart(entry.getKey(), (boolean) entry.getValue()));
+					}
+					else if(entry.getValue() instanceof String)
+					{
+						builder.put(fieldName, buildStringFilterPart(entry.getKey(), (String) entry.getValue()));
+					}
+					else if(entry.getValue() instanceof Integer)
+					{
+						builder.put(fieldName, buildIntegerFilterPart(entry.getKey(), (Integer) entry.getValue()));
+					}
+					else
+					{
+						// In FTS Config Query, but currently not used in DefaultFilter
+						builder.put(fieldName, "");
+					}
+				}
+			}
+		}
+
+
 		return builder.build();
 	}
 
@@ -200,6 +233,21 @@ public class FTSSearchService
 
 			return ", \"filter\": { \"terms\": { \"ad_org_id\": [" + orgIdsCommaSeparated + "] } }";
 		}
+	}
+
+	private String buildBooleanFilterPart(@NonNull final String fieldName, final boolean value)
+	{
+		return ", \"filter\": { \"terms\": { \"" + fieldName + "\": [" + StringUtils.ofBoolean(value) + "] } }";
+	}
+
+	private String buildStringFilterPart(@NonNull final String fieldName, final String value)
+	{
+		return ", \"filter\": { \"terms\": { \"" + fieldName + "\": [" + value + "] } }";
+	}
+
+	private String buildIntegerFilterPart(@NonNull final String fieldName, final Integer value)
+	{
+		return ", \"filter\": { \"terms\": { \"" + fieldName + "\": [" + value.toString() + "] } }";
 	}
 
 	private static FTSSearchResultItem extractFTSSearchResultItem(

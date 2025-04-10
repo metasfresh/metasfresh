@@ -9,11 +9,10 @@ import de.metas.location.geocoding.GeographicalCoordinates;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.FilterSql;
+import de.metas.ui.web.document.filter.sql.FilterSqlRequest;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.document.geo_location.GeoLocationDocumentDescriptor.LocationColumnNameType;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
-import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -51,7 +50,7 @@ import java.util.Optional;
 
 public class GeoLocationFilterConverter implements SqlDocumentFilterConverter
 {
-	public static final transient GeoLocationFilterConverter instance = new GeoLocationFilterConverter();
+	public static final GeoLocationFilterConverter instance = new GeoLocationFilterConverter();
 
 	private static final String MSG_NoCoordinatesFoundForTheGivenLocation = "de.metas.ui.web.document.filter.provider.locationAreaSearch.LocationAreaSearchDocumentFilterConverter.NoCoordinatesFoundForTheGivenLocation";
 
@@ -79,29 +78,26 @@ public class GeoLocationFilterConverter implements SqlDocumentFilterConverter
 
 	@Nullable
 	@Override
-	public FilterSql getSql(
-			@NonNull final DocumentFilter filter,
-			@NonNull final SqlOptions sqlOpts,
-			final SqlDocumentFilterConverterContext context_NOTUSED)
+	public FilterSql getSql(@NonNull final FilterSqlRequest request)
 	{
-		final GeoLocationDocumentDescriptor descriptor = filter.getParameterValueAs(PARAM_LocationAreaSearchDescriptor);
+		final GeoLocationDocumentDescriptor descriptor = request.getFilterParameterValueAs(PARAM_LocationAreaSearchDescriptor);
 		if (descriptor == null)
 		{
 			// shall not happen
-			logger.warn("Cannot convert filter to SQL because parameter {} is not set: {}", PARAM_LocationAreaSearchDescriptor, filter);
+			logger.warn("Cannot convert filter to SQL because parameter {} is not set: {}", PARAM_LocationAreaSearchDescriptor, request.getFilter());
 			return null;
 		}
 
-		final GeographicalCoordinates addressCoordinates = getAddressCoordinates(filter).orElse(null);
+		final GeographicalCoordinates addressCoordinates = getAddressCoordinates(request.getFilter()).orElse(null);
 		if (addressCoordinates == null)
 		{
-			logger.warn("Cannot convert filter to SQL because geo coordinates not found for {}", filter);
+			logger.warn("Cannot convert filter to SQL because geo coordinates not found for {}", request.getFilter());
 			throw new AdempiereException(MSG_NoCoordinatesFoundForTheGivenLocation).markAsUserValidationError();
 		}
 
-		final String visitorAddressQuery = constructVisitorAddressQuery(filter);
+		final String visitorAddressQuery = constructVisitorAddressQuery(request.getFilter());
 
-		final int distanceInKm = extractDistanceInKm(filter);
+		final int distanceInKm = extractDistanceInKm(request.getFilter());
 
 		if (LocationColumnNameType.LocationId.equals(descriptor.getType()))
 		{
@@ -111,7 +107,7 @@ public class GeoLocationFilterConverter implements SqlDocumentFilterConverter
 									+ " SELECT 1"
 									+ " FROM " + I_C_Location.Table_Name + " l"
 									+ " WHERE "
-									+ " l." + I_C_Location.COLUMNNAME_C_Location_ID + "=" + sqlOpts.getTableNameOrAlias() + "." + descriptor.getLocationColumnName()
+									+ " l." + I_C_Location.COLUMNNAME_C_Location_ID + "=" + request.getTableNameOrAlias() + "." + descriptor.getLocationColumnName()
 									// no visitorAddressQuery here
 									+ " AND ").append(sqlGeographicalDistance("l", addressCoordinates, distanceInKm))
 							.append(")")
@@ -126,7 +122,7 @@ public class GeoLocationFilterConverter implements SqlDocumentFilterConverter
 									+ " FROM " + I_C_BPartner_Location.Table_Name + " bpl"
 									+ " INNER JOIN " + I_C_Location.Table_Name + " l ON l." + I_C_Location.COLUMNNAME_C_Location_ID + "=bpl." + I_C_BPartner_Location.COLUMNNAME_C_Location_ID
 									+ " WHERE "
-									+ " bpl." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID + "=" + sqlOpts.getTableNameOrAlias() + "." + descriptor.getLocationColumnName()
+									+ " bpl." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID + "=" + request.getTableNameOrAlias() + "." + descriptor.getLocationColumnName()
 									+ visitorAddressQuery
 									+ " AND ").append(sqlGeographicalDistance("l", addressCoordinates, distanceInKm))
 							.append(")")
@@ -142,7 +138,7 @@ public class GeoLocationFilterConverter implements SqlDocumentFilterConverter
 									+ " INNER JOIN " + I_C_BPartner_Location.Table_Name + " bpl ON bpl." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID + "=bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID
 									+ " INNER JOIN " + I_C_Location.Table_Name + " l ON l." + I_C_Location.COLUMNNAME_C_Location_ID + "=bpl." + I_C_BPartner_Location.COLUMNNAME_C_Location_ID
 									+ " WHERE "
-									+ " bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + "=" + sqlOpts.getTableNameOrAlias() + "." + descriptor.getLocationColumnName()
+									+ " bp." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + "=" + request.getTableNameOrAlias() + "." + descriptor.getLocationColumnName()
 									+ " AND bpl." + I_C_BPartner_Location.COLUMNNAME_IsActive + "='Y'"
 									+ visitorAddressQuery
 									+ " AND ").append(sqlGeographicalDistance("l", addressCoordinates, distanceInKm))

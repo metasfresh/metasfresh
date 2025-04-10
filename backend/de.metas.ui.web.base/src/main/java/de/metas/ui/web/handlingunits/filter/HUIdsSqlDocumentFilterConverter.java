@@ -22,11 +22,9 @@
 
 package de.metas.ui.web.handlingunits.filter;
 
-import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.FilterSql;
+import de.metas.ui.web.document.filter.sql.FilterSqlRequest;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
-import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
 
 import java.util.Objects;
@@ -46,12 +44,9 @@ public final class HUIdsSqlDocumentFilterConverter implements SqlDocumentFilterC
 	}
 
 	@Override
-	public FilterSql getSql(
-			@NonNull final DocumentFilter filter,
-			final SqlOptions sqlOpts_NOTUSED,
-			@NonNull final SqlDocumentFilterConverterContext context)
+	public FilterSql getSql(@NonNull final FilterSqlRequest request)
 	{
-		final HUIdsFilterData huIdsFilter = HUIdsFilterHelper.extractFilterData(filter);
+		final HUIdsFilterData huIdsFilter = HUIdsFilterHelper.extractFilterData(request.getFilter());
 		return huIdsFilter.convert(FILTER_DATA_CONVERTER);
 	}
 
