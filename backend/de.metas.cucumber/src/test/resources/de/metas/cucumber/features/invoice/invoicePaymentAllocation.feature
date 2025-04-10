@@ -1486,38 +1486,29 @@ Feature: invoice payment allocation
   @Id:S0465_330
   @from:cucumber
   Scenario: sales credit memo - outbound payment (partial)
-
     Given metasfresh contains M_Products:
       | Identifier |
       | product1   |
-
     And metasfresh contains M_ProductPrices
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
       | salesPLV               | product1     | 5.00     | PCE      |
-
     And metasfresh contains C_Invoice:
       | Identifier       | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
       | salesCreditMemo1 | customer1     | Gutschrift              | 2022-05-11   | Spot                     | true    | EUR                 |
-
-
-
     And metasfresh contains C_InvoiceLines
       | C_Invoice_ID     | M_Product_ID | QtyInvoiced |
       | salesCreditMemo1 | product1     | 1 PCE       |
-
-
-    When metasfresh contains C_Payment
+    And metasfresh contains C_Payment
       | Identifier       | C_BPartner_ID | PayAmt   | IsReceipt | C_BP_BankAccount_ID |
       | outboundPayment1 | customer1     | 5.00 EUR | false     | org_EUR_account     |
-
     And the invoice identified by salesCreditMemo1 is completed
     And the payment identified by outboundPayment1 is completed
 
-    And allocate payments to invoices
+    When allocate payments to invoices
       | C_Invoice_ID     | C_Payment_ID     |
       | salesCreditMemo1 | outboundPayment1 |
 
-    And validate C_AllocationLines
+    Then validate C_AllocationLines
       | C_Invoice_ID     | C_Payment_ID     | Amount | OverUnderAmt | C_AllocationHdr_ID |
       | salesCreditMemo1 | outboundPayment1 | -5     | -0.95        | alloc1             |
 
@@ -1550,6 +1541,80 @@ Feature: invoice payment allocation
 
 
 
+    # ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
+  @Id:S0465_330
+  @from:cucumber
+  Scenario: sales credit memo - outbound payment - discount (full amount)
+    Given metasfresh contains M_Products:
+      | Identifier |
+      | product1   |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | salesPLV               | product1     | 1.00     | PCE      |
+    And metasfresh contains C_Invoice:
+      | Identifier       | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | salesCreditMemo1 | customer1     | Gutschrift              | 2022-05-11   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID     | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | salesCreditMemo1 | product1     | 100 PCE     | tax19%   |
+    And metasfresh contains C_Payment
+      | Identifier       | C_BPartner_ID | PayAmt | IsReceipt | C_BP_BankAccount_ID |
+      | outboundPayment1 | customer1     | 80 EUR | false     | org_EUR_account     |
+    And the invoice identified by salesCreditMemo1 is completed
+    And the payment identified by outboundPayment1 is completed
+
+    When allocate payments to invoices
+      | C_Invoice_ID     | C_Payment_ID     | DiscountAmt |
+      | salesCreditMemo1 | outboundPayment1 | -39 EUR     |
+
+    Then validate C_AllocationLines
+      | C_Invoice_ID     | C_Payment_ID     | Amount | DiscountAmt | OverUnderAmt | C_AllocationHdr_ID |
+      | salesCreditMemo1 | outboundPayment1 | -80    | -39         | -0           | alloc1             |
+    And Fact_Acct records are matching
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_Tax_ID | C_BPartner_ID | Record_ID        |
+      | *                     |             |             |          |               | salesCreditMemo1 |
+      | T_Due_Acct            | 19 EUR      |             | tax19%   | customer1     | salesCreditMemo1 |
+      | C_Receivable_Acct     |             | 119 EUR     |          | customer1     | salesCreditMemo1 |
+      # ----------------------------------------------------------------------
+      | C_Receivable_Acct     | 119 EUR     |             |          | customer1     | alloc1           |
+      | PayDiscount_Rev_Acct  |             | 39 EUR      | tax19%   | customer1     | alloc1           |
+      | B_PaymentSelect_Acct  |             | 80 EUR      |          | customer1     | alloc1           |
+      # tax correction:
+      | PayDiscount_Rev_Acct  | 6.23 EUR    |             | tax19%   | customer1     | alloc1           |
+      | T_Due_Acct            |             | 6.23 EUR    | tax19%   | customer1     | alloc1           |
+      # ----------------------------------------------------------------------
+      | B_PaymentSelect_Acct  | 80 EUR      |             |          | customer1     | outboundPayment1 |
+      | B_InTransit_Acct      |             | 80 EUR      |          | customer1     | outboundPayment1 |
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
@@ -1614,7 +1679,7 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
   @Id:S0465_350
   @from:cucumber
-  Scenario: purchase credit - inbound payment (partial)
+  Scenario: purchase credit memo - inbound payment (partial)
 
     Given metasfresh contains M_Products:
       | Identifier |
@@ -1691,6 +1756,101 @@ Feature: invoice payment allocation
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
+  @Id:S0465_350_010
+  @from:cucumber
+  Scenario: purchase credit memo - inbound payment - discount (full amount)
+
+    Given metasfresh contains M_Products:
+      | Identifier |
+      | product1   |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | purchasePLV            | product1     | 1.00     | PCE      |
+
+    And metasfresh contains C_Invoice:
+      | Identifier          | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | purchaseCreditMemo1 | vendor1       | Gutschrift (Lieferant)  | 2022-05-11   | Spot                     | false   | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID        | M_Product_ID | QtyInvoiced | C_Tax_ID |
+      | purchaseCreditMemo1 | product1     | 100 PCE     | tax19%   |
+    When metasfresh contains C_Payment
+      | Identifier      | C_BPartner_ID | PayAmt | IsReceipt | C_BP_BankAccount_ID |
+      | inboundPayment1 | vendor1       | 80 EUR | true      | org_EUR_account     |
+    And the invoice identified by purchaseCreditMemo1 is completed
+    And the payment identified by inboundPayment1 is completed
+
+    And allocate payments to invoices
+      | C_Invoice_ID        | C_Payment_ID    | DiscountAmt |
+      | purchaseCreditMemo1 | inboundPayment1 | -39 EUR     |
+    And validate C_AllocationLines
+      | C_Invoice_ID        | C_Payment_ID    | Amount | DiscountAmt | OverUnderAmt | C_AllocationHdr_ID |
+      | purchaseCreditMemo1 | inboundPayment1 | 80     | 39          | 0            | alloc1             |
+    Then validate created invoices
+      | C_Invoice_ID        | IsPaid | IsPartiallyPaid | OpenAmt |
+      | purchaseCreditMemo1 | true   | false           | 0       |
+    And validate payments
+      | C_Payment_ID    | IsAllocated |
+      | inboundPayment1 | true        |
+
+    And Fact_Acct records are matching
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | C_Tax_ID | C_BPartner_ID | Record_ID           |
+      | *                      |             |             |          |               | purchaseCreditMemo1 |
+      | T_Credit_Acct          |             | 19 EUR      | tax19%   | vendor1       | purchaseCreditMemo1 |
+      | V_Liability_Acct       | 119 EUR     |             | -        | vendor1       | purchaseCreditMemo1 |
+      # ---------------------------------------------------------------------------------------------------------------
+      | V_Liability_Acct       |             | 119 EUR     | -        | vendor1       | alloc1              |
+      | B_UnallocatedCash_Acct | 80 EUR      |             | -        | vendor1       | alloc1              |
+      | PayDiscount_Exp_Acct   | 39 EUR      |             | tax19%   | vendor1       | alloc1              |
+      | PayDiscount_Exp_Acct   |             | 6.23 EUR    | tax19%   | vendor1       | alloc1              |
+      | T_Credit_Acct          | 6.23 EUR    |             | tax19%   | vendor1       | alloc1              |
+      # ---------------------------------------------------------------------------------------------------------------
+      | B_UnallocatedCash_Acct |             | 80 EUR      | -        | vendor1       | inboundPayment1     |
+      | B_InTransit_Acct       | 80 EUR      |             | -        | vendor1       | inboundPayment1     |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ############################################################################################################################################
+# ############################################################################################################################################
+# ############################################################################################################################################
   @Id:S0465_500
   @from:cucumber
   Scenario: sales credit memo - purchase invoice - inbound payment (REMADV case)
@@ -1714,9 +1874,9 @@ Feature: invoice payment allocation
       | customerCreditMemo   | customer1     | Gutschrift              | 2022-05-11   | Spot                     | true    | EUR                 |
       | vendorServiceInvoice | vendor1       | Eingangsrechnung        | 2022-05-11   | Spot                     | false   | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | C_Invoice_ID         | M_Product_ID         | QtyInvoiced | Price  |
-      | customerCreditMemo   | creditMemoProduct    | 1 PCE       | 434.58 |
-      | vendorServiceInvoice | vendorServiceProduct | 1 PCE       | 6.46   |
+      | C_Invoice_ID         | M_Product_ID         | QtyInvoiced | Price  | C_Tax_ID |
+      | customerCreditMemo   | creditMemoProduct    | 1 PCE       | 434.58 | tax19%   |
+      | vendorServiceInvoice | vendorServiceProduct | 1 PCE       | 6.46   | tax19%   |
     And the invoice identified by customerCreditMemo is completed
     And the invoice identified by vendorServiceInvoice is completed
 
@@ -1744,22 +1904,24 @@ Feature: invoice payment allocation
       | customerCreditMemo | true   | false           | 0       |
 
     And Fact_Acct records are matching
-      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID            |
-      | C_Receivable_Acct      |             | 434.58 EUR  | customer1     | customerCreditMemo   |
-      | *                      |             |             |               | customerCreditMemo   |
+      | AccountConceptualName  | AmtSourceDr | AmtSourceCr | C_BPartner_ID | C_Tax_ID | Record_ID            |
+      | C_Receivable_Acct      |             | 434.58 EUR  | customer1     | -        | customerCreditMemo   |
+      | T_Due_Acct             | 69.39 EUR   |             | customer1     | tax19%   | customerCreditMemo   |
+      | *                      |             |             |               |          | customerCreditMemo   |
       # ------------------------------------------------------------------------------------------
-      | V_Liability_Acct       |             | 6.46 EUR    | vendor1       | vendorServiceInvoice |
-      | *                      |             |             |               | vendorServiceInvoice |
+      | V_Liability_Acct       |             | 6.46 EUR    | vendor1       | -        | vendorServiceInvoice |
+      | *                      |             |             |               |          | vendorServiceInvoice |
       # ------------------------------------------------------------------------------------------
-      | C_Receivable_Acct      |             | 6.46 EUR    | customer1     | alloc1               |
-      | V_Liability_Acct       | 6.46 EUR    |             | vendor1       | alloc1               |
+      | C_Receivable_Acct      |             | 6.46 EUR    | customer1     | -        | alloc1               |
+      | V_Liability_Acct       | 6.46 EUR    |             | vendor1       | -        | alloc1               |
       # ------------------------------------------------------------------------------------------
-      | C_Receivable_Acct      | 441.04 EUR  |             | customer1     | alloc2               |
-      | B_UnallocatedCash_Acct |             | 434.97 EUR  | vendor1       | alloc2               |
-      | PayDiscount_Rev_Acct   |             | 6.07 EUR    | vendor1       | alloc2               |
-      # TODO: tax correction (might not be OK!)
-      | *                      |             |             |               | alloc2               |
+      | C_Receivable_Acct      | 441.04 EUR  |             | customer1     | -        | alloc2               |
+      | B_UnallocatedCash_Acct |             | 434.97 EUR  | vendor1       | -        | alloc2               |
+      | PayDiscount_Rev_Acct   |             | 6.07 EUR    | vendor1       | tax19%   | alloc2               |
+      # tax correction:
+      | PayDiscount_Rev_Acct   | 0.97 EUR    |             | customer1     | tax19%   | alloc2               |
+      | T_Due_Acct             |             | 0.97 EUR    | customer1     | tax19%   | alloc2               |
       # ------------------------------------------------------------------------------------------
-      | B_UnallocatedCash_Acct |             | -434.97 EUR | vendor1       | inboundPayment       |
-      | B_InTransit_Acct       | -434.97 EUR |             | vendor1       | inboundPayment       |
+      | B_UnallocatedCash_Acct |             | -434.97 EUR | vendor1       | -        | inboundPayment       |
+      | B_InTransit_Acct       | -434.97 EUR |             | vendor1       | -        | inboundPayment       |
 
