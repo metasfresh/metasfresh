@@ -32,6 +32,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ResourceId;
 import de.metas.uom.UomId;
+import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -46,6 +47,7 @@ public class StepDefConstants
 	public static final PPRoutingId WORKFLOW_ID = PPRoutingId.ofRepoId(540075);
 	public static final LocatorId LOCATOR_ID = LocatorId.ofRepoId(WAREHOUSE_ID, 540007);
 	public static final DocTypeId DOC_TYPE_ID_MMI = DocTypeId.ofRepoId(1000023);
+	public static final ClientId CLIENT_ID = ClientId.METASFRESH;
 	public static final OrgId ORG_ID = OrgId.MAIN;
 	public static final OrgId ORG_ID_SYSTEM = OrgId.ANY;
 	public static final CountryId COUNTRY_ID = CountryId.GERMANY;
