@@ -35,7 +35,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.springframework.stereotype.Repository;
 
@@ -54,13 +53,13 @@ public class QRCodeConfigurationRepository
 			.build();
 
 	@NonNull
-	public Optional<QRCodeConfiguration> getById(@NonNull final QRCodeConfigurationId id)
+	public Optional<QRCodeConfiguration> getActiveById(@NonNull final QRCodeConfigurationId id)
 	{
 		return getConfigurationMap().getById(id);
 	}
 
 	@NonNull
-	public ImmutableMap<QRCodeConfigurationId, QRCodeConfiguration> getByIds(@NonNull final ImmutableSet<QRCodeConfigurationId> ids)
+	public ImmutableMap<QRCodeConfigurationId, QRCodeConfiguration> getActiveByIds(@NonNull final ImmutableSet<QRCodeConfigurationId> ids)
 	{
 		return getConfigurationMap().getByIds(ids);
 	}
