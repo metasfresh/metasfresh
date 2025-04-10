@@ -527,8 +527,8 @@ public class PPOrderCandidateService
 	{
 		final BigDecimal qtyToProcess = remainingQtyToDistribute.toBigDecimal().min(candidate.getQtyProcessed());
 		candidate.setQtyToProcess(candidate.getQtyToProcess().add(qtyToProcess));
-		candidate.setQtyProcessed(candidate.getQtyEntered().subtract(candidate.getQtyToProcess()));
-		candidate.setProcessed(false);
+		candidate.setQtyProcessed(candidate.getQtyProcessed().subtract(candidate.getQtyToProcess()));
+		candidate.setProcessed(candidate.getQtyToProcess().signum() >= 0);
 
 		ppOrderCandidateDAO.save(candidate);
 

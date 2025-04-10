@@ -41,6 +41,7 @@ import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidationEngine;
@@ -289,9 +290,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	public boolean voidIt()
 	{
 		final PPOrderCandidateService ppOrderCandidateService = SpringContextHolder.instance.getBean(PPOrderCandidateService.class);
-		final PPOrderChangedEventFactory eventFactory = PPOrderChangedEventFactory.newWithPPOrderBeforeChange(
-				SpringContextHolder.instance.getBean(PPOrderPojoConverter.class),
-				this);
+		final PPOrderChangedEventFactory eventFactory = newPpOrderChangedEventFactory();
 
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_VOID);
 
@@ -358,9 +357,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	{
 		ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_CLOSE);
 
-		final PPOrderChangedEventFactory eventFactory = PPOrderChangedEventFactory.newWithPPOrderBeforeChange(
-				SpringContextHolder.instance.getBean(PPOrderPojoConverter.class),
-				this);
+		final PPOrderChangedEventFactory eventFactory = newPpOrderChangedEventFactory();
 
 		//
 		// Check already closed
@@ -432,6 +429,13 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		materialEventService.enqueueEventAfterNextCommit(changeEvent);
 
 		return true;
+	}
+
+	private @NonNull PPOrderChangedEventFactory newPpOrderChangedEventFactory()
+	{
+		return PPOrderChangedEventFactory.newWithPPOrderBeforeChange(
+				SpringContextHolder.instance.getBean(PPOrderPojoConverter.class),
+				this);
 	}
 
 	@Override
