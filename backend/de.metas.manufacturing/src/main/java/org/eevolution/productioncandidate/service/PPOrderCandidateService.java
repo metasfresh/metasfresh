@@ -497,19 +497,8 @@ public class PPOrderCandidateService
 
 	public void resetByPPOrderId(@NonNull final PPOrderId ppOrderId)
 	{
-		// final ImmutableList<I_PP_Order_Candidate> candidates = ppOrderCandidateDAO.getByOrderId(request.getPpOrderId());
-		// Quantity remainingQtyToDistribute = request.getQtyToReset();
-		// for (final I_PP_Order_Candidate candidate : candidates)
-		// {
-		// 	remainingQtyToDistribute = resetPPOrderCandidate(candidate, remainingQtyToDistribute);
-		// }
 		ppOrderDAO.getPPOrderAllocations(ppOrderId)
 				.forEach(this::revertAllocation);
-	}
-
-	private void revertProductionOrderAllocation(final @NonNull PPOrderId ppOrderId)
-	{
-
 	}
 
 	private void revertAllocation(@NonNull final I_PP_OrderCandidate_PP_Order iPpOrderCandidatePpOrder)
@@ -521,18 +510,6 @@ public class PPOrderCandidateService
 		newAllocationRecord.setQtyEntered(newAllocationRecord.getQtyEntered().negate());
 		saveRecord(newAllocationRecord);
 	}
-
-	// private Quantity resetPPOrderCandidate(@NonNull final I_PP_Order_Candidate candidate, @NonNull final Quantity remainingQtyToDistribute)
-	// {
-	// 	final BigDecimal qtyToProcess = remainingQtyToDistribute.toBigDecimal().min(candidate.getQtyProcessed());
-	// 	candidate.setQtyToProcess(candidate.getQtyToProcess().add(qtyToProcess));
-	// 	candidate.setQtyProcessed(candidate.getQtyProcessed().subtract(candidate.getQtyToProcess()));
-	// 	candidate.setProcessed(candidate.getQtyToProcess().signum() >= 0);
-	//
-	// 	ppOrderCandidateDAO.save(candidate);
-	//
-	// 	return remainingQtyToDistribute.subtract(qtyToProcess);
-	// }
 
 	public void updateOrderCandidate(final PPOrderCandidateId ppOrderCandidateId)
 	{
