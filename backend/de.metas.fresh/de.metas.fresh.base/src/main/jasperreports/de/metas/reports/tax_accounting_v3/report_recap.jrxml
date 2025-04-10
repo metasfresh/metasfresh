@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_recap" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/tax_accounting_new/report" uuid="368dee7e-3f75-4062-a55c-84e201083d00">
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 7.0.0-b478feaa9aab4375eba71de77b4ca138ad2f62aa  -->
+<jasperReport name="report_recap" language="java" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/tax_accounting_new/report" uuid="368dee7e-3f75-4062-a55c-84e201083d00">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
@@ -35,13 +34,11 @@
 	<parameter name="showdetails" class="java.lang.String">
 		<defaultValueExpression><![CDATA["N"]]></defaultValueExpression>
 	</parameter>
-	<queryString>
-		<![CDATA[select *
+	<query language="sql"><![CDATA[select *
 from de_metas_acct.taxaccounts_perVATCode($P{AD_Org_ID},
 	                                                                                        $P{DateFrom},
 	                                                                                         $P{DateTo})
-;]]>
-	</queryString>
+;]]></query>
 	<field name="balance" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.name" value="balance"/>
 		<property name="com.jaspersoft.studio.field.label" value="balance"/>
@@ -49,6 +46,14 @@ from de_metas_acct.taxaccounts_perVATCode($P{AD_Org_ID},
 	<field name="balanceyear" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.name" value="balanceyear"/>
 		<property name="com.jaspersoft.studio.field.label" value="balanceyear"/>
+	</field>
+	<field name="currency" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="currency"/>
+		<property name="com.jaspersoft.studio.field.label" value="currency"/>
+	</field>
+	<field name="source_currency" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="source_currency"/>
+		<property name="com.jaspersoft.studio.field.label" value="source_currency"/>
 	</field>
 	<field name="invoice_total_sum" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.name" value="invoice_total_sum"/>
@@ -66,149 +71,82 @@ from de_metas_acct.taxaccounts_perVATCode($P{AD_Org_ID},
 		<property name="com.jaspersoft.studio.field.name" value="vatcode"/>
 		<property name="com.jaspersoft.studio.field.label" value="vatcode"/>
 	</field>
-	<background>
-		<band splitType="Stretch"/>
-	</background>
-	<title>
-		<band height="30" splitType="Stretch">
-			<textField>
-				<reportElement x="1" y="0" width="79" height="20" uuid="ab05efaf-1e02-4b58-8859-672d5a58a1e2"/>
-				<textElement>
-					<font fontName="Arial" size="10" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{recap}]]></textFieldExpression>
-			</textField>
-		</band>
+	<background splitType="Stretch"/>
+	<title height="30" splitType="Stretch">
+		<element kind="textField" uuid="ab05efaf-1e02-4b58-8859-672d5a58a1e2" x="1" y="0" width="79" height="20" fontName="Arial" fontSize="10.0" bold="true">
+			<expression><![CDATA[$R{recap}]]></expression>
+		</element>
 	</title>
-	<pageHeader>
-		<band height="33" splitType="Stretch">
-			<rectangle>
-				<reportElement key="rectangle-1" x="0" y="4" width="782" height="26" backcolor="#808080" uuid="c647c428-44a7-438e-9c9b-a58314ec4521">
-					<property name="com.jaspersoft.studio.unit.height" value="px"/>
-				</reportElement>
-				<graphicElement>
-					<pen lineWidth="0.0" lineStyle="Solid"/>
-				</graphicElement>
-			</rectangle>
-			<textField>
-				<reportElement x="1" y="4" width="70" height="12" forecolor="#FFFFFF" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
-				<textElement>
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{vatcode}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="580" y="4" width="96" height="12" forecolor="#FFFFFF" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{balancePeriod}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="676" y="4" width="100" height="12" forecolor="#FFFFFF" uuid="58475cb0-76ef-46d3-8440-818898eb1ce8"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{balance}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="71" y="4" width="278" height="12" forecolor="#FFFFFF" uuid="aff6cbcc-29bc-4a99-a1b7-da1ddbf1630a"/>
-				<textElement textAlignment="Left">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{tax}]]></textFieldExpression>
-			</textField>
-			<line>
-				<reportElement key="line" positionType="FixRelativeToBottom" x="0" y="1" width="782" height="1" forecolor="#000000" uuid="925eb5ac-422b-4ead-baa5-9a1a93308d7d"/>
-				<graphicElement>
-					<pen lineWidth="1.0" lineStyle="Solid"/>
-				</graphicElement>
-			</line>
-			<textField>
-				<reportElement x="438" y="16" width="91" height="12" forecolor="#FFFFFF" uuid="1b4be4de-f1a4-4de7-8edc-cbda8736a064">
-					<property name="com.jaspersoft.studio.unit.x" value="px"/>
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{baseamt}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="529" y="16" width="91" height="12" forecolor="#FFFFFF" uuid="68432012-9c31-412b-a5bc-ae992f648808">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<property name="com.jaspersoft.studio.unit.x" value="px"/>
-					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{amt_not_vat}]]></textFieldExpression>
-			</textField>
-		</band>
+	<pageHeader height="33" splitType="Stretch">
+		<element kind="rectangle" uuid="c647c428-44a7-438e-9c9b-a58314ec4521" key="rectangle-1" x="0" y="4" width="782" height="26" backcolor="#808080">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<pen lineWidth="0.0" lineStyle="Solid"/>
+		</element>
+		<element kind="textField" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2" x="1" y="4" width="70" height="12" forecolor="#FFFFFF" fontName="Arial" fontSize="8.0" bold="true">
+			<expression><![CDATA[$R{vatcode}]]></expression>
+		</element>
+		<element kind="textField" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2" x="580" y="4" width="96" height="12" forecolor="#FFFFFF" fontName="Arial" fontSize="8.0" bold="true" hTextAlign="Right">
+			<expression><![CDATA[$R{balancePeriod}]]></expression>
+		</element>
+		<element kind="textField" uuid="58475cb0-76ef-46d3-8440-818898eb1ce8" x="676" y="4" width="100" height="12" forecolor="#FFFFFF" fontName="Arial" fontSize="8.0" bold="true" hTextAlign="Right">
+			<expression><![CDATA[$R{balance}]]></expression>
+		</element>
+		<element kind="textField" uuid="aff6cbcc-29bc-4a99-a1b7-da1ddbf1630a" x="71" y="4" width="278" height="12" forecolor="#FFFFFF" fontName="Arial" fontSize="8.0" bold="true" hTextAlign="Left">
+			<expression><![CDATA[$R{tax}]]></expression>
+		</element>
+		<element kind="line" uuid="925eb5ac-422b-4ead-baa5-9a1a93308d7d" key="line" positionType="FixRelativeToBottom" x="0" y="1" width="782" height="1" forecolor="#000000">
+			<pen lineWidth="1.0" lineStyle="Solid"/>
+		</element>
+		<element kind="textField" uuid="1b4be4de-f1a4-4de7-8edc-cbda8736a064" x="430" y="16" width="99" height="12" forecolor="#FFFFFF" fontName="Arial" fontSize="8.0" bold="true" hTextAlign="Right">
+			<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
+			<expression><![CDATA[$R{baseamt}]]></expression>
+			<property name="com.jaspersoft.studio.unit.x" value="px"/>
+			<property name="com.jaspersoft.studio.unit.width" value="px"/>
+		</element>
+		<element kind="textField" uuid="68432012-9c31-412b-a5bc-ae992f648808" x="529" y="16" width="91" height="12" forecolor="#FFFFFF" fontName="Arial" fontSize="8.0" bold="true" hTextAlign="Right">
+			<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
+			<expression><![CDATA[$R{amt_not_vat}]]></expression>
+			<property name="com.jaspersoft.studio.unit.width" value="px"/>
+			<property name="com.jaspersoft.studio.unit.x" value="px"/>
+		</element>
 	</pageHeader>
-	<columnHeader>
-		<band splitType="Stretch"/>
-	</columnHeader>
+	<columnHeader splitType="Stretch"/>
 	<detail>
-		<band height="17">
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="0" y="2" width="70" height="15" uuid="9179a5e9-e70e-4d0e-9840-ca3a3ba424ee"/>
-				<textElement>
-					<font fontName="Arial" size="8" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{vatcode} == null ? ($R{no_vatcode}) : $F{vatcode}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="70" y="2" width="279" height="15" uuid="5de14448-7069-4dc1-beba-f9b49d8b7d24"/>
-				<textElement>
-					<font fontName="Arial" size="8" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{taxname}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="580" y="2" width="96" height="15" uuid="cbdf57d5-daba-424a-97be-5fda474189ae"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{balance}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="676" y="0" width="100" height="15" uuid="4667c47d-5055-48c9-9a38-6de63514fa63"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{balanceyear}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="438" y="2" width="91" height="12" forecolor="#000000" uuid="622c629c-0d48-4790-84eb-8ad14a379aba">
-					<property name="com.jaspersoft.studio.unit.x" value="px"/>
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{invoice_total_sum}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="529" y="2" width="91" height="12" forecolor="#000000" uuid="78b06e9e-6186-4659-9972-b70c27f9c760">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-					<property name="com.jaspersoft.studio.unit.x" value="px"/>
-					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{taxbaseamt_vat_sum}]]></textFieldExpression>
-			</textField>
+		<band height="19">
+			<element kind="textField" uuid="9179a5e9-e70e-4d0e-9840-ca3a3ba424ee" x="0" y="2" width="70" height="15" fontName="Arial" fontSize="8.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false">
+				<expression><![CDATA[$F{vatcode} == null ? ($R{no_vatcode}) : $F{vatcode}]]></expression>
+			</element>
+			<element kind="textField" uuid="5de14448-7069-4dc1-beba-f9b49d8b7d24" x="70" y="2" width="279" height="15" fontName="Arial" fontSize="8.0" textAdjust="StretchHeight" blankWhenNull="true" bold="false">
+				<expression><![CDATA[$F{taxname}]]></expression>
+			</element>
+			<element kind="textField" uuid="cbdf57d5-daba-424a-97be-5fda474189ae" x="600" y="2" width="76" height="15" fontName="Arial" fontSize="8.0" textAdjust="StretchHeight" pattern="#,##0.00" blankWhenNull="true" bold="false" hTextAlign="Right">
+				<expression><![CDATA[$F{balance}]]></expression>
+			</element>
+			<element kind="textField" uuid="4667c47d-5055-48c9-9a38-6de63514fa63" x="676" y="0" width="100" height="15" fontName="Arial" fontSize="8.0" textAdjust="StretchHeight" pattern="#,##0.00" blankWhenNull="true" bold="false" hTextAlign="Right">
+				<expression><![CDATA[$F{balanceyear}]]></expression>
+			</element>
+			<element kind="textField" uuid="622c629c-0d48-4790-84eb-8ad14a379aba" x="430" y="2" width="70" height="12" forecolor="#000000" fontName="Arial" fontSize="8.0" textAdjust="StretchHeight" pattern="#,##0.00" blankWhenNull="true" bold="false" hTextAlign="Right">
+				<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
+				<expression><![CDATA[$F{invoice_total_sum}]]></expression>
+				<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				<property name="com.jaspersoft.studio.unit.width" value="px"/>
+			</element>
+			<element kind="textField" uuid="78b06e9e-6186-4659-9972-b70c27f9c760" x="529" y="2" width="61" height="12" forecolor="#000000" fontName="Arial" fontSize="8.0" textAdjust="StretchHeight" pattern="#,##0.00" blankWhenNull="true" bold="false" hTextAlign="Right">
+				<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
+				<expression><![CDATA[$F{taxbaseamt_vat_sum}]]></expression>
+				<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				<property name="com.jaspersoft.studio.unit.x" value="px"/>
+			</element>
+			<element kind="textField" uuid="31cb8c11-66e8-44c3-bf05-29bcd3b54657" x="500" y="2" width="26" height="12" fontName="Arial" fontSize="8.0" textAdjust="StretchHeight" pattern="#,##0.00" blankWhenNull="true" hTextAlign="Right">
+				<expression><![CDATA[$F{source_currency}]]></expression>
+				<property name="com.jaspersoft.studio.unit.y" value="px"/>
+			</element>
+			<element kind="textField" uuid="ed3ba9c7-f60b-4973-aae2-70fcde64a1f6" x="590" y="2" width="30" height="12" fontName="Arial" fontSize="8.0" textAdjust="StretchHeight" pattern="#,##0.00" blankWhenNull="true" hTextAlign="Right">
+				<expression><![CDATA[$F{source_currency}]]></expression>
+				<property name="com.jaspersoft.studio.unit.y" value="px"/>
+			</element>
 		</band>
 	</detail>
-	<columnFooter>
-		<band splitType="Stretch"/>
-	</columnFooter>
-	<summary>
-		<band splitType="Stretch"/>
-	</summary>
+	<columnFooter splitType="Stretch"/>
+	<summary splitType="Stretch"/>
 </jasperReport>
