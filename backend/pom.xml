@@ -157,6 +157,7 @@
 
         <module>de.metas.serviceprovider</module>
 
+        <module>de.metas.shipper.gateway.api</module>
         <module>de.metas.shipper.gateway.commons</module>
         <module>de.metas.shipper.gateway.spi</module>
         <module>de.metas.shipper.gateway.go</module>

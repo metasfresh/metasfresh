@@ -39,6 +39,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.shipper.gateway.api.ShipperGatewayId;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryData;
 import de.metas.shipper.gateway.dhl.model.DhlCustomDeliveryDataDetail;
 import de.metas.shipper.gateway.dhl.model.DhlCustomsDocument;
@@ -86,7 +87,7 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 	private final DhlDeliveryOrderRepository dhlDeliveryOrderRepository;
 
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return DhlConstants.SHIPPER_GATEWAY_ID;
 	}
@@ -102,10 +103,10 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 
 	@NonNull
 	@Override
-	public DeliveryOrder getByRepoId(@NonNull final DeliveryOrderId deliveryOrderRepoId)
+	public DeliveryOrder getById(@NonNull final DeliveryOrderId deliveryOrderId)
 	{
-		return dhlDeliveryOrderRepository.getByRepoId(deliveryOrderRepoId)
-				.withCustomDeliveryData(getDhlCustomDeliveryData(deliveryOrderRepoId));
+		return dhlDeliveryOrderRepository.getByRepoId(deliveryOrderId)
+				.withCustomDeliveryData(getDhlCustomDeliveryData(deliveryOrderId));
 	}
 
 	/**

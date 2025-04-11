@@ -1,26 +1,10 @@
 package de.metas.shipper.gateway.go;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import javax.xml.bind.JAXBElement;
-
 import com.google.common.annotations.VisibleForTesting;
-import org.adempiere.exceptions.AdempiereException;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.oxm.jaxb.Jaxb2Marshaller;
-import org.springframework.ws.client.core.WebServiceTemplate;
-import org.springframework.ws.transport.http.HttpComponentsMessageSender;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
-
+import de.metas.shipper.gateway.api.ShipperGatewayId;
 import de.metas.shipper.gateway.go.GOClientLogEvent.GOClientLogEventBuilder;
 import de.metas.shipper.gateway.go.schema.Fehlerbehandlung;
 import de.metas.shipper.gateway.go.schema.GOOrderStatus;
@@ -48,6 +32,20 @@ import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.oxm.jaxb.Jaxb2Marshaller;
+import org.springframework.ws.client.core.WebServiceTemplate;
+import org.springframework.ws.transport.http.HttpComponentsMessageSender;
+
+import javax.xml.bind.JAXBElement;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /*
  * #%L
@@ -131,7 +129,7 @@ public class GOClient implements ShipperGatewayClient
 
 	@NonNull
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return GOConstants.SHIPPER_GATEWAY_ID;
 	}
@@ -224,8 +222,8 @@ public class GOClient implements ShipperGatewayClient
 	}
 
 	private Object sendAndReceive(final JAXBElement<?> goRequestElement,
-			final String action, // for logging
-			final int deliveryOrderRepoId // for logging
+								  final String action, // for logging
+								  final int deliveryOrderRepoId // for logging
 	)
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();

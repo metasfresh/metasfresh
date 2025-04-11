@@ -1,5 +1,6 @@
 package de.metas.shipper.gateway.spi;
 
+import de.metas.shipper.gateway.api.ShipperGatewayId;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import org.adempiere.util.lang.ITableRecordReference;
 
@@ -27,18 +28,18 @@ import org.adempiere.util.lang.ITableRecordReference;
 
 public interface DeliveryOrderService
 {
-	String getShipperGatewayId();
+	ShipperGatewayId getShipperGatewayId();
 
 	/**
 	 * @return a reference to the internal {@code AD_Table_ID} and {@code Record_ID} of the record that backs the given {@code deliveryOrder}.
-	 *         Note that the reference's {@code Record_ID} is coming from {@link DeliveryOrder#getId()}.
+	 * Note that the reference's {@code Record_ID} is coming from {@link DeliveryOrder#getId()}.
 	 */
 	ITableRecordReference toTableRecordReference(DeliveryOrder deliveryOrder);
 
 	/**
-	 * Assumes that there is a data record for the given {@code deliveryOrderRepoId}.
+	 * Assumes that there is a data record for the given {@code deliveryOrderId}.
 	 */
-	DeliveryOrder getByRepoId(DeliveryOrderId deliveryOrderRepoId);
+	DeliveryOrder getById(DeliveryOrderId deliveryOrderId);
 
 	/**
 	 * Create or update the internal data record for the given {@code order}. The returned instance shall always have a {@code repoId > 0}.

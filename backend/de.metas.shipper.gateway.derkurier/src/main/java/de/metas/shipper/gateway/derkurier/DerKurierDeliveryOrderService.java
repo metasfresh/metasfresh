@@ -25,6 +25,7 @@ package de.metas.shipper.gateway.derkurier;
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.shipper.gateway.api.ShipperGatewayId;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrder;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.DeliveryOrderService;
@@ -63,7 +64,7 @@ public class DerKurierDeliveryOrderService implements DeliveryOrderService
 
 	@Override
 	@NonNull
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return SHIPPER_GATEWAY_ID;
 	}
@@ -76,7 +77,7 @@ public class DerKurierDeliveryOrderService implements DeliveryOrderService
 	}
 
 	@Override
-	public DeliveryOrder getByRepoId(@NonNull final DeliveryOrderId deliveryOrderId)
+	public DeliveryOrder getById(@NonNull final DeliveryOrderId deliveryOrderId)
 	{
 		return derKurierDeliveryOrderRepository.getByRepoId(deliveryOrderId);
 	}

@@ -22,13 +22,13 @@
 
 package de.metas.shipper.gateway.dpd;
 
-import org.compiere.model.X_M_Shipper;
-
+import de.metas.shipper.gateway.api.ShipperGatewayId;
 import de.metas.uom.X12DE355;
+import org.compiere.model.X_M_Shipper;
 
 public class DpdConstants
 {
-	public static final String SHIPPER_GATEWAY_ID = X_M_Shipper.SHIPPERGATEWAY_DPD;
+	public static final ShipperGatewayId SHIPPER_GATEWAY_ID = ShipperGatewayId.ofString(X_M_Shipper.SHIPPERGATEWAY_DPD);
 
 	public static final String DEFAULT_MESSAGE_LANGUAGE = "en_EN";
 

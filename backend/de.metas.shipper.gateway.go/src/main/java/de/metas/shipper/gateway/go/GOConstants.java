@@ -22,8 +22,10 @@ package de.metas.shipper.gateway.go;
  * #L%
  */
 
+import de.metas.shipper.gateway.api.ShipperGatewayId;
+
 public class GOConstants
 {
-	public static final String SHIPPER_GATEWAY_ID = "go";
+	public static final ShipperGatewayId SHIPPER_GATEWAY_ID = ShipperGatewayId.ofString("go");
 
 }

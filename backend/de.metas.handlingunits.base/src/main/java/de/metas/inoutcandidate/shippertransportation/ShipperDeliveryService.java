@@ -38,13 +38,13 @@ import de.metas.inout.InOutId;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.shipper.gateway.api.ShipperGatewayId;
 import de.metas.shipper.gateway.commons.ShipperGatewayFacade;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
-import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -153,9 +153,9 @@ public class ShipperDeliveryService
 			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		final I_M_Shipper shipper = Services.get(IShipperDAO.class).getById(shipperId);
-		final String shipperGatewayId = shipper.getShipperGateway();
+		final ShipperGatewayId shipperGatewayId = ShipperGatewayId.ofNullableString(shipper.getShipperGateway());
 		// no ShipperGateway, so no API to call/no courier to request
-		if (Check.isBlank(shipperGatewayId))
+		if (shipperGatewayId == null)
 		{
 			return;
 		}

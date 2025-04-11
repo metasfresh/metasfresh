@@ -3,6 +3,7 @@ package de.metas.shipper.gateway.commons;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.logging.LogManager;
+import de.metas.shipper.gateway.api.ShipperGatewayId;
 import de.metas.shipper.gateway.spi.DeliveryOrderService;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
 import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
@@ -42,11 +43,11 @@ import java.util.Optional;
 @Service
 public class ShipperGatewayServicesRegistry
 {
-	private final transient Logger logger = LogManager.getLogger(getClass());
+	private static final Logger logger = LogManager.getLogger(ShipperGatewayServicesRegistry.class);
 
-	private final ImmutableMap<String, DeliveryOrderService> servicesByGatewayId;
-	private final ImmutableMap<String, ShipperGatewayClientFactory> clientFactoriesByGatewayId;
-	private final ImmutableMap<String, DraftDeliveryOrderCreator> draftDeliveryOrderCreatorsByGatewayId;
+	private final ImmutableMap<ShipperGatewayId, DeliveryOrderService> servicesByGatewayId;
+	private final ImmutableMap<ShipperGatewayId, ShipperGatewayClientFactory> clientFactoriesByGatewayId;
+	private final ImmutableMap<ShipperGatewayId, DraftDeliveryOrderCreator> draftDeliveryOrderCreatorsByGatewayId;
 
 	public ShipperGatewayServicesRegistry(
 			@NonNull final Optional<List<DeliveryOrderService>> deliveryOrderServices,
@@ -71,30 +72,31 @@ public class ShipperGatewayServicesRegistry
 		logger.info("deliveryOrderServices: {}", servicesByGatewayId);
 	}
 
-	public DeliveryOrderService getDeliveryOrderService(@NonNull final String shipperGatewayId)
+	public DeliveryOrderService getDeliveryOrderService(@NonNull final ShipperGatewayId shipperGatewayId)
 	{
 		final DeliveryOrderService deliveryOrderService = servicesByGatewayId.get(shipperGatewayId);
 		return Check.assumeNotNull(deliveryOrderService, "deliveryOrderService shall exist for shipperGatewayId={}", shipperGatewayId);
 	}
 
-	public ShipperGatewayClientFactory getClientFactory(@NonNull final String shipperGatewayId)
+	public ShipperGatewayClientFactory getClientFactory(@NonNull final ShipperGatewayId shipperGatewayId)
 	{
 		final ShipperGatewayClientFactory shipperGatewayClientFactory = clientFactoriesByGatewayId.get(shipperGatewayId);
 		return Check.assumeNotNull(shipperGatewayClientFactory, "shipperGatewayClientFactory shall exist for shipperGatewayId={}", shipperGatewayId);
 	}
 
-	public DraftDeliveryOrderCreator getShipperGatewayService(@NonNull final String shipperGatewayId)
+	public DraftDeliveryOrderCreator getShipperGatewayService(@NonNull final ShipperGatewayId shipperGatewayId)
 	{
 		final DraftDeliveryOrderCreator service = draftDeliveryOrderCreatorsByGatewayId.get(shipperGatewayId);
 		return Check.assumeNotNull(service, "service shall exist for shipperGatewayId={}", shipperGatewayId);
 	}
 
-	public boolean hasServiceSupport(@Nullable final String shipperGatewayId)
+	public boolean hasServiceSupport(@Nullable final ShipperGatewayId shipperGatewayId)
 	{
-		if(Check.isEmpty(shipperGatewayId,true))
+		if (shipperGatewayId == null)
 		{
 			return false;
 		}
+
 		return draftDeliveryOrderCreatorsByGatewayId.containsKey(shipperGatewayId);
 	}
 }

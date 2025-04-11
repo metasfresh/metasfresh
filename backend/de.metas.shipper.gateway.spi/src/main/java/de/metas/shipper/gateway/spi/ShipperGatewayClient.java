@@ -1,11 +1,12 @@
 package de.metas.shipper.gateway.spi;
 
-import java.util.List;
-
+import de.metas.shipper.gateway.api.ShipperGatewayId;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import lombok.NonNull;
+
+import java.util.List;
 
 /*
  * #%L
@@ -32,7 +33,7 @@ import lombok.NonNull;
 public interface ShipperGatewayClient
 {
 	@NonNull
-	String getShipperGatewayId();
+	ShipperGatewayId getShipperGatewayId();
 
 	/**
 	 * Create a delivery order on the remote endpoint. The remote order is drafted and can still be changed.

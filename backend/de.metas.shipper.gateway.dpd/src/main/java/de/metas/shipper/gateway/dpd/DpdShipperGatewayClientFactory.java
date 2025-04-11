@@ -22,15 +22,15 @@
 
 package de.metas.shipper.gateway.dpd;
 
+import de.metas.shipper.gateway.api.ShipperGatewayId;
 import de.metas.shipper.gateway.dpd.logger.DpdDatabaseClientLogger;
-import de.metas.shipping.ShipperId;
-import lombok.NonNull;
-import org.springframework.stereotype.Service;
-
 import de.metas.shipper.gateway.dpd.model.DpdClientConfig;
 import de.metas.shipper.gateway.dpd.model.DpdClientConfigRepository;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
+import de.metas.shipping.ShipperId;
+import lombok.NonNull;
+import org.springframework.stereotype.Service;
 
 @Service
 public class DpdShipperGatewayClientFactory implements ShipperGatewayClientFactory
@@ -43,7 +43,7 @@ public class DpdShipperGatewayClientFactory implements ShipperGatewayClientFacto
 	}
 
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return DpdConstants.SHIPPER_GATEWAY_ID;
 	}

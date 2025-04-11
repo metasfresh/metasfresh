@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.dpd;
 
+import de.metas.shipper.gateway.api.ShipperGatewayId;
 import de.metas.shipper.gateway.dpd.model.I_DPD_StoreOrder;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.DeliveryOrderService;
@@ -41,7 +42,7 @@ public class DpdDeliveryOrderService implements DeliveryOrderService
 	private final DpdDeliveryOrderRepository dpdDeliveryOrderRepository;
 
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return DpdConstants.SHIPPER_GATEWAY_ID;
 	}
@@ -56,10 +57,10 @@ public class DpdDeliveryOrderService implements DeliveryOrderService
 	}
 
 	@Override
-	public DeliveryOrder getByRepoId(final DeliveryOrderId deliveryOrderRepoId)
+	public DeliveryOrder getById(final DeliveryOrderId deliveryOrderId)
 	{
 
-		return dpdDeliveryOrderRepository.getByRepoId(deliveryOrderRepoId);
+		return dpdDeliveryOrderRepository.getByRepoId(deliveryOrderId);
 	}
 
 	/**
