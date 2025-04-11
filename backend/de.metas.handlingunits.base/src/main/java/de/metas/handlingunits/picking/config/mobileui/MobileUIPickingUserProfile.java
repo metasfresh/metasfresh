@@ -52,7 +52,7 @@ public class MobileUIPickingUserProfile
 					.isAllowSkippingRejectedReason(false)
 					.createShipmentPolicy(CreateShipmentPolicy.DO_NOT_CREATE)
 					.isAllowCompletingPartialPickingJob(true)
-       			    .isShowLastPickedBestBeforeDateForLines(false)
+       			                .isShowLastPickedBestBeforeDateForLines(false)
 					.build())
 			.filters(PickingFiltersList.ofList(ImmutableList.of(
 					PickingFilter.of(PickingJobFacetGroup.CUSTOMER, 10),
