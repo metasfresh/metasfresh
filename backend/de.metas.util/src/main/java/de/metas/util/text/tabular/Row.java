@@ -65,4 +65,9 @@ public class Row
 		map.forEach((columnName, value) -> this.map.put(columnName, Cell.ofNullable(value)));
 	}
 
+	public boolean containsColumn(final String columnName)
+	{
+		return map.containsKey(columnName);
+	}
+
 }

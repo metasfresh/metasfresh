@@ -84,6 +84,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PriceList_ID;
@@ -203,14 +204,6 @@ public class M_PriceList_StepDef
 	{
 		final CurrencyCode currencyCode = extractCurrencyCode(row);
 		return currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
-	}
-
-	private I_M_PriceList getExistingPriceList(final boolean soTrx, final int pricingSystemId, final CountryId countryId)
-	{
-		final I_M_PriceList m_priceList;
-		final List<I_M_PriceList> existingPriceLists = priceListDAO.retrievePriceLists(PricingSystemId.ofRepoId(pricingSystemId), countryId, SOTrx.ofBoolean(soTrx));
-		m_priceList = existingPriceLists.isEmpty() ? InterfaceWrapperHelper.newInstance(I_M_PriceList.class) : existingPriceLists.get(0);
-		return m_priceList;
 	}
 
 	@NonNull
@@ -457,4 +450,24 @@ public class M_PriceList_StepDef
 				.map(Optional::get)
 				.orElse(AttributesKey.NONE);
 	}
+
+	@And("update M_PriceLists:")
+	public void updatePriceLists(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_M_PriceList_ID)
+				.forEach(this::updatePriceList);
+	}
+
+	private void updatePriceList(@NonNull final DataTableRow row)
+	{
+		final StepDefDataIdentifier identifier = row.getAsIdentifier();
+
+		final I_M_PriceList priceList = identifier.lookupNotNullIn(priceListTable);
+		row.getAsOptionalBoolean("IsTaxIncluded").ifPresent(priceList::setIsTaxIncluded);
+
+		save(priceList);
+		priceListTable.putOrReplace(identifier, priceList);
+	}
+
 }

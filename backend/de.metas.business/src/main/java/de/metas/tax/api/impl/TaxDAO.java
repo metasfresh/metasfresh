@@ -39,6 +39,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ExemptTaxNotFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
@@ -482,5 +483,16 @@ public class TaxDAO implements ITaxDAO
 		}
 
 		return locationDAO.getCountryIdByLocationId(LocationId.ofRepoId(bpartnerLocation.getC_Location_ID()));
+	}
+
+	@Override
+	public Optional<TaxId> getIdByName(@NonNull final String name, @NonNull final ClientId clientId)
+	{
+		return queryBL.createQueryBuilder(I_C_Tax.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Tax.COLUMNNAME_Name, name)
+				.addEqualsFilter(I_C_Tax.COLUMNNAME_AD_Client_ID, clientId)
+				.create()
+				.firstIdOnlyOptional(TaxId::ofRepoIdOrNull);
 	}
 }
