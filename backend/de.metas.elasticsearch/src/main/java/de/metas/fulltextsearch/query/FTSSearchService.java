@@ -43,12 +43,9 @@ import de.metas.security.UserRolePermissionsKey;
 import de.metas.security.permissions.Access;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.util.CtxName;
-import org.compiere.util.CtxNames;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.elasticsearch.action.search.SearchRequest;
@@ -174,32 +171,26 @@ public class FTSSearchService
 			builder.put(ESQueryTemplate.PARAM_orgFilter, buildOrgIdsFilterPart(request.getUserRolePermissionsKey()));
 		}
 
-		if (request.hasDefaultFilterParams())
+		if (request.hasDefaultFilterParams() && jsonQueryTemplate.isDefaultFilterQueryRequired())
 		{
+			final StringBuilder query = new StringBuilder();
 			for(final Map.Entry<String, Object> entry : request.getDefaultFilterParams().entrySet() )
 			{
-				final CtxName fieldName = CtxNames.parseNotNull(entry.getKey());
-				if (jsonQueryTemplate.isParameterRequired(fieldName))
+				final Object value = entry.getValue();
+				if( value instanceof Boolean || value instanceof Integer)
 				{
-					if(entry.getValue() instanceof Boolean)
-					{
-						builder.put(fieldName, buildBooleanFilterPart(entry.getKey(), (boolean) entry.getValue()));
-					}
-					else if(entry.getValue() instanceof String)
-					{
-						builder.put(fieldName, buildStringFilterPart(entry.getKey(), (String) entry.getValue()));
-					}
-					else if(entry.getValue() instanceof Integer)
-					{
-						builder.put(fieldName, buildIntegerFilterPart(entry.getKey(), (Integer) entry.getValue()));
-					}
-					else
-					{
-						// In FTS Config Query, but currently not used in DefaultFilter
-						builder.put(fieldName, "");
-					}
+					query.append(buildDefaultFilterQueryTermPart(entry.getKey(), value));
+				}
+				else if (value instanceof String)
+				{
+					query.append(buildDefaultFilterQueryWildcardPart(entry.getKey(), value));
+				}
+				else
+				{
+					logger.debug("Not supported datatype for value: {}", value);
 				}
 			}
+			builder.put(ESQueryTemplate.PARAM_defaultFilterQuery, query.toString());
 		}
 
 
@@ -235,9 +226,35 @@ public class FTSSearchService
 		}
 	}
 
-	private String buildBooleanFilterPart(@NonNull final String fieldName, final boolean value)
+	private static String buildDefaultFilterQueryTermPart(@NonNull final String fieldName, @NonNull final Object value)
 	{
-		return ", \"filter\": { \"terms\": { \"" + fieldName + "\": [" + StringUtils.ofBoolean(value) + "] } }";
+		final boolean isStringValue = (value instanceof String);
+		final String valueEff = isStringValue ? "\"" + ((String)value).toLowerCase() + "\"" : String.valueOf(value);
+		final String fieldNameEff = fieldName.toLowerCase();
+
+		//Field either does not exist in es_index or has exact value of defaultFilter
+		return ",{ \"bool\":{ \"should\":[{\"bool\": {\"must_not\": [{\"exists\": {\"field\": \""
+				+ fieldNameEff
+				+   "\"}}]}},{\"bool\": {\"must\": [{\"term\": {\""
+				+ fieldNameEff
+				+ "\": "
+				+ valueEff
+				+ "}}]}}],\"minimum_should_match\": 1}} ";
+	}
+
+	private static String buildDefaultFilterQueryWildcardPart(@NonNull final String fieldName, @NonNull final Object value)
+	{
+		final String valueEff = "\"*" + ((String)value).toLowerCase() + "*\"";
+		final String fieldNameEff = fieldName.toLowerCase();
+
+		//Field either does not exist in es_index or has wildcard value of defaultFilter
+		return ",{ \"bool\":{ \"should\":[{\"bool\": {\"must_not\": [{\"exists\": {\"field\": \""
+				+ fieldNameEff
+				+   "\"}}]}},{\"bool\": {\"must\": [{\"wildcard\": {\""
+				+ fieldNameEff
+				+ "\": {\"value\": "
+				+ valueEff
+				+ "}}}]}}],\"minimum_should_match\": 1}} ";
 	}
 
 	private String buildStringFilterPart(@NonNull final String fieldName, final String value)

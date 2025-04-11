@@ -189,12 +189,8 @@ public class InvoiceFTSModelIndexer implements FTSModelIndexer
 			}
 			else if (I_C_DocType.Table_Name.equals(sourceTableName))
 			{
-				//new docTypeId
-				if(sourceModelRef.getRecord_ID() == 0)
-				{
-					continue;
-				}
-				docTypeIds.add(DocTypeId.ofRepoId(sourceModelRef.getRecord_ID()));
+				final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(sourceModelRef.getRecord_ID());
+				if (docTypeId != null) {docTypeIds.add(docTypeId);}
 			}
 			else if (I_M_Warehouse.Table_Name.equals(sourceTableName))
 			{

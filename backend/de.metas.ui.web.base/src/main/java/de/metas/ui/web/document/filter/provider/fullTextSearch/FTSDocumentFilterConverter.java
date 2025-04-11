@@ -42,8 +42,6 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
-import static de.metas.ui.web.document.filter.provider.standard.StandardDocumentFilterDescriptorsProviderFactory.FILTER_ID_Default;
-
 public class FTSDocumentFilterConverter implements SqlDocumentFilterConverter
 {
 	public static final FTSDocumentFilterConverter instance = new FTSDocumentFilterConverter();
@@ -71,20 +69,13 @@ public class FTSDocumentFilterConverter implements SqlDocumentFilterConverter
 		final FTSSearchService searchService = ftsContext.getSearchService();
 		final FTSConfig ftsConfig = searchService.getConfigById(ftsFilterDescriptor.getFtsConfigId());
 
-		//Converting to map, as the POJOs can't be used. Would Introduce circular Dependency
-		final Map<String, Object> defaultFilterParams = request.getFilterById(FILTER_ID_Default).stream()
-				.map(DocumentFilter::getParameters)
-				.flatMap(List::stream)
-				.map(documentFilterParam -> GuavaCollectors.entry(documentFilterParam.getFieldName(), documentFilterParam.getValue()))
-				.collect(GuavaCollectors.toImmutableMap());
-
 		final FTSSearchResult ftsResult = searchService.search(FTSSearchRequest.builder()
 				.searchId(extractSearchId(request.getContext()))
 				.searchText(searchText)
 				.esIndexName(ftsConfig.getEsIndexName())
 				.userRolePermissionsKey(request.getUserRolePermissionsKey())
 				.filterDescriptor(ftsFilterDescriptor)
-				.defaultFilterParams(defaultFilterParams)
+				.defaultFilterParams(toDefaultFilterParamsMap(request))
 				.build());
 
 		if (ftsResult.isEmpty())
@@ -107,6 +98,15 @@ public class FTSDocumentFilterConverter implements SqlDocumentFilterConverter
 						.joinColumns(ftsFilterDescriptor.getJoinColumns())
 						.build())
 				.build();
+	}
+
+	private static Map<String, Object> toDefaultFilterParamsMap(@NonNull final FilterSqlRequest request)
+	{
+		return  request.getFilterById(de.metas.ui.web.document.filter.provider.standard.StandardDocumentFilterDescriptorsProviderFactory.FILTER_ID_Default).stream()
+				.map(DocumentFilter::getParameters)
+				.flatMap(List::stream)
+				.map(documentFilterParam -> GuavaCollectors.entry(documentFilterParam.getFieldName(), documentFilterParam.getValue()))
+				.collect(GuavaCollectors.toImmutableMap());
 	}
 
 	private static String extractSearchId(@NonNull final SqlDocumentFilterConverterContext context)

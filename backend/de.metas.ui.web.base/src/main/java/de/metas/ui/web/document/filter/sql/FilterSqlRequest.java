@@ -42,7 +42,7 @@ public class FilterSqlRequest
 	@NonNull DocumentFilter filter;
 	@NonNull SqlOptions sqlOpts;
 	@NonNull SqlDocumentFilterConverterContext context;
-	@NonNull DocumentFilterList filters;
+	@NonNull DocumentFilterList allFilters;
 
 	@Nullable
 	public String getFilterParameterValueAsString(@NonNull final String parameterName) {return filter.getParameterValueAsString(parameterName);}
@@ -77,6 +77,6 @@ public class FilterSqlRequest
 	@NonNull
 	public Optional<DocumentFilter> getFilterById(final String id)
 	{
-		return filters.getFilterById(id);
+		return allFilters.getFilterById(id);
 	}
 }

@@ -78,7 +78,7 @@ public interface SqlDocumentFilterConverter
 					.filter(filter)
 					.sqlOpts(sqlOpts)
 					.context(context)
-					.filters(filters)
+					.allFilters(filters)
 					.build()
 			);
 			if (filterSql == null)

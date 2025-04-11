@@ -36,6 +36,7 @@ public class ESQueryTemplate
 	@NonNull public static final CtxName PARAM_query = CtxNames.parse("query");
 	@NonNull public static final CtxName PARAM_queryStartsWith = CtxNames.parse("queryStartsWith");
 	@NonNull public static final CtxName PARAM_orgFilter = CtxNames.parse("OrgFilter");
+	@NonNull public static final CtxName PARAM_defaultFilterQuery = CtxNames.parse("DefaultFilterQuery");
 
 	@NonNull IStringExpression expression;
 
@@ -49,10 +50,8 @@ public class ESQueryTemplate
 		this.expression = expression;
 	}
 
-	public boolean isOrgFilterParameterRequired()
-	{
-		return isParameterRequired(PARAM_orgFilter);
-	}
+	public boolean isOrgFilterParameterRequired() {return isParameterRequired(PARAM_orgFilter);}
+	public boolean isDefaultFilterQueryRequired() {return isParameterRequired(PARAM_defaultFilterQuery);}
 
 	public boolean isParameterRequired(@NonNull final CtxName ctxName)
 	{
@@ -63,6 +62,7 @@ public class ESQueryTemplate
 	{
 		final ToJsonEvaluatee evalCtxEffective = new ToJsonEvaluatee(evalCtx);
 		evalCtxEffective.skipConvertingToJson(PARAM_orgFilter.getName());
+		evalCtxEffective.skipConvertingToJson(PARAM_defaultFilterQuery.getName());
 		return expression.evaluate(evalCtxEffective, IExpressionEvaluator.OnVariableNotFound.Fail);
 	}
 }
