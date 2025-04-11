@@ -65,7 +65,8 @@ FROM fact_acct fa
                                  i.c_invoice_id,
                                  inv_tax.c_tax_id
                           FROM c_invoice_v1 i
-                                   JOIN C_InvoiceTax inv_tax ON i.c_invoice_id = inv_tax.c_invoice_id) i
+                                   JOIN C_InvoiceTax inv_tax ON i.c_invoice_id = inv_tax.c_invoice_id
+                            ) i
                          ON (fa.record_id = i.c_invoice_id AND fa.ad_table_id = get_Table_Id('C_Invoice') AND i.c_tax_id = fa.c_tax_id)
     --
     -- if gl journal
@@ -118,4 +119,3 @@ FROM fact_acct fa
     -- if allocationHdr
          LEFT OUTER JOIN c_allocationline al ON (al.c_allocationline_id = fa.line_id AND al.c_allocationhdr_id = fa.record_id AND fa.ad_table_id = get_Table_Id('C_AllocationHdr'))
 ;
-
