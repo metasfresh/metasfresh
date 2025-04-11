@@ -23,7 +23,7 @@ CREATE OR REPLACE FUNCTION de_metas_acct.report_taxaccounts_perVATCode(p_AD_Org_
                 TaxAmt_SUM_PrevYear numeric,
                 Currency            varchar,
                 NetAmt_SUM          numeric,
-                TotalAmt            numeric,
+                TotalAmt_SUM            numeric,
                 Source_Currency     varchar
             )
     LANGUAGE plpgsql

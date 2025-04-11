@@ -35,28 +35,24 @@
 	<parameter name="showdetails" class="java.lang.String">
 		<defaultValueExpression><![CDATA["N"]]></defaultValueExpression>
 	</parameter>
+	<parameter name="ad_language" class="java.lang.String">
+		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
+	</parameter>
 	<queryString>
-		<![CDATA[SELECT TaxAmt_SUM,
-       TaxAmt_SUM_PrevYear,
-       currency,
-       source_currency,
-       (CASE
-            WHEN Currency = source_currency THEN
-                (NetAmt_SUM + TaxAmt_SUM)
-                                            ELSE NULL
-        END)                     AS TotalAmt_SUM,
-       NetAmt_SUM,
-       Taxname,
-       vatcode
-FROM de_metas_acct.report_taxaccounts(p_AD_Org_ID =>  $P{AD_Org_ID},
-                                      p_account_id => NULL,
-                                      p_c_vat_code_id => NULL,
+		<![CDATA[SELECT *
+FROM de_metas_acct.report_taxaccounts_perVATCode(p_AD_Org_ID =>  $P{AD_Org_ID},
                                       p_datefrom => $P{DateFrom},
                                       p_dateto => $P{DateTo},
-                                      p_level => '3'
+                                      p_ad_language => $P{ad_language}
      )
 ORDER BY vatcode]]>
 	</queryString>
+	<field name="vatcode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="vatcode"/>
+	</field>
+	<field name="taxname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="taxname"/>
+	</field>
 	<field name="taxamt_sum" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="taxamt_sum"/>
 	</field>
@@ -66,20 +62,14 @@ ORDER BY vatcode]]>
 	<field name="currency" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="currency"/>
 	</field>
-	<field name="source_currency" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="source_currency"/>
+	<field name="netamt_sum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="netamt_sum"/>
 	</field>
 	<field name="totalamt_sum" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="totalamt_sum"/>
 	</field>
-	<field name="netamt_sum" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="netamt_sum"/>
-	</field>
-	<field name="taxname" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="taxname"/>
-	</field>
-	<field name="vatcode" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="vatcode"/>
+	<field name="source_currency" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="source_currency"/>
 	</field>
 	<background>
 		<band splitType="Stretch"/>
