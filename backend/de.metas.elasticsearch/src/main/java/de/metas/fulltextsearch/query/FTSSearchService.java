@@ -244,7 +244,7 @@ public class FTSSearchService
 
 	private static String buildDefaultFilterQueryWildcardPart(@NonNull final String fieldName, @NonNull final Object value)
 	{
-		final String valueEff = "\"*" + ((String)value).toLowerCase() + "*\"";
+		final String valueEff = "\"" + ((String)value).toLowerCase() + "*\"";
 		final String fieldNameEff = fieldName.toLowerCase();
 
 		//Field either does not exist in es_index or has wildcard value of defaultFilter
@@ -255,16 +255,6 @@ public class FTSSearchService
 				+ "\": {\"value\": "
 				+ valueEff
 				+ "}}}]}}],\"minimum_should_match\": 1}} ";
-	}
-
-	private String buildStringFilterPart(@NonNull final String fieldName, final String value)
-	{
-		return ", \"filter\": { \"terms\": { \"" + fieldName + "\": [" + value + "] } }";
-	}
-
-	private String buildIntegerFilterPart(@NonNull final String fieldName, final Integer value)
-	{
-		return ", \"filter\": { \"terms\": { \"" + fieldName + "\": [" + value.toString() + "] } }";
 	}
 
 	private static FTSSearchResultItem extractFTSSearchResultItem(
