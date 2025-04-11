@@ -175,7 +175,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 		final PickingLineGroupBy groupBy = pickingJobOptions.getPickingLineGroupBy().orElse(PickingLineGroupBy.NONE);
 		final PickingLineSortBy sortBy = pickingJobOptions.getPickingLineSortBy().orElse(PickingLineSortBy.ORDER_LINE_SEQ_NO);
 		final Map<String, List<PickingJobLine>> sortedGroupedLines = groupBy.groupLines(pickingJob.getLines(), sortBy);
-		final HUCache huCache = cacheLastPickedHUsForEachLine(pickingJob);
+		final HUCache huCache = cacheLastPickedHUsForEachLineIfNeeded(pickingJobOptions, pickingJob);
 
 		final ArrayList<JsonPickingJobLine> result = new ArrayList<>();
 		for (final Map.Entry<String, List<PickingJobLine>> group : sortedGroupedLines.entrySet())
@@ -230,17 +230,20 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 	}
 
 	@NonNull
-	private HUCache cacheLastPickedHUsForEachLine(@NonNull final PickingJob job)
+	private HUCache cacheLastPickedHUsForEachLineIfNeeded(@NonNull final PickingJobOptions pickingJobOptions, @NonNull final PickingJob job)
 	{
+		if (!pickingJobOptions.isShowLastPickedBestBeforeDateForLines())
+		{
+			return HUCache.init(handlingUnitsBL::getById);
+		}
+
 		final Set<HuId> huIds = job.streamLines()
 				.map(PickingJobLine::getLastPickedHUId)
 				.filter(Optional::isPresent)
 				.map(Optional::get)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final HUCache cache = HUCache.builder()
-				.loadHU(handlingUnitsBL::getById)
-				.build();
+		final HUCache cache = HUCache.init(handlingUnitsBL::getById);
 
 		cache.cacheHUs(handlingUnitsBL.getByIds(huIds));
 
@@ -251,6 +254,13 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 	@Builder
 	private static class HUCache
 	{
+		public static HUCache init(@NonNull Function<HuId, I_M_HU> loadHU)
+		{
+			return HUCache.builder()
+					.loadHU(loadHU)
+					.build();
+		}
+
 		@NonNull Function<HuId, I_M_HU> loadHU;
 		Map<HuId, I_M_HU> huById = new ConcurrentHashMap<>();
 
