@@ -132,7 +132,9 @@ FROM de_metas_acct.report_taxaccounts(
 					<textFieldExpression><![CDATA[$F{netamt_sum}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="570" y="12" width="26" height="14" uuid="edd9b0e4-eb2d-4d85-838b-f2fbdbb01df7"/>
+					<reportElement x="570" y="12" width="26" height="14" uuid="edd9b0e4-eb2d-4d85-838b-f2fbdbb01df7">
+						<printWhenExpression><![CDATA[$F{netamt_sum}!=null]]></printWhenExpression>
+					</reportElement>
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="10" isBold="true"/>
 					</textElement>
@@ -178,7 +180,9 @@ FROM de_metas_acct.report_taxaccounts(
 					<textFieldExpression><![CDATA[$F{netamt_sum}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="570" y="3" width="26" height="14" uuid="40ac304e-5dcf-4fd2-9a2c-683b4e9ed485"/>
+					<reportElement x="570" y="3" width="26" height="14" uuid="40ac304e-5dcf-4fd2-9a2c-683b4e9ed485">
+						<printWhenExpression><![CDATA[$F{netamt_sum}!=null]]></printWhenExpression>
+					</reportElement>
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
@@ -505,10 +509,12 @@ FROM de_metas_acct.report_taxaccounts(
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{netamt}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{netamt_sum}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="570" y="2" width="27" height="12" uuid="236dbdfc-aa1e-4d0f-8191-292933973379"/>
+				<reportElement x="570" y="2" width="27" height="12" uuid="236dbdfc-aa1e-4d0f-8191-292933973379">
+					<printWhenExpression><![CDATA[$F{netamt_sum}!=null]]></printWhenExpression>
+				</reportElement>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
