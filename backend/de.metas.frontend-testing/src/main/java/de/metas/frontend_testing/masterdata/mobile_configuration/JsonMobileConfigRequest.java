@@ -39,6 +39,11 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean pickWithNewLU;
 		@Nullable Boolean allowNewTU;
 		@Nullable Boolean allowSkippingRejectedReason;
+<<<<<<< HEAD
+=======
+		@Nullable Boolean filterByQRCode;
+		@Nullable Boolean showLastPickedBestBeforeDateForLines;
+>>>>>>> adba836fca (MobileUI Kommissionierung - Show last picked HU BestBeforeDate (#20535))
 
 		@Nullable List<Customer> customers;
 
