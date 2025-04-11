@@ -7,8 +7,11 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.money.MoneyService;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMDAO;
 import io.cucumber.datatable.DataTable;
 import lombok.Builder;
@@ -23,6 +26,7 @@ import java.util.Optional;
 public class FactAcctMatchersFactory
 {
 	@NonNull private final IUOMDAO uomDAO;
+	@NonNull private final ITaxDAO taxDAO;
 	@NonNull private final MoneyService moneyService;
 	@NonNull private final IdentifiersResolver identifiersResolver;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
@@ -69,7 +73,7 @@ public class FactAcctMatchersFactory
 				.amtSourceCr(row.getAsOptionalMoney(I_Fact_Acct.COLUMNNAME_AmtSourceCr, moneyService::getCurrencyIdByCurrencyCode).orElse(null))
 				.qty(row.getAsOptionalQuantity(I_Fact_Acct.COLUMNNAME_Qty, uomDAO::getByX12DE355).orElse(null))
 				.documentRef(documentRef)
-				.taxId(row.getAsOptionalIdentifier("C_Tax_ID").map(taxTable::getId).orElse(null))
+				.taxId(extractTaxId(row))
 				.bpartnerId(extractBPartnerId(row))
 				.build();
 	}
@@ -80,4 +84,35 @@ public class FactAcctMatchersFactory
 		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier("C_BPartner_ID").orElse(null);
 		return identifier == null ? null : Optional.ofNullable(identifier.lookupIdIn(bpartnerTable));
 	}
+
+	@SuppressWarnings("OptionalAssignedToNull")
+	private Optional<TaxId> extractTaxId(final @NonNull DataTableRow row)
+	{
+		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier("C_Tax_ID").orElse(null);
+		if (identifier == null)
+		{
+			return null;
+		}
+
+		if (identifier.isNullPlaceholder())
+		{
+			return Optional.empty();
+		}
+
+		TaxId taxId = taxTable.getIdOptional(identifier).orElse(null);
+		if (taxId != null)
+		{
+			return Optional.of(taxId);
+		}
+
+		taxId = taxDAO.getIdByName(identifier.getAsString(), StepDefConstants.CLIENT_ID).orElse(null);
+		if (taxId != null)
+		{
+			return Optional.of(taxId);
+		}
+
+		taxId = identifier.getAsId(TaxId.class);
+		return Optional.of(taxId);
+	}
+
 }
