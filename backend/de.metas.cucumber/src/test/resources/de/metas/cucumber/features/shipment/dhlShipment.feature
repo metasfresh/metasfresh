@@ -28,8 +28,8 @@ Feature: Dhl Shipment
 
     # Create product
     And metasfresh contains M_Products:
-      | Identifier          | Name                | IsStocked | Weight |
-      | test_product_dhl_01 | test_product_dhl_01 | true      | 0.250  |
+      | Identifier          | Name                | IsStocked | WeightGross |
+      | test_product_dhl_01 | test_product_dhl_01 | true      | 0.250 KGM   |
     And metasfresh contains M_PricingSystems
       | Identifier | Name           | Value          |
       | ps_dhl_1   | pricing_system | pricing_system |

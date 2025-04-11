@@ -149,7 +149,7 @@ public interface IProductBL extends ISingletonService
 
 	I_C_UOM getWeightUOM(I_M_Product product);
 
-	Optional<Quantity> getWeight(ProductId productId);
+	Optional<Quantity> getGrossWeight(ProductId productId);
 
 	/**
 	 * Gets product standard Weight in <code>uomTo</code>.

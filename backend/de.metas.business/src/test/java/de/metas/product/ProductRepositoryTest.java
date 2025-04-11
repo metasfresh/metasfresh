@@ -207,7 +207,7 @@ class ProductRepositoryTest
 				.commodityNumberId(commodityNumberId)
 				.manufacturerId(manufacturerId)
 				.packageSize(packageSize)
-				.weight(weight)
+				.weightNetInKg(weight)
 				.build();
 
 		productRepository.updateProduct(product);
@@ -229,7 +229,7 @@ class ProductRepositoryTest
 		assertThat(updatedProduct.getCommodityNumberId()).isEqualTo(commodityNumberId);
 		assertThat(updatedProduct.getManufacturerId()).isEqualTo(manufacturerId);
 		assertThat(updatedProduct.getPackageSize()).isEqualTo(packageSize);
-		assertThat(updatedProduct.getWeight()).isEqualTo(weight);
+		assertThat(updatedProduct.getWeightNetInKg()).isEqualTo(weight);
 		assertThat(updatedProduct.getUomId()).isEqualTo(product.getUomId());
 	}
 

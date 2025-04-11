@@ -287,7 +287,16 @@ public class M_Product_StepDef
 
 		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_Description).ifPresent(productRecord::setDescription);
 
-		tableRow.getAsOptionalBigDecimal(I_M_Product.COLUMNNAME_Weight).ifPresent(productRecord::setWeight);
+		tableRow.getAsOptionalQuantity("WeightNet", uomDAO::getByX12DE355)
+				.ifPresent(netWeight -> {
+					assertThat(netWeight.getX12DE355()).as("NetWeight must be in Kilograms").isEqualTo(X12DE355.KILOGRAM);
+					productRecord.setWeight(netWeight.toBigDecimal());
+				});
+		tableRow.getAsOptionalQuantity("WeightGross", uomDAO::getByX12DE355)
+				.ifPresent(grossWeight -> {
+					productRecord.setGrossWeight(grossWeight.toBigDecimal());
+					productRecord.setGrossWeight_UOM_ID(grossWeight.getUomId().getRepoId());
+				});
 
 		final boolean isSold = tableRow.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsSold).orElseTrue();
 		final boolean isPurchased = tableRow.getAsOptionalBoolean(I_M_Product.COLUMNNAME_IsPurchased).orElseTrue();

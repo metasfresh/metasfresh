@@ -27,6 +27,7 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMConversionDAO;
 import de.metas.uom.IUOMDAO;
@@ -178,21 +179,27 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public Optional<Quantity> getWeight(final ProductId productId)
+	public Optional<Quantity> getGrossWeight(final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
-		if (InterfaceWrapperHelper.isNull(product, I_M_Product.COLUMNNAME_Weight))
+		final UomId weightUomId = UomId.ofRepoIdOrNull(product.getGrossWeight_UOM_ID());
+		if (weightUomId == null)
 		{
 			return Optional.empty();
 		}
 
-		final BigDecimal weightBD = product.getWeight();
+		if (InterfaceWrapperHelper.isNull(product, I_M_Product.COLUMNNAME_GrossWeight))
+		{
+			return Optional.empty();
+		}
+
+		final BigDecimal weightBD = product.getGrossWeight();
 		if (weightBD.signum() <= 0)
 		{
 			return Optional.empty();
 		}
 
-		return Optional.of(Quantity.of(weightBD, getWeightUOM()));
+		return Optional.of(Quantitys.of(weightBD, weightUomId));
 	}
 
 	@Override

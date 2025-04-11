@@ -286,7 +286,7 @@ class ReceiptCandidateAPIService
 				.name(product.getName().translate(adLanguage))
 				.documentNote(product.getDocumentNote().translate(adLanguage))
 				.packageSize(product.getPackageSize())
-				.weight(product.getWeight())
+				.weight(product.getWeightNetInKg())
 				.commodityNumberValue(commodityNumber)
 				.description(product.getDescription().translate(adLanguage));
 

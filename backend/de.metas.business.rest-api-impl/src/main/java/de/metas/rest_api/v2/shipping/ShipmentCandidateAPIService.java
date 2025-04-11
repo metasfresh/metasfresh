@@ -429,7 +429,7 @@ class ShipmentCandidateAPIService
 				.name(product.getName().translate(adLanguage))
 				.documentNote(product.getDocumentNote().translate(adLanguage))
 				.packageSize(product.getPackageSize())
-				.weight(product.getWeight())
+				.weight(product.getWeightNetInKg())
 				.stocked(product.isStocked())
 				.description(product.getDescription().translate(adLanguage))
 				.build();
