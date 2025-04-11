@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" resourceBundle="de/metas/reports/tax_accounting_v3/report" uuid="368dee7e-3f75-4062-a55c-84e201083d00">
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
@@ -28,23 +28,21 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT t.*
-FROM de_metas_acct.taxaccountsonly_details($P{AD_Org_ID},$P{account_id}, $P{C_VAT_Code_ID}, $P{DateFrom},  $P{DateTo}) AS t 
-WHERE t.taxname IS NOT NULL
-order by vatcode, accountno
-;]]>
+		<![CDATA[SELECT *
+FROM de_metas_acct.report_taxaccounts(
+        p_ad_org_id => $P{AD_Org_ID},
+       p_account_id => $P{account_id},
+       p_c_vat_code_id =>$P{C_VAT_Code_ID},
+       p_datefrom => $P{DateFrom}, 
+       p_dateto => $P{DateTo},
+       p_isshowdetails => $P{showdetails},
+       p_ad_language =>$P{ad_language});]]>
 	</queryString>
-	<field name="balance" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="balance"/>
+	<field name="level" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="level"/>
 	</field>
-	<field name="balanceyear" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="balanceyear"/>
-	</field>
-	<field name="taxbaseamt" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="taxbaseamt"/>
-	</field>
-	<field name="accountno" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="accountno"/>
+	<field name="vatcode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="vatcode"/>
 	</field>
 	<field name="accountname" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="accountname"/>
@@ -52,14 +50,38 @@ order by vatcode, accountno
 	<field name="taxname" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="taxname"/>
 	</field>
-	<field name="c_tax_id" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="c_tax_id"/>
+	<field name="netamt_sum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="netamt_sum"/>
 	</field>
-	<field name="vatcode" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="vatcode"/>
+	<field name="taxamt_sum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="taxamt_sum"/>
 	</field>
-	<field name="c_elementvalue_id" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="c_elementvalue_id"/>
+	<field name="taxamt_sum_prevyear" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="taxamt_sum_prevyear"/>
+	</field>
+	<field name="currency" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="currency"/>
+	</field>
+	<field name="dateacct" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.label" value="dateacct"/>
+	</field>
+	<field name="documentno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="documentno"/>
+	</field>
+	<field name="bpartnername" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="bpartnername"/>
+	</field>
+	<field name="totalamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="totalamt"/>
+	</field>
+	<field name="netamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="netamt"/>
+	</field>
+	<field name="source_currency" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="source_currency"/>
+	</field>
+	<field name="taxamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="taxamt"/>
 	</field>
 	<field name="param_startdate" class="java.sql.Date">
 		<property name="com.jaspersoft.studio.field.label" value="param_startdate"/>
@@ -76,37 +98,11 @@ order by vatcode, accountno
 	<field name="param_org" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="param_org"/>
 	</field>
-	<field name="currency" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="currency"/>
-	</field>
-	<variable name="balanceyear_acct_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="account_group" calculation="Sum">
-		<variableExpression><![CDATA[$F{balanceyear}]]></variableExpression>
-		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
-	</variable>
-	<variable name="balanceyear_vat_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="vatcode_group" calculation="Sum">
-		<variableExpression><![CDATA[$F{balanceyear}]]></variableExpression>
-		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
-	</variable>
-	<variable name="balance_acct_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="account_group" calculation="Sum">
-		<variableExpression><![CDATA[$F{balance}]]></variableExpression>
-		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
-	</variable>
-	<variable name="balance_vat_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="vatcode_group" calculation="Sum">
-		<variableExpression><![CDATA[$F{balance}]]></variableExpression>
-		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
-	</variable>
-	<variable name="taxbaseamt_vat_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="vatcode_group" calculation="Sum">
-		<variableExpression><![CDATA[$F{taxbaseamt}]]></variableExpression>
-		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
-	</variable>
-	<variable name="taxbaseamt_acct_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="account_group" calculation="Sum">
-		<variableExpression><![CDATA[$F{taxbaseamt}]]></variableExpression>
-		<initialValueExpression><![CDATA[BigDecimal.ZERO]]></initialValueExpression>
-	</variable>
-	<group name="vatcode_group">
+	<group name="vatcode_group" footerPosition="CollateAtBottom">
 		<groupExpression><![CDATA[$F{vatcode}]]></groupExpression>
 		<groupHeader>
-			<band height="27">
+			<band height="31">
+				<printWhenExpression><![CDATA["1".equals($F{level})]]></printWhenExpression>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="0" y="12" width="150" height="14" uuid="f9a5b4ab-ac9d-4612-9172-b6ce863e873a"/>
 					<textElement textAlignment="Left" verticalAlignment="Bottom">
@@ -114,26 +110,33 @@ order by vatcode, accountno
 					</textElement>
 					<textFieldExpression><![CDATA[$F{vatcode} == null ? ($R{no_vatcode}) : $F{vatcode}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="vatcode_group" pattern="#,##0.00" isBlankWhenNull="true">
+				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="680" y="12" width="100" height="14" uuid="25fae90c-d0e1-493d-a174-5bbcf9dfc162"/>
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{balanceyear_vat_sum}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{taxamt_sum_prevyear}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="vatcode_group" pattern="#,##0.00" isBlankWhenNull="true">
+				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="597" y="12" width="83" height="14" uuid="fb200e00-cbab-4355-8cfe-4e71cd55d9b0"/>
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{balance_vat_sum}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{taxamt_sum}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="vatcode_group" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="520" y="12" width="77" height="14" uuid="ae4f572d-b66d-4194-a001-188b93c0d3a1"/>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="460" y="12" width="110" height="14" uuid="ae4f572d-b66d-4194-a001-188b93c0d3a1"/>
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{taxbaseamt_vat_sum}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{netamt_sum}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="570" y="12" width="26" height="14" uuid="edd9b0e4-eb2d-4d85-838b-f2fbdbb01df7"/>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Arial" size="10" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{source_currency}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -142,43 +145,44 @@ order by vatcode, accountno
 		</groupFooter>
 	</group>
 	<group name="account_group">
-		<groupExpression><![CDATA[$F{accountno}]]></groupExpression>
+		<groupExpression><![CDATA[$F{accountname}+$F{level}]]></groupExpression>
 		<groupHeader>
 			<band height="26">
-				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="account_group" pattern="#,##0.00" isBlankWhenNull="true">
+				<printWhenExpression><![CDATA["2".equals($F{level})]]></printWhenExpression>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="680" y="3" width="100" height="14" uuid="58ca5ce2-1c32-49c9-a66b-f57e6b1b5ca8"/>
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{balanceyear_acct_sum}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{taxamt_sum_prevyear}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="0" y="3" width="70" height="14" uuid="28d98eec-e34e-4ec1-b4ab-6d2c7376c61a"/>
-					<textElement textAlignment="Left" verticalAlignment="Bottom">
-						<font fontName="Arial" size="9" isBold="true"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{accountno}]]></textFieldExpression>
-				</textField>
-				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="70" y="3" width="270" height="14" uuid="4bea804d-ae57-4e6a-9149-4ed9c8bf33ba"/>
+					<reportElement x="0" y="3" width="330" height="14" uuid="4bea804d-ae57-4e6a-9149-4ed9c8bf33ba"/>
 					<textElement textAlignment="Left" verticalAlignment="Bottom">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{accountname}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="account_group" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="597" y="4" width="83" height="14" uuid="a3f27b7c-379b-4539-ab3e-71b302e4fb59"/>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="597" y="3" width="83" height="14" uuid="a3f27b7c-379b-4539-ab3e-71b302e4fb59"/>
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{balance_acct_sum}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{taxamt_sum}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="account_group" pattern="#,##0.00" isBlankWhenNull="true">
-					<reportElement x="520" y="3" width="77" height="14" uuid="26391098-bd8c-49a3-963d-6d4f8e1430f8"/>
+				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="460" y="3" width="110" height="14" uuid="26391098-bd8c-49a3-963d-6d4f8e1430f8"/>
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$V{taxbaseamt_acct_sum}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{netamt_sum}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="570" y="3" width="26" height="14" uuid="40ac304e-5dcf-4fd2-9a2c-683b4e9ed485"/>
+					<textElement textAlignment="Right" verticalAlignment="Bottom">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{source_currency}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -187,7 +191,7 @@ order by vatcode, accountno
 		</groupFooter>
 	</group>
 	<group name="account_tax_vat" keepTogether="true">
-		<groupExpression><![CDATA[$F{vatcode}+$F{taxname}+$F{accountno}]]></groupExpression>
+		<groupExpression><![CDATA[$F{vatcode}+$F{taxname}+$F{accountname}]]></groupExpression>
 	</group>
 	<background>
 		<band splitType="Stretch"/>
@@ -343,7 +347,7 @@ order by vatcode, accountno
 				<textFieldExpression><![CDATA[$R{booking}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="340" y="121" width="131" height="12" forecolor="#FFFFFF" uuid="ed0aad1b-40b1-4d1b-b3ee-bd0c1c55ef81">
+				<reportElement x="280" y="121" width="131" height="12" forecolor="#FFFFFF" uuid="ed0aad1b-40b1-4d1b-b3ee-bd0c1c55ef81">
 					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -386,15 +390,6 @@ order by vatcode, accountno
 					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{bpname}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="383" y="134" width="55" height="12" forecolor="#FFFFFF" uuid="300e52de-09ca-470e-a0a4-98faf146de7e">
-					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{vat}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="438" y="134" width="91" height="12" forecolor="#FFFFFF" uuid="2cd7115b-12b6-423f-bbf1-35797b9e8760">
@@ -476,22 +471,16 @@ order by vatcode, accountno
 	</columnHeader>
 	<detail>
 		<band height="19">
+			<printWhenExpression><![CDATA["3".equals($F{level})]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="0" y="2" width="70" height="12" uuid="f1148d44-61ec-4614-b025-8b84222eca1d"/>
-				<textElement textAlignment="Left">
-					<font fontName="Arial" size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{accountno}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="70" y="2" width="270" height="12" uuid="f8dfa375-a6d0-4df6-af0e-d9cae2c72b65"/>
+				<reportElement x="0" y="2" width="280" height="12" uuid="f8dfa375-a6d0-4df6-af0e-d9cae2c72b65"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{accountname}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="340" y="2" width="180" height="12" uuid="324e8ede-9298-453f-90dd-03b190730e6d"/>
+				<reportElement x="280" y="2" width="160" height="12" uuid="324e8ede-9298-453f-90dd-03b190730e6d"/>
 				<textElement textAlignment="Left">
 					<font fontName="Arial" size="8"/>
 				</textElement>
@@ -502,53 +491,101 @@ order by vatcode, accountno
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{balanceyear}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{taxamt_sum_prevyear}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="597" y="2" width="83" height="12" uuid="7ac05829-90bc-40de-882b-efaa1e855b94"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{balance}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{taxamt_sum}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="520" y="2" width="77" height="12" uuid="329993a1-8b91-41d6-aba5-aee39cb330b9"/>
+				<reportElement x="493" y="2" width="77" height="12" uuid="329993a1-8b91-41d6-aba5-aee39cb330b9"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{taxbaseamt}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{netamt}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="570" y="2" width="27" height="12" uuid="236dbdfc-aa1e-4d0f-8191-292933973379"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{source_currency}]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="4" splitType="Stretch">
-			<printWhenExpression><![CDATA["Y".equals($P{showdetails})]]></printWhenExpression>
-			<subreport>
-				<reportElement x="0" y="0" width="780" height="4" isPrintWhenDetailOverflows="true" uuid="74a4be63-a872-4c91-8eb6-d32c169f6ef5">
-					<printWhenExpression><![CDATA["Y".equals($P{showdetails})]]></printWhenExpression>
+		<band height="12" splitType="Stretch">
+			<printWhenExpression><![CDATA["Y".equals($P{showdetails}) && "4".equals($F{level})]]></printWhenExpression>
+			<textField pattern="dd.MM.yyyy">
+				<reportElement x="0" y="0" width="70" height="12" uuid="66e35d05-f943-460f-b288-b43b1029ae02"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+					<paragraph leftIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{dateacct}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="70" y="0" width="59" height="12" uuid="7a3b7643-0a27-4aa4-ae86-86ceff371e3e"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{documentno}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="128" y="0" width="152" height="12" uuid="78f3b53b-312b-49cb-897a-550fa8d08cd4"/>
+				<textElement>
+					<font fontName="Arial" size="8" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{bpartnername}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="280" y="0" width="131" height="12" uuid="85f1bc01-07d4-442c-ba9d-9d1091222e97"/>
+				<textElement>
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{taxname}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="434" y="0" width="70" height="12" uuid="5e660320-4b24-418b-87bc-c7a316b1a0be"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalamt}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="504" y="0" width="26" height="12" uuid="d16b68eb-633f-4a86-a334-d98359a1d269">
+					<printWhenExpression><![CDATA[$F{totalamt}!=null]]></printWhenExpression>
 				</reportElement>
-				<subreportParameter name="DateFrom">
-					<subreportParameterExpression><![CDATA[$P{DateFrom}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="vatcode">
-					<subreportParameterExpression><![CDATA[$F{vatcode}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="account_id">
-					<subreportParameterExpression><![CDATA[$F{c_elementvalue_id}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="AD_Org_ID">
-					<subreportParameterExpression><![CDATA[$P{AD_Org_ID}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="DateTo">
-					<subreportParameterExpression><![CDATA[$P{DateTo}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="c_tax_id">
-					<subreportParameterExpression><![CDATA[$F{c_tax_id}]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="currency">
-					<subreportParameterExpression><![CDATA[$F{currency}]]></subreportParameterExpression>
-				</subreportParameter>
-				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/reports/tax_accounting_v3/report_details.jasper"]]></subreportExpression>
-			</subreport>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{source_currency}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="530" y="0" width="68" height="12" uuid="64bc371e-422a-440f-94b5-0990efc5a550"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{netamt}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="625" y="0" width="106" height="12" uuid="18376337-4c47-426f-9e02-13080f319e54"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+					<paragraph rightIndent="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{taxamt}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="598" y="0" width="26" height="12" uuid="1cea82cc-629e-4b37-bd48-8610170248e8">
+					<printWhenExpression><![CDATA[$F{netamt}!=null]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{source_currency}]]></textFieldExpression>
+			</textField>
 		</band>
 	</detail>
 	<columnFooter>
