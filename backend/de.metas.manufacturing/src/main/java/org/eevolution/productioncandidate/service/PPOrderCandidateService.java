@@ -524,6 +524,11 @@ public class PPOrderCandidateService
 		);
 	}
 
+	public void updateOrderCandidateById(@NonNull final PPOrderCandidateId ppOrderCandidateId)
+	{
+		updateOrderCandidatesByIds(ImmutableSet.of(ppOrderCandidateId));
+	}
+
 	private void updateOrderCandidatesByIds(@NonNull final Collection<PPOrderCandidateId> ppOrderCandidateIds)
 	{
 		final ImmutableList<I_PP_Order_Candidate> ppOrderCandidates = ppOrderCandidateDAO.getByIds(ppOrderCandidateIds);
