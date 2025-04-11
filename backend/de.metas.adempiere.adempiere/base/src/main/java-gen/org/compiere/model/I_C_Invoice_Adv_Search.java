@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_Invoice_Adv_Search
  *  @author metasfresh (generated) 
@@ -589,6 +590,50 @@ public interface I_C_Invoice_Adv_Search
 
 	ModelColumn<I_C_Invoice_Adv_Search, Object> COLUMN_IsCompany = new ModelColumn<>(I_C_Invoice_Adv_Search.class, "IsCompany", null);
 	String COLUMNNAME_IsCompany = "IsCompany";
+
+	/**
+	 * Set Paid.
+	 * The document is paid
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsPaid (boolean IsPaid);
+
+	/**
+	 * Get Paid.
+	 * The document is paid
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isPaid();
+
+	ModelColumn<I_C_Invoice_Adv_Search, Object> COLUMN_IsPaid = new ModelColumn<>(I_C_Invoice_Adv_Search.class, "IsPaid", null);
+	String COLUMNNAME_IsPaid = "IsPaid";
+
+	/**
+	 * Set Partially Paid.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsPartiallyPaid (boolean IsPartiallyPaid);
+
+	/**
+	 * Get Partially Paid.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isPartiallyPaid();
+
+	ModelColumn<I_C_Invoice_Adv_Search, Object> COLUMN_IsPartiallyPaid = new ModelColumn<>(I_C_Invoice_Adv_Search.class, "IsPartiallyPaid", null);
+	String COLUMNNAME_IsPartiallyPaid = "IsPartiallyPaid";
 
 	/**
 	 * Set Lastname.

@@ -23,18 +23,16 @@
 package de.metas.ui.web.bpartner.filter;
 
 import com.jgoodies.common.base.Objects;
-import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.sql.FilterSql;
+import de.metas.ui.web.document.filter.sql.FilterSqlRequest;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
-import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
-import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.compiere.model.I_C_BPartner_Export;
 
 public class BPartnerExportFilterConverter implements SqlDocumentFilterConverter
 {
-	public static final transient BPartnerExportFilterConverter instance = new BPartnerExportFilterConverter();
+	public static final BPartnerExportFilterConverter instance = new BPartnerExportFilterConverter();
 
 	static final String FILTER_ID = "postal";
 
@@ -52,20 +50,17 @@ public class BPartnerExportFilterConverter implements SqlDocumentFilterConverter
 	}
 
 	@Override
-	public FilterSql getSql(
-			@NonNull final DocumentFilter filter,
-			@NonNull final SqlOptions sqlOpts,
-			final SqlDocumentFilterConverterContext ignored)
+	public FilterSql getSql(@NonNull final FilterSqlRequest request)
 	{
-		final String postalFrom = filter.getParameterValueAsString(PARAM_POSTAL_FROM, null);
-		final String postalTo = filter.getParameterValueAsString(PARAM_POSTAL_TO, null);
+		final String postalFrom = request.getFilterParameterValueAsString(PARAM_POSTAL_FROM, null);
+		final String postalTo = request.getFilterParameterValueAsString(PARAM_POSTAL_TO, null);
 
 		Check.assumeNotEmpty(postalFrom, "PostalFrom not empty");
 		Check.assumeNotEmpty(postalTo, "PostalTo not empty");
 
 		return FilterSql.ofWhereClause(
-				sqlOpts.getTableNameOrAlias() + "." + I_C_BPartner_Export.COLUMNNAME_Postal + " >= '" + postalFrom
-						+ "' AND " + sqlOpts.getTableNameOrAlias() + "." + I_C_BPartner_Export.COLUMNNAME_Postal
+				request.getTableNameOrAlias() + "." + I_C_BPartner_Export.COLUMNNAME_Postal + " >= '" + postalFrom
+						+ "' AND " + request.getTableNameOrAlias() + "." + I_C_BPartner_Export.COLUMNNAME_Postal
 						+ " <= '" + postalTo + "'");
 	}
 }

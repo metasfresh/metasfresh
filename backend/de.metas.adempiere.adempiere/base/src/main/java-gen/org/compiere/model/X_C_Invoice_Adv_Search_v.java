@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_Invoice_Adv_Search_v
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice_Adv_Search_v extends org.compiere.model.PO implements I_C_Invoice_Adv_Search_v, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1850138883L;
+	private static final long serialVersionUID = -866949625L;
 
     /** Standard Constructor */
     public X_C_Invoice_Adv_Search_v (final Properties ctx, final int C_Invoice_Adv_Search_v_ID, @Nullable final String trxName)
@@ -353,6 +353,30 @@ public class X_C_Invoice_Adv_Search_v extends org.compiere.model.PO implements I
 	public boolean isCompany() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCompany);
+	}
+
+	@Override
+	public void setIsPaid (final boolean IsPaid)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsPaid, IsPaid);
+	}
+
+	@Override
+	public boolean isPaid() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPaid);
+	}
+
+	@Override
+	public void setIsPartiallyPaid (final boolean IsPartiallyPaid)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsPartiallyPaid, IsPartiallyPaid);
+	}
+
+	@Override
+	public boolean isPartiallyPaid() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPartiallyPaid);
 	}
 
 	@Override

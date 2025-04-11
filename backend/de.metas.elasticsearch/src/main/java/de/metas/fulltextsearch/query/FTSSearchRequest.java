@@ -22,6 +22,7 @@
 
 package de.metas.fulltextsearch.query;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.fulltextsearch.config.FTSFilterDescriptor;
 import de.metas.security.UserRolePermissionsKey;
 import lombok.Builder;
@@ -29,6 +30,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 
 @Value
 @Builder
@@ -39,6 +41,9 @@ public class FTSSearchRequest
 	@NonNull String esIndexName;
 
 	@Nullable UserRolePermissionsKey userRolePermissionsKey;
-
 	@NonNull FTSFilterDescriptor filterDescriptor;
+
+	@NonNull @Builder.Default Map<String, Object> defaultFilterParams = ImmutableMap.of();
+
+	boolean hasDefaultFilterParams() {return !defaultFilterParams.isEmpty();}
 }

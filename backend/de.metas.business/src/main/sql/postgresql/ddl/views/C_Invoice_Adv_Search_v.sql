@@ -42,6 +42,8 @@ SELECT i.c_invoice_id,
        0::numeric                                                                                              AS createdby,
        GREATEST(bp.updated, bpl.updated, u.updated, dt.updated, wh.updated, cal.updated, year.updated)         AS updated,
        0::numeric                                                                                              AS updatedby,
+       i.ispaid,
+       i.ispartiallypaid,
        --
        i.c_invoice_ID
            || '-' || bp.c_bpartner_id

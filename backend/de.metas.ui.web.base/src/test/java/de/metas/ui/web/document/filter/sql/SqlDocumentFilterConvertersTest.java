@@ -1,9 +1,8 @@
 package de.metas.ui.web.document.filter.sql;
 
-import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.sql.SqlEntityBinding;
-import de.metas.ui.web.window.model.sql.SqlOptions;
+import lombok.NonNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -47,7 +46,7 @@ public class SqlDocumentFilterConvertersTest
 		 * This method won't be called throughout our test
 		 */
 		@Override
-		public FilterSql getSql(final DocumentFilter filter, final SqlOptions sqlOpts, final SqlDocumentFilterConverterContext context)
+		public FilterSql getSql(@NonNull final FilterSqlRequest request)
 		{
 			throw new UnsupportedOperationException();
 		}

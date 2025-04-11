@@ -1,7 +1,5 @@
 package de.metas.ui.web.document.filter.sql;
 
-import de.metas.ui.web.document.filter.DocumentFilter;
-import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -57,16 +55,12 @@ import lombok.ToString;
 	}
 
 	@Override
-	public FilterSql getSql(
-			@NonNull final DocumentFilter filter,
-			@NonNull final SqlOptions sqlOpts,
-			@NonNull final SqlDocumentFilterConverterContext context)
+	public FilterSql getSql(@NonNull final FilterSqlRequest request)
 	{
 		// Find the effective converter to be used for given filter
-		final String filterId = filter.getFilterId();
-		final SqlDocumentFilterConverter effectiveConverter = converters.getConverterOrDefault(filterId, defaultConverter);
+		final SqlDocumentFilterConverter effectiveConverter = converters.getConverterOrDefault(request.getFilterId(), defaultConverter);
 
 		// Convert the filter to SQL using the effective converter
-		return effectiveConverter.getSql(filter, sqlOpts, context);
+		return effectiveConverter.getSql(request);
 	}
 }
