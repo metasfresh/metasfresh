@@ -1,6 +1,7 @@
 package de.metas.ui.web.document.filter.sql;
 
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.filter.DocumentFilterParam.Operator;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
@@ -72,7 +73,7 @@ public class SqlDefaultDocumentFilterConverterTest
 	}
 
 	@SuppressWarnings("SameParameterValue")
-	static DocumentFilter filter(@NonNull String fieldName, @NonNull Operator operator, @Nullable Object value)
+	static DocumentFilter filter(@NonNull final String fieldName, @NonNull final Operator operator, @Nullable final Object value)
 	{
 		return DocumentFilter.builder()
 				.filterId("filterId")
@@ -85,7 +86,7 @@ public class SqlDefaultDocumentFilterConverterTest
 	}
 
 	@SuppressWarnings("SameParameterValue")
-	static DocumentFilter betweenFilter(@NonNull String fieldName, @Nullable Object valueFrom, @Nullable Object valueTo)
+	static DocumentFilter betweenFilter(@NonNull final String fieldName, @Nullable final Object valueFrom, @Nullable final Object valueTo)
 	{
 		return DocumentFilter.builder()
 				.filterId("filterId")
@@ -98,11 +99,16 @@ public class SqlDefaultDocumentFilterConverterTest
 				.build();
 	}
 
-	RecursiveComparisonAssert<?> assertSqlWhereClause(@NonNull DocumentFilter filter)
+	RecursiveComparisonAssert<?> assertSqlWhereClause(@NonNull final DocumentFilter filter)
 	{
 		final SqlOptions sqlOpts = SqlOptions.usingTableName("MyTable");
 		final SqlDocumentFilterConverterContext context = SqlDocumentFilterConverterContext.builder().build();
-		final FilterSql sql = converter.getSql(filter, sqlOpts, context);
+		final FilterSql sql = converter.getSql(FilterSqlRequest.builder()
+				.filter(filter)
+				.sqlOpts(sqlOpts)
+				.context(context)
+				.allFilters(DocumentFilterList.of(filter))
+				.build());
 		final SqlAndParams sqlWhereClause = sql != null ? sql.getWhereClause() : null;
 		return assertThat(sqlWhereClause)
 				.usingRecursiveComparison();
