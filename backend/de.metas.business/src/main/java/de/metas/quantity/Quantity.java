@@ -309,6 +309,10 @@ public final class Quantity implements Comparable<Quantity>
 		return qty;
 	}
 
+	// intorduced because we cannot use Quantity::toBigDecimal (we have 2 methods)
+	public BigDecimal getAsBigDecimal() {return toBigDecimal();}
+
+
 	/**
 	 * @deprecated Please use {@link #toBigDecimal()}
 	 */
@@ -829,6 +833,11 @@ public final class Quantity implements Comparable<Quantity>
 	private UOMPrecision getUOMPrecision()
 	{
 		return UOMPrecision.ofInt(uom.getStdPrecision());
+	}
+
+	public Quantity setScale(@NonNull final UOMPrecision newScale)
+	{
+		return setScale(newScale, newScale.getRoundingMode());
 	}
 
 	public Quantity setScale(final UOMPrecision newScale, @NonNull final RoundingMode roundingMode)

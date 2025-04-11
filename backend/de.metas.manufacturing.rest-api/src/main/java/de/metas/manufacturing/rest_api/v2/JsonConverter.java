@@ -66,7 +66,7 @@ public class JsonConverter
 				.description(product.getDescription().translate(adLanguage))
 				.documentNote(product.getDocumentNote().translate(adLanguage))
 				.packageSize(product.getPackageSize())
-				.weight(product.getWeight())
+				.weight(product.getWeightNetInKg())
 				.stocked(product.isStocked())
 				.build();
 	}

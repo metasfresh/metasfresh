@@ -35,7 +35,6 @@ import de.metas.common.product.v2.request.JsonRequestBPartnerProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import de.metas.common.product.v2.request.JsonRequestProductUpsertItem;
-import de.metas.common.product.v2.response.JsonProductBPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
@@ -68,7 +67,6 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.X_M_Product;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -255,6 +253,7 @@ public class ProductRestService
 		externalReferenceRestControllerService.performUpsert(externalReferenceCreateRequest, org.getValue());
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private void validateCreateSyncAdvise(
 			@NonNull final Object parentResource,
 			@NonNull final String resourceIdentifier,
@@ -786,7 +785,7 @@ public class ProductRestService
 				.commodityNumberId(existingProduct.getCommodityNumberId())
 				.manufacturerId(existingProduct.getManufacturerId())
 				.packageSize(existingProduct.getPackageSize())
-				.weight(existingProduct.getWeight());
+				.weightNetInKg(existingProduct.getWeightNetInKg());
 
 		return builder.build();
 	}

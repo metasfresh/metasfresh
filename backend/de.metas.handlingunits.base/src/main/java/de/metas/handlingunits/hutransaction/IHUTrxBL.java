@@ -45,6 +45,7 @@ import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.Mutable;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.util.Date;
@@ -93,7 +94,7 @@ public interface IHUTrxBL extends ISingletonService
 	 * <code>trxLines</code> shall contain the transaction but also the counterpart transaction. If not, an error will be thrown.
 	 */
 	void reverseTrxLines(IHUContext huContext, List<I_M_HU_Trx_Line> trxLines);
-	
+
 	default void unlinkFromParentBeforeDestroy(
 			final IHUContext huContext,
 			@NonNull final I_M_HU hu,
@@ -201,9 +202,15 @@ public interface IHUTrxBL extends ISingletonService
 
 	static I_M_Product extractProductOrNull(@NonNull final I_M_HU_Trx_Line trxLine)
 	{
-		final ProductId productId = ProductId.ofRepoIdOrNull(trxLine.getM_Product_ID());
+		final ProductId productId = extractProductId(trxLine);
 		return productId != null
 				? Services.get(IProductDAO.class).getById(productId)
 				: null;
+	}
+
+	@Nullable
+	static ProductId extractProductId(@NotNull final I_M_HU_Trx_Line trxLine)
+	{
+		return ProductId.ofRepoIdOrNull(trxLine.getM_Product_ID());
 	}
 }

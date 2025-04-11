@@ -348,7 +348,7 @@ public class ProductRepository
 				.discontinuedFrom(TimeUtil.asLocalDate(productRecord.getDiscontinuedFrom(), zoneId))
 				.manufacturerId(BPartnerId.ofRepoIdOrNull(manufacturerId))
 				.packageSize(productRecord.getPackageSize())
-				.weight(productRecord.getWeight())
+				.weightNetInKg(productRecord.getWeight())
 				.stocked(productRecord.isStocked())
 				.commodityNumberId(CommodityNumberId.ofRepoIdOrNull(productRecord.getM_CommodityNumber_ID()))
 				.active(productRecord.isActive())
@@ -387,7 +387,7 @@ public class ProductRepository
 		record.setC_UOM_ID(product.getUomId().getRepoId());
 		record.setManufacturer_ID(BPartnerId.toRepoId(product.getManufacturerId()));
 		record.setPackageSize(product.getPackageSize());
-		record.setWeight(product.getWeight());
+		record.setWeight(product.getWeightNetInKg());
 		record.setIsStocked(product.isStocked());
 		record.setM_CommodityNumber_ID(CommodityNumberId.toRepoId(product.getCommodityNumberId()));
 		record.setIsActive(product.getActive() != null ? product.getActive() : record.isActive());
