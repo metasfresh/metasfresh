@@ -50,14 +50,14 @@ FROM de_metas_acct.report_taxaccounts(
 	<field name="taxname" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="taxname"/>
 	</field>
-	<field name="totalwithoutvat" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="totalwithoutvat"/>
+	<field name="netamt_sum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="netamt_sum"/>
 	</field>
-	<field name="currentbalance" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="currentbalance"/>
+	<field name="taxamt_sum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="taxamt_sum"/>
 	</field>
-	<field name="balance_one_year_ago" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="balance_one_year_ago"/>
+	<field name="taxamt_sum_prevyear" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="taxamt_sum_prevyear"/>
 	</field>
 	<field name="currency" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="currency"/>
@@ -71,11 +71,11 @@ FROM de_metas_acct.report_taxaccounts(
 	<field name="bpartnername" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="bpartnername"/>
 	</field>
-	<field name="grandtotal" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="grandtotal"/>
+	<field name="totalamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="totalamt"/>
 	</field>
-	<field name="totalwithoutvatperdoc" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="totalwithoutvatperdoc"/>
+	<field name="netamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="netamt"/>
 	</field>
 	<field name="source_currency" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="source_currency"/>
@@ -115,21 +115,21 @@ FROM de_metas_acct.report_taxaccounts(
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{balance_one_year_ago}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{taxamt_sum_prevyear}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="597" y="12" width="83" height="14" uuid="fb200e00-cbab-4355-8cfe-4e71cd55d9b0"/>
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{currentbalance}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{taxamt_sum}]]></textFieldExpression>
 				</textField>
-				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="vatcode_group" pattern="#,##0.00" isBlankWhenNull="true">
+				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="460" y="12" width="110" height="14" uuid="ae4f572d-b66d-4194-a001-188b93c0d3a1"/>
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="10" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{totalwithoutvat}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{netamt_sum}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="570" y="12" width="26" height="14" uuid="edd9b0e4-eb2d-4d85-838b-f2fbdbb01df7"/>
@@ -154,7 +154,7 @@ FROM de_metas_acct.report_taxaccounts(
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{balance_one_year_ago}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{taxamt_sum_prevyear}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="0" y="3" width="330" height="14" uuid="4bea804d-ae57-4e6a-9149-4ed9c8bf33ba"/>
@@ -168,14 +168,14 @@ FROM de_metas_acct.report_taxaccounts(
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{currentbalance}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{taxamt_sum}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 					<reportElement x="460" y="3" width="110" height="14" uuid="26391098-bd8c-49a3-963d-6d4f8e1430f8"/>
 					<textElement textAlignment="Right" verticalAlignment="Bottom">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{totalwithoutvat}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{netamt_sum}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="570" y="3" width="26" height="14" uuid="40ac304e-5dcf-4fd2-9a2c-683b4e9ed485"/>
@@ -491,21 +491,21 @@ FROM de_metas_acct.report_taxaccounts(
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{balance_one_year_ago}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{taxamt_sum_prevyear}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="597" y="2" width="83" height="12" uuid="7ac05829-90bc-40de-882b-efaa1e855b94"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{currentbalance}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{taxamt_sum}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="493" y="2" width="77" height="12" uuid="329993a1-8b91-41d6-aba5-aee39cb330b9"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{totalwithoutvat}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{netamt}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="570" y="2" width="27" height="12" uuid="236dbdfc-aa1e-4d0f-8191-292933973379"/>
@@ -551,11 +551,11 @@ FROM de_metas_acct.report_taxaccounts(
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{grandtotal}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{totalamt}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="504" y="0" width="26" height="12" uuid="d16b68eb-633f-4a86-a334-d98359a1d269">
-					<printWhenExpression><![CDATA[$F{grandtotal}!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{totalamt}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
@@ -567,7 +567,7 @@ FROM de_metas_acct.report_taxaccounts(
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{totalwithoutvatperdoc}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{netamt}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="625" y="0" width="106" height="12" uuid="18376337-4c47-426f-9e02-13080f319e54"/>
@@ -579,7 +579,7 @@ FROM de_metas_acct.report_taxaccounts(
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="598" y="0" width="26" height="12" uuid="1cea82cc-629e-4b37-bd48-8610170248e8">
-					<printWhenExpression><![CDATA[$F{totalwithoutvatperdoc}!=null]]></printWhenExpression>
+					<printWhenExpression><![CDATA[$F{netamt}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>

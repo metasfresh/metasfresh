@@ -1,3 +1,12 @@
+/**
+  p_level meaning:
+  * Level '1' : data summed per vatcode; only sum amount are filled up
+  * Level '2' : data summed per vatcode, accounto; only sum amount are filled up
+  * Level '3' : data summed per vatcode, accounto, taxname; only sum amount are filled up
+  * Level '4' : detailed data; only data per document are filled up
+  * null value implies level '4'
+ */
+
 CREATE OR REPLACE FUNCTION de_metas_acct.report_taxaccounts(p_ad_org_id     numeric,
                                                             p_account_id    numeric,
                                                             p_c_vat_code_id numeric,
@@ -8,26 +17,26 @@ CREATE OR REPLACE FUNCTION de_metas_acct.report_taxaccounts(p_ad_org_id     nume
                                                             p_ad_language   character varying DEFAULT 'de_DE'::bpchar)
     RETURNS TABLE
             (
-                Level                 varchar,
-                vatcode               varchar,
-                AccountName           text,
-                Taxname               text,
-                TotalWithoutVAT       numeric,
-                CurrentBalance        numeric,
-                balance_one_year_ago  numeric,
-                Currency              varchar,
-                DateAcct              timestamp,
-                DocumentNo            text,
-                BPartnerName          text,
-                GrandTotal            numeric,
-                TotalWithoutVATPerDoc numeric,
-                source_currency       varchar,
-                TaxAmt                numeric,
-                param_startdate       date,
-                param_enddate         date,
-                param_konto           varchar,
-                param_vatcode         varchar,
-                param_org             varchar
+                Level               varchar,
+                vatcode             varchar,
+                AccountName         text,
+                Taxname             text,
+                NetAmt_SUM          numeric,
+                TaxAmt_SUM          numeric,
+                TaxAmt_SUM_PrevYear numeric,
+                Currency            varchar,
+                DateAcct            timestamp,
+                DocumentNo          text,
+                BPartnerName        text,
+                TotalAmt            numeric,
+                NetAmt              numeric,
+                source_currency     varchar,
+                TaxAmt              numeric,
+                param_startdate     date,
+                param_enddate       date,
+                param_konto         varchar,
+                param_vatcode       varchar,
+                param_org           varchar
             )
     LANGUAGE plpgsql
 AS
@@ -137,7 +146,7 @@ BEGIN
            (CASE
                 WHEN c_currency_id = source_currency_id THEN (taxbaseamt + taxamt)
                                                         ELSE NULL
-            END)                                   AS GrandTotal,
+            END)                                   AS TotalAmt,
            source_currency,
            c_tax_id,
            source_currency_id,
@@ -184,26 +193,26 @@ BEGIN
 
     CREATE TEMP TABLE tmp_final_taxaccounts_report
     (
-        Level                 varchar,
-        vatcode               varchar,
-        AccountName           text,
-        DateAcct              timestamp,
-        DocumentNo            text,
-        BPartnerName          text,
-        Taxname               text,
-        GrandTotal            numeric,
-        TotalWithoutVATPerDoc numeric,
-        TaxAmt                numeric,
-        TotalWithoutVAT       numeric,
-        source_currency       varchar,
-        CurrentBalance        numeric,
-        balance_one_year_ago  numeric,
-        Currency              varchar,
-        param_startdate       date,
-        param_enddate         date,
-        param_konto           varchar,
-        param_vatcode         varchar,
-        param_org             varchar
+        Level               varchar,
+        vatcode             varchar,
+        AccountName         text,
+        DateAcct            timestamp,
+        DocumentNo          text,
+        BPartnerName        text,
+        Taxname             text,
+        TotalAmt            numeric,
+        NetAmt              numeric,
+        TaxAmt              numeric,
+        NetAmt_SUM          numeric,
+        source_currency     varchar,
+        TaxAmt_SUM          numeric,
+        TaxAmt_SUM_PrevYear numeric,
+        Currency            varchar,
+        param_startdate     date,
+        param_enddate       date,
+        param_konto         varchar,
+        param_vatcode       varchar,
+        param_org           varchar
     );
 
     -- insert data for sums per vatcode, currency, source_currency, param_org
@@ -217,13 +226,13 @@ BEGIN
                NULL::text               AS DocumentNo,
                NULL::text               AS BPartnerName,
                NULL::text               AS Taxname,
-               NULL::numeric            AS GrandTotal,
-               NULL::numeric            AS TotalWithoutVATPerDoc,
+               NULL::numeric            AS TotalAmt,
+               NULL::numeric            AS NetAmt,
                NULL::numeric            AS TaxAmt,
-               SUM(taxbaseamt)          AS TotalWithoutVAT,
+               SUM(taxbaseamt)          AS NetAmt_SUM,
                source_currency::varchar AS source_currency,
-               SUM(taxamt)              AS CurrentBalance,
-               0::numeric               AS balance_one_year_ago,
+               SUM(taxamt)              AS TaxAmt_SUM,
+               0::numeric               AS TaxAmt_SUM_PrevYear,
                currency::varchar        AS Currency,
                param_startdate::date,
                param_enddate::date,
@@ -245,13 +254,13 @@ BEGIN
                NULL::text               AS DocumentNo,
                NULL::text               AS BPartnerName,
                NULL::text               AS Taxname,
-               NULL::numeric            AS GrandTotal,
-               NULL::numeric            AS TotalWithoutVATPerDoc,
+               NULL::numeric            AS TotalAmt,
+               NULL::numeric            AS NetAmt,
                NULL::numeric            AS TaxAmt,
-               SUM(taxbaseamt)          AS TotalWithoutVAT,
+               SUM(taxbaseamt)          AS NetAmt_SUM,
                source_currency::varchar AS source_currency,
-               SUM(taxamt)              AS CurrentBalance,
-               0::numeric               AS balance_one_year_ago,
+               SUM(taxamt)              AS TaxAmt_SUM,
+               0::numeric               AS TaxAmt_SUM_PrevYear,
                currency::varchar        AS Currency,
                param_startdate::date,
                param_enddate::date,
@@ -273,13 +282,13 @@ BEGIN
                NULL::text               AS DocumentNo,
                NULL::text               AS BPartnerName,
                taxname::text            AS Taxname,
-               NULL::numeric            AS GrandTotal,
-               NULL::numeric            AS TotalWithoutVATPerDoc,
+               NULL::numeric            AS TotalAmt,
                NULL::numeric            AS TaxAmt,
-               SUM(taxbaseamt)          AS TotalWithoutVAT,
+               NULL::numeric            AS TaxAmt,
+               SUM(taxbaseamt)          AS NetAmt_SUM,
                source_currency::varchar AS source_currency,
-               SUM(taxamt)              AS CurrentBalance,
-               0::numeric               AS balance_one_year_ago,
+               SUM(taxamt)              AS TaxAmt_SUM,
+               0::numeric               AS TaxAmt_SUM_PrevYear,
                currency::varchar        AS Currency,
                param_startdate::date,
                param_enddate::date,
@@ -288,40 +297,6 @@ BEGIN
                param_org ::varchar
         FROM tmp_taxaccounts_details
         GROUP BY vatcode, currency, source_currency, accountname, taxname, param_org, param_startdate, param_enddate, param_konto, param_vatcode;
-    END IF;
-
-    --- update balance for the previous year
-    ---data for sums per vatcode, currency, source_currency, param_org
-    IF p_level IS NULL OR p_level = '1' THEN
-        UPDATE tmp_final_taxaccounts_report t
-        SET balance_one_year_ago = (SELECT COALESCE(SUM(taxamt), 0)
-                                    FROM tmp_taxaccounts_details_previous_year p
-                                    WHERE p.vatcode = t.vatcode
-                                      AND p.source_currency = t.source_currency)
-        WHERE t.Level = '1';
-    END IF;
-
-    ---data for sums per vatcode, currency, param_org, accountno, accountname
-    IF p_level IS NULL OR p_level = '2' THEN
-        UPDATE tmp_final_taxaccounts_report t
-        SET balance_one_year_ago = (SELECT COALESCE(SUM(taxamt), 0)
-                                    FROM tmp_taxaccounts_details_previous_year p
-                                    WHERE vatcode = t.vatcode
-                                      AND p.source_currency = t.source_currency
-                                      AND p.AccountName = t.AccountName)
-        WHERE t.Level = '2';
-    END IF;
-
-    ---data for sums per vatcode, currency, source_currency, param_org, accountno, accountname, taxname
-    IF p_level IS NULL OR p_level = '3' THEN
-        UPDATE tmp_final_taxaccounts_report t
-        SET balance_one_year_ago = (SELECT COALESCE(SUM(taxamt), 0)
-                                    FROM tmp_taxaccounts_details_previous_year p
-                                    WHERE vatcode = t.vatcode
-                                      AND p.source_currency = t.source_currency
-                                      AND p.AccountName = t.AccountName
-                                      AND p.Taxname = t.Taxname)
-        WHERE t.Level = '3';
     END IF;
 
     -- add data per documents - level 4
@@ -334,13 +309,13 @@ BEGIN
                t.documentno             AS DocumentNo,
                t.bpname                 AS BPartnerName,
                t.taxname                AS Taxname,
-               t.GrandTotal,
-               t.taxbaseamt             AS TotalWithoutVATPerDoc,
+               t.TotalAmt               AS TotalAmt,
+               t.taxbaseamt             AS NetAmt,
                t.taxamt                 AS TaxAmt,
-               NULL::numeric            AS TotalWithoutVAT,
+               NULL::numeric            AS NetAmt_SUM,
                source_currency::varchar AS source_currency,
-               NULL::numeric            AS CurrentBalance,
-               NULL::numeric            AS balance_one_year_ago,
+               NULL::numeric            AS TaxAmt_SUM,
+               NULL::numeric            AS TaxAmt_SUM_PrevYear,
                currency::varchar        AS Currency,
                param_startdate::date,
                param_enddate::date,
@@ -353,6 +328,43 @@ BEGIN
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
     RAISE NOTICE 'Show taxes per vatcode account and tax: % tmp_final_taxaccounts_report', v_rowcount;
 
+
+
+    --- update balance for the previous year
+    ---data for sums per vatcode, currency, source_currency, param_org
+    IF p_level IS NULL OR p_level = '1' THEN
+        UPDATE tmp_final_taxaccounts_report t
+        SET TaxAmt_SUM_PrevYear = (SELECT COALESCE(SUM(taxamt), 0)
+                                   FROM tmp_taxaccounts_details_previous_year p
+                                   WHERE p.vatcode = t.vatcode
+                                     AND p.source_currency = t.source_currency)
+        WHERE t.Level = '1';
+    END IF;
+
+    ---data for sums per vatcode, currency, param_org, accountno, accountname
+    IF p_level IS NULL OR p_level = '2' THEN
+        UPDATE tmp_final_taxaccounts_report t
+        SET TaxAmt_SUM_PrevYear = (SELECT COALESCE(SUM(taxamt), 0)
+                                   FROM tmp_taxaccounts_details_previous_year p
+                                   WHERE vatcode = t.vatcode
+                                     AND p.source_currency = t.source_currency
+                                     AND p.AccountName = t.AccountName)
+        WHERE t.Level = '2';
+    END IF;
+
+    ---data for sums per vatcode, currency, source_currency, param_org, accountno, accountname, taxname
+    IF p_level IS NULL OR p_level = '3' THEN
+        UPDATE tmp_final_taxaccounts_report t
+        SET TaxAmt_SUM_PrevYear = (SELECT COALESCE(SUM(taxamt), 0)
+                                   FROM tmp_taxaccounts_details_previous_year p
+                                   WHERE vatcode = t.vatcode
+                                     AND p.source_currency = t.source_currency
+                                     AND p.AccountName = t.AccountName
+                                     AND p.Taxname = t.Taxname)
+        WHERE t.Level = '3';
+    END IF;
+
+
     <<RESULT_TABLE>>
     BEGIN
         RETURN QUERY
@@ -360,15 +372,15 @@ BEGIN
                    vatcode,
                    AccountName,
                    Taxname,
-                   TotalWithoutVAT,
-                   CurrentBalance,
-                   balance_one_year_ago,
+                   NetAmt_SUM,
+                   TaxAmt_SUM,
+                   TaxAmt_SUM_PrevYear,
                    Currency,
                    DateAcct,
                    DocumentNo,
                    BPartnerName,
-                   GrandTotal,
-                   TotalWithoutVATPerDoc,
+                   TotalAmt,
+                   NetAmt,
                    source_currency,
                    TaxAmt,
                    param_startdate,

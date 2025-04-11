@@ -97,9 +97,9 @@ FROM (SELECT fa.vatcode                        AS vatcode,
              fa.ad_org_id,
              fa.ad_client_id
       FROM fact_acct fa
-               LEFT OUTER JOIN c_elementvalue ev ON ev.c_elementvalue_id = fa.account_id
-               LEFT OUTER JOIN c_tax tax ON fa.c_tax_id = tax.c_tax_id
-               LEFT OUTER JOIN C_Currency c ON fa.c_Currency_ID = c.C_Currency_ID
+               INNER JOIN c_elementvalue ev ON ev.c_elementvalue_id = fa.account_id
+               INNER JOIN c_tax tax ON fa.c_tax_id = tax.c_tax_id
+               INNER JOIN C_Currency c ON fa.c_Currency_ID = c.C_Currency_ID
                LEFT OUTER JOIN c_bpartner bp ON fa.c_bpartner_id = bp.c_bpartner_id
                LEFT OUTER JOIN C_InvoiceTax inv_tax ON (fa.record_id = inv_tax.c_invoice_id AND fa.ad_table_id = get_Table_Id('C_Invoice') AND inv_tax.c_tax_id = fa.c_tax_id)
                LEFT OUTER JOIN GL_JournalLine gll ON (fa.record_id = gll.gl_journal_id AND fa.ad_table_id = get_Table_Id('GL_Journal') AND gll.gl_journalline_id = fa.line_id AND COALESCE(gll.dr_tax_id, gll.cr_tax_id) = fa.c_tax_id)
