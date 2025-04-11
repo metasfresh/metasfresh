@@ -30,9 +30,9 @@ import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
 import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
-import de.metas.document.invoicingpool.DocTypeInvoicingPoolRepository;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
 import de.metas.greeting.GreetingRepository;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoicecandidate.AbstractICTestSupport;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL.IInvoiceGenerateResult;
@@ -70,7 +70,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class InvoiceCandBLCreateInvoicesTest
@@ -89,7 +89,6 @@ public class InvoiceCandBLCreateInvoicesTest
 	 * <li>makes sure that only NOT processed candidates reach this point
 	 * <li>generates a dummy invoice
 	 * </ul>
-	 *
 	 */
 	public static class MockedDummyInvoiceGenerator implements IInvoiceGeneratorRunnable
 	{
@@ -149,11 +148,11 @@ public class InvoiceCandBLCreateInvoicesTest
 		icTestSupport.registerModelInterceptors();
 
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
-		SpringContextHolder.registerJUnitBean(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()));
-		
+		SpringContextHolder.registerJUnitBean(DocTypeInvoicingPoolService.newInstanceForUnitTesting());
+
 		invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
-		this.invoiceCandBLCreateInvoices = new InvoiceCandBLCreateInvoices();
+		this.invoiceCandBLCreateInvoices = new InvoiceCandBLCreateInvoices(MatchInvoiceService.newInstanceForUnitTesting());
 		this.orderLineBL = Services.get(IOrderLineBL.class);
 
 		final BPartnerStatisticsUpdater asyncBPartnerStatisticsUpdater = new BPartnerStatisticsUpdater();
@@ -166,7 +165,7 @@ public class InvoiceCandBLCreateInvoicesTest
 
 	/**
 	 * Test: if we process an invoice candidate which does not have an user in charge, then don't create the AD_Note but flag it IsError=Y
-	 *
+	 * <p>
 	 * Note: the error is caused in {@link DefaultAggregator}, because the IC's LineAggregationKey is empty and there is no C_Invoice_Candidate_Recompute tag.
 	 */
 	@Test
@@ -192,16 +191,16 @@ public class InvoiceCandBLCreateInvoicesTest
 
 	/**
 	 * Test: processed invoice candidates shall be skipped when generating invoices
-	 *
+	 * <p>
 	 * User Story: there can be cases where invoice candidates had Processed=N when fetched, but in meantime, some of them were already processed and so we need to skip those
-	 *
+	 * <p>
 	 * Task http://dewiki908/mediawiki/index.php/04533_Erstellung_einer_Rechnung_%282013070810000082%29
 	 */
 	@Test
 	public void test_submitAlreadyProcessedCandidate()
 	{
 		invoiceCandBLCreateInvoices.setInvoiceGeneratorClass(MockedDummyInvoiceGenerator.class);
-		
+
 		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
 		final I_C_BPartner_Location bPartnerLocation = BusinessTestHelper.createBPartnerLocation(bPartner);
 		final BPartnerLocationId billBPartnerAndLocationId = BPartnerLocationId.ofRepoId(bPartnerLocation.getC_BPartner_ID(), bPartnerLocation.getC_BPartner_Location_ID());
@@ -269,7 +268,7 @@ public class InvoiceCandBLCreateInvoicesTest
 
 	/**
 	 * Test: Invoice candidates with discount
-	 *
+	 * <p>
 	 * Task http://dewiki908/mediawiki/index.php/04868_Fehler_beim_Abrechen_von_Rechnungskandidaten_%28102205076842%29
 	 */
 	@Test
@@ -335,7 +334,7 @@ public class InvoiceCandBLCreateInvoicesTest
 
 	/**
 	 * Test: priceEntered in Invoice candidadates
-	 *
+	 * <p>
 	 * Task http://dewiki908/mediawiki/index.php/04917_Add_PriceEntered_in_Invoice_candiates_%28104928745590%29
 	 */
 	@Test

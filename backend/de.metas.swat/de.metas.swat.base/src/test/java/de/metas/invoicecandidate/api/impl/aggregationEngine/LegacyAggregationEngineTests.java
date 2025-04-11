@@ -5,7 +5,6 @@ import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyRepository;
-import de.metas.document.invoicingpool.DocTypeInvoicingPoolRepository;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
@@ -40,7 +39,6 @@ import static org.hamcrest.Matchers.comparesEqualTo;
 import static org.junit.Assert.assertThat;
 
 /**
- *
  * <b>IMPORTANT:</b> these tests are still valid! Just the way the tests are implemented is "legacy".
  */
 @RunWith(SpringRunner.class)
@@ -55,9 +53,9 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 	{
 		super.init();
 
-		SpringContextHolder.registerJUnitBean(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()));
+		SpringContextHolder.registerJUnitBean(DocTypeInvoicingPoolService.newInstanceForUnitTesting());
 	}
-	
+
 	@Test
 	public void test_simple01()
 	{
@@ -97,7 +95,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		InterfaceWrapperHelper.refresh(ic2);
 		InterfaceWrapperHelper.refresh(ic3);
 
-		final AggregationEngine engine = AggregationEngine.newInstance();
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting().build();
 		engine.addInvoiceCandidate(ic1);
 		engine.addInvoiceCandidate(ic2);
 		engine.addInvoiceCandidate(ic3);
@@ -161,7 +159,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 
 		updateInvalidCandidates();
 
-		final AggregationEngine engine = AggregationEngine.newInstance();
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting().build();
 		engine.addInvoiceCandidate(ic1);
 		engine.addInvoiceCandidate(ic2);
 		engine.addInvoiceCandidate(ic3);
@@ -213,7 +211,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 
 		updateInvalidCandidates();
 
-		final AggregationEngine engine = AggregationEngine.newInstance();
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting().build();
 		engine.addInvoiceCandidate(manualIc1);
 
 		final List<IInvoiceHeader> invoices = invokeAggregationEngine(engine);
@@ -266,7 +264,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 
 		updateInvalidCandidates();
 
-		final AggregationEngine engine = AggregationEngine.newInstance();
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting().build();
 		engine.addInvoiceCandidate(manualIc1);
 
 		final List<IInvoiceHeader> invoices = invokeAggregationEngine(engine);
@@ -320,7 +318,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		//
 		// Generate invoice
 		{
-			final AggregationEngine engine = AggregationEngine.newInstance();
+			final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting().build();
 			engine.addInvoiceCandidate(ic1);
 			engine.addInvoiceCandidate(ic2);
 
@@ -446,7 +444,7 @@ public class LegacyAggregationEngineTests extends AbstractAggregationEngineTestB
 		//
 		// Generate invoice (again) for IC2_split, IC3
 		{
-			final AggregationEngine engine = AggregationEngine.newInstance();
+			final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting().build();
 			// engine2.addIC(ic1); // already processed
 			// engine2.addIC(ic2); // already processed
 			engine.addInvoiceCandidate(ic2_split);

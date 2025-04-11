@@ -2,7 +2,8 @@ package de.metas.invoicecandidate.spi.impl.aggregator.standard;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.inout.IInOutBL;
-import de.metas.invoice.service.IMatchInvDAO;
+import de.metas.inout.InOutLineId;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceLineAggregationRequest;
 import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
@@ -35,7 +36,7 @@ public final class InvoiceCandidateWithInOutLine
 {
 	// services
 	private final transient IInOutBL inOutBL = Services.get(IInOutBL.class);
-	private final transient IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
+	private final MatchInvoiceService matchInvoiceService;
 
 	private final I_C_Invoice_Candidate ic;
 	private final I_C_InvoiceCandidate_InOutLine iciol;
@@ -69,8 +70,12 @@ public final class InvoiceCandidateWithInOutLine
 	private final InvoiceCandidateId invoicecandidateId;
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-	public InvoiceCandidateWithInOutLine(@NonNull final IInvoiceLineAggregationRequest request)
+	public InvoiceCandidateWithInOutLine(
+			@NonNull final MatchInvoiceService matchInvoiceService,
+			@NonNull final IInvoiceLineAggregationRequest request)
 	{
+		this.matchInvoiceService = matchInvoiceService;
+
 		this.ic = request.getC_Invoice_Candidate();
 		this.iciol = request.getC_InvoiceCandidate_InOutLine();
 		this.allocateRemainingQty = request.isAllocateRemainingQty();
@@ -112,8 +117,11 @@ public final class InvoiceCandidateWithInOutLine
 		{
 			return zero;
 		}
-
-		return matchInvDAO.retrieveQtysInvoiced(iciol.getM_InOutLine(), zero);
+		else
+		{
+			final InOutLineId inoutLineId = InOutLineId.ofRepoId(iciol.getM_InOutLine_ID());
+			return matchInvoiceService.getMaterialQtyMatched(inoutLineId, zero);
+		}
 	}
 
 	public StockQtyAndUOMQty getQtysAlreadyShipped()
