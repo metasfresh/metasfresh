@@ -19,8 +19,8 @@
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-DROP VIEW IF EXISTS de_metas_acct.tax_accounts_details_v
-;
+-- DROP VIEW IF EXISTS de_metas_acct.tax_accounts_details_v
+-- ;
 
 CREATE OR REPLACE VIEW de_metas_acct.tax_accounts_details_v
 AS
@@ -39,7 +39,7 @@ SELECT fa.vatcode,
        fa.bpName,
        fa.taxamt,
        fa.currency,
-       (ABS(TaxBaseAmt) * fa.signTax) AS TaxBaseAmt, -- we need the absolut value in order to be able to enforce tax sign
+       (ABS(TaxBaseAmt) * SIGN(TaxAmt)) AS TaxBaseAmt, -- we need the absolut value in order to be able to enforce tax sign
        fa.source_currency,
        fa.C_Tax_ID,
        fa.account_id,
@@ -63,7 +63,6 @@ FROM (SELECT fa.vatcode                        AS vatcode,
              bp.name                           AS bpName,
 
              (fa.AmtAcctDr - fa.AmtAcctCr)     AS taxamt,
-             SIGN(fa.AmtAcctDr - fa.AmtAcctCr) AS signTax,
              (CASE
                   WHEN fa.ad_table_id = get_Table_Id('C_Invoice')       THEN inv_tax.taxbaseamt
                   WHEN fa.ad_table_id = get_Table_Id('C_AllocationHdr') THEN
@@ -112,7 +111,7 @@ FROM (SELECT fa.vatcode                        AS vatcode,
                INNER JOIN AD_ClientInfo ci ON ci.AD_Client_ID = fa.ad_client_id
                INNER JOIN C_AcctSchema acs ON acs.C_AcctSchema_ID = ci.C_AcctSchema1_ID
                INNER JOIN C_Currency cr ON acs.C_Currency_ID = cr.C_Currency_ID) AS fa
-         RIGHT JOIN tax_accounts ON (tax_accounts.C_ElementValue_ID = fa.account_id AND fa.ad_table_id IN (get_Table_Id('SAP_GLJournal'), get_Table_Id('GL_Journal')))
+         LEFT OUTER JOIN tax_accounts ON (tax_accounts.C_ElementValue_ID = fa.account_id AND fa.ad_table_id IN (get_Table_Id('SAP_GLJournal'), get_Table_Id('GL_Journal')))
 WHERE (fa.ad_table_id IN (get_Table_Id('SAP_GLJournal'), get_Table_Id('GL_Journal')))
    OR (fa.ad_table_id IN (get_Table_Id('C_Invoice'), get_Table_Id('C_AllocationHdr')) AND fa.accountconceptualname IN ('T_Due_Acct', 'T_Credit_Acct'))
 ;

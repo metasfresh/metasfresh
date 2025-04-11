@@ -29,12 +29,13 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<query language="sql"><![CDATA[SELECT *
-FROM de_metas_acct.taxaccounts_report($P{AD_Org_ID},
+FROM de_metas_acct.report_taxaccounts($P{AD_Org_ID},
                                       $P{account_id},
                                       $P{C_VAT_Code_ID},
                                      $P{DateFrom}, 
 									$P{DateTo},
                                    $P{showdetails},
+									null,
                                       $P{ad_language})
                                       order by vatcode, level, accountname, taxname;]]></query>
 	<field name="level" class="java.lang.String">

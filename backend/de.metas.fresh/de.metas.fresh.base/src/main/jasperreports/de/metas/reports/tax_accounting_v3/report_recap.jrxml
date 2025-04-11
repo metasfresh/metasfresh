@@ -35,7 +35,7 @@
 		<defaultValueExpression><![CDATA["N"]]></defaultValueExpression>
 	</parameter>
 	<query language="sql"><![CDATA[select *
-from de_metas_acct.taxaccounts_perVATCode($P{AD_Org_ID},
+from de_metas_acct.report_taxaccounts_perVATCode($P{AD_Org_ID},
 	                                                                                        $P{DateFrom},
 	                                                                                         $P{DateTo})
 ;]]></query>

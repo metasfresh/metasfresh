@@ -1,14 +1,3 @@
-DROP FUNCTION de_metas_acct.taxaccounts_report(p_ad_org_id     numeric,
-                                                            p_account_id    numeric,
-                                                            p_c_vat_code_id numeric,
-                                                            p_datefrom      date,
-                                                            p_dateto        date,
-                                                            p_isshowdetails character ,
-                                                            p_ad_language   character varying );
-
-
-
-
 CREATE OR REPLACE FUNCTION de_metas_acct.report_taxaccounts(p_ad_org_id     numeric,
                                                             p_account_id    numeric,
                                                             p_c_vat_code_id numeric,
