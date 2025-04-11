@@ -62,7 +62,6 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
@@ -162,26 +161,43 @@ public final class ProductBL implements IProductBL
 		return Check.assumeNotNull(getStockUOM(product), "The uom for productId={} may not be null", productId);
 	}
 
-	/**
-	 * @return UOM used for Product's Weight; never return null
-	 */
-	@Override
-	public I_C_UOM getWeightUOM(final I_M_Product product)
-	{
-		return getWeightUOM();
-	}
-
 	@NotNull
-	private I_C_UOM getWeightUOM()
+	private I_C_UOM getNetWeightUOM()
 	{
 		// FIXME: we hardcoded the UOM for M_Product.Weight to Kilogram
 		return uomsRepo.getByX12DE355(X12DE355.KILOGRAM);
 	}
 
 	@Override
+	public Optional<Quantity> computeGrossWeight(@NonNull final ProductId productId, @NonNull final Quantity qty)
+	{
+		final Quantity unitWeight = getGrossWeight(productId, qty.getUOM()).orElse(null);
+		if (unitWeight == null)
+		{
+			return Optional.empty();
+		}
+
+		final Quantity totalWeight = unitWeight.multiply(qty.toBigDecimal());
+		return Optional.of(totalWeight);
+	}
+
+	@Override
+	public Optional<Quantity> getGrossWeight(final ProductId productId, final I_C_UOM targetProductUOM)
+	{
+		final I_M_Product product = getById(productId);
+		return getGrossWeight(product)
+				.map(weightForOneStockingUOM -> convertWeightFromStockingUOMToTargetUOM(weightForOneStockingUOM, product, targetProductUOM));
+	}
+
+	@Override
 	public Optional<Quantity> getGrossWeight(final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
+		return getGrossWeight(product);
+	}
+
+	private Optional<Quantity> getGrossWeight(final I_M_Product product)
+	{
 		final UomId weightUomId = UomId.ofRepoIdOrNull(product.getGrossWeight_UOM_ID());
 		if (weightUomId == null)
 		{
@@ -203,31 +219,46 @@ public final class ProductBL implements IProductBL
 	}
 
 	@Override
-	public BigDecimal getWeight(
-			@NonNull final I_M_Product product,
-			@NonNull final I_C_UOM uomTo)
+	public Optional<Quantity> getNetWeight(@NonNull final I_M_Product product)
 	{
 		final BigDecimal weightPerStockingUOM = product.getWeight();
-		if (weightPerStockingUOM.signum() == 0)
+		if (weightPerStockingUOM.signum() <= 0)
 		{
-			return BigDecimal.ZERO;
+			return Optional.empty();
 		}
 
+		return Optional.of(Quantity.of(weightPerStockingUOM, getNetWeightUOM()));
+	}
+
+	@Override
+	public Optional<Quantity> getNetWeight(
+			@NonNull final I_M_Product product,
+			@NonNull final I_C_UOM targetProductUOM)
+	{
+		return getNetWeight(product)
+				.map(weightPerOneStockingUOM -> convertWeightFromStockingUOMToTargetUOM(weightPerOneStockingUOM, product, targetProductUOM));
+	}
+
+	private Quantity convertWeightFromStockingUOMToTargetUOM(
+			@NonNull final Quantity weightPerOneStockingUOM,
+			@NonNull final I_M_Product product,
+			@NonNull final I_C_UOM targetProductUOM)
+	{
 		final I_C_UOM stockingUom = getStockUOM(product);
 
 		//
 		// Calculate the rate to convert from stocking UOM to "uomTo"
 		final UOMConversionContext uomConversionCtx = UOMConversionContext.of(product.getM_Product_ID());
 		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class); // don't extract it to field because IUOMConversionBL already has IProductBL as a field
-		final BigDecimal stocking2uomToRate = uomConversionBL.convertQty(uomConversionCtx, BigDecimal.ONE, stockingUom, uomTo);
+		final BigDecimal stocking2uomToRate = uomConversionBL.convertQty(uomConversionCtx, BigDecimal.ONE, stockingUom, targetProductUOM);
 
 		//
 		// Calculate the Weight for one "uomTo"
-		final int weightPerUomToPrecision = getWeightUOM(product).getStdPrecision();
+		final UOMPrecision weightPerUomToPrecision = UOMPrecision.ofInt(getNetWeightUOM().getStdPrecision());
 
-		return weightPerStockingUOM
+		return weightPerOneStockingUOM
 				.multiply(stocking2uomToRate)
-				.setScale(weightPerUomToPrecision, RoundingMode.HALF_UP);
+				.setScale(weightPerUomToPrecision);
 	}
 
 	@Override

@@ -67,6 +67,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import static de.metas.shipper.gateway.dhl.DhlDeliveryOrderRepository.getAllShipmentOrdersForRequest;
 
@@ -176,7 +177,7 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 	{
 		final ProductId productId = packageItem.getProductId();
 		final I_M_Product product = productDAO.getById(productId);
-		final BigDecimal weightInKg = productBL.getWeight(product, productBL.getWeightUOM(product));
+		final BigDecimal weightInKg = computeNominalGrossWeightInKg(packageItem).orElse(BigDecimal.ZERO);
 		Quantity packagedQuantity;
 		try
 		{
@@ -197,5 +198,14 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 				.packagedQuantity(packagedQuantity.intValueExact())
 				.itemValue(Amount.of(orderLine.getPriceEntered(), currencyCode))
 				.build();
+	}
+
+	private Optional<BigDecimal> computeNominalGrossWeightInKg(final PackageItem packageItem)
+	{
+		final ProductId productId = packageItem.getProductId();
+		final Quantity quantity = packageItem.getQuantity();
+		return productBL.computeGrossWeight(productId, quantity)
+				.map(weight -> uomConversionBL.convertToKilogram(weight, productId))
+				.map(Quantity::getAsBigDecimal);
 	}
 }

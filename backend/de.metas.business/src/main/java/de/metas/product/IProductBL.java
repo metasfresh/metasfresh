@@ -44,7 +44,6 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -147,16 +146,18 @@ public interface IProductBL extends ISingletonService
 
 	Optional<UomId> getCatchUOMId(ProductId productId);
 
-	I_C_UOM getWeightUOM(I_M_Product product);
+	Optional<Quantity> computeGrossWeight(@NonNull ProductId productId, @NonNull Quantity qty);
+
+	Optional<Quantity> getGrossWeight(ProductId productId, I_C_UOM targetProductUOM);
 
 	Optional<Quantity> getGrossWeight(ProductId productId);
 
+	Optional<Quantity> getNetWeight(@NonNull I_M_Product product);
+
 	/**
-	 * Gets product standard Weight in <code>uomTo</code>.
-	 *
-	 * @return product's standard weight in <code>uomTo</code>
+	 * @return Net Weight for one unit of product in <code>targetProductUOM</code>.
 	 */
-	BigDecimal getWeight(I_M_Product product, I_C_UOM uomTo);
+	Optional<Quantity> getNetWeight(I_M_Product product, I_C_UOM targetProductUOM);
 
 	/**
 	 * Checks if given product is a Trading Product.
