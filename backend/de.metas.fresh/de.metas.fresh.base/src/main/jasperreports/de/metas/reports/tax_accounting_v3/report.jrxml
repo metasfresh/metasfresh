@@ -36,8 +36,7 @@ FROM de_metas_acct.report_taxaccounts(
        p_datefrom => $P{DateFrom}, 
        p_dateto => $P{DateTo},
        p_isshowdetails => $P{showdetails},
-       p_ad_language =>$P{ad_language})
-ORDER BY vatcode, level, accountname, taxname]]>
+       p_ad_language =>$P{ad_language});]]>
 	</queryString>
 	<field name="level" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="level"/>
@@ -146,7 +145,7 @@ ORDER BY vatcode, level, accountname, taxname]]>
 		</groupFooter>
 	</group>
 	<group name="account_group">
-		<groupExpression><![CDATA[$F{accountname}]]></groupExpression>
+		<groupExpression><![CDATA[$F{accountname}+$F{level}]]></groupExpression>
 		<groupHeader>
 			<band height="26">
 				<printWhenExpression><![CDATA["2".equals($F{level})]]></printWhenExpression>
@@ -547,28 +546,30 @@ ORDER BY vatcode, level, accountname, taxname]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{taxname}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="434" y="0" width="70" height="12" uuid="5e660320-4b24-418b-87bc-c7a316b1a0be"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{grandtotal}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
-				<reportElement x="504" y="0" width="26" height="12" uuid="d16b68eb-633f-4a86-a334-d98359a1d269"/>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="504" y="0" width="26" height="12" uuid="d16b68eb-633f-4a86-a334-d98359a1d269">
+					<printWhenExpression><![CDATA[$F{grandtotal}!=null]]></printWhenExpression>
+				</reportElement>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{source_currency}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="530" y="0" width="68" height="12" uuid="64bc371e-422a-440f-94b5-0990efc5a550"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{totalwithoutvatperdoc}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="625" y="0" width="106" height="12" uuid="18376337-4c47-426f-9e02-13080f319e54"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
@@ -576,8 +577,10 @@ ORDER BY vatcode, level, accountname, taxname]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{taxamt}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
-				<reportElement x="598" y="0" width="26" height="12" uuid="1cea82cc-629e-4b37-bd48-8610170248e8"/>
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement x="598" y="0" width="26" height="12" uuid="1cea82cc-629e-4b37-bd48-8610170248e8">
+					<printWhenExpression><![CDATA[$F{totalwithoutvatperdoc}!=null]]></printWhenExpression>
+				</reportElement>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>

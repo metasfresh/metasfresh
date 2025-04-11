@@ -89,7 +89,7 @@ ORDER BY vatcode]]>
 					<pen lineWidth="0.0" lineStyle="Solid"/>
 				</graphicElement>
 			</rectangle>
-			<textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="1" y="4" width="70" height="12" forecolor="#FFFFFF" uuid="9ce82332-fbd5-4b30-b809-ed7aa1ce68b2"/>
 				<textElement>
 					<font fontName="Arial" size="8" isBold="true"/>
@@ -148,35 +148,35 @@ ORDER BY vatcode]]>
 	</columnHeader>
 	<detail>
 		<band height="19">
-			<textField isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="0" y="2" width="70" height="15" uuid="9179a5e9-e70e-4d0e-9840-ca3a3ba424ee"/>
 				<textElement>
 					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{vatcode}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="true">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="70" y="2" width="279" height="15" uuid="5de14448-7069-4dc1-beba-f9b49d8b7d24"/>
 				<textElement>
 					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{taxname}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="580" y="2" width="96" height="15" uuid="cbdf57d5-daba-424a-97be-5fda474189ae"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{balance}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="676" y="0" width="100" height="15" uuid="4667c47d-5055-48c9-9a38-6de63514fa63"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{balanceyear}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="470" y="2" width="82" height="15" uuid="178a6ff6-f865-4316-81fb-a0a1d2e96ed5">
 					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
@@ -185,16 +185,16 @@ ORDER BY vatcode]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{taxbaseamt_vat_sum}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="553" y="2" width="27" height="15" uuid="8b94e306-64c4-477f-87af-afda7b5e9afa">
-					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails})) && $F{taxbaseamt_vat_sum}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{source_currency}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="369" y="1" width="74" height="15" uuid="810460cc-0c79-4d7b-95d3-44aa2db60039">
 					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
 				</reportElement>
@@ -203,9 +203,9 @@ ORDER BY vatcode]]>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{invoice_total_sum}]]></textFieldExpression>
 			</textField>
-			<textField pattern="#,##0.00">
+			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="443" y="1" width="27" height="15" uuid="a1a11914-a422-4636-ae03-9150233a5edc">
-					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails}))]]></printWhenExpression>
+					<printWhenExpression><![CDATA[new Boolean(("Y").equals($P{showdetails})) && $F{invoice_total_sum}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8" isBold="false"/>
