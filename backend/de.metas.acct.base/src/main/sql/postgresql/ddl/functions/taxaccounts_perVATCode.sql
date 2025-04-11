@@ -1,12 +1,12 @@
 DROP FUNCTION IF EXISTS de_metas_acct.report_taxaccounts_perVATCode(p_AD_Org_ID numeric(10, 0),
-                                                             p_DateFrom  date,
-                                                             p_DateTo    date)
+                                                                    p_DateFrom  date,
+                                                                    p_DateTo    date)
 ;
 
 
 CREATE OR REPLACE FUNCTION de_metas_acct.report_taxaccounts_perVATCode(p_AD_Org_ID numeric(10, 0),
-                                                                p_DateFrom  date,
-                                                                p_DateTo    date)
+                                                                       p_DateFrom  date,
+                                                                       p_DateTo    date)
     RETURNS TABLE
             (
                 Balance            numeric,
@@ -32,14 +32,13 @@ SELECT SUM(CurrentBalance)       AS balance,
        SUM(TotalWithoutVAT)      AS taxbaseamt_vat_sum,
        Taxname,
        vatcode
-FROM de_metas_acct.report_taxaccounts(p_AD_Org_ID,
-                                      NULL,
-                                      NULL,
-                                      p_DateFrom,
-                                      p_DateTo,
-                                      'N'::bpchar,
-                                      '3',
-                                      NULL)
+FROM de_metas_acct.report_taxaccounts(p_AD_Org_ID => p_AD_Org_ID,
+                                      p_account_id => NULL,
+                                      p_c_vat_code_id => NULL,
+                                      p_datefrom => p_DateFrom,
+                                      p_dateto => p_DateTo,
+                                      p_level => '3'
+     )
 GROUP BY vatcode, currency, source_currency, Taxname
 ORDER BY vatcode
 $BODY$

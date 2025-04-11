@@ -182,27 +182,28 @@ BEGIN
     -- assemble the result in one temporray table
     DROP TABLE IF EXISTS tmp_final_taxaccounts_report;
 
-    CREATE TEMP TABLE tmp_final_taxaccounts_report (
-                                                       Level                 varchar,
-                                                       vatcode               varchar,
-                                                       AccountName           text,
-                                                       DateAcct              timestamp,
-                                                       DocumentNo            text,
-                                                       BPartnerName          text,
-                                                       Taxname               text,
-                                                       GrandTotal            numeric,
-                                                       TotalWithoutVATPerDoc numeric,
-                                                       TaxAmt                numeric,
-                                                       TotalWithoutVAT       numeric,
-                                                       source_currency       varchar,
-                                                       CurrentBalance        numeric,
-                                                       balance_one_year_ago  numeric,
-                                                       Currency              varchar,
-                                                       param_startdate       date,
-                                                       param_enddate         date,
-                                                       param_konto           varchar,
-                                                       param_vatcode         varchar,
-                                                       param_org             varchar
+    CREATE TEMP TABLE tmp_final_taxaccounts_report
+    (
+        Level                 varchar,
+        vatcode               varchar,
+        AccountName           text,
+        DateAcct              timestamp,
+        DocumentNo            text,
+        BPartnerName          text,
+        Taxname               text,
+        GrandTotal            numeric,
+        TotalWithoutVATPerDoc numeric,
+        TaxAmt                numeric,
+        TotalWithoutVAT       numeric,
+        source_currency       varchar,
+        CurrentBalance        numeric,
+        balance_one_year_ago  numeric,
+        Currency              varchar,
+        param_startdate       date,
+        param_enddate         date,
+        param_konto           varchar,
+        param_vatcode         varchar,
+        param_org             varchar
     );
 
     -- insert data for sums per vatcode, currency, source_currency, param_org
@@ -264,7 +265,7 @@ BEGIN
     -- insert data for sums per vatcode, currency, source_currency, param_org, accountno, accountname, taxname
     -- Level 3
     IF p_level IS NULL OR p_level = '3' THEN
-    INSERT INTO tmp_final_taxaccounts_report
+        INSERT INTO tmp_final_taxaccounts_report
         SELECT '3' ::varchar            AS level,
                vatcode,
                AccountName,
@@ -324,32 +325,29 @@ BEGIN
     END IF;
 
     -- add data per documents - level 4
-    IF p_level IS NULL OR p_level = '4' THEN
-        IF p_isshowdetails = 'Y' THEN
-
-            INSERT INTO tmp_final_taxaccounts_report
-            SELECT '4' ::varchar            AS level,
-                   vatcode,
-                   AccountName,
-                   t.dateacct               AS DateAcct,
-                   t.documentno             AS DocumentNo,
-                   t.bpname                 AS BPartnerName,
-                   t.taxname                AS Taxname,
-                   t.GrandTotal,
-                   t.taxbaseamt             AS TotalWithoutVATPerDoc,
-                   t.taxamt                 AS TaxAmt,
-                   NULL::numeric            AS TotalWithoutVAT,
-                   source_currency::varchar AS source_currency,
-                   NULL::numeric            AS CurrentBalance,
-                   NULL::numeric            AS balance_one_year_ago,
-                   currency::varchar        AS Currency,
-                   param_startdate::date,
-                   param_enddate::date,
-                   param_konto ::varchar,
-                   param_vatcode::varchar,
-                   param_org ::varchar
-            FROM tmp_taxaccounts_details t;
-        END IF;
+    IF (p_level IS NULL OR p_level = '4') AND p_isshowdetails = 'Y' THEN
+        INSERT INTO tmp_final_taxaccounts_report
+        SELECT '4' ::varchar            AS level,
+               vatcode,
+               AccountName,
+               t.dateacct               AS DateAcct,
+               t.documentno             AS DocumentNo,
+               t.bpname                 AS BPartnerName,
+               t.taxname                AS Taxname,
+               t.GrandTotal,
+               t.taxbaseamt             AS TotalWithoutVATPerDoc,
+               t.taxamt                 AS TaxAmt,
+               NULL::numeric            AS TotalWithoutVAT,
+               source_currency::varchar AS source_currency,
+               NULL::numeric            AS CurrentBalance,
+               NULL::numeric            AS balance_one_year_ago,
+               currency::varchar        AS Currency,
+               param_startdate::date,
+               param_enddate::date,
+               param_konto ::varchar,
+               param_vatcode::varchar,
+               param_org ::varchar
+        FROM tmp_taxaccounts_details t;
     END IF;
 
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;

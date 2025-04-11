@@ -34,10 +34,12 @@
 	<parameter name="showdetails" class="java.lang.String">
 		<defaultValueExpression><![CDATA["N"]]></defaultValueExpression>
 	</parameter>
-	<query language="sql"><![CDATA[select *
-from de_metas_acct.report_taxaccounts_perVATCode($P{AD_Org_ID},
-	                                                                                        $P{DateFrom},
-	                                                                                         $P{DateTo})
+	<query language="sql"><![CDATA[SELECT *
+FROM de_metas_acct.report_taxaccounts_perVATCode(
+    p_AD_Org_ID => $P{AD_Org_ID},
+	p_DateFrom => $P{DateFrom},
+	p_DateTo => $P{DateTo})
+ORDER BY vatcode
 ;]]></query>
 	<field name="balance" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.name" value="balance"/>
