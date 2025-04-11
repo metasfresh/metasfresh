@@ -50,14 +50,6 @@ public class JsonMobileConfigRequest
 		{
 			@NonNull Identifier customer;
 		}
-
-		@Value
-		@Builder
-		@Jacksonized
-		public static class PickingLineConfig
-		{
-			@Nullable Boolean showLastPickedBestBeforeDate;
-		}
 	}
 
 	//

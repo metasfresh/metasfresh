@@ -153,8 +153,6 @@ public class PickingJobStepPickFromMap
 				.map(PickingJobStepPickedTo::getLastPickedHu)
 				.filter(Optional::isPresent)
 				.map(Optional::get)
-				.min(Comparator.comparing(
-						PickingJobStepPickedToHU::getCreatedAt,
-						Comparator.nullsFirst(Comparator.reverseOrder())));
+				.max(Comparator.comparing(PickingJobStepPickedToHU::getCreatedAt));
 	}
 }

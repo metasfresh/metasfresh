@@ -28,7 +28,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileRepository;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
@@ -245,10 +244,5 @@ public class PickingJobRestService
 				.map(HuId::ofRepoId)
 				.filter(huId -> !HuId.equals(huId, currentlyOpenedLUId))
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	public MobileUIPickingUserProfile getPickingProfile()
-	{
-		return mobileUIPickingUserProfileRepository.getProfile();
 	}
 }
