@@ -9,7 +9,6 @@ import de.metas.acct.api.IFactAcctDAO;
 import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.document.engine.IDocument;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -40,6 +39,8 @@ public class FactAcctDAO implements IFactAcctDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
 
 	private static final String ACCOUNTCONCEPTUALNAME_NULL_MARKER = "NOTSET";
 
@@ -56,29 +57,40 @@ public class FactAcctDAO implements IFactAcctDAO
 	}
 
 	@Override
-	public int deleteForDocument(final IDocument document)
+	public void deleteForDocument(final IDocument document)
 	{
-		final int countDeleted = retrieveQueryForDocument(document)
+		retrieveQueryForDocument(document)
 				.create()
 				.deleteDirectly();
 
-		Services.get(IFactAcctListenersService.class).fireAfterUnpost(document);
+		factAcctListenersService.fireAfterUnpost(document);
 
-		return countDeleted;
 	}
 
 	@Override
-	public int deleteForDocumentModel(@NonNull final Object documentObj)
+	public void deleteForDocumentModel(@NonNull final Object documentObj)
 	{
 		final int adTableId = InterfaceWrapperHelper.getModelTableId(documentObj);
 		final int recordId = InterfaceWrapperHelper.getId(documentObj);
-		final int countDeleted = retrieveQueryForDocument(Env.getCtx(), adTableId, recordId, ITrx.TRXNAME_ThreadInherited)
+		retrieveQueryForDocument(Env.getCtx(), adTableId, recordId, ITrx.TRXNAME_ThreadInherited)
 				.create()
 				.deleteDirectly();
 
-		Services.get(IFactAcctListenersService.class).fireAfterUnpost(documentObj);
+		factAcctListenersService.fireAfterUnpost(documentObj);
 
-		return countDeleted;
+	}
+
+	@Override
+	public void deleteForRecordRef(@NonNull final TableRecordReference recordRef)
+	{
+		final int adTableId = recordRef.getAD_Table_ID();
+		final int recordId = recordRef.getRecord_ID();
+		retrieveQueryForDocument(Env.getCtx(), adTableId, recordId, ITrx.TRXNAME_ThreadInherited)
+				.create()
+				.deleteDirectly();
+
+		factAcctListenersService.fireAfterUnpost(recordRef);
+
 	}
 
 	@Override
@@ -93,31 +105,30 @@ public class FactAcctDAO implements IFactAcctDAO
 
 	private IQueryBuilder<I_Fact_Acct> retrieveQueryForDocument(final Properties ctx, final int adTableId, final int recordId, final String trxName)
 	{
-		return Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_Fact_Acct.class, ctx, trxName)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordId)
 				.orderBy()
-				.addColumn(I_Fact_Acct.COLUMN_Fact_Acct_ID) // make sure we have a predictable order
+				.addColumn(I_Fact_Acct.COLUMNNAME_Fact_Acct_ID) // make sure we have a predictable order
 				.endOrderBy();
 	}
 
 	@Override
-	public List<I_Fact_Acct> retrieveForDocumentLine(final String tableName, final int recordId, final Object documentLine)
+	public List<I_Fact_Acct> retrieveForDocumentLine(final String tableName, final int recordId, @NonNull final Object documentLine)
 	{
-		Check.assumeNotNull(documentLine, "documentLine not null");
-		final int adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
+		final int adTableId = adTableDAO.retrieveTableId(tableName);
 		final int lineId = InterfaceWrapperHelper.getId(documentLine);
 
-		final IQueryBuilder<I_Fact_Acct> queryBuilder = Services.get(IQueryBL.class)
+		final IQueryBuilder<I_Fact_Acct> queryBuilder = queryBL
 				.createQueryBuilder(I_Fact_Acct.class, documentLine)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, recordId)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Line_ID, lineId);
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordId)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Line_ID, lineId);
 
 		// make sure we have a predictable order
 		queryBuilder.orderBy()
-				.addColumn(I_Fact_Acct.COLUMN_Fact_Acct_ID);
+				.addColumn(I_Fact_Acct.COLUMNNAME_Fact_Acct_ID);
 
 		return queryBuilder.create().list();
 	}
@@ -134,23 +145,20 @@ public class FactAcctDAO implements IFactAcctDAO
 	}
 
 	@Override
-	public int updateActivityForDocumentLine(final Properties ctx, final int adTableId, final int recordId, final int lineId, final int activityId)
+	public void updateActivityForDocumentLine(final Properties ctx, final int adTableId, final int recordId, final int lineId, final int activityId)
 	{
 		// Make sure we are updating the Fact_Acct records in a transaction
-		Services.get(ITrxManager.class).assertThreadInheritedTrxExists();
+		trxManager.assertThreadInheritedTrxExists();
 
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final int countUpdated = queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, ITrx.TRXNAME_ThreadInherited)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_AD_Table_ID, adTableId)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Record_ID, recordId)
-				.addEqualsFilter(I_Fact_Acct.COLUMN_Line_ID, lineId)
-				.addNotEqualsFilter(I_Fact_Acct.COLUMN_C_Activity_ID, activityId)
+		queryBL.createQueryBuilder(I_Fact_Acct.class, ctx, ITrx.TRXNAME_ThreadInherited)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_AD_Table_ID, adTableId)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Record_ID, recordId)
+				.addEqualsFilter(I_Fact_Acct.COLUMNNAME_Line_ID, lineId)
+				.addNotEqualsFilter(I_Fact_Acct.COLUMNNAME_C_Activity_ID, activityId)
 				.create()
 				.updateDirectly()
 				.addSetColumnValue(I_Fact_Acct.COLUMNNAME_C_Activity_ID, activityId)
 				.execute();
-
-		return countUpdated;
 	}
 
 	@Override

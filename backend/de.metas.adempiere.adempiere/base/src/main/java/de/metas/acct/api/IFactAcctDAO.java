@@ -52,29 +52,22 @@ public interface IFactAcctDAO extends ISingletonService
 	 * Deletes all accounting records for given document.
 	 * <p>
 	 * NOTE: this method is NOT checking if the accounting period of given document is open!
-	 *
-	 * @param document
-	 * @return how many {@link I_Fact_Acct} were deleted
 	 */
-	int deleteForDocument(IDocument document);
+	void deleteForDocument(IDocument document);
 
-	int deleteForDocumentModel(final Object documentObj);
+	void deleteForDocumentModel(final Object documentObj);
+
+	void deleteForRecordRef(@NonNull TableRecordReference recordRef);
 
 	/**
 	 * Retries all accounting records for given document.
 	 *
-	 * @param document
 	 * @return query
 	 */
 	IQueryBuilder<I_Fact_Acct> retrieveQueryForDocument(IDocument document);
 
 	/**
 	 * Retries all accounting records for given document line.
-	 *
-	 * @param tableName
-	 * @param recordId
-	 * @param documentLine
-	 * @return
 	 */
 	List<I_Fact_Acct> retrieveForDocumentLine(String tableName, int recordId, Object documentLine);
 
@@ -83,22 +76,19 @@ public interface IFactAcctDAO extends ISingletonService
 	/**
 	 * Update directly all the fact accounts of the given document by setting their docStatus from document.
 	 *
-	 * @param document
-	 * @task http://dewiki908/mediawiki/index.php/09243_Stornobuchungen_ausblenden_%28Liste%2C_Konteninfo%29
+	 * @implSpec <a href="http://dewiki908/mediawiki/index.php/09243_Stornobuchungen_ausblenden_%28Liste%2C_Konteninfo%29">task</a>
 	 */
 	void updateDocStatusForDocument(IDocument document);
 
 	/**
 	 * Update directly all {@link I_Fact_Acct} records for given document line and sets the given activity.
 	 *
-	 * @param ctx
 	 * @param adTableId  document header's AD_Table_ID
 	 * @param recordId   document header's ID
 	 * @param lineId     document line's ID
 	 * @param activityId activity to set
-	 * @return how many {@link I_Fact_Acct} records were updated
 	 */
-	int updateActivityForDocumentLine(Properties ctx, int adTableId, int recordId, int lineId, int activityId);
+	void updateActivityForDocumentLine(Properties ctx, int adTableId, int recordId, int lineId, int activityId);
 
 	void updatePOReference(@NonNull TableRecordReference recordRef, @Nullable String poReference);
 

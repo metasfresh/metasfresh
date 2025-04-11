@@ -30,6 +30,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.impex.InputDataSourceId;
 import de.metas.inout.InOutId;
 import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -67,6 +68,7 @@ import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
@@ -85,6 +87,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 
 /**
  * Aggregates multiple {@link I_C_Invoice_Candidate} records and returns a result that that is suitable to create invoices.
@@ -96,16 +99,17 @@ public final class AggregationEngine
 {
 
 	@VisibleForTesting
-	public static AggregationEngine newInstance()
+	public static AggregationEngineBuilder newInstanceForUnitTesting()
 	{
+		Adempiere.assertUnitTestMode();
 		return builder()
-				.docTypeInvoicingPoolService(SpringContextHolder.instance.getBean(DocTypeInvoicingPoolService.class))
-				.build();
+				.matchInvoiceService(MatchInvoiceService.newInstanceForUnitTesting())
+				.docTypeInvoicingPoolService(DocTypeInvoicingPoolService.newInstanceForUnitTesting());
 	}
 
 	//
 	// services
-	private static final transient Logger logger = InvoiceCandidate_Constants.getLogger(AggregationEngine.class);
+	private static final Logger logger = InvoiceCandidate_Constants.getLogger(AggregationEngine.class);
 	private final transient IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final transient IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
@@ -123,6 +127,7 @@ public final class AggregationEngine
 	//
 	// Parameters
 	private final IBPartnerBL bpartnerBL;
+	private final MatchInvoiceService matchInvoiceService;
 	private final boolean alwaysUseDefaultHeaderAggregationKeyBuilder;
 	private final LocalDate today;
 	private final LocalDate dateInvoicedParam;
@@ -138,6 +143,7 @@ public final class AggregationEngine
 
 	@Builder
 	private AggregationEngine(
+			@Nullable final MatchInvoiceService matchInvoiceService,
 			final IBPartnerBL bpartnerBL,
 			final boolean alwaysUseDefaultHeaderAggregationKeyBuilder,
 			@Nullable final LocalDate dateInvoicedParam,
@@ -146,6 +152,7 @@ public final class AggregationEngine
 			@NonNull final DocTypeInvoicingPoolService docTypeInvoicingPoolService)
 	{
 		this.bpartnerBL = coalesce(bpartnerBL, Services.get(IBPartnerBL.class));
+		this.matchInvoiceService = coalesceNotNull(matchInvoiceService, MatchInvoiceService::get);
 
 		this.alwaysUseDefaultHeaderAggregationKeyBuilder = alwaysUseDefaultHeaderAggregationKeyBuilder;
 
@@ -311,10 +318,10 @@ public final class AggregationEngine
 			// task 08451: log why we create a new invoice header
 			final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 			loggable.addLog("Created new InvoiceHeaderAndLineAggregators instance. current number: {}\n"
-									+ "Params: ['ic'={}, 'headerAggregationKey'={}, 'inutId'={}, 'iciol'={}];\n"
-									+ " ic's own headerAggregationKey = {};\n"
-									+ " new headerAndAggregators = {}",
-							key2headerAndAggregators.size(), icRecord, headerAggregationKey, inoutId, iciol, icRecord.getHeaderAggregationKey(), headerAndAggregators);
+							+ "Params: ['ic'={}, 'headerAggregationKey'={}, 'inutId'={}, 'iciol'={}];\n"
+							+ " ic's own headerAggregationKey = {};\n"
+							+ " new headerAndAggregators = {}",
+					key2headerAndAggregators.size(), icRecord, headerAggregationKey, inoutId, iciol, icRecord.getHeaderAggregationKey(), headerAndAggregators);
 		}
 		else
 		{
@@ -329,6 +336,7 @@ public final class AggregationEngine
 		if (lineAggregator == null)
 		{
 			lineAggregator = aggregationBL.createInvoiceLineAggregatorInstance(icRecord);
+			lineAggregator.setMatchInvoiceService(matchInvoiceService);
 			headerAndAggregators.setLineAggregator(invoiceCandidateAggId, lineAggregator);
 		}
 
@@ -402,7 +410,7 @@ public final class AggregationEngine
 			invoiceHeader.setIncotermLocation(icRecord.getIncotermLocation());
 			invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
 
-			if(orderEmailPropagationSysConfigRepository.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(icRecord.getAD_Client_ID(), icRecord.getAD_Org_ID())))
+			if (orderEmailPropagationSysConfigRepository.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(icRecord.getAD_Client_ID(), icRecord.getAD_Org_ID())))
 			{
 				invoiceHeader.setEmail(icRecord.getEMail());
 			}
@@ -451,8 +459,8 @@ public final class AggregationEngine
 				{
 					final String pricingSystemName = priceListDAO.getPricingSystemName(PricingSystemId.ofRepoIdOrNull(icRecord.getM_PricingSystem_ID()));
 					throw new AdempiereException(ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P,
-												 pricingSystemName,
-												 invoiceHeader.getBillTo())
+							pricingSystemName,
+							invoiceHeader.getBillTo())
 							.appendParametersToMessage()
 							.setParameter("M_PricingSystem_ID", icRecord.getM_PricingSystem_ID())
 							.setParameter("C_Invoice_Candidate", icRecord);
@@ -604,12 +612,12 @@ public final class AggregationEngine
 		if (useDefaultBillLocationAndContactIfNotOverride)
 		{
 			final User defaultBillContact = bpartnerBL.retrieveContactOrNull(RetrieveContactRequest.builder()
-																					 .onlyActive(true)
-																					 .contactType(ContactType.BILL_TO_DEFAULT)
-																					 .bpartnerId(billBPLocationId.getBpartnerId())
-																					 .bPartnerLocationId(billBPLocationId)
-																					 .ifNotFound(IfNotFound.RETURN_NULL)
-																					 .build());
+					.onlyActive(true)
+					.contactType(ContactType.BILL_TO_DEFAULT)
+					.bpartnerId(billBPLocationId.getBpartnerId())
+					.bPartnerLocationId(billBPLocationId)
+					.ifNotFound(IfNotFound.RETURN_NULL)
+					.build());
 			if (defaultBillContact != null)
 			{
 				return BPartnerContactId.ofRepoId(defaultBillContact.getBpartnerId(), defaultBillContact.getId().getRepoId());
