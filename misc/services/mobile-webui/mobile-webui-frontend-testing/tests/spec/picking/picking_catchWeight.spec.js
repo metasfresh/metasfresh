@@ -7,7 +7,7 @@ import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { expectErrorToast } from '../../utils/common';
 import { PickingJobLineScreen } from '../../utils/screens/picking/PickingJobLineScreen';
 
-const createMasterdata = async ({ showLastPickedBestBeforeDate } = {}) => {
+const createMasterdata = async ({ showLastPickedBestBeforeDateForLines } = {}) => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -23,9 +23,7 @@ const createMasterdata = async ({ showLastPickedBestBeforeDate } = {}) => {
                     pickWithNewLU: true,
                     allowNewTU: true,
                     allowCompletingPartialPickingJob: true,
-                    lineConfig: {
-                        showLastPickedBestBeforeDate
-                    }
+                    showLastPickedBestBeforeDateForLines: showLastPickedBestBeforeDateForLines ?? false,
                 }
             },
             bpartners: { "BP1": {} },
@@ -204,8 +202,8 @@ test('EAN13 with prefix 29 and not matching product', async ({ page }) => {
 
 
 // noinspection JSUnusedLocalSymbols
-test('Check Last BestBeforeDate is displayed when MobileUIPickingProfile.PickingLineConfig.ShowLastBestBeforeDate = Y', async ({ page }) => {
-    const masterdata = await createMasterdata({ showLastPickedBestBeforeDate: true });
+test('Check Last BestBeforeDate is displayed when MobileUIPickingProfile.ShowLastPickedBestBeforeDateForLines = Y', async ({ page }) => {
+    const masterdata = await createMasterdata({ showLastPickedBestBeforeDateForLines: true });
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
