@@ -2,13 +2,11 @@ package de.metas.shipper.gateway.spi.model;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-
-import de.metas.util.Check;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import de.metas.shipper.gateway.api.ShipperGatewayId;
+import de.metas.util.Check;
 import lombok.Data;
 
 /*
@@ -37,9 +35,9 @@ import lombok.Data;
 @JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
 public final class OrderId
 {
-	public static final OrderId of(final String shipperGatewayId, final String orderIdAsString)
+	public static final OrderId of(final ShipperGatewayId shipperGatewayId, final String orderIdAsString)
 	{
-		return new OrderId(shipperGatewayId, orderIdAsString);
+		return new OrderId(shipperGatewayId.getAsString(), orderIdAsString);
 	}
 
 	@JsonProperty("gatewayId")

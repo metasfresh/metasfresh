@@ -177,6 +177,12 @@ public class UOMDAO implements IUOMDAO
 	}
 
 	@Override
+	public UOMPrecision getStandardPrecision(@NonNull final X12DE355 x12de355)
+	{
+		return getStandardPrecision(getUomIdByX12DE355(x12de355));
+	}
+
+	@Override
 	public UOMPrecision getStandardPrecision(final UomId uomId)
 	{
 		if (uomId == null)

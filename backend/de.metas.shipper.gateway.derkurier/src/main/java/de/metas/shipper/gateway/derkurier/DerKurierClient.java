@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.printing.IMassPrintingService;
 import de.metas.process.ProcessInfo;
 import de.metas.report.PrintCopies;
+import de.metas.shipper.gateway.api.ShipperGatewayId;
 import de.metas.shipper.gateway.derkurier.misc.Converters;
 import de.metas.shipper.gateway.derkurier.model.I_DerKurier_DeliveryOrderLine;
 import de.metas.shipper.gateway.derkurier.restapi.models.Routing;
@@ -86,9 +87,9 @@ public class DerKurierClient implements ShipperGatewayClient
 		this.derKurierDeliveryOrderRepository = derKurierDeliveryOrderRepository;
 	}
 
-	@NonNull
 	@Override
-	public String getShipperGatewayId()
+	@NonNull
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return DerKurierConstants.SHIPPER_GATEWAY_ID;
 	}

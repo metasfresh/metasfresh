@@ -30,6 +30,7 @@ import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.mpackage.PackageId;
 import de.metas.organization.OrgId;
+import de.metas.shipper.gateway.api.ShipperGatewayId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.dpd.model.DpdClientConfigRepository;
 import de.metas.shipper.gateway.dpd.model.DpdNotificationChannel;
@@ -73,7 +74,7 @@ public class DpdDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	@NonNull private final DpdClientConfigRepository clientConfigRepository;
 
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return DpdConstants.SHIPPER_GATEWAY_ID;
 	}

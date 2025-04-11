@@ -3,6 +3,7 @@ package de.metas.shipper.gateway.go;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.mpackage.PackageId;
 import de.metas.organization.OrgId;
+import de.metas.shipper.gateway.api.ShipperGatewayId;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.go.schema.GOPaidMode;
 import de.metas.shipper.gateway.go.schema.GOSelfDelivery;
@@ -53,7 +54,7 @@ public class GODraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
 
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return GOConstants.SHIPPER_GATEWAY_ID;
 	}

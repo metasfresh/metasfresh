@@ -41,6 +41,7 @@ import com.dpd.common.ws.loginservice.v2_0.types.Login;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.CCache;
+import de.metas.shipper.gateway.api.ShipperGatewayId;
 import de.metas.shipper.gateway.dpd.logger.DpdClientLogEvent;
 import de.metas.shipper.gateway.dpd.logger.DpdDatabaseClientLogger;
 import de.metas.shipper.gateway.dpd.model.DpdClientConfig;
@@ -104,7 +105,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 
 	@NonNull
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return DpdConstants.SHIPPER_GATEWAY_ID;
 	}
@@ -128,8 +129,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 		final StoreOrders storeOrders = createStoreOrdersFromDeliveryOrder(deliveryOrder, login.getDepot());
 
 		final JAXBElement<StoreOrders> storeOrdersElement = shipmentServiceOF.createStoreOrders(storeOrders);
-		@SuppressWarnings("unchecked")
-		final JAXBElement<StoreOrdersResponse> storeOrdersResponseElement = (JAXBElement<StoreOrdersResponse>)doActualRequest(config.getShipmentServiceApiUrl(), storeOrdersElement, login, deliveryOrder.getId());
+		@SuppressWarnings("unchecked") final JAXBElement<StoreOrdersResponse> storeOrdersResponseElement = (JAXBElement<StoreOrdersResponse>)doActualRequest(config.getShipmentServiceApiUrl(), storeOrdersElement, login, deliveryOrder.getId());
 
 		final StoreOrdersResponseType storeOrdersResponse = storeOrdersResponseElement.getValue().getOrderResult();
 
@@ -408,8 +408,7 @@ public class DpdShipperGatewayClient implements ShipperGatewayClient
 		epicLogger.addLog("Creating login request");
 
 		final JAXBElement<GetAuth> getAuthElement = loginServiceOF.createGetAuth(getAuthValue);
-		@SuppressWarnings("unchecked")
-		final JAXBElement<GetAuthResponse> authenticationElement = (JAXBElement<GetAuthResponse>)doActualRequest(config.getLoginApiUrl(), getAuthElement, null, null);
+		@SuppressWarnings("unchecked") final JAXBElement<GetAuthResponse> authenticationElement = (JAXBElement<GetAuthResponse>)doActualRequest(config.getLoginApiUrl(), getAuthElement, null, null);
 
 		final Login login = authenticationElement.getValue().getReturn();
 

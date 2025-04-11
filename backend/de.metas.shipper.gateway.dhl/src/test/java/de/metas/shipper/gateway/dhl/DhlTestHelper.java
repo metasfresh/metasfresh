@@ -268,7 +268,7 @@ class DhlTestHelper
 
 		//
 		// check 3: updated Dummy DO <-> retrieved DO from persistence
-		final DeliveryOrder deserialisedDO = orderService.getByRepoId(updatedDummyDeliveryOrder.getId());
+		final DeliveryOrder deserialisedDO = orderService.getById(updatedDummyDeliveryOrder.getId());
 		DhlCustomDeliveryData customDeliveryData = DhlCustomDeliveryData.builder()
 				.detail(extractPackageIdAndSequenceNumberFromDO(deserialisedDO, PACKAGE_ID_1))
 				.build();
@@ -297,7 +297,7 @@ class DhlTestHelper
 
 		//
 		// check 6: retrieve the persisted completed DO. nothing should be modified
-		final DeliveryOrder deserialisedCompletedDeliveryOrder = orderService.getByRepoId(updatedDummyDeliveryOrder.getId());
+		final DeliveryOrder deserialisedCompletedDeliveryOrder = orderService.getById(updatedDummyDeliveryOrder.getId());
 		assertEquals("nothing should be modified", updatedDummyDeliveryOrder, deserialisedCompletedDeliveryOrder);
 		assertSizeOfCustomDeliveryData(deserialisedCompletedDeliveryOrder);
 
