@@ -13,52 +13,70 @@
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
 	<parameter name="AD_PInstance_ID" class="java.lang.Integer"/>
 	<queryString>
-		<![CDATA[select t.* , s.T_Selection_id as hu
-from T_Selection s
-                    join "de.metas.handlingunits".HU_Label(s.T_Selection_id, 'Käserei-Nr.', 'HU_BestBeforeDate') as t on 1=1
+		<![CDATA[SELECT DISTINCT t.*,tt.stringattributevalue as Lot_No, s.T_Selection_id AS hu
+FROM T_Selection s
+         JOIN "de.metas.handlingunits".HU_Label(s.T_Selection_id, 'Käserei-Nr.', 'HU_BestBeforeDate') AS t ON 1 = 1
+         JOIN "de.metas.handlingunits".HU_Label(s.T_Selection_id, 'Lot-Nummer', 'HU_BestBeforeDate') AS tt ON 1 = 1
 where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 	</queryString>
 	<field name="prod_name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="prod_name"/>
 		<property name="com.jaspersoft.studio.field.label" value="prod_name"/>
 	</field>
 	<field name="prod_value" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="prod_value"/>
 		<property name="com.jaspersoft.studio.field.label" value="prod_value"/>
 	</field>
 	<field name="prod_desc" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="prod_desc"/>
 		<property name="com.jaspersoft.studio.field.label" value="prod_desc"/>
 	</field>
 	<field name="displayableqrcode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="displayableqrcode"/>
 		<property name="com.jaspersoft.studio.field.label" value="displayableqrcode"/>
 	</field>
 	<field name="renderedqrcode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="renderedqrcode"/>
 		<property name="com.jaspersoft.studio.field.label" value="renderedqrcode"/>
 	</field>
 	<field name="vendorname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="vendorname"/>
 		<property name="com.jaspersoft.studio.field.label" value="vendorname"/>
 	</field>
 	<field name="purchaseorderno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="purchaseorderno"/>
 		<property name="com.jaspersoft.studio.field.label" value="purchaseorderno"/>
 	</field>
 	<field name="receiptdate" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="receiptdate"/>
 		<property name="com.jaspersoft.studio.field.label" value="receiptdate"/>
 	</field>
 	<field name="proddate" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.name" value="proddate"/>
 		<property name="com.jaspersoft.studio.field.label" value="proddate"/>
 	</field>
 	<field name="stringattributevalue" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="stringattributevalue"/>
 		<property name="com.jaspersoft.studio.field.label" value="stringattributevalue"/>
 	</field>
 	<field name="dateattributevalue" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="dateattributevalue"/>
 		<property name="com.jaspersoft.studio.field.label" value="dateattributevalue"/>
 	</field>
+	<field name="lot_no" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="lot_no"/>
+		<property name="com.jaspersoft.studio.field.label" value="lot_no"/>
+	</field>
 	<field name="hu" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="hu"/>
 		<property name="com.jaspersoft.studio.field.label" value="hu"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="t_selection"/>
 	</field>
 	<detail>
 		<band height="832" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<componentElement>
-				<reportElement x="0" y="46" width="585" height="559" uuid="8e1e65e5-36d3-4f4c-853d-118d34f0253e">
+				<reportElement x="0" y="46" width="583" height="534" uuid="8e1e65e5-36d3-4f4c-853d-118d34f0253e">
 					<property name="com.jaspersoft.studio.unit.margin" value="mm"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -68,7 +86,7 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 				</jr:QRCode>
 			</componentElement>
 			<textField isBlankWhenNull="true">
-				<reportElement x="100" y="628" width="474" height="20" uuid="9ca36b70-e8b8-46ae-86ea-1667ec6270f6">
+				<reportElement x="100" y="609" width="474" height="20" uuid="9ca36b70-e8b8-46ae-86ea-1667ec6270f6">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement markup="none">
@@ -77,7 +95,7 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 				<textFieldExpression><![CDATA[$F{prod_name}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement x="100" y="608" width="474" height="20" uuid="88fc1e12-5d5b-4a16-bc62-4bf4dd0b6461">
+				<reportElement x="100" y="589" width="474" height="20" uuid="88fc1e12-5d5b-4a16-bc62-4bf4dd0b6461">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement markup="none">
@@ -86,7 +104,7 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 				<textFieldExpression><![CDATA[$F{prod_value}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement x="100" y="678" width="474" height="15" uuid="f4edc7b4-1b38-4322-85a6-8214833326f3">
+				<reportElement x="100" y="652" width="474" height="15" uuid="f4edc7b4-1b38-4322-85a6-8214833326f3">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Top" markup="none">
@@ -95,7 +113,7 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 				<textFieldExpression><![CDATA[$R{proddate_L}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="100" y="693" width="474" height="15" uuid="013766d3-9f4c-475d-a1f7-431b1b67643c">
+				<reportElement x="100" y="667" width="474" height="15" uuid="013766d3-9f4c-475d-a1f7-431b1b67643c">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Top" markup="none">
@@ -104,7 +122,7 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 				<textFieldExpression><![CDATA[$F{proddate}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement x="100" y="708" width="474" height="15" uuid="1bf3ef07-daed-4bec-800f-50f675346c1b">
+				<reportElement x="100" y="682" width="474" height="15" uuid="1bf3ef07-daed-4bec-800f-50f675346c1b">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Top" markup="none">
@@ -113,7 +131,7 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 				<textFieldExpression><![CDATA[$R{vendor}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement x="100" y="723" width="474" height="15" uuid="4d9074ee-2393-4ae7-8e4d-8a96f1a412b4">
+				<reportElement x="100" y="697" width="474" height="15" uuid="4d9074ee-2393-4ae7-8e4d-8a96f1a412b4">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Top" markup="none">
@@ -122,7 +140,7 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 				<textFieldExpression><![CDATA[$F{vendorname}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement x="100" y="648" width="474" height="20" uuid="bf68b704-b1f1-4b1a-aaf7-8fde14a56c2f">
+				<reportElement x="100" y="629" width="474" height="20" uuid="bf68b704-b1f1-4b1a-aaf7-8fde14a56c2f">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Top" markup="none">
@@ -132,7 +150,7 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 				<textFieldExpression><![CDATA[$F{hu}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement x="100" y="738" width="474" height="15" uuid="8f323ccf-c760-4b18-a608-590311e33c9d">
+				<reportElement x="100" y="712" width="474" height="15" uuid="8f323ccf-c760-4b18-a608-590311e33c9d">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Top" markup="none">
@@ -141,7 +159,7 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 				<textFieldExpression><![CDATA[$R{receiptdate}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="100" y="753" width="474" height="15" uuid="859efbcc-fd5f-48b9-a389-36e52c45ad6a">
+				<reportElement x="100" y="727" width="474" height="15" uuid="859efbcc-fd5f-48b9-a389-36e52c45ad6a">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Top" markup="none">
@@ -150,7 +168,7 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 				<textFieldExpression><![CDATA[$F{receiptdate}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement x="100" y="768" width="474" height="15" uuid="9a2d6bc2-f0d4-468e-9f4d-ed97fb70caf2">
+				<reportElement x="100" y="742" width="474" height="15" uuid="9a2d6bc2-f0d4-468e-9f4d-ed97fb70caf2">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Top" markup="none">
@@ -159,7 +177,7 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 				<textFieldExpression><![CDATA[$R{mhd}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="100" y="783" width="474" height="15" uuid="fcb05ced-b4cc-4e3c-af57-3bd7f7b7c338">
+				<reportElement x="100" y="757" width="474" height="15" uuid="fcb05ced-b4cc-4e3c-af57-3bd7f7b7c338">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Top" markup="none">
@@ -168,7 +186,7 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 				<textFieldExpression><![CDATA[$F{dateattributevalue}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement x="100" y="798" width="474" height="15" uuid="4289ab1c-0d33-451c-8c18-d56910ef6348">
+				<reportElement x="100" y="772" width="474" height="15" uuid="4289ab1c-0d33-451c-8c18-d56910ef6348">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Top" markup="none">
@@ -177,13 +195,31 @@ where s.ad_pinstance_id=$P{AD_PInstance_ID};]]>
 				<textFieldExpression><![CDATA[$R{CheeseDairyNo}]]></textFieldExpression>
 			</textField>
 			<textField textAdjust="StretchHeight" pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="100" y="813" width="474" height="15" uuid="ad5eac28-8394-458e-98e9-d3376d80fbc3">
+				<reportElement x="100" y="787" width="474" height="15" uuid="ad5eac28-8394-458e-98e9-d3376d80fbc3">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
 				<textElement verticalAlignment="Top" markup="none">
 					<font fontName="Arial" size="12" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{stringattributevalue}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement x="100" y="802" width="474" height="15" uuid="23791e6e-7697-4f1c-86cd-e2d8f9969ae2">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Top" markup="none">
+					<font fontName="Arial" size="12" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{Lot_No}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" pattern="dd.MM.yyyy" isBlankWhenNull="true">
+				<reportElement x="100" y="817" width="474" height="15" uuid="d8be60b7-12d9-4ae8-95f0-f8545e0d5f9d">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement verticalAlignment="Top" markup="none">
+					<font fontName="Arial" size="12" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{lot_no}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
