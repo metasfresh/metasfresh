@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 734866239L;
+	private static final long serialVersionUID = -1338941339L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking (final Properties ctx, final int MobileUI_UserProfile_Picking_ID, @Nullable final String trxName)
@@ -189,6 +189,18 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public boolean isShowConfirmationPromptWhenOverPick() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsShowConfirmationPromptWhenOverPick);
+	}
+
+	@Override
+	public void setIsShowLastPickedBestBeforeDateForLines (final boolean IsShowLastPickedBestBeforeDateForLines)
+	{
+		set_Value (COLUMNNAME_IsShowLastPickedBestBeforeDateForLines, IsShowLastPickedBestBeforeDateForLines);
+	}
+
+	@Override
+	public boolean isShowLastPickedBestBeforeDateForLines() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsShowLastPickedBestBeforeDateForLines);
 	}
 
 	@Override

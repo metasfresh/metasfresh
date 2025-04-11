@@ -342,6 +342,27 @@ public interface I_MobileUI_UserProfile_Picking_Job
 	String COLUMNNAME_IsShowConfirmationPromptWhenOverPick = "IsShowConfirmationPromptWhenOverPick";
 
 	/**
+	 * Set Show Best Before of Last Picked Item .
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsShowLastPickedBestBeforeDateForLines (boolean IsShowLastPickedBestBeforeDateForLines);
+
+	/**
+	 * Get Show Best Before of Last Picked Item .
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isShowLastPickedBestBeforeDateForLines();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_IsShowLastPickedBestBeforeDateForLines = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "IsShowLastPickedBestBeforeDateForLines", null);
+	String COLUMNNAME_IsShowLastPickedBestBeforeDateForLines = "IsShowLastPickedBestBeforeDateForLines";
+
+	/**
 	 * Set Mobile UI Picking Job Options.
 	 *
 	 * <br>Type: ID

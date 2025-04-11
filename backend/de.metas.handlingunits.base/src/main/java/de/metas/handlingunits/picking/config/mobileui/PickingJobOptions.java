@@ -23,6 +23,7 @@ public class PickingJobOptions
 	boolean isAllowSkippingRejectedReason;
 	boolean isShowConfirmationPromptWhenOverPick;
 	boolean isAllowCompletingPartialPickingJob;
+	boolean isShowLastPickedBestBeforeDateForLines;
 	@NonNull CreateShipmentPolicy createShipmentPolicy;
 	@Nullable PickingLineGroupBy pickingLineGroupBy;
 	@Nullable PickingLineSortBy pickingLineSortBy;
@@ -39,6 +40,7 @@ public class PickingJobOptions
 			final boolean isAllowSkippingRejectedReason,
 			final boolean isShowConfirmationPromptWhenOverPick,
 			final boolean isAllowCompletingPartialPickingJob,
+			final boolean isShowLastPickedBestBeforeDateForLines,
 			@NonNull final CreateShipmentPolicy createShipmentPolicy,
 			@Nullable final PickingLineGroupBy pickingLineGroupBy,
 			@Nullable final PickingLineSortBy pickingLineSortBy)
@@ -53,6 +55,7 @@ public class PickingJobOptions
 		this.isAllowSkippingRejectedReason = isAllowSkippingRejectedReason;
 		this.isShowConfirmationPromptWhenOverPick = isShowConfirmationPromptWhenOverPick;
 		this.isAllowCompletingPartialPickingJob = isAllowCompletingPartialPickingJob;
+		this.isShowLastPickedBestBeforeDateForLines = isShowLastPickedBestBeforeDateForLines;
 		this.createShipmentPolicy = createShipmentPolicy;
 		this.pickingLineGroupBy = pickingLineGroupBy;
 		this.pickingLineSortBy = pickingLineSortBy;

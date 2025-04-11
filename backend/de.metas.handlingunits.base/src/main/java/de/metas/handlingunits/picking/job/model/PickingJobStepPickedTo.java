@@ -12,8 +12,10 @@ import lombok.extern.jackson.Jacksonized;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @Value
@@ -99,5 +101,12 @@ public class PickingJobStepPickedTo
 				.map(PickingJobStepPickedToHU::getActualPickedHU)
 				.map(HUInfo::getId)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public Optional<PickingJobStepPickedToHU> getLastPickedHu()
+	{
+		return actualPickedHUs.stream()
+				.max(Comparator.comparing(PickingJobStepPickedToHU::getCreatedAt));
 	}
 }

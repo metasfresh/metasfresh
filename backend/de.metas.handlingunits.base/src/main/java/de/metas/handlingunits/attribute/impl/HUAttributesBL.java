@@ -30,11 +30,13 @@ import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IHUContextProcessorExecutor;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
-import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
+import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
@@ -43,9 +45,9 @@ import de.metas.handlingunits.attribute.strategy.impl.HUAttributeTransferRequest
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
-import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
@@ -64,6 +66,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IMutable;
@@ -401,4 +404,15 @@ public class HUAttributesBL implements IHUAttributesBL
 				.orElse(null);
 	}
 
+	@Override
+	@Nullable
+	public IAttributeValue getAttributeValue(@NonNull final I_M_HU hu, @NonNull final AttributeCode attributeCode)
+	{
+		final IMutableHUContext huContext = handlingUnitsBL
+				.createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx());
+
+		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
+		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
+		return attributeStorage.getAttributeValue(attributeCode);
+	}
 }
