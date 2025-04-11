@@ -183,7 +183,7 @@ BEGIN
       AND (DateAcct >= p_datefrom AND DateAcct <= p_dateto);
 
     GET DIAGNOSTICS v_rowcount = ROW_COUNT;
-    RAISE NOTICE 'Show taxes per vatcode % tmp_taxaccounts_details', v_rowcount;
+    RAISE NOTICE 'Show all taxes  % tmp_taxaccounts_details', v_rowcount;
 
     CREATE INDEX ON tmp_taxaccounts_details (vatcode, currency, source_currency, param_org);
     CREATE INDEX ON tmp_taxaccounts_details (vatcode, currency, source_currency, param_org, accountname, taxname);
@@ -326,11 +326,7 @@ BEGIN
         FROM tmp_taxaccounts_details t;
     END IF;
 
-    GET DIAGNOSTICS v_rowcount = ROW_COUNT;
-    RAISE NOTICE 'Show taxes per vatcode account and tax: % tmp_final_taxaccounts_report', v_rowcount;
-
-
-    IF p_level IS NULL OR p_level = 'ReCap' THEN
+    IF p_level = 'ReCap' THEN
         INSERT INTO tmp_final_taxaccounts_report
         SELECT 'ReCap'::varchar         AS level,
                vatcode,
@@ -392,7 +388,7 @@ BEGIN
 
     --- update balance for the previous year
     ---data for sums per vatcode, currency, source_currency, param_org
-    IF p_level IS NULL OR p_level = 'ReCap' THEN
+    IF p_level = 'ReCap' THEN
         UPDATE tmp_final_taxaccounts_report t
         SET TaxAmt_SUM_PrevYear = (SELECT COALESCE(SUM(taxamt), 0)
                                    FROM tmp_taxaccounts_details_previous_year p
