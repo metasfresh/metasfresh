@@ -53,9 +53,7 @@ public interface SqlDocumentFilterConverter
 	 * @return SQL
 	 */
 	@Nullable
-	FilterSql getSql(DocumentFilter filter,
-					 SqlOptions sqlOpts,
-					 SqlDocumentFilterConverterContext context);
+	FilterSql getSql(@NonNull final FilterSqlRequest request);
 
 	@NonNull
 	default FilterSql getSql(
@@ -76,7 +74,13 @@ public interface SqlDocumentFilterConverter
 
 		for (final DocumentFilter filter : filters.toList())
 		{
-			final FilterSql filterSql = getSql(filter, sqlOpts, context);
+			final FilterSql filterSql = getSql(FilterSqlRequest.builder()
+					.filter(filter)
+					.sqlOpts(sqlOpts)
+					.context(context)
+					.allFilters(filters)
+					.build()
+			);
 			if (filterSql == null)
 			{
 				continue;
