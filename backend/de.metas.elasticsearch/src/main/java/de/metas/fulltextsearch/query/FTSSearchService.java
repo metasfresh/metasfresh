@@ -54,14 +54,14 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.Strings;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchModule;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.xcontent.DeprecationHandler;
 import org.elasticsearch.xcontent.NamedXContentRegistry;
 import org.elasticsearch.xcontent.XContentFactory;
 import org.elasticsearch.xcontent.XContentParser;
 import org.elasticsearch.xcontent.XContentType;
-import org.elasticsearch.search.SearchHit;
-import org.elasticsearch.search.SearchModule;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -70,6 +70,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -170,6 +171,30 @@ public class FTSSearchService
 			builder.put(ESQueryTemplate.PARAM_orgFilter, buildOrgIdsFilterPart(request.getUserRolePermissionsKey()));
 		}
 
+		if (request.hasDefaultFilterParams() && jsonQueryTemplate.isDefaultFilterQueryRequired())
+		{
+			final StringBuilder query = new StringBuilder();
+			for(final Map.Entry<String, Object> entry : request.getDefaultFilterParams().entrySet() )
+			{
+				final Object value = entry.getValue();
+				if( value instanceof Boolean) // || value instanceof Integer - excluded for now needs to be improved before adding
+				{
+					query.append(buildDefaultFilterQueryTermPart(entry.getKey(), value));
+				}
+				// Excluded for now as it is reducing results too much
+				// else if (value instanceof String)
+				// {
+				// 	query.append(buildDefaultFilterQueryWildcardPart(entry.getKey(), value));
+				// }
+				else
+				{
+					logger.debug("Not supported datatype for value: {}", value);
+				}
+			}
+			builder.put(ESQueryTemplate.PARAM_defaultFilterQuery, query.toString());
+		}
+
+
 		return builder.build();
 	}
 
@@ -201,6 +226,38 @@ public class FTSSearchService
 			return ", \"filter\": { \"terms\": { \"ad_org_id\": [" + orgIdsCommaSeparated + "] } }";
 		}
 	}
+
+	private static String buildDefaultFilterQueryTermPart(@NonNull final String fieldName, @NonNull final Object value)
+	{
+		final boolean isStringValue = (value instanceof String);
+		final String valueEff = isStringValue ? "\"" + ((String)value).toLowerCase() + "\"" : String.valueOf(value);
+		final String fieldNameEff = fieldName.toLowerCase();
+
+		//Field either does not exist in es_index or has exact value of defaultFilter
+		return ",{ \"bool\":{ \"should\":[{\"bool\": {\"must_not\": [{\"exists\": {\"field\": \""
+				+ fieldNameEff
+				+   "\"}}]}},{\"bool\": {\"must\": [{\"term\": {\""
+				+ fieldNameEff
+				+ "\": "
+				+ valueEff
+				+ "}}]}}],\"minimum_should_match\": 1}} ";
+	}
+
+	// Excluded for now as it is reducing results too much
+	// private static String buildDefaultFilterQueryWildcardPart(@NonNull final String fieldName, @NonNull final Object value)
+	// {
+	// 	final String valueEff = "\"" + ((String)value).toLowerCase() + "*\"";
+	// 	final String fieldNameEff = fieldName.toLowerCase();
+	//
+	// 	//Field either does not exist in es_index or has wildcard value of defaultFilter
+	// 	return ",{ \"bool\":{ \"should\":[{\"bool\": {\"must_not\": [{\"exists\": {\"field\": \""
+	// 			+ fieldNameEff
+	// 			+   "\"}}]}},{\"bool\": {\"must\": [{\"wildcard\": {\""
+	// 			+ fieldNameEff
+	// 			+ "\": {\"value\": "
+	// 			+ valueEff
+	// 			+ "}}}]}}],\"minimum_should_match\": 1}} ";
+	// }
 
 	private static FTSSearchResultItem extractFTSSearchResultItem(
 			@NonNull final SearchHit hit,
