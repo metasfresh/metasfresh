@@ -26,6 +26,9 @@ INSERT INTO public.ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_
 
 UPDATE public.ad_element_trl SET  name = 'Belegwährung', printname = 'Belegwährung', istranslated = 'Y' WHERE ad_element_id = 578756 AND ad_language = 'de_CH';
 UPDATE public.ad_element_trl SET name = 'Belegwährung', printname = 'Belegwährung',  istranslated = 'Y' WHERE ad_element_id = 578756 AND ad_language = 'de_DE';
+UPDATE public.ad_element SET name = 'Belegwährung', printname = 'Belegwährung' WHERE ad_element_id = 578756 ;
+UPDATE ad_element SET columnname = 'NetAmt',  name = 'Nettobetrag', printname = 'Nettobetrag' WHERE ad_element_id = 583579;
+
 
 UPDATE ad_process SET sqlstatement = e'SELECT *
 FROM de_metas_acct.report_taxaccounts(@AD_Org_ID@, @Account_ID/NULL@, @C_VAT_Code_ID/NULL@, \'@DateFrom@\'::date, \'@DateTo@\'::date,\'@showdetails/N@\')
