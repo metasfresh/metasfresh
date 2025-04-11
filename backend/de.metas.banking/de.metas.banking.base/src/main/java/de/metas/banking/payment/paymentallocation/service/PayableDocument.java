@@ -48,7 +48,6 @@ import java.time.LocalDate;
 
 /**
  * Mutable invoice allocation candidate.
- *
  * Used by {@link PaymentAllocationBuilder} internally.
  *
  * @author tsa

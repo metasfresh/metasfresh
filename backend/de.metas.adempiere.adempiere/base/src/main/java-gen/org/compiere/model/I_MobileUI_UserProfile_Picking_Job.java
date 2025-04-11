@@ -143,6 +143,29 @@ public interface I_MobileUI_UserProfile_Picking_Job
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Allow Partial Picking Completion.
+	 * Users can complete jobs on mobile without picking the full ordered quantity.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowCompletingPartialPickingJob (boolean IsAllowCompletingPartialPickingJob);
+
+	/**
+	 * Get Allow Partial Picking Completion.
+	 * Users can complete jobs on mobile without picking the full ordered quantity.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowCompletingPartialPickingJob();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_IsAllowCompletingPartialPickingJob = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "IsAllowCompletingPartialPickingJob", null);
+	String COLUMNNAME_IsAllowCompletingPartialPickingJob = "IsAllowCompletingPartialPickingJob";
+
+	/**
 	 * Set Allow new TU.
 	 *
 	 * <br>Type: YesNo

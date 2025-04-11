@@ -346,16 +346,20 @@ public class C_Invoice_StepDef
 
 		final SoftAssertions softly = new SoftAssertions();
 
-		final StepDefDataIdentifier bpartnerIdentifier = row.getAsIdentifier(COLUMNNAME_C_BPartner_ID);
-		final BPartnerId expectedBPartnerId = bpartnerTable.getIdOptional(bpartnerIdentifier)
-				.orElseGet(() -> bpartnerIdentifier.getAsId(BPartnerId.class));
-		softly.assertThat(invoice.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(expectedBPartnerId.getRepoId());
+		row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_ID)
+				.ifPresent(bpartnerIdentifier -> {
+					final BPartnerId expectedBPartnerId = bpartnerTable.getIdOptional(bpartnerIdentifier)
+							.orElseGet(() -> bpartnerIdentifier.getAsId(BPartnerId.class));
+					softly.assertThat(invoice.getC_BPartner_ID()).as("C_BPartner_ID").isEqualTo(expectedBPartnerId.getRepoId());
+				});
 
-		final StepDefDataIdentifier bpartnerLocationIdentifier = row.getAsIdentifier(COLUMNNAME_C_BPartner_Location_ID);
-		final Integer expectedBPartnerLocationId = bPartnerLocationTable.getOptional(bpartnerLocationIdentifier)
-				.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
-				.orElseGet(bpartnerLocationIdentifier::getAsInt);
-		softly.assertThat(invoice.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isEqualTo(expectedBPartnerLocationId);
+		row.getAsOptionalIdentifier(COLUMNNAME_C_BPartner_Location_ID)
+				.ifPresent(bpartnerLocationIdentifier -> {
+					final Integer expectedBPartnerLocationId = bPartnerLocationTable.getOptional(bpartnerLocationIdentifier)
+							.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
+							.orElseGet(bpartnerLocationIdentifier::getAsInt);
+					softly.assertThat(invoice.getC_BPartner_Location_ID()).as("C_BPartner_Location_ID").isEqualTo(expectedBPartnerLocationId);
+				});
 
 		row.getAsOptionalString(COLUMNNAME_POReference)
 				.ifPresent(poReference -> softly.assertThat(invoice.getPOReference()).as("POReference").isEqualTo(poReference));
@@ -368,14 +372,14 @@ public class C_Invoice_StepDef
 		extractPaymentTermId(row)
 				.ifPresent(paymentTermId -> softly.assertThat(PaymentTermId.ofRepoIdOrNull(invoice.getC_PaymentTerm_ID())).as("C_PaymentTerm_ID").isEqualTo(paymentTermId));
 
+		row.getAsOptionalString(I_C_DocType.COLUMNNAME_DocBaseType)
+				.ifPresent(docBaseType -> {
+					final I_C_DocType docType = docTypeBL.getById(DocTypeId.ofRepoId(invoice.getC_DocType_ID()));
+					softly.assertThat(docType.getDocBaseType()).as("DocBaseType").isEqualTo(docBaseType);
+				});
 		row.getAsOptionalString(I_C_DocType.COLUMNNAME_DocSubType)
 				.ifPresent(docSubType -> {
-					final int docTargetTypeId = invoice.getC_DocTypeTarget_ID();
-					final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
-							.addEqualsFilter(I_C_DocType.COLUMN_C_DocType_ID, docTargetTypeId)
-							.create()
-							.firstOnlyNotNull(I_C_DocType.class);
-
+					final I_C_DocType docType = docTypeBL.getById(DocTypeId.ofRepoId(invoice.getC_DocType_ID()));
 					softly.assertThat(docType.getDocSubType()).as("DocSubType").isEqualTo(docSubType);
 				});
 
@@ -414,11 +418,11 @@ public class C_Invoice_StepDef
 			assertThat(invoice.getAD_User_ID()).isEqualTo(contact.getAD_User_ID());
 		}
 
-		final BigDecimal grandTotal = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_GrandTotal);
-		if (grandTotal != null)
-		{
-			softly.assertThat(invoice.getGrandTotal()).as("GrandTotal").isEqualByComparingTo(grandTotal);
-		}
+		row.getAsOptionalMoney(COLUMNNAME_GrandTotal, currencyRepository::getCurrencyIdByCurrencyCode)
+				.ifPresent(grandTotal -> {
+					softly.assertThat(invoice.getGrandTotal()).as("GrandTotal").isEqualByComparingTo(grandTotal.toBigDecimal());
+					softly.assertThat(invoice.getC_Currency_ID()).as("C_Currency_ID").isEqualByComparingTo(grandTotal.getCurrencyId().getRepoId());
+				});
 
 		final BigDecimal totalLines = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_TotalLines);
 		if (totalLines != null)
@@ -491,16 +495,10 @@ public class C_Invoice_StepDef
 					.ifPresent(invoiceIsPartiallyPaid -> softly.assertThat(invoice.isPartiallyPaid()).as("IsPartiallyPaid").isEqualTo(invoiceIsPartiallyPaid));
 			row.getAsOptionalBigDecimal("OpenAmt")
 					.ifPresent(expectedOpenAmt -> {
-						softly.assertThat(invoice.getOpenAmt()).as("C_Invoice.OpenAmt").isEqualByComparingTo(expectedOpenAmt);
+						softly.assertThat(invoice.getOpenAmt()).as("OpenAmt not matching C_Invoice.OpenAmt").isEqualByComparingTo(expectedOpenAmt);
 
-						final List<InvoiceToAllocate> invoiceToAllocates = paymentAllocationRepository
-								.retrieveInvoicesToAllocate(InvoiceToAllocateQuery.builder()
-										.evaluationDate(ZonedDateTime.now())
-										.onlyInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-										.build());
-						final InvoiceToAllocate invoiceToAllocate = invoiceToAllocates.isEmpty() ? null : invoiceToAllocates.get(0);
-						final BigDecimal actualOpenAmountConverted = invoiceToAllocate != null ? invoiceToAllocate.getOpenAmountConverted().getAsBigDecimal() : BigDecimal.ZERO;
-						softly.assertThat(actualOpenAmountConverted).as("OpenAmountConverted").isEqualByComparingTo(expectedOpenAmt);
+						final BigDecimal computedOpenAmt = computeOpenAmount(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()));
+						softly.assertThat(computedOpenAmt).as("OpenAmt not matching computed value").isEqualByComparingTo(expectedOpenAmt);
 					});
 		}
 
@@ -542,6 +540,27 @@ public class C_Invoice_StepDef
 		}
 
 		softly.assertAll();
+	}
+
+	private BigDecimal computeOpenAmount(@NonNull final InvoiceId invoiceId)
+	{
+		final List<InvoiceToAllocate> invoiceToAllocates = paymentAllocationRepository
+				.retrieveInvoicesToAllocate(InvoiceToAllocateQuery.builder()
+						.evaluationDate(ZonedDateTime.now())
+						.onlyInvoiceId(invoiceId)
+						.build());
+
+		if (invoiceToAllocates.isEmpty())
+		{
+			return BigDecimal.ZERO;
+		}
+
+		final InvoiceToAllocate invoiceToAllocate = invoiceToAllocates.get(0);
+		return invoiceToAllocate.getOpenAmountConverted()
+				// because retrieved amount is already CM adjusted, we are "canceling" this adjustment here,
+				// because that's how the amount is expected to be returned
+				.negateIf(invoiceToAllocate.getDocBaseType().isCreditMemo())
+				.toBigDecimal();
 	}
 
 	public ProviderResult<List<I_C_Invoice>> loadInvoice(@NonNull final Map<String, String> row)
@@ -592,7 +611,7 @@ public class C_Invoice_StepDef
 
 		assertThat(invoices).isNotEmpty();
 		assertThat(invoices).hasSameSizeAs(invoiceIdentifiers);
-		
+
 		for (int invoiceIndex = 0; invoiceIndex < invoices.size(); invoiceIndex++)
 		{
 			invoiceTable.putOrReplace(invoiceIdentifiers.get(invoiceIndex), invoices.get(invoiceIndex));

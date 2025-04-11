@@ -294,6 +294,7 @@ public class MobileUIPickingUserProfileRepository
 				.isShowConfirmationPromptWhenOverPick(record.isShowConfirmationPromptWhenOverPick())
 				.isShowLastPickedBestBeforeDateForLines(record.isShowLastPickedBestBeforeDateForLines())
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(record.getCreateShipmentPolicy()))
+				.isAllowCompletingPartialPickingJob(record.isAllowCompletingPartialPickingJob())
 				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(record.getPickingLineGroupBy()))
 				.pickingLineSortBy(PickingLineSortBy.ofNullableCode(record.getPickingLineSortBy()))
 				.build();

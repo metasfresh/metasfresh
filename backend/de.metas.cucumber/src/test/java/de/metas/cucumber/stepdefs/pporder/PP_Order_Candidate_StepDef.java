@@ -102,7 +102,8 @@ import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
 import static org.eevolution.model.I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID;
 
@@ -659,5 +660,13 @@ public class PP_Order_Candidate_StepDef
 				.resourceTable(resourceTable)
 				.productBOMTable(productBOMTable)
 				.build();
+	}
+
+	@And("^after not more than (.*)s, the following PP_Order_Candidates exist")
+	public void verifyPPOrderCandidatesAreUpdated(final int timeoutSec, @NonNull final DataTable dataTable )
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName("PP_Order_Candidate_ID")
+				.forEach(row -> this.validatePP_Order_Candidate(timeoutSec, row));
 	}
 }
