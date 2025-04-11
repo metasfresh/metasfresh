@@ -224,11 +224,10 @@ public final class ProductBL implements IProductBL
 		//
 		// Calculate the Weight for one "uomTo"
 		final int weightPerUomToPrecision = getWeightUOM(product).getStdPrecision();
-		final BigDecimal weightPerUomTo = weightPerStockingUOM
+
+		return weightPerStockingUOM
 				.multiply(stocking2uomToRate)
 				.setScale(weightPerUomToPrecision, RoundingMode.HALF_UP);
-
-		return weightPerUomTo;
 	}
 
 	@Override
@@ -528,7 +527,7 @@ public final class ProductBL implements IProductBL
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
 						product -> ProductId.ofRepoId(product.getM_Product_ID()),
-						product -> product.getValue()));
+						I_M_Product::getValue));
 	}
 
 	@Override

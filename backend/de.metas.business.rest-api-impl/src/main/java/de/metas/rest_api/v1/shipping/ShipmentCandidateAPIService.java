@@ -125,7 +125,7 @@ import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndFor
 @Service
 class ShipmentCandidateAPIService
 {
-	private final static transient Logger logger = LogManager.getLogger(ShipmentCandidateAPIService.class);
+	private final static Logger logger = LogManager.getLogger(ShipmentCandidateAPIService.class);
 
 	private final ShipmentScheduleAuditRepository shipmentScheduleAuditRepository;
 	private final ShipmentScheduleRepository shipmentScheduleRepository;

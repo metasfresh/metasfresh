@@ -253,6 +253,7 @@ public class ProductRestService
 		externalReferenceRestControllerService.performUpsert(externalReferenceCreateRequest, org.getValue());
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private void validateCreateSyncAdvise(
 			@NonNull final Object parentResource,
 			@NonNull final String resourceIdentifier,

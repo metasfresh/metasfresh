@@ -373,7 +373,6 @@ public class M_Product_StepDef
 
 	private void updateMProduct(@NonNull final DataTableRow row)
 	{
-		;
 		final I_M_Product productRecord = row.getAsIdentifier().lookupIn(productTable);
 		assertThat(productRecord).isNotNull();
 

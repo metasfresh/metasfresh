@@ -107,7 +107,7 @@ import static de.metas.inoutcandidate.exportaudit.APIExportStatus.Pending;
 @Service
 class ReceiptCandidateAPIService
 {
-	private final static transient Logger logger = LogManager.getLogger(ReceiptCandidateAPIService.class);
+	private final static Logger logger = LogManager.getLogger(ReceiptCandidateAPIService.class);
 
 	private final ReceiptScheduleAuditRepository receiptScheduleAuditRepository;
 	private final ReceiptScheduleRepository receiptScheduleRepository;
