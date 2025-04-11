@@ -102,6 +102,7 @@ public class PP_Order_Candidate
 			ppOrderCandidateService.syncLines(ppOrderCandidateRecord);
 
 			syncUpdatesToMaterialDispo(ppOrderCandidateRecord);
+			ppOrderCandidateRecord.setProcessed(ppOrderCandidateRecord.getQtyToProcess().signum() == 0);
 		}
 	}
 
