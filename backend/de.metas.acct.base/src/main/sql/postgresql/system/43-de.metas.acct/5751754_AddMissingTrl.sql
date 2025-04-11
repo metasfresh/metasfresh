@@ -1,4 +1,3 @@
-
 INSERT INTO public.ad_element (ad_element_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, columnname, entitytype, name, printname, description, help, po_name, po_printname, po_description, po_help, widgetsize, commitwarning, webui_namebrowse, webui_namenewbreadcrumb, webui_namenew) VALUES (583581, 0, 0, 'Y', '2025-04-11 16:30:42.791000 +02:00', 100, '2025-04-11 16:31:00.304000 +02:00', 100, 'TaxAmt_Sum_PrevYear', 'U', 'Saldo Vorjahr', 'Saldo Vorjahr', null, 'It''s used like a balance for taxes', null, null, null, null, null, null, null, null, null);
 INSERT INTO public.ad_element (ad_element_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, columnname, entitytype, name, printname, description, help, po_name, po_printname, po_description, po_help, widgetsize, commitwarning, webui_namebrowse, webui_namenewbreadcrumb, webui_namenew) VALUES (583580, 0, 0, 'Y', '2025-04-11 16:29:01.817000 +02:00', 100, '2025-04-11 16:29:41.013000 +02:00', 100, 'TaxAmt_Sum', 'U', 'Aktueller Saldo', 'Aktueller Saldo', null, 'It''s used for describing tax amount like a balance', null, null, null, null, null, null, null, null, null);
 INSERT INTO public.ad_element (ad_element_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, columnname, entitytype, name, printname, description, help, po_name, po_printname, po_description, po_help, widgetsize, commitwarning, webui_namebrowse, webui_namenewbreadcrumb, webui_namenew) VALUES (583579, 0, 0, 'Y', '2025-04-11 16:26:49.749000 +02:00', 100, '2025-04-11 16:27:05.098000 +02:00', 100, 'NeAmt', 'U', 'Nettobetrag', 'Nettobetrag', null, null, null, null, null, null, null, null, null, null, null);
@@ -26,6 +25,9 @@ INSERT INTO public.ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_
 
 UPDATE public.ad_element_trl SET  name = 'Belegwährung', printname = 'Belegwährung', istranslated = 'Y' WHERE ad_element_id = 578756 AND ad_language = 'de_CH';
 UPDATE public.ad_element_trl SET name = 'Belegwährung', printname = 'Belegwährung',  istranslated = 'Y' WHERE ad_element_id = 578756 AND ad_language = 'de_DE';
+UPDATE public.ad_element SET name = 'Belegwährung', printname = 'Belegwährung' WHERE ad_element_id = 578756 ;
+UPDATE ad_element SET columnname = 'NetAmt',  name = 'Nettobetrag', printname = 'Nettobetrag' WHERE ad_element_id = 583579;
+
 
 UPDATE ad_process SET sqlstatement = e'SELECT *
 FROM de_metas_acct.report_taxaccounts(@AD_Org_ID@, @Account_ID/NULL@, @C_VAT_Code_ID/NULL@, \'@DateFrom@\'::date, \'@DateTo@\'::date,\'@showdetails/N@\')
