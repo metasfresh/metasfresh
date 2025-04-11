@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.money.CurrencyId;
@@ -453,6 +454,7 @@ public class DataTableRow
 	{
 		return Optionals.firstPresentOfSuppliers(
 						() -> getAsOptionalString("C_Currency.ISO_Code"),
+						() -> getAsOptionalString("C_Currency." + StepDefDataIdentifier.SUFFIX),
 						() -> getAsOptionalString("C_Currency_ID")
 				)
 				.map(CurrencyCode::ofThreeLetterCode);
@@ -469,6 +471,12 @@ public class DataTableRow
 	public Optional<Money> getAsOptionalMoney(
 			@NonNull final String valueColumnName,
 			@NonNull final Function<CurrencyCode, CurrencyId> currencyCodeMapper)
+	{
+		return getAsOptionalAmount(valueColumnName)
+				.map(amount -> amount.toMoney(currencyCodeMapper));
+	}
+
+	public Optional<Amount> getAsOptionalAmount(@NonNull final String valueColumnName)
 	{
 		final String valueStr = getAsOptionalString(valueColumnName).map(StringUtils::trimBlankToNull).orElse(null);
 		if (valueStr == null)
@@ -501,8 +509,7 @@ public class DataTableRow
 			throw new AdempiereException("No currency code incorporated into `" + valueColumnName + "`: " + valueStr);
 		}
 
-		final CurrencyId currencyId = currencyCodeMapper.apply(currencyCode);
-		return Optional.of(Money.of(valueBD, currencyId));
+		return Optional.of(Amount.of(valueBD, currencyCode));
 	}
 
 	public LocalDate getAsLocalDate(@NonNull final String columnName)
@@ -530,16 +537,19 @@ public class DataTableRow
 
 	public Timestamp getAsLocalDateTimestamp(@NonNull final String columnName)
 	{
-		return Timestamp.valueOf(getAsLocalDate(columnName).atStartOfDay());
+		return toTimestamp(getAsLocalDate(columnName));
+	}
+
+	private static Timestamp toTimestamp(final LocalDate localDate)
+	{
+		return Timestamp.valueOf(localDate.atStartOfDay());
 	}
 
 	public Optional<Timestamp> getAsOptionalLocalDateTimestamp(@NonNull final String columnName)
 	{
-		return getAsOptionalLocalDate(columnName)
-				.map(localDate -> Timestamp.valueOf(localDate.atStartOfDay()));
+		return getAsOptionalLocalDate(columnName).map(DataTableRow::toTimestamp);
 	}
-
-
+	
 	@SuppressWarnings("unused")
 	public Timestamp getAsInstantTimestamp(@NonNull final String columnName)
 	{

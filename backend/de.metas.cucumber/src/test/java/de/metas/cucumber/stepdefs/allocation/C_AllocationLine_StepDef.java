@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.invoice.InvoiceId;
@@ -63,8 +64,14 @@ public class C_AllocationLine_StepDef
 
 	private void validate_C_AllocationLine(final DataTableRow row)
 	{
-		final InvoiceId invoiceId = row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_ID).map(invoiceTable::getId).orElse(null);
-		final PaymentId paymentId = row.getAsOptionalIdentifier(COLUMNNAME_C_Payment_ID).map(paymentTable::getId).orElse(null);
+		final InvoiceId invoiceId = row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_ID)
+				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+				.map(invoiceTable::getId)
+				.orElse(null);
+		final PaymentId paymentId = row.getAsOptionalIdentifier(COLUMNNAME_C_Payment_ID)
+				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
+				.map(paymentTable::getId)
+				.orElse(null);
 
 		final I_C_AllocationLine singleAllocationLine = queryBL.createQueryBuilder(I_C_AllocationLine.class)
 				.addOnlyActiveRecordsFilter()

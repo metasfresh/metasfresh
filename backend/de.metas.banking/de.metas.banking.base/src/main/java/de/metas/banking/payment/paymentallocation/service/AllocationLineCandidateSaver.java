@@ -53,21 +53,21 @@ final class AllocationLineCandidateSaver
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 
-	public ImmutableMap<PaymentAllocationId,AllocationLineCandidate> save(final List<AllocationLineCandidate> candidates)
+	public ImmutableMap<PaymentAllocationId, AllocationLineCandidate> save(final List<AllocationLineCandidate> candidates)
 	{
 		return trxManager.callInThreadInheritedTrx(() -> saveInTrx(candidates));
 	}
 
-	private ImmutableMap<PaymentAllocationId,AllocationLineCandidate> saveInTrx(final List<AllocationLineCandidate> candidates)
+	private ImmutableMap<PaymentAllocationId, AllocationLineCandidate> saveInTrx(final List<AllocationLineCandidate> candidates)
 	{
-		final ImmutableMap.Builder<PaymentAllocationId,AllocationLineCandidate> candidatesByPaymentId = ImmutableMap.builder();
+		final ImmutableMap.Builder<PaymentAllocationId, AllocationLineCandidate> candidatesByPaymentId = ImmutableMap.builder();
 
 		for (final AllocationLineCandidate candidate : candidates)
 		{
 			final PaymentAllocationId paymentAllocationId = saveCandidate(candidate);
 			if (paymentAllocationId != null)
 			{
-				candidatesByPaymentId.put(paymentAllocationId,candidate);
+				candidatesByPaymentId.put(paymentAllocationId, candidate);
 			}
 		}
 
@@ -209,7 +209,7 @@ final class AllocationLineCandidateSaver
 
 		final C_AllocationHdr_Builder allocationBuilder = newC_AllocationHdr_Builder(candidate);
 
-		// Sales credit memo
+		// Sales credit memo (ARC)
 		allocationBuilder.addLine()
 				.skipIfAllAmountsAreZero()
 				//
@@ -217,14 +217,14 @@ final class AllocationLineCandidateSaver
 				.bpartnerId(candidate.getBpartnerId())
 				//
 				// Amounts
-				.amount(payAmt.toBigDecimal())
-				.discountAmt(discountAmt.toBigDecimal())
-				.writeOffAmt(writeOffAmt.toBigDecimal())
+				.amount(payAmt.negate().toBigDecimal())
+				.discountAmt(discountAmt.negate().toBigDecimal())
+				.writeOffAmt(writeOffAmt.negate().toBigDecimal())
 				.overUnderAmt(candidate.getPayableOverUnderAmt().toBigDecimal())
 				//
 				.invoiceId(extractInvoiceId(candidate.getPayableDocumentRef()));
 
-		// Purchase invoice
+		// Purchase invoice (API)
 		allocationBuilder.addLine()
 				.skipIfAllAmountsAreZero()
 				//
