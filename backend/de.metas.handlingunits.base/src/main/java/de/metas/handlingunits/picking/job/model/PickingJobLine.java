@@ -273,12 +273,9 @@ public class PickingJobLine
 				.map(PickingJobStep::getLastPickedHU)
 				.filter(Optional::isPresent)
 				.map(Optional::get)
-				.sorted(Comparator.comparing(
-						PickingJobStepPickedToHU::getCreatedAt,
-						Comparator.nullsFirst(Comparator.reverseOrder())))
+				.max(Comparator.comparing(PickingJobStepPickedToHU::getCreatedAt))
 				.map(PickingJobStepPickedToHU::getActualPickedHU)
-				.map(HUInfo::getId)
-				.findFirst();
+				.map(HUInfo::getId);
 	}
 
 	PickingJobLine withCurrentPickingTarget(@NonNull final CurrentPickingTarget currentPickingTarget)

@@ -12,7 +12,6 @@ import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfig;
 import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfigsCollection;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions.PickingJobOptionsBuilder;
-import de.metas.handlingunits.picking.config.mobileui.PickingLineConfig;
 import de.metas.mobile.MobileConfig;
 import de.metas.mobile.MobileConfig.MobileConfigBuilder;
 import de.metas.mobile.MobileConfigService;
@@ -80,15 +79,6 @@ public class MobileConfigCommand
 		if (picking.getAllowPickingAnyCustomer() != null)
 		{
 			newProfileBuilder.isAllowPickingAnyCustomer(picking.getAllowPickingAnyCustomer());
-		}
-		if (picking.getLineConfig() != null)
-		{
-			final PickingLineConfig.PickingLineConfigBuilder lineConfigBuilder = profile.getPickingLineConfig().toBuilder();
-			if (picking.getLineConfig().getShowLastPickedBestBeforeDate() != null)
-			{
-				lineConfigBuilder.showLastPickedBestBeforeDate(picking.getLineConfig().getShowLastPickedBestBeforeDate());
-			}
-			newProfileBuilder.pickingLineConfig(lineConfigBuilder.build());
 		}
 
 		final MobileUIPickingUserProfile newProfile = newProfileBuilder.build();

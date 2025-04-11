@@ -406,9 +406,8 @@ public class HUAttributesBL implements IHUAttributesBL
 
 	@Override
 	@Nullable
-	public IAttributeValue getAttributeValue(@NonNull final HuId huId, @NonNull final AttributeCode attributeCode)
+	public IAttributeValue getAttributeValue(@NonNull final I_M_HU hu, @NonNull final AttributeCode attributeCode)
 	{
-		final I_M_HU hu = handlingUnitsDAO.getById(huId);
 		final IMutableHUContext huContext = handlingUnitsBL
 				.createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx());
 

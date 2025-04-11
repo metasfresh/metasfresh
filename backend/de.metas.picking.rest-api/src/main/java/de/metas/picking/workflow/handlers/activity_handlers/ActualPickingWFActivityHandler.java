@@ -24,11 +24,13 @@ package de.metas.picking.workflow.handlers.activity_handlers;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
-import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
-import de.metas.handlingunits.picking.config.mobileui.PickingLineConfig;
 import de.metas.handlingunits.picking.config.mobileui.PickingLineGroupBy;
 import de.metas.handlingunits.picking.config.mobileui.PickingLineSortBy;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -39,7 +41,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.organization.IOrgDAO;
 import de.metas.picking.rest_api.json.JsonPickingJob;
 import de.metas.picking.rest_api.json.JsonPickingJobLine;
 import de.metas.picking.rest_api.json.JsonRejectReasonsList;
@@ -58,8 +59,10 @@ import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.Params;
 import org.jetbrains.annotations.NotNull;
@@ -70,6 +73,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 
 import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.getPickingJob;
 import static org.adempiere.mm.attributes.api.AttributeConstants.ATTR_BestBeforeDate;
@@ -89,6 +95,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final PickingJobRestService pickingJobRestService;
 
@@ -168,7 +175,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 		final PickingLineGroupBy groupBy = pickingJobOptions.getPickingLineGroupBy().orElse(PickingLineGroupBy.NONE);
 		final PickingLineSortBy sortBy = pickingJobOptions.getPickingLineSortBy().orElse(PickingLineSortBy.ORDER_LINE_SEQ_NO);
 		final Map<String, List<PickingJobLine>> sortedGroupedLines = groupBy.groupLines(pickingJob.getLines(), sortBy);
-		final MobileUIPickingUserProfile profile = pickingJobRestService.getPickingProfile();
+		final HUCache huCache = cacheLastPickedHUsForEachLine(pickingJob);
 
 		final ArrayList<JsonPickingJobLine> result = new ArrayList<>();
 		for (final Map.Entry<String, List<PickingJobLine>> group : sortedGroupedLines.entrySet())
@@ -178,7 +185,7 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 							.displayGroupKey(group.getKey())
 							.allowPickingAnyHU(pickingJob.isAllowPickingAnyHU())
 							.additionalHeaderProperties(JsonWFProcessHeaderProperties.of(
-									getAdditionalHeaderProperties(line, profile, jsonOpts), jsonOpts))
+									getAdditionalHeaderProperties(line, pickingJobOptions, huCache, jsonOpts), jsonOpts))
 							.build()
 					)
 					.forEach(result::add);
@@ -189,26 +196,28 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 	@NonNull
 	private WFProcessHeaderProperties getAdditionalHeaderProperties(
 			@NonNull final PickingJobLine line,
-			@NonNull final MobileUIPickingUserProfile profile,
+			@NonNull final PickingJobOptions options,
+			@NonNull final HUCache huCache,
 			@NonNull final JsonOpts opts)
 	{
 		final WFProcessHeaderProperties.WFProcessHeaderPropertiesBuilder builder = WFProcessHeaderProperties.builder();
-		getLastPickedBestBeforeDate(line, profile.getPickingLineConfig(), opts).ifPresent(builder::entry);
+		getLastPickedBestBeforeDate(line, options, huCache, opts).ifPresent(builder::entry);
 		return builder.build();
 	}
 
 	private Optional<WFProcessHeaderProperty> getLastPickedBestBeforeDate(
 			@NonNull final PickingJobLine line,
-			@NonNull final PickingLineConfig pickingLineConfig,
+			@NonNull final PickingJobOptions pickingJobOptions,
+			@NonNull final HUCache huCache,
 			@NonNull final JsonOpts opts)
 	{
-		if (!pickingLineConfig.isShowLastPickedBestBeforeDate())
+		if (!pickingJobOptions.isShowLastPickedBestBeforeDateForLines())
 		{
 			return Optional.empty();
 		}
 
 		final String lastPickedHUBestBeforeDate = line.getLastPickedHUId()
-				.map(huId -> huAttributesBL.getAttributeValue(huId, ATTR_BestBeforeDate))
+				.map(huId -> huAttributesBL.getAttributeValue(huCache.getOrLoad(huId), ATTR_BestBeforeDate))
 				.map(IAttributeValue::getValueAsDate)
 				.map(date -> JsonHUAttributeConverters.toDisplayValue(date, opts.getAdLanguage()))
 				.map(String::valueOf)
@@ -218,5 +227,42 @@ public class ActualPickingWFActivityHandler implements WFActivityHandler
 								   .caption(msgBL.getTranslatableMsgText(LAST_PICKED_HU_BEST_BEFORE_DATE))
 								   .value(lastPickedHUBestBeforeDate)
 								   .build());
+	}
+
+	@NonNull
+	private HUCache cacheLastPickedHUsForEachLine(@NonNull final PickingJob job)
+	{
+		final Set<HuId> huIds = job.streamLines()
+				.map(PickingJobLine::getLastPickedHUId)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final HUCache cache = HUCache.builder()
+				.loadHU(handlingUnitsBL::getById)
+				.build();
+
+		cache.cacheHUs(handlingUnitsBL.getByIds(huIds));
+
+		return cache;
+	}
+
+	@Value
+	@Builder
+	private static class HUCache
+	{
+		@NonNull Function<HuId, I_M_HU> loadHU;
+		Map<HuId, I_M_HU> huById = new ConcurrentHashMap<>();
+
+		public void cacheHUs(@NonNull final List<I_M_HU> hus)
+		{
+			hus.forEach(hu -> huById.put(HuId.ofRepoId(hu.getM_HU_ID()), hu));
+		}
+
+		@NonNull
+		public I_M_HU getOrLoad(@NonNull final HuId huId)
+		{
+			return huById.computeIfAbsent(huId, loadHU);
+		}
 	}
 }

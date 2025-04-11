@@ -107,7 +107,6 @@ public class PickingJobStepPickedTo
 	public Optional<PickingJobStepPickedToHU> getLastPickedHu()
 	{
 		return actualPickedHUs.stream()
-				.min(Comparator.comparing(PickingJobStepPickedToHU::getCreatedAt,
-										  Comparator.nullsFirst(Comparator.reverseOrder())));
+				.max(Comparator.comparing(PickingJobStepPickedToHU::getCreatedAt));
 	}
 }

@@ -40,7 +40,6 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean allowNewTU;
 		@Nullable Boolean allowSkippingRejectedReason;
 		@Nullable Boolean filterByQRCode;
-		@Nullable PickingLineConfig lineConfig;
 
 		@Nullable List<Customer> customers;
 
