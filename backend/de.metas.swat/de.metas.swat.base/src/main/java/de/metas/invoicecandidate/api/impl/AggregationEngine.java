@@ -399,8 +399,6 @@ public final class AggregationEngine
 	{
 		try
 		{
-			final BPartnerLocationAndCaptureId billBPLocationId = getBillLocationId(icRecord);
-
 			invoiceHeader.setC_Async_Batch_ID(icRecord.getC_Async_Batch_ID());
 			invoiceHeader.setAD_Org_ID(icRecord.getAD_Org_ID());
 			invoiceHeader.setBillTo(getBillTo(icRecord));
@@ -859,7 +857,6 @@ public final class AggregationEngine
 		invoiceHeader.setDocTypeInvoiceId(docTypeIdToBeUsed);
 	}
 
-	@Nullable
 	private Optional<DocTypeInvoicingPool> getDocTypeInvoicingPool(@NonNull final DocTypeId docTypeId)
 	{
 		final I_C_DocType docTypeInvoice = docTypeBL.getByIdInTrx(docTypeId);

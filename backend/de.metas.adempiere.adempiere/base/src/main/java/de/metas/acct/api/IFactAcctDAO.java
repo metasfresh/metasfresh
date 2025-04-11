@@ -38,12 +38,6 @@ import java.util.Properties;
 
 public interface IFactAcctDAO extends ISingletonService
 {
-	String DB_SCHEMA = "de_metas_acct";
-	/**
-	 * Function used to calculate ending balance for a given {@link I_Fact_Acct} line.
-	 */
-	String DB_FUNC_Fact_Acct_EndingBalance = DB_SCHEMA + ".Fact_Acct_EndingBalance";
-
 	I_Fact_Acct getById(int factAcctId);
 
 	void save(I_Fact_Acct factAcct);

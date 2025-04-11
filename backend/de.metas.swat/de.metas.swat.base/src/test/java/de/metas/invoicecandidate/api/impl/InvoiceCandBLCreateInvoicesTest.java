@@ -30,7 +30,6 @@ import de.metas.bpartner.service.impl.BPartnerStatisticsUpdater;
 import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
-import de.metas.document.invoicingpool.DocTypeInvoicingPoolRepository;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
 import de.metas.greeting.GreetingRepository;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
