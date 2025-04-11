@@ -22,18 +22,15 @@ package de.metas.invoicecandidate.expectations;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
+import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
+import de.metas.util.Check;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.test.AbstractExpectation;
 import org.adempiere.util.test.ErrorMessage;
 import org.compiere.model.I_M_AttributeSetInstance;
 
-import de.metas.invoicecandidate.api.IInvoiceLineAttribute;
-import de.metas.util.Check;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Expectations for a set of {@link IInvoiceLineAttribute}s.
@@ -49,24 +46,23 @@ public class InvoiceLineAttributeExpectations<ParentExpectationType> extends Abs
 		return new InvoiceLineAttributeExpectations<>();
 	}
 
-	private List<InvoiceLineAttributeExpectation<InvoiceLineAttributeExpectations<ParentExpectationType>>> attributeExpectations = new ArrayList<>();
+	private final List<InvoiceLineAttributeExpectation<InvoiceLineAttributeExpectations<ParentExpectationType>>> attributeExpectations = new ArrayList<>();
 
-	public InvoiceLineAttributeExpectations(ParentExpectationType parent)
+	public InvoiceLineAttributeExpectations(final ParentExpectationType parent)
 	{
 		super(parent);
 	}
 
 	private InvoiceLineAttributeExpectations()
 	{
-		super();
 	}
 
-	public InvoiceLineAttributeExpectations<ParentExpectationType> assertExpected(final String message, final Set<IInvoiceLineAttribute> invoiceLineAttributes)
+	public InvoiceLineAttributeExpectations<ParentExpectationType> assertExpected(final String message, final List<IInvoiceLineAttribute> invoiceLineAttributes)
 	{
 		return assertExpected(newErrorMessage(message), invoiceLineAttributes);
 	}
 
-	public InvoiceLineAttributeExpectations<ParentExpectationType> assertExpected(final ErrorMessage message, final Set<IInvoiceLineAttribute> invoiceLineAttributes)
+	public InvoiceLineAttributeExpectations<ParentExpectationType> assertExpected(final ErrorMessage message, final List<IInvoiceLineAttribute> invoiceLineAttributes)
 	{
 		final int attributesCount = attributeExpectations.size();
 		assertEquals(message.expect("attributes count"), attributesCount, invoiceLineAttributes.size());

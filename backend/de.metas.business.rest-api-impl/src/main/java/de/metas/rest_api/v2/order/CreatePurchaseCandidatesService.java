@@ -29,6 +29,7 @@ import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonAttributeInstance;
 import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
+import de.metas.common.rest_api.v2.JsonPrice;
 import de.metas.common.rest_api.v2.JsonPurchaseCandidate;
 import de.metas.common.rest_api.v2.JsonPurchaseCandidateCreateItem;
 import de.metas.common.rest_api.v2.JsonVendor;
@@ -40,6 +41,7 @@ import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
@@ -72,6 +74,7 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
+import org.compiere.model.I_C_UOM;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -152,41 +155,43 @@ public class CreatePurchaseCandidatesService
 
 		final AttributeSetInstanceId attributeSetInstanceId = getAttributeSetInstanceId(request.getAttributeSetInstance());
 
-		final BigDecimal enteredPrice = manualPrice ? request.getPrice().getValue() : BigDecimal.ZERO;
 		final Percent discountPercent = Percent.of(request.isManualDiscount() ? request.getDiscount() : BigDecimal.ZERO);
-		final UomId enteredPriceUomId = manualPrice 
-				? uomDAO.getUomIdByX12DE355(X12DE355.ofCode(request.getPrice().getPriceUomCode())) 
-				: quantity.getUomId();
 
-		final PurchaseCandidate purchaseCandidate = PurchaseCandidate.builder()
+		final PurchaseCandidate.PurchaseCandidateBuilder purchaseCandidateBuilder = PurchaseCandidate.builder()
 				.orgId(orgId)
 				.externalHeaderId(ExternalId.of(request.getExternalHeaderId()))
 				.externalLineId(ExternalId.of(request.getExternalLineId()))
 				.poReference(request.getPoReference())
 				.externalPurchaseOrderUrl(request.getExternalPurchaseOrderUrl())
 				.productId(productId)
-				.warehouseId(warehouseService.getWarehouseByIdentifier(orgId, request.getWarehouseIdentifier()))
+				.warehouseId(warehouseService.resolveWarehouseByIdentifier(orgId, request.getWarehouseIdentifier()))
 				.purchaseDatePromised(datePromised)
 				.purchaseDateOrdered(request.getPurchaseDateOrdered())
 				.vendorId(vendorId)
 				.vendorProductNo(productDAO.retrieveProductValueByProductId(productId))
 				.qtyToPurchase(quantity)
 				.groupReference(DemandGroupReference.EMPTY)
-				.price(enteredPrice)
-				.priceUomId(enteredPriceUomId)
 				.discount(discountPercent)
 				.isManualDiscount(request.isManualDiscount())
 				.isManualPrice(manualPrice)
 				.prepared(request.isPrepared())
 				.attributeSetInstanceId(attributeSetInstanceId)
-				.source(PurchaseCandidateSource.Api)
-				.build();
+				.source(PurchaseCandidateSource.Api);
+
+		if (manualPrice)
+		{
+			purchaseCandidateBuilder.price(request.getPrice().getValue());
+			purchaseCandidateBuilder.priceUomId(getPriceUOMId(request.getPrice()).orElse(quantity.getUomId()));
+			purchaseCandidateBuilder.currencyId(getCurrencyId(request.getPrice()));
+		}
+		else
+		{
+			purchaseCandidateBuilder.price(BigDecimal.ZERO);
+		}
+
+		final PurchaseCandidate purchaseCandidate = purchaseCandidateBuilder.build();
 		purchaseCandidateBL.updateCandidatePricingDiscount(purchaseCandidate);
 
-		if (manualPrice && request.getPrice().getCurrencyCode() != null)
-		{
-			purchaseCandidate.setCurrencyId(currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.ofThreeLetterCode(request.getPrice().getCurrencyCode())));
-		}
 		return purchaseCandidate;
 	}
 
@@ -292,5 +297,23 @@ public class CreatePurchaseCandidatesService
 			default:
 				throw new InvalidIdentifierException(productExternalIdentifier.getRawValue());
 		}
+	}
+
+	@NonNull
+	private Optional<UomId> getPriceUOMId(@NonNull final JsonPrice price)
+	{
+		return X12DE355.ofCodeOrOptional(price.getPriceUomCode())
+				.map(uomDAO::getByX12DE355)
+				.map(I_C_UOM::getC_UOM_ID)
+				.map(UomId::ofRepoId);
+	}
+
+	@Nullable
+	private CurrencyId getCurrencyId(@NonNull final JsonPrice price)
+	{
+		return Optional.ofNullable(price.getCurrencyCode())
+				.map(CurrencyCode::ofThreeLetterCode)
+				.map(currencyRepository::getCurrencyIdByCurrencyCode)
+				.orElse(null);
 	}
 }

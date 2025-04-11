@@ -43,8 +43,10 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
@@ -57,10 +59,11 @@ public class C_Flatrate_DataEntry
 	private static final String MSG_DATA_ENTRY_EXISTING_CORRECTION_ENTRY_0P = "DataEntry_Existing_Correction_Entry";
 	public static final String MSG_DATA_ENTRY_EXISTING_CLOSING_ENTRY_0P = "DataEntry_Existing_Closing_Entry";
 
-	public static final transient C_Flatrate_DataEntry instance = new C_Flatrate_DataEntry();
+	public static final C_Flatrate_DataEntry instance = new C_Flatrate_DataEntry();
 
 	private static final List<String> DATAENTRY_TYPES_InvoiceCandidatesRelated = ImmutableList
 			.of(X_C_Flatrate_DataEntry.TYPE_Correction_PeriodBased, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased);
+
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
 	private C_Flatrate_DataEntry()
@@ -117,7 +120,7 @@ public class C_Flatrate_DataEntry
 	}
 
 	/** @return true if dataEntry's type is invoice candidates related */
-	private final boolean isInvoiceCandidatesRelatedType(I_C_Flatrate_DataEntry dataEntry)
+	private boolean isInvoiceCandidatesRelatedType(@NonNull final I_C_Flatrate_DataEntry dataEntry)
 	{
 		final String dataEntryType = dataEntry.getType();
 		return DATAENTRY_TYPES_InvoiceCandidatesRelated.contains(dataEntryType);
@@ -199,7 +202,6 @@ public class C_Flatrate_DataEntry
 		{
 			return;
 		}
-
 		beforeReactivate(dataEntry);
 	}
 
@@ -248,19 +250,31 @@ public class C_Flatrate_DataEntry
 
 		deleteInvoiceCandidate(dataEntry);
 		deleteInvoiceCandidateCorr(dataEntry);
-
 	}
 
-	private void checkInvoiceCandidate(final I_C_Flatrate_DataEntry dataEntry)
+	private void checkInvoiceCandidate(@NonNull final I_C_Flatrate_DataEntry dataEntry)
 	{
-		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandDAO.getById(InvoiceCandidateId.ofRepoId(dataEntry.getC_Invoice_Candidate_ID()));
-		if (invoiceCandidate != null && invoiceCandidate.getQtyInvoiced().signum() != 0)
+		final InvoiceCandidateId invoiceCandId = InvoiceCandidateId.ofRepoIdOrNull(dataEntry.getC_Invoice_Candidate_ID());
+		if (invoiceCandId != null)
 		{
-			throw new AdempiereException("@" + MSG_DATA_ENTRY_ALREADY_INVOICED_0P + "@");
+			final I_C_Invoice_Candidate invoiceCandidate = invoiceCandDAO.getById(invoiceCandId);
+			failIfInvoiced(invoiceCandidate);
 		}
 
-		final I_C_Invoice_Candidate icCorr = invoiceCandDAO.getById(InvoiceCandidateId.ofRepoId(dataEntry.getC_Invoice_Candidate_Corr_ID()));
-		if (icCorr != null && icCorr.getQtyInvoiced().signum() != 0)
+		final InvoiceCandidateId icCorrId = InvoiceCandidateId.ofRepoIdOrNull(dataEntry.getC_Invoice_Candidate_Corr_ID());
+		if (icCorrId != null)
+		{
+			final I_C_Invoice_Candidate icCorr = invoiceCandDAO.getById(icCorrId);
+			failIfInvoiced(icCorr);
+		}
+
+		final List<I_C_Invoice_Candidate> referencingICs = invoiceCandDAO.retrieveReferencing(TableRecordReference.of(dataEntry));
+		referencingICs.forEach(C_Flatrate_DataEntry::failIfInvoiced);
+	}
+
+	private static void failIfInvoiced(@Nullable final I_C_Invoice_Candidate icRecord)
+	{
+		if (icRecord != null && icRecord.getQtyInvoiced().signum() != 0)
 		{
 			throw new AdempiereException("@" + MSG_DATA_ENTRY_ALREADY_INVOICED_0P + "@");
 		}
@@ -268,21 +282,30 @@ public class C_Flatrate_DataEntry
 
 	private void deleteInvoiceCandidate(@NonNull final I_C_Flatrate_DataEntry dataEntry)
 	{
-		final I_C_Invoice_Candidate invoiceCandidate = invoiceCandDAO.getById(InvoiceCandidateId.ofRepoId(dataEntry.getC_Invoice_Candidate_ID()));
-		if (invoiceCandidate != null)
+		final InvoiceCandidateId invoiceCandId = InvoiceCandidateId.ofRepoIdOrNull(dataEntry.getC_Invoice_Candidate_ID());
+		if (invoiceCandId != null)
 		{
-			dataEntry.setC_Invoice_Candidate_ID(0);
-			InterfaceWrapperHelper.delete(invoiceCandidate);
+			final I_C_Invoice_Candidate invoiceCandidate = invoiceCandDAO.getById(invoiceCandId);
+			if (invoiceCandidate != null)
+			{
+				dataEntry.setC_Invoice_Candidate_ID(0);
+				InterfaceWrapperHelper.delete(invoiceCandidate);
+			}
 		}
+		invoiceCandDAO.deleteAllReferencingInvoiceCandidates(dataEntry);
 	}
 
 	private void deleteInvoiceCandidateCorr(@NonNull final I_C_Flatrate_DataEntry dataEntry)
 	{
-		final I_C_Invoice_Candidate icCorr = invoiceCandDAO.getById(InvoiceCandidateId.ofRepoId(dataEntry.getC_Invoice_Candidate_Corr_ID()));
-		if (icCorr != null)
+		final InvoiceCandidateId invoiceCandId = InvoiceCandidateId.ofRepoIdOrNull(dataEntry.getC_Invoice_Candidate_Corr_ID());
+		if (invoiceCandId != null)
 		{
-			dataEntry.setC_Invoice_Candidate_Corr_ID(0);
-			InterfaceWrapperHelper.delete(icCorr);
+			final I_C_Invoice_Candidate icCorr = invoiceCandDAO.getById(invoiceCandId);
+			if (icCorr != null)
+			{
+				dataEntry.setC_Invoice_Candidate_Corr_ID(0);
+				InterfaceWrapperHelper.delete(icCorr);
+			}
 		}
 	}
 

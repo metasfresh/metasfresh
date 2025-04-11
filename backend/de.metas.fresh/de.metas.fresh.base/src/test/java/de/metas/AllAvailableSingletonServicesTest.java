@@ -5,6 +5,8 @@ import de.metas.banking.api.BankAccountService;
 import de.metas.banking.api.BankRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.handlingunits.impl.ShipperTransportationRepository;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -97,6 +99,7 @@ public class AllAvailableSingletonServicesTest
 		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
 		SpringContextHolder.registerJUnitBean(new CurrencyRepository());
 		SpringContextHolder.registerJUnitBean(new BankAccountService(new BankRepository(), new CurrencyRepository()));
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 	}
 
 	@ParameterizedTest

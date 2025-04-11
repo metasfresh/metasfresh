@@ -65,7 +65,7 @@ public class ExternalSystemRestAPIHandler extends RouteBuilder
 
 		from("timer://runOnce?repeatCount=1")
 				.routeId(HANDLE_EXTERNAL_SYSTEM_SERVICES_ROUTE_ID)
-				.log("Route invoked!")
+				.log("ExternalSystemRestAPIHandler - Route invoked! Checking with externalsystem-routes to start")
 				.startupOrder(CamelRoutesStartUpOrder.ONE.getValue())
 				.process(this::prepareQueryServiceStatusRequests)
 				.split(body())
@@ -73,7 +73,7 @@ public class ExternalSystemRestAPIHandler extends RouteBuilder
 
 					.process(this::filterActiveServices)
 					.split(body())
-						.process(this::enableServices)
+						.process(this::createEnableServiceRequest)
 						.to("{{" + ExternalSystemCamelConstants.MF_INVOKE_EXTERNAL_SYSTEM_ACTION_V2_CAMEL_URI + "}}");
 		//@formatter:on
 	}
@@ -100,7 +100,7 @@ public class ExternalSystemRestAPIHandler extends RouteBuilder
 										 .collect(ImmutableList.toImmutableList()));
 	}
 
-	private void enableServices(@NonNull final Exchange exchange)
+	private void createEnableServiceRequest(@NonNull final Exchange exchange)
 	{
 		final JsonExternalStatusResponseItem externalStatusResponse = exchange.getIn().getBody(JsonExternalStatusResponseItem.class);
 

@@ -1,0 +1,17 @@
+{
+  "traceId": "traceId",
+  "orgCode": "orgCode",
+  "externalSystemName": "ProCareManagement",
+  "externalSystemChildConfigValue": "pcmValue",
+  "command": "stopProductSyncLocalFile",
+  "externalSystemConfigId": 1,
+  "adPInstanceId": 2,
+  "writeAuditEndpoint": "fileFolder",
+  "parameters": {
+    "LocalFileRootLocation": "rootDirectory",
+    "LocalFileProcessedDirectory": "processedDirectory",
+    "LocalFileErroredDirectory": "errorDirectory",
+    "LocalFilePollingFrequencyInMs": "1000",
+    "LocalFileProductFileNamePattern": "doesntmatter"
+  }
+}

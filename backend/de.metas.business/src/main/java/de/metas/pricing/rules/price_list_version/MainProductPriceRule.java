@@ -35,12 +35,12 @@ import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.pricing.service.ProductScalePriceService;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
-import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -66,6 +66,8 @@ class MainProductPriceRule extends AbstractPriceListBasedRule
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
+
+	private final ProductTaxCategoryService productTaxCategoryService = SpringContextHolder.instance.getBean(ProductTaxCategoryService.class);
 
 	private final ProductScalePriceService productScalePriceService = SpringContextHolder.instance.getBean(ProductScalePriceService.class);
 
@@ -116,7 +118,7 @@ class MainProductPriceRule extends AbstractPriceListBasedRule
 		result.setDiscountEditable(result.isDiscountEditable() && productPrice.isDiscountEditable());
 		result.setEnforcePriceLimit(extractEnforcePriceLimit(priceList));
 		result.setTaxIncluded(priceList.isTaxIncluded());
-		result.setTaxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()));
+		result.setTaxCategoryId(productTaxCategoryService.getTaxCategoryId(productPrice));
 		result.setPriceListVersionId(resultPriceListVersionId);
 		result.setPriceUomId(getProductPriceUomId(productPrice)); // 06942 : use product price uom all the time
 		result.setInvoicableQtyBasedOn(InvoicableQtyBasedOn.ofNullableCodeOrNominal(productPrice.getInvoicableQtyBasedOn()));
