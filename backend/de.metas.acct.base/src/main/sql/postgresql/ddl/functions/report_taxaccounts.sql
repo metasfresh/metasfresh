@@ -4,6 +4,7 @@
   * Level '2' : data summed per vatcode, accounto; only sum amount are filled up
   * Level '3' : data summed per vatcode, accounto, taxname; only sum amount are filled up
   * Level '4' : detailed data; only data per document are filled up
+  * Level 'ReCap' : data summed per vatcode and taxname; only sum amount are filled up
   * null value implies level '4'
  */
 
@@ -329,6 +330,31 @@ BEGIN
     RAISE NOTICE 'Show taxes per vatcode account and tax: % tmp_final_taxaccounts_report', v_rowcount;
 
 
+    IF p_level IS NULL OR p_level = 'ReCap' THEN
+        INSERT INTO tmp_final_taxaccounts_report
+        SELECT 'ReCap'::varchar         AS level,
+               vatcode,
+               NULL::text               AS AccountName,
+               NULL::timestamp          AS DateAcct,
+               NULL::text               AS DocumentNo,
+               NULL::text               AS BPartnerName,
+               TaxName                  AS Taxname,
+               NULL::numeric            AS TotalAmt,
+               NULL::numeric            AS NetAmt,
+               NULL::numeric            AS TaxAmt,
+               SUM(taxbaseamt)          AS NetAmt_SUM,
+               source_currency::varchar AS source_currency,
+               SUM(taxamt)              AS TaxAmt_SUM,
+               0::numeric               AS TaxAmt_SUM_PrevYear,
+               currency::varchar        AS Currency,
+               param_startdate::date,
+               param_enddate::date,
+               param_konto ::varchar,
+               param_vatcode::varchar,
+               param_org ::varchar
+        FROM tmp_taxaccounts_details
+        GROUP BY vatcode, taxname, currency, source_currency, param_org, param_startdate, param_enddate, param_konto, param_vatcode;
+    END IF;
 
     --- update balance for the previous year
     ---data for sums per vatcode, currency, source_currency, param_org
@@ -362,6 +388,18 @@ BEGIN
                                      AND p.AccountName = t.AccountName
                                      AND p.Taxname = t.Taxname)
         WHERE t.Level = '3';
+    END IF;
+
+    --- update balance for the previous year
+    ---data for sums per vatcode, currency, source_currency, param_org
+    IF p_level IS NULL OR p_level = 'ReCap' THEN
+        UPDATE tmp_final_taxaccounts_report t
+        SET TaxAmt_SUM_PrevYear = (SELECT COALESCE(SUM(taxamt), 0)
+                                   FROM tmp_taxaccounts_details_previous_year p
+                                   WHERE p.vatcode = t.vatcode
+                                     AND p.Taxname = t.Taxname
+                                     AND p.source_currency = t.source_currency)
+        WHERE t.Level = 'ReCap';
     END IF;
 
 
