@@ -33,6 +33,7 @@ import de.metas.ui.web.document.filter.sql.FilterSqlRequest;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.view.ViewId;
+import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
@@ -100,13 +101,29 @@ public class FTSDocumentFilterConverter implements SqlDocumentFilterConverter
 				.build();
 	}
 
+	@NonNull
 	private static Map<String, Object> toDefaultFilterParamsMap(@NonNull final FilterSqlRequest request)
 	{
 		return  request.getFilterById(de.metas.ui.web.document.filter.provider.standard.StandardDocumentFilterDescriptorsProviderFactory.FILTER_ID_Default).stream()
 				.map(DocumentFilter::getParameters)
 				.flatMap(List::stream)
-				.map(documentFilterParam -> GuavaCollectors.entry(documentFilterParam.getFieldName(), documentFilterParam.getValue()))
+				.map(documentFilterParam -> toDefaultFilterParamEntry(documentFilterParam.getFieldName(), documentFilterParam.getValue()))
 				.collect(GuavaCollectors.toImmutableMap());
+	}
+
+	@NonNull
+	private static Map.Entry<String, Object> toDefaultFilterParamEntry(@Nullable final String fieldName, @Nullable final Object value)
+	{
+		Check.assumeNotNull(fieldName, "At this point we should only get NonNull FilterParams fieldNames");
+		Check.assumeNotNull(value, "At this point we should only get NonNull FilterParams values");
+		if(value instanceof LookupValue.IntegerLookupValue)
+		{
+			return GuavaCollectors.entry(fieldName,((LookupValue.IntegerLookupValue)value).getIdAsInt());
+		}
+		else
+		{
+			return GuavaCollectors.entry(fieldName, value);
+		}
 	}
 
 	private static String extractSearchId(@NonNull final SqlDocumentFilterConverterContext context)

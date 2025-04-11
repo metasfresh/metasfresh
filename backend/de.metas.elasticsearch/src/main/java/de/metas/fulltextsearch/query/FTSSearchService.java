@@ -177,14 +177,15 @@ public class FTSSearchService
 			for(final Map.Entry<String, Object> entry : request.getDefaultFilterParams().entrySet() )
 			{
 				final Object value = entry.getValue();
-				if( value instanceof Boolean || value instanceof Integer)
+				if( value instanceof Boolean) // || value instanceof Integer - excluded for now needs to be improved before adding
 				{
 					query.append(buildDefaultFilterQueryTermPart(entry.getKey(), value));
 				}
-				else if (value instanceof String)
-				{
-					query.append(buildDefaultFilterQueryWildcardPart(entry.getKey(), value));
-				}
+				// Excluded for now as it is reducing results too much
+				// else if (value instanceof String)
+				// {
+				// 	query.append(buildDefaultFilterQueryWildcardPart(entry.getKey(), value));
+				// }
 				else
 				{
 					logger.debug("Not supported datatype for value: {}", value);
@@ -242,20 +243,21 @@ public class FTSSearchService
 				+ "}}]}}],\"minimum_should_match\": 1}} ";
 	}
 
-	private static String buildDefaultFilterQueryWildcardPart(@NonNull final String fieldName, @NonNull final Object value)
-	{
-		final String valueEff = "\"" + ((String)value).toLowerCase() + "*\"";
-		final String fieldNameEff = fieldName.toLowerCase();
-
-		//Field either does not exist in es_index or has wildcard value of defaultFilter
-		return ",{ \"bool\":{ \"should\":[{\"bool\": {\"must_not\": [{\"exists\": {\"field\": \""
-				+ fieldNameEff
-				+   "\"}}]}},{\"bool\": {\"must\": [{\"wildcard\": {\""
-				+ fieldNameEff
-				+ "\": {\"value\": "
-				+ valueEff
-				+ "}}}]}}],\"minimum_should_match\": 1}} ";
-	}
+	// Excluded for now as it is reducing results too much
+	// private static String buildDefaultFilterQueryWildcardPart(@NonNull final String fieldName, @NonNull final Object value)
+	// {
+	// 	final String valueEff = "\"" + ((String)value).toLowerCase() + "*\"";
+	// 	final String fieldNameEff = fieldName.toLowerCase();
+	//
+	// 	//Field either does not exist in es_index or has wildcard value of defaultFilter
+	// 	return ",{ \"bool\":{ \"should\":[{\"bool\": {\"must_not\": [{\"exists\": {\"field\": \""
+	// 			+ fieldNameEff
+	// 			+   "\"}}]}},{\"bool\": {\"must\": [{\"wildcard\": {\""
+	// 			+ fieldNameEff
+	// 			+ "\": {\"value\": "
+	// 			+ valueEff
+	// 			+ "}}}]}}],\"minimum_should_match\": 1}} ";
+	// }
 
 	private static FTSSearchResultItem extractFTSSearchResultItem(
 			@NonNull final SearchHit hit,
