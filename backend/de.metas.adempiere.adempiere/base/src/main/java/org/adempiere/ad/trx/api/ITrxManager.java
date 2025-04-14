@@ -501,6 +501,21 @@ public interface ITrxManager extends ISingletonService
 
 	boolean isDebugConnectionBackendId();
 
+	default <T> void accumulateAndProcessBeforeCommit(
+			@NonNull final String propertyName,
+			@NonNull final Collection<T> itemsToAccumulate,
+			@NonNull final Consumer<ImmutableList<T>> beforeCommitListProcessor)
+	{
+		final ITrx trx = getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
+		if (isActive(trx))
+		{
+			trx.accumulateAndProcessBeforeCommit(propertyName, itemsToAccumulate, beforeCommitListProcessor);
+		}
+		else
+		{
+			beforeCommitListProcessor.accept(ImmutableList.copyOf(itemsToAccumulate));
+		}
+	}
 	default <T> void accumulateAndProcessAfterCommit(
 			@NonNull final String propertyName,
 			@NonNull final Collection<T> itemsToAccumulate,

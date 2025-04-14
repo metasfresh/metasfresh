@@ -211,6 +211,19 @@ public interface ITrx
 				.addAll(itemsToAccumulate);
 	}
 
+	default <T> void accumulateAndProcessBeforeCommit(
+			@NonNull final String propertyName,
+			@NonNull final Collection<T> itemsToAccumulate,
+			@NonNull final Consumer<ImmutableList<T>> beforeCommitListProcessor)
+	{
+		getProperty(propertyName, () -> {
+			final ListAccumulator<T> accum = new ListAccumulator<>();
+			runBeforeCommit(() -> accum.flush(beforeCommitListProcessor));
+			return accum;
+		})
+				.addAll(itemsToAccumulate);
+	}
+
 	default <T> void accumulateAndProcessAfterRollback(
 			@NonNull final String propertyName,
 			@NonNull final Collection<T> itemsToAccumulate,
@@ -237,6 +250,11 @@ public interface ITrx
 	default void runAfterCommit(@NonNull final Runnable runnable)
 	{
 		getTrxListenerManager().runAfterCommit(runnable);
+	}
+
+	default void runBeforeCommit(@NonNull final Runnable runnable)
+	{
+		getTrxListenerManager().runBeforeCommit(runnable);
 	}
 
 	default void runAfterRollback(@NonNull final Runnable runnable)

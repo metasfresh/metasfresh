@@ -193,6 +193,13 @@ public interface ITrxListenerManager
 				.registerHandlingMethod(trx -> runnable.run());
 	}
 
+	default void runBeforeCommit(@NonNull final Runnable runnable)
+	{
+		newEventListener(TrxEventTiming.BEFORE_COMMIT)
+				.invokeMethodJustOnce(true)
+				.registerHandlingMethod(trx -> runnable.run());
+	}
+
 	default void runAfterRollback(@NonNull final Runnable runnable)
 	{
 		newEventListener(TrxEventTiming.AFTER_ROLLBACK)
