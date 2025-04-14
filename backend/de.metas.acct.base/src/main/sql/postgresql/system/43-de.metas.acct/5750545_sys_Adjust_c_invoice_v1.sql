@@ -1,4 +1,7 @@
-CREATE OR REPLACE VIEW c_invoice_v1 AS
+DROP VIEW IF EXISTS c_invoice_v1$new
+;
+
+CREATE OR REPLACE VIEW c_invoice_v1$new AS
 SELECT i.c_invoice_id,
        i.ad_client_id,
        i.ad_org_id,
@@ -72,4 +75,16 @@ SELECT i.c_invoice_id,
        i.Posted
 FROM c_invoice i
          JOIN c_doctype d ON i.c_doctype_id = d.c_doctype_id
+;
+
+
+SELECT db_alter_view(
+               'c_invoice_v1',
+               (SELECT view_definition
+                FROM information_schema.views
+                WHERE views.table_name = 'c_invoice_v1$new')
+           )
+;
+
+DROP VIEW IF EXISTS c_invoice_v1$new
 ;
