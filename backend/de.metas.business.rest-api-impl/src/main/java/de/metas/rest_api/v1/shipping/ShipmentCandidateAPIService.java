@@ -125,7 +125,7 @@ import static de.metas.inoutcandidate.exportaudit.APIExportStatus.ExportedAndFor
 @Service
 class ShipmentCandidateAPIService
 {
-	private final static transient Logger logger = LogManager.getLogger(ShipmentCandidateAPIService.class);
+	private final static Logger logger = LogManager.getLogger(ShipmentCandidateAPIService.class);
 
 	private final ShipmentScheduleAuditRepository shipmentScheduleAuditRepository;
 	private final ShipmentScheduleRepository shipmentScheduleRepository;
@@ -371,7 +371,7 @@ class ShipmentCandidateAPIService
 				.name(product.getName().translate(adLanguage))
 				.documentNote(product.getDocumentNote().translate(adLanguage))
 				.packageSize(product.getPackageSize())
-				.weight(product.getWeight())
+				.weight(product.getWeightNetInKg())
 				.stocked(product.isStocked());
 		if (product.getDescription() != null)
 		{

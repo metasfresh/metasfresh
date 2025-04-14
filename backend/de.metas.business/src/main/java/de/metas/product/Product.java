@@ -58,7 +58,7 @@ public class Product
 	@Nullable Boolean active;
 	@Nullable BPartnerId manufacturerId;
 	@Nullable String packageSize;
-	@Nullable BigDecimal weight;
+	@Nullable BigDecimal weightNetInKg;
 	boolean stocked;
 	@Nullable CommodityNumberId commodityNumberId;
 	@Nullable String procurementStatus;
