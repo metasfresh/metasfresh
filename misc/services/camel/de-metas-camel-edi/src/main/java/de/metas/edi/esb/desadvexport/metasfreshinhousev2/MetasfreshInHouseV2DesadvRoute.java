@@ -35,6 +35,9 @@ import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIDesadvFeedbackType;
 import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvPackItemType;
 import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvPackType;
 import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.ObjectFactory;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
@@ -75,7 +78,18 @@ public class MetasfreshInHouseV2DesadvRoute extends AbstractEDIRoute
 	@Override
 	public void configureEDIRoute(@NonNull final DataFormat jaxb, @NonNull final DecimalFormat decimalFormat)
 	{
-		final JaxbDataFormat dataFormat = new JaxbDataFormat(EDIExpDesadvType.class.getPackage().getName());
+		final JAXBContext jaxbContext;
+		try
+		{
+			jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
+		}
+		catch (final JAXBException e)
+		{
+			throw new RuntimeException(e);
+		}
+		// jakarta.xml.bind.JAXBException: class de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType nor any of its super class is known to this context.
+		//final JaxbDataFormat dataFormat = new JaxbDataFormat(EDIExpDesadvType.class.getPackage().getName());
+		final JaxbDataFormat dataFormat = new JaxbDataFormat(jaxbContext);
 		dataFormat.setCamelContext(getContext());
 		dataFormat.setEncoding(StandardCharsets.UTF_8.name());
 
@@ -106,7 +120,7 @@ public class MetasfreshInHouseV2DesadvRoute extends AbstractEDIRoute
 
 		from(MetasfreshInHouseV2DesadvRoute.EP_EDI_METASFRESH_XML_DESADV_CONSUMER)
 				.routeId(ROUTE_ID)
-				.streamCaching()
+				.streamCache("true")
 
 				.log(LoggingLevel.INFO, "Setting defaults as exchange properties...")
 				.setProperty(MetasfreshInHouseV2DesadvRoute.EDI_ORDER_EDIMessageDatePattern).constant(defaultEDIMessageDatePattern)
@@ -123,10 +137,21 @@ public class MetasfreshInHouseV2DesadvRoute extends AbstractEDIRoute
 
 					final String fileName = "DESADV_" + xmlDesadv.getDocumentNo() + "_" + SystemTime.millis() + ".xml";
 					exchange.getIn().setHeader(Exchange.FILE_NAME, fileName);
+					//exchange.getIn().setBody(new ObjectFactory().createEDIExpDesadv(xmlDesadv));
 				})
 
 				.log(LoggingLevel.INFO, "Marshalling XML Java Object -> XML...")
 				.marshal(dataFormat)
+				// 				.process(exchange -> {
+				// 					final EDIExpDesadvType xmlDesadv = exchange.getIn().getBody(EDIExpDesadvType.class);
+				// 					final JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
+				// 					final Marshaller marshaller = jaxbContext.createMarshaller();
+				// 					final var writer = new StringWriter();
+				//					
+				// 					marshaller.marshal(new ObjectFactory().createEDIExpDesadv(xmlDesadv), writer);
+				//
+				// 					exchange.getIn().setBody(writer.toString());
+				// 				})
 
 				.log(LoggingLevel.INFO, "Output file's name=${in.headers." + Exchange.FILE_NAME + "}")
 				//.log(LoggingLevel.INFO, "Sending this XML to the " + endPointURIs.length + " endpoint(s):\r\n" + body())
@@ -148,13 +173,13 @@ public class MetasfreshInHouseV2DesadvRoute extends AbstractEDIRoute
 	{
 		xmlDesadv.getEDIExpDesadvPack()
 				.sort(Comparator.comparing(EDIExpDesadvPackType::getSeqNo,
-										   Comparator.nullsLast(Comparator.naturalOrder())));
+						Comparator.nullsLast(Comparator.naturalOrder())));
 
 		for (final EDIExpDesadvPackType pack : xmlDesadv.getEDIExpDesadvPack())
 		{
 			pack.getEDIExpDesadvPackItem()
 					.sort(Comparator.comparing(EDIExpDesadvPackItemType::getLine,
-											   Comparator.nullsLast(Comparator.naturalOrder())));
+							Comparator.nullsLast(Comparator.naturalOrder())));
 		}
 	}
 }

@@ -26,6 +26,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonCreateRemittanceAdviceRequest;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
+import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.AdviceWithRouteBuilder;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.component.mock.MockEndpoint;
@@ -99,23 +100,23 @@ class EcosioRemadvRoute_b_Test extends CamelTestSupport
 		template.sendBodyAndHeader(MOCK_FROM_ENDPOINT, createREMADVFile, Exchange.FILE_NAME_ONLY, "b_10_EcosioRemadvTestFile_Invoice_and_CreditMemo.xml");
 
 		assertThat(createRemadvEndpoint.called).isEqualTo(1);
-		assertMockEndpointsSatisfied();
+		mock.assertIsSatisfied(1000);
 	}
 
 	private void prepareRouteForTesting(final MockSuccessfullyCreatedRemadvProcessor createdRemadvProcessor) throws Exception
 	{
-		AdviceWithRouteBuilder.adviceWith(context, ECOSIO_REMADV_XML_TO_JSON_ROUTE,
-										  advice -> {
-											  advice.replaceFromWith(MOCK_FROM_ENDPOINT);
+		AdviceWith.adviceWith(context, ECOSIO_REMADV_XML_TO_JSON_ROUTE,
+				advice -> {
+					advice.replaceFromWith(MOCK_FROM_ENDPOINT);
 
-											  advice.weaveById(REMADV_XML_TO_JSON_PROCESSOR)
-													  .after()
-													  .to(MOCK_XML_TO_JSON_ENDPOINT);
+					advice.weaveById(REMADV_XML_TO_JSON_PROCESSOR)
+							.after()
+							.to(MOCK_XML_TO_JSON_ENDPOINT);
 
-											  advice.interceptSendToEndpoint("http://" + CREATE_REMADV_MF_URL)
-													  .skipSendToOriginalEndpoint()
-													  .process(createdRemadvProcessor);
-										  });
+					advice.interceptSendToEndpoint("http://" + CREATE_REMADV_MF_URL)
+							.skipSendToOriginalEndpoint()
+							.process(createdRemadvProcessor);
+				});
 	}
 
 	private static class MockSuccessfullyCreatedRemadvProcessor implements Processor
