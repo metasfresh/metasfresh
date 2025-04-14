@@ -27,6 +27,7 @@ import de.metas.document.archive.api.IDocOutboundDAO;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
+import de.metas.document.archive.xfactura.XFacturaGenerateStatus;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -55,6 +56,7 @@ import java.util.Properties;
 import java.util.stream.Stream;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class DocOutboundDAO implements IDocOutboundDAO
@@ -62,6 +64,12 @@ public class DocOutboundDAO implements IDocOutboundDAO
 
 	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@Override
+	public I_C_Doc_Outbound_Log getById(@NonNull final DocOutboundLogId docOutboundLogId)
+	{
+		return load(docOutboundLogId, I_C_Doc_Outbound_Log.class);
+	}
 
 	// note that this method doesn't directly access the DB. Therefore, a unit test DAO implementation can extend this
 	// class without problems.
@@ -245,5 +253,13 @@ public class DocOutboundDAO implements IDocOutboundDAO
 		docOutboundLog.setPOReference(poReference);
 
 		saveRecord(docOutboundLog);
+	}
+
+	@Override
+	public void setXFacturaGenerateStatus(@NonNull final DocOutboundLogId docOutboundLogId, @NonNull final XFacturaGenerateStatus generateStatus)
+	{
+		final I_C_Doc_Outbound_Log logRecord = getById(docOutboundLogId);
+		// TODO logRecord.setXFactura_Generate_Status(generateStatus.getCode());
+		InterfaceWrapperHelper.save(logRecord);
 	}
 }
