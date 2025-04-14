@@ -101,7 +101,7 @@ import java.util.List;
 					.setAmountSign(amountToDistribute.getLeft())
 					.setAmountToDistribute(amountToDistribute.getRight())
 					.setCurrencyId(line.getCurrencyId())
-					.setQtyToDistribute(line.getQty() != null ? line.getQty().toBigDecimal() : null)
+					.setQtyToDistribute(line.getQty() != null ? line.getQty().toBigDecimal() : BigDecimal.ZERO)
 					.distribute();
 			final List<FactLine> lines_Distributed = createFactLines(line, distributionResult);
 
