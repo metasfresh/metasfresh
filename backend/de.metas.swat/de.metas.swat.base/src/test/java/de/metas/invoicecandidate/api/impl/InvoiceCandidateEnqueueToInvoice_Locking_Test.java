@@ -31,6 +31,7 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
 import de.metas.email.MailService;
 import de.metas.greeting.GreetingRepository;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_BPartner;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
@@ -64,6 +65,7 @@ public class InvoiceCandidateEnqueueToInvoice_Locking_Test extends InvoiceCandid
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 		NOPWorkpackageLogsRepository.registerToSpringContext();
 		SpringContextHolder.registerJUnitBean(DocTypeInvoicingPoolService.newInstanceForUnitTesting());
+		SpringContextHolder.registerJUnitBean(MatchInvoiceService.newInstanceForUnitTesting());
 	}
 
 	@Override
