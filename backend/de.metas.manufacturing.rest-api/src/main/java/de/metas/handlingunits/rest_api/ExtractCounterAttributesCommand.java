@@ -38,6 +38,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static de.metas.handlingunits.rest_api.HandlingUnitsService.isConsideredEmptyAttribute;
+
 class ExtractCounterAttributesCommand
 {
 	private static final Pattern PATTERN_NAME_ENDING_WITH_NUMBER = Pattern.compile("^([^\\d]*)(\\d+)$");
@@ -138,8 +140,7 @@ class ExtractCounterAttributesCommand
 
 	private boolean isEmptyAttributeValue(@NonNull final AttributeCode attributeCode)
 	{
-		final Object value = attributes.getValue(attributeCode);
-		return Check.isEmpty(value);
+		return isConsideredEmptyAttribute(attributeCode, attributes.getValue(attributeCode));
 	}
 
 	@Value

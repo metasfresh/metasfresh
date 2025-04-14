@@ -73,10 +73,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import static de.metas.handlingunits.rest_api.JsonHUHelper.fromJsonClearanceStatus;
 import static de.metas.handlingunits.rest_api.JsonHUHelper.toJsonClearanceStatus;
+import static de.metas.manufacturing.generatedcomponents.MacAddressGenerator.EMPTY_MAC_ADDRESS;
+import static org.adempiere.mm.attributes.api.AttributeConstants.ATTR_CODE_PREFIX_RouterMAC;
 
 @Service
 public class HandlingUnitsService
@@ -99,12 +102,12 @@ public class HandlingUnitsService
 	public JsonHU getFullHU(@NonNull final HuId huId, @NonNull final String adLanguage, final boolean getAllowedClearanceStatuses)
 	{
 		final I_M_HU hu = handlingUnitsBL.getById(huId);
-		if(hu == null)
+		if (hu == null)
 		{
 			throw new AdempiereException("No HU found for M_HU_ID: " + huId);
 		}
 
-		if(!huStatusBL.isPhysicalHU(hu))
+		if (!huStatusBL.isPhysicalHU(hu))
 		{
 			throw new AdempiereException("Not a physical HU: " + huId);
 		}
@@ -129,8 +132,8 @@ public class HandlingUnitsService
 		final boolean isAggregatedTU = handlingUnitsBL.isAggregateHU(hu);
 
 		final JsonHUAttributes jsonHUAttributes = toJsonHUAttributes(
-				huContext, 
-				hu, 
+				huContext,
+				hu,
 				loadJsonHURequest.isExcludeEmptyAttributes(),
 				loadJsonHURequest.getEmptyAttributesToInclude());
 
@@ -158,7 +161,7 @@ public class HandlingUnitsService
 					.locatorValue(warehouseAndLocatorValue.getLocatorValue());
 		}
 
-		if(loadJsonHURequest.isGetAllowedClearanceStatuses())
+		if (loadJsonHURequest.isGetAllowedClearanceStatuses())
 		{
 			jsonHUBuilder.allowedHUClearanceStatuses(getAllowedClearanceStatuses(hu));
 		}
@@ -201,7 +204,7 @@ public class HandlingUnitsService
 	{
 		final I_M_HU hu = handlingUnitsBL.getById(huId);
 
-		if(hu == null)
+		if (hu == null)
 		{
 			throw MissingResourceException.builder()
 					.resourceName("M_HU")
@@ -276,7 +279,7 @@ public class HandlingUnitsService
 			final Object value = huAttributes.getValue(attributeCode);
 
 			// dev-note: skip null or empty attributes
-			if (excludeEmptyAttributes && Check.isEmpty(value) && !emptyAttributesToInclude.contains(attributeCode.getCode()))
+			if (excludeEmptyAttributes && isConsideredEmptyAttribute(attributeCode, value) && !emptyAttributesToInclude.contains(attributeCode.getCode()))
 			{
 				continue;
 			}
@@ -299,6 +302,12 @@ public class HandlingUnitsService
 		}
 
 		return JsonHUAttributes.builder().list(ImmutableList.copyOf(list)).build();
+	}
+
+	public static boolean isConsideredEmptyAttribute(final @NonNull AttributeCode attributeCode, @Nullable final Object value)
+	{
+		return Check.isEmpty(value)
+				|| (attributeCode.startsWith(ATTR_CODE_PREFIX_RouterMAC) && Objects.equals(value, EMPTY_MAC_ADDRESS));
 	}
 
 	@NonNull
@@ -400,12 +409,12 @@ public class HandlingUnitsService
 	@NonNull
 	private HuId resolveHUIdentifier(@NonNull final JsonSetClearanceStatusRequest.JsonHUIdentifier jsonHuIdentifier)
 	{
-		if(jsonHuIdentifier.getMetasfreshId() != null)
+		if (jsonHuIdentifier.getMetasfreshId() != null)
 		{
 			return HuId.ofRepoId(jsonHuIdentifier.getMetasfreshId().getValue());
 		}
 
-		if(Check.isNotBlank((jsonHuIdentifier.getQrCode())))
+		if (Check.isNotBlank((jsonHuIdentifier.getQrCode())))
 		{
 			final HUQRCode huQRCode = HUQRCode.fromGlobalQRCodeJsonString(jsonHuIdentifier.getQrCode());
 			final HuId huId = huQRCodeService.getHuIdByQRCode(huQRCode);
