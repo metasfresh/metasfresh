@@ -30,14 +30,12 @@ import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
-import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
@@ -590,7 +588,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		else
 		{
 			setPriceEntered(m_productPricing.getPriceStd().multiply(getQtyInvoiced()
-																			.divide(getQtyEntered(), 6, BigDecimal.ROUND_HALF_UP)));    // precision
+					.divide(getQtyEntered(), 6, BigDecimal.ROUND_HALF_UP)));    // precision
 		}
 
 		setC_TaxCategory_ID(m_productPricing.getC_TaxCategory_ID());
@@ -1614,8 +1612,8 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			largestAmtAllocation.setAmt(largestAmtAllocation.getAmt().add(difference));
 			largestAmtAllocation.save();
 			log.debug("Difference=" + difference
-							  + ", C_LandedCostAllocation_ID=" + largestAmtAllocation.getC_LandedCostAllocation_ID()
-							  + ", Amt" + largestAmtAllocation.getAmt());
+					+ ", C_LandedCostAllocation_ID=" + largestAmtAllocation.getC_LandedCostAllocation_ID()
+					+ ", Amt" + largestAmtAllocation.getAmt());
 		}
 	}    // allocateLandedCostRounding
 
@@ -1766,12 +1764,6 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		final I_C_InvoiceLine il = create(this, I_C_InvoiceLine.class);
 		// task FRESH-273
 		il.setIsPackagingMaterial(true);
-	}
-
-	@Deprecated
-	public StockQtyAndUOMQty getMatchedQty()
-	{
-		return Services.get(IMatchInvDAO.class).retrieveQtyMatched(this);
 	}
 
 	// metas: begin

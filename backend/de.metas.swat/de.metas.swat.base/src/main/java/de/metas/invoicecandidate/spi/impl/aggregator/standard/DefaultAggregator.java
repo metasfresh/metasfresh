@@ -24,6 +24,7 @@ package de.metas.invoicecandidate.spi.impl.aggregator.standard;
 
 import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.AggregationKey;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
@@ -39,8 +40,8 @@ import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.ObjectUtils;
 import org.compiere.model.I_M_InOutLine;
 
 import java.util.ArrayList;
@@ -58,10 +59,12 @@ import java.util.Properties;
  *
  * @author ts
  */
+@ToString
 public class DefaultAggregator implements IAggregator
 {
 	// Services
 	private final transient IAggregationBL aggregationBL = Services.get(IAggregationBL.class);
+	private transient MatchInvoiceService matchInvoiceService;
 
 	/**
 	 * Map: Invoice Line Aggregation Key to List of candidates, that needs to be aggregated. Using a {@link LinkedHashMap} so that the order in which the {@link InvoiceCandidateWithInOutLine}'s are
@@ -72,9 +75,9 @@ public class DefaultAggregator implements IAggregator
 	private final Map<String, List<InvoiceCandidateWithInOutLine>> aggKey2iciol = new LinkedHashMap<>();
 
 	@Override
-	public String toString()
+	public void setMatchInvoiceService(final MatchInvoiceService matchInvoiceService)
 	{
-		return ObjectUtils.toString(this);
+		this.matchInvoiceService = matchInvoiceService;
 	}
 
 	@Override
@@ -95,7 +98,7 @@ public class DefaultAggregator implements IAggregator
 
 		//
 		// Create InvoiceCandidate with InOutLine and add it to the pool
-		final InvoiceCandidateWithInOutLine ics = new InvoiceCandidateWithInOutLine(request);
+		final InvoiceCandidateWithInOutLine ics = new InvoiceCandidateWithInOutLine(matchInvoiceService, request);
 		icsPool.add(ics);
 	}
 

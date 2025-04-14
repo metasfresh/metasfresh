@@ -18,7 +18,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_R_Request;
 
@@ -175,16 +174,6 @@ public interface IInOutBL extends ISingletonService
 	 * @return sorted lines
 	 */
 	List<I_M_InOutLine> sortLines(I_M_InOut inOut);
-
-	/**
-	 * Delete all {@link I_M_MatchInv}s for given {@link I_M_InOut}.
-	 */
-	void deleteMatchInvs(I_M_InOut inout);
-
-	/**
-	 * Delete all {@link I_M_MatchInv}s for given {@link I_M_InOutLine}.
-	 */
-	void deleteMatchInvsForInOutLine(I_M_InOutLine iol);
 
 	/**
 	 * @return the given <code>iol</code>'s <code>MovementQty</code> or its negation, based on the inOut's <code>MovementType</code>.
