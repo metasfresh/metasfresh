@@ -11,12 +11,15 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.material.MovementType;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.MatchPOId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
@@ -24,15 +27,15 @@ import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_MatchPO;
-import org.compiere.model.X_M_InOut;
 
-import java.sql.Timestamp;
-import java.time.Instant;
+import javax.annotation.Nullable;
+import java.util.Optional;
 
 /*
  * #%L
@@ -62,30 +65,37 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IUOMConversionBL uomConversionsBL = Services.get(IUOMConversionBL.class);
 
-	private final I_C_OrderLine orderLine;
-	private final I_M_InOutLine _receiptLine;
-	private final I_M_InOut _receipt;
-	private final CurrencyConversionContext _currencyConversionContext;
+	@NonNull private final I_C_OrderLine orderLine;
 
-	DocLine_MatchPO(final I_M_MatchPO matchPO, final Doc_MatchPO doc)
+	@Nullable private final I_M_InOutLine _receiptLine;
+	@Nullable private final I_M_InOut _receipt;
+	@NonNull private final ExplainedOptional<CurrencyConversionContext> _currencyConversionContext;
+
+	DocLine_MatchPO(@NonNull final I_M_MatchPO matchPO, @NonNull final Doc_MatchPO doc)
 	{
 		super(InterfaceWrapperHelper.getPO(matchPO), doc);
 
-		IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(matchPO.getC_OrderLine_ID());
 		this.orderLine = orderDAO.getOrderLineById(orderLineId);
 
-		IInOutBL inoutBL = Services.get(IInOutBL.class);
 		final InOutLineId receiptLineId = InOutLineId.ofRepoIdOrNull(matchPO.getM_InOutLine_ID());
 		if (receiptLineId == null)
 		{
-			throw newPostingException()
-					.setDetailMessage("MatchPO cannot be posted because receipt line is not set yet")
-					.setPreserveDocumentPostedStatus();
+			// throw newPostingException()
+			// 		.setDetailMessage("MatchPO cannot be posted because receipt line is not set yet")
+			// 		.setPreserveDocumentPostedStatus();
+			this._receiptLine = null;
+			this._receipt = null;
+			this._currencyConversionContext = ExplainedOptional.emptyBecause("No currency conversion context because receipt line is not set yet");
 		}
-		this._receiptLine = inoutBL.getLineByIdInTrx(receiptLineId);
-		this._receipt = inoutBL.getById(InOutId.ofRepoId(_receiptLine.getM_InOut_ID()));
-		this._currencyConversionContext = inoutBL.getCurrencyConversionContext(_receipt);
+		else
+		{
+			final IInOutBL inoutBL = Services.get(IInOutBL.class);
+			this._receiptLine = inoutBL.getLineByIdInTrx(receiptLineId);
+			this._receipt = inoutBL.getById(InOutId.ofRepoId(_receiptLine.getM_InOut_ID()));
+			this._currencyConversionContext = ExplainedOptional.of(inoutBL.getCurrencyConversionContext(_receipt));
+		}
 
 		setDateDoc(LocalDateAndOrgId.ofTimestamp(
 				matchPO.getDateTrx(),
@@ -149,7 +159,14 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 
 	void createCostDetails(final AcctSchema as)
 	{
-		final I_M_InOut receipt = getReceipt();
+		final I_M_InOut receipt = getReceipt().orElse(null);
+		if (receipt == null)
+		{
+			// in case we are dealing with M_MatchPO without receipt line (only with invoice line set),
+			// there no costs (nor facts) to be created
+			return;
+		}
+
 		final Quantity qty = isReturnTrx() ? getQty().negate() : getQty();
 		final CostAmount amt = CostAmount.multiply(getOrderLineCostPriceInStockingUOM(), qty);
 
@@ -167,46 +184,47 @@ final class DocLine_MatchPO extends DocLine<Doc_MatchPO>
 						.qty(qty)
 						.amt(amt)
 						.currencyConversionContext(getCurrencyConversionContext())
-						.date(getReceiptDateAcct())
+						.date(receipt.getDateAcct().toInstant())
 						.description(getOrderLine().getDescription())
 						.build());
 	}
 
+	boolean isReceivingInDifferentOrgThanPurchaseOrder()
+	{
+		final I_M_InOutLine receiptLine = getReceiptLine().orElse(null);
+		final I_C_OrderLine orderLine = getOrderLine();
+		return receiptLine != null
+				&& receiptLine.getAD_Org_ID() != orderLine.getAD_Org_ID();
+	}
+
+	@NonNull
 	I_C_OrderLine getOrderLine()
 	{
 		return orderLine;
 	}
 
-	I_M_InOutLine getReceiptLine()
-	{
-		return this._receiptLine;
-	}
+	boolean isNoReceiptLineSet() {return !getReceiptLine().isPresent();}
 
-	I_M_InOut getReceipt()
-	{
-		return this._receipt;
-	}
+	@NonNull
+	private Optional<I_M_InOutLine> getReceiptLine() {return Optional.ofNullable(this._receiptLine);}
 
+	@NonNull
+	private Optional<I_M_InOut> getReceipt() {return Optional.ofNullable(this._receipt);}
+
+	@NonNull
 	private CurrencyConversionContext getCurrencyConversionContext()
 	{
-		return this._currencyConversionContext;
-	}
-
-	Instant getReceiptDateAcct()
-	{
-		final I_M_InOut receipt = getReceipt();
-		final Timestamp receiptDateAcct = receipt.getDateAcct();
-		return receiptDateAcct.toInstant();
+		return _currencyConversionContext.orElseThrow();
 	}
 
 	boolean isReturnTrx()
 	{
-		final I_M_InOut receipt = getReceipt();
-		return X_M_InOut.MOVEMENTTYPE_VendorReturns.equals(receipt.getMovementType());
+		final I_M_InOut receipt = getReceipt().orElse(null);
+		return receipt != null && MovementType.ofCode(receipt.getMovementType()).isMaterialReturn();
 	}
 
-	private int getM_MatchPO_ID()
+	private MatchPOId getM_MatchPO_ID()
 	{
-		return get_ID();
+		return MatchPOId.ofRepoId(get_ID());
 	}
 }
