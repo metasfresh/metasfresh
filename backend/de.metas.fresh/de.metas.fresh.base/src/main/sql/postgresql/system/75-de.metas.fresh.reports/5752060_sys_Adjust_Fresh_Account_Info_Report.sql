@@ -512,5 +512,3 @@ END;
 $BODY$
     LANGUAGE plpgsql VOLATILE
 ;
-
-

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/account_info/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="erpwebui.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="122"/>
 	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="873"/>
@@ -33,127 +33,186 @@
 	<parameter name="StartDate" class="java.sql.Date"/>
 	<parameter name="EndDate" class="java.sql.Date"/>
 	<queryString>
-		<![CDATA[SELECT * FROM report.Fresh_Account_Info_Report (
-	$P{Account_From_ID},
-	$P{Account_To_ID},
-	$P{C_Period_Start_ID},
-	$P{C_Period_End_ID},
-	$P{StartDate},
-	$P{EndDate},
-	$P{C_Activity_ID},
-	$P{DisplayVoidDocuments},
-	$P{showCurrencyExchange},
-	$P{DisplayOnlyEmptyActivity},
-	$P{ad_org_id}
-);]]>
+		<![CDATA[SELECT *
+FROM report.Fresh_Account_Info_Report(
+    p_account_from_id => $P{Account_From_ID},
+	p_account_to_id => $P{Account_To_ID},
+	p_C_Period_Start_ID => $P{C_Period_Start_ID},
+	p_C_Period_End_ID => $P{C_Period_End_ID},
+	p_StartDate => $P{StartDate},
+	p_EndDate => $P{EndDate},
+	p_c_activity_id => $P{C_Activity_ID},
+	p_displayvoiddocuments => $P{DisplayVoidDocuments},
+	p_showcurrencyexchange => $P{showCurrencyExchange},
+	p_showonlyemptyactivity => $P{DisplayOnlyEmptyActivity},
+	p_ad_org_id => $P{ad_org_id}
+)
+ORDER BY param_acct_name, dateacct, unionorder
+;]]>
 	</queryString>
 	<field name="dateacct" class="java.sql.Date">
 		<property name="com.jaspersoft.studio.field.label" value="dateacct"/>
+		<property name="com.jaspersoft.studio.field.name" value="dateacct"/>
 	</field>
 	<field name="fact_acct_id" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="fact_acct_id"/>
+		<property name="com.jaspersoft.studio.field.name" value="fact_acct_id"/>
 	</field>
 	<field name="bp_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="bp_name"/>
+		<property name="com.jaspersoft.studio.field.name" value="bp_name"/>
 	</field>
 	<field name="description" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="description"/>
+		<property name="com.jaspersoft.studio.field.name" value="description"/>
 	</field>
 	<field name="account2_id" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="account2_id"/>
+		<property name="com.jaspersoft.studio.field.name" value="account2_id"/>
 	</field>
 	<field name="a_value" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="a_value"/>
+		<property name="com.jaspersoft.studio.field.name" value="a_value"/>
 	</field>
 	<field name="amtsourcedr" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="amtsourcedr"/>
+		<property name="com.jaspersoft.studio.field.name" value="amtsourcedr"/>
 	</field>
 	<field name="amtsourcecr" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="amtsourcecr"/>
+		<property name="com.jaspersoft.studio.field.name" value="amtsourcecr"/>
 	</field>
 	<field name="source_currency" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="source_currency"/>
+		<property name="com.jaspersoft.studio.field.name" value="source_currency"/>
 	</field>
 	<field name="amtacctdr" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="amtacctdr"/>
+		<property name="com.jaspersoft.studio.field.name" value="amtacctdr"/>
 	</field>
 	<field name="amtacctcr" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="amtacctcr"/>
+		<property name="com.jaspersoft.studio.field.name" value="amtacctcr"/>
 	</field>
 	<field name="saldo" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="saldo"/>
+		<property name="com.jaspersoft.studio.field.name" value="saldo"/>
 	</field>
 	<field name="param_acct_value" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="param_acct_value"/>
+		<property name="com.jaspersoft.studio.field.name" value="param_acct_value"/>
 	</field>
 	<field name="param_acct_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="param_acct_name"/>
+		<property name="com.jaspersoft.studio.field.name" value="param_acct_name"/>
 	</field>
 	<field name="param_end_date" class="java.sql.Date">
 		<property name="com.jaspersoft.studio.field.label" value="param_end_date"/>
+		<property name="com.jaspersoft.studio.field.name" value="param_end_date"/>
 	</field>
 	<field name="param_start_date" class="java.sql.Date">
 		<property name="com.jaspersoft.studio.field.label" value="param_start_date"/>
+		<property name="com.jaspersoft.studio.field.name" value="param_start_date"/>
 	</field>
 	<field name="param_activity_value" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="param_activity_value"/>
+		<property name="com.jaspersoft.studio.field.name" value="param_activity_value"/>
 	</field>
 	<field name="param_activity_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="param_activity_name"/>
+		<property name="com.jaspersoft.studio.field.name" value="param_activity_name"/>
 	</field>
 	<field name="overallcount" class="java.lang.Long">
 		<property name="com.jaspersoft.studio.field.label" value="overallcount"/>
+		<property name="com.jaspersoft.studio.field.name" value="overallcount"/>
 	</field>
 	<field name="unionorder" class="java.lang.Integer">
 		<property name="com.jaspersoft.studio.field.label" value="unionorder"/>
+		<property name="com.jaspersoft.studio.field.name" value="unionorder"/>
 	</field>
 	<field name="docstatus" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="docstatus"/>
+		<property name="com.jaspersoft.studio.field.name" value="docstatus"/>
 	</field>
 	<field name="eurosaldo" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="eurosaldo"/>
+		<property name="com.jaspersoft.studio.field.name" value="eurosaldo"/>
 	</field>
 	<field name="containseur" class="java.lang.Boolean">
 		<property name="com.jaspersoft.studio.field.label" value="containseur"/>
+		<property name="com.jaspersoft.studio.field.name" value="containseur"/>
 	</field>
 	<field name="ad_org_id" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+		<property name="com.jaspersoft.studio.field.name" value="ad_org_id"/>
 	</field>
 	<field name="vat_code" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="vat_code"/>
+		<property name="com.jaspersoft.studio.field.name" value="vat_code"/>
 	</field>
 	<field name="tax_rate_name" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="tax_rate_name"/>
+		<property name="com.jaspersoft.studio.field.name" value="tax_rate_name"/>
+	</field>
+	<field name="beginingbalance1" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="beginingbalance1"/>
+		<property name="com.jaspersoft.studio.field.name" value="beginingbalance1"/>
 	</field>
 	<field name="sourcebalance1" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="sourcebalance1"/>
+		<property name="com.jaspersoft.studio.field.name" value="sourcebalance1"/>
 	</field>
 	<field name="sourcebalance_currency1" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="sourcebalance_currency1"/>
+		<property name="com.jaspersoft.studio.field.name" value="sourcebalance_currency1"/>
+	</field>
+	<field name="beginingbalance2" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="beginingbalance2"/>
+		<property name="com.jaspersoft.studio.field.name" value="beginingbalance2"/>
 	</field>
 	<field name="sourcebalance2" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="sourcebalance2"/>
+		<property name="com.jaspersoft.studio.field.name" value="sourcebalance2"/>
 	</field>
 	<field name="sourcebalance_currency2" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="sourcebalance_currency2"/>
+		<property name="com.jaspersoft.studio.field.name" value="sourcebalance_currency2"/>
+	</field>
+	<field name="beginingbalance3" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="beginingbalance3"/>
+		<property name="com.jaspersoft.studio.field.name" value="beginingbalance3"/>
 	</field>
 	<field name="sourcebalance3" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="sourcebalance3"/>
+		<property name="com.jaspersoft.studio.field.name" value="sourcebalance3"/>
 	</field>
 	<field name="sourcebalance_currency3" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="sourcebalance_currency3"/>
+		<property name="com.jaspersoft.studio.field.name" value="sourcebalance_currency3"/>
+	</field>
+	<field name="beginingbalance4" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="beginingbalance4"/>
+		<property name="com.jaspersoft.studio.field.name" value="beginingbalance4"/>
 	</field>
 	<field name="sourcebalance4" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="sourcebalance4"/>
+		<property name="com.jaspersoft.studio.field.name" value="sourcebalance4"/>
 	</field>
 	<field name="sourcebalance_currency4" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="sourcebalance_currency4"/>
+		<property name="com.jaspersoft.studio.field.name" value="sourcebalance_currency4"/>
+	</field>
+	<field name="beginingbalance5" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="beginingbalance5"/>
+		<property name="com.jaspersoft.studio.field.name" value="beginingbalance5"/>
 	</field>
 	<field name="sourcebalance5" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="sourcebalance5"/>
+		<property name="com.jaspersoft.studio.field.name" value="sourcebalance5"/>
 	</field>
 	<field name="sourcebalance_currency5" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="sourcebalance_currency5"/>
+		<property name="com.jaspersoft.studio.field.name" value="sourcebalance_currency5"/>
 	</field>
 	<group name="Count Group">
 		<groupExpression><![CDATA[""]]></groupExpression>
@@ -162,7 +221,7 @@
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="22" y="8" width="555" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
-						<font size="8" isBold="false"/>
+						<font fontName="Arial" size="8" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{overallcount} > 150000 ?
     $R{info} + " "  +$F{overallcount} + " " + $R{info2} :
@@ -174,48 +233,48 @@
 	<group name="All" isStartNewPage="true" isResetPageNumber="true" isReprintHeaderOnEachPage="true">
 		<groupExpression><![CDATA[$F{param_acct_value}]]></groupExpression>
 		<groupHeader>
-			<band height="115">
+			<band height="110">
 				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() == 1 && $F{overallcount} < 150000)]]></printWhenExpression>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="7" y="106" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="9" y="96" width="54" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<box rightPadding="3"/>
-					<textElement textAlignment="Right">
-						<font size="7" isBold="false"/>
+					<textElement textAlignment="Left">
+						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{dateacct}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="426" y="106" width="58" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="431" y="96" width="52" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement textAlignment="Right">
-						<font size="7" isBold="false"/>
+						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{amtcr}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
-					<reportElement x="134" y="106" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+					<reportElement x="164" y="96" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 					<textElement>
-						<font size="7" isBold="false"/>
+						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{description}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="518" y="30" width="30" height="9" uuid="d3e7678f-3696-4ffe-8e20-3db62c351a39"/>
+					<reportElement x="518" y="34" width="30" height="9" uuid="d3e7678f-3696-4ffe-8e20-3db62c351a39"/>
 					<textElement textAlignment="Right">
-						<font size="7"/>
+						<font fontName="Arial" size="7"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{PAGE_NUMBER}+" " + $R{of}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
-					<reportElement x="76" y="106" width="57" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+					<reportElement x="106" y="96" width="57" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 					<textElement>
-						<font size="7" isBold="false"/>
+						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{bp_name}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="368" y="106" width="58" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="378" y="96" width="52" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement textAlignment="Right">
-						<font size="7" isBold="false"/>
+						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{amtdr}]]></textFieldExpression>
 				</textField>
@@ -229,98 +288,98 @@
 				<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy HH:mm" isBlankWhenNull="true">
 					<reportElement x="465" y="22" width="103" height="9" uuid="82a28042-ab56-435b-9547-dfe5fc99f4cf"/>
 					<textElement textAlignment="Right">
-						<font size="7"/>
+						<font fontName="Arial" size="7"/>
 					</textElement>
 					<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="40" y="106" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="64" y="96" width="42" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement>
-						<font size="7" isBold="false"/>
+						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{record_id}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="All" isBlankWhenNull="true">
-					<reportElement x="547" y="30" width="21" height="9" uuid="20fa10dc-ece0-4d33-bc24-b87118cf1609"/>
+					<reportElement x="547" y="34" width="21" height="9" uuid="20fa10dc-ece0-4d33-bc24-b87118cf1609"/>
 					<textElement textAlignment="Right">
-						<font size="7"/>
+						<font fontName="Arial" size="7"/>
 					</textElement>
 					<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="484" y="106" width="58" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="484" y="96" width="58" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement textAlignment="Right">
-						<font size="7" isBold="false"/>
+						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{balance}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="57" y="49" width="70" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="57" y="42" width="70" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{accountno}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="57" y="60" width="70" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="57" y="53" width="70" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{account}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="57" y="71" width="70" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="57" y="64" width="70" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{dateacct}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="127" y="49" width="350" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="127" y="42" width="350" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{param_acct_value}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="127" y="71" width="350" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="127" y="64" width="350" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{param_start_date} + " - " + $F{param_end_date}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="127" y="60" width="350" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="127" y="53" width="350" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{param_acct_name}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="494" y="30" width="25" height="9" uuid="d3e7678f-3696-4ffe-8e20-3db62c351a39"/>
+					<reportElement x="494" y="34" width="25" height="9" uuid="d3e7678f-3696-4ffe-8e20-3db62c351a39"/>
 					<textElement textAlignment="Right">
-						<font size="7"/>
+						<font fontName="Arial" size="7"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{page}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="331" y="106" width="36" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
+					<reportElement x="344" y="96" width="34" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					</reportElement>
 					<textElement textAlignment="Right">
-						<font size="7" isBold="false"/>
+						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{activity}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="57" y="82" width="70" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="57" y="75" width="70" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{activity}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="127" y="82" width="350" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="127" y="75" width="350" height="9" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font fontName="Arial" size="7" isBold="true"/>
 					</textElement>
@@ -329,106 +388,109 @@
     $R{all}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="285" y="106" width="44" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="299" y="96" width="44" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement>
-						<font size="7" isBold="false"/>
+						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{counter_account}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="542" y="106" width="45" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="542" y="96" width="45" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement textAlignment="Right">
-						<font size="7" isBold="false"/>
+						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{docstatus}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="195" y="106" width="38" height="9" uuid="6c4a6a90-b02a-4fba-b553-32fe6b6fde32">
+					<reportElement x="224" y="96" width="30" height="9" uuid="6c4a6a90-b02a-4fba-b553-32fe6b6fde32">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					</reportElement>
 					<textElement>
-						<font size="7"/>
+						<font fontName="Arial" size="7"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{vatcode}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="234" y="106" width="50" height="9" uuid="eab5c09d-6d1e-43dd-983b-d87e84847360"/>
+					<reportElement x="255" y="96" width="44" height="9" uuid="eab5c09d-6d1e-43dd-983b-d87e84847360"/>
 					<textElement>
-						<font size="7"/>
+						<font fontName="Arial" size="7"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{tax_rate_name}]]></textFieldExpression>
 				</textField>
+				<line>
+					<reportElement x="6" y="108" width="585" height="1" uuid="f3abe1a6-f3a7-4a75-8031-16c4d7137b09"/>
+				</line>
 			</band>
-			<band height="74">
+			<band height="75">
 				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() > 1 && $F{overallcount} < 150000)]]></printWhenExpression>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="9" y="60" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="9" y="60" width="54" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<box rightPadding="3"/>
-					<textElement textAlignment="Right">
-						<font size="7" isBold="false"/>
+					<textElement textAlignment="Left">
+						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{dateacct}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="426" y="60" width="58" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="431" y="60" width="52" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement textAlignment="Right">
-						<font size="7" isBold="false"/>
+						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{amtcr}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
-					<reportElement x="134" y="60" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+					<reportElement x="164" y="60" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 					<textElement>
-						<font size="7" isBold="false"/>
+						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{description}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
-					<reportElement x="76" y="60" width="57" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+					<reportElement x="106" y="60" width="57" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 					<textElement>
-						<font size="7" isBold="false"/>
+						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{bp_name}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="368" y="60" width="58" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="378" y="60" width="52" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement textAlignment="Right">
-						<font size="7" isBold="false"/>
+						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{amtdr}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="43" y="60" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="64" y="60" width="42" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement>
-						<font size="7" isBold="false"/>
+						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{record_id}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="484" y="60" width="58" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement textAlignment="Right">
-						<font size="7" isBold="false"/>
+						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{balance}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="537" y="50" width="30" height="9" uuid="d3e7678f-3696-4ffe-8e20-3db62c351a39"/>
 					<textElement textAlignment="Right">
-						<font size="7"/>
+						<font fontName="Arial" size="7"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{PAGE_NUMBER}+" " + $R{of}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy HH:mm" isBlankWhenNull="true">
-					<reportElement x="484" y="42" width="103" height="9" uuid="82a28042-ab56-435b-9547-dfe5fc99f4cf"/>
+					<reportElement x="484" y="37" width="103" height="9" uuid="82a28042-ab56-435b-9547-dfe5fc99f4cf"/>
 					<textElement textAlignment="Right">
-						<font size="7"/>
+						<font fontName="Arial" size="7"/>
 					</textElement>
 					<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="513" y="50" width="25" height="9" uuid="d3e7678f-3696-4ffe-8e20-3db62c351a39"/>
 					<textElement textAlignment="Right">
-						<font size="7"/>
+						<font fontName="Arial" size="7"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{page}]]></textFieldExpression>
 				</textField>
@@ -437,49 +499,52 @@
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 					<textElement textAlignment="Right">
-						<font size="7"/>
+						<font fontName="Arial" size="7"/>
 					</textElement>
 					<textFieldExpression><![CDATA[" " + $V{PAGE_NUMBER}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="331" y="60" width="36" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
+					<reportElement x="344" y="60" width="34" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					</reportElement>
 					<textElement textAlignment="Right">
-						<font size="7" isBold="false"/>
+						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{activity}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="285" y="60" width="44" height="9" uuid="7cf59c05-dd27-465d-8d5d-5025e6c71d18"/>
+					<reportElement x="299" y="60" width="44" height="9" uuid="7cf59c05-dd27-465d-8d5d-5025e6c71d18"/>
 					<textElement>
-						<font size="7"/>
+						<font fontName="Arial" size="7"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{counter_account}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="542" y="60" width="45" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement textAlignment="Right">
-						<font size="7" isBold="false"/>
+						<font fontName="Arial" size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{docstatus}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="195" y="60" width="38" height="9" uuid="de55145a-f3db-483d-9bd2-87ca9f28a815">
+					<reportElement x="224" y="60" width="30" height="9" uuid="de55145a-f3db-483d-9bd2-87ca9f28a815">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
 					</reportElement>
 					<textElement>
-						<font size="7"/>
+						<font fontName="Arial" size="7"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{vatcode}]]></textFieldExpression>
 				</textField>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-					<reportElement x="234" y="60" width="50" height="9" uuid="dc3549fc-eb36-48ed-bfa8-2326daf22334"/>
+					<reportElement x="255" y="60" width="44" height="9" uuid="dc3549fc-eb36-48ed-bfa8-2326daf22334"/>
 					<textElement>
-						<font size="7"/>
+						<font fontName="Arial" size="7"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{tax_rate_name}]]></textFieldExpression>
 				</textField>
+				<line>
+					<reportElement x="6" y="72" width="585" height="1" uuid="4b14d888-c339-48de-b007-c4ad783394a0"/>
+				</line>
 			</band>
 		</groupHeader>
 	</group>
@@ -502,24 +567,24 @@
 		<band height="40" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() != 3 && $F{unionorder}.intValue() != 4 && $F{overallcount} < 150000)]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="9" y="0" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="9" y="0" width="54" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 				<box rightPadding="3"/>
-				<textElement textAlignment="Right">
-					<font size="7" isBold="false"/>
+				<textElement textAlignment="Left">
+					<font fontName="Arial" size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{dateacct}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="426" y="0" width="58" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="431" y="0" width="52" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="false"/>
+					<font fontName="Arial" size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{amtacctcr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="134" y="0" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="164" y="0" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement>
-					<font size="7" isBold="false"/>
+					<font fontName="Arial" size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{description}.equals("Anfangssaldo") ? $R{initial_balance} : 
 (
@@ -529,69 +594,69 @@
 )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="76" y="0" width="57" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="106" y="0" width="57" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement>
-					<font size="7" isBold="false"/>
+					<font fontName="Arial" size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bp_name}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="368" y="0" width="58" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="378" y="0" width="52" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="false"/>
+					<font fontName="Arial" size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{amtacctdr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
-				<reportElement x="43" y="0" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="64" y="0" width="42" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 				<textElement>
-					<font size="7" isBold="false"/>
+					<font fontName="Arial" size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{fact_acct_id}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="484" y="0" width="58" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="false"/>
+					<font fontName="Arial" size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{saldo}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="331" y="0" width="36" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
+				<reportElement x="344" y="0" width="34" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="false"/>
+					<font fontName="Arial" size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{a_value}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="285" y="0" width="44" height="9" uuid="7cf59c05-dd27-465d-8d5d-5025e6c71d18"/>
+				<reportElement x="299" y="0" width="44" height="9" uuid="7cf59c05-dd27-465d-8d5d-5025e6c71d18"/>
 				<textElement>
-					<font size="7"/>
+					<font fontName="Arial" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{account2_id}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement x="542" y="0" width="45" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 				<textElement textAlignment="Right">
-					<font size="7" isBold="false"/>
+					<font fontName="Arial" size="7" isBold="false"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{docstatus}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="195" y="0" width="38" height="9" uuid="04382bf8-5b1c-46f1-ac10-cbc12a84993b">
+				<reportElement x="224" y="0" width="30" height="9" uuid="04382bf8-5b1c-46f1-ac10-cbc12a84993b">
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
 				</reportElement>
 				<textElement>
-					<font size="7"/>
+					<font fontName="Arial" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{vat_code}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="234" y="0" width="50" height="9" uuid="81425b72-e3f0-470e-a86b-155041149740"/>
+				<reportElement x="255" y="0" width="44" height="9" uuid="81425b72-e3f0-470e-a86b-155041149740"/>
 				<textElement>
-					<font size="7"/>
+					<font fontName="Arial" size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{tax_rate_name}]]></textFieldExpression>
 			</textField>
@@ -611,7 +676,7 @@
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="5" isBold="false" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{sourcebalance1}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{unionorder}.intValue() == 1 ?  $F{beginingbalance1} :  $F{sourcebalance1}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="527" y="10" width="15" height="6" isRemoveLineWhenBlank="true" uuid="69771371-b4ac-4196-8e4d-96b91be311d5">
@@ -638,7 +703,7 @@
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="5" isBold="false" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{sourcebalance2}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{unionorder}.intValue() == 1 ?  $F{beginingbalance2} : $F{sourcebalance2}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="527" y="16" width="15" height="6" isRemoveLineWhenBlank="true" uuid="a58e3e42-33b3-4ca2-b53c-5573aa87a4c1">
@@ -665,7 +730,7 @@
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="5" isBold="false" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{sourcebalance3}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{unionorder}.intValue() == 1 ?  $F{beginingbalance3} : $F{sourcebalance3}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="527" y="22" width="15" height="6" isRemoveLineWhenBlank="true" uuid="924952ea-c0d8-47cc-9243-6a1dc6474c98">
@@ -701,7 +766,7 @@
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="5" isBold="false" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{sourcebalance5}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{unionorder}.intValue() == 1 ?  $F{beginingbalance5} : $F{sourcebalance5}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="502" y="28" width="25" height="6" isRemoveLineWhenBlank="true" uuid="8a5ee8a9-e09a-417b-8584-5dc77535a3d6">
@@ -710,7 +775,7 @@
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="5" isBold="false" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{sourcebalance4}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{unionorder}.intValue() == 1 ?  $F{beginingbalance4} : $F{sourcebalance4}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
 				<reportElement positionType="Float" x="492" y="28" width="10" height="6" isRemoveLineWhenBlank="true" uuid="fb5a4b30-8d08-4bde-a991-65f22b87bbd0">
@@ -731,7 +796,7 @@
 				<textFieldExpression><![CDATA["("]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="374" y="10" width="11" height="6" isRemoveLineWhenBlank="true" uuid="7f1e1c22-0b38-4aa5-9740-7d386e5f8a94">
+				<reportElement x="378" y="10" width="11" height="6" isRemoveLineWhenBlank="true" uuid="7f1e1c22-0b38-4aa5-9740-7d386e5f8a94">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" )&&$F{amtsourcedr}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -740,7 +805,7 @@
 				<textFieldExpression><![CDATA["("]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="385" y="10" width="26" height="6" isRemoveLineWhenBlank="true" uuid="706d72f5-cab5-4243-a161-c20c632e0c34">
+				<reportElement x="389" y="10" width="26" height="6" isRemoveLineWhenBlank="true" uuid="706d72f5-cab5-4243-a161-c20c632e0c34">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" )]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -749,7 +814,7 @@
 				<textFieldExpression><![CDATA[$F{amtsourcedr}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="432" y="10" width="11" height="6" isRemoveLineWhenBlank="true" uuid="a166e224-ac28-4ddb-ba95-d7191622a9aa">
+				<reportElement x="431" y="10" width="11" height="6" isRemoveLineWhenBlank="true" uuid="a166e224-ac28-4ddb-ba95-d7191622a9aa">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" )&&$F{amtsourcecr}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -758,7 +823,7 @@
 				<textFieldExpression><![CDATA["("]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="443" y="10" width="26" height="6" isRemoveLineWhenBlank="true" uuid="b786481a-7aae-4e71-b557-90376be0d871">
+				<reportElement x="442" y="10" width="26" height="6" isRemoveLineWhenBlank="true" uuid="b786481a-7aae-4e71-b557-90376be0d871">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" )]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -767,7 +832,7 @@
 				<textFieldExpression><![CDATA[$F{amtsourcecr}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="411" y="10" width="15" height="6" isRemoveLineWhenBlank="true" uuid="c12090b1-d7a5-4160-989e-e9b1ea69f7bb">
+				<reportElement x="415" y="10" width="15" height="6" isRemoveLineWhenBlank="true" uuid="c12090b1-d7a5-4160-989e-e9b1ea69f7bb">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" )&&$F{amtsourcedr}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -776,7 +841,7 @@
 				<textFieldExpression><![CDATA[$F{source_currency}+")"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="469" y="10" width="15" height="6" isRemoveLineWhenBlank="true" uuid="09c32cf8-5f15-4ae8-bb12-08d90df0c8a1">
+				<reportElement x="468" y="10" width="15" height="6" isRemoveLineWhenBlank="true" uuid="09c32cf8-5f15-4ae8-bb12-08d90df0c8a1">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" )&&$F{amtsourcecr}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -787,23 +852,15 @@
 		</band>
 		<band height="10">
 			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() == 3 && $F{overallcount} < 150000)]]></printWhenExpression>
-			<textField isStretchWithOverflow="true" pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="9" y="0" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
-				<box rightPadding="3"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{dateacct}]]></textFieldExpression>
-			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="426" y="0" width="58" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="431" y="0" width="52" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{amtacctcr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="134" y="0" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="164" y="0" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement>
 					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
@@ -814,41 +871,18 @@
 	) 
 )]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="76" y="0" width="57" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{bp_name}]]></textFieldExpression>
-			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="368" y="0" width="58" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="378" y="0" width="52" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{amtacctdr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" pattern="###0" isBlankWhenNull="true">
-				<reportElement x="43" y="0" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
-				<textElement>
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{fact_acct_id}.setScale( 0, RoundingMode.HALF_UP )]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement x="331" y="0" width="36" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e">
-					<property name="com.jaspersoft.studio.unit.width" value="px"/>
-				</reportElement>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="7" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{a_value}]]></textFieldExpression>
-			</textField>
 		</band>
 		<band height="10">
 			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() == 4 && $F{eurosaldo} != null && $F{overallcount} < 150000)]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="134" y="0" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="164" y="0" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement>
 					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
