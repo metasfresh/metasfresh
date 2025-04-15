@@ -22,7 +22,9 @@
 
 package de.metas.document.invoicingpool;
 
+import com.google.common.annotations.VisibleForTesting;
 import lombok.NonNull;
+import org.compiere.Adempiere;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -34,6 +36,13 @@ public class DocTypeInvoicingPoolService
 	public DocTypeInvoicingPoolService(@NonNull final DocTypeInvoicingPoolRepository docTypeInvoicingPoolRepository)
 	{
 		this.docTypeInvoicingPoolRepository = docTypeInvoicingPoolRepository;
+	}
+
+	@VisibleForTesting
+	public static DocTypeInvoicingPoolService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		return new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository());
 	}
 
 	@NonNull
