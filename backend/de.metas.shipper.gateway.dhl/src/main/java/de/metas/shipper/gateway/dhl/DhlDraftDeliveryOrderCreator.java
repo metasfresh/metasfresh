@@ -58,6 +58,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -197,7 +198,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		for(final CreateDraftDeliveryOrderRequest.PackageInfo packageInfo : packageInfos)
 		{
 			mpackageIds.add(packageInfo.getPackageId());
-			grossWeightKg += packageInfo.getWeightInKgOr(DEFAULT_PackageWeightInKg).intValue();
+			grossWeightKg += packageInfo.getWeightInKgOr(DEFAULT_PackageWeightInKg).setScale(0, RoundingMode.UP).intValueExact();
 		}
 		
 		final DeliveryPosition deliveryPosition = DeliveryPosition.builder()
