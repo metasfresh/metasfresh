@@ -354,7 +354,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Pricing Informations
 		final org.compiere.model.I_M_InOutLine inOutLineRecordToUse = inOutLineRecord.getReturn_Origin_InOutLine_ID() > 0 ? inOutLineRecord.getReturn_Origin_InOutLine() : inOutLineRecord;
-		calculatePriceAndQuantityAndUpdate(icRecord, inOutLineRecordToUse);
+		calculatePriceAndTaxAndUpdate(icRecord, inOutLineRecordToUse);
 
 		//
 		// Description
@@ -991,7 +991,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Nullable
-	public static PriceAndTax calculatePriceAndQuantityAndUpdate(
+	public static PriceAndTax calculatePriceAndTaxAndUpdate(
 			@NonNull final I_C_Invoice_Candidate icRecord,
 			final org.compiere.model.I_M_InOutLine fromInOutLine)
 	{

@@ -32,6 +32,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
@@ -59,6 +60,7 @@ import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_TaxCategory;
+import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Product;
 
@@ -77,6 +79,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_P
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_PriceEntered;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.compiere.model.I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_Processed;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_UOM_ID;
@@ -273,7 +276,7 @@ public class C_InvoiceLine_StepDef
 			softly.assertThat(invoiceLine.getC_Tax_ID()).isEqualTo(taxId.getRepoId());
 		}
 
-		final String taxCategoryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_C_TaxCategory_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String taxCategoryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_TaxCategory_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		if (Check.isNotBlank(taxCategoryIdentifier))
 		{

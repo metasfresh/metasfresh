@@ -58,6 +58,8 @@ public interface IWarehouseDAO extends ISingletonService
 {
 	I_M_Warehouse getById(WarehouseId warehouseId);
 
+	<T extends I_M_Warehouse> T getByIdInTrx(@NonNull WarehouseId warehouseId, @NonNull Class<T> modelType);
+
 	<T extends I_M_Warehouse> T getById(WarehouseId warehouseId, Class<T> modelType);
 
 	List<I_M_Warehouse> getByIds(Collection<WarehouseId> warehouseIds);
@@ -215,4 +217,19 @@ public interface IWarehouseDAO extends ISingletonService
 	WarehouseId retrieveWarehouseIdBy(WarehouseQuery query);
 
 	WarehouseAndLocatorValue retrieveWarehouseAndLocatorValueByLocatorRepoId(int locatorRepoId);
+
+	@NonNull
+	Optional<WarehouseId> getOptionalIdByValue(@NonNull String value);
+
+	@NonNull
+	Optional<Warehouse> getOptionalById(@NonNull WarehouseId id);
+
+	void save(@NonNull Warehouse warehouse);
+
+	/**
+	 * Create a warehouse and a default locator.
+	 */
+	@NonNull
+	Warehouse createWarehouse(@NonNull CreateWarehouseRequest request);
+
 }

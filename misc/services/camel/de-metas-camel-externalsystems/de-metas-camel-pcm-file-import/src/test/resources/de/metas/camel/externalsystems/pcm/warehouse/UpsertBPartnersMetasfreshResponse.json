@@ -1,0 +1,18 @@
+{
+  "responseItems": [
+    {
+      "responseBPartnerItem": {
+        "identifier": "2156425",
+        "metasfreshId": 2156425,
+        "syncOutcome": "NOTHING_DONE"
+      },
+      "responseLocationItems": [
+        {
+          "identifier": "ext-ProCareManagement-warehouseIdentifier_1",
+          "metasfreshId": 2205176,
+          "syncOutcome": "CREATED"
+        }
+      ]
+    }
+  ]
+}

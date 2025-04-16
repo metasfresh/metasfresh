@@ -230,7 +230,7 @@ public class JsonPersisterService
 				effectiveSyncAdvise);
 
 		final JsonResponseBPartnerCompositeUpsertItem result = resultBuilder.build();
-		handleExternalReferenceRecords(requestItem, result, orgCode);
+		handleExternalReferenceRecords(requestItem, result, bpartnerComposite.getOrgId());
 
 		handleAlbertaInfo(bpartnerComposite.getOrgId(), effectiveSyncAdvise, requestItem, result);
 
@@ -721,7 +721,7 @@ public class JsonPersisterService
 		final SyncAdvise syncAdvise = coalesceNotNull(jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
 		final boolean hasOrgId = bpartnerComposite.getOrgId() != null;
 
-		if (hasOrgId && !syncAdvise.getIfExists().isUpdate())
+		if (hasOrgId && (!syncAdvise.getIfExists().isUpdate() || Check.isBlank(jsonBPartnerComposite.getOrgCode())))
 		{
 			return;
 		}
@@ -1859,7 +1859,7 @@ public class JsonPersisterService
 	private void handleExternalReferenceRecords(
 			@NonNull final JsonRequestBPartnerUpsertItem requestItem,
 			@NonNull final JsonResponseBPartnerCompositeUpsertItem result,
-			@Nullable final String orgCode)
+			@NonNull final OrgId orgId)
 	{
 		final Set<JsonRequestExternalReferenceUpsert> externalReferenceCreateReqs = new HashSet<>();
 
@@ -1911,7 +1911,7 @@ public class JsonPersisterService
 
 		for (final JsonRequestExternalReferenceUpsert request : externalReferenceCreateReqs)
 		{
-			externalReferenceRestControllerService.performUpsert(request, orgCode);
+			externalReferenceRestControllerService.performUpsert(request, orgId);
 		}
 	}
 

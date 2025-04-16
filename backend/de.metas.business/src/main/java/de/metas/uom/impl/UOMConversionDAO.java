@@ -29,7 +29,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 {
 	private static final Logger logger = LogManager.getLogger(UOMConversionDAO.class);
 
-	private final CCache<ProductId, UOMConversionsMap> productConversionsCache = CCache.<ProductId, UOMConversionsMap> builder()
+	private final CCache<ProductId, UOMConversionsMap> productConversionsCache = CCache.<ProductId, UOMConversionsMap>builder()
 			.tableName(I_C_UOM_Conversion.Table_Name)
 			.build();
 
@@ -112,7 +112,7 @@ public class UOMConversionDAO implements IUOMConversionDAO
 
 		final BigDecimal fromToMultiplier = request.getFromToMultiplier();
 		final BigDecimal toFromMultiplier = UOMConversionRate.computeInvertedMultiplier(fromToMultiplier);
-		
+
 		record.setMultiplyRate(fromToMultiplier);
 		record.setDivideRate(toFromMultiplier);
 		record.setIsCatchUOMForProduct(request.isCatchUOMForProduct());
