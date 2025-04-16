@@ -407,7 +407,7 @@ BEGIN
             -- 3
             --
             UNION ALL
-            (SELECT DISTINCT NULL::date             AS DateAcct,
+            (SELECT  NULL::date             AS DateAcct,
                              NULL::numeric          AS fact_acct_id,
                              NULL                   AS BP_Name,
                              'Summe'                AS description,
@@ -454,8 +454,6 @@ BEGIN
                       r.Beginning_Balance,
                       r.Param_Acct_Value,
                       r.Param_Acct_Name,
-                      v_EndDate_Effective,
-                      v_StartDate_Effective,
                       r.Param_Activity_Value,
                       r.Param_Activity_Name)
             --
