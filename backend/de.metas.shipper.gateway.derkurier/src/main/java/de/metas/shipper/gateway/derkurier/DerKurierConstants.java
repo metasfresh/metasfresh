@@ -1,9 +1,10 @@
 package de.metas.shipper.gateway.derkurier;
 
+import de.metas.shipper.gateway.api.ShipperGatewayId;
+import de.metas.shipper.gateway.spi.model.Address;
+
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-
-import de.metas.shipper.gateway.spi.model.Address;
 
 /*
  * #%L
@@ -29,8 +30,10 @@ import de.metas.shipper.gateway.spi.model.Address;
 
 public class DerKurierConstants
 {
-	/** Important: needs to be kept in sync with the respective shippergateway AD_Reflist value in M_Sipper. */
-	public static final String SHIPPER_GATEWAY_ID = "derKurier";
+	/**
+	 * Important: needs to be kept in sync with the respective shippergateway AD_Reflist value in M_Sipper.
+	 */
+	public static final ShipperGatewayId SHIPPER_GATEWAY_ID = ShipperGatewayId.ofString("derKurier");
 
 	public static final String SYSCONFIG_DERKURIER_LABEL_PROCESS_ID = "de.metas.shipper.gateway.derkurier.PackageLabel.AD_Process_ID";
 
@@ -38,7 +41,9 @@ public class DerKurierConstants
 
 	public static final String TIME_FORMAT = "HH:mm";
 
-	/** used to join&split the street1 and street2 that we have in {@link Address} into the one "street" field that we have at "Der Kurier" */
+	/**
+	 * used to join&split the street1 and street2 that we have in {@link Address} into the one "street" field that we have at "Der Kurier"
+	 */
 	public static final String STREET_DELIMITER = " - ";
 
 	public static final Charset CSV_DATA_CHARSET = StandardCharsets.ISO_8859_1;

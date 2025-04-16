@@ -3,6 +3,7 @@ package de.metas.shipper.gateway.commons;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.mpackage.PackageId;
+import de.metas.shipper.gateway.api.ShipperGatewayId;
 import de.metas.shipper.gateway.commons.async.DeliveryOrderWorkpackageProcessor;
 import de.metas.shipper.gateway.spi.DeliveryOrderService;
 import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator;
@@ -17,12 +18,13 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.X12DE355;
-import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
@@ -60,17 +62,14 @@ import java.util.Set;
  */
 
 @Service
+@RequiredArgsConstructor
 public class ShipperGatewayFacade
 {
-	private final ShipperGatewayServicesRegistry shipperRegistry;
+	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	@NonNull private final IShipperDAO shipperDAO = Services.get(IShipperDAO.class);
+	@NonNull private final ShipperGatewayServicesRegistry shipperRegistry;
 
-	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final UOMPrecision kgPrecision = uomDAO.getStandardPrecision(uomDAO.getUomIdByX12DE355(X12DE355.KILOGRAM));
-
-	public ShipperGatewayFacade(@NonNull final ShipperGatewayServicesRegistry shipperRegistry)
-	{
-		this.shipperRegistry = shipperRegistry;
-	}
+	private final UOMPrecision kgPrecision = uomDAO.getStandardPrecision(X12DE355.KILOGRAM);
 
 	public void createAndSendDeliveryOrdersForPackages(@NonNull final DeliveryOrderCreateRequest request)
 	{
@@ -140,7 +139,7 @@ public class ShipperGatewayFacade
 			@NonNull final Collection<I_M_Package> mpackages)
 	{
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
-		final String shipperGatewayId = retrieveShipperGatewayId(shipperId);
+		final ShipperGatewayId shipperGatewayId = retrieveShipperGatewayId(shipperId);
 		final DeliveryOrderService deliveryOrderRepository = shipperRegistry.getDeliveryOrderService(shipperGatewayId);
 
 		final ImmutableSet<PackageInfo> packageInfos = mpackages.stream()
@@ -162,19 +161,19 @@ public class ShipperGatewayFacade
 		DeliveryOrder deliveryOrder = shipperGatewayService.createDraftDeliveryOrder(request);
 
 		deliveryOrder = deliveryOrderRepository.save(deliveryOrder);
-		DeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(deliveryOrder.getId().getRepoId(), shipperGatewayId, deliveryOrderKey.getAsyncBatchId());
+		DeliveryOrderWorkpackageProcessor.enqueueOnTrxCommit(deliveryOrder.getId(), shipperGatewayId, deliveryOrderKey.getAsyncBatchId());
 	}
 
-	private String retrieveShipperGatewayId(final ShipperId shipperId)
+	private ShipperGatewayId retrieveShipperGatewayId(final ShipperId shipperId)
 	{
-		final I_M_Shipper shipper = Services.get(IShipperDAO.class).getById(shipperId);
-		return Check.assumeNotEmpty(
-				shipper.getShipperGateway(),
-				"The given shipper with M_Shipper_ID={} has an empty ShipperGateway value; shipper={}", shipperId, shipper);
+		final I_M_Shipper shipper = shipperDAO.getById(shipperId);
+		return StringUtils.trimBlankToOptional(shipper.getShipperGateway())
+				.map(ShipperGatewayId::ofString)
+				.orElseThrow(() -> new AdempiereException("Shipper " + shipper.getName() + "(ID=" + shipperId + ") has no ShipperGateway defined!"));
 	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
-	public boolean hasServiceSupport(@NonNull final String shipperGatewayId)
+	public boolean hasServiceSupport(@NonNull final ShipperGatewayId shipperGatewayId)
 	{
 		return shipperRegistry.hasServiceSupport(shipperGatewayId);
 	}

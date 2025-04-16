@@ -20,6 +20,7 @@ import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.logging.LogManager;
+import de.metas.shipper.gateway.api.ShipperGatewayId;
 import de.metas.shipper.gateway.commons.ShipperGatewayFacade;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
 import de.metas.shipping.IShipperDAO;
@@ -276,8 +277,8 @@ public class HUShippingFacade
 			@NonNull final Collection<I_M_Package> mPackages)
 	{
 		final I_M_Shipper shipper = Services.get(IShipperDAO.class).getById(shipperId);
-		final String shipperGatewayId = shipper.getShipperGateway();
-		if (Check.isEmpty(shipperGatewayId, true))
+		final ShipperGatewayId shipperGatewayId = ShipperGatewayId.ofNullableString(shipper.getShipperGateway());
+		if (shipperGatewayId == null)
 		{
 			return;
 		}

@@ -1,5 +1,6 @@
 package de.metas.shipper.gateway.go;
 
+import de.metas.shipper.gateway.api.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import org.springframework.stereotype.Service;
 
@@ -49,7 +50,7 @@ public class GOClientFactory implements ShipperGatewayClientFactory
 	}
 
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return GOConstants.SHIPPER_GATEWAY_ID;
 	}

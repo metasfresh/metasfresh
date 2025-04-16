@@ -1,5 +1,6 @@
 package de.metas.shipper.gateway.dhl;
 
+import de.metas.shipper.gateway.api.ShipperGatewayId;
 import de.metas.shipper.gateway.dhl.logger.DhlDatabaseClientLogger;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfig;
 import de.metas.shipper.gateway.dhl.model.DhlClientConfigRepository;
@@ -24,7 +25,7 @@ public class DhlShipperGatewayClientFactory implements ShipperGatewayClientFacto
 	}
 
 	@Override
-	public String getShipperGatewayId()
+	public ShipperGatewayId getShipperGatewayId()
 	{
 		return DhlConstants.SHIPPER_GATEWAY_ID;
 	}
