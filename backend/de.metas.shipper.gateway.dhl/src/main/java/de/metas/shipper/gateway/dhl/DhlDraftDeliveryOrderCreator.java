@@ -199,7 +199,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		for(final CreateDraftDeliveryOrderRequest.PackageInfo packageInfo : packageInfos)
 		{
 			mpackageIds.add(packageInfo.getPackageId());
-			grossWeightKg += packageInfo.getWeightInKgOr(DEFAULT_PACKAGE_WEIGHT_IN_KG).setScale(0, RoundingMode.UP).intValueExact();
+			grossWeightKg = packageInfo.getWeightInKgOr(DEFAULT_PACKAGE_WEIGHT_IN_KG).setScale(0, RoundingMode.UP).intValueExact();
 		}
 		final int grossWeightKgToUse = Math.min(grossWeightKg, DHL_MAX_ACCEPTED_GROSS_WEIGHT); //client wants to pay overweight delivery fee rather than not being able to ship
 		
