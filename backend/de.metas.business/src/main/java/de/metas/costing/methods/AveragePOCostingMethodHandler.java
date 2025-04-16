@@ -266,7 +266,14 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
 			requestEffective = request.withAmountAndQty(amt, qty);
 
-			currentCosts.addToCurrentQtyAndCumulate(qty, amt);
+			if (explicitCostPrice != null)
+			{
+				currentCosts.addWeightedAverage(amt, qty, utils.getQuantityUOMConverter());
+			}
+			else
+			{
+				currentCosts.addToCurrentQtyAndCumulate(qty, amt);
+			}
 		}
 
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(
