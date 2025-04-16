@@ -937,23 +937,31 @@ public class X_DHL_ShipmentOrder extends org.compiere.model.PO implements I_DHL_
 		return (java.lang.String)get_Value(COLUMNNAME_PackageDescription);
 	}
 
-	/** Set Paket-ID.
-		@param PackageId Paket-ID	  */
 	@Override
-	public void setPackageId (int PackageId)
+	public org.compiere.model.I_M_Package getM_Package()
 	{
-		set_Value (COLUMNNAME_PackageId, Integer.valueOf(PackageId));
+		return get_ValueAsPO(COLUMNNAME_M_Package_ID, org.compiere.model.I_M_Package.class);
 	}
 
-	/** Get Paket-ID.
-		@return Paket-ID	  */
 	@Override
-	public int getPackageId () 
+	public void setM_Package(final org.compiere.model.I_M_Package M_Package)
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_PackageId);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		set_ValueFromPO(COLUMNNAME_M_Package_ID, org.compiere.model.I_M_Package.class, M_Package);
+	}
+
+	@Override
+	public void setM_Package_ID (final int M_Package_ID)
+	{
+		if (M_Package_ID < 1)
+			set_Value (COLUMNNAME_M_Package_ID, null);
+		else
+			set_Value (COLUMNNAME_M_Package_ID, M_Package_ID);
+	}
+
+	@Override
+	public int getM_Package_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Package_ID);
 	}
 
 	/** Set PdfLabelData.

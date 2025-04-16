@@ -140,7 +140,7 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 					}
 
 					return DhlCustomDeliveryDataDetail.builder()
-							.packageId(PackageId.ofRepoId(po.getPackageId()))
+							.packageId(PackageId.ofRepoId(po.getM_Package_ID()))
 							.awb(po.getawb())
 							.sequenceNumber(DhlSequenceNumber.of(po.getDHL_ShipmentOrder_ID()))
 							.pdfLabelData(po.getPdfLabelData())
@@ -159,7 +159,7 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 	private DhlCustomsDocument getCustomsDocument(@NonNull final I_DHL_ShipmentOrder firstOrder, @NonNull final I_DHL_ShipmentOrder po, @Nullable final String orgBpEORI)
 	{
 		final I_C_BPartner consigneeBpartner = bpartnerDAO.getById(firstOrder.getC_BPartner_ID());
-		final Package mPackage = inOutPackageRepository.getPackageById(PackageId.ofRepoId(po.getPackageId()));
+		final Package mPackage = inOutPackageRepository.getPackageById(PackageId.ofRepoId(po.getM_Package_ID()));
 
 		final ImmutableList<DhlCustomsItem> dhlCustomsItems = mPackage.getPackageContents()
 				.stream()

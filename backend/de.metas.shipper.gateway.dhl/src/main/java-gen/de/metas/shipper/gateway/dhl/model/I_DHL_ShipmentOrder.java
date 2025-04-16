@@ -1,5 +1,9 @@
 package de.metas.shipper.gateway.dhl.model;
 
+import org.adempiere.model.ModelColumn;
+import org.compiere.model.I_M_Package;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for DHL_ShipmentOrder
  *  @author Adempiere (generated) 
@@ -1211,27 +1215,32 @@ public interface I_DHL_ShipmentOrder
     public static final String COLUMNNAME_PackageDescription = "PackageDescription";
 
 	/**
-	 * Set Paket-ID.
+	 * Set Package.
+	 * Shipment Package
 	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setPackageId (int PackageId);
+	void setM_Package_ID (int M_Package_ID);
 
 	/**
-	 * Get Paket-ID.
+	 * Get Package.
+	 * Shipment Package
 	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
+	 * <br>Type: Search
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getPackageId();
+	int getM_Package_ID();
 
-    /** Column definition for PackageId */
-    public static final org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object> COLUMN_PackageId = new org.adempiere.model.ModelColumn<I_DHL_ShipmentOrder, Object>(I_DHL_ShipmentOrder.class, "PackageId", null);
-    /** Column name PackageId */
-    public static final String COLUMNNAME_PackageId = "PackageId";
+	@Nullable
+	org.compiere.model.I_M_Package getM_Package();
+
+	void setM_Package(@Nullable org.compiere.model.I_M_Package M_Package);
+
+	ModelColumn<I_DHL_ShipmentOrder, I_M_Package> COLUMN_M_Package_ID = new ModelColumn<>(I_DHL_ShipmentOrder.class, "M_Package_ID", org.compiere.model.I_M_Package.class);
+	String COLUMNNAME_M_Package_ID = "M_Package_ID";
 
 	/**
 	 * Set PdfLabelData.

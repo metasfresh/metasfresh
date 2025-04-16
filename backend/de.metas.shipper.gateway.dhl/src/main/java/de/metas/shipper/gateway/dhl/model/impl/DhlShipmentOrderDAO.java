@@ -47,7 +47,7 @@ public class DhlShipmentOrderDAO implements IDhlShipmentOrderDAO
 
 		return DhlCustomDeliveryDataDetail.builder()
 				.awb(shipmentOrder.getawb())
-				.packageId(PackageId.ofRepoId(shipmentOrder.getPackageId()))
+				.packageId(PackageId.ofRepoId(shipmentOrder.getM_Package_ID()))
 				.trackingUrl(shipmentOrder.getTrackingURL())
 				.pdfLabelData(shipmentOrder.getPdfLabelData())
 				.internationalDelivery(shipmentOrder.isInternationalDelivery())
