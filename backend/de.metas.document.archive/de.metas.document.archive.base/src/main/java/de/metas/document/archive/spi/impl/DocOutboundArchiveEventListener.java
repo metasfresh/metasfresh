@@ -56,6 +56,8 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	private final AttachmentEntryService attachmentEntryService;
 	private final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry;
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
+	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 	public DocOutboundArchiveEventListener(
 			@NonNull final AttachmentEntryService attachmentEntryService,
@@ -127,10 +129,10 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 	@Override
 	public void onPrintOut(final I_AD_Archive archive,
-						   @Nullable final UserId userId,
-						   final String printerName,
-						   final int copies,
-						   @NonNull final ArchivePrintOutStatus status)
+			@Nullable final UserId userId,
+			final String printerName,
+			final int copies,
+			@NonNull final ArchivePrintOutStatus status)
 	{
 		// task 05334: only assume existing archive if the status is "success"
 		if (status.isSuccess())
@@ -157,6 +159,15 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		save(docOutboundLogLineRecord);
 	}
 
+	@Override
+	public void onVoidDocument(@NonNull final I_AD_Archive archive)
+	{
+		final TableRecordReference reference = DocOutboundDAO.extractRecordRef(archive);
+		final DocStatus docStatus = docActionBL.getDocStatusOrNull(reference);
+
+		docOutboundDAO.updateLogAndLinesDocStatus(reference, docStatus);
+	}
+
 	/**
 	 * We don't generate logs for archives without table IDs
 	 */
@@ -177,7 +188,6 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	@VisibleForTesting
 	I_C_Doc_Outbound_Log_Line createLogLine(@NonNull final I_AD_Archive archive)
 	{
-		final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
 		I_C_Doc_Outbound_Log docOutboundLogRecord = docOutboundDAO.retrieveLog(DocOutboundDAO.extractRecordRef(archive));
 
 		if (docOutboundLogRecord == null)
@@ -210,9 +220,6 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	 */
 	private I_C_Doc_Outbound_Log createLog(@NonNull final I_AD_Archive archiveRecord)
 	{
-		// Services
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-
 		final TableRecordReference reference = DocOutboundDAO.extractRecordRef(archiveRecord);
 		final int adTableId = reference.getAD_Table_ID();
 		final int recordId = reference.getRecord_ID();

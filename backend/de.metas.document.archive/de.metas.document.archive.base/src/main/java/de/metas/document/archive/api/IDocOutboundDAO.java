@@ -27,6 +27,7 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.postfinance.PostFinanceStatus;
+import de.metas.document.engine.DocStatus;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -90,4 +91,6 @@ public interface IDocOutboundDAO extends ISingletonService
 	 * Retrieves last created {@link I_C_Doc_Outbound_Log} for given bpartner and table
 	 */
 	I_C_Doc_Outbound_Log retrieveLog(final IContextAware contextProvider, int bpartnerId, int AD_Table_ID);
+
+	void updateLogAndLinesDocStatus(@NonNull TableRecordReference tableRecordReference, @Nullable DocStatus docStatus);
 }
