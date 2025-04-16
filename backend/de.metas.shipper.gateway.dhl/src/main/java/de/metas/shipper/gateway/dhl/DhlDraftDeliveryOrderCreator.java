@@ -66,7 +66,8 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 {
-	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
+	private static final BigDecimal DEFAULT_PACKAGE_WEIGHT_IN_KG = BigDecimal.ONE;
+	public static final int DHL_MAX_ACCEPTED_GROSS_WEIGHT = 30;
 
 	@NonNull private final DhlClientConfigRepository clientConfigRepository;
 
@@ -198,13 +199,14 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 		for(final CreateDraftDeliveryOrderRequest.PackageInfo packageInfo : packageInfos)
 		{
 			mpackageIds.add(packageInfo.getPackageId());
-			grossWeightKg += packageInfo.getWeightInKgOr(DEFAULT_PackageWeightInKg).setScale(0, RoundingMode.UP).intValueExact();
+			grossWeightKg += packageInfo.getWeightInKgOr(DEFAULT_PACKAGE_WEIGHT_IN_KG).setScale(0, RoundingMode.UP).intValueExact();
 		}
+		final int grossWeightKgToUse = Math.max(grossWeightKg, DHL_MAX_ACCEPTED_GROSS_WEIGHT); //client wants to pay overweight delivery fee rather than not being able to
 		
 		final DeliveryPosition deliveryPosition = DeliveryPosition.builder()
 				.numberOfPackages(packageInfos.size())
 				.packageIds(mpackageIds.build())
-				.grossWeightKg(grossWeightKg)
+				.grossWeightKg(grossWeightKgToUse)
 				.packageDimensions(packageDimensions)
 				.build();
 		
