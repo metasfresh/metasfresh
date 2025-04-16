@@ -28,10 +28,12 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Config;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.document.archive.postfinance.PostFinanceStatus;
+import de.metas.document.engine.DocStatus;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
@@ -59,7 +61,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 public class DocOutboundDAO implements IDocOutboundDAO
 {
 	public static final IQueryBL queryBL = Services.get(IQueryBL.class);
-	
+
 	// note that this method doesn't directly access the DB. Therefore, a unit test DAO implementation can extend this
 	// class without problems.
 	@Override
@@ -259,5 +261,37 @@ public class DocOutboundDAO implements IDocOutboundDAO
 	public I_C_Doc_Outbound_Config getConfigById(final int docOutboundConfigId)
 	{
 		return InterfaceWrapperHelper.load(docOutboundConfigId, I_C_Doc_Outbound_Config.class);
+	}
+
+	public void updateLogAndLinesDocStatus(@NonNull final TableRecordReference tableRecordReference, @Nullable final DocStatus docStatus)
+	{
+		updateLogDocStatus(tableRecordReference, docStatus);
+		updateLogLineDocStatus(tableRecordReference, docStatus);
+	}
+	
+	private void updateLogDocStatus(@NonNull final TableRecordReference tableRecordReference, @Nullable final DocStatus docStatus)
+	{
+		final ICompositeQueryUpdater<I_C_Doc_Outbound_Log> queryUpdater = queryBL.createCompositeQueryUpdater(I_C_Doc_Outbound_Log.class)
+				.addSetColumnValue(I_C_Doc_Outbound_Log.COLUMNNAME_DocStatus, DocStatus.toCodeOrNull(docStatus));
+
+		queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMNNAME_AD_Table_ID, tableRecordReference.getAdTableId())
+				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMN_Record_ID, tableRecordReference.getRecord_ID())
+				.create()
+				.update(queryUpdater);
+	}
+
+	private void updateLogLineDocStatus(@NonNull final TableRecordReference tableRecordReference, @Nullable final DocStatus docStatus)
+	{
+		final ICompositeQueryUpdater<I_C_Doc_Outbound_Log_Line> queryUpdaterLogLine = queryBL.createCompositeQueryUpdater(I_C_Doc_Outbound_Log_Line.class)
+				.addSetColumnValue(I_C_Doc_Outbound_Log_Line.COLUMNNAME_DocStatus, DocStatus.toCodeOrNull(docStatus));
+
+		queryBL.createQueryBuilder(I_C_Doc_Outbound_Log_Line.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Doc_Outbound_Log_Line.COLUMNNAME_AD_Table_ID, tableRecordReference.getAdTableId())
+				.addEqualsFilter(I_C_Doc_Outbound_Log_Line.COLUMN_Record_ID, tableRecordReference.getRecord_ID())
+				.create()
+				.update(queryUpdaterLogLine);
 	}
 }
