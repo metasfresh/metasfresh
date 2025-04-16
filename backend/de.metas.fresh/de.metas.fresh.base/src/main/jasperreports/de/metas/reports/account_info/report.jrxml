@@ -670,7 +670,7 @@ ORDER BY param_acct_name, dateacct, unionorder
 				<textFieldExpression><![CDATA["("]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="488" y="9" width="32" height="6" isRemoveLineWhenBlank="true" uuid="81080e5e-133d-40ae-8ad6-11672137eb91">
+				<reportElement positionType="Float" x="488" y="9" width="34" height="6" isRemoveLineWhenBlank="true" uuid="81080e5e-133d-40ae-8ad6-11672137eb91">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" ) && $F{sourcebalance_currency1}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -679,7 +679,7 @@ ORDER BY param_acct_name, dateacct, unionorder
 				<textFieldExpression><![CDATA[$F{unionorder}.intValue() == 1 ?  $F{beginingbalance1} :  $F{sourcebalance1}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="519" y="9" width="15" height="6" isRemoveLineWhenBlank="true" uuid="69771371-b4ac-4196-8e4d-96b91be311d5">
+				<reportElement positionType="Float" x="521" y="9" width="15" height="6" isRemoveLineWhenBlank="true" uuid="69771371-b4ac-4196-8e4d-96b91be311d5">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" ) && $F{sourcebalance_currency1}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -697,7 +697,7 @@ ORDER BY param_acct_name, dateacct, unionorder
 				<textFieldExpression><![CDATA["("]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="488" y="15" width="32" height="6" isRemoveLineWhenBlank="true" uuid="fd9be128-ea82-4694-97c8-9fe758b728ba">
+				<reportElement positionType="Float" x="488" y="15" width="34" height="6" isRemoveLineWhenBlank="true" uuid="fd9be128-ea82-4694-97c8-9fe758b728ba">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" ) && $F{sourcebalance_currency2}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -706,7 +706,7 @@ ORDER BY param_acct_name, dateacct, unionorder
 				<textFieldExpression><![CDATA[$F{unionorder}.intValue() == 1 ?  $F{beginingbalance2} : $F{sourcebalance2}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="519" y="15" width="15" height="6" isRemoveLineWhenBlank="true" uuid="a58e3e42-33b3-4ca2-b53c-5573aa87a4c1">
+				<reportElement positionType="Float" x="521" y="15" width="15" height="6" isRemoveLineWhenBlank="true" uuid="a58e3e42-33b3-4ca2-b53c-5573aa87a4c1">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" ) && $F{sourcebalance_currency2}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -724,7 +724,7 @@ ORDER BY param_acct_name, dateacct, unionorder
 				<textFieldExpression><![CDATA["("]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="488" y="21" width="32" height="6" isRemoveLineWhenBlank="true" uuid="313250bf-6a04-475c-96f0-a4c2a26dd3f6">
+				<reportElement positionType="Float" x="488" y="21" width="34" height="6" isRemoveLineWhenBlank="true" uuid="313250bf-6a04-475c-96f0-a4c2a26dd3f6">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" ) && $F{sourcebalance_currency3}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -733,7 +733,7 @@ ORDER BY param_acct_name, dateacct, unionorder
 				<textFieldExpression><![CDATA[$F{unionorder}.intValue() == 1 ?  $F{beginingbalance3} : $F{sourcebalance3}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="519" y="21" width="15" height="6" isRemoveLineWhenBlank="true" uuid="924952ea-c0d8-47cc-9243-6a1dc6474c98">
+				<reportElement positionType="Float" x="521" y="21" width="15" height="6" isRemoveLineWhenBlank="true" uuid="924952ea-c0d8-47cc-9243-6a1dc6474c98">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" ) && $F{sourcebalance_currency3}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -742,7 +742,7 @@ ORDER BY param_acct_name, dateacct, unionorder
 				<textFieldExpression><![CDATA[$F{sourcebalance_currency3}+")"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="519" y="27" width="15" height="6" isRemoveLineWhenBlank="true" uuid="9638f66b-9e02-4b55-a4f7-8035d4347b41">
+				<reportElement positionType="Float" x="521" y="27" width="15" height="6" isRemoveLineWhenBlank="true" uuid="9638f66b-9e02-4b55-a4f7-8035d4347b41">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" ) && $F{sourcebalance_currency4}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -751,7 +751,7 @@ ORDER BY param_acct_name, dateacct, unionorder
 				<textFieldExpression><![CDATA[$F{sourcebalance_currency4}+")"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="519" y="33" width="15" height="6" isRemoveLineWhenBlank="true" uuid="1f0a9278-8f6d-4ef6-9f12-cbad6a400c57">
+				<reportElement positionType="Float" x="521" y="33" width="15" height="6" isRemoveLineWhenBlank="true" uuid="1f0a9278-8f6d-4ef6-9f12-cbad6a400c57">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" ) && $F{sourcebalance_currency5}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -760,7 +760,7 @@ ORDER BY param_acct_name, dateacct, unionorder
 				<textFieldExpression><![CDATA[$F{sourcebalance_currency5}+")"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="488" y="33" width="32" height="6" isRemoveLineWhenBlank="true" uuid="491ae793-d715-434d-874a-4aaa94226c7f">
+				<reportElement positionType="Float" x="488" y="33" width="34" height="6" isRemoveLineWhenBlank="true" uuid="491ae793-d715-434d-874a-4aaa94226c7f">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" ) && $F{sourcebalance_currency5}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -769,7 +769,7 @@ ORDER BY param_acct_name, dateacct, unionorder
 				<textFieldExpression><![CDATA[$F{unionorder}.intValue() == 1 ?  $F{beginingbalance5} : $F{sourcebalance5}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement positionType="Float" x="488" y="27" width="32" height="6" isRemoveLineWhenBlank="true" uuid="8a5ee8a9-e09a-417b-8584-5dc77535a3d6">
+				<reportElement positionType="Float" x="488" y="27" width="34" height="6" isRemoveLineWhenBlank="true" uuid="8a5ee8a9-e09a-417b-8584-5dc77535a3d6">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" ) && $F{sourcebalance_currency4}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right">
@@ -850,49 +850,49 @@ ORDER BY param_acct_name, dateacct, unionorder
 				<textFieldExpression><![CDATA[$F{source_currency}+")"]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="535" y="9" width="8" height="6" uuid="aeb10aef-8cec-4db4-9d09-66b6bc2f1fe7">
+				<reportElement x="537" y="9" width="5" height="6" uuid="aeb10aef-8cec-4db4-9d09-66b6bc2f1fe7">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" ) && $F{sourcebalance_currency1}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement>
-					<font fontName="DejaVu Sans Mono" size="5"/>
+					<font fontName="Arial" size="4"/>
 				</textElement>
-				<text><![CDATA[─┘]]></text>
+				<text><![CDATA[_|]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="535" y="15" width="8" height="6" uuid="213ed862-a3a0-4270-9d51-e7a7d2f398c0">
+				<reportElement x="537" y="15" width="5" height="6" uuid="213ed862-a3a0-4270-9d51-e7a7d2f398c0">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" ) && $F{sourcebalance_currency2}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement>
-					<font fontName="DejaVu Sans Mono" size="5"/>
+					<font fontName="Arial" size="4"/>
 				</textElement>
-				<text><![CDATA[─┘]]></text>
+				<text><![CDATA[_|]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="535" y="21" width="8" height="6" uuid="0c6f9b50-8bfb-467b-8907-8dd91265e9f3">
+				<reportElement x="537" y="21" width="5" height="6" uuid="0c6f9b50-8bfb-467b-8907-8dd91265e9f3">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" ) && $F{sourcebalance_currency3}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement>
-					<font fontName="DejaVu Sans Mono" size="5"/>
+					<font fontName="Arial" size="4"/>
 				</textElement>
-				<text><![CDATA[─┘]]></text>
+				<text><![CDATA[_|]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="535" y="27" width="8" height="6" uuid="31e03865-f1e4-4822-9fc2-d6bc842c93cc">
+				<reportElement x="537" y="27" width="5" height="6" uuid="31e03865-f1e4-4822-9fc2-d6bc842c93cc">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" ) && $F{sourcebalance_currency4}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement>
-					<font fontName="DejaVu Sans Mono" size="5"/>
+					<font fontName="Arial" size="4"/>
 				</textElement>
-				<text><![CDATA[─┘]]></text>
+				<text><![CDATA[_|]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="535" y="33" width="8" height="6" uuid="e1942775-95b4-430c-9858-bba60f63dc6b">
+				<reportElement x="537" y="33" width="5" height="6" uuid="e1942775-95b4-430c-9858-bba60f63dc6b">
 					<printWhenExpression><![CDATA[$P{showCurrencyExchange}.equals( "Y" ) && $F{sourcebalance_currency5}!=null]]></printWhenExpression>
 				</reportElement>
 				<textElement>
-					<font fontName="DejaVu Sans Mono" size="5"/>
+					<font fontName="DejaVu Sans Mono" size="4"/>
 				</textElement>
-				<text><![CDATA[─┘]]></text>
+				<text><![CDATA[_|]]></text>
 			</staticText>
 		</band>
 		<band height="10">
