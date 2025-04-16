@@ -57,6 +57,8 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	private final AttachmentEntryService attachmentEntryService;
 	private final DocOutboundLogMailRecipientRegistry docOutboundLogMailRecipientRegistry;
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IDocOutboundDAO docOutboundDAO = Services.get(IDocOutboundDAO.class);
+	private final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
 
 	public DocOutboundArchiveEventListener(
 			@NonNull final AttachmentEntryService attachmentEntryService,
@@ -158,6 +160,15 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 		save(docOutboundLogLineRecord);
 	}
 
+	@Override
+	public void onVoidDocument(@NonNull final I_AD_Archive archive)
+	{
+		final TableRecordReference reference = TableRecordReference.ofReferenced(archive);
+		final DocStatus docStatus = docActionBL.getDocStatusOrNull(reference);
+
+		docOutboundDAO.updateLogAndLinesDocStatus(reference, docStatus);
+	}
+
 	/**
 	 * We don't generate logs for archives without table IDs
 	 */
@@ -178,7 +189,7 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	I_C_Doc_Outbound_Log_Line createLogLine(@NonNull final I_AD_Archive archive)
 	{
 		final ArchiveId archiveId = ArchiveId.ofRepoId(archive.getAD_Archive_ID());
-		I_C_Doc_Outbound_Log docOutboundLogRecord = Services.get(IDocOutboundDAO.class).retrieveLog(archiveId);
+		I_C_Doc_Outbound_Log docOutboundLogRecord = docOutboundDAO.retrieveLog(archiveId);
 
 		if (docOutboundLogRecord == null)
 		{
@@ -210,9 +221,6 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 	 */
 	private I_C_Doc_Outbound_Log createLog(@NonNull final I_AD_Archive archiveRecord)
 	{
-		// Services
-		final IDocumentBL docActionBL = Services.get(IDocumentBL.class);
-
 		final TableRecordReference reference = TableRecordReference.ofReferenced(archiveRecord);
 
 		final int adTableId = reference.getAD_Table_ID();
