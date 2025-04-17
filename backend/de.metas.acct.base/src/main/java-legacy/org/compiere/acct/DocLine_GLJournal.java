@@ -6,11 +6,13 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_GL_JournalLine;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /*
@@ -37,42 +39,35 @@ import java.math.BigDecimal;
 
 class DocLine_GLJournal extends DocLine<Doc_GLJournal>
 {
-	@Getter
-	private final int groupNo;
+	@Getter private final int groupNo;
+	@Getter @Setter private AcctSchemaId acctSchemaId;
+	@Getter @Setter private BigDecimal fixedCurrencyRate;
+	@Getter private Account account;
+	@Nullable @Setter private ProductId productId;
+	@Nullable @Setter private OrderId salesOrderId;
 
-	@Getter
-	@Setter
-	private AcctSchemaId acctSchemaId;
-
-	@Getter
-	@Setter
-	private BigDecimal fixedCurrencyRate;
-
-	private Account account = null;
-
-	@Getter
-	@Setter
-	private ProductId productId;
-
-	@Getter
-	@Setter
-	private OrderId orderId;
-
-	public DocLine_GLJournal(final I_GL_JournalLine glJournalLine, final Doc_GLJournal doc)
+	DocLine_GLJournal(@NonNull final I_GL_JournalLine glJournalLine, @NonNull final Doc_GLJournal doc)
 	{
 		super(InterfaceWrapperHelper.getPO(glJournalLine), doc);
 		groupNo = glJournalLine.getGL_JournalLine_Group();
 		fixedCurrencyRate = glJournalLine.getCurrencyRate();
 	}
 
-	public final void setAccount(final I_C_ValidCombination acct)
+	final void setAccount(@NonNull final I_C_ValidCombination acct)
 	{
-		account = Account.ofId(AccountId.ofRepoId(acct.getC_ValidCombination_ID()));
+		setAccount(Account.ofId(AccountId.ofRepoId(acct.getC_ValidCombination_ID())));
 	}
 
-	public final Account getAccount()
+	final void setAccount(@NonNull final Account account)
 	{
-		return account;
-	}   // getAccount
+		this.account = account;
+	}
 
+	@Override
+	@Nullable
+	public ProductId getProductId() {return productId;}
+
+	@Nullable
+	@Override
+	protected OrderId getSalesOrderId() {return salesOrderId;}
 }

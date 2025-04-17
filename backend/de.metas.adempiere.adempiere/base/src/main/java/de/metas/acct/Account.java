@@ -48,15 +48,15 @@ public final class Account
 	}
 
 	@NonNull
-	public static Account of(@NonNull final AccountId accountId, @NonNull final AccountConceptualName accountConceptualName)
+	public static Account of(@NonNull final AccountId accountId, @Nullable final AccountConceptualName accountConceptualName)
 	{
 		return new Account(accountId, accountConceptualName);
 	}
 
 	@NonNull
-	public static Account of(@NonNull final AccountId accountId, @NonNull final String accountConceptualName)
+	public static Account of(@NonNull final AccountId accountId, @Nullable final String accountConceptualName)
 	{
-		return new Account(accountId, AccountConceptualName.ofString(accountConceptualName));
+		return new Account(accountId, AccountConceptualName.ofNullableString(accountConceptualName));
 	}
 
 	@NonNull
@@ -77,5 +77,4 @@ public final class Account
 	{
 		return new Account(accountId, null);
 	}
-
 }

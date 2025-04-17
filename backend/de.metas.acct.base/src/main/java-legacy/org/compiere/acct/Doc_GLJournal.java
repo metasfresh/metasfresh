@@ -1,6 +1,8 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.Account;
+import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
@@ -13,6 +15,8 @@ import de.metas.currency.FixedConversionRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMDAO;
@@ -116,9 +120,9 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 			docLineDR.setAmount(glJournalLine.getAmtSourceDr(), BigDecimal.ZERO);
 			docLineDR.setC_ConversionType_ID(glJournalLine.getC_ConversionType_ID());
 			docLineDR.setConvertedAmt(glJournalLine.getAmtAcctDr(), BigDecimal.ZERO);
-			docLineDR.setAccount(glJournalLine.getAccount_DR());
-
-
+			docLineDR.setAccount(Account.of(AccountId.ofRepoId(glJournalLine.getAccount_DR_ID()), glJournalLine.getDR_AccountConceptualName()));
+			docLineDR.setProductId(ProductId.ofRepoIdOrNull(glJournalLine.getDR_M_Product_ID()));
+			docLineDR.setSalesOrderId(OrderId.ofRepoIdOrNull(glJournalLine.getDR_C_Order_ID()));
 			docLines.add(docLineDR);
 		}
 		if (glJournalLine.isAllowAccountCR())
@@ -127,8 +131,9 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 			docLineCR.setAmount(BigDecimal.ZERO, glJournalLine.getAmtSourceCr());
 			docLineCR.setC_ConversionType_ID(glJournalLine.getC_ConversionType_ID());
 			docLineCR.setConvertedAmt(BigDecimal.ZERO, glJournalLine.getAmtAcctCr());
-			docLineCR.setAccount(glJournalLine.getAccount_CR());
-
+			docLineCR.setAccount(Account.of(AccountId.ofRepoId(glJournalLine.getAccount_CR_ID()), glJournalLine.getCR_AccountConceptualName()));
+			docLineCR.setProductId(ProductId.ofRepoIdOrNull(glJournalLine.getCR_M_Product_ID()));
+			docLineCR.setSalesOrderId(OrderId.ofRepoIdOrNull(glJournalLine.getCR_C_Order_ID()));
 			docLines.add(docLineCR);
 		}
 
@@ -232,11 +237,6 @@ public class Doc_GLJournal extends Doc<DocLine_GLJournal>
 		return Quantity.of(glJournalLine.getQty(), uom);
 	}
 
-	/**************************************************************************
-	 * Get Source Currency Balance - subtracts line and tax amounts from total - no rounding
-	 *
-	 * @return positive amount, if total invoice is bigger than lines
-	 */
 	@Override
 	public BigDecimal getBalance()
 	{
