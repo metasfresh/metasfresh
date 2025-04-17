@@ -143,7 +143,8 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsAllowAnyCustomer = "IsAllowAnyCustomer";
 
 	/**
-	 * Set Allow Partial Picking Completion.
+	 * Set Allow completing partial picking jobs.
+	 * Users can complete jobs on mobile without picking the full ordered quantity.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -152,7 +153,8 @@ public interface I_MobileUI_UserProfile_Picking
 	void setIsAllowCompletingPartialPickingJob (boolean IsAllowCompletingPartialPickingJob);
 
 	/**
-	 * Get Allow Partial Picking Completion.
+	 * Get Allow completing partial picking jobs.
+	 * Users can complete jobs on mobile without picking the full ordered quantity.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

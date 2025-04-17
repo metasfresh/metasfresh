@@ -38,11 +38,7 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean allowCompletingPartialPickingJob;
 		@Nullable Boolean pickWithNewLU;
 		@Nullable Boolean allowNewTU;
-<<<<<<< HEAD
-=======
 		@Nullable Boolean allowSkippingRejectedReason;
-		@Nullable Boolean filterByQRCode;
->>>>>>> 99b3360b24 (MobileUI Picking - fix picking line stauts (#20480))
 
 		@Nullable List<Customer> customers;
 

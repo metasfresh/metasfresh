@@ -96,11 +96,7 @@ public class MobileConfigCommand
 				.alwaysSplitHUsEnabled(profile.getDefaultPickingJobOptions().isAlwaysSplitHUsEnabled())
 				.pickWithNewLU(profile.getDefaultPickingJobOptions().isPickWithNewLU())
 				.allowNewTU(profile.getDefaultPickingJobOptions().isAllowNewTU())
-<<<<<<< HEAD
-=======
-				.filterByQRCode(profile.isFilterByBarcode())
 				.allowCompletingPartialPickingJob(profile.getDefaultPickingJobOptions().isAllowCompletingPartialPickingJob())
->>>>>>> 99b3360b24 (MobileUI Picking - fix picking line stauts (#20480))
 				.build();
 	}
 
