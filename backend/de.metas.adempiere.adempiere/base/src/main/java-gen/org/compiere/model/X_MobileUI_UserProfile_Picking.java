@@ -198,7 +198,7 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public boolean isShowLastPickedBestBeforeDateForLines() 
+	public boolean isShowLastPickedBestBeforeDateForLines()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsShowLastPickedBestBeforeDateForLines);
 	}
