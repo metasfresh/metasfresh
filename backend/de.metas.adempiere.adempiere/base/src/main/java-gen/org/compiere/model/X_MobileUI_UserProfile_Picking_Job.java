@@ -72,6 +72,18 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	}
 
 	@Override
+	public void setIsAllowCompletingPartialPickingJob (final boolean IsAllowCompletingPartialPickingJob)
+	{
+		set_Value (COLUMNNAME_IsAllowCompletingPartialPickingJob, IsAllowCompletingPartialPickingJob);
+	}
+
+	@Override
+	public boolean isAllowCompletingPartialPickingJob()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowCompletingPartialPickingJob);
+	}
+
+	@Override
 	public void setIsAllowNewTU (final boolean IsAllowNewTU)
 	{
 		set_Value (COLUMNNAME_IsAllowNewTU, IsAllowNewTU);

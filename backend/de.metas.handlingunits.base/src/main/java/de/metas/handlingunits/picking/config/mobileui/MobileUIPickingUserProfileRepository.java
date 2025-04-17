@@ -289,6 +289,7 @@ public class MobileUIPickingUserProfileRepository
 				.isAllowSkippingRejectedReason(record.isAllowSkippingRejectedReason())
 				.isShowConfirmationPromptWhenOverPick(record.isShowConfirmationPromptWhenOverPick())
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(record.getCreateShipmentPolicy()))
+				.isAllowCompletingPartialPickingJob(record.isAllowCompletingPartialPickingJob())
 				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(record.getPickingLineGroupBy()))
 				.pickingLineSortBy(PickingLineSortBy.ofNullableCode(record.getPickingLineSortBy()))
 				.build();
