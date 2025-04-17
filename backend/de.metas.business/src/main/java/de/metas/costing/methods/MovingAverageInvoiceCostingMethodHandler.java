@@ -66,6 +66,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOutLine;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 @Component
@@ -300,7 +301,7 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 
 	private CostDetailCreateResult createCostDetailAndAdjustCurrentCosts(final CostDetailCreateRequest request)
 	{
-		final CostAmount explicitCostPrice = request.getExplicitCostPrice();
+		@Nullable final CostAmount explicitCostPrice = request.getExplicitCostPrice();
 
 		final CurrentCost currentCosts = utils.getCurrentCost(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
@@ -362,11 +363,20 @@ public class MovingAverageInvoiceCostingMethodHandler extends CostingMethodHandl
 		// Outbound transactions (qty < 0)
 		else
 		{
-			final CostPrice price = currentCosts.getCostPrice();
+			final CostAmount price = explicitCostPrice != null
+					? explicitCostPrice
+					: currentCosts.getCostPrice().toCostAmount();
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
 			requestEffective = request.withAmountAndQty(amt, qty);
 
-			currentCosts.addToCurrentQtyAndCumulate(qty, amt);
+			if (explicitCostPrice != null)
+			{
+				currentCosts.addWeightedAverage(amt, qty, utils.getQuantityUOMConverter());
+			}
+			else
+			{
+				currentCosts.addToCurrentQtyAndCumulate(qty, amt);
+			}
 		}
 
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(requestEffective, previousCosts);

@@ -41,6 +41,3 @@ DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=569089
 DELETE FROM AD_Column WHERE AD_Column_ID=569089
 ;
 
-ALTER TABLE DHL_ShipmentOrder
-    DROP COLUMN PackageId
-;
