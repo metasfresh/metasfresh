@@ -30,6 +30,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
@@ -302,7 +303,7 @@ public class AdempiereException extends RuntimeException
 		this(message, true);
 	}
 
-	public AdempiereException(@NonNull final ITranslatableString message,final boolean userValidationError)
+	public AdempiereException(@NonNull final ITranslatableString message, final boolean userValidationError)
 	{
 		// when this constructor is called, usually we have nice error messages,
 		// so we can consider those user-friendly errors
@@ -688,6 +689,12 @@ public class AdempiereException extends RuntimeException
 	public final Object getParameter(@NonNull final String name)
 	{
 		return parameters != null ? Null.unbox(parameters.get(name)) : null;
+	}
+
+	@Nullable
+	public final String getParameterAsString(@NonNull final String name)
+	{
+		return Objects.toString(getParameter(name), null);
 	}
 
 	public final Map<String, Object> getParameters()
