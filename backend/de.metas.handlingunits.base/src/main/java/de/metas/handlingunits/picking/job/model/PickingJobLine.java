@@ -163,20 +163,22 @@ public class PickingJobLine
 			this.qtyRemainingToPickTUs = null;
 		}
 
-		this.progress = computeProgress(this.steps, this.isManuallyClosed);
+		this.progress = computeProgress(this.isManuallyClosed, this.qtyToPick, this.qtyPicked);
 	}
 
 	public BPartnerId getCustomerId() {return this.deliveryBPLocationId.getBpartnerId();}
 
-	private static PickingJobProgress computeProgress(@NonNull final ImmutableList<PickingJobStep> steps, final boolean isManuallyClosed)
+	private static PickingJobProgress computeProgress(final boolean isManuallyClosed, final Quantity qtyToPick, final Quantity qtyPicked)
 	{
-		if (isManuallyClosed)
+		if (isManuallyClosed || qtyPicked.compareTo(qtyToPick) >= 0)
 		{
 			return PickingJobProgress.DONE;
 		}
-
-		final ImmutableSet<PickingJobProgress> stepProgresses = steps.stream().map(PickingJobStep::getProgress).collect(ImmutableSet.toImmutableSet());
-		return PickingJobProgress.reduce(stepProgresses);
+		if (qtyPicked.isPositive())
+		{
+			return PickingJobProgress.IN_PROGRESS;
+		}
+		return PickingJobProgress.NOT_STARTED;
 	}
 
 	public I_C_UOM getUOM() {return qtyToPick.getUOM();}

@@ -22,6 +22,7 @@ public class PickingJobOptions
 	boolean considerSalesOrderCapacity;
 	boolean isAllowSkippingRejectedReason;
 	boolean isShowConfirmationPromptWhenOverPick;
+	boolean isAllowCompletingPartialPickingJob;
 	@NonNull CreateShipmentPolicy createShipmentPolicy;
 	@Nullable PickingLineGroupBy pickingLineGroupBy;
 	@Nullable PickingLineSortBy pickingLineSortBy;
@@ -37,6 +38,7 @@ public class PickingJobOptions
 			final boolean considerSalesOrderCapacity,
 			final boolean isAllowSkippingRejectedReason,
 			final boolean isShowConfirmationPromptWhenOverPick,
+			final boolean isAllowCompletingPartialPickingJob,
 			@NonNull final CreateShipmentPolicy createShipmentPolicy,
 			@Nullable final PickingLineGroupBy pickingLineGroupBy,
 			@Nullable final PickingLineSortBy pickingLineSortBy)
@@ -50,6 +52,7 @@ public class PickingJobOptions
 		this.considerSalesOrderCapacity = considerSalesOrderCapacity;
 		this.isAllowSkippingRejectedReason = isAllowSkippingRejectedReason;
 		this.isShowConfirmationPromptWhenOverPick = isShowConfirmationPromptWhenOverPick;
+		this.isAllowCompletingPartialPickingJob = isAllowCompletingPartialPickingJob;
 		this.createShipmentPolicy = createShipmentPolicy;
 		this.pickingLineGroupBy = pickingLineGroupBy;
 		this.pickingLineSortBy = pickingLineSortBy;

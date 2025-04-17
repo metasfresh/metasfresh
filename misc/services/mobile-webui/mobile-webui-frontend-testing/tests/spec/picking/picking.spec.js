@@ -7,8 +7,9 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { expectErrorToast } from '../../utils/common';
+import { QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQuantityDialog';
 
-const createMasterdata = async () => {
+const createMasterdata = async ({ allowCompletingPartialPickingJob } = {}) => {
     const response = await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -23,6 +24,7 @@ const createMasterdata = async () => {
                     allowPickingAnyHU: true,
                     pickWithNewLU: true,
                     allowNewTU: false,
+                    allowCompletingPartialPickingJob: allowCompletingPartialPickingJob ?? false,
                 }
             },
             bpartners: { "BP1": {} },
@@ -117,4 +119,82 @@ test('Scan invalid picking slot QR code', async ({ page }) => {
     await expectErrorToast('Invalid QR code', async () => {
         await PickingJobScreen.scanPickingSlot({ qrCode: 'invalid QR code' });
     });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Test picking line complete status - draft | in progress | complete', async ({ page }) => {
+    const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } = await createMasterdata();
+
+    await LoginScreen.login(login);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(documentNo);
+    await PickingJobsListScreen.startJob({ documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
+    await PickingJobScreen.setTargetLU({ lu: luPIName });
+
+    await PickingJobScreen.expectLineStatusColor({ index: 1, color: 'red' });
+
+    await PickingJobScreen.pickHU({ qrCode: huQRCode, qtyEntered: '2', expectQtyEntered: '3', qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND });
+
+    await PickingJobScreen.expectLineStatusColor({ index: 1, color: 'yellow' });
+
+    await PickingJobScreen.pickHU({ qrCode: huQRCode, qtyEntered: '1', expectQtyEntered: '0' });
+
+    await PickingJobScreen.expectLineStatusColor({ index: 1, color: 'green' });
+
+    await PickingJobScreen.complete();
+});
+
+test.describe('Picking Job Completion', () => {
+
+    test("Should fail when partial picking and allowCompletingPartialPickingJob = N", async ({ page }) => {
+      const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } =
+        await createMasterdata({
+          allowCompletingPartialPickingJob: false,
+        });
+
+      await LoginScreen.login(login);
+      await ApplicationsListScreen.expectVisible();
+      await ApplicationsListScreen.startApplication("picking");
+      await PickingJobsListScreen.waitForScreen();
+      await PickingJobsListScreen.filterByDocumentNo(documentNo);
+      await PickingJobsListScreen.startJob({ documentNo });
+      await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
+      await PickingJobScreen.setTargetLU({ lu: luPIName });
+      await PickingJobScreen.pickHU({
+        qrCode: huQRCode,
+        qtyEntered: 2,
+        expectQtyEntered: "3",
+        qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND
+      });
+        await expectErrorToast('All steps must be completed in order to complete the job.', async () => {
+            await PickingJobScreen.complete();
+        });
+    });
+
+    test("Should succeed when partial picking and allowCompletingPartialPickingJob = Y", async ({ page }) => {
+        const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } =
+          await createMasterdata({
+            allowCompletingPartialPickingJob: true,
+          });
+
+        await LoginScreen.login(login);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication("picking");
+        await PickingJobsListScreen.waitForScreen();
+        await PickingJobsListScreen.filterByDocumentNo(documentNo);
+        await PickingJobsListScreen.startJob({ documentNo });
+        await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
+        await PickingJobScreen.setTargetLU({ lu: luPIName });
+        await PickingJobScreen.pickHU({
+            qrCode: huQRCode,
+            qtyEntered: 2,
+            expectQtyEntered: "3",
+            qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND,
+        });
+        await PickingJobScreen.complete()
+    });
+
 });

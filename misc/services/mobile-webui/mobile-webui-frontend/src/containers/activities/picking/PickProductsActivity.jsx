@@ -86,6 +86,7 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
               return (
                 <ButtonWithIndicator
                   id={`line-${groupIndex}-${lineIndex}-button`}
+                  testId={`line-${groupIndex}-${lineIndex}-button`}
                   key={lineId}
                   caption={line.caption}
                   completeStatus={line.completeStatus || CompleteStatus.NOT_STARTED}
