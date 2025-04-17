@@ -6,6 +6,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -13,8 +14,16 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class AccountConceptualName implements Comparable<AccountConceptualName>
 {
 	private final String name;
-
 	private static final ConcurrentHashMap<String, AccountConceptualName> cache = new ConcurrentHashMap<>();
+
+	public static final AccountConceptualName P_Asset_Acct = new AccountConceptualName("P_Asset_Acct");
+
+	static
+	{
+		//noinspection ArraysAsListWithZeroOrOneArgument
+		Arrays.asList(P_Asset_Acct)
+				.forEach(acctConceptualName -> cache.put(acctConceptualName.getAsString(), acctConceptualName));
+	}
 
 	private AccountConceptualName(@NonNull final String name) {this.name = name;}
 
