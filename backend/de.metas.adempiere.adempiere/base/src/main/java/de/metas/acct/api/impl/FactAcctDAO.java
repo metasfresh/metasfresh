@@ -6,7 +6,6 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.FactAcctId;
 import de.metas.acct.api.FactAcctQuery;
 import de.metas.acct.api.IFactAcctDAO;
-import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.open_items.FAOpenItemTrxInfo;
 import de.metas.document.engine.IDocument;
 import de.metas.util.Services;
@@ -40,7 +39,7 @@ public class FactAcctDAO implements IFactAcctDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
+	// private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
 
 	private static final String ACCOUNTCONCEPTUALNAME_NULL_MARKER = "NOTSET";
 
@@ -63,8 +62,7 @@ public class FactAcctDAO implements IFactAcctDAO
 				.create()
 				.deleteDirectly();
 
-		factAcctListenersService.fireAfterUnpost(document);
-
+		// factAcctListenersService.fireAfterUnpost(document);
 	}
 
 	@Override
@@ -76,8 +74,7 @@ public class FactAcctDAO implements IFactAcctDAO
 				.create()
 				.deleteDirectly();
 
-		factAcctListenersService.fireAfterUnpost(documentObj);
-
+		// factAcctListenersService.fireAfterUnpost(documentObj);
 	}
 
 	@Override
@@ -89,8 +86,7 @@ public class FactAcctDAO implements IFactAcctDAO
 				.create()
 				.deleteDirectly();
 
-		factAcctListenersService.fireAfterUnpost(recordRef);
-
+		// factAcctListenersService.fireAfterUnpost(recordRef);
 	}
 
 	@Override

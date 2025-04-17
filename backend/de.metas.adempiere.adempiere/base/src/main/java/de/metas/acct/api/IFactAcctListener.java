@@ -46,10 +46,10 @@ public interface IFactAcctListener
 	 */
 	void onAfterPost(final Object document);
 
-	/**
-	 * Called after document's {@link I_Fact_Acct} records were deleted.
-	 * 
-	 * @param document
-	 */
-	void onAfterUnpost(final Object document);
+	// /**
+	//  * Called after document's {@link I_Fact_Acct} records were deleted.
+	//  * 
+	//  * @param document
+	//  */
+	// void onAfterUnpost(final Object document);
 }
