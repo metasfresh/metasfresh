@@ -43,7 +43,7 @@ public class PP_OrderCandidate_PP_Order
 	private void propagateQtyProcessed(@NonNull final I_PP_OrderCandidate_PP_Order ppOrderAllocation)
 	{
 		final PPOrderCandidateId ppOrderCandidateId = PPOrderCandidateId.ofRepoId(ppOrderAllocation.getPP_Order_Candidate_ID());
-		ppOrderCandidateService.updateOrderCandidateById(ppOrderCandidateId);
+		ppOrderCandidateService.updateOrderCandidateBeforeCommit(ppOrderCandidateId);
 	}
 
 }
