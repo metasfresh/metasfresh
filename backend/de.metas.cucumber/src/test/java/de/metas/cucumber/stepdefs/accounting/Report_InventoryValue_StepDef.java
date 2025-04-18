@@ -14,6 +14,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,9 +41,13 @@ public class Report_InventoryValue_StepDef
 		SharedTestContext.put("response", InventoryValuationResponseToTabularStringConverter.toTabularString(response));
 		final InventoryValue inventoryValue = response.getSingleLine();
 
-		row.getAsOptionalBigDecimal("Qty").ifPresent(qty -> assertThat(inventoryValue.getQty()).as("Qty").isEqualByComparingTo(qty));
-		row.getAsOptionalBigDecimal("TotalAmt").ifPresent(totalAmt -> assertThat(inventoryValue.getTotalAmt()).as("TotalAmt").isEqualByComparingTo(totalAmt));
-		row.getAsOptionalBigDecimal("CostPrice").ifPresent(costPrice -> assertThat(inventoryValue.getCostPrice()).as("CostPrice").isEqualByComparingTo(costPrice));
+		final SoftAssertions softly = new SoftAssertions();
+
+		row.getAsOptionalBigDecimal("Qty").ifPresent(qty -> softly.assertThat(inventoryValue.getQty()).as("Qty").isEqualByComparingTo(qty));
+		row.getAsOptionalBigDecimal("TotalAmt").ifPresent(totalAmt -> softly.assertThat(inventoryValue.getTotalAmt()).as("TotalAmt").isEqualByComparingTo(totalAmt));
+		row.getAsOptionalBigDecimal("CostPrice").ifPresent(costPrice -> softly.assertThat(inventoryValue.getCostPrice()).as("CostPrice").isEqualByComparingTo(costPrice));
+		
+		softly.assertAll();
 	}
 
 	private InventoryValuationRequest extractInventoryValuationRequest(final DataTableRow row)
