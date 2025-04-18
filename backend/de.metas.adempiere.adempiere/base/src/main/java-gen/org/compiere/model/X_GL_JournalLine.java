@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_GL_JournalLine extends org.compiere.model.PO implements I_GL_JournalLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1135221516L;
+	private static final long serialVersionUID = -1922484396L;
 
     /** Standard Constructor */
     public X_GL_JournalLine (final Properties ctx, final int GL_JournalLine_ID, @Nullable final String trxName)
@@ -347,6 +347,21 @@ public class X_GL_JournalLine extends org.compiere.model.PO implements I_GL_Jour
 	}
 
 	@Override
+	public void setCR_Locator_ID (final int CR_Locator_ID)
+	{
+		if (CR_Locator_ID < 1) 
+			set_Value (COLUMNNAME_CR_Locator_ID, null);
+		else 
+			set_Value (COLUMNNAME_CR_Locator_ID, CR_Locator_ID);
+	}
+
+	@Override
+	public int getCR_Locator_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_CR_Locator_ID);
+	}
+
+	@Override
 	public void setCR_M_Product_ID (final int CR_M_Product_ID)
 	{
 		if (CR_M_Product_ID < 1) 
@@ -550,6 +565,21 @@ public class X_GL_JournalLine extends org.compiere.model.PO implements I_GL_Jour
 	public int getDR_C_Order_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_DR_C_Order_ID);
+	}
+
+	@Override
+	public void setDR_Locator_ID (final int DR_Locator_ID)
+	{
+		if (DR_Locator_ID < 1) 
+			set_Value (COLUMNNAME_DR_Locator_ID, null);
+		else 
+			set_Value (COLUMNNAME_DR_Locator_ID, DR_Locator_ID);
+	}
+
+	@Override
+	public int getDR_Locator_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_DR_Locator_ID);
 	}
 
 	@Override
