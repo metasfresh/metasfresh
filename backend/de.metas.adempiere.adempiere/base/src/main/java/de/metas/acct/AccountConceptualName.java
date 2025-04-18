@@ -75,4 +75,15 @@ public final class AccountConceptualName implements Comparable<AccountConceptual
 
 		return false;
 	}
+
+	public boolean isProductMandatory()
+	{
+		return isAnyOf(P_Asset_Acct);
+	}
+
+	public boolean isWarehouseLocatorMandatory()
+	{
+		return isAnyOf(P_Asset_Acct);
+	}
+
 }

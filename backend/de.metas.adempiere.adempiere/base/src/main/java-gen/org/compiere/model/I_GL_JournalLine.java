@@ -486,6 +486,26 @@ public interface I_GL_JournalLine
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Locator (Credit).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCR_Locator_ID (int CR_Locator_ID);
+
+	/**
+	 * Get Locator (Credit).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCR_Locator_ID();
+
+	String COLUMNNAME_CR_Locator_ID = "CR_Locator_ID";
+
+	/**
 	 * Set Material (Credit).
 	 *
 	 * <br>Type: Search
@@ -768,6 +788,26 @@ public interface I_GL_JournalLine
 
 	ModelColumn<I_GL_JournalLine, org.compiere.model.I_C_Order> COLUMN_DR_C_Order_ID = new ModelColumn<>(I_GL_JournalLine.class, "DR_C_Order_ID", org.compiere.model.I_C_Order.class);
 	String COLUMNNAME_DR_C_Order_ID = "DR_C_Order_ID";
+
+	/**
+	 * Set Locator (Debit).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDR_Locator_ID (int DR_Locator_ID);
+
+	/**
+	 * Get Locator (Debit).
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDR_Locator_ID();
+
+	String COLUMNNAME_DR_Locator_ID = "DR_Locator_ID";
 
 	/**
 	 * Set Material (Debit).
