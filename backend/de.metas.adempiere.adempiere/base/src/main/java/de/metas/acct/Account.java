@@ -67,6 +67,19 @@ public final class Account
 	}
 
 	@NonNull
+	public static Optional<Account> optionalOfRepoId(final int accountRepoId, @Nullable final String accountConceptualNameStr)
+	{
+		final AccountId accountId = AccountId.ofRepoIdOrNull(accountRepoId);
+		if (accountId == null)
+		{
+			return Optional.empty();
+		}
+
+		final AccountConceptualName accountConceptualName = AccountConceptualName.ofNullableString(accountConceptualNameStr);
+		return Optional.of(of(accountId, accountConceptualName));
+	}
+
+	@NonNull
 	public static Account of(@NonNull final AccountId accountId, @NonNull final AccountConceptualNameAware accountConceptualNameAware)
 	{
 		return of(accountId, accountConceptualNameAware.getAccountConceptualName());

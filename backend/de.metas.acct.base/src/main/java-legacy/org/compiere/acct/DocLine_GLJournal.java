@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_GL_JournalLine;
 
@@ -45,6 +46,7 @@ class DocLine_GLJournal extends DocLine<Doc_GLJournal>
 	@Getter private Account account;
 	@Nullable @Setter private ProductId productId;
 	@Nullable @Setter private OrderId salesOrderId;
+	@Nullable @Getter @Setter private LocatorId locatorId;
 
 	DocLine_GLJournal(@NonNull final I_GL_JournalLine glJournalLine, @NonNull final Doc_GLJournal doc)
 	{
@@ -70,4 +72,7 @@ class DocLine_GLJournal extends DocLine<Doc_GLJournal>
 	@Nullable
 	@Override
 	protected OrderId getSalesOrderId() {return salesOrderId;}
+
+	@Override
+	public int getM_Locator_ID() {return LocatorId.toRepoId(getLocatorId());}
 }
