@@ -15,7 +15,7 @@ public enum TriggerTiming
 	{
 		switch (changeType)
 		{
-			case BEFORE_NEW:
+			case AFTER_NEW:
 				return Optional.of(NEW);
 			case BEFORE_CHANGE:
 				return Optional.of(UPDATE);
