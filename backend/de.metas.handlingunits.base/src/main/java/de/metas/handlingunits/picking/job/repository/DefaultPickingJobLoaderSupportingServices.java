@@ -83,7 +83,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	private final HashMap<LocatorId, String> locatorNamesCache = new HashMap<>();
 
 	@Override
-	public PickingJobOptions getPickingJobOptions(final @NonNull BPartnerId customerId) {return mobileUIPickingUserProfileRepository.getPickingJobOptions(customerId);}
+	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId) {return mobileUIPickingUserProfileRepository.getPickingJobOptions(customerId);}
 
 	@Override
 	public void warmUpCachesFrom(@NonNull final PackageableList items)

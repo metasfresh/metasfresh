@@ -133,6 +133,7 @@ public class MobileUIPickingUserProfile
 		return launcherFieldsInOrder.stream().anyMatch(field -> PickingJobFieldType.equals(field.getField(), fieldType));
 	}
 
+	@NonNull
 	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId, @NonNull PickingJobOptionsCollection pickingJobOptionsCollection)
 	{
 		return customerId != null

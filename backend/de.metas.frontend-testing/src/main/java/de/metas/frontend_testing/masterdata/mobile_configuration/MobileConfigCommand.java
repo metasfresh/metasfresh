@@ -99,6 +99,7 @@ public class MobileConfigCommand
 				.allowNewTU(profile.getDefaultPickingJobOptions().isAllowNewTU())
 				.filterByQRCode(profile.isFilterByBarcode())
 				.allowCompletingPartialPickingJob(profile.getDefaultPickingJobOptions().isAllowCompletingPartialPickingJob())
+				.isAnonymousPickHUsOnTheFly(profile.getDefaultPickingJobOptions().isAnonymousPickHUsOnTheFly())
 				.build();
 	}
 
@@ -140,6 +141,10 @@ public class MobileConfigCommand
 		if (from.getShowLastPickedBestBeforeDateForLines() != null)
 		{
 			builder.isShowLastPickedBestBeforeDateForLines(from.getShowLastPickedBestBeforeDateForLines());
+		}
+		if (from.getAnonymousPickHUsOnTheFly() != null)
+		{
+			builder.isAnonymousPickHUsOnTheFly(from.getAnonymousPickHUsOnTheFly());
 		}
 
 		return builder.build();
