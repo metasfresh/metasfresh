@@ -22,6 +22,7 @@
 
 package de.metas.elementvalue;
 
+import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.organization.OrgId;
@@ -52,6 +53,7 @@ public class ElementValue
 	@Nullable ElementValueId parentId;
 	int seqNo;
 	@Nullable String defaultAccountName;
+	@Nullable AccountConceptualName accountConceptualName;
 
 	public String toShortString() {return value + "_" + name;}
 
