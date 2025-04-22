@@ -184,6 +184,7 @@ const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStore
   draftActivityDataStored.isAllowNewTU = fromPickingJob.allowNewTU;
   draftActivityDataStored.isAllowSkippingRejectedReason = fromPickingJob.allowSkippingRejectedReason;
   draftActivityDataStored.isShowPromptWhenOverPicking = fromPickingJob.showPromptWhenOverPicking;
+  draftActivityDataStored.isAnonymousPickHUsOnTheFly = fromPickingJob.anonymousPickHUsOnTheFly;
   draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
 
   //
