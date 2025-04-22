@@ -1336,14 +1336,14 @@ public final class ProcessInfo implements Serializable
 			return this;
 		}
 
-		public ProcessInfoBuilder setRecord(final String tableName, final int recordId)
+		public ProcessInfoBuilder setRecord(@Nullable final String tableName, final int recordId)
 		{
 			this.adTableId = Services.get(IADTableDAO.class).retrieveTableId(tableName);
 			this.recordId = recordId;
 			return this;
 		}
 
-		public ProcessInfoBuilder setRecord(final ITableRecordReference recordRef)
+		public ProcessInfoBuilder setRecord(@Nullable final ITableRecordReference recordRef)
 		{
 			if (recordRef == null)
 			{
@@ -1578,7 +1578,7 @@ public final class ProcessInfo implements Serializable
 			return tabNo;
 		}
 
-		public ProcessInfoBuilder setWhereClause(final String whereClause)
+		public ProcessInfoBuilder setWhereClause(@Nullable final String whereClause)
 		{
 			this.whereClause = Optional.ofNullable(whereClause);
 			return this;

@@ -10,6 +10,7 @@ import de.metas.handlingunits.trace.HUTraceEventQuery.EventTimeOperator;
 import de.metas.handlingunits.trace.HUTraceEventQuery.RecursionMode;
 import de.metas.handlingunits.trace.HUTraceType;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inventory.InventoryId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilter;
@@ -53,7 +54,7 @@ import java.util.function.BiFunction;
 final class HuTraceQueryCreator
 {
 	private static final Map<String, BiFunction<HUTraceEventQuery, DocumentFilterParam, HUTraceEventQuery>> FIELD_NAME_2_UPDATE_METHOD = //
-			ImmutableMap.<String, BiFunction<HUTraceEventQuery, DocumentFilterParam, HUTraceEventQuery>> builder()
+			ImmutableMap.<String, BiFunction<HUTraceEventQuery, DocumentFilterParam, HUTraceEventQuery>>builder()
 					.put(I_M_HU_Trace.COLUMNNAME_AD_Org_ID, HuTraceQueryCreator::updateOrgIdFromParameter)
 					.put(I_M_HU_Trace.COLUMNNAME_C_DocType_ID, HuTraceQueryCreator::updateDocTypeIdFromParameter)
 					.put(I_M_HU_Trace.COLUMNNAME_DocStatus, HuTraceQueryCreator::updateDocStatusFromParameter)
@@ -71,6 +72,7 @@ final class HuTraceQueryCreator
 					.put(I_M_HU_Trace.COLUMNNAME_VHU_Source_ID, HuTraceQueryCreator::updateVhuSourceIdFromParameter)
 					.put(I_M_HU_Trace.COLUMNNAME_VHUStatus, HuTraceQueryCreator::updateVhuStatusFromParameter)
 					.put(I_M_HU_Trace.COLUMNNAME_EventTime, HuTraceQueryCreator::updateEventTimeFromParameter)
+					.put(I_M_HU_Trace.COLUMNNAME_LotNumber, HuTraceQueryCreator::updateLotNumberFromParameter)
 					.build();
 
 	public static HUTraceEventQuery createTraceQueryFromDocumentFilter(@NonNull final DocumentFilter documentFilter)
@@ -165,6 +167,15 @@ final class HuTraceQueryCreator
 		return query.withProductId(ProductId.ofRepoIdOrNull(extractInt(parameter)));
 	}
 
+	private static HUTraceEventQuery updateLotNumberFromParameter(
+			@NonNull final HUTraceEventQuery query,
+			@NonNull final DocumentFilterParam parameter)
+	{
+		errorIfQueryValueNotNull("LotNumber", query.getLotNumber(), query);
+
+		return query.withLotNumber(extractString(parameter));
+	}
+
 	private static HUTraceEventQuery updateShipmentScheduleIdFromParameter(
 			@NonNull final HUTraceEventQuery query,
 			@NonNull final DocumentFilterParam parameter)
@@ -214,9 +225,9 @@ final class HuTraceQueryCreator
 			@NonNull final HUTraceEventQuery query,
 			@NonNull final DocumentFilterParam parameter)
 	{
-		errorIfQueryValueNotNull("Type", query.getType(), query);
+		errorIfQueryValueNotEmpty("Type", query.getTypes(), query);
 
-		return query.withType(HUTraceType.valueOf(extractString(parameter)));
+		return query.withTypes(ImmutableSet.of(HUTraceType.valueOf(extractString(parameter))));
 	}
 
 	private static HUTraceEventQuery updateVhuStatusFromParameter(
@@ -233,6 +244,14 @@ final class HuTraceQueryCreator
 		errorIfQueryValueGreaterThanZero("MovementId", query.getMovementId(), query);
 
 		return query.withMovementId(extractInt(parameter));
+	}
+
+	private static HUTraceEventQuery updateInventoryIdFromParameter(
+			@NonNull final HUTraceEventQuery query, @NonNull final DocumentFilterParam parameter)
+	{
+		errorIfQueryValueNotNull("InventoryId", query.getInventoryId(), query);
+
+		return query.withInventoryId(InventoryId.ofRepoIdOrNull(extractInt(parameter)));
 	}
 
 	private static HUTraceEventQuery updateHuTrxLineIdFromParameter(

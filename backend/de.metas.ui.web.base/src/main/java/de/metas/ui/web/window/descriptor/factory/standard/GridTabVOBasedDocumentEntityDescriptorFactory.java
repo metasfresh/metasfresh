@@ -13,6 +13,7 @@ import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
+import de.metas.ui.web.attributes_included_tab.AttributesUIElementTypeFactory;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.session.WebRestApiContextProvider;
@@ -80,6 +81,7 @@ import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -119,7 +121,6 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 {
 	// Services
 	private static final Logger logger = LogManager.getLogger(GridTabVOBasedDocumentEntityDescriptorFactory.class);
-	private final IColumnBL adColumnBL = Services.get(IColumnBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final DocumentsRepository documentsRepository = SqlDocumentsRepository.instance;
@@ -145,13 +146,14 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 	private GridTabVOBasedDocumentEntityDescriptorFactory(
 			@NonNull final LookupDataSourceFactory lookupDataSourceFactory,
 			@NonNull final GridTabVO gridTabVO,
-			final ImmutableList<IDocumentDecorator> documentDecorators,
+			@NonNull final Collection<IDocumentDecorator> documentDecorators,
 			@Nullable final GridTabVO parentTabVO,
 			final boolean isSOTrx,
-			@NonNull final List<I_AD_UI_Element> labelsUIElements)
+			@NonNull final List<I_AD_UI_Element> labelsUIElements,
+			@NonNull final AttributesUIElementTypeFactory attributesUIElementTypeFactory)
 	{
 		this.lookupDataSourceFactory = lookupDataSourceFactory;
-		this.documentDecorators = documentDecorators;
+		this.documentDecorators = ImmutableList.copyOf(documentDecorators);
 
 		final boolean rootEntity = parentTabVO == null;
 
@@ -167,7 +169,7 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 
 		//
 		// Create initial document entity & field builders
-		_documentEntityBuilder = createDocumentEntityBuilder(gridTabVO, parentTabVO, isSOTrx, labelsUIElements);
+		_documentEntityBuilder = createDocumentEntityBuilder(gridTabVO, parentTabVO, isSOTrx, labelsUIElements, attributesUIElementTypeFactory);
 
 		//
 		// Document summary
@@ -226,7 +228,8 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 			@NonNull final GridTabVO gridTabVO,
 			@Nullable final GridTabVO parentTabVO,
 			final boolean isSOTrx,
-			@NonNull final List<I_AD_UI_Element> labelsUIElements)
+			@NonNull final List<I_AD_UI_Element> labelsUIElements,
+			@NonNull final AttributesUIElementTypeFactory attributesUIElementTypeFactory)
 	{
 		final String tableName = gridTabVO.getTableName();
 
@@ -253,8 +256,8 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 		//
 		final ILogicExpression displayLogic = gridTabVO.getDisplayLogic()
 				.evaluatePartial(Evaluatees.mapBuilder()
-										 .put(WebRestApiContextProvider.CTXNAME_IsWebUI, DisplayType.toBooleanString(true))
-										 .build());
+						.put(WebRestApiContextProvider.CTXNAME_IsWebUI, DisplayType.toBooleanString(true))
+						.build());
 
 		//
 		// Entity descriptor
@@ -303,13 +306,16 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 				// .stream().filter(uiElement -> X_AD_UI_Element.AD_UI_ELEMENTTYPE_Labels.equals(uiElement.getAD_UI_ElementType())) // assume they are already filtered
 				.forEach(labelUIElement -> createAndAddField_Labels(entityDescriptorBuilder, labelUIElement));
 
+		attributesUIElementTypeFactory.createAndAddDocumentFieldDescriptors(entityDescriptorBuilder);
+
 		return entityDescriptorBuilder;
 	}
 
-	private static NotFoundMessages extractNotFoundMessages(final GridTabVO gridTabVO) {
+	private static NotFoundMessages extractNotFoundMessages(final GridTabVO gridTabVO)
+	{
 		final ITranslatableString message = gridTabVO.getNotFoundMessage();
 		final ITranslatableString detail = gridTabVO.getNotFoundMessageDetail();
-		if(TranslatableStrings.isBlank(message) && TranslatableStrings.isBlank(detail))
+		if (TranslatableStrings.isBlank(message) && TranslatableStrings.isBlank(detail))
 		{
 			return null;
 		}
@@ -370,12 +376,13 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 		if (X_AD_UI_ElementField.TYPE_Tooltip.equals(elementFieldRecord.getType()))
 		{
 			final String tooltipIconName = Check.assumeNotEmpty(elementFieldRecord.getTooltipIconName(),
-																"An elementFieldRecord with type=tooltip needs to have a tooltipIcon; elementFieldRecord={}", elementFieldRecord);
+					"An elementFieldRecord with type=tooltip needs to have a tooltipIcon; elementFieldRecord={}", elementFieldRecord);
 			builder.setTooltipIconName(tooltipIconName);
 		}
 		return builder;
 	}
 
+	@Nullable
 	DocumentFieldDescriptor.Builder documentField(final String fieldName)
 	{
 		return documentEntity().getFieldBuilder(fieldName);
@@ -563,7 +570,8 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 						fieldBinding.getValueClass(),
 						lookupDescriptorProvider.provideForFilter().orElse(null)))
 				//
-				.setDataBinding(fieldBinding);
+				.setDataBinding(fieldBinding)
+				.mainAdFieldId(gridFieldVO.getAD_Field_ID());
 
 		//
 		// Add Field builder to document entity
@@ -816,7 +824,7 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 		final IModelTranslationMap trlMap = InterfaceWrapperHelper.getModelTranslationMap(labelsUIElement);
 
 		final ITranslatableString caption = coalesce(getLabelFieldCaptionByName(labelsUIElement),
-													 trlMap.getColumnTrl(I_AD_UI_Element.COLUMNNAME_Name, labelsUIElement.getName())
+				trlMap.getColumnTrl(I_AD_UI_Element.COLUMNNAME_Name, labelsUIElement.getName())
 		);
 
 		final DocumentFieldDescriptor.Builder fieldBuilder = DocumentFieldDescriptor.builder(lookupDescriptor.getFieldName())
@@ -875,14 +883,15 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 			@NonNull final I_AD_UI_Element labelsUIElement,
 			@NonNull final String tableName)
 	{
-		final I_AD_Tab labelsTab = labelsUIElement.getLabels_Tab();
+		final I_AD_Tab labelsTab = Check.assumeNotNull(labelsUIElement.getLabels_Tab(), "Labels_Tab_ID is set for {}", labelsUIElement);
 		final AdTableId adTableId = AdTableId.ofRepoId(labelsTab.getAD_Table_ID());
 		final String labelsTableName = TableIdsCache.instance.getTableName(adTableId);
 
 		final String linkColumnName;
 		if (labelsTab.getParent_Column_ID() > 0)
 		{
-			linkColumnName = labelsTab.getParent_Column().getColumnName();
+			final I_AD_Column parentColumn = Check.assumeNotNull(labelsTab.getParent_Column(), "Parent_Column_ID exists for {}", labelsUIElement);
+			linkColumnName = parentColumn.getColumnName();
 		}
 		else
 		{
@@ -892,14 +901,15 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 		final String labelsLinkColumnName;
 		if (labelsTab.getAD_Column_ID() > 0)
 		{
-			labelsLinkColumnName = labelsTab.getAD_Column().getColumnName();
+			final I_AD_Column adColumn = Check.assumeNotNull(labelsTab.getAD_Column(), "AD_Column_ID exists for {}", labelsTab);
+			labelsLinkColumnName = adColumn.getColumnName();
 		}
 		else
 		{
 			labelsLinkColumnName = linkColumnName;
 		}
 
-		final I_AD_Field labelsSelectorField = labelsUIElement.getLabels_Selector_Field();
+		final I_AD_Field labelsSelectorField = Check.assumeNotNull(labelsUIElement.getLabels_Selector_Field(), "Labels_Selector_Field_ID exists for {}", labelsUIElement);
 
 		final I_AD_Column labelsValueColumn = labelsSelectorField.getAD_Column();
 		final String labelsValueColumnName = labelsValueColumn.getColumnName();
@@ -1046,6 +1056,7 @@ import static de.metas.ui.web.window.WindowConstants.SYS_CONFIG_AD_ORG_ID_IS_DIS
 		fieldNames
 				.stream()
 				.map(this::documentField)
+				.filter(Objects::nonNull)
 				.forEach(field -> field.addCharacteristic(characteristic));
 	}
 

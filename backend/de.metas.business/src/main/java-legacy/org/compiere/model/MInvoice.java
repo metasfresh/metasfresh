@@ -38,13 +38,13 @@ import de.metas.i18n.Msg;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoicePaymentStatus;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
+import de.metas.invoice.matchinv.MatchInvType;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IMatchInvBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.order.IMatchPOBL;
-import de.metas.order.IMatchPODAO;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
@@ -1038,6 +1038,8 @@ public class MInvoice extends X_C_Invoice implements IDocument
 	@Override
 	public String completeIt()
 	{
+		final MatchInvoiceService matchInvoiceService = MatchInvoiceService.get();
+
 		// Re-Check
 		if (!m_justPrepared)
 		{
@@ -1057,8 +1059,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 		}
 
 		// Update Order & Match
-		int matchInv = 0;
-		int matchPO = 0;
 		final MInvoiceLine[] lines = getLines(false);
 		for (final MInvoiceLine line : lines)
 		{
@@ -1085,7 +1085,6 @@ public class MInvoice extends X_C_Invoice implements IDocument
 					// MatchPO is created also from MInOut when Invoice exists before Shipment
 					final BigDecimal matchQty = line.getQtyInvoiced();
 					Services.get(IMatchPOBL.class).create(line, null, getDateInvoiced(), matchQty);
-					matchPO++;
 				}
 			}
 
@@ -1113,18 +1112,13 @@ public class MInvoice extends X_C_Invoice implements IDocument
 					&& !isReversal() // in case of reversal, the job is done by IInvoiceBL.handleReversalForInvoice()
 			)
 			{
-				final boolean matchInvCreated = Services.get(IMatchInvBL.class).createMatchInvBuilder()
-						.setContext(this)
-						.setC_InvoiceLine(line)
-						.setM_InOutLine(line.getM_InOutLine())
-						.setDateTrx(getDateInvoiced())
-						.setConsiderQtysAlreadyMatched(false) // backward compatibility
-						.setAllowQtysOfOppositeSigns(true)// backward compatibility
+				matchInvoiceService.newMatchInvBuilder(MatchInvType.Material)
+						.invoiceLine(line)
+						.inoutLine(line.getM_InOutLine())
+						.dateTrx(getDateInvoiced())
+						.considerQtysAlreadyMatched(false) // backward compatibility
+						.allowQtysOfOppositeSigns()// backward compatibility
 						.build();
-				if (matchInvCreated)
-				{
-					matchInv++;
-				}
 			}
 		}    // for all lines
 
@@ -1409,19 +1403,7 @@ public class MInvoice extends X_C_Invoice implements IDocument
 			// for (int i = 0; i < mInv.length; i++)
 			// mInv[i].delete(true);
 
-			for (final I_M_MatchPO matchPO : Services.get(IMatchPODAO.class).getByInvoiceId(InvoiceId.ofRepoId(getC_Invoice_ID())))
-			{
-				if (matchPO.getM_InOutLine_ID() <= 0)
-				{
-					matchPO.setProcessed(false);
-					InterfaceWrapperHelper.delete(matchPO);
-				}
-				else
-				{
-					matchPO.setC_InvoiceLine_ID(-1);
-					InterfaceWrapperHelper.save(matchPO);
-				}
-			}
+			Services.get(IMatchPOBL.class).unlink(InvoiceId.ofRepoId(getC_Invoice_ID()));
 		}
 		//
 		load(get_TrxName());    // reload allocation reversal info

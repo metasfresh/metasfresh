@@ -209,7 +209,7 @@ public class DDOrderCandidateRepository
 	{
 		toSqlQuery(query)
 				.create()
-				.delete(!query.isDeleteEvenIfProceed());
+				.delete();
 	}
 
 	private IQueryBuilder<I_DD_Order_Candidate> toSqlQuery(@NonNull final DDOrderCandidateQuery query)

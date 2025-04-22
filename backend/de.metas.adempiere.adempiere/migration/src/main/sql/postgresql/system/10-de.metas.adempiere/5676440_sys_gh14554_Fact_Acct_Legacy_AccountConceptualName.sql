@@ -20,6 +20,10 @@
  * #L%
  */
 
+ALTER TABLE fact_acct DISABLE TRIGGER ALL;
+
 UPDATE fact_acct
 SET AccountConceptualName = 'UNKNOWN_LEGACY'
 WHERE AccountConceptualName is NULL;
+
+ALTER TABLE fact_acct ENABLE TRIGGER ALL;

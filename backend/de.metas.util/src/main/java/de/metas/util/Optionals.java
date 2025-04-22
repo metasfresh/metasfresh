@@ -43,6 +43,11 @@ public class Optionals
 
 		for (final Supplier<Optional<T>> supplier : suppliers)
 		{
+			if (supplier == null)
+			{
+				continue;
+			}
+			
 			final Optional<T> optionalValue = supplier.get();
 			if (optionalValue != null && optionalValue.isPresent())
 			{

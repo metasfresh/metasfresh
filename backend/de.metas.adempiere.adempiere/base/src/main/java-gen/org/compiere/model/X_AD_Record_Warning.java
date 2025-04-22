@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_Record_Warning extends org.compiere.model.PO implements I_AD_Record_Warning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1171640052L;
+	private static final long serialVersionUID = 1004276011L;
 
     /** Standard Constructor */
     public X_AD_Record_Warning (final Properties ctx, final int AD_Record_Warning_ID, @Nullable final String trxName)
@@ -92,7 +92,7 @@ public class X_AD_Record_Warning extends org.compiere.model.PO implements I_AD_R
 	}
 
 	@Override
-	public void setMsgText (final @Nullable java.lang.String MsgText)
+	public void setMsgText (final java.lang.String MsgText)
 	{
 		set_Value (COLUMNNAME_MsgText, MsgText);
 	}

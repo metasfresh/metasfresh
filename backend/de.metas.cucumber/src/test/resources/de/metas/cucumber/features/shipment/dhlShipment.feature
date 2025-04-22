@@ -9,7 +9,7 @@ Feature: Dhl Shipment
     And ensure product accounts exist
     And load M_Shipper:
       | Identifier  | Name |
-      | shipper_DHL             | Dhl      |
+      | shipper_DHL | Dhl  |
     And load C_UOM:
       | C_UOM_ID.Identifier | X12DE355 |
       | cm                  | CM       |
@@ -28,29 +28,29 @@ Feature: Dhl Shipment
 
     # Create product
     And metasfresh contains M_Products:
-      | Identifier          | Name                | IsStocked |
-      | test_product_dhl_01 | test_product_dhl_01 | true      |
+      | Identifier          | Name                | IsStocked | Weight |
+      | test_product_dhl_01 | test_product_dhl_01 | true      | 0.250  |
     And metasfresh contains M_PricingSystems
       | Identifier | Name           | Value          |
       | ps_dhl_1   | pricing_system | pricing_system |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name              | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_dhl_so  | ps_dhl_1                      | DE                        | EUR                 | price_list_dhl_so | true  | false         | 2              |
+      | Identifier | M_PricingSystem_ID | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name              | SOTrx |
+      | pl_dhl_so  | ps_dhl_1           | DE                        | EUR                 | price_list_dhl_so | true  |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name       | ValidFrom  |
       | plv_dhl_so | pl_dhl_so                 | plv_dhl_so | 2022-01-20 |
     And metasfresh contains M_ProductPrices
-      | Identifier           | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_TaxCategory_ID.InternalName | C_UOM_ID.X12DE355 |
-      | pp_product_01        | plv_dhl_so                        | test_product_dhl_01     | 10.0     | Normal                        | PCE               |
-      | pp_packing_product_1 | plv_dhl_so                        | packing_product_1       | 0.0      | Normal                        | PCE               |
+      | M_PriceList_Version_ID | M_Product_ID        | PriceStd | C_TaxCategory_ID.InternalName | C_UOM_ID.X12DE355 |
+      | plv_dhl_so             | test_product_dhl_01 | 10.0     | Normal                        | PCE               |
+      | plv_dhl_so             | packing_product_1   | 0.0      | Normal                        | PCE               |
 
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
       | inv_1                     | 2022-12-12   | 540008         |
     And metasfresh contains M_InventoriesLines:
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
-      | inv_1                     | inv_l_1                       | test_product_dhl_01     | 0       | 10       | PCE          |
-      | inv_1                     | inv_l_2                       | packing_product_1       | 0       | 10       | PCE          |
+      | inv_1                     | inv_l_1                       | test_product_dhl_01     | 0       | 100      | PCE          |
+      | inv_1                     | inv_l_2                       | packing_product_1       | 0       | 100      | PCE          |
     When the inventory identified by inv_1 is completed
     And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
@@ -58,8 +58,8 @@ Feature: Dhl Shipment
       | inv_l_2                       | hu_2               |
     And M_HU_Storage are validated
       | Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
-      | hu_s_1     | hu_1               | test_product_dhl_01     | 10  |
-      | hu_s_2     | hu_2               | packing_product_1       | 10  |
+      | hu_s_1     | hu_1               | test_product_dhl_01     | 100 |
+      | hu_s_2     | hu_2               | packing_product_1       | 100 |
 
     # create bpartner with invoice-rule "immediate", because we need just an invoice without a shipment
     And metasfresh contains C_BPartners:
@@ -85,7 +85,7 @@ Feature: Dhl Shipment
       | dhl_huPiItemTU             | dhl_packingVersionTU          | 0   | PM       | dhl_pm                                 |
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.M_HU_PI_Item_Product_ID |
-      | dhl_huProductTU_X                  | dhl_huPiItemTU             | test_product_dhl_01     | 1   | 2022-01-10 | 55667                       |
+      | dhl_huProductTU_X                  | dhl_huPiItemTU             | test_product_dhl_01     | 5   | 2022-01-10 | 55667                       |
 
   @Id:S0335.1_100
   Scenario: Auto-processing of olcand and shipped via DHL
@@ -160,8 +160,8 @@ Feature: Dhl Shipment
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
-      | il2                         | invoice_1               | packing_product_1       | 1           | true      |
       | il1                         | invoice_1               | test_product_dhl_01     | 1           | true      |
+      | il2                         | invoice_1               | packing_product_1       | 1           | true      |
     And load Transportation Order from Shipment
       | M_InOut_ID.Identifier | M_ShipperTransportation_ID.Identifier |
       | shipment_1            | shipTransp_1                          |
@@ -175,15 +175,10 @@ Feature: Dhl Shipment
     And validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
       | shipTransp_1                          | shipper_DHL             | orgBP                          | orgBPLocation                  | DR            |
-    And load M_Package for M_ShipperTransportation: shipTransp_1
-      | M_Package_ID.Identifier | OPT.M_InOut_ID.Identifier |
-      | packageDI               | shipment_1                |
-    And validate M_Package:
-      | M_Package_ID.Identifier | M_Shipper_ID.Identifier | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
-      | packageDI               | shipper_DHL             | dhl_customer                 | dhl_location                          |
-    And load DHL_ShipmentOrder:
-      | DHL_ShipmentOrder_ID.Identifier | M_Package_ID.Identifier |
-      | shippingPackageDI               | packageDI               |
+    And validate M_Packages for shipment shipment_1
+      | M_Shipper_ID | C_BPartner_ID | C_BPartner_Location_ID | PackageWeight | M_Package_ID |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 0.250         | package1     |
     And validate DHL_ShipmentOrder:
-      | DHL_ShipmentOrder_ID.Identifier | C_BPartner_ID.Identifier | DHL_LengthInCm | DHL_WidthInCm | DHL_HeightInCm | DHL_WeightInKg |
-      | shippingPackageDI               | dhl_customer             | 30             | 20            | 10             | 1              |
+      | M_Package_ID | C_BPartner_ID | DHL_LengthInCm | DHL_WidthInCm | DHL_HeightInCm | DHL_WeightInKg |
+      | package1     | dhl_customer  | 30             | 20            | 10             | 1              |
+    

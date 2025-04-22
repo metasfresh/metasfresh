@@ -31,7 +31,9 @@ import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.IDesadvDAO;
 import de.metas.edi.model.I_C_Doc_Outbound_Log;
 import de.metas.edi.model.I_C_Invoice;
+import de.metas.edi.model.I_M_InOut;
 import de.metas.esb.edi.model.I_EDI_Desadv;
+import de.metas.inout.IInOutDAO;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -55,6 +57,7 @@ public class ChangeEDI_ExportStatusHelper
 	private final ADReferenceService adReferenceService = ADReferenceService.get();
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final EDIDocOutBoundLogService ediDocOutBoundLogService = SpringContextHolder.instance.getBean(EDIDocOutBoundLogService.class);
+	private static final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 	@NonNull
 	public List<EDIExportStatus> getAvailableTargetExportStatuses(@NonNull final EDIExportStatus fromStatus)
@@ -91,6 +94,14 @@ public class ChangeEDI_ExportStatusHelper
 	public void EDI_DesadvDoIt(@NonNull final EDIDesadvId desadvId, @NonNull final EDIExportStatus targetExportStatus, final boolean isProcessed)
 	{
 		final I_EDI_Desadv edi = desadvDAO.retrieveById(desadvId);
+
+		final List<I_M_InOut> inOuts = desadvDAO.retrieveAllInOuts(edi);
+		for (final I_M_InOut inOut : inOuts)
+		{
+			inOut.setEDI_ExportStatus(targetExportStatus.getCode());
+			inOutDAO.save(inOut);
+		}
+		
 		edi.setEDI_ExportStatus(targetExportStatus.getCode());
 		edi.setProcessed(isProcessed);
 		desadvDAO.save(edi);

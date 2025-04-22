@@ -1,5 +1,4 @@
 import React from 'react';
-import { useRouteMatch } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 
 import { toastError } from '../../utils/toast';
@@ -12,11 +11,7 @@ import { useScreenDefinition } from '../../hooks/useScreenDefinition';
 import { appLaunchersLocation } from '../../routes/launchers';
 
 const WFLaunchersScanBarcodeScreen = () => {
-  const { history } = useScreenDefinition({ back: appLaunchersLocation });
-
-  const {
-    params: { applicationId },
-  } = useRouteMatch();
+  const { applicationId, history } = useScreenDefinition({ back: appLaunchersLocation });
 
   const dispatch = useDispatch();
   const onBarcodeScanned = ({ scannedBarcode }) => {

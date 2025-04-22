@@ -56,11 +56,10 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoicePaymentStatus;
 import de.metas.invoice.InvoiceTax;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IInvoiceLineBL;
-import de.metas.invoice.service.IMatchInvBL;
-import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
@@ -83,7 +82,6 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
@@ -120,7 +118,6 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_RMA;
 import org.compiere.model.X_C_DocType;
@@ -1860,9 +1857,8 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 		final org.compiere.model.I_C_Invoice reversalInvoice = invoice.getReversal();
 
 		// services
-		final IMatchInvBL matchInvBL = Services.get(IMatchInvBL.class);
-		final IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+		final MatchInvoiceService matchInvoiceService = MatchInvoiceService.get();
 
 		for (final I_C_InvoiceLine il : invoiceDAO.retrieveLines(invoice))
 		{
@@ -1882,23 +1878,9 @@ public abstract class AbstractInvoiceBL implements IInvoiceBL
 
 			//
 			// Create M_MatchInv reversal records, linked to reversal invoice line and original inout line.
-			final List<I_M_MatchInv> matchInvs = matchInvDAO.retrieveForInvoiceLine(il);
-			for (final I_M_MatchInv matchInv : matchInvs)
-			{
-				final I_M_InOutLine inoutLine = matchInv.getM_InOutLine();
-
-				final StockQtyAndUOMQty qtyToMatchExact = StockQtyAndUOMQtys.create(
-						matchInv.getQty().negate(), ProductId.ofRepoId(inoutLine.getM_Product_ID()),
-						matchInv.getQtyInUOM().negate(), UomId.ofRepoId(matchInv.getC_UOM_ID()));
-
-				matchInvBL.createMatchInvBuilder()
-						.setContext(reversalLine)
-						.setC_InvoiceLine(reversalLine)
-						.setM_InOutLine(inoutLine)
-						.setDateTrx(reversalInvoice.getDateInvoiced())
-						.setQtyToMatchExact(qtyToMatchExact)
-						.build();
-			}
+			final Timestamp reversalDateInvoiced = reversalInvoice.getDateInvoiced();
+			final InvoiceAndLineId invoiceLineId = InvoiceAndLineId.ofRepoId(il.getC_Invoice_ID(), il.getC_InvoiceLine_ID());
+			matchInvoiceService.createReversals(invoiceLineId, reversalLine, reversalDateInvoiced);
 		}
 	}
 

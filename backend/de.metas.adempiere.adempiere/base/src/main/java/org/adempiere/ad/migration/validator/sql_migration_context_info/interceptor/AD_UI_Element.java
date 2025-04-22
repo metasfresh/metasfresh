@@ -23,13 +23,13 @@
 package org.adempiere.ad.migration.validator.sql_migration_context_info.interceptor;
 
 import org.adempiere.ad.element.api.AdFieldId;
+import org.adempiere.ad.element.api.AdUIElementGroupId;
 import org.adempiere.ad.migration.logger.MigrationScriptFileLoggerHolder;
 import org.adempiere.ad.migration.validator.sql_migration_context_info.names.ADColumnNameFQ;
 import org.adempiere.ad.migration.validator.sql_migration_context_info.names.ADUIElementGroupNameFQ;
 import org.adempiere.ad.migration.validator.sql_migration_context_info.names.Names;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.window.api.UIElementGroupId;
 import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
@@ -46,7 +46,7 @@ public class AD_UI_Element
 			return;
 		}
 
-		final UIElementGroupId uiElementGroupId = UIElementGroupId.ofRepoId(uiElement.getAD_UI_ElementGroup_ID());
+		final AdUIElementGroupId uiElementGroupId = AdUIElementGroupId.ofRepoId(uiElement.getAD_UI_ElementGroup_ID());
 		final ADUIElementGroupNameFQ uiElementGroupFQ = Names.ADUIElementGroupNameFQ_Loader.retrieve(uiElementGroupId);
 		final String uiElementFQ = uiElementGroupFQ.toShortString() + "." + uiElement.getName();
 		MigrationScriptFileLoggerHolder.logComment("UI Element: " + uiElementFQ);

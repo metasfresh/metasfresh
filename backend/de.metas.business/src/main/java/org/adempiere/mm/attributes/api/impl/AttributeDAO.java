@@ -80,6 +80,8 @@ public class AttributeDAO implements IAttributeDAO
 
 	private final CCache<AttributeSetId, AttributeSetAttributeIdsList> attributeSetAttributeIdsListsCache = CCache.<AttributeSetId, AttributeSetAttributeIdsList>builder()
 			.tableName(I_M_AttributeUse.Table_Name)
+			.additionalTableNameToResetFor(I_M_AttributeSet.Table_Name)
+			.additionalTableNameToResetFor(I_M_Attribute.Table_Name)
 			.build();
 
 	@Override
@@ -149,7 +151,21 @@ public class AttributeDAO implements IAttributeDAO
 
 		final ArrayListMultimap<AttributeSetId, AttributeSetAttribute> result = queryBL.createQueryBuilderOutOfTrx(I_M_AttributeUse.class)
 				.addOnlyActiveRecordsFilter()
-				.addInArrayFilter(I_M_AttributeUse.COLUMN_M_AttributeSet_ID, attributeSetIds)
+				.addInSubQueryFilter(
+						I_M_AttributeUse.COLUMNNAME_M_AttributeSet_ID,
+						I_M_AttributeSet.COLUMNNAME_M_AttributeSet_ID,
+						queryBL.createQueryBuilder(I_M_AttributeSet.class)
+								.addInArrayFilter(I_M_AttributeSet.COLUMNNAME_M_AttributeSet_ID, attributeSetIds)
+								.addOnlyActiveRecordsFilter()
+								.create()
+				)
+				.addInSubQueryFilter(
+						I_M_AttributeUse.COLUMNNAME_M_Attribute_ID,
+						I_M_Attribute.COLUMNNAME_M_Attribute_ID,
+						queryBL.createQueryBuilder(I_M_Attribute.class)
+								.addOnlyActiveRecordsFilter()
+								.create()
+				)
 				.orderBy(I_M_AttributeUse.COLUMNNAME_M_AttributeSet_ID)
 				.orderBy(I_M_AttributeUse.COLUMNNAME_SeqNo)
 				.orderBy(I_M_AttributeUse.COLUMNNAME_M_AttributeUse_ID)

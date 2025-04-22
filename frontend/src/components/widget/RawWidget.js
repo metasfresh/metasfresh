@@ -194,14 +194,9 @@ export class RawWidget extends PureComponent {
 
   /**
    * @method handleBlurWithParams
-   * @summary on blurring the widget field enable shortcuts/key event listeners
-   * and patch the field if necessary
-   *
-   * @param {*} widgetField
-   * @param {*} value
-   * @param {*} id
+   * @summary on blurring the widget field enable shortcuts/key event listeners and patch the field if necessary
    */
-  handleBlurWithParams = (widgetField, value, id) => {
+  handleBlurWithParams = (widgetField, value, id, valueTo) => {
     const {
       allowShortcut,
       handleBlur,
@@ -218,7 +213,7 @@ export class RawWidget extends PureComponent {
         listenOnKeysTrue && listenOnKeysTrue();
 
         if (widgetField) {
-          this.handlePatch(widgetField, value, id);
+          this.handlePatch(widgetField, value, id, valueTo);
         }
       });
     }
@@ -226,16 +221,18 @@ export class RawWidget extends PureComponent {
 
   /**
    * @method handleBlur
-   * @summary Wrapper around `handleBlurWithParams` to grab the missing
-   * parameters and avoid anonymous function in event handlers
-   * @param {*} e - DOM event
+   * @summary Wrapper around `handleBlurWithParams` to grab the missing parameters and avoid anonymous function in event handlers
    */
-  handleBlur = (e) => {
-    const { filterWidget, fields, id } = this.props;
-    const value = e.target.value;
+  handleBlur = (e, isValueTo = false) => {
+    const { filterWidget, fields, id, widgetData } = this.props;
+
+    const valueToSet = e.target.value;
+    const value = !isValueTo ? valueToSet : widgetData?.[0]?.value;
+    const valueTo = isValueTo ? valueToSet : widgetData?.[0]?.valueTo;
+
     const widgetField = getWidgetField({ filterWidget, fields });
 
-    this.handleBlurWithParams(widgetField, value, id);
+    this.handleBlurWithParams(widgetField, value, id, valueTo);
   };
 
   /**
@@ -255,21 +252,26 @@ export class RawWidget extends PureComponent {
    * @method handleKeyDown
    * @summary key handler for the widgets. For number fields we're suppressing up/down
    *          arrows to enable table row navigation
-   * @param {*} e - DOM event
    */
-  handleKeyDown = (e) => {
+  handleKeyDown = (e, isValueTo = false) => {
     const {
       propagateEnterKeyEvent,
       widgetType,
       filterWidget,
       fields,
       closeTableField,
+      id,
+      widgetData,
     } = this.props;
-    const value = e.target.value;
     const { key } = e;
+
+    const valueToSet = e.target.value;
+    const value = !isValueTo ? valueToSet : widgetData?.[0]?.value;
+    const valueTo = isValueTo ? valueToSet : widgetData?.[0]?.valueTo;
+
     const widgetField = getWidgetField({ filterWidget, fields });
 
-    this.updateTypedCharacters(e.target.value);
+    this.updateTypedCharacters(value);
 
     // for number fields submit them automatically on up/down arrow pressed and blur the field
     const NumberWidgets = [
@@ -286,7 +288,7 @@ export class RawWidget extends PureComponent {
       closeTableField?.();
       e.preventDefault();
 
-      return this.handlePatch(widgetField, value, null, null, true);
+      return this.handlePatch(widgetField, value, id, valueTo, true);
     }
 
     if ((key === 'Enter' || key === 'Tab') && !e.shiftKey) {
@@ -296,24 +298,22 @@ export class RawWidget extends PureComponent {
 
       return key === 'Tab'
         ? this.handleBlur(e)
-        : this.handlePatch(widgetField, value);
+        : this.handlePatch(widgetField, value, id, valueTo);
     }
   };
 
-  /**
-   * @method handleChange
-   * @summary onChange event handler
-   * @param {*} e - DOM event
-   */
-  handleChange = (e) => {
-    const { handleChange, filterWidget, fields } = this.props;
+  handleChange = (e, isValueTo = false) => {
+    const { handleChange, filterWidget, fields, id, widgetData } = this.props;
+    if (!handleChange) return;
 
-    const widgetField = getWidgetField({ filterWidget, fields });
+    const widgetFieldName = getWidgetField({ filterWidget, fields });
 
-    if (handleChange) {
-      this.updateTypedCharacters(e.target.value);
-      handleChange(widgetField, e.target.value);
-    }
+    const valueToSet = e.target.value;
+    const value = !isValueTo ? valueToSet : widgetData?.[0]?.value;
+    const valueTo = isValueTo ? valueToSet : widgetData?.[0]?.valueTo;
+
+    this.updateTypedCharacters(value);
+    handleChange(widgetFieldName, value, id, valueTo);
   };
 
   /**

@@ -50,7 +50,7 @@ public class StepDefConstants
 	public static final ClientId CLIENT_ID = ClientId.METASFRESH;
 	public static final OrgId ORG_ID = OrgId.MAIN;
 	public static final OrgId ORG_ID_SYSTEM = OrgId.ANY;
-	public static final CountryId COUNTRY_ID = CountryId.ofRepoId(101);
+	public static final CountryId COUNTRY_ID = CountryId.GERMANY;
 	public static final FlatrateTransitionId FLATRATE_TRANSITION_ID = FlatrateTransitionId.ofRepoId(1000003);
 	public static final ProductCategoryId PRODUCT_CATEGORY_STANDARD_ID = ProductCategoryId.ofRepoId(1000000);
 	public static final UomId PCE_UOM_ID = UomId.ofRepoId(100);

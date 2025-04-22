@@ -169,6 +169,17 @@ public class PriceListDAO implements IPriceListDAO
 	}
 
 	@Override
+	public I_M_PriceList getByIdInTrx(final PriceListId priceListId)
+	{
+		if (priceListId == null)
+		{
+			return null;
+		}
+
+		return load(priceListId, I_M_PriceList.class);
+	}
+
+	@Override
 	public I_M_PriceList_Version getPriceListVersionById(final PriceListVersionId priceListVersionId)
 	{
 		return loadOutOfTrx(priceListVersionId, I_M_PriceList_Version.class);

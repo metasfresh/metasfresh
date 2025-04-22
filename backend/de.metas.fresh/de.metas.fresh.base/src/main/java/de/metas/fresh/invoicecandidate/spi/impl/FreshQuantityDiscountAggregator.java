@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -64,7 +65,7 @@ import java.util.Set;
  * Quantity/Quality Discount Aggregation. This aggregator's job is to customize the system's behavior for the case there there is a {@link I_C_Invoice_Candidate#COLUMN_QualityDiscountPercent_Effective}
  * that is greater than zero. In this case, the default implementation only invoices the quantity minus the quality discount and that's it. This implementation creates <b>two</b> invoice lines. The
  * fist one ignores the discount and invoices whatever is the full quantity. The second line explicitly subtracts the discount quantity (line with a negative quantity).
- * <p>
+ *
  * <b>Important:</b> this customization is applied only to purchase invoice candidates! Right now the catch-weight invoicing (plus qtyToInvoiceOverride) is not working together with the qutWithIssues (plus qualtiyDiscountOverride)!
  * <p>
  * Note about the naming: this class is called Fresh<b>Quantity</b>DiscountAggregator because the discount is not a percentage on the price, but a part of the delivered quantity is not invoiced. It
@@ -86,7 +87,7 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 	 * Stores ics and their icIols whose iols are in dispute. Those icIols are ignored by the default implementation, so we need to store them here, because in this implementation we want to keep
 	 * track of them (to have the chance to create MatchInv and stuff).
 	 */
-	private final Map<I_C_Invoice_Candidate, List<I_C_InvoiceCandidate_InOutLine>> ic2IndisputeIcIols = new IdentityHashMap<>();
+	private final IdentityHashMap<I_C_Invoice_Candidate, List<I_C_InvoiceCandidate_InOutLine>> ic2IndisputeIcIols = new IdentityHashMap<>();
 
 	/**
 	 * We use the default aggregator to do most of the work.
@@ -97,6 +98,12 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 	public void setContext(final Properties ctx, final String trxName)
 	{
 		defaultAggregator.setContext(ctx, trxName);
+	}
+
+	@Override
+	public void setMatchInvoiceService(final MatchInvoiceService matchInvoiceService)
+	{
+		this.defaultAggregator.setMatchInvoiceService(matchInvoiceService);
 	}
 
 	/**
@@ -158,7 +165,6 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 
 	/**
 	 * Create quality discount invoice line aggregates (one for each invoice candidate), if needed.
-	 * <p>
 	 * NOTE: this method will also adjust the qty to invoice of the original invoice line.
 	 */
 	private List<IInvoiceCandAggregate> createQualityDiscountAggregates(final IInvoiceCandAggregate invoiceCandAggregate)

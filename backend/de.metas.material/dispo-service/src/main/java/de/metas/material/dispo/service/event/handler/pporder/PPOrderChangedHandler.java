@@ -1,6 +1,5 @@
 package de.metas.material.dispo.service.event.handler.pporder;
 
-import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -8,8 +7,6 @@ import de.metas.Profiles;
 import de.metas.document.engine.DocStatus;
 import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
-import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
-import de.metas.material.dispo.commons.candidate.businesscase.Flag;
 import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
@@ -18,7 +15,6 @@ import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.event.pporder.PPOrderChangedEvent.ChangedPPOrderLineDescriptor;
 import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.util.Check;
-import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.PPOrderAndBOMLineId;
@@ -95,35 +91,13 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 			updatedCandidatesToPersist.add(headerCandidate);
 		}
 
-		final ProductionDetail headerProductionDetail = ProductionDetail.cast(headerCandidate.getBusinessCaseDetail());
-		final DemandDetail headerDemandDetail = headerCandidate.getDemandDetail();
+		updatedCandidatesToPersist.addAll(
+				processPPOrderLinesChanges(
+						candidatesToUpdate,
+						event.getNewDocStatus(),
+						event.getPpOrderLineChanges()));
+		// TODO: handle delete and creation of new lines
 
-		//
-		// Line candidates (demands, supplies)
-		if (event.isJustCompleted())
-		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("PPOrder was just completed; create the demand and supply candidates for ppOrder lines");
-
-			PPOrderLineCandidatesCreateCommand.builder()
-					.candidateChangeService(candidateChangeService)
-					.candidateRepositoryRetrieval(candidateRepositoryRetrieval)
-					.ppOrder(event.getPpOrderAfterChanges())
-					.headerDemandDetail(headerDemandDetail)
-					.groupId(headerCandidate.getGroupId())
-					.headerCandidateSeqNo(headerCandidate.getSeqNo())
-					.advised(headerProductionDetail.getAdvised())
-					.pickDirectlyIfFeasible(Flag.FALSE_DONT_UPDATE) // only the ppOrder's header supply product can be picked directly because only there we might know the shipment schedule ID
-					.create();
-		}
-		else
-		{
-			updatedCandidatesToPersist.addAll(
-					processPPOrderLinesChanges(
-							candidatesToUpdate,
-							event.getNewDocStatus(),
-							event.getPpOrderLineChanges()));
-			// TODO: handle delete and creation of new lines
-		}
 		updatedCandidatesToPersist.forEach(candidateChangeService::onCandidateNewOrChange);
 	}
 
@@ -179,7 +153,9 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 
 		final Candidate updatedCandidate = candidateToUpdate.toBuilder()
 				.businessCaseDetail(updatedProductionDetail)
-				.materialDescriptor(candidateToUpdate.getMaterialDescriptor().withQuantity(newCandidateQty))
+				.materialDescriptor(candidateToUpdate.getMaterialDescriptor()
+											.withQuantity(newCandidateQty)
+											.withDate(ppOrderChangedEvent.getNewDatePromised()))
 				.build();
 
 		return updatedCandidate;
@@ -238,7 +214,9 @@ public class PPOrderChangedHandler implements MaterialEventHandler<PPOrderChange
 
 		return candidateToUpdate.toBuilder()
 				.businessCaseDetail(updatedProductionDetail)
-				.materialDescriptor(candidateToUpdate.getMaterialDescriptor().withQuantity(newCandidateQty))
+				.materialDescriptor(candidateToUpdate.getMaterialDescriptor()
+											.withQuantity(newCandidateQty)
+											.withDate(ppOrderLineChange.getIssueOrReceiveDate()))
 				.build();
 	}
 

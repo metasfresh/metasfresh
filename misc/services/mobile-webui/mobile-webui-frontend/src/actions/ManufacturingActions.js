@@ -1,7 +1,7 @@
 import {
   UPDATE_MANUFACTURING_ISSUE_QTY,
-  UPDATE_MANUFACTURING_RECEIPT_QTY,
   UPDATE_MANUFACTURING_LU_RECEIPT_TARGET,
+  UPDATE_MANUFACTURING_RECEIPT_QTY,
   UPDATE_MANUFACTURING_TU_RECEIPT_TARGET,
 } from '../constants/ManufacturingActionTypes';
 
@@ -87,8 +87,28 @@ export const updateManufacturingTUReceiptTarget = ({ wfProcessId, activityId, li
   };
 };
 
-export const updateManufacturingReceiptQty = ({ wfProcessId, activityId, lineId, qtyReceived }) => {
-  console.log('updateManufacturingReceiptQty', { wfProcessId, activityId, lineId, qtyReceived });
+export const updateManufacturingReceiptQty = ({
+  wfProcessId,
+  activityId,
+  lineId,
+  qtyReceived,
+  pickTo,
+  catchWeight,
+  catchWeightUom,
+  bestBeforeDate,
+  lotNo,
+}) => {
+  console.log('updateManufacturingReceiptQty', {
+    wfProcessId,
+    activityId,
+    lineId,
+    qtyReceived,
+    pickTo,
+    catchWeight,
+    catchWeightUom,
+    bestBeforeDate,
+    lotNo,
+  });
   return (dispatch, getState) => {
     const { aggregateToLU, aggregateToTU } = getAggregateTarget({
       globalState: getState(),
@@ -99,10 +119,23 @@ export const updateManufacturingReceiptQty = ({ wfProcessId, activityId, lineId,
     return postManufacturingReceiveEvent({
       wfProcessId,
       activityId,
-      receiveFrom: { lineId, aggregateToLU, aggregateToTU, qtyReceived },
+      receiveFrom: {
+        lineId,
+        aggregateToLU,
+        aggregateToTU,
+        qtyReceived,
+        catchWeight,
+        catchWeightUomSymbol: catchWeightUom,
+        bestBeforeDate,
+        lotNo,
+      },
+      pickTo,
     }) //
       .then((response) => {
-        dispatch({ type: UPDATE_MANUFACTURING_RECEIPT_QTY, payload: { wfProcessId, activityId, lineId, qtyReceived } });
+        dispatch({
+          type: UPDATE_MANUFACTURING_RECEIPT_QTY,
+          payload: { wfProcessId, activityId, lineId, qtyReceived: response.qtyReceivedTotal },
+        });
         dispatch(updateManufacturingLUReceiptTarget({ wfProcessId, activityId, lineId, target: response.existingLU }));
       });
   };

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { getLaunchers, useLaunchersWebsocket } from '../../api/launchers';
@@ -19,16 +18,12 @@ import { useCurrentWorkplace } from '../../api/workplace';
 import { useApplicationInfo } from '../../reducers/applications';
 import { useCurrentWorkstation } from '../../api/workstation';
 import { useScreenDefinition } from '../../hooks/useScreenDefinition';
+import { useMobileLocation } from '../../hooks/useMobileLocation';
 
 const WFLaunchersScreen = () => {
-  const { history } = useScreenDefinition({ back: '/' });
-
+  const { history } = useScreenDefinition({ screenId: 'WFLaunchersScreen', back: '/' });
   const dispatch = useDispatch();
-
-  const {
-    url,
-    params: { applicationId },
-  } = useRouteMatch();
+  const { url, applicationId } = useMobileLocation();
 
   const [currentPanel, setCurrentPanel] = useState('default');
   const { requiresLaunchersQRCodeFilter, showFilters } = useApplicationInfo({ applicationId });
@@ -142,15 +137,16 @@ const WFLaunchersScreen = () => {
       {currentPanel === 'default' &&
         launchers &&
         launchers.map((launcher, index) => {
-          const key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + index;
+          const id = `launcher-${index}-button`;
           return (
             <WFLauncherButton
-              key={key}
+              key={id}
               applicationId={launcher.applicationId}
               caption={launcher.caption}
               startedWFProcessId={launcher.startedWFProcessId}
               wfParameters={launcher.wfParameters}
               showWarningSign={launcher.showWarningSign}
+              testId={launcher.testId}
             />
           );
         })}

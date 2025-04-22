@@ -13,6 +13,7 @@ import java.util.Optional;
 @EqualsAndHashCode(doNotUseGetters = true)
 public class PickingJobOptions
 {
+	@Nullable PickingJobAggregationType aggregationType;
 	boolean isAllowPickingAnyHU;
 	boolean isAlwaysSplitHUsEnabled;
 	boolean isPickWithNewLU;
@@ -21,12 +22,14 @@ public class PickingJobOptions
 	boolean considerSalesOrderCapacity;
 	boolean isAllowSkippingRejectedReason;
 	boolean isShowConfirmationPromptWhenOverPick;
+	boolean isAllowCompletingPartialPickingJob;
 	@NonNull CreateShipmentPolicy createShipmentPolicy;
 	@Nullable PickingLineGroupBy pickingLineGroupBy;
 	@Nullable PickingLineSortBy pickingLineSortBy;
 
 	@Builder(toBuilder = true)
 	private PickingJobOptions(
+			@Nullable final PickingJobAggregationType aggregationType,
 			final boolean isAllowPickingAnyHU,
 			final boolean isAlwaysSplitHUsEnabled,
 			final boolean isPickWithNewLU,
@@ -35,10 +38,12 @@ public class PickingJobOptions
 			final boolean considerSalesOrderCapacity,
 			final boolean isAllowSkippingRejectedReason,
 			final boolean isShowConfirmationPromptWhenOverPick,
-			@Nullable final CreateShipmentPolicy createShipmentPolicy,
+			final boolean isAllowCompletingPartialPickingJob,
+			@NonNull final CreateShipmentPolicy createShipmentPolicy,
 			@Nullable final PickingLineGroupBy pickingLineGroupBy,
 			@Nullable final PickingLineSortBy pickingLineSortBy)
 	{
+		this.aggregationType = aggregationType;
 		this.isAllowPickingAnyHU = isAllowPickingAnyHU;
 		this.isAlwaysSplitHUsEnabled = isAlwaysSplitHUsEnabled;
 		this.isPickWithNewLU = isPickWithNewLU;
@@ -47,7 +52,8 @@ public class PickingJobOptions
 		this.considerSalesOrderCapacity = considerSalesOrderCapacity;
 		this.isAllowSkippingRejectedReason = isAllowSkippingRejectedReason;
 		this.isShowConfirmationPromptWhenOverPick = isShowConfirmationPromptWhenOverPick;
-		this.createShipmentPolicy = createShipmentPolicy != null ? createShipmentPolicy : CreateShipmentPolicy.DO_NOT_CREATE;
+		this.isAllowCompletingPartialPickingJob = isAllowCompletingPartialPickingJob;
+		this.createShipmentPolicy = createShipmentPolicy;
 		this.pickingLineGroupBy = pickingLineGroupBy;
 		this.pickingLineSortBy = pickingLineSortBy;
 	}

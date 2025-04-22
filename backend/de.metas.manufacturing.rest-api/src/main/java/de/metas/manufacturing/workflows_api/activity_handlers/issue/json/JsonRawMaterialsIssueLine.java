@@ -29,7 +29,7 @@ public class JsonRawMaterialsIssueLine
 	@Nullable JsonQtyToleranceSpec qtyToIssueTolerance;
 
 	@NonNull BigDecimal qtyIssued;
-
+	int seqNo;
 	@NonNull List<JsonRawMaterialsIssueLineStep> steps;
 
 	public static JsonRawMaterialsIssueLineBuilder builderFrom(
@@ -45,6 +45,7 @@ public class JsonRawMaterialsIssueLine
 				.qtyToIssueMax(from.getQtyToIssueMax().map(qty -> qty.toBigDecimal()).orElse(null))
 				.qtyToIssueTolerance(JsonQtyToleranceSpec.ofNullable(from.getIssuingToleranceSpec()))
 				.qtyIssued(from.getQtyIssued().toBigDecimal())
+				.seqNo(from.getSeqNo())
 				.steps(from.getSteps()
 						.stream()
 						.map(step -> JsonRawMaterialsIssueLineStep.of(step, jsonOpts))

@@ -1,23 +1,33 @@
 import { useDispatch } from 'react-redux';
-import { useRouteMatch } from 'react-router-dom';
 import { useEffect } from 'react';
 import { pushHeaderEntry } from '../actions/HeaderActions';
 import { trl } from '../utils/translations';
 import { useMobileNavigation } from './useMobileNavigation';
+import { useMobileLocation } from './useMobileLocation';
 
-export const useScreenDefinition = ({ captionKey, values, isHomeStop, back } = {}) => {
+export const useScreenDefinition = ({ screenId, captionKey, values, isHomeStop, back } = {}) => {
   const dispatch = useDispatch();
-  const {
-    url,
-    params: { applicationId, workflowId: wfProcessId, activityId, lineId, stepId, altStepId },
-  } = useRouteMatch();
-  const backLocation = computeBackLocation({ back, applicationId, wfProcessId, activityId, lineId, stepId, altStepId });
+  const { url, applicationId, wfProcessId, activityId, lineId, stepId, altStepId, ...otherParams } =
+    useMobileLocation();
+
+  const backLocation = computeBackLocation({
+    back,
+    applicationId,
+    wfProcessId,
+    activityId,
+    lineId,
+    stepId,
+    altStepId,
+    ...otherParams,
+  });
+
   const history = useMobileNavigation({ backLocation });
 
   useEffect(() => {
     dispatch(
       pushHeaderEntry({
         location: url,
+        screenId,
         caption: computeCaption({ captionKey }),
         values,
         isHomeStop,
@@ -27,8 +37,7 @@ export const useScreenDefinition = ({ captionKey, values, isHomeStop, back } = {
   }, [url]);
 
   return {
-    history,
-    //
+    ...otherParams,
     url,
     applicationId,
     wfProcessId,
@@ -36,6 +45,8 @@ export const useScreenDefinition = ({ captionKey, values, isHomeStop, back } = {
     lineId,
     stepId,
     altStepId,
+    //
+    history,
   };
 };
 

@@ -74,6 +74,7 @@ import de.metas.inoutcandidate.spi.ModelWithoutInvoiceCandidateVetoer;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceSchedule;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.InvoiceScheduleRepository;
@@ -284,6 +285,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	private final IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
+	private final SpringContextHolder.Lazy<MatchInvoiceService> matchInvoiceServiceHolder = SpringContextHolder.lazyBean(MatchInvoiceService.class);
 	private final IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
@@ -735,7 +737,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	@Override
 	public IInvoiceGenerator generateInvoices()
 	{
-		return new InvoiceCandBLCreateInvoices();
+		return new InvoiceCandBLCreateInvoices(matchInvoiceServiceHolder.get());
 	}
 
 	@Override

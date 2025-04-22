@@ -22,15 +22,14 @@ package de.metas.banking.payment.paymentallocation.service;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Exception thrown by {@link PaymentAllocationBuilder} when some payable documents could not be allocated.

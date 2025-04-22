@@ -34,20 +34,10 @@ import java.math.BigDecimal;
 @Builder
 public class CreatePackagesRequest
 {
-	@NonNull
-	InOutId inOutId;
-
-	@NonNull
-	ShipperId shipperId;
-
+	@NonNull InOutId inOutId;
+	@NonNull ShipperId shipperId;
 	boolean processed;
-
-	@Nullable
-	String trackingCode;
-
-	@Nullable
-	BigDecimal weight;
-
-	@Nullable
-	String trackingURL;
+	@Nullable String trackingCode;
+	@Nullable String trackingURL;
+	@Nullable BigDecimal weightInKg;
 }

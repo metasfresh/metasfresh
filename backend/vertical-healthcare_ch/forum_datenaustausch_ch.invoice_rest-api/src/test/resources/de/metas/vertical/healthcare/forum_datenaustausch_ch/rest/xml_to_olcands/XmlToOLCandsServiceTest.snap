@@ -49,7 +49,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -231,7 +235,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -413,7 +421,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -595,7 +607,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -777,7 +793,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -959,7 +979,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -1141,7 +1165,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -1323,7 +1351,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -1505,7 +1537,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -1687,7 +1723,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -1869,7 +1909,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -2051,7 +2095,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -2233,7 +2281,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -2415,7 +2467,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -2597,7 +2653,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -2779,7 +2839,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -2961,7 +3025,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -3143,7 +3211,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -3325,7 +3397,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -3507,7 +3583,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -3689,7 +3769,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -3879,7 +3963,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -4061,7 +4149,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -4243,7 +4335,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -4425,7 +4521,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -4607,7 +4707,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -4789,7 +4893,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -4971,7 +5079,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -5153,7 +5265,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -5335,7 +5451,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -5517,7 +5637,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -5699,7 +5823,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -5881,7 +6009,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -6063,7 +6195,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -6245,7 +6381,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -6427,7 +6567,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -6609,7 +6753,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -6791,7 +6939,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -6973,7 +7125,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -7155,7 +7311,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -7337,7 +7497,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",
@@ -7519,7 +7683,11 @@ de.metas.vertical.healthcare.forum_datenaustausch_ch.rest.xml_to_olcands.XmlToOL
             "regionSet": false,
             "shipToDefaultSet": false,
             "shipToSet": false,
-            "syncAdviseSet": false
+            "syncAdvise": {
+              "ifExists": "DONT_UPDATE",
+              "ifNotExists": "FAIL"
+            },
+            "syncAdviseSet": true
           },
           "syncAdvise": {
             "ifExists": "DONT_UPDATE",

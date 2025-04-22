@@ -66,6 +66,7 @@ const GetDocumentNoDialog = ({ documentNo: documentNoInitial, onOK, onClear }) =
                     <div className="field">
                       <div className="control">
                         <input
+                          id="documentNo-input"
                           ref={inputRef}
                           className="input"
                           type="text"

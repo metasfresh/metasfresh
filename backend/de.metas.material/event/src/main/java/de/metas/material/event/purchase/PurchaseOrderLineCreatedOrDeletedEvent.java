@@ -6,6 +6,8 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_OrderLine;
 
 import javax.annotation.Nullable;
 
@@ -45,4 +47,17 @@ public class PurchaseOrderLineCreatedOrDeletedEvent implements MaterialEvent
 	@JsonProperty("minMaxDescriptor")
 	@Nullable
 	MinMaxDescriptor minMaxDescriptor;
+
+	@Nullable
+	@Override
+	public TableRecordReference getSourceTableReference()
+	{
+		return TableRecordReference.ofNullable(I_C_OrderLine.Table_Name, orderLineDescriptor.getOrderLineId());
+	}
+
+	@Override
+	public String getEventName()
+	{
+		return TYPE;
+	}
 }

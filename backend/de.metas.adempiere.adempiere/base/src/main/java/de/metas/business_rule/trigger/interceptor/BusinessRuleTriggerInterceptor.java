@@ -4,8 +4,13 @@ import de.metas.business_rule.BusinessRuleService;
 import de.metas.business_rule.descriptor.model.BusinessRulesCollection;
 import de.metas.business_rule.descriptor.model.TriggerTiming;
 import de.metas.logging.LogManager;
+import de.metas.notification.INotificationBL;
+import de.metas.record.warning.RecordWarningRepository;
+import de.metas.record.warning.RecordWarningTextProvider;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
@@ -23,19 +28,16 @@ import java.util.Objects;
  * Intercepts source tables and pushes the trigger if necessary.
  */
 @Component
+@RequiredArgsConstructor
 public class BusinessRuleTriggerInterceptor extends AbstractModelInterceptor
 {
 	@NonNull private static final Logger logger = LogManager.getLogger(BusinessRuleTriggerInterceptor.class);
 	@NonNull private final BusinessRuleService ruleService;
+	@NonNull private final RecordWarningRepository recordWarningRepository;
 	private IModelValidationEngine engine;
 
 	@NonNull private BusinessRulesCollection rules = BusinessRulesCollection.EMPTY;
 	@NonNull private final HashSet<String> registeredTableNames = new HashSet<>();
-
-	public BusinessRuleTriggerInterceptor(final @NonNull BusinessRuleService ruleService)
-	{
-		this.ruleService = ruleService;
-	}
 
 	private @NotNull BusinessRulesCollection getRules() {return rules;}
 
@@ -46,6 +48,8 @@ public class BusinessRuleTriggerInterceptor extends AbstractModelInterceptor
 	{
 		this.engine = engine;
 		ruleService.addRulesChangedListener(this::updateFromBusinessRulesRepository);
+
+		Services.get(INotificationBL.class).addCtxProvider(new RecordWarningTextProvider(recordWarningRepository));
 
 		updateFromBusinessRulesRepository();
 	}

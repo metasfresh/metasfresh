@@ -31,7 +31,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.handlingunits.impl.ShipperTransportationQuery;
 import de.metas.handlingunits.impl.ShipperTransportationRepository;
-import de.metas.handlingunits.transportation.InOutToTransportationOrderService;
+import de.metas.handlingunits.shipping.InOutToTransportationOrderService;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;

@@ -287,7 +287,7 @@ public class C_RemittanceAdvice_CreateAndAllocatePayment extends JavaProcess
 					.setParameter("remittanceAdviceLine", remittanceAdviceLine);
 		}
 
-		final SOTrx soTrx = SOTrx.ofBooleanNotNull(remittanceAdvice.isSOTrx()); // not sure why we don't have invoice.isSOTrx(), but it is like this and seems to work   
+		final SOTrx soTrx = SOTrx.ofBooleanNotNull(remittanceAdvice.isSOTrx());
 		final boolean isCreditMemo = invoiceBL.isCreditMemo(invoice);
 		final InvoiceAmtMultiplier amtMultiplier = toInvoiceAmtMultiplier(soTrx, isCreditMemo);
 

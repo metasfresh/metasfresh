@@ -22,6 +22,7 @@
 
 package de.metas.handlingunits.shipmentschedule.spi.impl;
 
+import de.metas.handlingunits.shipping.PackageInfo;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Value;

@@ -6,9 +6,10 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.cache.CCache;
 import de.metas.cache.CCacheStats;
 import de.metas.util.Check;
-import de.metas.util.Services;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -31,22 +32,27 @@ import java.util.Map;
  * Implementation of {@link IAttributeValuesProvider} which is fetching the attributes from {@link IAttributeDAO}.
  *
  * @author tsa
- *
  */
 public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 {
-	private final I_M_Attribute attribute;
-	private transient Boolean _highVolume = null; // lazy
-
 	private static final String CACHE_PREFIX = IAttributeDAO.CACHEKEY_ATTRIBUTE_VALUE;
-	private static final transient CCache<Integer, AttributeValuesMap> attributeId2values = CCache.newLRUCache(CACHE_PREFIX + "#AttributeValuesList#by#M_Attribute_ID", 100, 0);
+	private static final CCache<AttributeId, AttributeValuesMap> attributeId2values = CCache.newLRUCache(CACHE_PREFIX + "#AttributeValuesList#by#M_Attribute_ID", 100, 0);
+	@NonNull private final IAttributeDAO attributeDAO;
+
+	@NonNull private final I_M_Attribute attribute;
+	@NonNull @Getter private final AttributeId attributeId;
+	private transient Boolean _highVolume = null; // lazy
 
 	private transient AttributeValuesMap _attributeValuesMap; // lazy
 	private final transient Map<String, NamePair> attributeValuesNP_HighVolumeCache = new HashMap<>();
 
-	public DefaultAttributeValuesProvider(@NonNull final I_M_Attribute attribute)
+	public DefaultAttributeValuesProvider(
+			@NonNull final IAttributeDAO attributeDAO,
+			@NonNull final I_M_Attribute attribute)
 	{
+		this.attributeDAO = attributeDAO;
 		this.attribute = attribute;
+		this.attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
 	}
 
 	@Override
@@ -75,31 +81,28 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 		return X_M_Attribute.ATTRIBUTEVALUETYPE_StringMax40;
 	}
 
-	private final AttributeValuesMap getAttributeValuesMap()
+	private AttributeValuesMap getAttributeValuesMap()
 	{
 		AttributeValuesMap attributeValuesMap = _attributeValuesMap;
 		if (attributeValuesMap == null)
 		{
-			attributeValuesMap = _attributeValuesMap = attributeId2values.getOrLoad(attribute.getM_Attribute_ID(), () -> retrieveAttributeValuesList(attribute));
+			attributeValuesMap = _attributeValuesMap = attributeId2values.getOrLoad(attributeId, () -> retrieveAttributeValuesList(attribute));
 		}
 		return attributeValuesMap;
 	}
 
-	private static final AttributeValuesMap retrieveAttributeValuesList(final I_M_Attribute attribute)
+	private AttributeValuesMap retrieveAttributeValuesList(final I_M_Attribute attribute)
 	{
-		final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 		final List<AttributeListValue> attributeValues = attributeDAO.retrieveAttributeValues(attribute);
-
 		return new AttributeValuesMap(attribute, attributeValues);
 	}
 
-	private static ValueNamePair createNamePair(final AttributeListValue av)
+	private static ValueNamePair toValueNamePair(final AttributeListValue av)
 	{
 		final String value = av.getValue();
 		final String name = av.getName();
 		final String description = av.getDescription();
-		final ValueNamePair vnp = ValueNamePair.of(value, name, description);
-		return vnp;
+		return ValueNamePair.of(value, name, description);
 	}
 
 	@Override
@@ -121,7 +124,7 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 		return getAttributeValuesMap().getValues();
 	}
 
-	private static final String normalizeValueKey(final Object valueKey)
+	private static String normalizeValueKey(final Object valueKey)
 	{
 		return valueKey == null ? null : valueKey.toString();
 	}
@@ -160,11 +163,11 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 		return getAttributeValuesMap().getAttributeValueId(valueKeyNormalized);
 	}
 
-	private final NamePair findValueDirectly(final String valueKey)
+	private NamePair findValueDirectly(final String valueKey)
 	{
 		return attributeValuesNP_HighVolumeCache.computeIfAbsent(valueKey, key -> {
-			final AttributeListValue av = Services.get(IAttributeDAO.class).retrieveAttributeValueOrNull(attribute, valueKey);
-			return av == null ? null : createNamePair(av);
+			final AttributeListValue av = attributeDAO.retrieveAttributeValueOrNull(attribute, valueKey);
+			return av == null ? null : toValueNamePair(av);
 		});
 	}
 
@@ -179,7 +182,7 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 	{
 		if (_highVolume == null)
 		{
-			_highVolume = Services.get(IAttributeDAO.class).isHighVolumeValuesList(attribute);
+			_highVolume = attributeDAO.isHighVolumeValuesList(attribute);
 		}
 		return _highVolume;
 	}
@@ -187,7 +190,7 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 	@Immutable
 	private static final class AttributeValuesMap
 	{
-		private final NamePair nullValue;
+		@Getter private final NamePair nullValue;
 		private final ImmutableMap<String, NamePair> valuesByKey;
 		private final ImmutableList<NamePair> valuesList;
 		private final ImmutableMap<String, AttributeValueId> attributeValueIdByKey;
@@ -205,7 +208,7 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 					continue;
 				}
 
-				final ValueNamePair vnp = createNamePair(av);
+				final ValueNamePair vnp = toValueNamePair(av);
 				valuesByKey.put(vnp.getValue(), vnp);
 
 				attributeValueIdByKey.put(vnp.getValue(), av.getId());
@@ -255,11 +258,6 @@ public class DefaultAttributeValuesProvider implements IAttributeValuesProvider
 				throw new AdempiereException("No M_AttributeValue_ID found for '" + valueKey + "'");
 			}
 			return attributeValueId;
-		}
-
-		public NamePair getNullValue()
-		{
-			return nullValue;
 		}
 	}
 }

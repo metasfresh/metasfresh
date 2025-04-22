@@ -27,7 +27,6 @@ import de.metas.inout.InOutLineId;
 import de.metas.inout.InOutQuery;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.interfaces.I_C_BPartner;
-import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.Money;
@@ -72,7 +71,6 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_MatchInv;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Warehouse;
@@ -125,7 +123,6 @@ public class InOutBL implements IInOutBL
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
@@ -580,29 +577,6 @@ public class InOutBL implements IInOutBL
 
 			return Integer.compare(line1No, line2No);
 		};
-	}
-
-	@Override
-	public void deleteMatchInvs(final I_M_InOut inout)
-	{
-		final List<I_M_MatchInv> matchInvs = matchInvDAO.retrieveForInOut(inout);
-		for (final I_M_MatchInv matchInv : matchInvs)
-		{
-			matchInv.setProcessed(false);
-			InterfaceWrapperHelper.delete(matchInv);
-		}
-	}
-
-	@Override
-	public void deleteMatchInvsForInOutLine(final I_M_InOutLine iol)
-	{
-		//
-		// Delete M_MatchInvs (08627)
-		for (final I_M_MatchInv matchInv : matchInvDAO.retrieveForInOutLine(iol))
-		{
-			matchInv.setProcessed(false); // delete it even if it's processed, because all M_MatchInv are processed on save new.
-			InterfaceWrapperHelper.delete(matchInv);
-		}
 	}
 
 	@Override

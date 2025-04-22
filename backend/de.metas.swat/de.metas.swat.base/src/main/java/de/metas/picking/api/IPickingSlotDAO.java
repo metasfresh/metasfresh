@@ -34,4 +34,6 @@ public interface IPickingSlotDAO extends ISingletonService
 	Set<PickingSlotIdAndCaption> retrievePickingSlotIdAndCaptions(@NonNull PickingSlotQuery query);
 
 	void save(@NonNull I_M_PickingSlot slot);
+
+	PickingSlotIdAndCaption createPickingSlot(@NonNull PickingSlotCreateRequest request);
 }

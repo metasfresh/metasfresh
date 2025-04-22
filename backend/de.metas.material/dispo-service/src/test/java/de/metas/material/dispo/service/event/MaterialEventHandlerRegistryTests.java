@@ -19,7 +19,7 @@ import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.StockCandidateService;
 import de.metas.material.dispo.service.candidatechange.handler.DemandCandiateHandler;
 import de.metas.material.dispo.service.candidatechange.handler.SupplyCandidateHandler;
-import de.metas.material.dispo.service.event.handler.ForecastCreatedHandler;
+import de.metas.material.dispo.service.event.handler.foreacast.ForecastCreatedHandler;
 import de.metas.material.dispo.service.event.handler.TransactionEventHandler;
 import de.metas.material.dispo.service.event.handler.ddordercandidate.DDOrderCandidateAdvisedHandler;
 import de.metas.material.dispo.service.event.handler.shipmentschedule.ShipmentScheduleCreatedHandler;

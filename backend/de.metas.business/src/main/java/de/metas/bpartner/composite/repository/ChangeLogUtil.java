@@ -187,6 +187,11 @@ final class ChangeLogUtil
 			.put(I_C_BP_BankAccount.COLUMNNAME_IBAN, BPartnerBankAccount.IBAN)
 			.put(I_C_BP_BankAccount.COLUMNNAME_C_Currency_ID, BPartnerBankAccount.CURRENCY_ID)
 			.put(I_C_BP_BankAccount.COLUMNNAME_IsActive, BPartnerBankAccount.ACTIVE)
+			.put(I_C_BP_BankAccount.COLUMNNAME_A_Name, BPartnerBankAccount.ACCOUNT_NAME)
+			.put(I_C_BP_BankAccount.COLUMNNAME_A_Street, BPartnerBankAccount.ACCOUNT_STREET)
+			.put(I_C_BP_BankAccount.COLUMNNAME_A_Zip, BPartnerBankAccount.ACCOUNT_ZIP)
+			.put(I_C_BP_BankAccount.COLUMNNAME_A_City, BPartnerBankAccount.ACCOUNT_CITY)
+			.put(I_C_BP_BankAccount.COLUMNNAME_A_Country, BPartnerBankAccount.ACCOUNT_COUNTRY)
 			.build();
 
 	public static RecordChangeLog createBPartnerChangeLog(

@@ -92,9 +92,13 @@ const computeActivityIsUserEditable = ({ currentActivity, previousActivity }) =>
   return { isUserEditable, makePreviousActivityReadOnly };
 };
 
-export const mergeWFProcessToState = ({ draftWFProcess, fromWFProcess }) => {
+export const mergeWFProcessToState = ({ draftWFProcess, fromWFProcess, parent }) => {
   draftWFProcess.headerProperties = fromWFProcess.headerProperties;
   draftWFProcess.isAllowAbort = !!fromWFProcess.isAllowAbort;
+
+  if (parent !== undefined) {
+    draftWFProcess.parent = parent ? { ...parent } : null;
+  }
 
   if (!draftWFProcess.activities) {
     draftWFProcess.activities = {};

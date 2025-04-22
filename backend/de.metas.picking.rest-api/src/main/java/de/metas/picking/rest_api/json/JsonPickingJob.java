@@ -23,6 +23,9 @@
 package de.metas.picking.rest_api.json;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.global_qrcodes.JsonDisplayableQRCode;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
+import de.metas.handlingunits.picking.job.model.HUInfo;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import lombok.Builder;
 import lombok.NonNull;
@@ -31,32 +34,41 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.function.Function;
 
 @Value
 @Builder
 @Jacksonized
 public class JsonPickingJob
 {
+	@NonNull PickingJobAggregationType aggregationType;
 	@NonNull JsonCompleteStatus completeStatus;
-	@Nullable JsonLUPickingTarget pickTarget;
-	@Nullable JsonTUPickingTarget tuPickTarget;
+	@Nullable JsonDisplayableQRCode pickFromHU;
+	boolean lineLevelPickTarget;
+	@Nullable JsonLUPickingTarget luPickingTarget;
+	@Nullable JsonTUPickingTarget tuPickingTarget;
 	@NonNull List<JsonPickingJobLine> lines;
 	@NonNull List<JsonPickFromAlternative> pickFromAlternatives;
 
-	public static JsonPickingJob of(
-			@NonNull final PickingJob pickingJob,
-			@NonNull final Function<PickingJob, List<JsonPickingJobLine>> getJsonPickingLines)
+	@NonNull JsonRejectReasonsList qtyRejectedReasons;
+
+	boolean allowSkippingRejectedReason;
+	boolean pickWithNewLU;
+	boolean allowNewTU;
+	boolean showPromptWhenOverPicking;
+
+	public static JsonPickingJobBuilder builderFrom(@NonNull final PickingJob pickingJob)
 	{
 		return builder()
+				.aggregationType(pickingJob.getAggregationType())
 				.completeStatus(JsonCompleteStatus.of(pickingJob.getProgress()))
-				.pickTarget(pickingJob.getLuPickTarget().map(JsonLUPickingTarget::of).orElse(null))
-				.tuPickTarget(pickingJob.getTuPickTarget().map(JsonTUPickingTarget::of).orElse(null))
-				.lines(getJsonPickingLines.apply(pickingJob))
+				.pickFromHU(pickingJob.getPickFromHU().map(HUInfo::toQRCodeRenderedJson).orElse(null))
+				.lineLevelPickTarget(pickingJob.isLineLevelPickTarget())
+				.luPickingTarget(pickingJob.getLuPickingTarget(null).map(JsonLUPickingTarget::of).orElse(null))
+				.tuPickingTarget(pickingJob.getTuPickingTarget(null).map(JsonTUPickingTarget::of).orElse(null))
 				.pickFromAlternatives(pickingJob.getPickFromAlternatives()
 						.stream()
 						.map(JsonPickFromAlternative::of)
 						.collect(ImmutableList.toImmutableList()))
-				.build();
+				;
 	}
 }

@@ -38,6 +38,8 @@ public class WFProcessHeaderProperty
 	@NonNull ITranslatableString caption;
 	@NonNull ITranslatableString value;
 
+	public boolean isValueNotBlank() {return !TranslatableStrings.isBlank(value);}
+
 	@SuppressWarnings("unused")
 	public static class WFProcessHeaderPropertyBuilder
 	{

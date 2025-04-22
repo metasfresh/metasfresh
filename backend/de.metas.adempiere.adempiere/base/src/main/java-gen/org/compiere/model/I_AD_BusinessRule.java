@@ -234,23 +234,22 @@ public interface I_AD_BusinessRule
 	String COLUMNNAME_Validation_Rule_ID = "Validation_Rule_ID";
 
 	/**
-	 * Set Warning Message.
+	 * Set Warning Message ID.
 	 *
-	 * <br>Type: TextLong
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setWarningMessage (@Nullable java.lang.String WarningMessage);
+	void setWarning_Message_ID (int Warning_Message_ID);
 
 	/**
-	 * Get Warning Message.
+	 * Get Warning Message ID.
 	 *
-	 * <br>Type: TextLong
+	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getWarningMessage();
+	int getWarning_Message_ID();
 
-	ModelColumn<I_AD_BusinessRule, Object> COLUMN_WarningMessage = new ModelColumn<>(I_AD_BusinessRule.class, "WarningMessage", null);
-	String COLUMNNAME_WarningMessage = "WarningMessage";
+	String COLUMNNAME_Warning_Message_ID = "Warning_Message_ID";
 }

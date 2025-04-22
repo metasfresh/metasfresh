@@ -9,7 +9,11 @@ import lombok.Builder;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Collection;
+
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
+import static java.math.BigDecimal.ONE;
 
 /*
  * #%L
@@ -41,17 +45,21 @@ public final class GroupCreator
 
 	private final GroupTemplate groupTemplate;
 
+	private final BigDecimal qty;
+
 	@Builder
 	private GroupCreator(
 			@NonNull final GroupRepository groupsRepo,
 			@NonNull final GroupCompensationLineCreateRequestFactory compensationLineCreateRequestFactory,
 			//
-			@NonNull final GroupTemplate groupTemplate)
+			@NonNull final GroupTemplate groupTemplate,
+			@Nullable final BigDecimal qty)
 	{
 		this.groupsRepo = groupsRepo;
 		this.compensationLineCreateRequestFactory = compensationLineCreateRequestFactory;
 
 		this.groupTemplate = groupTemplate;
+		this.qty = coalesceNotNull(qty, ONE);
 	}
 
 	public static class GroupCreatorBuilder
@@ -68,7 +76,7 @@ public final class GroupCreator
 			return build().createGroup(null, orderId, conditionsId);
 		}
 
-		public void recreateGroup(@NonNull final Group group) { build().recreateGroup(group); }
+		public void recreateGroup(@NonNull final Group group) {build().recreateGroup(group);}
 	}
 
 	public Group createGroup(
@@ -82,6 +90,7 @@ public final class GroupCreator
 						.orderLineIds(lineIdsToGroup != null ? ImmutableSet.copyOf(lineIdsToGroup) : ImmutableSet.of())
 						.newGroupTemplate(groupTemplate)
 						.newContractConditionsId(contractConditionsId)
+						.qtyMultiplier(qty)
 						.build());
 
 		recreateGroup(group);

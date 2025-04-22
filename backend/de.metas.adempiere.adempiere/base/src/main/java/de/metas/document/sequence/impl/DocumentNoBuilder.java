@@ -34,7 +34,6 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequenceno.CustomSequenceNoProvider;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
@@ -316,8 +315,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 			final Evaluatee evalContext = getEvaluationContext();
 			if (!customSequenceNoProvider.isApplicable(evalContext, docSeqInfo))
 			{
-				final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_PROVIDER_NOT_APPLICABLE, docSeqInfo.getName());
-				throw new DocumentNoBuilderException(msg)
+				throw new DocumentNoBuilderException(MSG_PROVIDER_NOT_APPLICABLE, docSeqInfo.getName())
 						.appendParametersToMessage()
 						.setParameter("context", evalContext);
 			}
@@ -641,7 +639,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 	{
 		return _usePreliminaryDocumentNo;
 	}
-	
+
 	@NonNull
 	private DocumentNoBuilder.CalendarYearMonthAndDay getCalendarYearMonthAndDay(@NonNull final DocumentSequenceInfo docSeqInfo)
 	{
@@ -649,7 +647,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 				.calendarYear(getCalendarYear(docSeqInfo.getDateColumn()))
 				.calendarMonth(DEFAULT_CALENDAR_MONTH_TO_USE)
 				.calendarDay(DEFAULT_CALENDAR_DAY_TO_USE);
-		
+
 		if (docSeqInfo.isStartNewDay())
 		{
 			calendarYearMonthAndDayBuilder.calendarMonth(getCalendarMonth(docSeqInfo.getDateColumn()));
@@ -659,10 +657,10 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 		{
 			calendarYearMonthAndDayBuilder.calendarMonth(getCalendarMonth(docSeqInfo.getDateColumn()));
 		}
-		
+
 		return calendarYearMonthAndDayBuilder.build();
 	}
-	
+
 	@Builder
 	@Value
 	private static class CalendarYearMonthAndDay

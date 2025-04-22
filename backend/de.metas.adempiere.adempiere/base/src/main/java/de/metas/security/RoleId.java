@@ -35,6 +35,7 @@ import java.util.Objects;
 public class RoleId implements RepoIdAware
 {
 	public static final RoleId SYSTEM = new RoleId(0);
+	public static final RoleId WEBUI = new RoleId(540024);
 
 	/**
 	 * Used by the reports service when it accesses the REST-API
@@ -53,6 +54,10 @@ public class RoleId implements RepoIdAware
 		if (repoId == SYSTEM.getRepoId())
 		{
 			return SYSTEM;
+		}
+		else if (repoId == WEBUI.getRepoId())
+		{
+			return WEBUI;
 		}
 		else if (repoId == JSON_REPORTS.getRepoId())
 		{

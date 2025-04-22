@@ -42,6 +42,7 @@ SELECT i.description                                                            
        bp.VATaxID,
        bp.value                                                                         AS bp_value,
        bp.eori                                                                          AS eori,
+       bp.customernoatvendor                                                            AS customernoatvendor,
        COALESCE(cogr.name, '') ||
        COALESCE(' ' || cont.title, '') ||
        COALESCE(' ' || cont.firstName, '') ||
@@ -68,7 +69,7 @@ SELECT i.description                                                            
        cm.documentno                                                                    AS creditmemo_docNo
 FROM C_Invoice i
          JOIN C_BPartner bp ON i.C_BPartner_ID = bp.C_BPartner_ID
-         LEFT JOIN AD_User srep ON i.SalesRep_ID = srep.AD_User_ID AND srep.AD_User_ID <> 100
+         LEFT JOIN AD_User srep ON i.SalesRep_ID = srep.AD_User_ID
          LEFT JOIN AD_User cont ON i.AD_User_ID = cont.AD_User_ID
          LEFT JOIN C_Greeting cogr ON cont.C_Greeting_ID = cogr.C_Greeting_ID
          LEFT JOIN C_Greeting srgr ON srep.C_Greeting_ID = srgr.C_Greeting_ID

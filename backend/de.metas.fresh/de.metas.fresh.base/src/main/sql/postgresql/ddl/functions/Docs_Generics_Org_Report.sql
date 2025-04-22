@@ -1,29 +1,31 @@
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report( IN p_Email Character Varying(60), IN p_IsSOTrx Character Varying(1), IN p_AD_Org_ID Numeric );
 DROP TABLE IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report;
 
-CREATE TABLE de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report 
-(
-	Name Character Varying(60),
-	Address Character Varying(100),
-	VATaxID Character Varying(60),
-	TaxID Character Varying(60),
-	Phone Character Varying,
-	Phone2 Character Varying,
-	Fax Character Varying,
-	Postal Character Varying(10),
-	City Character Varying(60),
-	gln varchar,
-	Email Character Varying(60),
-	URL Character Varying
-);
+CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report( IN p_Email Character Varying(60), IN p_IsSOTrx Character Varying(1), IN p_AD_Org_ID Numeric )
+    RETURNS TABLE
+            (
+                Name        Character Varying(60),
+                description varchar(255),
+                Address     Character Varying(100),
+                VATaxID     Character Varying(60),
+                TaxID       Character Varying(60),
+                Phone       Character Varying,
+                Phone2      Character Varying,
+                Fax         Character Varying,
+                Postal      Character Varying(10),
+                City        Character Varying(60),
+                gln         varchar,
+                Email       Character Varying(60),
+                URL         Character Varying
+            )
 
-CREATE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report( IN p_Email Character Varying(60), IN p_IsSOTrx Character Varying(1), IN p_AD_Org_ID Numeric ) 
-RETURNS SETOF de_metas_endcustomer_fresh_reports.Docs_Generics_Org_Report
+
 AS
 $$
 (
 SELECT
 	org_bp.name AS name,
+    org_bp.description,
 	loc.address1 AS address,
 	org_bp.vataxid,
 	org_bp.taxid,

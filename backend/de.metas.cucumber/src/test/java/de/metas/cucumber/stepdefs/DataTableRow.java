@@ -549,7 +549,7 @@ public class DataTableRow
 	{
 		return getAsOptionalLocalDate(columnName).map(DataTableRow::toTimestamp);
 	}
-
+	
 	@SuppressWarnings("unused")
 	public Timestamp getAsInstantTimestamp(@NonNull final String columnName)
 	{

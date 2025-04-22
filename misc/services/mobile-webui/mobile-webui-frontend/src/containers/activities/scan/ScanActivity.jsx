@@ -50,6 +50,8 @@ const ScanActivity = (props) => {
         />
       )}
       <ButtonWithIndicator
+        id={'scan-activity-' + activityId + '-button'}
+        testId={'scan-activity-' + activityId + '-button'}
         caption={scanButtonCaption}
         completeStatus={activityCompleteStatus}
         disabled={!isUserEditable}

@@ -12,7 +12,6 @@ import de.metas.util.ConnectionUtil;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Getter;
-import lombok.NonNull;
 import org.adempiere.ad.housekeeping.HouseKeepingService;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.concurrent.CustomizableThreadFactory;
@@ -34,17 +33,9 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
-import org.springframework.http.MediaType;
-import org.springframework.web.servlet.config.annotation.ContentNegotiationConfigurer;
-import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.annotation.Nullable;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -141,6 +132,8 @@ public class ServerBoot implements InitializingBean
 					.run(args);
 		}
 		SpringContextHolder.instance.getBean(ServerBoot.class).commandLineOptions = commandLineOptions;
+		
+		final ServerBootHealthIndicator healthIndicator = SpringContextHolder.instance.getBean(ServerBootHealthIndicator.class);
 
 		// now init the model validation engine
 		ModelValidationEngine.get();
@@ -151,6 +144,7 @@ public class ServerBoot implements InitializingBean
 
 		logger.info("Metasfresh Server started in {}", stopwatch);
 		logger.info("End of {} main-method ", ServerBoot.class);
+		healthIndicator.setStatusUp();
 	}
 
 	private static ArrayList<String> retrieveActiveProfilesFromSysConfig()

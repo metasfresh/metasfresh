@@ -19,6 +19,7 @@ import { getWFProcessScreenLocation } from '../../../../routes/workflow_location
 
 const RawMaterialIssueLineScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
+    screenId: 'RawMaterialIssueLineScreen',
     back: getWFProcessScreenLocation,
   });
 
@@ -64,13 +65,14 @@ const RawMaterialIssueLineScreen = () => {
 
   return (
     <div className="section pt-2">
-      <ButtonWithIndicator caption={trl('general.scanQRCode')} onClick={onScanHUClicked} />
+      <ButtonWithIndicator caption={trl('general.scanQRCode')} onClick={onScanHUClicked} testId="scanQRCode-button" />
       {steps.length > 0 &&
-        steps.map((stepItem) => {
+        steps.map((stepItem, stepIdx) => {
           return (
             <ButtonWithIndicator
               key={stepItem.id}
-              caption={stepItem.locatorName + ' - ' + toQRCodeDisplayable(stepItem.huQRCode)}
+              testId={`step-${stepIdx + 1}-button`}
+              caption={stepItem.locatorName + ' - ' + (toQRCodeDisplayable(stepItem.huQRCode) ?? '')}
               completeStatus={stepItem.completeStatus}
               onClick={() => onStepButtonClick({ stepId: stepItem.id })}
             >

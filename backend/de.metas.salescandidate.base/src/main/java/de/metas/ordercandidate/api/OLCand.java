@@ -398,12 +398,6 @@ public final class OLCand implements IProductPriceAware
 		return olCandRecord.getAD_DataDestination_ID();
 	}
 
-	public boolean isImportedWithIssues()
-	{
-		final org.adempiere.process.rpl.model.I_C_OLCand rplCandidate = InterfaceWrapperHelper.create(olCandRecord, org.adempiere.process.rpl.model.I_C_OLCand.class);
-		return rplCandidate.isImportedWithIssues();
-	}
-
 	// FIXME hardcoded (08691)
 	@Nullable
 	public Object getValueByColumn(@NonNull final OLCandAggregationColumn column)

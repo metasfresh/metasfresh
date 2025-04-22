@@ -547,6 +547,11 @@ public final class TableRecordReference implements ITableRecordReference
 		return getModel(PlainContextAware.newWithThreadInheritedTrx());
 	}
 
+	/**
+	 * Deprecated: pls use appropriate DAO/Repository for loading models
+	 * e.g. ModelDAO.getById({@link TableRecordReference#getIdAssumingTableName(String, IntFunction)})
+	 */
+	@Deprecated
 	@Override
 	public <T> T getModel(final Class<T> modelClass)
 	{

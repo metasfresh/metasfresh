@@ -15,6 +15,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
@@ -135,5 +136,14 @@ public class DistributionJobLoaderSupportingServices
 				.map(ppOrderBL::getById)
 				.map(I_PP_Order::getDocumentNo)
 				.orElse(null);
+	}
+
+	@NonNull
+	public ResourceInfo getPlantInfo(@NonNull final ResourceId resourceId)
+	{
+		return ResourceInfo.builder()
+				.resourceId(resourceId)
+				.caption(ppOrderBL.getResourceName(resourceId))
+				.build();
 	}
 }

@@ -4,6 +4,8 @@ import { isError } from 'lodash';
 import { Bounce, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import * as uiTrace from './ui_trace';
+import React from 'react';
+import PropTypes from 'prop-types';
 
 export const toastErrorFromObj = (obj) => {
   console.log('toastErrorFromObj', { obj });
@@ -20,11 +22,13 @@ export const toastErrorFromObj = (obj) => {
 };
 
 export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMessage, context }) => {
+  let code;
   let message;
   if (axiosError) {
     message = extractUserFriendlyErrorMessageFromAxiosError({ axiosError, fallbackMessageKey });
   } else if (messageKey) {
     message = trl(messageKey);
+    code = messageKey;
   } else if (plainMessage) {
     message = plainMessage;
   } else {
@@ -32,9 +36,9 @@ export const toastError = ({ axiosError, messageKey, fallbackMessageKey, plainMe
     return;
   }
 
-  console.trace('toast error: ', { message, axiosError, context });
+  console.trace('toast error: ', { message, code, axiosError, context });
 
-  toast.error(message, {
+  toast.error(<ToastMessage message={message} code={code} />, {
     autoClose: 1000 * 60 * 5,
     position: 'bottom-center',
     transition: Bounce,
@@ -89,6 +93,13 @@ export const toastNotification = ({ messageKey, plainMessage }) => {
   });
 };
 
+export const extractErrorResponseFromAxiosError = (axiosError) => {
+  if (!axiosError || !axiosError.response || !axiosError.response.data) {
+    return undefined;
+  }
+  return unboxAxiosResponse(axiosError.response);
+};
+
 function extractUserFriendlyErrorSingleErrorObject(error) {
   if (!error) {
     // null/empty error message... shall not happen
@@ -107,3 +118,20 @@ function extractUserFriendlyErrorSingleErrorObject(error) {
     return `${error}`;
   }
 }
+
+const ToastMessage = ({ message, code }) => {
+  if (!code) return message;
+
+  return (
+    <>
+      {message}
+      <span className="toast-code" style={{ display: 'none' }}>
+        {code}
+      </span>
+    </>
+  );
+};
+ToastMessage.propTypes = {
+  message: PropTypes.string,
+  code: PropTypes.string,
+};

@@ -159,6 +159,7 @@ class PickingWorkflowLaunchersProvider
 				.applicationId(APPLICATION_ID)
 				.caption(caption)
 				.startedWFProcessId(WFProcessId.ofIdPart(APPLICATION_ID, pickingJobReference.getPickingJobId()))
+				.wfParameters(PickingWFProcessStartParams.of(pickingJobReference).toParams())
 				.build();
 	}
 

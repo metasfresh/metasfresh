@@ -224,7 +224,7 @@ public final class Document
 					parentLinkField = field;
 				}
 
-				if(fieldName.equals(FIELDNAME_IsSOTrx) && !fieldDescriptor.isBooleanWidgetType())
+				if (fieldName.equals(FIELDNAME_IsSOTrx) && !fieldDescriptor.isBooleanWidgetType())
 				{
 					hasNonBooleanIsSOTrx = true;
 				}
@@ -1128,6 +1128,11 @@ public final class Document
 		return _saveStatus;
 	}
 
+	private DocumentSaveStatus setSaveStatusAndReturn(@NonNull final Exception exception)
+	{
+		return setSaveStatusAndReturn(DocumentSaveStatus.error(exception, this._saveStatus));
+	}
+
 	private DocumentSaveStatus setSaveStatusAndReturn(@NonNull final DocumentSaveStatus saveStatus)
 	{
 		_saveStatus = saveStatus;
@@ -1384,7 +1389,7 @@ public final class Document
 			return ReadOnlyInfo.TRUE;
 		}
 
-		if(isFieldsReadOnlyInUI())
+		if (isFieldsReadOnlyInUI())
 		{
 			return ReadOnlyInfo.TRUE;
 		}
@@ -1720,7 +1725,6 @@ public final class Document
 	/**
 	 * Set Dynamic Attribute.
 	 * A dynamic attribute is an attribute that is not stored in database and is kept as long as this this instance is not destroyed.
-	 *
 	 */
 	public Object setDynAttribute(final String name, final Object value)
 	{
@@ -1957,7 +1961,7 @@ public final class Document
 			// NOTE: usually if we do the right checks we shall not get to this
 			// logger.warn("Failed saving document, but IGNORED: {}", this, saveEx);
 			setValidStatusAndReturn(DocumentValidStatus.invalid(saveEx), OnValidStatusChanged.DO_NOTHING);
-			return setSaveStatusAndReturn(DocumentSaveStatus.error(saveEx));
+			return setSaveStatusAndReturn(saveEx);
 		}
 	}
 
@@ -1983,7 +1987,7 @@ public final class Document
 			}
 			catch (Exception ex)
 			{
-				return setSaveStatusAndReturn(DocumentSaveStatus.error(ex)).throwIfError();
+				return setSaveStatusAndReturn(ex).throwIfError();
 			}
 		}
 		else
@@ -2155,7 +2159,7 @@ public final class Document
 				.findFirst()
 				.orElse(BooleanWithReason.FALSE);
 	}
-	
+
 	public boolean containsField(@NonNull final String fieldName)
 	{
 		return fieldsByName.containsKey(fieldName);

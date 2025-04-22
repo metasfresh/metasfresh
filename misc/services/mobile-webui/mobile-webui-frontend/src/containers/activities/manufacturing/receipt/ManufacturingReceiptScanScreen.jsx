@@ -12,6 +12,7 @@ import {
 
 const ManufacturingReceiptScanScreen = () => {
   const { history, wfProcessId, activityId, lineId } = useScreenDefinition({
+    screenId: 'ManufacturingReceiptScanScreen',
     captionKey: 'activities.mfg.receipts.existingLU',
     back: manufacturingReceiptReceiveTargetScreen,
   });

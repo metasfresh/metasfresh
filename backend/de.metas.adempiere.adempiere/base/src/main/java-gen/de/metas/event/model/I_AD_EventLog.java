@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.adempiere.adempiere.base
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.event.model;
 
 import org.adempiere.model.ModelColumn;
@@ -73,6 +95,28 @@ public interface I_AD_EventLog
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Table.
+	 * Database Table information
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Table_ID (int AD_Table_ID);
+
+	/**
+	 * Get Table.
+	 * Database Table information
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Table_ID();
+
+	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -98,34 +142,13 @@ public interface I_AD_EventLog
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Event UUID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setEvent_UUID (String Event_UUID);
-
-	/**
-	 * Get Event UUID.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	String getEvent_UUID();
-
-	ModelColumn<I_AD_EventLog, Object> COLUMN_Event_UUID = new ModelColumn<>(I_AD_EventLog.class, "Event_UUID", null);
-	String COLUMNNAME_Event_UUID = "Event_UUID";
-
-	/**
 	 * Set Daten.
 	 *
 	 * <br>Type: TextLong
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setEventData (@Nullable String EventData);
+	void setEventData (@Nullable java.lang.String EventData);
 
 	/**
 	 * Get Daten.
@@ -134,13 +157,34 @@ public interface I_AD_EventLog
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getEventData();
+	@Nullable java.lang.String getEventData();
 
 	ModelColumn<I_AD_EventLog, Object> COLUMN_EventData = new ModelColumn<>(I_AD_EventLog.class, "EventData", null);
 	String COLUMNNAME_EventData = "EventData";
 
 	/**
-	 * Set Zeitpunkt.
+	 * Set Event Name.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEventName (@Nullable java.lang.String EventName);
+
+	/**
+	 * Get Event Name.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEventName();
+
+	ModelColumn<I_AD_EventLog, Object> COLUMN_EventName = new ModelColumn<>(I_AD_EventLog.class, "EventName", null);
+	String COLUMNNAME_EventName = "EventName";
+
+	/**
+	 * Set Date/Time.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -149,7 +193,7 @@ public interface I_AD_EventLog
 	void setEventTime (@Nullable java.sql.Timestamp EventTime);
 
 	/**
-	 * Get Zeitpunkt.
+	 * Get Date/Time.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -167,7 +211,7 @@ public interface I_AD_EventLog
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setEventTopicName (@Nullable String EventTopicName);
+	void setEventTopicName (@Nullable java.lang.String EventTopicName);
 
 	/**
 	 * Get Topicname.
@@ -176,7 +220,7 @@ public interface I_AD_EventLog
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getEventTopicName();
+	@Nullable java.lang.String getEventTopicName();
 
 	ModelColumn<I_AD_EventLog, Object> COLUMN_EventTopicName = new ModelColumn<>(I_AD_EventLog.class, "EventTopicName", null);
 	String COLUMNNAME_EventTopicName = "EventTopicName";
@@ -188,7 +232,7 @@ public interface I_AD_EventLog
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setEventTypeName (@Nullable String EventTypeName);
+	void setEventTypeName (@Nullable java.lang.String EventTypeName);
 
 	/**
 	 * Get Event type.
@@ -197,10 +241,31 @@ public interface I_AD_EventLog
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getEventTypeName();
+	@Nullable java.lang.String getEventTypeName();
 
 	ModelColumn<I_AD_EventLog, Object> COLUMN_EventTypeName = new ModelColumn<>(I_AD_EventLog.class, "EventTypeName", null);
 	String COLUMNNAME_EventTypeName = "EventTypeName";
+
+	/**
+	 * Set Event UUID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setEvent_UUID (java.lang.String Event_UUID);
+
+	/**
+	 * Get Event UUID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getEvent_UUID();
+
+	ModelColumn<I_AD_EventLog, Object> COLUMN_Event_UUID = new ModelColumn<>(I_AD_EventLog.class, "Event_UUID", null);
+	String COLUMNNAME_Event_UUID = "Event_UUID";
 
 	/**
 	 * Set Active.
@@ -268,6 +333,29 @@ public interface I_AD_EventLog
 
 	ModelColumn<I_AD_EventLog, Object> COLUMN_IsErrorAcknowledged = new ModelColumn<>(I_AD_EventLog.class, "IsErrorAcknowledged", null);
 	String COLUMNNAME_IsErrorAcknowledged = "IsErrorAcknowledged";
+
+	/**
+	 * Set Record ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRecord_ID (int Record_ID);
+
+	/**
+	 * Get Record ID.
+	 * Direct internal record ID
+	 *
+	 * <br>Type: Button
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getRecord_ID();
+
+	ModelColumn<I_AD_EventLog, Object> COLUMN_Record_ID = new ModelColumn<>(I_AD_EventLog.class, "Record_ID", null);
+	String COLUMNNAME_Record_ID = "Record_ID";
 
 	/**
 	 * Get Updated.

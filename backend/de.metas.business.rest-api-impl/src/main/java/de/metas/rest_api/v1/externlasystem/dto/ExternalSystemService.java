@@ -65,7 +65,7 @@ import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_
 @Service
 public class ExternalSystemService
 {
-	private static final transient Logger logger = LogManager.getLogger(ExternalSystemService.class);
+	private static final Logger logger = LogManager.getLogger(ExternalSystemService.class);
 	private static final String DEFAULT_ISSUE_SUMMARY = "No summary provided.";
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
@@ -184,6 +184,7 @@ public class ExternalSystemService
 				.sourceClassName(jsonErrorItem.getSourceClassName())
 				.sourceMethodName(jsonErrorItem.getSourceMethodName())
 				.stacktrace(jsonErrorItem.getStackTrace())
+				.errorCode(jsonErrorItem.getErrorCode())
 				.pInstance_ID(pInstanceId)
 				.orgId(RestUtils.retrieveOrgIdOrDefault(jsonErrorItem.getOrgCode()))
 				.build();

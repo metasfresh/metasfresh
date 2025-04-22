@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details_footer" pageWidth="521" pageHeight="842" columnWidth="521" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/invoice/report" uuid="07781559-9273-40dd-ab0a-726b6e29bd5a">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -26,9 +26,9 @@ JOIN report.taxnote ( $P{c_invoice_id}, $P{ad_language} ) taxnote  on 1=1;]]>
 		<property name="com.jaspersoft.studio.field.name" value="descriptionbottom"/>
 		<property name="com.jaspersoft.studio.field.label" value="descriptionbottom"/>
 	</field>
-	<field name="p_cond" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="p_cond"/>
-		<property name="com.jaspersoft.studio.field.label" value="p_cond"/>
+	<field name="p_term" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="p_term"/>
+		<property name="com.jaspersoft.studio.field.label" value="p_term"/>
 	</field>
 	<field name="paymentrule" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="paymentrule"/>
@@ -37,10 +37,6 @@ JOIN report.taxnote ( $P{c_invoice_id}, $P{ad_language} ) taxnote  on 1=1;]]>
 	<field name="textcenter" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="textcenter"/>
 		<property name="com.jaspersoft.studio.field.label" value="textcenter"/>
-	</field>
-	<field name="p_term" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="p_term"/>
-		<property name="com.jaspersoft.studio.field.label" value="p_term"/>
 	</field>
 	<field name="discount1" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.name" value="discount1"/>
@@ -85,7 +81,7 @@ JOIN report.taxnote ( $P{c_invoice_id}, $P{ad_language} ) taxnote  on 1=1;]]>
 	<detail>
 		<band height="15" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[new Boolean( $F{p_cond} != null )]]></printWhenExpression>
+			<printWhenExpression><![CDATA[new Boolean( $F{p_term} != null )]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-82" style="Test" x="150" y="0" width="370" height="12" isPrintWhenDetailOverflows="true" uuid="4ff37ef9-5963-48e1-b50b-c31a32425867"/>
 				<box>
@@ -97,7 +93,7 @@ JOIN report.taxnote ( $P{c_invoice_id}, $P{ad_language} ) taxnote  on 1=1;]]>
 				<textElement markup="html">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{p_cond}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{p_term}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="37" y="0" width="112" height="12" isPrintWhenDetailOverflows="true" uuid="5c6e9099-bbbd-48a8-8175-4092f979f1a9"/>

@@ -1,5 +1,6 @@
-import { useHistory, useLocation, useRouteMatch } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useBackLocationFromHeaders } from '../reducers/headers';
+import { useMobileLocation } from './useMobileLocation';
 
 export const useMobileNavigation = ({ backLocation: backLocationParam } = {}) => {
   const history = useHistory();
@@ -8,9 +9,7 @@ export const useMobileNavigation = ({ backLocation: backLocationParam } = {}) =>
   const backLocation = backLocationParam ?? backLocationFromHeaders;
   //console.log(`useMobileNavigation: back location ${backLocation}`, { backLocationParam, backLocationFromHeaders });
 
-  const {
-    params: { applicationId, workflowId: wfProcessId, activityId, lineId, stepId, altStepId },
-  } = useRouteMatch();
+  const { applicationId, wfProcessId, activityId, lineId, stepId, altStepId } = useMobileLocation();
 
   const goTo = (location) => {
     const locationEff = parseLocation({

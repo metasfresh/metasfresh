@@ -2,6 +2,7 @@ package de.metas.handlingunits.pporder.api.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
@@ -394,7 +395,7 @@ public class HUPPOrderBL implements IHUPPOrderBL
 		attributesBL.updateHUAttribute(HuId.ofRepoId(receivedHu.getM_HU_ID()), AttributeConstants.ProductionDate, SystemTime.asTimestamp());
 
 		final HUQRCode huqrCode = huqrCodesService.get().getQRCodeByHuId(HuId.ofRepoId(huToBeIssued.getM_HU_ID()));
-		huqrCodesService.get().assign(huqrCode, HuId.ofRepoId(receivedHu.getM_HU_ID()));
+		huqrCodesService.get().assign(huqrCode, ImmutableSet.of(HuId.ofRepoId(receivedHu.getM_HU_ID())));
 
 		processPlanning(PPOrderPlanningStatus.COMPLETE, ppOrderId);
 	}

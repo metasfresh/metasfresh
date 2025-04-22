@@ -83,12 +83,17 @@ const translations = {
       defaultCaption: 'Scan',
       invalidScannedBarcode: 'Code ist ungültig',
     },
+    huManager: {
+      missingTargetQrCode: 'Der Ziel-QR-Code muss zuerst gescannt werden!',
+      scanLuOrLocator: 'Scannen LU oder Lagerort',
+    },
     picking: {
       PickingLine: 'Pick Zeile',
+      PickFromManufacturingOrder: 'Produzieren',
       PickHU: 'HU kommissionieren',
       scanQRCode: 'QR scannen',
       notEligibleHUBarcode: 'HU Code passt nicht',
-      qtyAboveMax: '%(qtyDiff)s über max', // TODO verify trl
+      qtyAboveMax: '%(qtyDiff)s über max',
       notPositiveQtyNotAllowed: 'Null oder negative Menge nicht erlaubt', // TODO verify trl
       confirmDone: 'OK',
       confirmDoneAndCloseTarget: 'OK und LU schließen',
@@ -120,6 +125,7 @@ const translations = {
       },
       overPickConfirmationPrompt: 'Möchten Sie wirklich mehr kommissionieren als beauftragt wurde?',
       reopenLU: 'LU wieder öffnen',
+      pickingSlot: 'Kommissionier Fach  ',
     },
     distribution: {
       DistributionLine: 'Bereitstellung Zeile',

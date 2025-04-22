@@ -6,6 +6,7 @@ Feature: EDI_cctop_invoic_v export format
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
+    And metasfresh is configured for One-DESADV-Per-ORDERS
 
   #   Convenience Salat 250g
     And load M_Product:
@@ -224,7 +225,7 @@ Feature: EDI_cctop_invoic_v export format
 
     And after not more than 60s, EDI_Desadv records have the following export status
       | EDI_Desadv_ID.Identifier | EDI_ExportStatus |
-      | d_1                      | D                |
+      | d_1                      | U                |
 
     And RabbitMQ receives a EDI_Exp_Desadv
       | EDI_Exp_Desadv_ID.Identifier | EXP_Processor_ID.Identifier | EXP_ProcessorParameter.Value |

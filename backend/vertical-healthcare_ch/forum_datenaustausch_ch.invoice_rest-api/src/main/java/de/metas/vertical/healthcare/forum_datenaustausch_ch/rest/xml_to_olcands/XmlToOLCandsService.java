@@ -47,6 +47,7 @@ import de.metas.common.ordercandidates.v1.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.v1.JsonDocTypeInfo;
 import de.metas.common.rest_api.v1.SyncAdvise;
+import de.metas.common.util.pair.ImmutablePair;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.v1.bpartner.BpartnerRestController;
@@ -129,15 +130,32 @@ public class XmlToOLCandsService
 	public JsonAttachment createOLCands(@NonNull final CreateOLCandsRequest createOLCandsRequest)
 	{
 		final MultipartFile xmlInvoiceFile = createOLCandsRequest.getXmlInvoiceFile();
-
 		final RequestType xmlInvoice = unmarshal(xmlInvoiceFile);
+
+		// note: the billers-organisation is created manually before the first XML is send
+		final JsonExternalId billerOrgCode = createBPartnerExternalId(getBiller(xmlInvoice.getPayload().getBody()));
+
+		// the patient is needed in all cases, because we are going to reference it from C_Invoice.Beneficiary_BPartner_ID
+		final ImmutablePair<JsonRequestBPartnerLocationAndContact, JsonRequestLocation> patientWithPossibleBillToLocation = createPatientBPartnerRequest(
+				xmlInvoice.getPayload().getBody(),
+				createOLCandsRequest.getDebitorSyncAdvise());
+
+		final String invoiceRecipientEAN = extractRecipientEAN(xmlInvoice);
+		final HighLevelContext context = HighLevelContext.builder()
+				.targetDocType(createOLCandsRequest.getTargetDocType())
+				.billerSyncAdvise(createOLCandsRequest.getBillerSyncAdvise())
+				.debitorSyncAdvise(createOLCandsRequest.getDebitorSyncAdvise())
+				.productsSyncAdvise(createOLCandsRequest.getProductSyncAdvise())
+				.invoiceRecipientEAN(invoiceRecipientEAN)
+				.billerOrgCode(billerOrgCode)
+				.patientWithPossibleBillToLocation(patientWithPossibleBillToLocation)
+				.build();
+
+		upsertPatientBPartner(context, patientWithPossibleBillToLocation);
 
 		final JsonOLCandCreateBulkRequest jsonOLCandCreateBulkRequest = createJsonOLCandCreateBulkRequest(
 				xmlInvoice,
-				createOLCandsRequest.getTargetDocType(),
-				createOLCandsRequest.getBillerSyncAdvise(),
-				createOLCandsRequest.getDebitorSyncAdvise(),
-				createOLCandsRequest.getProductSyncAdvise());
+				context);
 
 		final ResponseEntity<JsonOLCandCreateBulkResponse> orderCandidates = orderCandidatesRestEndpoint.createOrderLineCandidates(jsonOLCandCreateBulkRequest);
 
@@ -150,6 +168,43 @@ public class XmlToOLCandsService
 				externalHeaderId,
 				Invoice440RequestConversionService.INVOICE_440_REQUEST_XSD); // store the XSD name so we don't need to extract it from the binary attachment data
 		return result.getBody();
+	}
+
+	private void upsertPatientBPartner(
+			@NonNull final HighLevelContext context,
+			@NonNull final ImmutablePair<JsonRequestBPartnerLocationAndContact, JsonRequestLocation> patientWithPossibleBillToLocation)
+	{
+		final JsonRequestBPartner bpartner = patientWithPossibleBillToLocation.getLeft().getBpartner();
+		final JsonRequestLocation location = patientWithPossibleBillToLocation.getLeft().getLocation();
+		final JsonRequestLocation billToLocation = patientWithPossibleBillToLocation.getRight();
+
+		final JsonRequestLocationUpsert.JsonRequestLocationUpsertBuilder locations = JsonRequestLocationUpsert.builder();
+		locations.requestItem(JsonRequestLocationUpsertItem.builder()
+				.locationIdentifier("ext-" + location.getExternalId().getValue())
+				.location(location)
+				.build());
+		if (billToLocation != null)
+		{
+			locations.requestItem(JsonRequestLocationUpsertItem.builder()
+					.locationIdentifier("ext-" + JsonExternalId.of(billToLocation.getExternalId().getValue() + "_GUARANTOR"))
+					.location(billToLocation)
+					.build());
+		}
+
+		final String orgCode = context.getBillerOrgCode().getValue();
+		final JsonRequestBPartnerUpsert partnerUpsert = JsonRequestBPartnerUpsert.builder()
+				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
+				.requestItem(JsonRequestBPartnerUpsertItem.builder()
+						.bpartnerIdentifier("ext-" + bpartner.getExternalId().getValue())
+						.bpartnerComposite(JsonRequestComposite.builder()
+								.orgCode(orgCode)
+								.bpartner(bpartner)
+								.locations(locations.build())
+								.build())
+						.build())
+				.build();
+		
+		bpartnerRestController.createOrUpdateBPartner(orgCode, partnerUpsert);
 	}
 
 	@Value
@@ -222,24 +277,12 @@ public class XmlToOLCandsService
 	@VisibleForTesting
 	JsonOLCandCreateBulkRequest createJsonOLCandCreateBulkRequest(
 			@NonNull final RequestType xmlInvoice,
-			@NonNull final HealthCareInvoiceDocSubType targetDocType,
-			@NonNull final SyncAdvise billerSyncAdvise,
-			@NonNull final SyncAdvise debitorSyncAdvise,
-			@NonNull final SyncAdvise productsSyncAdvise)
+			@NonNull final HighLevelContext context)
 	{
 		final JsonOLCandCreateRequestBuilder requestBuilder = JsonOLCandCreateRequest
 				.builder()
 				.dataSource("int-" + RestApiConstants.INPUT_SOURCE_INTERAL_NAME)
 				.dataDest("int-" + InvoiceCandidate_Constants.DATA_DESTINATION_INTERNAL_NAME);
-
-		final String invoiceRecipientEAN = extractRecipientEAN(xmlInvoice);
-		final HighLevelContext context = HighLevelContext.builder()
-				.targetDocType(targetDocType)
-				.billerSyncAdvise(billerSyncAdvise)
-				.debitorSyncAdvise(debitorSyncAdvise)
-				.productsSyncAdvise(productsSyncAdvise)
-				.invoiceRecipientEAN(invoiceRecipientEAN)
-				.build();
 
 		final List<JsonOLCandCreateRequest> requests = insertPayloadIntoBuilders(
 				requestBuilder,
@@ -269,15 +312,21 @@ public class XmlToOLCandsService
 		SyncAdvise debitorSyncAdvise;
 		@NonNull
 		SyncAdvise productsSyncAdvise;
+
+		@NonNull
+		JsonExternalId billerOrgCode;
+
+		@NonNull
+		ImmutablePair<JsonRequestBPartnerLocationAndContact, JsonRequestLocation> patientWithPossibleBillToLocation;
 	}
 
-	private String extractRecipientEAN(@NonNull final RequestType xmlInvoice)
+	@VisibleForTesting
+	String extractRecipientEAN(@NonNull final RequestType xmlInvoice)
 	{
-		final String invoiceRecipientEAN = xmlInvoice
+		return xmlInvoice
 				.getProcessing()
 				.getTransport()
 				.getTo();
-		return invoiceRecipientEAN;
 	}
 
 	/**
@@ -355,28 +404,25 @@ public class XmlToOLCandsService
 			@NonNull final BodyType body,
 			@NonNull final HighLevelContext context)
 	{
-		final JsonOrganization billerOrgInfo = createBillerOrg(
-				getBiller(body),
-				context);
+		final JsonOrganization billerOrgInfo = createBillerOrg(getBiller(body), context);
+
 		requestBuilder.org(billerOrgInfo);
 
 		switch (context.getTargetDocType())
 		{
 			case KV:
 			case KT:
-				// the bpartner already exists in metasfresh
+				// note: the bpartner already exists in metasfresh
 				requestBuilder.bpartner(createReadOnlyInvoiceRecipient(context));
 				break;
 			case EA:
-				// The bill-receiver (patient) might or might not yet exist.
-				// We extract all the infos, so the sales order-candidate-API could create it on the fly
+				// note: the bill-receiver (patient) already exists by now as it was upserted before we got to this code-point.
 				addPatientInvoiceRecipient(
 						requestBuilder,
-						body,
-						context);
+						context.getPatientWithPossibleBillToLocation());
 				break;
 			case GM:
-				// The bill-receiver (municipality)  might or might not yet exist.
+				// note: the bill-receiver (municipality)  might or might not yet exist.
 				// We need it to be at org=* which can't be done by sales order-candidate-API
 				requestBuilder.bpartner(addMunicipalityInvoiceRecipient(body, context));
 				break;
@@ -393,7 +439,8 @@ public class XmlToOLCandsService
 				context);
 	}
 
-	private BillerAddressType getBiller(@NonNull final BodyType body)
+	@VisibleForTesting
+	BillerAddressType getBiller(@NonNull final BodyType body)
 	{
 		final boolean tiersGarantIsSet = body.getTiersGarant() != null;
 		final boolean tiersPayantIsSet = body.getTiersPayant() != null;
@@ -447,8 +494,31 @@ public class XmlToOLCandsService
 
 	private void addPatientInvoiceRecipient(
 			@NonNull final JsonOLCandCreateRequestBuilder requestBuilder,
+			@NonNull final ImmutablePair<JsonRequestBPartnerLocationAndContact, JsonRequestLocation> patientBPartnerRequests)
+	{
+		// the bpartner was already upserted, so we add the request here with SyncAdvise.READ_ONLY
+		final JsonRequestBPartnerLocationAndContact bpartner = patientBPartnerRequests
+				.getLeft()
+				.toBuilder()
+				.syncAdvise(SyncAdvise.READ_ONLY).build();
+		requestBuilder.bpartner(bpartner);
+		
+		if (patientBPartnerRequests.getRight() != null)
+		{
+			// add an additional bill-location for the guarantor
+			final JsonRequestBPartnerLocationAndContact billBartnerInfo = JsonRequestBPartnerLocationAndContact
+					.builder()
+					.syncAdvise(SyncAdvise.READ_ONLY)
+					.bpartner(patientBPartnerRequests.getLeft().getBpartner())
+					.location(patientBPartnerRequests.getRight())
+					.build();
+			requestBuilder.billBPartner(billBartnerInfo);
+		}
+	}
+
+	private ImmutablePair<JsonRequestBPartnerLocationAndContact, JsonRequestLocation> createPatientBPartnerRequest(
 			@NonNull final BodyType body,
-			@NonNull final HighLevelContext context)
+			@NonNull final SyncAdvise debitorSyncAdvise)
 	{
 		final PatientAddressType patient = getPatient(body);
 		final GuarantorAddressType guarantor = getGuarantor(body);
@@ -458,7 +528,7 @@ public class XmlToOLCandsService
 
 		final JsonRequestBPartnerLocationAndContactBuilder bPartnerInfo = JsonRequestBPartnerLocationAndContact
 				.builder()
-				.syncAdvise(context.getDebitorSyncAdvise());
+				.syncAdvise(debitorSyncAdvise);
 
 		final PersonType person = patient.getPerson();
 		final String patientName = createFullPersonName(person);
@@ -488,7 +558,10 @@ public class XmlToOLCandsService
 				patientExternalId,
 				null/* gln */,
 				nameAndPostal.getPostal());
-		if (Objects.equals(patientLocation, guarantorLocation))
+
+		final boolean differentBillLocation = Objects.equals(patientLocation, guarantorLocation);
+
+		if (differentBillLocation)
 		{
 			patientLocation.setName(patientName);
 			patientLocation.setShipTo(true);
@@ -498,12 +571,6 @@ public class XmlToOLCandsService
 		}
 		else
 		{
-			// add an additional bill-location for the guarantor
-			final JsonRequestBPartnerLocationAndContactBuilder billBartnerInfo = JsonRequestBPartnerLocationAndContact
-					.builder()
-					.syncAdvise(context.getDebitorSyncAdvise())
-					.bpartner(bPartner);
-
 			guarantorLocation.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
 			guarantorLocation.setName(nameAndPostal.getName());
 			guarantorLocation.setBpartnerName(nameAndPostal.getName());
@@ -512,8 +579,6 @@ public class XmlToOLCandsService
 			guarantorLocation.setShipToDefault(false);
 			guarantorLocation.setBillTo(true);
 			guarantorLocation.setBillToDefault(true);
-			billBartnerInfo.location(guarantorLocation);
-			requestBuilder.billBPartner(billBartnerInfo.build());
 
 			patientLocation.setSyncAdvise(SyncAdvise.CREATE_OR_MERGE);
 			patientLocation.setName(patientName);
@@ -523,7 +588,10 @@ public class XmlToOLCandsService
 			patientLocation.setBillToDefault(false);
 		}
 		bPartnerInfo.location(patientLocation);
-		requestBuilder.bpartner(bPartnerInfo.build());
+
+		return differentBillLocation
+				? ImmutablePair.of(bPartnerInfo.build(), guarantorLocation)
+				: ImmutablePair.of(bPartnerInfo.build(), null);
 	}
 
 	private JsonRequestBPartnerLocationAndContact addMunicipalityInvoiceRecipient(
@@ -665,7 +733,7 @@ public class XmlToOLCandsService
 		return JsonOrganization
 				.builder()
 				.syncAdvise(context.getBillerSyncAdvise())
-				.code(createBPartnerExternalId(biller).getValue())
+				.code(context.getBillerOrgCode().getValue())
 				.name(name.getSingleStringName())
 				.bpartner(createJsonBPartnerInfo(biller, context))
 				.build();
@@ -692,6 +760,7 @@ public class XmlToOLCandsService
 		final JsonRequestLocation location = new JsonRequestLocation();
 		location.setGln(context.getInvoiceRecipientEAN());
 		location.setExternalId(createLocationExternalId(recipientExternalId));
+		location.setSyncAdvise(SyncAdvise.READ_ONLY);
 
 		return JsonRequestBPartnerLocationAndContact
 				.builder()
@@ -811,8 +880,9 @@ public class XmlToOLCandsService
 		return JsonExternalId.of(externalId.getValue());
 	}
 
+	@VisibleForTesting
 	@NonNull
-	private JsonExternalId createBPartnerExternalId(@NonNull final BillerAddressType biller)
+	JsonExternalId createBPartnerExternalId(@NonNull final BillerAddressType biller)
 	{
 		return JsonExternalId.of("EAN-" + biller.getEanParty());
 	}
@@ -890,8 +960,7 @@ public class XmlToOLCandsService
 		final JsonExternalId billerExternalId = assumeNotNull(request.getOrg().getBpartner().getBpartner().getExternalId(), "request.org.bpartner.bpartner.externalId may not be null; request={}", request);
 		final JsonExternalId billRecipientExternalId = assumeNotNull(request.getBpartner().getBpartner().getExternalId(), "request.bpartner.bpartner.externalId may not be null; request={}", request);
 
-		return ""
-				+ poReference // probably the "diversest" property
+		return poReference // probably the "diversest" property
 				+ "_"
 				+ billerExternalId.getValue() // biller, might be the same for different bill receivers
 				+ "_"

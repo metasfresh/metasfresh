@@ -57,9 +57,9 @@ public final class DocumentSaveStatus
 		return builder().hasChangesToBeSaved(true).isPresentInDatabase(previousSaveStatus.isPresentInDatabase()).error(true).reason(invalidState.getReason()).exception(invalidState.getException()).build();
 	}
 
-	public static DocumentSaveStatus error(@NonNull final Exception exception)
+	public static DocumentSaveStatus error(@NonNull final Exception exception, @NonNull final DocumentSaveStatus previousSaveStatus)
 	{
-		return builder().hasChangesToBeSaved(true).error(true).reason(AdempiereException.extractMessageTrl(exception)).exception(exception).build();
+		return builder().hasChangesToBeSaved(true).isPresentInDatabase(previousSaveStatus.isPresentInDatabase()).error(true).reason(AdempiereException.extractMessageTrl(exception)).exception(exception).build();
 	}
 
 	public static DocumentSaveStatus notSavedJustCreated()

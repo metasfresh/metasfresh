@@ -93,10 +93,7 @@ public class ManufacturingWorkflowLaunchersProvider
 			return WorkflowLauncher.builder()
 					.applicationId(ManufacturingMobileApplication.APPLICATION_ID)
 					.caption(computeCaption(manufacturingJobReference))
-					.wfParameters(ManufacturingWFProcessStartParams.builder()
-							.ppOrderId(manufacturingJobReference.getPpOrderId())
-							.build()
-							.toParams())
+					.wfParameters(ManufacturingWFProcessStartParams.ofPPOrderId(manufacturingJobReference.getPpOrderId()).toParams())
 					.build();
 		}
 	}

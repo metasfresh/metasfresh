@@ -154,15 +154,7 @@ public class ManufacturingRestService
 		else if (event.getReceiveFrom() != null)
 		{
 			final JsonManufacturingOrderEvent.ReceiveFrom receiveFrom = event.getReceiveFrom();
-			return manufacturingJobService.receiveGoods(
-					job,
-					receiveFrom.getFinishedGoodsReceiveLineId(),
-					SelectedReceivingTarget.builder()
-							.luReceivingTarget(receiveFrom.getAggregateToLU())
-							.tuReceivingTarget(receiveFrom.getAggregateToTU())
-							.build(),
-					receiveFrom.getQtyReceived(),
-					SystemTime.asZonedDateTime());
+			return manufacturingJobService.receiveGoods(receiveFrom, job, SystemTime.asZonedDateTime());
 		}
 		else
 		{

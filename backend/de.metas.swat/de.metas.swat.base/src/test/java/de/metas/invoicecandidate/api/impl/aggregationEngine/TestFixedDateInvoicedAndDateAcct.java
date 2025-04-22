@@ -1,12 +1,8 @@
 package de.metas.invoicecandidate.api.impl.aggregationEngine;
 
-import de.metas.ShutdownListener;
-import de.metas.StartupListener;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyRepository;
-import de.metas.document.invoicingpool.DocTypeInvoicingPoolRepository;
-import de.metas.document.invoicingpool.DocTypeInvoicingPoolService;
 import de.metas.invoicecandidate.C_Invoice_Candidate_Builder;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
 import de.metas.invoicecandidate.api.impl.AggregationEngine;
@@ -14,20 +10,16 @@ import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordSer
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.MoneyService;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -51,17 +43,16 @@ import static org.assertj.core.api.Assertions.*;
  * #L%
  */
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = {
-		StartupListener.class,
-		ShutdownListener.class,
-		//
-		CurrencyRepository.class,
-		MoneyService.class,
-		InvoiceCandidateRecordService.class })
-@DirtiesContext(classMode = ClassMode.BEFORE_CLASS)
 public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineTestBase
 {
+	@Override
+	public void init()
+	{
+		super.init();
+		SpringContextHolder.registerJUnitBean(new MoneyService(new CurrencyRepository()));
+		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
+	}
+
 	private C_Invoice_Candidate_Builder prepareInvoiceCandidate()
 	{
 		final I_C_BPartner bPartner = BusinessTestHelper.createBPartner("test-bp");
@@ -75,7 +66,9 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 				.setSOTrx(true);
 	}
 
-	/** Verifies that the "param" dateInvoiced takes precedence over the IC's "preset" dateInvoiced. */
+	/**
+	 * Verifies that the "param" dateInvoiced takes precedence over the IC's "preset" dateInvoiced.
+	 */
 	@Test
 	public void test_using_dateInvoicedParam()
 	{
@@ -86,9 +79,8 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		updateInvalidCandidates();
 		InterfaceWrapperHelper.refresh(ic1);
 
-		final AggregationEngine engine = AggregationEngine.builder()
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
-				.docTypeInvoicingPoolService(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()))
 				.build();
 
 		engine.addInvoiceCandidate(ic1);
@@ -109,10 +101,9 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		updateInvalidCandidates();
 		InterfaceWrapperHelper.refresh(ic1);
 
-		final AggregationEngine engine = AggregationEngine.builder()
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 1))
 				.dateAcctParam(LocalDate.of(2019, Month.SEPTEMBER, 2))
-				.docTypeInvoicingPoolService(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()))
 				.build();
 
 		engine.addInvoiceCandidate(ic1);
@@ -125,7 +116,9 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		assertThat(invoice.getDateAcct()).isEqualTo(LocalDate.of(2019, Month.SEPTEMBER, 2));
 	}
 
-	/** Verifies that the IC's "preset" dateInvoiced takes precedence over the IC's dateInvoiced. */
+	/**
+	 * Verifies that the IC's "preset" dateInvoiced takes precedence over the IC's dateInvoiced.
+	 */
 	@Test
 	public void test_using_presetDateInvoiced()
 	{
@@ -138,9 +131,8 @@ public class TestFixedDateInvoicedAndDateAcct extends AbstractAggregationEngineT
 		updateInvalidCandidates();
 		InterfaceWrapperHelper.refresh(ic1);
 
-		final AggregationEngine engine = AggregationEngine.builder()
+		final AggregationEngine engine = AggregationEngine.newInstanceForUnitTesting()
 				.dateInvoicedParam(LocalDate.of(2019, Month.SEPTEMBER, 13))
-				.docTypeInvoicingPoolService(new DocTypeInvoicingPoolService(new DocTypeInvoicingPoolRepository()))
 				.build();
 
 		engine.addInvoiceCandidate(ic1);
