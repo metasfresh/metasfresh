@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.cache.CCache;
@@ -62,7 +63,7 @@ public class ElementValueRepository
 			.tableName(I_C_ElementValue.Table_Name)
 			.build();
 
-	ElementValue getById(@NonNull final ElementValueId id)
+	public ElementValue getById(@NonNull final ElementValueId id)
 	{
 		return getMap().getById(id);
 	}
@@ -132,6 +133,7 @@ public class ElementValueRepository
 				.parentId(ElementValueId.ofRepoIdOrNull(record.getParent_ID()))
 				.seqNo(record.getSeqNo())
 				.defaultAccountName(record.getDefault_Account())
+				.accountConceptualName(AccountConceptualName.ofNullableString(record.getAccountConceptualName()))
 				.build();
 	}
 
@@ -231,7 +233,7 @@ public class ElementValueRepository
 				.first();
 		final String toValue = to != null ? to.getValue() : null;
 
-		if(from == null || to == null)
+		if (from == null || to == null)
 		{
 			return ImmutableSet.of();
 		}
