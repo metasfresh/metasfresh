@@ -67,6 +67,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import static de.metas.shipper.gateway.dhl.DhlDeliveryOrderRepository.getAllShipmentOrdersForRequest;
 
@@ -139,7 +140,7 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 					}
 
 					return DhlCustomDeliveryDataDetail.builder()
-							.packageId(PackageId.ofRepoId(po.getPackageId()))
+							.packageId(PackageId.ofRepoId(po.getM_Package_ID()))
 							.awb(po.getawb())
 							.sequenceNumber(DhlSequenceNumber.of(po.getDHL_ShipmentOrder_ID()))
 							.pdfLabelData(po.getPdfLabelData())
@@ -158,7 +159,7 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 	private DhlCustomsDocument getCustomsDocument(@NonNull final I_DHL_ShipmentOrder firstOrder, @NonNull final I_DHL_ShipmentOrder po, @Nullable final String orgBpEORI)
 	{
 		final I_C_BPartner consigneeBpartner = bpartnerDAO.getById(firstOrder.getC_BPartner_ID());
-		final Package mPackage = inOutPackageRepository.getPackageById(PackageId.ofRepoId(po.getPackageId()));
+		final Package mPackage = inOutPackageRepository.getPackageById(PackageId.ofRepoId(po.getM_Package_ID()));
 
 		final ImmutableList<DhlCustomsItem> dhlCustomsItems = mPackage.getPackageContents()
 				.stream()
@@ -176,7 +177,7 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 	{
 		final ProductId productId = packageItem.getProductId();
 		final I_M_Product product = productDAO.getById(productId);
-		final BigDecimal weightInKg = productBL.getWeight(product, productBL.getWeightUOM(product));
+		final BigDecimal weightInKg = computeNominalGrossWeightInKg(packageItem).orElse(BigDecimal.ZERO);
 		Quantity packagedQuantity;
 		try
 		{
@@ -197,5 +198,14 @@ public class DhlDeliveryOrderService implements DeliveryOrderService
 				.packagedQuantity(packagedQuantity.intValueExact())
 				.itemValue(Amount.of(orderLine.getPriceEntered(), currencyCode))
 				.build();
+	}
+
+	private Optional<BigDecimal> computeNominalGrossWeightInKg(final PackageItem packageItem)
+	{
+		final ProductId productId = packageItem.getProductId();
+		final Quantity quantity = packageItem.getQuantity();
+		return productBL.computeGrossWeight(productId, quantity)
+				.map(weight -> uomConversionBL.convertToKilogram(weight, productId))
+				.map(Quantity::getAsBigDecimal);
 	}
 }

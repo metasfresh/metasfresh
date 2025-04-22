@@ -65,6 +65,7 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderId;
 import org.jetbrains.annotations.NotNull;
 
@@ -637,6 +638,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.actualPickedHU(extractPickedHUInfo(record))
 				.qtyPicked(Quantitys.of(record.getQtyPicked(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.catchWeight(extractCatchWeight(record))
+				.createdAt(TimeUtil.asInstant(record.getCreated()))
 				.build();
 	}
 

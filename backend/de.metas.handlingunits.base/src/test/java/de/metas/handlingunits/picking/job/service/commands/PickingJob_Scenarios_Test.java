@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.job.service.commands;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.business.BusinessTestHelper;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.expectations.HUStorageExpectation;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
@@ -188,6 +189,7 @@ class PickingJob_Scenarios_Test
 											.qtyPicked(Quantity.of("100", helper.uomEach))
 											.pickFromHUId(vhu1.getId())
 											.actualPickedHU(vhu1)
+											.createdAt(SystemTime.asInstant())
 											//.pickingCandidateId(pickedTo.getActualPickedHUs().get(0).getPickingCandidateId()) // N/A
 											.build()))
 							.build());

@@ -607,10 +607,10 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
   - M_HU_PI_Item_Product_ID = 101 (No Packing Item)
 
     Given metasfresh contains M_Products:
-      | Identifier     | Weight |
-      | p_1_11212023_2 | 0.25   |
-      | p_2_11212023_2 |        |
-      | p_3_11212023_2 |        |
+      | Identifier     | WeightNet |
+      | p_1_11212023_2 | 0.25 KGM  |
+      | p_2_11212023_2 |           |
+      | p_3_11212023_2 |           |
     And metasfresh contains C_UOM_Conversions
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate | OPT.IsCatchUOMForProduct |
       | p_1_11212023_2          | PCE                    | KGM                  | 0.25         | true                     |
@@ -772,10 +772,10 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
   - Weight = 0.25 KGM
 
     Given metasfresh contains M_Products:
-      | Identifier     | Weight |
-      | p_1_11212023_3 | 0.25   |
-      | p_2_11212023_3 |        |
-      | p_3_11212023_3 |        |
+      | Identifier     | WeightNet |
+      | p_1_11212023_3 | 0.25 KGM  |
+      | p_2_11212023_3 |           |
+      | p_3_11212023_3 |           |
     And metasfresh contains C_UOM_Conversions
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate | OPT.IsCatchUOMForProduct |
       | p_1_11212023_3          | PCE                    | KGM                  | 0.25         | true                     |

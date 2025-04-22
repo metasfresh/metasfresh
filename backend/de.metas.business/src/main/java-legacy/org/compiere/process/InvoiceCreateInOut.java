@@ -16,18 +16,9 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import static java.math.BigDecimal.ZERO;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.adempiere.exceptions.InvoiceFullyMatchedException;
-import org.compiere.model.MInOut;
-import org.compiere.model.MInOutLine;
-import org.compiere.model.MInvoice;
-import org.compiere.model.MInvoiceLine;
 import de.metas.document.engine.DocStatus;
+import de.metas.invoice.matchinv.service.MatchInvoiceService;
 import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.ProductId;
@@ -35,6 +26,15 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.exceptions.InvoiceFullyMatchedException;
+import org.compiere.model.MInOut;
+import org.compiere.model.MInOutLine;
+import org.compiere.model.MInvoice;
+import org.compiere.model.MInvoiceLine;
+
+import static java.math.BigDecimal.ZERO;
 
 /**
  * Create (Generate) Shipment from Invoice
@@ -81,12 +81,6 @@ public class InvoiceCreateInOut extends JavaProcess
 		p_C_Invoice_ID = getRecord_ID();
 	}	// prepare
 
-	/**
-	 * Create Shipment
-	 *
-	 * @return info
-	 * @throws Exception
-	 */
 	@Override
 	protected String doIt() throws Exception
 	{
@@ -127,7 +121,6 @@ public class InvoiceCreateInOut extends JavaProcess
 	/**
 	 * Create Shipment/Receipt header
 	 *
-	 * @param invoice
 	 * @return Shipment/Receipt header
 	 */
 	private MInOut getCreateHeader(MInvoice invoice)
@@ -144,16 +137,14 @@ public class InvoiceCreateInOut extends JavaProcess
 	/**
 	 * Create shipment/receipt line
 	 *
-	 * @param invoice
-	 * @param invoiceLine
 	 * @return shipment/receipt line
 	 */
 	private MInOutLine createLine(MInvoice invoice, MInvoiceLine invoiceLine)
 	{
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-		final IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
+		final MatchInvoiceService matchInvoiceService = MatchInvoiceService.get();
 
-		final StockQtyAndUOMQty qtyMatched = matchInvDAO.retrieveQtyMatched(invoiceLine);
+		final StockQtyAndUOMQty qtyMatched = matchInvoiceService.getMaterialQtyMatched(invoiceLine);
 
 		final StockQtyAndUOMQty qtyInvoiced = StockQtyAndUOMQtys.create(
 				invoiceLine.getQtyInvoiced(), ProductId.ofRepoId(invoiceLine.getM_Product_ID()),

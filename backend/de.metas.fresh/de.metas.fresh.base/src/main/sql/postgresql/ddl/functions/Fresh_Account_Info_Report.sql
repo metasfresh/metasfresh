@@ -170,22 +170,22 @@ BEGIN
            COALESCE(
                    REPLACE(SUBSTRING(jl.description FOR POSITION('/' IN jl.description)), '/', ''),
                    bp.name
-               )                                                                                                           AS BP_Name,
+           )                                                                                                               AS BP_Name,
            COALESCE(
                    REPLACE(SUBSTRING(jl.description FROM POSITION('/' IN jl.description)), '/', ''),
                    COALESCE(tbl.name || ' ', '') || fa.Description
-               )                                                                                                           AS Description,
+           )                                                                                                               AS Description,
 
            -- this selects the name and value of one or no element value, that is matching with the current fact_acct (see when you press verbucht on your docu there is more than 1 line). Later shall be changed in some way so it can selece more, but currently we cannot associate more
            (CASE
                 WHEN
-                        (SELECT COUNT(0)
-                         FROM Fact_Acct fa2
-                         WHERE fa.ad_table_id = fa2.ad_table_id
-                           AND fa2.Record_ID = fa.Record_ID
-                           AND fa.Fact_Acct_id != fa2.Fact_Acct_id
-                           AND (CASE WHEN fa.amtacctdr != 0 THEN fa2.amtacctcr != 0 WHEN fa.amtacctcr != 0 THEN fa2.amtacctdr != 0 ELSE FALSE END)
-                           AND fa2.isActive = 'Y')
+                    (SELECT COUNT(0)
+                     FROM Fact_Acct fa2
+                     WHERE fa.ad_table_id = fa2.ad_table_id
+                       AND fa2.Record_ID = fa.Record_ID
+                       AND fa.Fact_Acct_id != fa2.Fact_Acct_id
+                       AND (CASE WHEN fa.amtacctdr != 0 THEN fa2.amtacctcr != 0 WHEN fa.amtacctcr != 0 THEN fa2.amtacctdr != 0 ELSE FALSE END)
+                       AND fa2.isActive = 'Y')
                         = 1 THEN (SELECT ev2.value || ' ' || ev2.name
                                   FROM Fact_Acct fa2
                                            INNER JOIN C_ElementValue ev2 ON fa2.Account_ID = ev2.C_ElementValue_ID AND ev2.isActive = 'Y'
@@ -202,8 +202,6 @@ BEGIN
            fa.AmtSourceCr,
            fa.AmtAcctDr,
            fa.AmtAcctCr,
-           SUM(fa.AmtAcctDr) OVER (PARTITION BY fa.Account_ID ORDER BY fa.DateAcct, fa.Fact_Acct_ID)                       AS AmtAcctDrEnd,
-           SUM(fa.AmtAcctCr) OVER (PARTITION BY fa.Account_ID ORDER BY fa.DateAcct, fa.Fact_Acct_ID)                       AS AmtAcctCrEnd,
            fa.Beginning_Balance + SUM(LineBalance) OVER (PARTITION BY fa.Account_ID ORDER BY fa.DateAcct, fa.Fact_Acct_ID) AS Rolling_Balance,
            fa.Beginning_Balance                                                                                            AS Beginning_Balance,
            CAST(fa.param_acct_value AS text),
@@ -228,7 +226,7 @@ BEGIN
                    fa.Beginning_SourceBalance,
                    SUM(de_metas_acct.to_SourceBalanceAmt(fa.LineSourceBalance, fa.source_currency_id))
                    OVER (PARTITION BY fa.Account_ID ORDER BY fa.DateAcct, fa.Fact_Acct_ID)
-               )
+           )
                                                                                                                            AS Rolling_SourceBalance,
            fa.Beginning_SourceBalance                                                                                      AS Beginning_SourceBalance,
            NULL::numeric                                                                                                   AS beginingbalance1,
@@ -273,7 +271,7 @@ BEGIN
                          ELSE -- check if the element value is set to show the Internation currency and if this currency is EURO. Convert to EURO in this case
                          (
                              EXISTS
-                                 (SELECT 1 FROM C_ElementValue elv WHERE ev.C_ElementValue_ID = elv.C_ElementValue_ID AND elv.ShowIntCurrency = 'Y' AND elv.Foreign_Currency_ID = v_EUR_Currency_ID AND elv.isActive = 'Y')
+                                     (SELECT 1 FROM C_ElementValue elv WHERE ev.C_ElementValue_ID = elv.C_ElementValue_ID AND elv.ShowIntCurrency = 'Y' AND elv.Foreign_Currency_ID = v_EUR_Currency_ID AND elv.isActive = 'Y')
                              )
                  END                                                                                                             AS ContainsEUR,
                  fa.ad_org_id,
@@ -358,58 +356,58 @@ BEGIN
             -- 1
             --
             UNION ALL
-            (SELECT DISTINCT NULL::date                                  AS DateAcct,
-                             NULL::numeric                               AS Fact_Acct_ID,
-                             NULL                                        AS BP_Name,
-                             'Anfangssaldo'                              AS Description,
-                             NULL::text                                  AS account2_id,
-                             NULL::text                                  AS a_value,
-                             NULL::numeric                               AS amtsourcedr,
-                             NULL::numeric                               AS amtsourcecr,
-                             NULL::text                                  AS source_currency,
-                             NULL::numeric                               AS amtacctdr,
-                             NULL::numeric                               AS amtacctcr,
-                             r.Beginning_Balance                         AS Saldo,
-                             r.Param_Acct_Value                          AS Param_Acct_Value,
-                             r.Param_Acct_Name                           AS Param_Acct_Name,
-                             v_EndDate_Effective                         AS Param_End_Date,
-                             v_StartDate_Effective                       AS Param_Start_Date,
-                             r.Param_Activity_Value                      AS Param_Activity_Value,
-                             r.Param_Activity_Name                       AS Param_Activity_Name,
-                             COUNT(0) OVER ()                            AS OverallCount,
-                             1                                           AS UnionOrder,
-                             NULL::text                                  AS DocStatus,
-                             NULL::numeric                               AS EuroSaldo,
-                             NULL::boolean                               AS ContainsEUR,
-                             r.ad_org_id                                 AS ad_org_id,
-                             NULL::text                                  AS vat_code,
-                             NULL::text                                  AS tax_rate_name,
+            (SELECT DISTINCT NULL::date                                                                                                     AS DateAcct,
+                             NULL::numeric                                                                                                  AS Fact_Acct_ID,
+                             NULL                                                                                                           AS BP_Name,
+                             'Anfangssaldo'                                                                                                 AS Description,
+                             NULL::text                                                                                                     AS account2_id,
+                             NULL::text                                                                                                     AS a_value,
+                             NULL::numeric                                                                                                  AS amtsourcedr,
+                             NULL::numeric                                                                                                  AS amtsourcecr,
+                             NULL::text                                                                                                     AS source_currency,
+                             NULL::numeric                                                                                                  AS amtacctdr,
+                             NULL::numeric                                                                                                  AS amtacctcr,
+                             r.Beginning_Balance                                                                                            AS Saldo,
+                             r.Param_Acct_Value                                                                                             AS Param_Acct_Value,
+                             r.Param_Acct_Name                                                                                              AS Param_Acct_Name,
+                             v_EndDate_Effective                                                                                            AS Param_End_Date,
+                             v_StartDate_Effective                                                                                          AS Param_Start_Date,
+                             r.Param_Activity_Value                                                                                         AS Param_Activity_Value,
+                             r.Param_Activity_Name                                                                                          AS Param_Activity_Name,
+                             COUNT(0) OVER ()                                                                                               AS OverallCount,
+                             1                                                                                                              AS UnionOrder,
+                             NULL::text                                                                                                     AS DocStatus,
+                             NULL::numeric                                                                                                  AS EuroSaldo,
+                             NULL::boolean                                                                                                  AS ContainsEUR,
+                             r.ad_org_id                                                                                                    AS ad_org_id,
+                             NULL::text                                                                                                     AS vat_code,
+                             NULL::text                                                                                                     AS tax_rate_name,
                              --
-                             (r.Beginning_SourceBalance).balance1        AS beginingbalance1,
-                             NULL::numeric                               AS sourcebalance1,
+                             (r.Beginning_SourceBalance).balance1                                                                           AS beginingbalance1,
+                             NULL::numeric                                                                                                  AS sourcebalance1,
                              (SELECT c.iso_code FROM c_currency c WHERE c.c_currency_id = (r.Beginning_SourceBalance).c_currency_id1)::text AS sourcebalance_currency1,
 
-                             (r.Beginning_SourceBalance).balance2        AS beginingbalance2,
-                             NULL::numeric                               AS sourcebalance2,
+                             (r.Beginning_SourceBalance).balance2                                                                           AS beginingbalance2,
+                             NULL::numeric                                                                                                  AS sourcebalance2,
                              (SELECT c.iso_code FROM c_currency c WHERE c.c_currency_id = (r.Beginning_SourceBalance).c_currency_id2)::text AS sourcebalance_currency2,
 
-                             (r.Beginning_SourceBalance).balance3        AS beginingbalance3,
-                             NULL::numeric                               AS sourcebalance3,
+                             (r.Beginning_SourceBalance).balance3                                                                           AS beginingbalance3,
+                             NULL::numeric                                                                                                  AS sourcebalance3,
                              (SELECT c.iso_code FROM c_currency c WHERE c.c_currency_id = (r.Beginning_SourceBalance).c_currency_id3)::text AS sourcebalance_currency3,
 
-                             (r.Beginning_SourceBalance).balance4        AS beginingbalance4,
-                             NULL::numeric                               AS sourcebalance4,
+                             (r.Beginning_SourceBalance).balance4                                                                           AS beginingbalance4,
+                             NULL::numeric                                                                                                  AS sourcebalance4,
                              (SELECT c.iso_code FROM c_currency c WHERE c.c_currency_id = (r.Beginning_SourceBalance).c_currency_id4)::text AS sourcebalance_currency4,
 
-                             (r.Beginning_SourceBalance).balance5        AS beginingbalance5,
-                             NULL::numeric                               AS sourcebalance5,
+                             (r.Beginning_SourceBalance).balance5                                                                           AS beginingbalance5,
+                             NULL::numeric                                                                                                  AS sourcebalance5,
                              (SELECT c.iso_code FROM c_currency c WHERE c.c_currency_id = (r.Beginning_SourceBalance).c_currency_id5)::text AS sourcebalance_currency5
              FROM tmp_report r)
             --
             -- 3
             --
             UNION ALL
-            (SELECT DISTINCT NULL::date             AS DateAcct,
+            (SELECT  NULL::date             AS DateAcct,
                              NULL::numeric          AS fact_acct_id,
                              NULL                   AS BP_Name,
                              'Summe'                AS description,
@@ -418,8 +416,8 @@ BEGIN
                              NULL::numeric          AS amtsourcedr,
                              NULL::numeric          AS amtsourcecr,
                              NULL::text             AS source_currency,
-                             r.AmtAcctDrEnd         AS amtacctdr,
-                             r.AmtAcctCrEnd         AS amtacctcr,
+                             SUM(r.AmtAcctDr)       AS amtacctdr,
+                             SUM(r.AmtAcctCr)       AS amtacctcr,
                              r.Beginning_Balance    AS saldo,
                              r.Param_Acct_Value     AS Param_Acct_Value,
                              r.Param_Acct_Name      AS Param_Acct_Name,
@@ -451,7 +449,13 @@ BEGIN
                              NULL::numeric          AS beginingbalance5,
                              NULL::numeric          AS sourcebalance5,
                              NULL::text             AS sourcebalance_currency5
-             FROM tmp_report r)
+             FROM tmp_report r
+             GROUP BY r.Account_ID, r.ad_org_id,
+                      r.Beginning_Balance,
+                      r.Param_Acct_Value,
+                      r.Param_Acct_Name,
+                      r.Param_Activity_Value,
+                      r.Param_Activity_Name)
             --
             -- 4
             --

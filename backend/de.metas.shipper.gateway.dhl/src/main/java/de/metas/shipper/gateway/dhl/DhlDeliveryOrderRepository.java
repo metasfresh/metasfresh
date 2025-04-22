@@ -112,7 +112,7 @@ public class DhlDeliveryOrderRepository
 				.orElseThrow(() -> new NoSuchElementException("No value present"));
 
 		final ImmutableSet<PackageId> packageIds = ordersPo.stream()
-				.map(shipmentOrder -> PackageId.ofRepoId(shipmentOrder.getPackageId()))
+				.map(shipmentOrder -> PackageId.ofRepoId(shipmentOrder.getM_Package_ID()))
 				.collect(ImmutableSet.toImmutableSet());
 
 		return DeliveryOrder.builder()
@@ -208,7 +208,7 @@ public class DhlDeliveryOrderRepository
 				// Misc which doesn't fit dhl structure
 				final Address deliveryAddress = deliveryOrder.getDeliveryAddress();
 
-				shipmentOrder.setPackageId(deliveryOrderLine.getPackageId().getRepoId());
+				shipmentOrder.setM_Package_ID(deliveryOrderLine.getPackageId().getRepoId());
 				shipmentOrder.setC_BPartner_ID(deliveryAddress.getBpartnerId());
 				shipmentOrder.setM_Shipper_ID(deliveryOrder.getShipperId().getRepoId());
 				shipmentOrder.setM_ShipperTransportation_ID(deliveryOrder.getShipperTransportationId().getRepoId());
@@ -349,7 +349,7 @@ public class DhlDeliveryOrderRepository
 				.createQueryBuilder(I_DHL_ShipmentOrder.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_DHL_ShipmentOrder.COLUMNNAME_DHL_ShipmentOrderRequest_ID, requestId)
-				.addEqualsFilter(I_DHL_ShipmentOrder.COLUMNNAME_PackageId, packageId)
+				.addEqualsFilter(I_DHL_ShipmentOrder.COLUMNNAME_M_Package_ID, packageId)
 				.create()
 				.first();
 	}
@@ -358,7 +358,7 @@ public class DhlDeliveryOrderRepository
 	{
 		return queryBL.createQueryBuilder(I_DHL_ShipmentOrder.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_DHL_ShipmentOrder.COLUMNNAME_PackageId, packageId)
+				.addEqualsFilter(I_DHL_ShipmentOrder.COLUMNNAME_M_Package_ID, packageId)
 				.create()
 				.firstOnlyOptional();
 	}

@@ -137,6 +137,10 @@ public class MobileConfigCommand
 		{
 			builder.isAllowSkippingRejectedReason(from.getAllowSkippingRejectedReason());
 		}
+		if (from.getShowLastPickedBestBeforeDateForLines() != null)
+		{
+			builder.isShowLastPickedBestBeforeDateForLines(from.getShowLastPickedBestBeforeDateForLines());
+		}
 
 		return builder.build();
 	}

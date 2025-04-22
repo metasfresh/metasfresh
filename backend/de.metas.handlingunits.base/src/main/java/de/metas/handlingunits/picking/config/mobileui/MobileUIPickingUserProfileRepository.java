@@ -117,6 +117,7 @@ public class MobileUIPickingUserProfileRepository
 				.isAllowSkippingRejectedReason(profileRecord.isAllowSkippingRejectedReason())
 				.isShowConfirmationPromptWhenOverPick(profileRecord.isShowConfirmationPromptWhenOverPick())
 				.isAllowCompletingPartialPickingJob(profileRecord.isAllowCompletingPartialPickingJob())
+				.isShowLastPickedBestBeforeDateForLines(profileRecord.isShowLastPickedBestBeforeDateForLines())
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
 				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(profileRecord.getPickingLineGroupBy()))
 				.pickingLineSortBy(PickingLineSortBy.ofNullableCode(profileRecord.getPickingLineSortBy()))
@@ -224,6 +225,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsConsiderSalesOrderCapacity(from.isConsiderSalesOrderCapacity());
 		record.setIsAllowSkippingRejectedReason(from.isAllowSkippingRejectedReason());
 		record.setIsShowConfirmationPromptWhenOverPick(from.isShowConfirmationPromptWhenOverPick());
+		record.setIsShowLastPickedBestBeforeDateForLines(from.isShowLastPickedBestBeforeDateForLines());
 		record.setCreateShipmentPolicy(from.getCreateShipmentPolicy().getCode());
 		record.setPickingLineGroupBy(from.getPickingLineGroupBy().map(PickingLineGroupBy::getCode).orElse(null));
 		record.setPickingLineSortBy(from.getPickingLineSortBy().map(PickingLineSortBy::getCode).orElse(null));
@@ -290,6 +292,7 @@ public class MobileUIPickingUserProfileRepository
 				.isCatchWeightTUPickingEnabled(record.isCatchWeightTUPickingEnabled())
 				.isAllowSkippingRejectedReason(record.isAllowSkippingRejectedReason())
 				.isShowConfirmationPromptWhenOverPick(record.isShowConfirmationPromptWhenOverPick())
+				.isShowLastPickedBestBeforeDateForLines(record.isShowLastPickedBestBeforeDateForLines())
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(record.getCreateShipmentPolicy()))
 				.isAllowCompletingPartialPickingJob(record.isAllowCompletingPartialPickingJob())
 				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(record.getPickingLineGroupBy()))
