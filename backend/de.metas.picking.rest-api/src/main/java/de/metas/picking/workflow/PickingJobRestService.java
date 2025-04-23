@@ -218,6 +218,7 @@ public class PickingJobRestService
 		return pickingJobService.closeTUPickingTarget(pickingJob, lineId);
 	}
 
+	@NonNull
 	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId) {return mobileUIPickingUserProfileRepository.getPickingJobOptions(customerId);}
 
 	@NonNull

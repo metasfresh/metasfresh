@@ -18,6 +18,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.handlingunits.qrcodes.special.PickOnTheFlyQRCode;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
@@ -378,6 +379,12 @@ public class HUQRCodesService
 		if (ean13HUQRCode != null)
 		{
 			return ean13HUQRCode;
+		}
+
+		final PickOnTheFlyQRCode pickOnTheFlyQRCode = PickOnTheFlyQRCode.fromStringOrNullIfNotHandled(jsonString);
+		if (pickOnTheFlyQRCode != null)
+		{
+			return pickOnTheFlyQRCode;
 		}
 
 		throw new AdempiereException("QR code is not handled: " + jsonString);

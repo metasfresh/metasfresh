@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking_Job, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 980521418L;
+	private static final long serialVersionUID = -1258613950L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking_Job (final Properties ctx, final int MobileUI_UserProfile_Picking_Job_ID, @Nullable final String trxName)
@@ -78,7 +78,7 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	}
 
 	@Override
-	public boolean isAllowCompletingPartialPickingJob()
+	public boolean isAllowCompletingPartialPickingJob() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAllowCompletingPartialPickingJob);
 	}
@@ -129,6 +129,18 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	public boolean isAlwaysSplitHUsEnabled() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAlwaysSplitHUsEnabled);
+	}
+
+	@Override
+	public void setIsAnonymousHuPickedOnTheFly (final boolean IsAnonymousHuPickedOnTheFly)
+	{
+		set_Value (COLUMNNAME_IsAnonymousHuPickedOnTheFly, IsAnonymousHuPickedOnTheFly);
+	}
+
+	@Override
+	public boolean isAnonymousHuPickedOnTheFly() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAnonymousHuPickedOnTheFly);
 	}
 
 	@Override
@@ -186,7 +198,7 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	}
 
 	@Override
-	public boolean isShowLastPickedBestBeforeDateForLines()
+	public boolean isShowLastPickedBestBeforeDateForLines() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsShowLastPickedBestBeforeDateForLines);
 	}

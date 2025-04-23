@@ -6,11 +6,11 @@ import GetQuantityDialog from './dialogs/GetQuantityDialog';
 import Button from './buttons/Button';
 import { formatQtyToHumanReadable, formatQtyToHumanReadableStr } from '../utils/qtys';
 import { useBooleanSetting } from '../reducers/settings';
-import { toastError } from '../utils/toast';
+import { toastError, toastErrorFromObj } from '../utils/toast';
 import { toQRCodeString } from '../utils/qrCode/hu';
 import HUScanner from './huSelector/HUScanner';
 import BarcodeScannerComponent from './BarcodeScannerComponent';
-import { toastErrorFromObj } from '../utils/toast';
+import { PICK_ON_THE_FLY_QRCODE } from '../containers/activities/picking/PickConfig';
 
 const STATUS_NOT_INITIALIZED = 'NOT_INITIALIZED';
 const STATUS_READ_BARCODE = 'READ_BARCODE';
@@ -75,7 +75,7 @@ const ScanHUAndGetQtyComponent = ({
   });
 
   //
-  // Init/reset resolvedBarcodeData on parameters changed (usually first time or when we get here from history.replace)
+  // Init/reset resolvedBarcodeData on parameters changed (usually the first time or when we get here from history.replace)
   useEffect(() => {
     setResolvedBarcodeData((prevState) => ({
       lineId: prevState?.lineId,
@@ -119,7 +119,7 @@ const ScanHUAndGetQtyComponent = ({
 
   //
   // Simulate barcode scanning when we get "qrCode" url param
-  // IMPORTANT: this shall be called after "Init/reset resolvedBarcodeData" effect
+  // IMPORTANT: this shall be called after the "Init / reset resolvedBarcodeData" effect
   useEffect(() => {
     if (scannedBarcodeParam) {
       onBarcodeScanned(handleResolveScannedBarcode({ scannedBarcode: scannedBarcodeParam }));
@@ -131,17 +131,22 @@ const ScanHUAndGetQtyComponent = ({
   const handleResolveScannedBarcode = ({ scannedBarcode, huId }) => {
     // console.log('handleResolveScannedBarcode', { scannedBarcode, eligibleBarcode });
 
-    // If an eligible barcode was provided, make sure scanned barcode is matching it
+    // If an eligible barcode was provided, make sure the scanned barcode is matching it
     if (eligibleBarcode && scannedBarcode !== eligibleBarcode) {
       return {
         error: trl(invalidBarcodeMessageKey ?? DEFAULT_MSG_notEligibleHUBarcode),
       };
     }
 
+    let resolveScannedBarcodeFuncResult = {};
+    if (resolveScannedBarcode && scannedBarcode !== PICK_ON_THE_FLY_QRCODE) {
+      resolveScannedBarcodeFuncResult = resolveScannedBarcode(scannedBarcode, huId);
+    }
+
     // noinspection UnnecessaryLocalVariableJS
-    const resolvedBarcodeDataNew = {
+    let resolvedBarcodeDataNew = {
       ...resolvedBarcodeData,
-      ...resolveScannedBarcode?.(scannedBarcode, huId),
+      ...resolveScannedBarcodeFuncResult,
       scannedBarcode,
     };
 

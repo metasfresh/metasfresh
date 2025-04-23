@@ -23,6 +23,7 @@ public class PickingJobHeader
 	@Nullable BPartnerLocationId deliveryBPLocationId;
 	@Nullable String deliveryRenderedAddress;
 	boolean isAllowPickingAnyHU;
+	boolean isAnonymousPickHUsOnTheFly;
 	@Nullable UserId lockedBy;
 	@Nullable BPartnerLocationId handoverLocationId;
 
