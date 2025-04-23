@@ -352,6 +352,11 @@ public interface ITrxManager extends ISingletonService
 	 */
 	void setTrxNameGenerator(ITrxNameGenerator trxNameGenerator);
 
+	default boolean canRegisterOnTiming(final ITrxListenerManager.TrxEventTiming timing)
+	{
+		return getCurrentTrxListenerManagerOrAutoCommit().canRegisterOnTiming(timing);
+	}
+
 	/**
 	 * Checks if given <code>trxName</code> is a valid and concrete transaction name.
 	 * <p>
@@ -507,7 +512,7 @@ public interface ITrxManager extends ISingletonService
 			@NonNull final Consumer<ImmutableList<T>> beforeCommitListProcessor)
 	{
 		final ITrx trx = getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		if (isActive(trx))
+		if (isActive(trx) && canRegisterOnTiming(ITrxListenerManager.TrxEventTiming.BEFORE_COMMIT))
 		{
 			trx.accumulateAndProcessBeforeCommit(propertyName, itemsToAccumulate, beforeCommitListProcessor);
 		}
@@ -522,7 +527,7 @@ public interface ITrxManager extends ISingletonService
 			@NonNull final Consumer<ImmutableList<T>> afterCommitListProcessor)
 	{
 		final ITrx trx = getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
-		if (isActive(trx))
+		if (isActive(trx)&& canRegisterOnTiming(ITrxListenerManager.TrxEventTiming.AFTER_COMMIT))
 		{
 			trx.accumulateAndProcessAfterCommit(propertyName, itemsToAccumulate, afterCommitListProcessor);
 		}

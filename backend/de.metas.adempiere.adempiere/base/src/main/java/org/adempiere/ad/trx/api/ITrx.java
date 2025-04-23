@@ -14,6 +14,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming.BEFORE_COMMIT;
+
 /**
  * Transaction interface
  *
@@ -216,12 +218,25 @@ public interface ITrx
 			@NonNull final Collection<T> itemsToAccumulate,
 			@NonNull final Consumer<ImmutableList<T>> beforeCommitListProcessor)
 	{
-		getProperty(propertyName, () -> {
-			final ListAccumulator<T> accum = new ListAccumulator<>();
-			runBeforeCommit(() -> accum.flush(beforeCommitListProcessor));
-			return accum;
-		})
-				.addAll(itemsToAccumulate);
+		if (getTrxListenerManager().canRegisterOnTiming(BEFORE_COMMIT))
+		{
+			getProperty(propertyName, () -> {
+				final ListAccumulator<T> accum = new ListAccumulator<>();
+				runBeforeCommit(() -> accum.flush(beforeCommitListProcessor));
+				return accum;
+			})
+					.addAll(itemsToAccumulate);
+		}
+		else {
+			getProperty(propertyName, () -> {
+				final ListAccumulator<T> accum = new ListAccumulator<>();
+				accum.addAll(itemsToAccumulate);
+				accum.flush(beforeCommitListProcessor);
+				return accum;
+			})
+					;
+		}
+
 	}
 
 	default <T> void accumulateAndProcessAfterRollback(

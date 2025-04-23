@@ -1,13 +1,15 @@
 package de.metas.material.event;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.logging.LogManager;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
+
+import java.util.Collection;
 
 /*
  * #%L
@@ -44,15 +46,15 @@ public class PostMaterialEventService
 	}
 
 	/**
-	 * Adds a trx listener to make sure the given {@code event} will be fired via {@link #enqueueEventNow(MaterialEvent)} when the given {@code trxName} is committed.
+	 * Adds a trx listener to make sure the given {@code event} will be fired via {@link #enqueueEventNow(MaterialEvent)} before the given {@code trxName} is committed.
 	 */
-	public void enqueueEventAfterNextCommit(@NonNull final MaterialEvent event)
+	public void enqueueEventBeforeNextCommit(@NonNull final MaterialEvent event)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-		trxManager.getCurrentTrxListenerManagerOrAutoCommit()
-				.newEventListener(TrxEventTiming.AFTER_COMMIT)
-				.registerHandlingMethod(innerTrx -> enqueueEventNow(event));
+		trxManager.accumulateAndProcessBeforeCommit(event.getEventName(),
+				ImmutableSet.of(event),
+				this::enqueueEventsNow);
 	}
 
 	/**
@@ -63,5 +65,10 @@ public class PostMaterialEventService
 	{
 		materialEventService.enqueueEvent(event);
 		logger.debug("Posted MaterialEvent={}", event);
+	}
+
+	public void enqueueEventsNow(final Collection<MaterialEvent> events)
+	{
+		events.forEach(this::enqueueEventNow);
 	}
 }

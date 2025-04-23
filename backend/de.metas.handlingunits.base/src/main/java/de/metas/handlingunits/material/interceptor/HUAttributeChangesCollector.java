@@ -87,7 +87,7 @@ final class HUAttributeChangesCollector
 			events.addAll(createMaterialEvent(huAttributeChanges));
 		}
 
-		events.forEach(materialEventService::enqueueEventAfterNextCommit);
+		events.forEach(materialEventService::enqueueEventBeforeNextCommit);
 	}
 
 	private List<AttributesChangedEvent> createMaterialEvent(final HUAttributeChanges changes)

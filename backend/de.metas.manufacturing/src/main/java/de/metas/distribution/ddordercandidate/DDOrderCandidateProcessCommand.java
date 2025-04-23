@@ -140,7 +140,7 @@ class DDOrderCandidateProcessCommand
 		aggregates.values().forEach(this::createDDOrder);
 	}
 
-	private void addToAggregates(DDOrderCandidate ddOrderCandidate)
+	private void addToAggregates(final DDOrderCandidate ddOrderCandidate)
 	{
 		final HeaderAggregationKey headerAggregationKey = HeaderAggregationKey.of(ddOrderCandidate);
 
@@ -327,7 +327,7 @@ class DDOrderCandidateProcessCommand
 	private void fireDDOrderCreatedEvent(@NonNull final DDOrderId ddOrderId, @Nullable final String traceId)
 	{
 		@NonNull final DDOrder ddOrder = getCreatedDDOrder(ddOrderId);
-		materialEventService.enqueueEventAfterNextCommit(DDOrderCreatedEvent.of(ddOrder, traceId));
+		materialEventService.enqueueEventBeforeNextCommit(DDOrderCreatedEvent.of(ddOrder, traceId));
 	}
 
 	private DDOrder getCreatedDDOrder(final DDOrderId ddOrderId)

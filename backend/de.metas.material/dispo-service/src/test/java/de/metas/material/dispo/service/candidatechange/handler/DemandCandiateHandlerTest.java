@@ -195,7 +195,7 @@ public class DemandCandiateHandlerTest
 	{
 		final ArgumentCaptor<MaterialEvent> eventCaptor = ArgumentCaptor.forClass(MaterialEvent.class);
 		Mockito.verify(postMaterialEventService)
-				.enqueueEventAfterNextCommit(eventCaptor.capture());
+				.enqueueEventBeforeNextCommit(eventCaptor.capture());
 
 		final MaterialEvent event = eventCaptor.getValue();
 

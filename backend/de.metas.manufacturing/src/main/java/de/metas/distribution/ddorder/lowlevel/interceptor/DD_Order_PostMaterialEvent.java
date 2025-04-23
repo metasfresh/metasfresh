@@ -30,7 +30,7 @@ public class DD_Order_PostMaterialEvent
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_DD_Order.COLUMNNAME_DocStatus)
 	public void postMaterialEvent_ddOrderDocStatusChange(@NonNull final I_DD_Order ddOrder)
 	{
-		materialEventService.enqueueEventAfterNextCommit(
+		materialEventService.enqueueEventBeforeNextCommit(
 				DDOrderDocStatusChangedEvent.builder()
 						.eventDescriptor(EventDescriptor.ofClientAndOrg(ddOrder.getAD_Client_ID(), ddOrder.getAD_Org_ID()))
 						.ddOrderId(ddOrder.getDD_Order_ID())

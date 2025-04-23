@@ -344,7 +344,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		final PPOrderChangedEvent changeEvent = eventFactory.inspectPPOrderAfterChange();
 
 		final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
-		materialEventService.enqueueEventAfterNextCommit(changeEvent);
+		materialEventService.enqueueEventBeforeNextCommit(changeEvent);
 		return true;
 	}
 
@@ -422,7 +422,7 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		final PPOrderChangedEvent changeEvent = eventFactory.inspectPPOrderAfterChange();
 
 		final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
-		materialEventService.enqueueEventAfterNextCommit(changeEvent);
+		materialEventService.enqueueEventBeforeNextCommit(changeEvent);
 
 		return true;
 	}

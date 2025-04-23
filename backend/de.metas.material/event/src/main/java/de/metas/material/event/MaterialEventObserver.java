@@ -194,6 +194,6 @@ public class MaterialEventObserver
 
 		// make sure the message gets out *after* the processing results were committed to DB
 		SpringContextHolder.instance.getBean(PostMaterialEventService.class)
-				.enqueueEventAfterNextCommit(allEventsProcessedEvent);
+				.enqueueEventBeforeNextCommit(allEventsProcessedEvent);
 	}
 }

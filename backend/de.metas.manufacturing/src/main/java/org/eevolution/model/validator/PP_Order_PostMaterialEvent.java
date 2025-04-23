@@ -72,7 +72,7 @@ public class PP_Order_PostMaterialEvent
 				.ppOrderId(ppOrderRecord.getPP_Order_ID())
 				.build();
 
-		materialEventService.enqueueEventAfterNextCommit(event);
+		materialEventService.enqueueEventBeforeNextCommit(event);
 	}
 
 	@DocValidate(timings = {
@@ -89,7 +89,7 @@ public class PP_Order_PostMaterialEvent
 				.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord)
 				.inspectPPOrderAfterChange();
 
-		materialEventService.enqueueEventAfterNextCommit(changeEvent);
+		materialEventService.enqueueEventBeforeNextCommit(changeEvent);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_PP_Order.COLUMNNAME_QtyDelivered)
@@ -99,7 +99,7 @@ public class PP_Order_PostMaterialEvent
 				.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord)
 				.inspectPPOrderAfterChange();
 
-		materialEventService.enqueueEventAfterNextCommit(changeEvent);
+		materialEventService.enqueueEventBeforeNextCommit(changeEvent);
 	}
 
 	private void postPPOrderCreatedEvent(@NonNull final I_PP_Order ppOrderRecord, @NonNull final ModelChangeType type)
