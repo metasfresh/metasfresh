@@ -174,7 +174,6 @@ const groupLinesByDisplayKey = (lines) => {
 const useLineButtonClickHandler = ({ applicationId, wfProcessId, activity, history }) => {
   const { activityId } = activity;
   const allowAnonymousPickHUsOnTheFly = isAnonymousPickHUsOnTheFly({ activity });
-  console.log('useLineButtonClickHandler: ', { allowAnonymousPickHUsOnTheFly, activity });
 
   return ({ line }) => {
     const { pickingLineId: lineId, qtyPicked } = line;
@@ -191,8 +190,7 @@ const useLineButtonClickHandler = ({ applicationId, wfProcessId, activity, histo
           next: NEXT_PickingJob,
         })
       );
-    }
-    if (qtyPicked <= 0 && allowAnonymousPickHUsOnTheFly) {
+    } else if (qtyPicked <= 0 && allowAnonymousPickHUsOnTheFly) {
       history.push(
         pickingLineScanScreenLocation({
           applicationId,
