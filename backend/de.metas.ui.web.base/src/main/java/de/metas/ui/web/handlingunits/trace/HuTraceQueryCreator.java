@@ -73,6 +73,7 @@ final class HuTraceQueryCreator
 					.put(I_M_HU_Trace.COLUMNNAME_VHUStatus, HuTraceQueryCreator::updateVhuStatusFromParameter)
 					.put(I_M_HU_Trace.COLUMNNAME_EventTime, HuTraceQueryCreator::updateEventTimeFromParameter)
 					.put(I_M_HU_Trace.COLUMNNAME_LotNumber, HuTraceQueryCreator::updateLotNumberFromParameter)
+					.put(I_M_HU_Trace.COLUMNNAME_IsActive, HuTraceQueryCreator::updateIsActiveFromParameter)
 					.build();
 
 	public static HUTraceEventQuery createTraceQueryFromDocumentFilter(@NonNull final DocumentFilter documentFilter)
@@ -176,6 +177,15 @@ final class HuTraceQueryCreator
 		return query.withLotNumber(extractString(parameter));
 	}
 
+	private static HUTraceEventQuery updateIsActiveFromParameter(
+			@NonNull final HUTraceEventQuery query,
+			@NonNull final DocumentFilterParam parameter)
+	{
+		errorIfQueryValueNotNull("IsActive", query.getIsActive(), query);
+
+		return query.withIsActive(extractBoolean(parameter));
+	}
+	
 	private static HUTraceEventQuery updateShipmentScheduleIdFromParameter(
 			@NonNull final HUTraceEventQuery query,
 			@NonNull final DocumentFilterParam parameter)
@@ -424,5 +434,17 @@ final class HuTraceQueryCreator
 		}
 
 		throw Check.fail("Unable to extract a String from parameter={}", parameter);
+	}
+
+	private static Boolean extractBoolean(@NonNull final DocumentFilterParam parameter)
+	{
+		final Object value = Check.assumeNotNull(parameter.getValue(), "Given parameter may not have a null value; parameter={}", parameter);
+
+		if (value instanceof Boolean)
+		{
+			return (Boolean)value;
+		}
+
+		throw Check.fail("Unable to extract a Boolean from parameter={}", parameter);
 	}
 }
