@@ -51,12 +51,23 @@ export const GetQuantityDialog = {
 
     clickDone: async () => await test.step(`${NAME} - Press OK`, async () => {
         await page.getByTestId('done-button').tap();
+        await GetQuantityDialog.expectComponentsDisabled();
         await GetQuantityDialog.waitToClose();
     }),
 
     clickCancel: async () => await test.step(`${NAME} - Press Cancel`, async () => {
         await page.getByTestId('cancel-button').tap();
+        await GetQuantityDialog.expectComponentsDisabled();
         await GetQuantityDialog.waitToClose();
+    }),
+    
+    expectComponentsDisabled: async () => await test.step(`${NAME} - Expect fields and buttons disabled`, async () => {
+        await expect(page.locator('#qty-input')).toBeDisabled();
+        await expect(page.getByTestId('bestBeforeDate')).toBeDisabled();
+        await expect(page.getByTestId('lotNo')).toBeDisabled();
+        await expect(page.getByTestId('done-button')).toBeDisabled();
+        await expect(page.getByTestId('cancel-button')).toBeDisabled();
+        await expect(page.getByTestId('confirmDoneAndCloseTarget-button')).toBeDisabled();
     }),
 
     fillAndPressDone: async ({ expectQtyEntered, qtyEntered, catchWeightQRCode, qtyNotFoundReason }) => await test.step(`${NAME} - Fill dialog`, async () => {
