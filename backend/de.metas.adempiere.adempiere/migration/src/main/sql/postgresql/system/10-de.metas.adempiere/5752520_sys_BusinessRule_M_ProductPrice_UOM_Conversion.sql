@@ -2,7 +2,8 @@
 
 -- Value: M_ProductPrice_No_UOM_Conversion
 -- 2025-04-23T12:04:49.003Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545529,0,TO_TIMESTAMP('2025-04-23 12:04:48.992000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'U','Y','The price UOM does not have a UOM conversion.','I',TO_TIMESTAMP('2025-04-23 12:04:48.992000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'M_ProductPrice_No_UOM_Conversion')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
+ VALUES (0,545529,0,TO_TIMESTAMP('2025-04-23 12:04:48.992000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','The price UOM does not have a UOM conversion.','I',TO_TIMESTAMP('2025-04-23 12:04:48.992000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'M_ProductPrice_No_UOM_Conversion')
 ;
 
 -- 2025-04-23T12:04:49.005Z
@@ -93,7 +94,7 @@ UpdatedBy=100 WHERE AD_BusinessRule_ID=540008
 -- 2025-04-23T12:25:31.747Z
 INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) 
 VALUES (0,0,540709,TO_TIMESTAMP('2025-04-23 12:25:31.743000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',
-100,'U','Y','M_ProductPrice with UOM Conversion','S',TO_TIMESTAMP('2025-04-23 12:25:31.743000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+100,'D','Y','M_ProductPrice with UOM Conversion','S',TO_TIMESTAMP('2025-04-23 12:25:31.743000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- Name: M_ProductPrice with UOM Conversion
