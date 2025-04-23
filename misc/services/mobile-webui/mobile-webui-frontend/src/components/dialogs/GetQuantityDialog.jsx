@@ -116,8 +116,9 @@ const GetQuantityDialog = ({
       try {
         const promise = onQtyChange(payload)?.catch?.((error) => toastErrorFromObj(error));
         doFinally(promise, () => setProcessing(false));
-      } finally {
+      } catch (error) {
         setProcessing(false);
+        throw error;
       }
     },
     [onQtyChange]
