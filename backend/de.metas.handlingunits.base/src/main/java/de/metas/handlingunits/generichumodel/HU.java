@@ -17,14 +17,16 @@ import lombok.Singular;
 import lombok.Value;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.util.lang.Mutable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /*
  * #%L
@@ -61,8 +63,8 @@ public class HU
 	@NonNull
 	HUType type;
 
-	@NonNull
-	Optional<PackagingCode> packagingCode;
+	@Nullable
+	PackagingCode packagingCode;
 
 	@NonNull
 	@Singular
@@ -72,16 +74,21 @@ public class HU
 	@Singular("productQtyInStockUOM")
 	ImmutableMap<ProductId, Quantity> productQtysInStockUOM;
 
-	@NonNull
-	Optional<Quantity> weightNet;
+	@Nullable
+	Quantity weightNet;
 
 	@NonNull
 	IAttributeSet attributes;
 
 	@NonNull
+	@Singular("referencingModel")
+	ImmutableList<TableRecordReference> referencingModels;
+
+	@NonNull
 	@Singular("childHU")
 	ImmutableList<HU> childHUs;
 
+	@Nullable
 	public <T> T extractSingleAttributeValue(
 			@NonNull final Function<IAttributeSet, T> attrValueFunction,
 			@NonNull final BinaryOperator<T> mergeFunction)
@@ -122,47 +129,73 @@ public class HU
 	/**
 	 * Creates a "sparse" HU that only contains child-HUs, quantities and weights (if any!) for the given {@code productId}.
 	 */
-	public Optional<HU> retainProduct(@NonNull final ProductId productId)
+	@Nullable
+	public HU retainReference(@NonNull final TableRecordReference reference)
 	{
-		if (!this.getProductQtysInStockUOM().containsKey(productId))
-		{
-			return Optional.empty(); // we know that the M_HU datamodel is such that if we don't have a product here, the children won't have it either.
-		}
+		final Predicate<HU> prediate = hu -> hu.getReferencingModels().contains(reference);
+		final HUBuilder result = this.toBuilder();
 
-		final Quantity quantity = this.getProductQtysInStockUOM().get(productId);
-		final HUBuilder result = this.toBuilder()
-				.clearProductQtysInStockUOM()
-				.clearChildHUs()
-				.productQtyInStockUOM(productId, quantity);
+		final boolean hasChildHUs = !getChildHUs().isEmpty();
 
 		Quantity newWeightNet;
-		if (getChildHUs().isEmpty())
+		if (hasChildHUs)
 		{
-			newWeightNet = weightNet.orElse(null);
+			// we will rebuild this from the child-HUs
+			result.clearProductQtysInStockUOM()
+					.clearReferencingModels()
+					.clearChildHUs();
+			newWeightNet = toZeroOrNull(weightNet);
 		}
 		else
-		{
-			// we will sum it up from our childrens' weights
-			newWeightNet = weightNet.map(Quantity::toZero).orElse(null);
+		{   // we are a leaf
+			if (!prediate.test(this))
+			{
+				return null;
+			}
+			
+			result.clearReferencingModels()
+					.referencingModel(reference);
+			newWeightNet = weightNet;
 		}
+
+		final HashMap<ProductId, Quantity> newProductQtysInStockUOM = new HashMap<>();
 
 		for (final HU child : getChildHUs())
 		{
-			final Optional<HU> childWithProduct = child.retainProduct(productId);
-			if (childWithProduct.isPresent())
+			final HU retainedChild = child.retainReference(reference);
+			if (retainedChild != null)
 			{
-				result.childHU(childWithProduct.get());
+				result.childHU(retainedChild);
+				result.referencingModels(retainedChild.getReferencingModels());
 
-				final Quantity childWeightNet = childWithProduct.get().getWeightNet().orElse(null);
-				if (newWeightNet != null && childWeightNet != null)
+				retainedChild.getProductQtysInStockUOM().forEach(
+						(productId, quantity) -> newProductQtysInStockUOM.merge(productId, quantity, Quantity::add));
+
+				if (newWeightNet == null && retainedChild.getWeightNet() != null)
 				{
-					newWeightNet = Quantitys.add(UOMConversionContext.of(productId), newWeightNet, childWeightNet);
+					newWeightNet = retainedChild.getWeightNet();
+				}
+				else if (newWeightNet != null && retainedChild.getWeightNet() != null)
+				{
+					newWeightNet = Quantitys.add(null, newWeightNet, retainedChild.getWeightNet());
 				}
 			}
 		}
+		result.productQtysInStockUOM(newProductQtysInStockUOM)
+				.weightNet(newWeightNet);
 
-		result.weightNet(Optional.ofNullable(newWeightNet));
-		return Optional.of(result.build());
+		final HU resultingHU = result.build();
+		if (hasChildHUs && resultingHU.getChildHUs().isEmpty())
+		{
+			return null; // none of the child-HUs match our predicate
+		}
+		return resultingHU;
+	}
+
+	@Nullable
+	private Quantity toZeroOrNull(@Nullable final Quantity weightNet)
+	{
+		return weightNet != null ? weightNet.toZero() : null;
 	}
 
 	/**
@@ -192,7 +225,7 @@ public class HU
 	public String getPackagingGTIN(@NonNull final BPartnerId bpartnerId)
 	{
 		final String gtin = packagingGTINs.get(bpartnerId);
-		if(Check.isNotBlank(gtin))
+		if (Check.isNotBlank(gtin))
 		{
 			return gtin;
 		}

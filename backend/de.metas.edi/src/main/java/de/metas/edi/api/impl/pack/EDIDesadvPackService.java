@@ -26,6 +26,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.SimpleSequence;
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDesadvLineId;
@@ -81,6 +82,7 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -445,19 +447,21 @@ public class EDIDesadvPackService
 
 		final HU topLevelHU = huRepository
 				.getById(HuId.ofRepoId(topLevelHURecord.getM_HU_ID()))
-				.retainProduct(productId) // no need to blindly hope that the HU is homogenous
-				.orElseThrow(() -> new AdempiereException("Missing M_HU").appendParametersToMessage()
-						.setParameter("M_HU_ID", topLevelHURecord.getM_HU_ID())
-						.setParameter("M_InOutLine_ID", inOutLineRecord.getM_InOutLine_ID())
-						.setParameter("EDI_DesadvLin_ID", desadvLineRecord.getEDI_DesadvLine_ID()));
+				.retainReference(TableRecordReference.of(inOutLineRecord)); // we just want the qty related to the current inoutLine
+		if (topLevelHU == null)
+		{
+			throw new AdempiereException("Missing M_HU").appendParametersToMessage()
+					.setParameter("M_HU_ID", topLevelHURecord.getM_HU_ID())
+					.setParameter("M_InOutLine_ID", inOutLineRecord.getM_InOutLine_ID())
+					.setParameter("EDI_DesadvLine_ID", desadvLineRecord.getEDI_DesadvLine_ID());
+		}
 
 		final StockQtyAndUOMQty inOutLineQty = inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn);
-		
-		// topLevelHU's quantity can be bigger than the inOutLine's quantity,
-		// if there are multiple lines with the same product and if those lines were picked onto the same LU.
-		// That's why we need to invoke minStockAndUom(..)
-		final StockQtyAndUOMQty qtyCUsPerTopLevelHU = getQuantity(topLevelHU, inOutLineQty).minStockAndUom(inOutLineQty);
-				
+
+		// topLevelHU's quantity cannot be bigger than the inOutLine's quantity,
+		// because we retained only the current inOutLine
+		final StockQtyAndUOMQty qtyCUsPerTopLevelHU = getQuantity(topLevelHU, inOutLineQty);
+
 		final RequestParameters parameters = new RequestParameters(topLevelHU,
 				bPartnerId,
 				qtyCUsPerTopLevelHU,
@@ -496,22 +500,21 @@ public class EDIDesadvPackService
 			@NonNull final HU rootHU,
 			@NonNull final StockQtyAndUOMQty inOutLineQty)
 	{
-
-		// note that rootHU only contains children, quantities and weights for productId
+		// note that rootHU only contains children, quantities and weights for the current inoutLine.
 		final Quantity qtyInStockUOM = rootHU.getProductQtysInStockUOM().get(inOutLineQty.getProductId());
-		final Optional<Quantity> weight = rootHU.getWeightNet();
+		final Quantity weight = rootHU.getWeightNet();
 
-		// Even if the HU contains a weight, we will not use if, unless the inOutLineQty *also* contains a weight in the same UOM!
+		// Even if the HU contains a weight, we will not use it, unless the inOutLineQty *also* contains a weight in the same UOM!
 		// That's because we are going to subtract the HU's qty from the inoutLine's Qty.
-		final boolean canUseWeight = weight.isPresent() 
-				&& inOutLineQty.isUOMQtySet() 
-				&& weight.get().getUomId().equals(inOutLineQty.getUOMQtyNotNull().getUomId());
+		final boolean canUseWeight = weight != null
+				&& inOutLineQty.isUOMQtySet()
+				&& weight.getUomId().equals(inOutLineQty.getUOMQtyNotNull().getUomId());
 		if (canUseWeight)
 		{
 			return StockQtyAndUOMQty.builder()
 					.productId(inOutLineQty.getProductId())
 					.stockQty(qtyInStockUOM)
-					.uomQty(weight.get())
+					.uomQty(weight)
 					.build();
 		}
 		else
@@ -719,7 +722,10 @@ public class EDIDesadvPackService
 			@NonNull final HU rootHU,
 			@NonNull final CreateEDIDesadvPackRequest.CreateEDIDesadvPackRequestBuilder createEDIDesadvPackRequestBuilder)
 	{
-		rootHU.getPackagingCode().ifPresent(code -> createEDIDesadvPackRequestBuilder.huPackagingCodeID(code.getId()));
+		if (rootHU.getPackagingCode() != null)
+		{
+			createEDIDesadvPackRequestBuilder.huPackagingCodeID(rootHU.getPackagingCode().getId());
+		}
 	}
 
 	/**
@@ -731,7 +737,7 @@ public class EDIDesadvPackService
 	{
 		final PackagingCode tuPackagingCode = CollectionUtils.extractSingleElementOrDefault(
 				childHUs, // don't iterate all HUs; we just care for the level below our LU (aka TU level).
-				hu -> hu.getPackagingCode().orElse(PackagingCode.NONE), // don't use null because CollectionUtils runs with ImmutableList
+				hu -> CoalesceUtil.coalesceNotNull(hu.getPackagingCode(), PackagingCode.NONE), // don't use null because CollectionUtils runs with ImmutableList
 				PackagingCode.NONE);
 
 		if (!tuPackagingCode.isNone())
