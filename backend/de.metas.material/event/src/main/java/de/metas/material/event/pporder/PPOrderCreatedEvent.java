@@ -13,6 +13,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 
 import javax.annotation.Nullable;
@@ -74,8 +75,8 @@ public class PPOrderCreatedEvent implements MaterialEvent
 	public void validate()
 	{
 		final PPOrder ppOrder = getPpOrder();
-		final int ppOrderId = ppOrder.getPpOrderId();
-		Check.errorIf(ppOrderId <= 0, "The given ppOrderCreatedEvent event has a ppOrder with ppOrderId={}", ppOrderId);
+		final PPOrderId ppOrderId = ppOrder.getPpOrderId();
+		Check.errorIf(ppOrderId != null, "The given ppOrderCreatedEvent event has a ppOrder with ppOrderId={}", ppOrderId);
 
 		ppOrder.getLines().forEach(this::validateLine);
 	}

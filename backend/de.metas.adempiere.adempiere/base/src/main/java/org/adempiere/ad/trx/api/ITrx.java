@@ -224,17 +224,11 @@ public interface ITrx
 				final ListAccumulator<T> accum = new ListAccumulator<>();
 				runBeforeCommit(() -> accum.flush(beforeCommitListProcessor));
 				return accum;
-			})
-					.addAll(itemsToAccumulate);
+			}).addAll(itemsToAccumulate);
 		}
-		else {
-			getProperty(propertyName, () -> {
-				final ListAccumulator<T> accum = new ListAccumulator<>();
-				accum.addAll(itemsToAccumulate);
-				accum.flush(beforeCommitListProcessor);
-				return accum;
-			})
-					;
+		else
+		{
+			beforeCommitListProcessor.accept(ImmutableList.copyOf(itemsToAccumulate));
 		}
 
 	}

@@ -211,9 +211,17 @@ public final class TableRecordReference implements ITableRecordReference
 	}
 
 	@Nullable
-	public static TableRecordReference ofNullable(@Nullable String tableName, final int recordId)
+	public static TableRecordReference ofNullable(final @Nullable String tableName, final int recordId)
 	{
 		return tableName != null && !Check.isBlank(tableName) && recordId >= 0
+				? of(tableName, recordId)
+				: null;
+	}
+
+	@Nullable
+	public static TableRecordReference ofNullable(final @Nullable String tableName, @Nullable final RepoIdAware recordId)
+	{
+		return tableName != null && !Check.isBlank(tableName) && recordId != null && recordId.getRepoId() >= 0
 				? of(tableName, recordId)
 				: null;
 	}

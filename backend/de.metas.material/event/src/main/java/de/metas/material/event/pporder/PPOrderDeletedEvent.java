@@ -41,23 +41,23 @@ public class PPOrderDeletedEvent implements MaterialEvent
 
 	EventDescriptor eventDescriptor;
 
-	int ppOrderId;
+	private final PPOrder ppOrder;
 
 	@JsonCreator
 	@Builder
 	public PPOrderDeletedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
-			@JsonProperty("ppOrderId") final int ppOrderId)
+			@JsonProperty("ppOrder") final PPOrder ppOrder)
 	{
 		this.eventDescriptor = eventDescriptor;
-		this.ppOrderId = ppOrderId;
+		this.ppOrder = ppOrder;
 	}
 
 	@Nullable
 	@Override
 	public TableRecordReference getSourceTableReference()
 	{
-		return TableRecordReference.ofNullable(I_PP_Order.Table_Name, ppOrderId);
+		return TableRecordReference.ofNullable(I_PP_Order.Table_Name, ppOrder.getPpOrderId());
 	}
 
 	@Override
