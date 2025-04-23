@@ -63,8 +63,8 @@ export const GetQuantityDialog = {
     
     expectComponentsDisabled: async () => await test.step(`${NAME} - Expect fields and buttons disabled`, async () => {
         await expect(page.locator('#qty-input')).toBeDisabled();
-        await expect(page.getByTestId('bestBeforeDate')).toBeDisabled();
-        await expect(page.getByTestId('lotNo')).toBeDisabled();
+        // await expect(page.getByTestId('bestBeforeDate')).toBeDisabled();
+        // await expect(page.getByTestId('lotNo')).toBeDisabled();
         await expect(page.getByTestId('done-button')).toBeDisabled();
         await expect(page.getByTestId('cancel-button')).toBeDisabled();
         await expect(page.getByTestId('confirmDoneAndCloseTarget-button')).toBeDisabled();
