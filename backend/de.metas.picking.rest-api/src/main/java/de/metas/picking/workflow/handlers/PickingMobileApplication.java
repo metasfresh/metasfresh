@@ -334,6 +334,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.caption(TranslatableStrings.adMessage(MSG_Caption_PickLines))
 				.wfActivityType(ActualPickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
 				.status(ActualPickingWFActivityHandler.computeActivityState(pickingJob))
+				.alwaysAvailableToUser(pickingJob.isAnonymousPickHUsOnTheFly() ? WFActivityAlwaysAvailableToUser.YES : WFActivityAlwaysAvailableToUser.DEFAULT)
 				.build();
 	}
 
