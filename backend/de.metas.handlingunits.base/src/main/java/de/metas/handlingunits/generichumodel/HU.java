@@ -9,7 +9,6 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
-import de.metas.uom.UOMConversionContext;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -26,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 /*
  * #%L
@@ -128,11 +126,23 @@ public class HU
 
 	/**
 	 * Creates a "sparse" HU that only contains child-HUs, quantities and weights (if any!) for the given {@code productId}.
+	 * ! Note that the HU's attribute-sets are <b>not</b> reduced by this method.
 	 */
 	@Nullable
 	public HU retainReference(@NonNull final TableRecordReference reference)
 	{
-		final Predicate<HU> prediate = hu -> hu.getReferencingModels().contains(reference);
+		return retainReference(reference, ImmutableList.of());
+	}
+
+	/**
+	 * @param referencingModelsOfParentHU if an HU has no own ReferencingModels, then assume these
+	 */
+	@Nullable
+	private HU retainReference(@NonNull final TableRecordReference reference,
+							   @NonNull final ImmutableList<TableRecordReference> referencingModelsOfParentHU)
+	{
+		final ImmutableList<TableRecordReference> effectiveReferencingModels = getReferencingModels().isEmpty() ? referencingModelsOfParentHU : getReferencingModels();
+
 		final HUBuilder result = this.toBuilder();
 
 		final boolean hasChildHUs = !getChildHUs().isEmpty();
@@ -148,11 +158,11 @@ public class HU
 		}
 		else
 		{   // we are a leaf
-			if (!prediate.test(this))
+			if (!effectiveReferencingModels.contains(reference))
 			{
 				return null;
 			}
-			
+
 			result.clearReferencingModels()
 					.referencingModel(reference);
 			newWeightNet = weightNet;
@@ -162,7 +172,7 @@ public class HU
 
 		for (final HU child : getChildHUs())
 		{
-			final HU retainedChild = child.retainReference(reference);
+			final HU retainedChild = child.retainReference(reference, effectiveReferencingModels);
 			if (retainedChild != null)
 			{
 				result.childHU(retainedChild);
