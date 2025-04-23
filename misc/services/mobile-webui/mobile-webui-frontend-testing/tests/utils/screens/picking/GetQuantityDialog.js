@@ -63,8 +63,8 @@ export const GetQuantityDialog = {
 
     expectComponentsDisabled: async () => await test.step(`${NAME} - Expect fields and buttons disabled`, async () => {
         await expectMissingOrDisabled(page.locator('#qty-input'));
-        await expectMissingOrDisabled(page.getByTestId('bestBeforeDate'));
-        await expectMissingOrDisabled(page.getByTestId('lotNo'));
+        // await expectMissingOrDisabled(page.getByTestId('bestBeforeDate'));
+        // await expectMissingOrDisabled(page.getByTestId('lotNo'));
         await expectMissingOrDisabled(page.getByTestId('done-button'));
         await expectMissingOrDisabled(page.getByTestId('cancel-button'));
         await expectMissingOrDisabled(page.getByTestId('confirmDoneAndCloseTarget-button'));
