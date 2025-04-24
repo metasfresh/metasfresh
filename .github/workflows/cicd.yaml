@@ -1232,5 +1232,7 @@ jobs:
           CICD_RUN_ID: ${{ github.run_id }}
           TAG_FIXED: ${{ needs.init.outputs.tag-fixed }}
           GH_TOKEN: ${{ secrets.CICD_TRIGGER_DISPATCH }}
+          CICD_DISPATCH_REPO: ${{ fromJson(vars.CICD_DISPATCH_CONFIG).repo }}
+          CICD_DISPATCH_WORKFLOW_FILE: ${{ fromJson(vars.CICD_DISPATCH_CONFIG).workflow_file }}
         run: |
-          gh workflow run dispatch_cicd_to_customer.yaml --repo "metasfresh/me03-gh-automation" -f "cicd_run_id=${CICD_RUN_ID}" -f "tag_fixed=${TAG_FIXED}" || exit 0
+          gh workflow run "${CICD_DISPATCH_WORKFLOW_FILE}" --repo "${CICD_DISPATCH_REPO}" -f "cicd_run_id=${CICD_RUN_ID}" -f "tag_fixed=${TAG_FIXED}"
