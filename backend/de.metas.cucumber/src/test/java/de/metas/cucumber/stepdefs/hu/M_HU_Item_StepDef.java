@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,11 +20,11 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.hu;
 
-import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_StepDefData;
-import de.metas.cucumber.stepdefs.hu.M_HU_PackingMaterial_StepDefData;
-import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
@@ -33,23 +33,24 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class M_HU_Item_StepDef
 {
+	private final M_HU_Item_StepDefData huItemTable;
 	private final M_HU_StepDefData huTable;
 	private final M_HU_PI_Item_StepDefData huPiItemTable;
 	private final M_HU_PackingMaterial_StepDefData huPackingMaterialTable;
 
 	public M_HU_Item_StepDef(
+			@NonNull final M_HU_Item_StepDefData huItemTable,
 			@NonNull final M_HU_StepDefData huTable,
 			@NonNull final M_HU_PI_Item_StepDefData huPiItemTable,
 			@NonNull final M_HU_PackingMaterial_StepDefData huPackingMaterialTable)
 	{
+		this.huItemTable = huItemTable;
 		this.huTable = huTable;
 		this.huPiItemTable = huPiItemTable;
 		this.huPackingMaterialTable = huPackingMaterialTable;
@@ -58,25 +59,18 @@ public class M_HU_Item_StepDef
 	@And("metasfresh contains M_HU_Item:")
 	public void create_M_HU_Item(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			createHuItem(tableRow);
-		}
+		final DataTableRows dataTableRows = DataTableRows.of(dataTable);
+		dataTableRows.forEach(this::createHuItem);
 	}
 
-	private void createHuItem(@NonNull final Map<String, String> row)
+	private void createHuItem(@NonNull final DataTableRow row)
 	{
-		final String huIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_Item.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final int huId = huTable.get(huIdentifier).getM_HU_ID();
+		final int huId = huTable.get(row.getAsIdentifier(I_M_HU_Item.COLUMNNAME_M_HU_ID)).getM_HU_ID();
+		final int huPiItemId = huPiItemTable.get(row.getAsIdentifier(I_M_HU_Item.COLUMNNAME_M_HU_PI_Item_ID)).getM_HU_PI_Item_ID();
 
-		final String huPiItemIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_Item.COLUMNNAME_M_HU_PI_Item_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final int huPiItemId = huPiItemTable.get(huPiItemIdentifier).getM_HU_PI_Item_ID();
+		final BigDecimal qty = row.getAsBigDecimal(I_M_HU_Item.COLUMNNAME_Qty);
 
-		final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_Item.COLUMNNAME_Qty);
-
-		final String huPackingMaterialIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_Item.COLUMNNAME_M_HU_PackingMaterial_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final int huPackingMaterialId = huPackingMaterialTable.get(huPackingMaterialIdentifier).getM_HU_PackingMaterial_ID();
+		final int huPackingMaterialId = huPackingMaterialTable.get(row.getAsIdentifier(I_M_HU_Item.COLUMNNAME_M_HU_PackingMaterial_ID)).getM_HU_PackingMaterial_ID();
 
 		final I_M_HU_Item huItemRecord = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_Item.class);
 		huItemRecord.setM_HU_ID(huId);
@@ -84,12 +78,11 @@ public class M_HU_Item_StepDef
 		huItemRecord.setQty(qty);
 		huItemRecord.setM_HU_PackingMaterial_ID(huPackingMaterialId);
 
-		final String itemType = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_M_HU_Item.COLUMNNAME_ItemType);
-		if (Check.isNotBlank(itemType))
-		{
-			huItemRecord.setItemType(DataTableUtil.nullToken2Null(itemType));
-		}
+		final Optional<String> itemType = row.getAsOptionalString(I_M_HU_Item.COLUMNNAME_ItemType);
+		itemType.ifPresent(t -> huItemRecord.setItemType(DataTableUtil.nullToken2Null(t)));
 
 		saveRecord(huItemRecord);
+
+		huItemTable.put(row.getAsIdentifier(I_M_HU_Item.COLUMNNAME_M_HU_ID), huItemRecord);
 	}
 }

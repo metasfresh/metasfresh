@@ -320,8 +320,8 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 	}
 
 	/**
-	 * tests inoutLine whose quantity is partially covered by an HU
-	 * setting new qty and uom on inOutLine due to {@link de.metas.quantity.StockQtyAndUOMQty#minStockAndUom}
+	 * Tests inoutLine whose quantity is partially covered by an HU.
+	 * Setting new qty and uom on inOutLine due to {@link de.metas.quantity.StockQtyAndUOMQty#minStockAndUom}
 	 */
 	@Test
 	void addToDesadvCreateForInOutIfNotExist_HU()
@@ -350,7 +350,11 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 		assertThat(ssccItemRecords)
 				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_BestBeforeDate, COLUMNNAME_QtyTU, COLUMNNAME_QtyCUsPerTU, COLUMNNAME_QtyCUsPerLU)
 				.containsOnly(
-						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), TimeUtil.parseTimestamp("2019-12-02"), 10, new BigDecimal("2.500"), new BigDecimal("24.500")/* 49 times 0.5, i.e. the Hus qty converted to the pack's UOM */),
+						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), 
+								TimeUtil.parseTimestamp("2019-12-02"), 
+								10, 
+								new BigDecimal("2.500"), 
+								new BigDecimal("24.500")/* 49 times 0.5, i.e. the Hus qty converted to the pack's UOM */),
 						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), null, 7, new BigDecimal("2.500"), new BigDecimal("17.500")) //
 				);
 	}
@@ -433,14 +437,35 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 
 		final I_M_HU_PI_Attribute bestBeforeHUPIAttributeRecord = huTestHelper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(bestBeforeAttrRecord)
 																											   .setM_HU_PI(handlingUnitsDAO.getIncludedPI(huPIItemPallet)));
-		for (final I_M_HU childHU : handlingUnitsDAO.retrieveIncludedHUs(lu))
+		for (final I_M_HU tu : handlingUnitsDAO.retrieveIncludedHUs(lu))
 		{
 			final I_M_HU_Attribute childHUAttrRecord = newInstance(I_M_HU_Attribute.class);
 			childHUAttrRecord.setM_Attribute_ID(bestBeforeHUPIAttributeRecord.getM_Attribute_ID());
-			childHUAttrRecord.setM_HU_ID(childHU.getM_HU_ID());
+			childHUAttrRecord.setM_HU_ID(tu.getM_HU_ID());
 			childHUAttrRecord.setValueDate(TimeUtil.parseTimestamp("2019-12-02"));
 			childHUAttrRecord.setM_HU_PI_Attribute_ID(bestBeforeHUPIAttributeRecord.getM_HU_PI_Attribute_ID());
 			saveRecord(childHUAttrRecord);
+
+			// need to make sure all TUs and CUs are asociated - like when we do actual picking
+			huAssignmentBL.createHUAssignmentBuilder()
+					.initializeAssignment(ctx, ITrx.TRXNAME_None)
+					.setModel(inOutLineRecord)
+					.setTopLevelHU(lu)
+					.setM_LU_HU(lu)
+					.setM_TU_HU(tu)
+					.build();
+
+			for (final I_M_HU cu : handlingUnitsDAO.retrieveIncludedHUs(tu))
+			{
+				huAssignmentBL.createHUAssignmentBuilder()
+						.initializeAssignment(ctx, ITrx.TRXNAME_None)
+						.setModel(inOutLineRecord)
+						.setTopLevelHU(lu)
+						.setM_LU_HU(lu)
+						.setM_TU_HU(tu)
+						.setVHU(cu)
+						.build();
+			}
 		}
 
 		huAssignmentBL.createHUAssignmentBuilder()
