@@ -29,9 +29,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.logging.LogManager;
 import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.pporder.PPOrderCandidate;
-import de.metas.material.event.pporder.PPOrderCandidateUpdatedEvent;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
@@ -521,15 +518,6 @@ public class PPOrderCandidateService
 		saveRecord(newAllocationRecord);
 	}
 
-	public void updateOrderCandidateBeforeCommit(@NonNull final PPOrderCandidateId ppOrderCandidateId)
-	{
-		trxManager.accumulateAndProcessBeforeCommit(
-				"PPOrderCandidateService.candidatesToUpdate",
-				ImmutableSet.of(ppOrderCandidateId),
-				this::updateOrderCandidatesByIds
-		);
-	}
-
 	public void updateOrderCandidateById(@NonNull final PPOrderCandidateId ppOrderCandidateId)
 	{
 		updateOrderCandidatesByIds(ImmutableSet.of(ppOrderCandidateId));
@@ -563,16 +551,6 @@ public class PPOrderCandidateService
 			ppOrderCandidate.setQtyProcessed(qtyProcessed.toBigDecimal());
 
 			ppOrderCandidateDAO.save(ppOrderCandidate);
-
-			final PPOrderCandidate ppOrderCandidatePojo = ppOrderCandidateConverter.toPPOrderCandidate(ppOrderCandidate);
-
-			final PPOrderCandidateUpdatedEvent ppOrderCandidateUpdatedEvent = PPOrderCandidateUpdatedEvent.builder()
-					.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrderCandidate.getAD_Client_ID(), ppOrderCandidate.getAD_Org_ID()))
-					.ppOrderCandidate(ppOrderCandidatePojo)
-					.build();
-
-			materialEventService.enqueueEventAfterNextCommit(ppOrderCandidateUpdatedEvent);
-
 		}
 	}
 
