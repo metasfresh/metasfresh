@@ -107,7 +107,7 @@ FROM (SELECT COALESCE(bpp.ProductNo, p.value)                                   
               LEFT OUTER JOIN C_BPartner_Product bpp ON bp.C_BPartner_ID = bpp.C_BPartner_ID AND p.M_Product_ID = bpp.M_Product_ID AND bpp.isActive = 'Y'
               LEFT OUTER JOIN M_Product_Category pc ON p.M_Product_Category_ID = pc.M_Product_Category_ID AND pc.isActive = 'Y'
               -- Unit of measurement and its translation
-              LEFT OUTER JOIN C_UOM uom ON COALESCE(ic.Price_UOM_ID, iol.C_UOM_ID) = uom.C_UOM_ID AND uom.isActive = 'Y'
+              LEFT OUTER JOIN C_UOM uom ON COALESCE(ic.Price_UOM_ID, iol.C_UOM_ID) = uom.C_UOM_ID
               LEFT OUTER JOIN C_UOM_Trl uomt ON uom.C_UOM_ID = uomt.C_UOM_ID AND uomt.AD_Language = p_AD_Language AND uomt.isActive = 'Y'
               LEFT OUTER JOIN C_UOM_Conversion conv ON conv.C_UOM_ID = iol.C_UOM_ID
               AND conv.C_UOM_To_ID = COALESCE(ic.Price_UOM_ID, iol.C_UOM_ID)
