@@ -76,7 +76,11 @@ test('Simple picking test', async ({ page }) => {
     await PickingJobsListScreen.startJob({ documentNo });
     await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
     await PickingJobScreen.setTargetLU({ lu: luPIName });
+
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
     await PickingJobScreen.pickHU({ qrCode: huQRCode, expectQtyEntered: '3' });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
+
     await PickingJobScreen.complete();
 });
 
@@ -92,14 +96,19 @@ test('Pick - unpick', async ({ page }) => {
     await PickingJobsListScreen.startJob({ documentNo });
     await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
     await PickingJobScreen.setTargetLU({ lu: luPIName });
+
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
     await PickingJobScreen.pickHU({ qrCode: huQRCode, expectQtyEntered: '3' });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
 
     await PickingJobScreen.clickLineButton({ index: 1 });
     await PickingJobLineScreen.waitForScreen();
     await PickingJobLineScreen.clickStepButton({ index: 0 });
     await PickingJobStepScreen.unpick();
-    await PickingJobLineScreen.waitForScreen();
     await PickingJobLineScreen.goBack();
+
+    await PickingJobScreen.waitForScreen();
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
 
     await PickingJobScreen.closeTargetLU();
 
@@ -134,51 +143,51 @@ test('Test picking line complete status - draft | in progress | complete', async
     await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
     await PickingJobScreen.setTargetLU({ lu: luPIName });
 
-    await PickingJobScreen.expectLineStatusColor({ index: 1, color: 'red' });
+    await PickingJobScreen.expectLineButton({ index: 1, color: 'red', qtyToPick: '3 TU', qtyPicked: '0 TU', qtyPickedCatchWeight: '' });
 
     await PickingJobScreen.pickHU({ qrCode: huQRCode, qtyEntered: '2', expectQtyEntered: '3', qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND });
-
-    await PickingJobScreen.expectLineStatusColor({ index: 1, color: 'yellow' });
+    await PickingJobScreen.expectLineButton({ index: 1, color: 'yellow', qtyToPick: '3 TU', qtyPicked: '2 TU', qtyPickedCatchWeight: '' });
 
     await PickingJobScreen.pickHU({ qrCode: huQRCode, qtyEntered: '1', expectQtyEntered: '0' });
-
-    await PickingJobScreen.expectLineStatusColor({ index: 1, color: 'green' });
+    await PickingJobScreen.expectLineButton({ index: 1, color: 'green', qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
 
     await PickingJobScreen.complete();
 });
 
 test.describe('Picking Job Completion', () => {
 
+    // noinspection JSUnusedLocalSymbols
     test("Should fail when partial picking and allowCompletingPartialPickingJob = N", async ({ page }) => {
-      const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } =
-        await createMasterdata({
-          allowCompletingPartialPickingJob: false,
-        });
+        const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } =
+            await createMasterdata({
+                allowCompletingPartialPickingJob: false,
+            });
 
-      await LoginScreen.login(login);
-      await ApplicationsListScreen.expectVisible();
-      await ApplicationsListScreen.startApplication("picking");
-      await PickingJobsListScreen.waitForScreen();
-      await PickingJobsListScreen.filterByDocumentNo(documentNo);
-      await PickingJobsListScreen.startJob({ documentNo });
-      await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
-      await PickingJobScreen.setTargetLU({ lu: luPIName });
-      await PickingJobScreen.pickHU({
-        qrCode: huQRCode,
-        qtyEntered: 2,
-        expectQtyEntered: "3",
-        qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND
-      });
+        await LoginScreen.login(login);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication("picking");
+        await PickingJobsListScreen.waitForScreen();
+        await PickingJobsListScreen.filterByDocumentNo(documentNo);
+        await PickingJobsListScreen.startJob({ documentNo });
+        await PickingJobScreen.scanPickingSlot({ qrCode: pickingSlotQRCode });
+        await PickingJobScreen.setTargetLU({ lu: luPIName });
+        await PickingJobScreen.pickHU({
+            qrCode: huQRCode,
+            qtyEntered: 2,
+            expectQtyEntered: "3",
+            qtyNotFoundReason: QTY_NOT_FOUND_REASON_NOT_FOUND
+        });
         await expectErrorToast('All steps must be completed in order to complete the job.', async () => {
             await PickingJobScreen.complete();
         });
     });
 
+    // noinspection JSUnusedLocalSymbols
     test("Should succeed when partial picking and allowCompletingPartialPickingJob = Y", async ({ page }) => {
         const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } =
-          await createMasterdata({
-            allowCompletingPartialPickingJob: true,
-          });
+            await createMasterdata({
+                allowCompletingPartialPickingJob: true,
+            });
 
         await LoginScreen.login(login);
         await ApplicationsListScreen.expectVisible();
