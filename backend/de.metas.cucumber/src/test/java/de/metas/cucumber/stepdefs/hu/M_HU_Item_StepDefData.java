@@ -20,14 +20,19 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.hu;
 
-import de.metas.handlingunits.model.I_M_HU_PackagingCode;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.handlingunits.model.I_M_HU_Item;
+import de.metas.handlingunits.model.I_M_HU_PI_Item;
 
-public class M_HU_PackagingCode_StepDefData extends StepDefData<I_M_HU_PackagingCode>
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
+public class M_HU_Item_StepDefData extends StepDefData<I_M_HU_Item>
 {
-	public M_HU_PackagingCode_StepDefData()
+	public M_HU_Item_StepDefData()
 	{
-		super(I_M_HU_PackagingCode.class);
+		super(I_M_HU_Item.class);
 	}
 }

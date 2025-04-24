@@ -42,9 +42,9 @@ Feature: Maturing scenarios
   @Id:S0382_100
   @flaky
   Scenario: Happy flow, raw good product HU created via inventory, maturing candidate created and processed
-    When metasfresh initially has M_Inventory data
-      | M_Inventory_ID | MovementDate | DocumentNo   |
-      | maturingInv    | 2024-01-01   | maturingInv1 |
+    When metasfresh contains M_Inventories:
+      | M_Inventory_ID | MovementDate | DocumentNo   | M_Warehouse_ID    |
+      | maturingInv    | 2024-01-01   | maturingInv1 | maturingWarehouse |
 
     And metasfresh contains M_AttributeSetInstance with identifier "huASI_10":
   """
@@ -58,9 +58,9 @@ Feature: Maturing scenarios
   }
   """
 
-    And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID | M_InventoryLine_ID | M_Product_ID | QtyBook | QtyCount | M_AttributeSetInstance_ID |
-      | maturingInv    | maturing_inv_10    | rawGood      | 0       | 10       | huASI_10                  |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID | M_InventoryLine_ID | M_Product_ID | QtyBook | QtyCount | M_AttributeSetInstance_ID | UOM.X12DE355 |
+      | maturingInv    | maturing_inv_10    | rawGood      | 0       | 10       | huASI_10                  | PCE          |
     And complete inventory with inventoryIdentifier 'maturingInv'
 
     And after not more than 60s, there are added M_HUs for inventory
@@ -109,9 +109,9 @@ Feature: Maturing scenarios
   @Id:S0382_200
   @flaky
   Scenario: Maturing candidate created, then HU qty is adjusted. Maturing candidate is updated
-    When metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate | DocumentNo   |
-      | maturingInv2              | 2024-01-01   | maturingInv2 |
+    When metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo   | M_Warehouse_ID    |
+      | maturingInv2              | 2024-01-01   | maturingInv2 | maturingWarehouse |
 
     And metasfresh contains M_AttributeSetInstance with identifier "huASI_20":
   """
@@ -125,9 +125,9 @@ Feature: Maturing scenarios
   }
   """
 
-    And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | OPT.M_AttributeSetInstance_ID.Identifier |
-      | maturingInv2              | maturing_inv_20               | rawGood                 | 0       | 20       | huASI_20                                 |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | OPT.M_AttributeSetInstance_ID.Identifier | UOM.X12DE355 |
+      | maturingInv2              | maturing_inv_20               | rawGood                 | 0       | 20       | huASI_20                                 | PCE          |
     And complete inventory with inventoryIdentifier 'maturingInv2'
 
     And after not more than 60s, there are added M_HUs for inventory
@@ -157,9 +157,9 @@ Feature: Maturing scenarios
   @from:cucumber
   @Id:S0382_300
   Scenario: Maturing candidate created, then HU is disposed. Maturing candidate is deleted.
-    When metasfresh initially has M_Inventory data
-      | M_Inventory_ID | MovementDate | DocumentNo   |
-      | maturingInv3   | 2024-01-01   | maturingInv3 |
+    When metasfresh contains M_Inventories:
+      | M_Inventory_ID | MovementDate | DocumentNo   | M_Warehouse_ID    |
+      | maturingInv3   | 2024-01-01   | maturingInv3 | maturingWarehouse |
 
     And metasfresh contains M_AttributeSetInstance with identifier "huASI_30":
   """
@@ -173,9 +173,9 @@ Feature: Maturing scenarios
   }
   """
 
-    And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID | M_InventoryLine_ID | M_Product_ID | QtyBook | QtyCount | M_AttributeSetInstance_ID |
-      | maturingInv3   | maturing_inv_30    | rawGood      | 0       | 30       | huASI_30                  |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID | M_InventoryLine_ID | M_Product_ID | QtyBook | QtyCount | M_AttributeSetInstance_ID | UOM.X12DE355 |
+      | maturingInv3   | maturing_inv_30    | rawGood      | 0       | 30       | huASI_30                  | PCE          |
     And complete inventory with inventoryIdentifier 'maturingInv3'
 
     And after not more than 60s, there are added M_HUs for inventory
