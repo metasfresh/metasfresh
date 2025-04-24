@@ -556,7 +556,9 @@ public class EDIDesadvPackService
 
 		// get minimum best before of all HUs and sub-HUs
 		final Date bestBefore = parameters.topLevelHU.extractSingleAttributeValue(
-				attrSet -> attrSet.hasAttribute(AttributeConstants.ATTR_BestBeforeDate) ? attrSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate) : null,
+				attrSet -> attrSet.hasAttribute(AttributeConstants.ATTR_BestBeforeDate)
+						? attrSet.getValueAsDate(AttributeConstants.ATTR_BestBeforeDate)
+						: null,
 				TimeUtil::min);
 
 		final CreateEDIDesadvPackItemRequest.CreateEDIDesadvPackItemRequestBuilder createPackItemRequestBuilder =
@@ -569,7 +571,7 @@ public class EDIDesadvPackService
 						.bestBeforeDate(TimeUtil.asTimestamp(bestBefore))
 						.qtyTu(parameters.topLevelHU.getChildHUs().size());
 
-		final String lotNumber = parameters.topLevelHU.getAttributes().getValueAsString(AttributeConstants.ATTR_LotNumber);
+		final String lotNumber = parameters.topLevelHU.extractSingleLotNumber();
 		if (Check.isNotBlank(lotNumber))
 		{
 			createPackItemRequestBuilder.lotNumber(lotNumber);
@@ -788,7 +790,7 @@ public class EDIDesadvPackService
 	}
 
 	/**
-	 * All thast needed to create with a pack-request that includes a pack-item-request or just a single pack-item-request.
+	 * All that's needed to create with a pack-request that includes a pack-item-request or just a single pack-item-request.
 	 */
 	@Value
 	@RequiredArgsConstructor

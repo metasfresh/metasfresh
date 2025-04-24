@@ -10,10 +10,12 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.util.Check;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.util.lang.Mutable;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -21,6 +23,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -101,6 +104,25 @@ public class HU
 		return result.getValue();
 	}
 
+	/**
+	 * If this HU and all children have the same LotNo - empties are ignored! - that String is returned.  
+	 */
+	@Nullable
+	public String extractSingleLotNumber()
+	{
+		final Function<IAttributeSet, String> attrValueFunction = attrSet -> attrSet.getValueAsStringOrNull(AttributeConstants.ATTR_LotNumber);
+		final HashSet<String> lotNumbers = new HashSet<>();
+		for (final HU hu : allHUAsList())
+		{
+			final String lotNo = attrValueFunction.apply(hu.getAttributes());
+			if (Check.isNotBlank(lotNo))
+			{
+				lotNumbers.add(lotNo);
+			}	
+		}
+		return CollectionUtils.singleElementOrNull(lotNumbers);
+	}
+
 	public List<HU> allHUAsList()
 	{
 		return recurseNext(this);
@@ -160,7 +182,7 @@ public class HU
 
 		final HashMap<ProductId, Quantity> newProductQtysInStockUOM = new HashMap<>();
 		final LinkedHashSet<TableRecordReference> newReferencingModels = new LinkedHashSet<>();
-		
+
 		for (final HU child : getChildHUs())
 		{
 			final HU retainedChild = child.retainReference(reference);
