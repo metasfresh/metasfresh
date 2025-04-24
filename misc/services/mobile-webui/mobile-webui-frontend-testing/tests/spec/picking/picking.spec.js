@@ -156,6 +156,7 @@ test('Test picking line complete status - draft | in progress | complete', async
 
 test.describe('Picking Job Completion', () => {
 
+    // noinspection JSUnusedLocalSymbols
     test("Should fail when partial picking and allowCompletingPartialPickingJob = N", async ({ page }) => {
         const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } =
             await createMasterdata({
@@ -181,6 +182,7 @@ test.describe('Picking Job Completion', () => {
         });
     });
 
+    // noinspection JSUnusedLocalSymbols
     test("Should succeed when partial picking and allowCompletingPartialPickingJob = Y", async ({ page }) => {
         const { login, pickingSlotQRCode, documentNo, huQRCode, luPIName } =
             await createMasterdata({

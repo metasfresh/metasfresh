@@ -193,6 +193,7 @@ test('EAN13 with prefix 29', async ({ page }) => {
     await PickingJobScreen.complete();
 });
 
+// noinspection JSUnusedLocalSymbols
 test('EAN13 with prefix 29 and not matching product', async ({ page }) => {
     const masterdata = await createMasterdata();
 
