@@ -98,3 +98,13 @@ INSERT INTO AD_BusinessRule_Trigger (AD_BusinessRule_ID,AD_BusinessRule_Trigger_
 UPDATE AD_BusinessRule_Trigger SET ConditionSQL='iscatchuomforproduct=''Y''',Updated=TO_TIMESTAMP('2025-04-24 17:13:28.823000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_BusinessRule_Trigger_ID=540026
 ;
 
+
+
+-- 2025-04-24T17:52:34.986Z
+UPDATE AD_BusinessRule_Trigger SET ConditionSQL=NULL,Updated=TO_TIMESTAMP('2025-04-24 17:52:34.986000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_BusinessRule_Trigger_ID=540020
+;
+
+-- 2025-04-24T17:52:39.267Z
+UPDATE AD_BusinessRule_Trigger SET ConditionSQL=NULL,Updated=TO_TIMESTAMP('2025-04-24 17:52:39.267000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_BusinessRule_Trigger_ID=540026
+;
+
