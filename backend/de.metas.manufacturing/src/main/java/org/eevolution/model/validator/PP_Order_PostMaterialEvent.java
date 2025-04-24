@@ -16,7 +16,6 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
@@ -74,9 +73,6 @@ public class PP_Order_PostMaterialEvent
 
 	private void createAndEnqueuePPOrderDeletedEvent(final @NonNull I_PP_Order ppOrderRecord)
 	{
-		final PPOrderPojoConverter ppOrderConverter = SpringContextHolder.instance.getBean(PPOrderPojoConverter.class);
-		final PostMaterialEventService materialEventService = SpringContextHolder.instance.getBean(PostMaterialEventService.class);
-
 		final PPOrder ppOrderPojo = ppOrderConverter.toPPOrder(ppOrderRecord);
 
 		final PPOrderDeletedEvent event = PPOrderDeletedEvent.builder()
