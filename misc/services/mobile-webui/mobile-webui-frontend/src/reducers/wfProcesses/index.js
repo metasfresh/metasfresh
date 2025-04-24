@@ -128,6 +128,10 @@ export const getScaleDeviceFromActivity = (activity) => {
   return activity?.dataStored?.scaleDevice;
 };
 
+export const isAnonymousPickHUsOnTheFly = ({ activity }) => {
+  return activity?.dataStored?.isAnonymousPickHUsOnTheFly ?? false;
+};
+
 const reducer = produce((draftState, action) => {
   draftState = workflowReducer({ draftState, action });
   draftState = scanReducer({ draftState, action });

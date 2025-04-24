@@ -89,6 +89,7 @@ const translations = {
       PickFromManufacturingOrder: 'Manufacture',
       PickHU: 'Pick HU',
       scanQRCode: 'Scan QR',
+      pickQtyButton: 'Pick Qty',
       notEligibleHUBarcode: 'HU barcode not matching',
       qtyAboveMax: '%(qtyDiff)s above max',
       notPositiveQtyNotAllowed: 'Zero or negative qty not allowed',

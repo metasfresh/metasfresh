@@ -41,6 +41,7 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean allowSkippingRejectedReason;
 		@Nullable Boolean filterByQRCode;
 		@Nullable Boolean showLastPickedBestBeforeDateForLines;
+		@Nullable Boolean anonymousPickHUsOnTheFly;
 
 		@Nullable List<Customer> customers;
 

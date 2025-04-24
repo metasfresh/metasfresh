@@ -37,6 +37,7 @@ public class JsonMobileConfigResponse
 		@Nullable Boolean allowNewTU;
 		@Nullable Boolean filterByQRCode;
 		@Nullable Boolean allowCompletingPartialPickingJob;
+		@Nullable Boolean isAnonymousPickHUsOnTheFly;
 	}
 
 	//

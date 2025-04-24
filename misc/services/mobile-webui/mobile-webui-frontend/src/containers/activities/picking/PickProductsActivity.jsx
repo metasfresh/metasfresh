@@ -8,7 +8,7 @@ import {
   pickingLineScreenLocation,
   pickingScanScreenLocation,
 } from '../../../routes/picking';
-import { getLinesArrayFromActivity } from '../../../reducers/wfProcesses';
+import { getLinesArrayFromActivity, isAnonymousPickHUsOnTheFly } from '../../../reducers/wfProcesses';
 import {
   getCurrentPickFromHUQRCode,
   isAllowPickingAnyHUOnHeaderLevel,
@@ -18,6 +18,7 @@ import { useCurrentPickingTargetInfo } from '../../../reducers/wfProcesses/picki
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import { NEXT_PickingJob } from './PickLineScanScreen';
 import SelectCurrentLUTUButtons from './SelectCurrentLUTUButtons';
+import { PICK_ON_THE_FLY_QRCODE } from './PickConfig';
 
 export const COMPONENTTYPE_PickProducts = 'picking/pickProducts';
 
@@ -46,12 +47,23 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
     const tuTargetIsSetButCurrentLineHasItsOwnPacking = tuPickingTarget && line.pickingUnit === 'TU';
     const tuTargetIsNotSetButCurrentLineMustBePlacedOnTUs =
       isPickWithNewLU && isAllowNewTU && !tuPickingTarget && line.pickingUnit === 'CU';
-    return (
+
+    // noinspection UnnecessaryLocalVariableJS
+    const result =
       !isUserEditable ||
       isLUScanRequiredAndMissing ||
       tuTargetIsSetButCurrentLineHasItsOwnPacking ||
-      tuTargetIsNotSetButCurrentLineMustBePlacedOnTUs
-    );
+      tuTargetIsNotSetButCurrentLineMustBePlacedOnTUs;
+    // console.log(`isLineReadOnly: ${result}`, {
+    //   tuPickingTarget,
+    //   isPickWithNewLU,
+    //   isAllowNewTU,
+    //   isUserEditable,
+    //   isLUScanRequiredAndMissing,
+    //   tuTargetIsSetButCurrentLineHasItsOwnPacking,
+    //   tuTargetIsNotSetButCurrentLineMustBePlacedOnTUs,
+    // });
+    return result;
   };
 
   const isAtLeastOneReadOnlyLine = (groupedLines) => {
@@ -160,8 +172,10 @@ const groupLinesByDisplayKey = (lines) => {
 //
 
 const useLineButtonClickHandler = ({ applicationId, wfProcessId, activity, history }) => {
+  const { activityId } = activity;
+  const allowAnonymousPickHUsOnTheFly = isAnonymousPickHUsOnTheFly({ activity });
+
   return ({ line }) => {
-    const { activityId } = activity;
     const { pickingLineId: lineId, qtyPicked } = line;
 
     const pickFromHUQRCode = getCurrentPickFromHUQRCode({ activity });
@@ -173,6 +187,17 @@ const useLineButtonClickHandler = ({ applicationId, wfProcessId, activity, histo
           activityId,
           lineId,
           qrCode: pickFromHUQRCode,
+          next: NEXT_PickingJob,
+        })
+      );
+    } else if (qtyPicked <= 0 && allowAnonymousPickHUsOnTheFly) {
+      history.push(
+        pickingLineScanScreenLocation({
+          applicationId,
+          wfProcessId,
+          activityId,
+          lineId,
+          qrCode: PICK_ON_THE_FLY_QRCODE,
           next: NEXT_PickingJob,
         })
       );

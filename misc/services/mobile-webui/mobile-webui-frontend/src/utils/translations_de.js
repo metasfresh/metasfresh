@@ -92,6 +92,7 @@ const translations = {
       PickFromManufacturingOrder: 'Produzieren',
       PickHU: 'HU kommissionieren',
       scanQRCode: 'QR scannen',
+      pickQtyButton: 'Menge kommissionieren',
       notEligibleHUBarcode: 'HU Code passt nicht',
       qtyAboveMax: '%(qtyDiff)s über max',
       notPositiveQtyNotAllowed: 'Null oder negative Menge nicht erlaubt', // TODO verify trl

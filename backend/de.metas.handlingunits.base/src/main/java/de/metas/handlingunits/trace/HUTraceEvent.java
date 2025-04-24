@@ -101,6 +101,9 @@ public class HUTraceEvent
 
 	@Nullable String lotNumber;
 
+	@Nullable
+	Boolean active;
+
 	public HUTraceEventQueryBuilder asQueryBuilder()
 	{
 		return HUTraceEventQuery.builder()
@@ -122,7 +125,8 @@ public class HUTraceEvent
 				.docTypeId(docTypeId)
 				.huTrxLineId(huTrxLineId)
 		        .vhuSourceId(vhuSourceId)
-				.lotNumber(lotNumber);
+				.lotNumber(lotNumber)
+				.isActive(active);
 
 	}
 }
