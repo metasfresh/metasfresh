@@ -91,8 +91,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | p_1_S0316_010                 | true                | null                   | null                                 | null                     | 1         |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
-      | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerTU_InInvoiceUOM | OPT.QtyCUsPerLU | OPT.QtyCUsPerLU_InInvoiceUOM | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
-      | pi_1_S0316_010                     | p_1_S0316_010                 | 10              | 10              | 10                           | 10              | 10                           | 0                   | 1         | s_1_S0316_010             | shipmentLine_1_S0316_010      | null               | null          | null                                    | null                        |
+      | EDI_Desadv_Pack_Item_ID | EDI_Desadv_Pack_ID | MovementQty | QtyCUsPerTU | QtyCUsPerTU_InInvoiceUOM | QtyCUsPerLU | QtyCUsPerLU_InInvoiceUOM | QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | M_InOutLine_ID           | BestBeforeDate | LotNumber | M_HU_PackagingCode_TU_ID | GTIN_TU_PackingMaterial |
+      | pi_1_S0316_010          | p_1_S0316_010      | 10          | 10          | 10                       | 10          | 10                       | 0               | 1         | s_1_S0316_010             | shipmentLine_1_S0316_010 | null           | null      | null                     | null                    |
 
     And the shipment identified by s_1_S0316_010 is reversed
 
@@ -181,8 +181,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | p_1_11212023_4     | true                | null    | null                  | null                 | 1     |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
-      | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerTU_InInvoiceUOM | OPT.QtyCUsPerLU | OPT.QtyCUsPerLU_InInvoiceUOM | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
-      | pi_1_11212023_4                    | p_1_11212023_4                | 10              | 10              | 2.5                          | 10              | 2.5                          | 1         | s_1_11212023_4            | shipmentLine_1_11212023_4     | null               | null          | null                                    | null                        |
+      | EDI_Desadv_Pack_Item_ID | EDI_Desadv_Pack_ID | MovementQty | QtyCUsPerTU | QtyCUsPerTU_InInvoiceUOM | QtyCUsPerLU | QtyCUsPerLU_InInvoiceUOM | QtyTU | M_InOut_ID     | M_InOutLine_ID            | BestBeforeDate | LotNumber | M_HU_PackagingCode_TU_ID | GTIN_TU_PackingMaterial |
+      | pi_1_11212023_4         | p_1_11212023_4     | 10          | 10          | 2.5                      | 10          | 2.5                      | 1     | s_1_11212023_4 | shipmentLine_1_11212023_4 | null           | null      | null                     | null                    |
 
     And the shipment identified by s_1_11212023_4 is reversed
 
@@ -277,8 +277,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | p_1_11212023_1     | true                | null    | null                  | null                 | 1     |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
-      | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerTU_InInvoiceUOM | OPT.QtyCUsPerLU | OPT.QtyCUsPerLU_InInvoiceUOM | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
-      | pi_1_11212023_1                    | p_1_11212023_1                | 10              | 10              | 3                            | 10              | 3                            | 1         | s_1_11212023_1            | shipmentLine_1_11212023_1     | null               | null          | null                                    | null                        |
+      | EDI_Desadv_Pack_Item_ID | EDI_Desadv_Pack_ID | MovementQty | QtyCUsPerTU | QtyCUsPerTU_InInvoiceUOM | QtyCUsPerLU | QtyCUsPerLU_InInvoiceUOM | QtyTU | M_InOut_ID     | M_InOutLine_ID            | BestBeforeDate | LotNumber | M_HU_PackagingCode_TU_ID | GTIN_TU_PackingMaterial |
+      | pi_1_11212023_1         | p_1_11212023_1     | 10          | 10          | 3                        | 10          | 3                        | 1     | s_1_11212023_1 | shipmentLine_1_11212023_1 | null           | null      | null                     | null                    |
 
     And the shipment identified by s_1_11212023_1 is reversed
 
@@ -404,8 +404,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | p_1_S0316_020                 | true                | null        | huPackagingCode_1_S0316_020 | gtinPiItemProduct    | 1     |
 
     And after not more than 60s, the EDI_Desadv_Pack_Item has only the following records:
-      | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerTU_InInvoiceUOM | OPT.QtyCUsPerLU | OPT.QtyCUsPerLU_InInvoiceUOM | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
-      | pi_1_S0316_020                     | p_1_S0316_020                 | 100             | 10              | 10                           | 100             | 100                          | 10                  | 10        | s_1_S0316_020             | shipmentLine_1_S0316_020      | 2021-04-20         | lotNumber     | huPackagingCode_2_S0316_020             | bPartnerProductGTIN         |
+      | EDI_Desadv_Pack_Item_ID | EDI_Desadv_Pack_ID | MovementQty | QtyCUsPerTU | QtyCUsPerTU_InInvoiceUOM | QtyCUsPerLU | QtyCUsPerLU_InInvoiceUOM | QtyItemCapacity | QtyTU | M_InOut_ID    | M_InOutLine_ID           | BestBeforeDate | LotNumber | M_HU_PackagingCode_TU_ID    | GTIN_TU_PackingMaterial |
+      | pi_1_S0316_020          | p_1_S0316_020      | 100         | 10          | 10                       | 100         | 100                      | 10              | 10    | s_1_S0316_020 | shipmentLine_1_S0316_020 | 2021-04-20     | lotNumber | huPackagingCode_2_S0316_020 | bPartnerProductGTIN     |
 
     And the shipment identified by s_1_S0316_020 is reversed
 
@@ -569,8 +569,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | p_1_S0316_030      | true                | createdLU_S0316_030 | huPackagingCode_1_S0316_030 | bPartnerProductGTIN_LU | 1     |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
-      | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
-      | pi_1_S0316_030                     | p_1_S0316_030                 | 10              | 10              | 10              | 10                  | 1         | s_1_S0316_030             | shipmentLine_1_S0316_030      | 2021-04-20         | luLotNumber   | huPackagingCode_2_S0316_030             | bPartnerProductGTIN_TU      |
+      | EDI_Desadv_Pack_Item_ID | EDI_Desadv_Pack_ID | MovementQty | QtyCUsPerTU | QtyCUsPerLU | QtyItemCapacity | QtyTU | M_InOut_ID    | M_InOutLine_ID           | BestBeforeDate | LotNumber   | M_HU_PackagingCode_TU_ID    | GTIN_TU_PackingMaterial |
+      | pi_1_S0316_030          | p_1_S0316_030      | 10          | 10          | 10          | 10              | 1     | s_1_S0316_030 | shipmentLine_1_S0316_030 | 2021-04-20     | luLotNumber | huPackagingCode_2_S0316_030 | bPartnerProductGTIN_TU  |
 
     And EDI_Desadv_Pack records are updated
       | EDI_Desadv_Pack_ID.Identifier | OPT.IPA_SSCC18     |
@@ -743,8 +743,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | p_1_11212023_2                | true                | createdLU_11212023_2 | huPackagingCode_1_11212023_2 | bPartnerProductGTIN_LU | 1     |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
-      | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerTU_InInvoiceUOM | OPT.QtyCUsPerLU | OPT.QtyCUsPerLU_InInvoiceUOM | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
-      | pi_1_11212023_2                    | p_1_11212023_2                | 10              | 10              | 2.5                          | 10              | 2.5                          | 10                  | 1         | s_1_11212023_2            | shipmentLine_1_11212023_2     | luLotNumber   | huPackagingCode_2_11212023_2            | bPartnerProductGTIN_TU      |
+      | EDI_Desadv_Pack_Item_ID | EDI_Desadv_Pack_ID | MovementQty | QtyCUsPerTU | QtyCUsPerTU_InInvoiceUOM | QtyCUsPerLU | QtyCUsPerLU_InInvoiceUOM | QtyItemCapacity | QtyTU | M_InOut_ID.Identifier | M_InOutLine_ID.Identifier | LotNumber   | M_HU_PackagingCode_TU_ID     | GTIN_TU_PackingMaterial |
+      | pi_1_11212023_2         | p_1_11212023_2     | 10          | 10          | 2.5                      | 10          | 2.5                      | 10              | 1     | s_1_11212023_2        | shipmentLine_1_11212023_2 | luLotNumber | huPackagingCode_2_11212023_2 | bPartnerProductGTIN_TU  |
 
     And the shipment identified by s_1_11212023_2 is reversed
 
@@ -909,9 +909,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | p_1_11212023_4     | true                | null                 | null                         | null                   |
 
     And after not more than 120s, the EDI_Desadv_Pack_Item has only the following records:
-      | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerTU_InInvoiceUOM | OPT.QtyCUsPerLU | OPT.QtyCUsPerLU_InInvoiceUOM | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
-      | pi_1_11212023_3                    | p_1_11212023_3                | 10              | 10              | 2.5                          | 10              | 2.5                          | 10                  | 1         | s_1_11212023_3            | luLotNumber   | huPackagingCode_2_11212023_3            | bPartnerProductGTIN_TU      |
-      | pi_1_11212023_4                    | p_1_11212023_4                | 5               | 5               | 1.25                         | 5               | 1.25                         | 0                   | 1         | s_1_11212023_3            |               |                                         |                             |
+      | EDI_Desadv_Pack_Item_ID | EDI_Desadv_Pack_ID | MovementQty | QtyCUsPerTU | QtyCUsPerTU_InInvoiceUOM | QtyCUsPerLU | QtyCUsPerLU_InInvoiceUOM | QtyItemCapacity | QtyTU | M_InOut_ID     | LotNumber   | M_HU_PackagingCode_TU_ID     | GTIN_TU_PackingMaterial |
+      | pi_1_11212023_3         | p_1_11212023_3     | 10          | 10          | 2.5                      | 10          | 2.5                      | 10              | 1     | s_1_11212023_3 | luLotNumber | huPackagingCode_2_11212023_3 | bPartnerProductGTIN_TU  |
+      | pi_1_11212023_4         | p_1_11212023_4     | 5           | 5           | 1.25                     | 5           | 1.25                     | 0               | 1     | s_1_11212023_3 |             |                              |                         |
 
     And the shipment identified by s_1_11212023_3 is reversed
 
@@ -1099,9 +1099,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | p_2_S0316_040                 | true                | createdLU_S0316_040 | huPackagingCode_1_S0316_040 | bPartnerProductGTIN_LU |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
-      | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
-      | pi_1_S0316_040                     | p_1_S0316_040                 | 5               | 10              | 5               | 10                  | 1         | 2021-04-20         | lotNumber     | huPackagingCode_2_S0316_040             | bPartnerProductGTIN         |
-      | pi_2_S0316_040                     | p_2_S0316_040                 | 5               | 5               | 5               | 5                   | 1         | 2021-04-20         | luLotNumber   | huPackagingCode_2_S0316_040             | bPartnerProductGTIN_TU      |
+      | EDI_Desadv_Pack_Item_ID | EDI_Desadv_Pack_ID | MovementQty | QtyCUsPerTU | QtyCUsPerLU | QtyItemCapacity | QtyTU | BestBeforeDate | LotNumber   | M_HU_PackagingCode_TU_ID    | GTIN_TU_PackingMaterial |
+      | pi_1_S0316_040          | p_1_S0316_040      | 5           | 10          | 5           | 10              | 1     | 2021-04-20     | lotNumber   | huPackagingCode_2_S0316_040 | bPartnerProductGTIN     |
+      | pi_2_S0316_040          | p_2_S0316_040      | 5           | 5           | 5           | 5               | 1     | 2021-04-20     | luLotNumber | huPackagingCode_2_S0316_040 | bPartnerProductGTIN_TU  |
 
     And EDI_Desadv_Pack records are updated
       | EDI_Desadv_Pack_ID.Identifier | OPT.IPA_SSCC18       |
@@ -1295,9 +1295,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | p_1_S0457_010      | false                   | createdLU_S0457_010 | huPackagingCode_1_S0457_010 | bPartnerProductGTIN_LU   | 1         | 012345670010000005 |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
-      | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCUsPerTU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
-      | pi_1_S0457_010                     | p_1_S0457_010                 | 10              | 10              | 10              | 10                  | 1         | s_1_S0457_010             | shipmentLine_1_S0457_010      | 2021-04-20         | luLotNumber   | huPackagingCode_2_S0457_010             | bPartnerProductGTIN_TU      |
-      | pi_2_S0457_010                     | p_1_S0457_010                 | 20              | 10              | 20              | 10                  | 2         | s_2_S0457_010             | shipmentLine_2_S0457_010      | 2021-04-20         | luLotNumber   | huPackagingCode_2_S0457_010             | bPartnerProductGTIN_TU      |
+      | EDI_Desadv_Pack_Item_ID | EDI_Desadv_Pack_ID | MovementQty | QtyCUsPerTU | QtyCUsPerLU | QtyItemCapacity | QtyTU | M_InOut_ID    | M_InOutLine_ID           | BestBeforeDate | LotNumber   | M_HU_PackagingCode_TU_ID    | GTIN_TU_PackingMaterial |
+      | pi_1_S0457_010          | p_1_S0457_010      | 10          | 10          | 10          | 10              | 1     | s_1_S0457_010 | shipmentLine_1_S0457_010 | 2021-04-20     | luLotNumber | huPackagingCode_2_S0457_010 | bPartnerProductGTIN_TU  |
+      | pi_2_S0457_010          | p_1_S0457_010      | 20          | 10          | 20          | 10              | 2     | s_2_S0457_010 | shipmentLine_2_S0457_010 | 2021-04-20     | luLotNumber | huPackagingCode_2_S0457_010 | bPartnerProductGTIN_TU  |
 
     And generate csv file for sscc labels for 'p_1_S0457_010'
       | ReportDataLine                                                                                                                                  |
@@ -1504,10 +1504,10 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | p_2_S0457_020      | false               | createdLU_2_S0457_020 | huPackagingCode_1_S0457_020 | bPartnerProductGTIN_LU | 2     | 012345680010000005 |
 
     And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
-      | EDI_Desadv_Pack_Item_ID | EDI_Desadv_Pack_ID | MovementQty | M_InOutLine_ID             | QtyCUsPerTU | QtyCUsPerLU | QtyItemCapacity | QtyTU | M_InOut_ID    | BestBeforeDate | LotNumber    | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
-      | pi_1_1_S0457_020        | p_1_S0457_020      | 10          | shipmentLine_1_1_S0457_020 | 10          | 10          | 10              | 1     | s_1_S0457_020 | 2021-04-20     | luLotNumber1 | huPackagingCode_2_S0457_020             | bPartnerProductGTIN_TU      |
-      | pi_1_2_S0457_020        | p_1_S0457_020      | 10          | shipmentLine_1_2_S0457_020 | 10          | 10          | 10              | 1     | s_1_S0457_020 | 2021-04-20     | luLotNumber1 | huPackagingCode_2_S0457_020             | bPartnerProductGTIN_TU      |
-      | pi_2_S0457_020          | p_2_S0457_020      | 10          | shipmentLine_1_1_S0457_020 | 10          | 10          | 10              | 1     | s_1_S0457_020 | 2021-04-30     | luLotNumber2 | huPackagingCode_2_S0457_020             | bPartnerProductGTIN_TU      |
+      | EDI_Desadv_Pack_Item_ID | EDI_Desadv_Pack_ID | MovementQty | M_InOutLine_ID             | QtyCUsPerTU | QtyCUsPerLU | QtyItemCapacity | QtyTU | M_InOut_ID    | BestBeforeDate | LotNumber    | M_HU_PackagingCode_TU_ID    | GTIN_TU_PackingMaterial |
+      | pi_1_1_S0457_020        | p_1_S0457_020      | 10          | shipmentLine_1_1_S0457_020 | 10          | 10          | 10              | 1     | s_1_S0457_020 | 2021-04-20     | luLotNumber1 | huPackagingCode_2_S0457_020 | bPartnerProductGTIN_TU  |
+      | pi_1_2_S0457_020        | p_1_S0457_020      | 10          | shipmentLine_1_2_S0457_020 | 10          | 10          | 10              | 1     | s_1_S0457_020 | 2021-04-30     | luLotNumber2 | huPackagingCode_2_S0457_020 | bPartnerProductGTIN_TU  |
+      | pi_2_S0457_020          | p_2_S0457_020      | 10          | shipmentLine_1_1_S0457_020 | 10          | 10          | 10              | 1     | s_1_S0457_020 | 2021-04-20     | luLotNumber1 | huPackagingCode_2_S0457_020 | bPartnerProductGTIN_TU  |
 
     And the shipment identified by s_1_S0457_020 is reversed
 
