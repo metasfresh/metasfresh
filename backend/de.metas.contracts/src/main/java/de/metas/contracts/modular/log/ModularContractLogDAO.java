@@ -166,6 +166,7 @@ public class ModularContractLogDAO
 						() -> log.setPriceActual(null));
 
 		log.setModCntr_Module_ID(request.getConfigModuleId().getRepoId());
+		// log.setModCntr_ParentModule_ID(ModularContractModuleId.toRepoId(request.getParentConfigModuleId())); TODO
 
 		log.setModCntr_InvoicingGroup_ID(InvoicingGroupId.toRepoId(request.getInvoicingGroupId()));
 
@@ -173,6 +174,16 @@ public class ModularContractLogDAO
 		{
 			log.setStorageDays(request.getStorageDays());
 		}
+
+		// if (request.getInterestDays() != null)
+		// {
+		// 	log.setInterestDays(request.getInterestDays()); TODO
+		// }
+
+		// if (request.getInterestPercent() != null)
+		// {
+		// 	log.setInterestPercent(request.getInterestPercent().toBigDecimal()); TODO
+		// }
 
 		if (request.getUserElementNumber1() != null)
 		{
@@ -199,7 +210,7 @@ public class ModularContractLogDAO
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.initialProductId(ProductId.ofRepoIdOrNull(record.getInitial_Product_ID()))
 				.productName(record.getProductName())
-				.modularContractTypeId(ModularContractTypeId.ofRepoIdOrNull(record.getModCntr_Type_ID()))
+				.modularContractTypeId(ModularContractTypeId.ofRepoId(record.getModCntr_Type_ID()))
 				.referencedRecord(TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID()))
 				.contractType(LogEntryContractType.ofCode(record.getContractType()))
 				.collectionPointBPartnerId(BPartnerId.ofRepoIdOrNull(record.getCollectionPoint_BPartner_ID()))
@@ -214,12 +225,15 @@ public class ModularContractLogDAO
 				.transactionDate(LocalDateAndOrgId.ofTimestamp(record.getDateTrx(), OrgId.ofRepoId(record.getAD_Org_ID()), orgDAO::getTimeZone))
 				.physicalClearanceDate(LocalDateAndOrgId.ofNullableTimestamp(record.getPhysicalClearanceDate(), OrgId.ofRepoId(record.getAD_Org_ID()), orgDAO::getTimeZone))
 				.storageDays(record.getStorageDays() >= 0 ? record.getStorageDays() : null)
+				//.interestDays(record.getInterestDays() >= 0 ? record.getInterestDays() : null) TODO
+				//.interestPercent(Percent.of(record.getInterestPercent())) TODO
 				.userElementNumber1(InterfaceWrapperHelper.getValueAsBigDecimalOrNull(record, I_ModCntr_Log.COLUMNNAME_UserElementNumber1))
 				.userElementNumber2(InterfaceWrapperHelper.getValueAsBigDecimalOrNull(record, I_ModCntr_Log.COLUMNNAME_UserElementNumber2))
 				.year(YearId.ofRepoId(record.getHarvesting_Year_ID()))
 				.isBillable(record.isBillable())
 				.priceActual(extractPriceActual(record))
 				.modularContractModuleId(ModularContractModuleId.ofRepoId(record.getModCntr_Module_ID()))
+				//.modularParentContractModuleId(ModularContractModuleId.ofRepoIdOrNull(record.getModCntr_ModuleParent_ID())) TODO
 				.invoicingGroupId(InvoicingGroupId.ofRepoIdOrNull(record.getModCntr_InvoicingGroup_ID()))
 				.invoiceCandidateId(InvoiceCandidateId.ofRepoIdOrNull(record.getC_Invoice_Candidate_ID()))
 				.build();
@@ -705,6 +719,10 @@ public class ModularContractLogDAO
 		record.setDateTrx(from.getTransactionDate().toTimestamp(getZoneIdByOrgId));
 		Optional.ofNullable(from.getStorageDays())
 				.ifPresentOrElse(record::setStorageDays, () -> record.setStorageDays(0));
+		// Optional.ofNullable(from.getInterestDays().)
+		// 		.ifPresentOrElse(record::setInterestDays, () -> record.setInterestDays(0));
+		// Optional.ofNullable(from.getInterestPercent().)
+		// 		.ifPresentOrElse(record::setInterestPercent, () -> record.setInterestPercent(null); TODO
 		record.setHarvesting_Year_ID(from.getYear().getRepoId());
 		record.setIsBillable(from.isBillable());
 		Optional.ofNullable(from.getPriceActual())

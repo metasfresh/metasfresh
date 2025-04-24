@@ -35,6 +35,7 @@
  import de.metas.contracts.modular.settings.ModularContractSettings;
  import de.metas.contracts.modular.settings.ModularContractSettingsService;
  import de.metas.contracts.modular.settings.ModuleConfig;
+ import de.metas.contracts.modular.settings.ModuleParentConfig;
  import de.metas.contracts.modular.workpackage.ModularContractLogHandlerRegistry;
  import de.metas.currency.CurrencyConversionContext;
  import de.metas.currency.ICurrencyBL;
@@ -278,13 +279,40 @@
 
 	 public void updatePriceAndAmount(@NonNull final ModCntrLogPriceUpdateRequest request, @NonNull final ModularContractLogHandlerRegistry logHandlerRegistry)
 	 {
-		 modularContractLogDAO.save(modularContractLogDAO.getModularContractLogEntries(ModularContractLogQuery.builder()
+		 final ModularContractLogEntriesList logEntries = modularContractLogDAO.getModularContractLogEntries(ModularContractLogQuery.builder()
 						 .flatrateTermId(request.flatrateTermId())
 						 .processed(false)
 						 .contractModuleId(request.modularContractModuleId())
 						 .excludedReferencedTableId(INVOICE_LINE_TABLE_ID)
 						 .build())
-				 .withPriceActualAndCalculateAmount(request.unitPrice(), uomConversionBL, logHandlerRegistry));
+				 .withPriceActualAndCalculateAmount(request.unitPrice(), uomConversionBL, logHandlerRegistry);
+		 modularContractLogDAO.save(logEntries);
+
+		 final ModularContractSettings modularContractSettings = modularContractSettingsService.getByFlatrateTermId(request.flatrateTermId());
+		 if(!modularContractSettings.getModuleParentConfigs().isEmpty())
+		 {
+			 final List<ModuleParentConfig> parentConfigs = modularContractSettings.getModuleParentConfigsByParentId(request.modularContractModuleId());
+			 for(final ModuleParentConfig moduleParentConfig : parentConfigs)
+			 {
+				 for(final ModularContractLogEntry log : logEntries)
+				 {
+
+					 modularContractLogDAO.save(modularContractLogDAO.getModularContractLogEntries(ModularContractLogQuery.builder()
+									 .flatrateTermId(request.flatrateTermId())
+									 .processed(false)
+									 .contractModuleId(moduleParentConfig.getModuleConfigId().getModularContractModuleId())
+									 .referenceSet(TableRecordReferenceSet.of(log.getReferencedRecord()))
+									 .excludedReferencedTableId(INVOICE_LINE_TABLE_ID)
+									 .build())
+							 .withPriceActualAndCalculateAmount(
+									 Check.assumeNotNull(log.getAmount(), "Amount shouldn't be null"),
+									 uomConversionBL,
+									 logHandlerRegistry
+							 )
+					 );
+				 }
+			 }
+		 }
 	 }
 
 	 public void updateModularLog(@NonNull final ModularContractLogEntry logEntry)
