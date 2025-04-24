@@ -127,7 +127,7 @@ public class MD_Candidate
 					.mdCandidateId(candidate.getMD_Candidate_ID())
 					.build();
 
-			materialEventService.enqueueEvent(stockCandidateChangedEvent);
+			materialEventService.enqueueEventAfterNextCommit(stockCandidateChangedEvent);
 		}
 
 		if (isUpdateCurrentStockRequired(timingType))
@@ -139,7 +139,7 @@ public class MD_Candidate
 					.materialDescriptor(toMaterialDescriptor(candidate))
 					.build();
 
-			materialEventService.enqueueEvent(stockCandidateChangedEvent);
+			materialEventService.enqueueEventAfterNextCommit(stockCandidateChangedEvent);
 		}
 	}
 
@@ -192,7 +192,7 @@ public class MD_Candidate
 				.qtyFulfilledDelta(qtyFulfilledDelta)
 				.build();
 
-		materialEventService.enqueueEvent(materialCandidateChangedEvent);
+		materialEventService.enqueueEventAfterNextCommit(materialCandidateChangedEvent);
 	}
 
 	@NonNull

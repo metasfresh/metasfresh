@@ -654,7 +654,7 @@ public class PPOrderBL implements IPPOrderBL
 				.directlyPickIfFeasible(PPOrderUtil.pickIfFeasible(ppOrderPojo.getPpOrderData()))
 				.build();
 
-		materialEventService.enqueueEvent(ppOrderCreatedEvent);
+		materialEventService.enqueueEventAfterNextCommit(ppOrderCreatedEvent);
 	}
 
 	@Override

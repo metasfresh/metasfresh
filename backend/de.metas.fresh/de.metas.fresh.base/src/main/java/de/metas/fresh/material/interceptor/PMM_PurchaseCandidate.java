@@ -96,6 +96,6 @@ public class PMM_PurchaseCandidate
 		}
 
 		final PostMaterialEventService materialEventService = Adempiere.getBean(PostMaterialEventService.class);
-		materialEventService.enqueueEvent(event);
+		materialEventService.enqueueEventAfterNextCommit(event);
 	}
 }

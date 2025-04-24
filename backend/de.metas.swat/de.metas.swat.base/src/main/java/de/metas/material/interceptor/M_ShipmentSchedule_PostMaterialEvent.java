@@ -88,7 +88,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 	{
 		final AbstractShipmentScheduleEvent event = createShipmentScheduleEvent(schedule, timing);
 
-		postMaterialEventService.enqueueEvent(event);
+		postMaterialEventService.enqueueEventAfterNextCommit(event);
 	}
 
 	@VisibleForTesting

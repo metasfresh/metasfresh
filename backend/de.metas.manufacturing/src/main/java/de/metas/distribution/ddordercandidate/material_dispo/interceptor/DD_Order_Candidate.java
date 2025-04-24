@@ -33,14 +33,14 @@ public class DD_Order_Candidate
 	public void afterNew(final I_DD_Order_Candidate record)
 	{
 		final DDOrderCandidateData data = toDDOrderCandidateData(record);
-		materialEventService.enqueueEvent(DDOrderCandidateCreatedEvent.of(data));
+		materialEventService.enqueueEventAfterNextCommit(DDOrderCandidateCreatedEvent.of(data));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE })
 	public void afterChange(final I_DD_Order_Candidate record)
 	{
 		final DDOrderCandidateData data = toDDOrderCandidateData(record);
-		materialEventService.enqueueEvent(DDOrderCandidateUpdatedEvent.of(data));
+		materialEventService.enqueueEventAfterNextCommit(DDOrderCandidateUpdatedEvent.of(data));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
@@ -51,7 +51,7 @@ public class DD_Order_Candidate
 															  .build());
 
 		final DDOrderCandidateData data = toDDOrderCandidateData(record);
-		materialEventService.enqueueEvent(DDOrderCandidateDeletedEvent.of(data));
+		materialEventService.enqueueEventAfterNextCommit(DDOrderCandidateDeletedEvent.of(data));
 	}
 
 	private DDOrderCandidateData toDDOrderCandidateData(final I_DD_Order_Candidate record)

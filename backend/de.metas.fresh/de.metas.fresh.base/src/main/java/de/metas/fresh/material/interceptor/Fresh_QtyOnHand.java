@@ -101,7 +101,7 @@ public class Fresh_QtyOnHand
 			events.add(event);
 		}
 
-		events.forEach(materialEventService::enqueueEvent);
+		events.forEach(materialEventService::enqueueEventAfterNextCommit);
 	}
 
 }

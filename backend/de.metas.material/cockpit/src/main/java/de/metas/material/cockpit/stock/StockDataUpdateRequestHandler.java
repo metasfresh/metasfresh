@@ -153,6 +153,6 @@ public class StockDataUpdateRequestHandler
 				.build();
 
 		// the event is about an I_MD_Stock record. better wait until it was committed to DB
-		postMaterialEventService.enqueueEvent(event);
+		postMaterialEventService.enqueueEventAfterNextCommit(event);
 	}
 }
