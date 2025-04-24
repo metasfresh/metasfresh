@@ -31,6 +31,7 @@ export const PickingJobLineScreen = {
     }),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {
+        await PickingJobLineScreen.waitForScreen();
         await page.locator(ID_BACK_BUTTON).tap();
         await PickingJobScreen.waitForScreen();
     }),
