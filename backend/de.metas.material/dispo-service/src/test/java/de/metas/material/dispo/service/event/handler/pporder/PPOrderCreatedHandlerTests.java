@@ -259,7 +259,7 @@ public class PPOrderCreatedHandlerTests
 				.ppOrder(ppOrder)
 				.build();
 
-		assertThat(ppOrder.getPpOrderId()).isEqualTo(ppOrderId);
+		assertThat(ppOrder.getPpOrderId().getRepoId()).isEqualTo(ppOrderId);
 		return event;
 	}
 

@@ -76,7 +76,7 @@ public class PPOrderCreatedEvent implements MaterialEvent
 	{
 		final PPOrder ppOrder = getPpOrder();
 		final PPOrderId ppOrderId = ppOrder.getPpOrderId();
-		Check.errorIf(ppOrderId != null, "The given ppOrderCreatedEvent event has a ppOrder with ppOrderId={}", ppOrderId);
+		Check.errorIf(ppOrderId == null, "The given ppOrderCreatedEvent event has a ppOrder with ppOrderId={}", ppOrderId);
 
 		ppOrder.getLines().forEach(this::validateLine);
 	}
