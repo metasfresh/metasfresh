@@ -275,7 +275,7 @@ public class RequestMaterialOrderService
 	private void createAndFirePurchaseCandidateRequestedEvent(@NonNull final CandidatesGroup group, @Nullable final String traceId)
 	{
 		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = createPurchaseCandidateRequestedEvent(group, traceId);
-		materialEventService.enqueueEventBeforeNextCommit(purchaseCandidateRequestedEvent);
+		materialEventService.enqueueEvent(purchaseCandidateRequestedEvent);
 	}
 
 	private PurchaseCandidateRequestedEvent createPurchaseCandidateRequestedEvent(@NonNull final CandidatesGroup group, @Nullable final String traceId)
@@ -312,7 +312,7 @@ public class RequestMaterialOrderService
 	private void createAndFireForecastRequestedEvent(@NonNull final CandidatesGroup group)
 	{
 		final PurchaseCandidateRequestedEvent purchaseCandidateRequestedEvent = createForecastRequestedEvent(group);
-		materialEventService.enqueueEventBeforeNextCommit(purchaseCandidateRequestedEvent);
+		materialEventService.enqueueEvent(purchaseCandidateRequestedEvent);
 	}
 
 	private PurchaseCandidateRequestedEvent createForecastRequestedEvent(@NonNull final CandidatesGroup group)

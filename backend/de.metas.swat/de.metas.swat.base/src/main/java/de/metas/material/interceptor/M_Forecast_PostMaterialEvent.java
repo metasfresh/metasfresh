@@ -51,13 +51,13 @@ public class M_Forecast_PostMaterialEvent
 	public void fireForecastCreatedEventOnComplete(@NonNull final I_M_Forecast forecast, @NonNull final DocTimingType timing)
 	{
 		forecastEventCreator.createEventWithLinesAndTiming(forecast, timing)
-				.ifPresent(materialEventService::enqueueEventBeforeNextCommit);
+				.ifPresent(materialEventService::enqueueEvent);
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REACTIVATE, ModelValidator.TIMING_AFTER_VOID })
 	public void fireForecastDeletedEventOnReactivate(@NonNull final I_M_Forecast forecast, @NonNull final DocTimingType timing)
 	{
 		forecastEventCreator.createDeletedEvent(forecast, timing)
-				.ifPresent(materialEventService::enqueueEventBeforeNextCommit);
+				.ifPresent(materialEventService::enqueueEvent);
 	}
 }

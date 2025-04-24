@@ -327,7 +327,7 @@ class DDOrderCandidateProcessCommand
 	private void fireDDOrderCreatedEvent(@NonNull final DDOrderId ddOrderId, @Nullable final String traceId)
 	{
 		@NonNull final DDOrder ddOrder = getCreatedDDOrder(ddOrderId);
-		materialEventService.enqueueEventBeforeNextCommit(DDOrderCreatedEvent.of(ddOrder, traceId));
+		materialEventService.enqueueEvent(DDOrderCreatedEvent.of(ddOrder, traceId));
 	}
 
 	private DDOrder getCreatedDDOrder(final DDOrderId ddOrderId)

@@ -163,7 +163,7 @@ public class PP_Order_Candidate
 				.build();
 
 		ppOrderCandidateService.deleteLines(PPOrderCandidateId.ofRepoId(ppOrderCandidateRecord.getPP_Order_Candidate_ID()));
-		materialEventService.enqueueEventBeforeNextCommit(ppOrderCandidateDeletedEvent);
+		materialEventService.enqueueEvent(ppOrderCandidateDeletedEvent);
 	}
 
 	private void validateQuantities(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
@@ -186,7 +186,7 @@ public class PP_Order_Candidate
 				.ppOrderCandidate(ppOrderCandidatePojo)
 				.build();
 
-		materialEventService.enqueueEventBeforeNextCommit(ppOrderCandidateUpdatedEvent);
+		materialEventService.enqueueEvent(ppOrderCandidateUpdatedEvent);
 	}
 
 	private void fireMaterialCreatedEvent(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
@@ -201,7 +201,7 @@ public class PP_Order_Candidate
 				.ppOrderCandidate(ppOrderCandidatePojo)
 				.build();
 
-		materialEventService.enqueueEventBeforeNextCommit(ppOrderCandidateCreatedEvent);
+		materialEventService.enqueueEvent(ppOrderCandidateCreatedEvent);
 	}
 
 	private void validateQtyEntered(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)

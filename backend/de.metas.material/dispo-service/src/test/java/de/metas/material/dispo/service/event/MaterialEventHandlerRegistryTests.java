@@ -217,7 +217,7 @@ public class MaterialEventHandlerRegistryTests
 
 		final ArgumentCaptor<MaterialEvent> eventCaptor = ArgumentCaptor.forClass(MaterialEvent.class);
 		Mockito.verify(postMaterialEventService)
-				.enqueueEventBeforeNextCommit(eventCaptor.capture());
+				.enqueueEvent(eventCaptor.capture());
 		final SupplyRequiredEvent event = (SupplyRequiredEvent)eventCaptor.getValue();
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = event.getSupplyRequiredDescriptor();
 

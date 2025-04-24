@@ -199,7 +199,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 				.topLevelHuIdsToPick(huIdsToPick)
 				.build();
 
-		postMaterialEventService.enqueueEventBeforeNextCommit(pickingRequestedEvent);
+		postMaterialEventService.enqueueEvent(pickingRequestedEvent);
 	}
 
 	@NonNull

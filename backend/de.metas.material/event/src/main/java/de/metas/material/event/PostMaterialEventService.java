@@ -48,11 +48,11 @@ public class PostMaterialEventService
 	/**
 	 * Adds a trx listener to make sure the given {@code event} will be fired via {@link #enqueueEventNow(MaterialEvent)} before the given {@code trxName} is committed.
 	 */
-	public void enqueueEventBeforeNextCommit(@NonNull final MaterialEvent event)
+	public void enqueueEventAfterNextCommit(@NonNull final MaterialEvent event)
 	{
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-		trxManager.accumulateAndProcessBeforeCommit(event.getEventName(),
+		trxManager.accumulateAndProcessAfterCommit(event.getEventName(),
 				ImmutableSet.of(event),
 				this::enqueueEventsNow);
 	}
