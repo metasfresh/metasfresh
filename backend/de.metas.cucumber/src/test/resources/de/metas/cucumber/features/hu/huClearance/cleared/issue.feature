@@ -37,12 +37,12 @@ Feature: Cleared HU can be issued to production order
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
       | huProductTU                        | huPiItemTU                 | huProduct               | 10  | 2022-01-01 |
 
-    And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate | DocumentNo      |
-      | huProduct_inventory       | 2022-03-20   | inventoryDocNo2 |
-    And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
-      | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 10       |
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo      | M_Warehouse_ID |
+      | huProduct_inventory       | 2022-03-20   | inventoryDocNo2 | warehouseStd   |
+    And  metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 10       | PCE          |
     And complete inventory with inventoryIdentifier 'huProduct_inventory'
 
     And after not more than 60s, there are added M_HUs for inventory
@@ -51,7 +51,7 @@ Feature: Cleared HU can be issued to production order
 
     And transform CU to new TUs
       | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | OPT.resultedNewTUs.Identifier | OPT.resultedNewCUs.Identifier |
-      | createdCU           | 10    | huProductTU                        | createdTU                 | newCreatedCU              |
+      | createdCU           | 10    | huProductTU                        | createdTU                     | newCreatedCU                  |
 
     And after not more than 60s, M_HUs should have
       | M_HU_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier |

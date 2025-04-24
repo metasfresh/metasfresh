@@ -66,6 +66,7 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.compiere.model.I_M_InOutLine.COLUMNNAME_C_OrderLine_ID;
 import static org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOutLine_ID;
 import static org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOut_ID;
 import static org.compiere.model.I_M_InOutLine.COLUMNNAME_M_Locator_ID;
@@ -120,7 +121,7 @@ public class M_InOut_Line_StepDef
 		row.getAsIdentifier(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).putOrReplace(shipmentLineTable, shipmentLineRecord);
 	}
 
-	private static I_M_InOutLine getSingleShipmentLine(final IQuery<I_M_InOutLine> query)
+	private static I_M_InOutLine getSingleShipmentLine(@NonNull final IQuery<I_M_InOutLine> query)
 	{
 		final List<I_M_InOutLine> lines = query.list();
 		if (lines.isEmpty())
@@ -311,6 +312,12 @@ public class M_InOut_Line_StepDef
 				.map(X12DE355::ofCode)
 				.map(uomDAO::getUomIdByX12DE355)
 				.ifPresent(uomId -> softly.assertThat(UomId.ofRepoIdOrNull(actual.getC_UOM_ID())).as("C_UOM_ID").isEqualTo(uomId));
+
+		expected.getAsOptionalIdentifier(COLUMNNAME_C_OrderLine_ID)
+				.ifPresent(orderLineIdentifier -> {
+					final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
+					softly.assertThat(actual.getC_OrderLine_ID()).as("C_OrderLine_ID").isEqualTo(orderLine.getC_OrderLine_ID());
+				});
 
 		expected.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_M_AttributeSetInstance_ID)
 				.ifPresent(asiIdentifier -> {

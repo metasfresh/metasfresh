@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,8 +20,9 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.hu;
 
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.handlingunits.model.I_M_HU_PackagingCode;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
