@@ -11,7 +11,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
     And metasfresh initially has no EDI_Desadv_Pack_Item data
     And metasfresh initially has no EDI_Desadv_Pack data
     And destroy existing M_HUs
-
+    And load M_Warehouse:
+      | M_Warehouse_ID | Value        |
+      | warehouseStd   | StdWarehouse |
     
     
     
@@ -484,12 +486,12 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
       | huProductTU_S0316_030              | huPiItemTU_S0316_030       | p_1_S0316_030           | 10  | 2021-01-01 |
 
-    And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier     | MovementDate | DocumentNo     |
-      | huProduct_inventory_S0316_030 | 2021-04-16   | inventoryDocNo |
-    And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID.Identifier     | M_InventoryLine_ID.Identifier     | M_Product_ID.Identifier | QtyBook | QtyCount |
-      | huProduct_inventory_S0316_030 | huProduct_inventoryLine_S0316_030 | p_1_S0316_030           | 0       | 10       |
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier     | MovementDate | DocumentNo     | M_Warehouse_ID |
+      | huProduct_inventory_S0316_030 | 2021-04-16   | inventoryDocNo | warehouseStd   |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier     | M_InventoryLine_ID.Identifier     | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | huProduct_inventory_S0316_030 | huProduct_inventoryLine_S0316_030 | p_1_S0316_030           | 0       | 10       | PCE          |
     And complete inventory with inventoryIdentifier 'huProduct_inventory_S0316_030'
     And after not more than 30s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier     | M_HU_ID.Identifier  |
@@ -523,8 +525,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And metasfresh contains M_HU_Item:
       | M_HU_Item_ID.Identifier | M_HU_ID.Identifier  | M_HU_PI_Item_ID.Identifier | Qty | M_HU_PackingMaterial_ID.Identifier | OPT.ItemType |
-      | huPiItemLU_S0316_030    | createdLU_S0316_030 | huPiItemLU_S0316_030       | 10  | pm_1_S0316_030                     | PM           |
-      | huPiItemTU_S0316_030    | createdTU_S0316_030 | huPiItemTU_S0316_030       | 10  | pm_2_S0316_030                     | PM           |
+      | huItemLU_S0316_030      | createdLU_S0316_030 | huPiItemLU_S0316_030       | 10  | pm_1_S0316_030                     | PM           |
+      | huItemTU_S0316_030      | createdTU_S0316_030 | huPiItemTU_S0316_030       | 10  | pm_2_S0316_030                     | PM           |
 
     And metasfresh contains C_Orders:
       | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   | C_PaymentTerm_ID | deliveryRule |
@@ -658,12 +660,12 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
       | huProductTU_11212023_2             | huPiItemTU_11212023_2      | p_1_11212023_2          | 10  | 2021-01-01 |
 
-    And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier      | MovementDate | DocumentNo     |
-      | huProduct_inventory_11212023_2 | 2021-04-16   | inventoryDocNo |
-    And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID.Identifier      | M_InventoryLine_ID.Identifier      | M_Product_ID.Identifier | QtyBook | QtyCount |
-      | huProduct_inventory_11212023_2 | huProduct_inventoryLine_11212023_2 | p_1_11212023_2          | 0       | 10       |
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier      | MovementDate | DocumentNo     | M_Warehouse_ID |
+      | huProduct_inventory_11212023_2 | 2021-04-16   | inventoryDocNo | warehouseStd   |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier      | M_InventoryLine_ID.Identifier      | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | huProduct_inventory_11212023_2 | huProduct_inventoryLine_11212023_2 | p_1_11212023_2          | 0       | 10       | PCE          |
     And complete inventory with inventoryIdentifier 'huProduct_inventory_11212023_2'
     And after not more than 30s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier      | M_HU_ID.Identifier   |
@@ -697,8 +699,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And metasfresh contains M_HU_Item:
       | M_HU_Item_ID.Identifier | M_HU_ID.Identifier   | M_HU_PI_Item_ID.Identifier | Qty | M_HU_PackingMaterial_ID.Identifier | OPT.ItemType |
-      | huPiItemLU_11212023_2   | createdLU_11212023_2 | huPiItemLU_11212023_2      | 10  | pm_1_11212023_2                    | PM           |
-      | huPiItemTU_11212023_2   | createdTU_11212023_2 | huPiItemTU_11212023_2      | 10  | pm_2_11212023_2                    | PM           |
+      | huItemLU_11212023_2     | createdLU_11212023_2 | huPiItemLU_11212023_2      | 10  | pm_1_11212023_2                    | PM           |
+      | huItemTU_11212023_2     | createdTU_11212023_2 | huPiItemTU_11212023_2      | 10  | pm_2_11212023_2                    | PM           |
 
     And metasfresh contains C_Orders:
       | Identifier     | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   | C_PaymentTerm_ID | deliveryRule |
@@ -823,12 +825,12 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
       | huProductTU_11212023_3             | huPiItemTU_11212023_3      | p_1_11212023_3          | 10  | 2021-01-01 |
 
-    And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier      | MovementDate | DocumentNo     |
-      | huProduct_inventory_11212023_3 | 2021-04-16   | inventoryDocNo |
-    And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID.Identifier      | M_InventoryLine_ID.Identifier      | M_Product_ID.Identifier | QtyBook | QtyCount |
-      | huProduct_inventory_11212023_3 | huProduct_inventoryLine_11212023_3 | p_1_11212023_3          | 0       | 10       |
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier      | MovementDate | DocumentNo     | M_Warehouse_ID |
+      | huProduct_inventory_11212023_3 | 2021-04-16   | inventoryDocNo | warehouseStd   |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier      | M_InventoryLine_ID.Identifier      | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | huProduct_inventory_11212023_3 | huProduct_inventoryLine_11212023_3 | p_1_11212023_3          | 0       | 10       | PCE          |
     And complete inventory with inventoryIdentifier 'huProduct_inventory_11212023_3'
     And after not more than 30s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier      | M_HU_ID.Identifier   |
@@ -862,8 +864,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And metasfresh contains M_HU_Item:
       | M_HU_Item_ID.Identifier | M_HU_ID.Identifier   | M_HU_PI_Item_ID.Identifier | Qty | M_HU_PackingMaterial_ID.Identifier | OPT.ItemType |
-      | huPiItemLU_11212023_3   | createdLU_11212023_3 | huPiItemLU_11212023_3      | 10  | pm_1_11212023_3                    | PM           |
-      | huPiItemTU_11212023_3   | createdTU_11212023_3 | huPiItemTU_11212023_3      | 10  | pm_2_11212023_3                    | PM           |
+      | huItemLU_11212023_3     | createdLU_11212023_3 | huPiItemLU_11212023_3      | 10  | pm_1_11212023_3                    | PM           |
+      | huItemTU_11212023_3     | createdTU_11212023_3 | huPiItemTU_11212023_3      | 10  | pm_2_11212023_3                    | PM           |
 
     And metasfresh contains C_Orders:
       | Identifier     | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   | C_PaymentTerm_ID | deliveryRule |
@@ -1024,12 +1026,12 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
   }
   """
 
-    And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier     | MovementDate | DocumentNo     |
-      | huProduct_inventory_S0316_040 | 2021-04-16   | inventoryDocNo |
-    And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID.Identifier     | M_InventoryLine_ID.Identifier     | M_Product_ID.Identifier | QtyBook | QtyCount |
-      | huProduct_inventory_S0316_040 | huProduct_inventoryLine_S0316_040 | p_1_S0316_040           | 0       | 5        |
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier     | MovementDate | DocumentNo     | M_Warehouse_ID |
+      | huProduct_inventory_S0316_040 | 2021-04-16   | inventoryDocNo | warehouseStd   |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier     | M_InventoryLine_ID.Identifier     | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | huProduct_inventory_S0316_040 | huProduct_inventoryLine_S0316_040 | p_1_S0316_040           | 0       | 5        | PCE          |
     And complete inventory with inventoryIdentifier 'huProduct_inventory_S0316_040'
     And after not more than 30s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier     | M_HU_ID.Identifier  |
@@ -1060,8 +1062,8 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And metasfresh contains M_HU_Item:
       | M_HU_Item_ID.Identifier | M_HU_ID.Identifier  | M_HU_PI_Item_ID.Identifier | Qty | M_HU_PackingMaterial_ID.Identifier | OPT.ItemType |
-      | huPiItemLU_S0316_040    | createdLU_S0316_040 | huPiItemLU_S0316_040       | 10  | pm_1_S0316_040                     | PM           |
-      | huPiItemTU_S0316_040    | createdTU_S0316_040 | huPiItemTU_S0316_040       | 10  | pm_2_S0316_040                     | PM           |
+      | huItemLU_S0316_040      | createdLU_S0316_040 | huPiItemLU_S0316_040       | 10  | pm_1_S0316_040                     | PM           |
+      | huItemTU_S0316_040      | createdTU_S0316_040 | huPiItemTU_S0316_040       | 10  | pm_2_S0316_040                     | PM           |
 
     And metasfresh contains C_Orders:
       | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   | C_PaymentTerm_ID | deliveryRule |
@@ -1114,6 +1116,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | "1","ipaSSCC18_14092022_2","@o_1_S0316_040@","16.04.2021","","@p_1_S0316_040@","1","0","210420","luLotNumber","","","","","","","","","","","","" |
 
 
+  @Id:S0457_010
   Scenario: S0457_010 - 1 Pack from 2 lines with HUs for entire qty.
   There are no packing-infos to go with, but the lines are picked onto two actual HUs, so we use the qtys from that HU.
   in:
@@ -1185,13 +1188,13 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
       | huProductTU_1_S0457_010            | huPiItemTU_S0457_010       | p_1_S0457_010           | 10  | 2021-01-01 |
       | huProductTU_2_S0457_010            | huPiItemTU_S0457_010       | p_2_S0457_010           | 10  | 2021-01-01 |
 
-    And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier     | MovementDate | DocumentNo     |
-      | huProduct_inventory_S0457_010 | 2021-04-16   | inventoryDocNo |
-    And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID.Identifier     | M_InventoryLine_ID.Identifier       | M_Product_ID.Identifier | QtyBook | QtyCount |
-      | huProduct_inventory_S0457_010 | huProduct_inventoryLine_1_S0457_010 | p_1_S0457_010           | 0       | 10       |
-      | huProduct_inventory_S0457_010 | huProduct_inventoryLine_2_S0457_010 | p_2_S0457_010           | 0       | 20       |
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier     | MovementDate | DocumentNo     | M_Warehouse_ID |
+      | huProduct_inventory_S0457_010 | 2021-04-16   | inventoryDocNo | warehouseStd   |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier     | M_InventoryLine_ID.Identifier       | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | huProduct_inventory_S0457_010 | huProduct_inventoryLine_1_S0457_010 | p_1_S0457_010           | 0       | 10       | PCE          |
+      | huProduct_inventory_S0457_010 | huProduct_inventoryLine_2_S0457_010 | p_2_S0457_010           | 0       | 20       | PCE          |
     And complete inventory with inventoryIdentifier 'huProduct_inventory_S0457_010'
     And after not more than 30s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier       | M_HU_ID.Identifier    |
@@ -1235,10 +1238,10 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a normal
 
     And metasfresh contains M_HU_Item:
       | M_HU_Item_ID.Identifier | M_HU_ID.Identifier      | M_HU_PI_Item_ID.Identifier | Qty | M_HU_PackingMaterial_ID.Identifier | OPT.ItemType |
-      | huPiItemLU_S0457_010    | createdLU_S0457_010     | huPiItemLU_S0457_010       | 10  | pm_1_S0457_010                     | PM           |
-      | huPiItemTU_S0457_010    | createdTU_1_S0457_010   | huPiItemTU_S0457_010       | 10  | pm_2_S0457_010                     | PM           |
-      | huPiItemTU_2_S0457_010  | createdTU_2_1_S0457_010 | huPiItemTU_S0457_010       | 20  | pm_2_S0457_010                     | PM           |
-      | huPiItemTU_2_S0457_010  | createdTU_2_2_S0457_010 | huPiItemTU_S0457_010       | 20  | pm_2_S0457_010                     | PM           |
+      | huItemLU_S0457_010      | createdLU_S0457_010     | huPiItemLU_S0457_010       | 10  | pm_1_S0457_010                     | PM           |
+      | huItemTU_S0457_010      | createdTU_1_S0457_010   | huPiItemTU_S0457_010       | 10  | pm_2_S0457_010                     | PM           |
+      | huItemTU_2_S0457_010    | createdTU_2_1_S0457_010 | huPiItemTU_S0457_010       | 20  | pm_2_S0457_010                     | PM           |
+      | huItemTU_2_S0457_010    | createdTU_2_2_S0457_010 | huPiItemTU_S0457_010       | 20  | pm_2_S0457_010                     | PM           |
 
     And metasfresh contains C_Orders:
       | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   | C_PaymentTerm_ID | deliveryRule |

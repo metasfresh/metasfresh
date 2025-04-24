@@ -23,7 +23,7 @@
 package de.metas.cucumber.stepdefs.edi;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.M_HU_PackagingCode_StepDefData;
+import de.metas.cucumber.stepdefs.hu.M_HU_PackagingCode_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;

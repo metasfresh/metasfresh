@@ -21,6 +21,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BinaryOperator;
@@ -125,24 +126,13 @@ public class HU
 	}
 
 	/**
-	 * Creates a "sparse" HU that only contains child-HUs, quantities and weights (if any!) for the given {@code productId}.
+	 * Creates a "sparse" HU that only contains child-HUs, quantities and weights (if any!) for the given {@code reference}.
 	 * ! Note that the HU's attribute-sets are <b>not</b> reduced by this method.
 	 */
 	@Nullable
 	public HU retainReference(@NonNull final TableRecordReference reference)
 	{
-		return retainReference(reference, ImmutableList.of());
-	}
-
-	/**
-	 * @param referencingModelsOfParentHU if an HU has no own ReferencingModels, then assume these
-	 */
-	@Nullable
-	private HU retainReference(@NonNull final TableRecordReference reference,
-							   @NonNull final ImmutableList<TableRecordReference> referencingModelsOfParentHU)
-	{
-		final ImmutableList<TableRecordReference> effectiveReferencingModels = getReferencingModels().isEmpty() ? referencingModelsOfParentHU : getReferencingModels();
-
+		final ImmutableList<TableRecordReference> effectiveReferencingModels = getReferencingModels();
 		final HUBuilder result = this.toBuilder();
 
 		final boolean hasChildHUs = !getChildHUs().isEmpty();
@@ -169,14 +159,15 @@ public class HU
 		}
 
 		final HashMap<ProductId, Quantity> newProductQtysInStockUOM = new HashMap<>();
-
+		final LinkedHashSet<TableRecordReference> newReferencingModels = new LinkedHashSet<>();
+		
 		for (final HU child : getChildHUs())
 		{
-			final HU retainedChild = child.retainReference(reference, effectiveReferencingModels);
+			final HU retainedChild = child.retainReference(reference);
 			if (retainedChild != null)
 			{
 				result.childHU(retainedChild);
-				result.referencingModels(retainedChild.getReferencingModels());
+				newReferencingModels.addAll(retainedChild.getReferencingModels());
 
 				retainedChild.getProductQtysInStockUOM().forEach(
 						(productId, quantity) -> newProductQtysInStockUOM.merge(productId, quantity, Quantity::add));
@@ -192,12 +183,13 @@ public class HU
 			}
 		}
 		result.productQtysInStockUOM(newProductQtysInStockUOM)
+				.referencingModels(newReferencingModels)
 				.weightNet(newWeightNet);
 
 		final HU resultingHU = result.build();
 		if (hasChildHUs && resultingHU.getChildHUs().isEmpty())
 		{
-			return null; // none of the child-HUs match our predicate
+			return null; // none of the child-HUs matched our predicate
 		}
 		return resultingHU;
 	}
