@@ -7,6 +7,9 @@ Feature: Group invoices and credit memos into a single document
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-04-16T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And load M_Warehouse:
+      | M_Warehouse_ID | Value        |
+      | warehouseStd   | StdWarehouse |
 
   @from:cucumber
   @Id:S0242_100
@@ -92,12 +95,12 @@ Feature: Group invoices and credit memos into a single document
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute | OPT.QtyDelivered |
       | schedule_SO | orderLine_SO              | N             | 8                |
 
-    And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate | DocumentNo      |
-      | inventory                 | 2022-06-16   | inventoryDocNo2 |
-    And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
-      | inventory                 | inventoryLine                 | product_SO              | 0       | 10       |
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo      | M_Warehouse_ID |
+      | inventory                 | 2022-06-16   | inventoryDocNo2 | warehouseStd   |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inventory                 | inventoryLine                 | product_SO              | 0       | 10       | PCE          |
 
     And complete inventory with inventoryIdentifier 'inventory'
 
@@ -267,12 +270,12 @@ Feature: Group invoices and credit memos into a single document
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute | OPT.QtyDelivered |
       | schedule_SO | orderLine_SO              | N             | 12               |
 
-    And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate | DocumentNo      |
-      | inventory                 | 2022-06-16   | inventoryDocNo2 |
-    And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
-      | inventory                 | inventoryLine                 | product_SO              | 0       | 10       |
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo      | M_Warehouse_ID |
+      | inventory                 | 2022-06-16   | inventoryDocNo2 | warehouseStd   |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inventory                 | inventoryLine                 | product_SO              | 0       | 10       | PCE          |
 
     And complete inventory with inventoryIdentifier 'inventory'
 
@@ -437,12 +440,12 @@ Feature: Group invoices and credit memos into a single document
       | Identifier  | C_OrderLine_ID.Identifier | IsToRecompute | OPT.QtyDelivered |
       | schedule_SO | orderLine_SO              | N             | 12               |
 
-    And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate | DocumentNo      |
-      | inventory                 | 2022-06-16   | inventoryDocNo2 |
-    And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
-      | inventory                 | inventoryLine                 | product_SO              | 0       | 10       |
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo      | M_Warehouse_ID |
+      | inventory                 | 2022-06-16   | inventoryDocNo2 | warehouseStd   |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inventory                 | inventoryLine                 | product_SO              | 0       | 10       | PCE          |
 
     And complete inventory with inventoryIdentifier 'inventory'
 
