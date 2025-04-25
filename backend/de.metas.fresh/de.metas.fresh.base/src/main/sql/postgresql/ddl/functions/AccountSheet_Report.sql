@@ -7,19 +7,19 @@ DROP FUNCTION IF EXISTS de_metas_acct.AccountSheet_Report(
 ;
 
 DROP FUNCTION IF EXISTS de_metas_acct.AccountSheet_Report(
-    p_Account_ID      numeric,
     p_C_AcctSchema_ID numeric,
     p_DateAcctFrom    DATE,
     p_DateAcctTo      date,
+    p_Account_ID      numeric,
     p_Account_IDs     numeric[]
 )
 ;
 
 CREATE OR REPLACE FUNCTION de_metas_acct.AccountSheet_Report(
+    p_C_AcctSchema_ID numeric,
+    p_DateAcctFrom    DATE,
+    p_DateAcctTo      date,
     p_Account_ID      numeric = NULL,
-    p_C_AcctSchema_ID numeric = NULL,
-    p_DateAcctFrom    DATE = NULL,
-    p_DateAcctTo      date = NULL,
     p_Account_IDs     numeric[] = NULL
 )
     RETURNS
@@ -48,7 +48,7 @@ BEGIN
     IF (p_Account_ID IS NOT NULL AND p_Account_ID > 0) THEN
         v_Account_IDs := ARRAY [p_Account_ID];
     ELSE
-        v_Account_IDs := p_Account_IDs;
+        v_Account_IDs := array_retain_positive(p_Account_IDs);
     END IF;
 
     IF (v_Account_IDs IS NULL OR ARRAY_LENGTH(v_Account_IDs, 1) = 0) THEN
@@ -70,7 +70,7 @@ BEGIN
         WHERE TRUE
           AND t.PostingType = 'A'
           AND t.C_AcctSchema_ID = p_C_AcctSchema_ID
-          AND t.account_id = ANY ((array_retain_positive(v_Account_IDs)))
+          AND t.account_id = ANY (v_Account_IDs)
           AND (p_DateAcctFrom IS NULL OR t.dateacct >= p_DateAcctFrom)
           AND (p_DateAcctTo IS NULL OR t.dateacct <= p_DateAcctTo)
         ORDER BY t.dateacct, t.ad_table_id, t.record_id, t.fact_acct_id;
