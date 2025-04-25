@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -118,17 +119,31 @@ public class HU
 	@Nullable
 	public String extractSingleLotNumber()
 	{
-		final Function<IAttributeSet, String> attrValueFunction = attrSet -> attrSet.getValueAsStringOrNull(AttributeConstants.ATTR_LotNumber);
-		final HashSet<String> lotNumbers = new HashSet<>();
-		for (final HU hu : allHUAsList())
+		final Supplier<String> attrValueFunction = () -> attributes.getValueAsStringOrNull(AttributeConstants.ATTR_LotNumber);
+
+		return extractLotNumber(attrValueFunction);
+	}
+
+	@VisibleForTesting
+	@Nullable
+	String extractLotNumber(@NonNull final Supplier<String> lotNumberSupplier)
+	{
+		final String ownLotNo = lotNumberSupplier.get();
+		if (Check.isNotBlank(ownLotNo))
 		{
-			final String lotNo = attrValueFunction.apply(hu.getAttributes());
-			if (Check.isNotBlank(lotNo))
+			return ownLotNo;
+		}
+
+		final HashSet<String> childLotNumbers = new HashSet<>();
+		for (final HU hu : childHUs)
+		{
+			final String childLotNo = hu.extractLotNumber(lotNumberSupplier);
+			if (Check.isNotBlank(childLotNo))
 			{
-				lotNumbers.add(lotNo);
+				childLotNumbers.add(childLotNo);
 			}
 		}
-		return CollectionUtils.singleElementOrNull(lotNumbers);
+		return CollectionUtils.singleElementOrNull(childLotNumbers);
 	}
 
 	public List<HU> allHUAsList()

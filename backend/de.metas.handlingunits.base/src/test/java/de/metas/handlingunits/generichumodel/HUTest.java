@@ -16,6 +16,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.Stack;
+import java.util.function.Supplier;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
@@ -197,7 +199,7 @@ class HUTest
 		assertThat(result.getChildHUs().get(1).getWeightNet()).isNotNull();
 		assertThat(result.getChildHUs().get(1).getWeightNet()).isEqualByComparingTo(Quantity.of("5", weightUOMRecord));
 		assertThat(result.getChildHUs().get(1).getReferencingModels()).isEmpty(); // it doesn't contain any ref. it's just here because its parent does
-		
+
 	}
 
 	/**
@@ -248,6 +250,55 @@ class HUTest
 		final HU tu1 = prepareTU(productId, ref1, ref2, true/*true or false, doesn't matter for this test*/);
 
 		assertThat(tu1.extractMedianCUQtyPerChildHU(productId)).isEqualByComparingTo(Quantity.of(TEN, stockUOMRecord));
+	}
+
+	@Test
+	void extractLotNumber()
+	{
+		final ProductId productId = BusinessTestHelper.createProductId("product", stockUOMRecord);
+		final TableRecordReference ref1 = TableRecordReference.of(1, 2);
+		final TableRecordReference ref2 = TableRecordReference.of(3, 4);
+
+		final HU tu1 = prepareTU(productId, ref1, ref2, true/*true or false, doesn't matter for this test*/);
+
+		{
+			// tu1 has no lotno and its children have different lotNos => expect null
+			final Stack<String> lotNumbers = new Stack<>();
+			lotNumbers.push("4");
+			lotNumbers.push("3");
+			lotNumbers.push("3");
+			lotNumbers.push(""); // this will be the lotnumber for tu1
+			final @NonNull Supplier<String> lotNumberSupplier = lotNumbers::pop;
+
+			final String result = tu1.extractLotNumber(lotNumberSupplier);
+
+			assertThat(result).isNull();
+		}
+
+		{
+			// tu1 has no lotno and its children the same lotno 4. expect 4
+			final Stack<String> lotNumbers = new Stack<>();
+			lotNumbers.push("4");
+			lotNumbers.push("4");
+			lotNumbers.push("4");
+			lotNumbers.push(""); // this will be the lotnumber for tu1
+			final @NonNull Supplier<String> lotNumberSupplier = lotNumbers::pop;
+
+			final String result = tu1.extractLotNumber(lotNumberSupplier);
+
+			assertThat(result).isEqualTo("4");
+		}
+
+		{
+			// tu1 has a lotno 
+			final Stack<String> lotNumbers = new Stack<>();
+			lotNumbers.push("1");
+			final @NonNull Supplier<String> lotNumberSupplier = lotNumbers::pop;
+
+			final String result = tu1.extractLotNumber(lotNumberSupplier);
+
+			assertThat(result).isEqualTo("1");
+		}
 	}
 
 	/**
