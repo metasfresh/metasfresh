@@ -447,7 +447,7 @@ public class EDIDesadvPackService
 
 		final HU topLevelHU = huRepository
 				.getById(HuId.ofRepoId(topLevelHURecord.getM_HU_ID()))
-				.retainReference(TableRecordReference.of(inOutLineRecord)); // we just want the qty related to the current inoutLine
+				.retain(TableRecordReference.of(inOutLineRecord), productId); // we just want the qty related to the current inoutLine
 		if (topLevelHU == null)
 		{
 			throw new AdempiereException("Missing M_HU").appendParametersToMessage()

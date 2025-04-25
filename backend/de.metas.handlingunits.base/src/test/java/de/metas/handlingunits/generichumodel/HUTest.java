@@ -64,13 +64,16 @@ class HUTest
 	{
 		final TableRecordReference ref1 = TableRecordReference.of(1, 2);
 
+		final ProductId productId1 = ProductId.ofRepoId(31);
+		final ProductId productId2 = ProductId.ofRepoId(32);
+		
 		final HU cu1_1 = HU.builder()
 				.id(HuId.ofRepoId(1))
 				.orgId(OrgId.ofRepoId(20))
 				.type(HUType.VirtualPI)
 				.packagingCode(null)
 				.attributes(ImmutableAttributeSet.EMPTY)
-				.productQtyInStockUOM(ProductId.ofRepoId(31), Quantity.of(ONE, stockUOMRecord))
+				.productQtyInStockUOM(productId1, Quantity.of(ONE, stockUOMRecord))
 				.weightNet(Quantity.of(new BigDecimal("4"), weightUOMRecord))
 				.referencingModel(ref1)
 				.build();
@@ -79,7 +82,7 @@ class HUTest
 				.clearProductQtysInStockUOM()
 				.clearReferencingModels()
 				.id(HuId.ofRepoId(2))
-				.productQtyInStockUOM(ProductId.ofRepoId(32), Quantity.of(TEN, stockUOMRecord))
+				.productQtyInStockUOM(productId2, Quantity.of(TEN, stockUOMRecord))
 				.weightNet(Quantity.of(new BigDecimal("6"), weightUOMRecord))
 				.build();
 
@@ -92,8 +95,8 @@ class HUTest
 				.type(HUType.TransportUnit)
 				.childHU(cu1_1)
 				.childHU(cu1_2)
-				.productQtyInStockUOM(ProductId.ofRepoId(31), Quantity.of(ONE, stockUOMRecord))
-				.productQtyInStockUOM(ProductId.ofRepoId(32), Quantity.of(TEN, stockUOMRecord))
+				.productQtyInStockUOM(productId1, Quantity.of(ONE, stockUOMRecord))
+				.productQtyInStockUOM(productId2, Quantity.of(TEN, stockUOMRecord))
 				.weightNet(Quantity.of(new BigDecimal("10"), weightUOMRecord))
 				.build();
 
@@ -102,7 +105,7 @@ class HUTest
 				.clearChildHUs()
 				.clearProductQtysInStockUOM()
 				.id(HuId.ofRepoId(20))
-				.productQtyInStockUOM(ProductId.ofRepoId(31), Quantity.of(new BigDecimal("20"), stockUOMRecord))
+				.productQtyInStockUOM(productId1, Quantity.of(new BigDecimal("20"), stockUOMRecord))
 				.weightNet(Quantity.of(new BigDecimal("20"), weightUOMRecord))
 				.referencingModel(ref1)
 				.build();
@@ -113,7 +116,7 @@ class HUTest
 				.clearProductQtysInStockUOM()
 				.clearPackagingGTINs()
 				.id(HuId.ofRepoId(30))
-				.productQtyInStockUOM(ProductId.ofRepoId(32), Quantity.of(new BigDecimal("30"), stockUOMRecord))
+				.productQtyInStockUOM(productId2, Quantity.of(new BigDecimal("30"), stockUOMRecord))
 				.weightNet(Quantity.of(new BigDecimal("30"), weightUOMRecord))
 				.build();
 
@@ -127,12 +130,12 @@ class HUTest
 				.childHU(tu2)
 				.childHU(tu3)
 				.weightNet(Quantity.of(new BigDecimal("60"), weightUOMRecord))
-				.productQtyInStockUOM(ProductId.ofRepoId(31), Quantity.of(new BigDecimal("21"), stockUOMRecord))
-				.productQtyInStockUOM(ProductId.ofRepoId(32), Quantity.of(new BigDecimal("40"), stockUOMRecord))
+				.productQtyInStockUOM(productId1, Quantity.of(new BigDecimal("21"), stockUOMRecord))
+				.productQtyInStockUOM(productId2, Quantity.of(new BigDecimal("40"), stockUOMRecord))
 				.build();
 
 		// invoke the method under test
-		final HU luResult = lu.retainReference(ref1);
+		final HU luResult = lu.retain(ref1, productId1);
 
 		assertThat(luResult).isNotNull();
 		assertThat(luResult.getChildHUs()).as("tu3 should not have been retained").hasSize(2);
@@ -141,7 +144,7 @@ class HUTest
 				.as("lu shall have a weight of 4 + 20 (from cu1_1 and tu2)").isEqualTo(Quantity.of(new BigDecimal("24"), weightUOMRecord));
 
 		assertThat(luResult.getProductQtysInStockUOM())
-				.as("lu shall only have productId 31").containsOnlyKeys(ProductId.ofRepoId(31))
+				.as("lu shall only have productId 31").containsOnlyKeys(productId1)
 				.as("lu shall have a qty of 20 + 1 (from tu1 and tu2)").containsValue(Quantity.of(new BigDecimal("21"), stockUOMRecord));
 
 		final ImmutableMap<HuId, HU> tuId2tu = Maps.uniqueIndex(luResult.getChildHUs(), HU::getId);
@@ -149,7 +152,7 @@ class HUTest
 		final HU tu2Result = tuId2tu.get(HuId.ofRepoId(20));
 
 		assertThat(tu1Result.getProductQtysInStockUOM())
-				.containsOnlyKeys(ProductId.ofRepoId(31))
+				.containsOnlyKeys(productId1)
 				.containsValue(Quantity.of(ONE, stockUOMRecord));
 		assertThat(tu1Result.getChildHUs()).as("cu1_2 should not have been retained").hasSize(1);
 		assertThat(tu1Result.getWeightNet()).isNotNull();
@@ -157,7 +160,7 @@ class HUTest
 				.as("lu shall have a weight of 4 (from cu1_1)").isEqualTo(Quantity.of(new BigDecimal("4"), weightUOMRecord));
 
 		assertThat(tu2Result.getProductQtysInStockUOM())
-				.containsOnlyKeys(ProductId.ofRepoId(31))
+				.containsOnlyKeys(productId1)
 				.containsValue(Quantity.of(new BigDecimal("20"), stockUOMRecord));
 	}
 
@@ -176,7 +179,7 @@ class HUTest
 		final HU tu1 = prepareTU(productId, ref1, ref2, false);
 
 		// when
-		final HU result = tu1.retainReference(ref1);
+		final HU result = tu1.retain(ref1, productId);
 
 		// then
 		assertThat(result).isNotNull();
@@ -216,7 +219,7 @@ class HUTest
 		final HU tu1 = prepareTU(productId, ref1, ref2, true);
 
 		// when
-		final HU result = tu1.retainReference(ref2);
+		final HU result = tu1.retain(ref2, productId);
 
 		// then
 		assertThat(result).isNotNull();
