@@ -78,3 +78,18 @@ INSERT INTO AD_BusinessRule_Precondition (AD_BusinessRule_ID,AD_BusinessRule_Pre
 INSERT INTO AD_BusinessRule_Trigger (AD_BusinessRule_ID,AD_BusinessRule_Trigger_ID,AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActive,OnDelete,OnNew,OnUpdate,Source_Table_ID,TargetRecordMappingSQL,Updated,UpdatedBy) VALUES (540017,540022,0,0,TO_TIMESTAMP('2025-04-24 14:50:33.074000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y',53018,'PP_Product_BOM_ID',TO_TIMESTAMP('2025-04-24 14:50:33.074000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
+-- 2025-04-25T09:34:30.455Z
+DELETE FROM AD_BusinessRule_Precondition WHERE AD_BusinessRule_Precondition_ID=540018
+;
+
+-- Name: PP_Product_BOM verified
+-- 2025-04-25T09:38:31.265Z
+UPDATE AD_Val_Rule SET Code='docstatus NOT IN (''CO'', ''CL'')
+   OR (
+    docstatus IN (''CO'', ''CL'')
+        AND EXISTS (SELECT 1
+                    FROM M_Product p
+                    WHERE pp_product_bom.m_product_id = p.m_product_id
+                      AND p.isverified = ''Y''))',Updated=TO_TIMESTAMP('2025-04-25 09:38:31.265000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540717
+;
+

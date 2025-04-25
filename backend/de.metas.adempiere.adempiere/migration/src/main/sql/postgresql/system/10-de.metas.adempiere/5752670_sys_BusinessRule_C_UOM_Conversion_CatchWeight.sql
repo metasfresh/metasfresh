@@ -50,17 +50,6 @@ INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Created,CreatedBy
 UPDATE AD_Val_Rule SET EntityType='D',Updated=TO_TIMESTAMP('2025-04-24 08:16:06.187000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540715
 ;
 
--- Name: C_UOM_Conversion with catch weight flag
--- 2025-04-24T08:22:10.745Z
-UPDATE AD_Val_Rule SET Code='EXISTS
-(SELECT 1
- FROM c_uom_conversion uomConversion
-          JOIN M_Product p
-               ON uomConversion.M_Product_ID = p.M_Product_ID
-          JOIN C_UOM targetUOM ON uomConversion.c_uom_to_id = targetUOM.c_uom_id
- WHERE uomConversion.c_uom_conversion_id = C_UOM_Conversion.c_uom_conversion_id
-   AND ((targetUOM.uomtype != ''WE'') OR (uomConversion.iscatchuomforproduct = ''Y'')))',Updated=TO_TIMESTAMP('2025-04-24 08:22:10.745000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540715
-;
 
 -- 2025-04-24T08:23:18.744Z
 INSERT INTO AD_BusinessRule (AD_BusinessRule_ID,AD_Client_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,IsActive,IsDebug,Name,Updated,UpdatedBy,Validation_Rule_ID,Warning_Message_ID) VALUES (540014,0,0,175,TO_TIMESTAMP('2025-04-24 08:23:18.726000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','C_UOM_Conversion with catch weight flag',TO_TIMESTAMP('2025-04-24 08:23:18.726000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,540715,545536)
@@ -72,5 +61,28 @@ INSERT INTO AD_BusinessRule_Precondition (AD_BusinessRule_ID,AD_BusinessRule_Pre
 
 -- 2025-04-24T08:29:44.412Z
 INSERT INTO AD_BusinessRule_Trigger (AD_BusinessRule_ID,AD_BusinessRule_Trigger_ID,AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActive,OnDelete,OnNew,OnUpdate,Source_Table_ID,TargetRecordMappingSQL,Updated,UpdatedBy) VALUES (540014,540019,0,0,TO_TIMESTAMP('2025-04-24 08:29:44.398000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','Y','Y',175,'C_UOM_Conversion_ID',TO_TIMESTAMP('2025-04-24 08:29:44.398000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-04-25T09:25:50.334Z
+DELETE FROM AD_BusinessRule_Precondition WHERE AD_BusinessRule_Precondition_ID=540008
+;
+
+-- 2025-04-25T09:30:27.690Z
+DELETE FROM T_ES_FTS_Search_Result t 
+ WHERE EXISTS (SELECT 1 FROM T_WEBUI_ViewSelection_ToDelete s 
+       WHERE 
+           s.View_UUID=t.Search_UUID
+           AND s.Executor_UUID='e3f84a8e-a6d5-4436-bb21-2729e57e11d3'
+ )
+;
+
+-- Name: C_UOM_Conversion with catch weight flag
+-- 2025-04-25T09:30:51.216Z
+UPDATE AD_Val_Rule SET Code='iscatchuomforproduct = ''N''
+   OR (iscatchuomforproduct = ''Y'' AND EXISTS
+    (SELECT 1
+     FROM C_UOM targetUOM
+     WHERE C_UOM_Conversion.c_uom_to_id = targetUOM.c_uom_id
+       AND targetUOM.uomtype = ''WE''))',Updated=TO_TIMESTAMP('2025-04-25 09:30:51.215000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540715
 ;
 

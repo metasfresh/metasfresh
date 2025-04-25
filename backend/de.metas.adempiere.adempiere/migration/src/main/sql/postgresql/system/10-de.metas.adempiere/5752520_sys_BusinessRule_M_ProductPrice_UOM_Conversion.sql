@@ -97,28 +97,7 @@ VALUES (0,0,540709,TO_TIMESTAMP('2025-04-23 12:25:31.743000','YYYY-MM-DD HH24:MI
 100,'D','Y','M_ProductPrice with UOM Conversion','S',TO_TIMESTAMP('2025-04-23 12:25:31.743000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- Name: M_ProductPrice with UOM Conversion
--- 2025-04-23T12:25:39.975Z
-UPDATE AD_Val_Rule SET Code='EXISTS (
-SELECT 1
-FROM M_ProductPrice pp
-         JOIN M_Product p
-              ON pp.M_Product_ID = p.M_Product_ID
-WHERE pp.M_ProductPrice_ID = M_ProductPrice.M_ProductPrice_ID
-  AND ((p.C_UOM_ID = pp.C_UOM_ID) OR (EXISTS (SELECT 1
-                                              FROM C_UOM_Conversion c
-                                              WHERE p.C_UOM_ID = c.C_UOM_ID
-                                                AND p.M_PRODUCT_ID = c.M_Product_ID
-                                                AND c.IsActive = ''Y''
-                                                AND M_ProductPrice.C_UOM_ID = C.C_UOM_TO_ID))
-    OR (EXISTS (SELECT 1
-                FROM C_UOM_Conversion c
-                WHERE p.C_UOM_ID = c.C_UOM_ID
-                  AND c.M_Product_ID IS NULL
-                  AND c.IsActive = ''Y''
-                  AND M_ProductPrice.C_UOM_ID = c.C_UOM_TO_ID))))
-',Updated=TO_TIMESTAMP('2025-04-23 12:25:39.975000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540709
-;
+
 
 -- 2025-04-23T12:26:02.769Z
 UPDATE AD_BusinessRule SET Validation_Rule_ID=540709,Updated=TO_TIMESTAMP('2025-04-23 12:26:02.769000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_BusinessRule_ID=540008
@@ -126,5 +105,25 @@ UPDATE AD_BusinessRule SET Validation_Rule_ID=540709,Updated=TO_TIMESTAMP('2025-
 
 -- 2025-04-23T12:26:55.669Z
 INSERT INTO AD_BusinessRule_Trigger (AD_BusinessRule_ID,AD_BusinessRule_Trigger_ID,AD_Client_ID,AD_Org_ID,Created,CreatedBy,IsActive,OnDelete,OnNew,OnUpdate,Source_Table_ID,TargetRecordMappingSQL,Updated,UpdatedBy) VALUES (540008,540013,0,0,TO_TIMESTAMP('2025-04-23 12:26:55.659000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','Y','Y',251,'m_productprice_id',TO_TIMESTAMP('2025-04-23 12:26:55.659000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- Name: M_ProductPrice with UOM Conversion
+-- 2025-04-25T09:19:50.316Z
+UPDATE AD_Val_Rule SET Code='(SELECT 1
+ FROM M_Product p
+ WHERE M_ProductPrice.M_Product_ID = p.M_Product_ID
+   AND ((p.C_UOM_ID = M_ProductPrice.C_UOM_ID)
+     OR (EXISTS (SELECT 1
+                 FROM C_UOM_Conversion c
+                 WHERE p.C_UOM_ID = c.C_UOM_ID
+                   AND p.M_PRODUCT_ID = c.M_Product_ID
+                   AND c.IsActive = ''Y''
+                   AND M_ProductPrice.C_UOM_ID = C.C_UOM_TO_ID))
+     OR (EXISTS (SELECT 1
+                 FROM C_UOM_Conversion c
+                 WHERE p.C_UOM_ID = c.C_UOM_ID
+                   AND c.M_Product_ID IS NULL
+                   AND c.IsActive = ''Y''
+                   AND M_ProductPrice.C_UOM_ID = c.C_UOM_TO_ID))))',Updated=TO_TIMESTAMP('2025-04-25 09:19:50.316000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540709
 ;
 

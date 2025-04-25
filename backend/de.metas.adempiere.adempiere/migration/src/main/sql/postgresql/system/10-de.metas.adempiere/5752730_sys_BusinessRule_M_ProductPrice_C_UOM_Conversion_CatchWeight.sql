@@ -40,30 +40,7 @@ UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2025-04-24 10:4
 INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540716,TO_TIMESTAMP('2025-04-24 10:51:46.431000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'U','Y','M_ProductPrice Catchweight has UOM Conversion','S',TO_TIMESTAMP('2025-04-24 10:51:46.431000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
--- Name: M_ProductPrice Catchweight has UOM Conversion
--- 2025-04-24T10:51:49.692Z
-UPDATE AD_Val_Rule SET Code='EXISTS (
-    SELECT 1
-    FROM M_ProductPrice pp
-             JOIN M_Product p
-                  ON pp.M_Product_ID = p.M_Product_ID
-    WHERE pp.M_ProductPrice_ID = M_ProductPrice.M_ProductPrice_ID
-      and pp.invoicableqtybasedon = ''CatchWeight''
-      AND ( (EXISTS (SELECT 1
-                                                  FROM C_UOM_Conversion c
-                                                  WHERE p.C_UOM_ID = c.C_UOM_ID
-                                                    AND p.M_PRODUCT_ID = c.M_Product_ID
-                                                    AND c.IsActive = ''Y''
-                                                    AND c.iscatchuomforproduct=''Y''
-                                                    AND M_ProductPrice.C_UOM_ID = C.C_UOM_TO_ID))
-        OR (EXISTS (SELECT 1
-                    FROM C_UOM_Conversion c
-                    WHERE p.C_UOM_ID = c.C_UOM_ID
-                      AND c.M_Product_ID IS NULL
-                      AND c.IsActive = ''Y''
-                      AND c.iscatchuomforproduct=''Y''
-                      AND M_ProductPrice.C_UOM_ID = c.C_UOM_TO_ID))))',Updated=TO_TIMESTAMP('2025-04-24 10:51:49.692000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540716
-;
+
 
 -- 2025-04-24T10:53:10.771Z
 INSERT INTO AD_BusinessRule (AD_BusinessRule_ID,AD_Client_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,IsActive,IsDebug,Name,Updated,UpdatedBy,Validation_Rule_ID,Warning_Message_ID) VALUES (540015,0,0,251,TO_TIMESTAMP('2025-04-24 10:53:10.753000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','Catchweight Product Price must have catchweight conversion',TO_TIMESTAMP('2025-04-24 10:53:10.753000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,540716,545537)
@@ -106,5 +83,32 @@ UPDATE AD_BusinessRule_Trigger SET ConditionSQL=NULL,Updated=TO_TIMESTAMP('2025-
 
 -- 2025-04-24T17:52:39.267Z
 UPDATE AD_BusinessRule_Trigger SET ConditionSQL=NULL,Updated=TO_TIMESTAMP('2025-04-24 17:52:39.267000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_BusinessRule_Trigger_ID=540026
+;
+
+-- 2025-04-25T09:31:44.464Z
+DELETE FROM AD_BusinessRule_Precondition WHERE AD_BusinessRule_Precondition_ID=540022
+;
+
+-- Name: M_ProductPrice Catchweight has UOM Conversion
+-- 2025-04-25T09:33:50.194Z
+UPDATE AD_Val_Rule SET Code='invoicableqtybasedon != ''CatchWeight''
+   OR (invoicableqtybasedon = ''CatchWeight'' AND
+       EXISTS (SELECT 1
+               FROM M_Product p
+               WHERE p.M_Product_ID = M_ProductPrice.M_Product_ID
+                 AND ((EXISTS (SELECT 1
+                               FROM C_UOM_Conversion c
+                               WHERE p.C_UOM_ID = c.C_UOM_ID
+                                 AND p.M_PRODUCT_ID = c.M_Product_ID
+                                 AND c.IsActive = ''Y''
+                                 AND c.iscatchuomforproduct = ''Y''
+                                 AND M_ProductPrice.C_UOM_ID = C.C_UOM_TO_ID))
+                   OR (EXISTS (SELECT 1
+                               FROM C_UOM_Conversion c
+                               WHERE p.C_UOM_ID = c.C_UOM_ID
+                                 AND c.M_Product_ID IS NULL
+                                 AND c.IsActive = ''Y''
+                                 AND c.iscatchuomforproduct = ''Y''
+                                 AND M_ProductPrice.C_UOM_ID = c.C_UOM_TO_ID)))))',Updated=TO_TIMESTAMP('2025-04-25 09:33:50.194000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540716
 ;
 
