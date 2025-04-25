@@ -29,8 +29,10 @@ import de.metas.contracts.modular.computing.ComputingMethodService;
 import de.metas.contracts.modular.computing.ComputingRequest;
 import de.metas.contracts.modular.computing.ComputingResponse;
 import de.metas.contracts.modular.log.ModularContractLogEntriesList;
+import de.metas.contracts.modular.settings.ModularContractModuleId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.money.Money;
+import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
@@ -39,6 +41,7 @@ import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.stream.Stream;
 
 @Getter
 @Component
@@ -84,5 +87,11 @@ public class InterestComputingMethod extends AbstractShipmentComputingMethod
 						.build())
 				.qty(qtyInStockUOM)
 				.build();
+	}
+
+	@Override
+	public @NonNull Stream<ProductId> streamContractSpecificPricedProductIds(@NonNull final ModularContractModuleId moduleId)
+	{
+		return Stream.empty();
 	}
 }
