@@ -67,14 +67,6 @@ INSERT INTO AD_BusinessRule_Trigger (AD_BusinessRule_ID,AD_BusinessRule_Trigger_
 DELETE FROM AD_BusinessRule_Precondition WHERE AD_BusinessRule_Precondition_ID=540008
 ;
 
--- 2025-04-25T09:30:27.690Z
-DELETE FROM T_ES_FTS_Search_Result t 
- WHERE EXISTS (SELECT 1 FROM T_WEBUI_ViewSelection_ToDelete s 
-       WHERE 
-           s.View_UUID=t.Search_UUID
-           AND s.Executor_UUID='e3f84a8e-a6d5-4436-bb21-2729e57e11d3'
- )
-;
 
 -- Name: C_UOM_Conversion with catch weight flag
 -- 2025-04-25T09:30:51.216Z
