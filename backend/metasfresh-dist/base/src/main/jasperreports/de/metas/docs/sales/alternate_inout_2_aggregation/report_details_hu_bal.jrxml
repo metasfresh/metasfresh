@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/purchase/inout/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
+<!-- Created with Jaspersoft Studio version 6.21.2.final using JasperReports Library version 6.21.2-8434a0bd7c3bbc37cbf916f2968d35e4b165821a  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report_details" pageWidth="596" pageHeight="842" columnWidth="596" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/docs/sales/alternate_inout_2_aggregation/report" uuid="352f38d2-10a9-47ea-be33-9b905ff1f8f6">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.026316236461414"/>
@@ -66,21 +67,21 @@ $P{ad_language}.equals("it_CH")?"Unterschrift":
 	<detail>
 		<band height="69">
 			<textField>
-				<reportElement uuid="9d78b242-91b6-4f5c-9e4e-88e8ae98b0e4" key="textField-16" x="37" y="10" width="284" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="10" width="284" height="12" forecolor="#000000" uuid="9d78b242-91b6-4f5c-9e4e-88e8ae98b0e4"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{GoodsNote}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{GoodsNote}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement uuid="ab33be9e-c19c-4e94-a0ef-90cbfff49049" key="textField-16" x="37" y="36" width="125" height="12" forecolor="#000000"/>
+				<reportElement key="textField-16" x="37" y="36" width="125" height="12" forecolor="#000000" uuid="ab33be9e-c19c-4e94-a0ef-90cbfff49049"/>
 				<textElement markup="none">
 					<font size="9" isBold="true" pdfFontName="Helvetica-Bold"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{Signature} + ":"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{Signature} + ":"]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement uuid="2d2bef7b-44cf-45d4-b528-93208eb77818" x="129" y="48" width="396" height="1"/>
+				<reportElement x="129" y="48" width="396" height="1" uuid="2d2bef7b-44cf-45d4-b528-93208eb77818"/>
 				<graphicElement>
 					<pen lineWidth="0.5" lineStyle="Dashed"/>
 				</graphicElement>

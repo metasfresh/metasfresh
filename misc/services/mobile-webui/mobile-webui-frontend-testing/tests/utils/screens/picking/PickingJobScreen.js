@@ -82,13 +82,28 @@ export const PickingJobScreen = {
     }),
 
     clickLineButton: async ({ index }) => await step(`${NAME} - Click line ${index}`, async () => {
-        await page.locator(`#line-0-${index - 1}-button`).tap();
+        await locateLineButton({ index }).tap();
         //await PickingJobLineScreen.waitForScreen();
     }),
 
-    expectLineStatusColor: async ({ index, color }) => await step(`${NAME} - Check status for picking line: ${index}`, async () => {
-        const indicator = page.locator(`[data-testid="line-0-${index - 1}-button-Indicator"]`);
-        await expect(indicator).toHaveClass(`indicator-${color}`);
+    expectLineButton: async ({ index, qtyPicked, qtyPickedCatchWeight, qtyToPick, color }) => await step(`${NAME} - Expect line button at index ${index}`, async () => {
+        const lineButton = locateLineButton({ index });
+        
+        if(qtyPicked !== undefined) {
+            await expectLineButtonAttribute({lineButton, attribute: 'data-qtycurrent', value: qtyPicked});
+        }
+        if(qtyPickedCatchWeight !== undefined) {
+            await expectLineButtonAttribute({lineButton, attribute: 'data-qtycurrentcatchweight', value: qtyPickedCatchWeight});
+        }
+        if(qtyToPick !== undefined) {
+            await expectLineButtonAttribute({lineButton, attribute: 'data-qtytarget', value: qtyToPick});
+        }
+        if(color !== undefined) {
+            await step(`${NAME} - Expect line button color='${color}'`, async () => {
+                const indicator = lineButton.locator(`[data-testid="line-0-${index - 1}-button-Indicator"]`);
+                await expect(indicator).toHaveClass(`indicator-${color}`);
+            });
+        }
     }),
 
     abort: async () => await step(`${NAME} - Abort`, async () => {
@@ -105,3 +120,16 @@ export const PickingJobScreen = {
         await PickingJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
     }),
 };
+
+//
+//
+//
+
+const locateLineButton = ({ index }) => {
+    return page.locator(`#line-0-${index - 1}-button`);
+};
+
+const expectLineButtonAttribute = async ({ lineButton, attribute, value }) => await step(`${NAME} - Expect line button attribute ${attribute}='${value}'`, async () => {
+    const lineButtonInfo = lineButton.locator('.picking-row-info');
+    await expect(lineButtonInfo).toHaveAttribute(attribute, value);
+});

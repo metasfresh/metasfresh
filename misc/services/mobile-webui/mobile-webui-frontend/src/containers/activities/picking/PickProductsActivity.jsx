@@ -19,6 +19,10 @@ import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import { NEXT_PickingJob } from './PickLineScanScreen';
 import SelectCurrentLUTUButtons from './SelectCurrentLUTUButtons';
 import { PICK_ON_THE_FLY_QRCODE } from './PickConfig';
+import {
+  computeCatchWeightsArrayForLine,
+  formatCatchWeightToHumanReadableStr,
+} from '../../../reducers/wfProcesses/picking/catch_weight';
 
 export const COMPONENTTYPE_PickProducts = 'picking/pickProducts';
 
@@ -94,6 +98,8 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
             return lines.map((line, lineIndex) => {
               const lineId = line.pickingLineId;
               const { uom, qtyToPick, qtyPicked } = line;
+              const qtyPickedCatchWeight = computeCatchWeightsArrayForLine({ line });
+              const qtyPickedCatchWeightStr = formatCatchWeightToHumanReadableStr(qtyPickedCatchWeight);
 
               return (
                 <ButtonWithIndicator
@@ -106,9 +112,10 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
                   onClick={() => onLineButtonClick({ line })}
                 >
                   <ButtonQuantityProp
-                    qtyCurrent={qtyPicked}
-                    qtyTarget={qtyToPick}
                     uom={uom}
+                    qtyTarget={qtyToPick}
+                    qtyCurrent={qtyPicked}
+                    qtyCurrentCatchWeight={qtyPickedCatchWeightStr}
                     applicationId={applicationId}
                   />
                 </ButtonWithIndicator>
