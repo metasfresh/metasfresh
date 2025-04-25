@@ -318,4 +318,9 @@ public class ModularContractLogEntriesList implements Iterable<ModularContractLo
 				.filter(Objects::nonNull)
 				.reduce(Money::add);
 	}
+
+	public int getDistinctBaseModuleConfigCount()
+	{
+		return list.stream().map(ModularContractLogEntry::getModularParentContractModuleId).distinct().toList().size();
+	}
 }

@@ -38,6 +38,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+
 @Getter
 @Component
 public class InterestComputingMethod extends AbstractShipmentComputingMethod
@@ -64,8 +66,10 @@ public class InterestComputingMethod extends AbstractShipmentComputingMethod
 			return computingMethodService.toZeroResponse(request);
 		}
 
-		final Quantity qtyInStockUOM = computingMethodService.getQtySumInStockUOM(logs);
 		final UomId stockUOMId = productBL.getStockUOMId(request.getProductId());
+		final Quantity qtyInStockUOM = computingMethodService.getQtySum(logs, stockUOMId)
+				.divide(BigDecimal.valueOf(logs.getDistinctBaseModuleConfigCount()));
+
 
 		final Money money = logs.computePricePerQtyUnit()
 				.orElseGet(() -> Money.zero(request.getCurrencyId()));
