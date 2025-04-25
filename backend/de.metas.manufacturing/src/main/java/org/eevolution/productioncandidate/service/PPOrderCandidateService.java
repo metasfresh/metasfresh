@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.logging.LogManager;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
@@ -113,6 +114,8 @@ public class PPOrderCandidateService
 	private final PPOrderCandidateDAO ppOrderCandidateDAO;
 	private final PPOrderAllocatorService ppOrderAllocatorBuilderService;
 	private final PPMaturingCandidatesViewRepo ppMaturingCandidatesViewRepo;
+	private final PPOrderCandidatePojoConverter ppOrderCandidateConverter;
+	private final PostMaterialEventService materialEventService;
 
 	private static final Logger logger = LogManager.getLogger(PPOrderCandidateService.class);
 
@@ -513,15 +516,6 @@ public class PPOrderCandidateService
 				.copyToNew(I_PP_OrderCandidate_PP_Order.class);
 		newAllocationRecord.setQtyEntered(newAllocationRecord.getQtyEntered().negate());
 		saveRecord(newAllocationRecord);
-	}
-
-	public void updateOrderCandidateAfterCommit(@NonNull final PPOrderCandidateId ppOrderCandidateId)
-	{
-		trxManager.accumulateAndProcessAfterCommit(
-				"PPOrderCandidateService.candidatesToUpdate",
-				ImmutableSet.of(ppOrderCandidateId),
-				this::updateOrderCandidatesByIds
-		);
 	}
 
 	public void updateOrderCandidateById(@NonNull final PPOrderCandidateId ppOrderCandidateId)

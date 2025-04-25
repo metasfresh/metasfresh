@@ -219,7 +219,7 @@ Feature: mobileUI Picking - Pick multiple products to LU
 
     And complete picking job
 
-    Then after not more than 99960s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | OPT.DocStatus |
       | shipmentSchedule1                | shipment              | CO            |
       | shipmentSchedule2                | shipment              | CO            |
