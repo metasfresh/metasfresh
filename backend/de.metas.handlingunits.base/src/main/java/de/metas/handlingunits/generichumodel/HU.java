@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -56,6 +57,11 @@ import java.util.function.Function;
 @Builder(toBuilder = true)
 public class HU
 {
+	/**
+	 * The {@code M_HU_ID} of the underlying {@link de.metas.handlingunits.model.I_M_HU}-record.
+	 * Note that in case of aggregated HUs one {@link HU} can have multiple child-HUs with the same id.
+	 * That's because logically, the aggregated  {@link de.metas.handlingunits.model.I_M_HU} represents not one but {@code n} HUs.
+	 */
 	@NonNull
 	HuId id;
 
@@ -86,6 +92,9 @@ public class HU
 	@Singular("referencingModel")
 	ImmutableList<TableRecordReference> referencingModels;
 
+	/**
+	 * Also see the remark at {@link #id}.
+	 */
 	@NonNull
 	@Singular("childHU")
 	ImmutableList<HU> childHUs;
@@ -105,22 +114,46 @@ public class HU
 	}
 
 	/**
-	 * If this HU and all children have the same LotNo - empties are ignored! - that String is returned.  
+	 * If this HU and all children have the same LotNo - empties are ignored! - that String is returned.
 	 */
 	@Nullable
-	public String extractSingleLotNumber()
+	public String extractLotNumber()
 	{
-		final Function<IAttributeSet, String> attrValueFunction = attrSet -> attrSet.getValueAsStringOrNull(AttributeConstants.ATTR_LotNumber);
-		final HashSet<String> lotNumbers = new HashSet<>();
-		for (final HU hu : allHUAsList())
+		return extractLotNumber(null);
+	}
+
+	/**
+	 * @param externalLotNumberSupplier set to not-null when calling this method from unit-tests.
+	 */
+	@VisibleForTesting
+	@Nullable
+	String extractLotNumber(@Nullable final Supplier<String> externalLotNumberSupplier)
+	{
+		final String ownLotNo;
+		if (externalLotNumberSupplier != null)
 		{
-			final String lotNo = attrValueFunction.apply(hu.getAttributes());
-			if (Check.isNotBlank(lotNo))
-			{
-				lotNumbers.add(lotNo);
-			}	
+			ownLotNo = externalLotNumberSupplier.get();
 		}
-		return CollectionUtils.singleElementOrNull(lotNumbers);
+		else
+		{
+			ownLotNo = getAttributes().getValueAsStringOrNull(AttributeConstants.ATTR_LotNumber);
+		}
+
+		if (Check.isNotBlank(ownLotNo))
+		{
+			return ownLotNo;
+		}
+
+		final HashSet<String> childLotNumbers = new HashSet<>();
+		for (final HU hu : childHUs)
+		{
+			final String childLotNo = hu.extractLotNumber(externalLotNumberSupplier);
+			if (Check.isNotBlank(childLotNo))
+			{
+				childLotNumbers.add(childLotNo);
+			}
+		}
+		return CollectionUtils.singleElementOrNull(childLotNumbers);
 	}
 
 	public List<HU> allHUAsList()
@@ -152,14 +185,31 @@ public class HU
 	 * ! Note that the HU's attribute-sets are <b>not</b> reduced by this method.
 	 */
 	@Nullable
-	public HU retainReference(@NonNull final TableRecordReference reference)
+	public HU retain(
+			@NonNull final TableRecordReference reference,
+			@NonNull final ProductId productId)
 	{
-		final ImmutableList<TableRecordReference> effectiveReferencingModels = getReferencingModels();
+		return retain(reference, productId, ImmutableList.of());
+	}
+
+	/**
+	 * @param referencingModelsOfParentHU if an HU has no own ReferencingModels, then assume these
+	 */
+	@Nullable
+	private HU retain(@NonNull final TableRecordReference reference,
+					  @NonNull final ProductId productId,
+					  @NonNull final ImmutableList<TableRecordReference> referencingModelsOfParentHU)
+	{
+		// If the current HU has no referencing models at all, we assume the parent's models.
+		final ImmutableList<TableRecordReference> effectiveReferencingModels = getReferencingModels().isEmpty() ? referencingModelsOfParentHU : getReferencingModels();
+
 		final HUBuilder result = this.toBuilder();
 
 		final boolean hasChildHUs = !getChildHUs().isEmpty();
 
 		Quantity newWeightNet;
+		Quantity newProductQtyInStockUOM;
+		
 		if (hasChildHUs)
 		{
 			// we will rebuild this from the child-HUs
@@ -167,33 +217,48 @@ public class HU
 					.clearReferencingModels()
 					.clearChildHUs();
 			newWeightNet = toZeroOrNull(weightNet);
+			newProductQtyInStockUOM = null;
 		}
 		else
 		{   // we are a leaf
-			if (!effectiveReferencingModels.contains(reference))
+			if (!effectiveReferencingModels.contains(reference) || !getProductQtysInStockUOM().containsKey(productId))
 			{
 				return null;
 			}
 
-			result.clearReferencingModels()
-					.referencingModel(reference);
+			result.clearProductQtysInStockUOM(); // clear now, will add it at the end of this method
+			
+			// If this leaf didn't have any own referencing models, keep it like that.
+			// If it contains the given 'reference', then make sure we retain only that one
+			if (!getReferencingModels().isEmpty())
+			{
+				result.clearReferencingModels().referencingModel(reference);
+			}
+			
 			newWeightNet = weightNet;
+			newProductQtyInStockUOM = getProductQtysInStockUOM().get(productId);
 		}
-
-		final HashMap<ProductId, Quantity> newProductQtysInStockUOM = new HashMap<>();
+		
 		final LinkedHashSet<TableRecordReference> newReferencingModels = new LinkedHashSet<>();
 
 		for (final HU child : getChildHUs())
 		{
-			final HU retainedChild = child.retainReference(reference);
+			final HU retainedChild = child.retain(reference, productId, effectiveReferencingModels);
 			if (retainedChild != null)
 			{
 				result.childHU(retainedChild);
 				newReferencingModels.addAll(retainedChild.getReferencingModels());
 
-				retainedChild.getProductQtysInStockUOM().forEach(
-						(productId, quantity) -> newProductQtysInStockUOM.merge(productId, quantity, Quantity::add));
-
+				final Quantity retainedChildConfig = retainedChild.getProductQtysInStockUOM().get(productId);
+				if (newProductQtyInStockUOM == null)
+				{
+					newProductQtyInStockUOM = retainedChildConfig;
+				}
+				else
+				{
+					newProductQtyInStockUOM = Quantitys.add(null, newProductQtyInStockUOM, retainedChildConfig);
+				}
+				
 				if (newWeightNet == null && retainedChild.getWeightNet() != null)
 				{
 					newWeightNet = retainedChild.getWeightNet();
@@ -204,7 +269,13 @@ public class HU
 				}
 			}
 		}
-		result.productQtysInStockUOM(newProductQtysInStockUOM)
+		if(newProductQtyInStockUOM == null)
+		{
+			return null; // no product-qty in here. nothing to return.
+		}
+		
+		result
+				.productQtyInStockUOM(productId, newProductQtyInStockUOM)
 				.referencingModels(newReferencingModels)
 				.weightNet(newWeightNet);
 
@@ -237,6 +308,7 @@ public class HU
 
 		final ImmutableList<BigDecimal> allQuantities = this.getChildHUs()
 				.stream()
+				.filter(hu -> hu.getProductQtysInStockUOM().containsKey(productId))
 				.map(hu -> hu.getProductQtysInStockUOM().get(productId).toBigDecimal())
 				.sorted()
 				.collect(ImmutableList.toImmutableList());
