@@ -29,6 +29,7 @@ import org.compiere.util.Env;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -68,10 +69,13 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	 *
 	 * @param queryBuilder the builder that is augmented by this method
 	 */
-	private IQueryBuilder<I_M_HU_Assignment> applyCommonTopLevelFilters(final IQueryBuilder<I_M_HU_Assignment> queryBuilder, final int adTableId)
+	private IQueryBuilder<I_M_HU_Assignment> applyCommonTopLevelFilters(@NonNull final IQueryBuilder<I_M_HU_Assignment> queryBuilder, final int adTableId)
 	{
+		if (adTableId > 0)
+		{
+			queryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, adTableId);
+		}
 		queryBuilder
-				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, adTableId)
 				//
 				// Filter out entries which are specifically for other levels
 				//
@@ -362,32 +366,12 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	}
 
 	@Override
-	public <T> List<T> retrieveModelsForHU(final I_M_HU hu, final Class<T> clazz, final boolean topLevel)
+	public <T> List<T> retrieveModelsForHU(@NonNull final I_M_HU hu, final Class<T> clazz, final boolean topLevel)
 	{
 		final int tableId = InterfaceWrapperHelper.getTableId(clazz);
 		final String keyColumnName = InterfaceWrapperHelper.getKeyColumnName(clazz);
 
-		final IQueryBuilder<I_M_HU_Assignment> huAssigmentQueryBuilder = queryBL.createQueryBuilder(I_M_HU_Assignment.class, hu)
-				.addOnlyContextClientOrSystem()
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, tableId);
-		if (topLevel)
-		{
-			huAssigmentQueryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, hu.getM_HU_ID());
-			applyCommonTopLevelFilters(huAssigmentQueryBuilder, tableId);
-		}
-		else
-		{
-			final ICompositeQueryFilter<I_M_HU_Assignment> filter = queryBL.createCompositeQueryFilter(I_M_HU_Assignment.class)
-					.setJoinOr()
-					.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_LU_HU_ID, hu.getM_HU_ID())
-					.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_TU_HU_ID, hu.getM_HU_ID())
-					.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_VHU_ID, hu.getM_HU_ID());
-			huAssigmentQueryBuilder.filter(filter);
-		}
-
-		final IQuery<I_M_HU_Assignment> huAssigmentQuery = huAssigmentQueryBuilder
-				.create();
+		final IQuery<I_M_HU_Assignment> huAssigmentQuery = createHUAssignmentQuery(hu, topLevel, tableId);
 
 		// @formatter:off
 		return queryBL.createQueryBuilder(clazz, hu)
@@ -403,6 +387,21 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	}
 
 	@Override
+	public ImmutableList<TableRecordReference> retrieveReferencingRecordsForHU(@NonNull final I_M_HU hu, final boolean topLevel)
+	{
+		final IQuery<I_M_HU_Assignment> huAssigmentQuery = createHUAssignmentQuery(hu, topLevel, -1);
+
+		final List<I_M_HU_Assignment> list = huAssigmentQuery.list();
+		
+		final LinkedHashSet<TableRecordReference> references = new LinkedHashSet<>();
+		for (final I_M_HU_Assignment huAssignment : list)
+		{
+			references.add(TableRecordReference.ofReferenced(huAssignment));
+		}
+		return ImmutableList.copyOf(references);
+	}
+
+	@Override
 	public List<I_M_HU_Assignment> retrieveTableHUAssignmentsNoTopFilterTUMandatory(final IContextAware contextProvider, final int adTableId, final I_M_HU hu)
 	{
 		final IQueryBuilder<I_M_HU_Assignment> queryBuilder = retrieveTableHUAssignmentsQueryNoTopLevel(contextProvider, adTableId, hu);
@@ -410,6 +409,32 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 				.addNotEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_TU_HU_ID, null)
 				.create()
 				.list(I_M_HU_Assignment.class);
+	}
+
+	private @NonNull IQuery<I_M_HU_Assignment> createHUAssignmentQuery(final @NonNull I_M_HU hu, final boolean topLevel, final int tableId)
+	{
+		final IQueryBuilder<I_M_HU_Assignment> huAssigmentQueryBuilder = queryBL.createQueryBuilder(I_M_HU_Assignment.class, hu)
+				.addOnlyActiveRecordsFilter();
+		if (tableId > 0)
+		{
+			huAssigmentQueryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, tableId);
+		}
+
+		if (topLevel)
+		{
+			huAssigmentQueryBuilder.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, hu.getM_HU_ID());
+			applyCommonTopLevelFilters(huAssigmentQueryBuilder, tableId);
+		}
+		else
+		{
+			final ICompositeQueryFilter<I_M_HU_Assignment> filter = queryBL.createCompositeQueryFilter(I_M_HU_Assignment.class)
+					.setJoinOr()
+					.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_LU_HU_ID, hu.getM_HU_ID())
+					.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_M_TU_HU_ID, hu.getM_HU_ID())
+					.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_VHU_ID, hu.getM_HU_ID());
+			huAssigmentQueryBuilder.filter(filter);
+		}
+		return huAssigmentQueryBuilder.create();
 	}
 
 	@Override
