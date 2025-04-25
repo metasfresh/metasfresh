@@ -25,7 +25,6 @@ package de.metas.cucumber.stepdefs.hu;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.M_HU_PackagingCode_StepDefData;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.util.Services;

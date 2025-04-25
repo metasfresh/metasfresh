@@ -40,12 +40,12 @@ Feature: Cleared HU can be picked on the fly and manually picked
       | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name            | HU_UnitType | IsCurrent |
       | packingVersionCU              | huPackingVirtualPI    | No Packing Item | V           | Y         |
 
-    And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate | DocumentNo     |
-      | huProduct_inventory       | 2022-03-20   | inventoryDocNo |
-    And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
-      | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 10       |
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | DocumentNo     | M_Warehouse_ID |
+      | huProduct_inventory       | 2022-03-20   | inventoryDocNo | warehouseStd   |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | huProduct_inventory       | huProduct_inventoryLine       | huProduct               | 0       | 10       | PCE          |
     And complete inventory with inventoryIdentifier 'huProduct_inventory'
     And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
