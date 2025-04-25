@@ -93,3 +93,8 @@ UPDATE AD_Val_Rule SET Code='docstatus NOT IN (''CO'', ''CL'')
                       AND p.isverified = ''Y''))',Updated=TO_TIMESTAMP('2025-04-25 09:38:31.265000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540717
 ;
 
+-- Name: PP_Product_BOM verified
+-- 2025-04-25T11:06:04.596Z
+UPDATE AD_Val_Rule SET IsActive='N',Updated=TO_TIMESTAMP('2025-04-25 11:06:04.596000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540717
+;
+
