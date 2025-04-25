@@ -452,8 +452,10 @@ public class EDIDesadvPackService
 		{
 			throw new AdempiereException("Missing M_HU").appendParametersToMessage()
 					.setParameter("M_HU_ID", topLevelHURecord.getM_HU_ID())
-					.setParameter("M_InOutLine_ID", inOutLineRecord.getM_InOutLine_ID())
+					.setParameter("EDI_DesadvLine.EDI_Desadv_ID", desadvLineRecord.getEDI_Desadv_ID())
+					.setParameter("EDI_DesadvLine.Line", desadvLineRecord.getLine())
 					.setParameter("EDI_DesadvLine_ID", desadvLineRecord.getEDI_DesadvLine_ID());
+				// no need for a parameter with the InOutLine-ID, because the InOutLine is rolled back anyways
 		}
 
 		final StockQtyAndUOMQty inOutLineQty = inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn);

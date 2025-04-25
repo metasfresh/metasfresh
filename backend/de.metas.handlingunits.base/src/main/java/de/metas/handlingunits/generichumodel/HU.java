@@ -56,6 +56,11 @@ import java.util.function.Function;
 @Builder(toBuilder = true)
 public class HU
 {
+	/**
+	 * The {@code M_HU_ID} of the underlying {@link de.metas.handlingunits.model.I_M_HU}-record.
+	 * Note that in case of aggregated HUs one {@link HU} can have multiple child-HUs with the same id.
+	 * That's because logically, the aggregated  {@link de.metas.handlingunits.model.I_M_HU} represents not one but {@code n} HUs.
+	 */
 	@NonNull
 	HuId id;
 
@@ -86,6 +91,9 @@ public class HU
 	@Singular("referencingModel")
 	ImmutableList<TableRecordReference> referencingModels;
 
+	/**
+	 * Also see the remark at {@link #id}.
+	 */
 	@NonNull
 	@Singular("childHU")
 	ImmutableList<HU> childHUs;
@@ -105,7 +113,7 @@ public class HU
 	}
 
 	/**
-	 * If this HU and all children have the same LotNo - empties are ignored! - that String is returned.  
+	 * If this HU and all children have the same LotNo - empties are ignored! - that String is returned.
 	 */
 	@Nullable
 	public String extractSingleLotNumber()
@@ -118,7 +126,7 @@ public class HU
 			if (Check.isNotBlank(lotNo))
 			{
 				lotNumbers.add(lotNo);
-			}	
+			}
 		}
 		return CollectionUtils.singleElementOrNull(lotNumbers);
 	}
@@ -154,7 +162,19 @@ public class HU
 	@Nullable
 	public HU retainReference(@NonNull final TableRecordReference reference)
 	{
-		final ImmutableList<TableRecordReference> effectiveReferencingModels = getReferencingModels();
+		return retainReference(reference, ImmutableList.of());
+	}
+
+	/**
+	 * @param referencingModelsOfParentHU if an HU has no own ReferencingModels, then assume these
+	 */
+	@Nullable
+	private HU retainReference(@NonNull final TableRecordReference reference,
+							   @NonNull final ImmutableList<TableRecordReference> referencingModelsOfParentHU)
+	{
+		// If the current HU has no referencing models at all, we assume the parent's models.
+		final ImmutableList<TableRecordReference> effectiveReferencingModels = getReferencingModels().isEmpty() ? referencingModelsOfParentHU : getReferencingModels();
+
 		final HUBuilder result = this.toBuilder();
 
 		final boolean hasChildHUs = !getChildHUs().isEmpty();
@@ -175,8 +195,12 @@ public class HU
 				return null;
 			}
 
-			result.clearReferencingModels()
-					.referencingModel(reference);
+			// If this leaf didn't have any own referencing models, keep it like that.
+			// If it contains the given 'reference', then make sure we retain only that one
+			if (!getReferencingModels().isEmpty())
+			{
+				result.clearReferencingModels().referencingModel(reference);
+			}
 			newWeightNet = weightNet;
 		}
 
@@ -185,7 +209,7 @@ public class HU
 
 		for (final HU child : getChildHUs())
 		{
-			final HU retainedChild = child.retainReference(reference);
+			final HU retainedChild = child.retainReference(reference, effectiveReferencingModels);
 			if (retainedChild != null)
 			{
 				result.childHU(retainedChild);

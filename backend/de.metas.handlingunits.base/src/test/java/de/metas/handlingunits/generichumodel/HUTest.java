@@ -171,7 +171,7 @@ class HUTest
 		final TableRecordReference ref1 = TableRecordReference.of(1, 2);
 		final TableRecordReference ref2 = TableRecordReference.of(3, 4);
 
-		final HU tu1 = prepareTU(productId, ref1, ref2);
+		final HU tu1 = prepareTU(productId, ref1, ref2, false);
 
 		// when
 		final HU result = tu1.retainReference(ref1);
@@ -179,11 +179,11 @@ class HUTest
 		// then
 		assertThat(result).isNotNull();
 		assertThat(result.getId()).isEqualTo(HuId.ofRepoId(10));
-		assertThat(result.getProductQtysInStockUOM().get(productId)).isEqualByComparingTo(Quantity.of("1", stockUOMRecord));
-		assertThat(result.getChildHUs()).hasSize(1); // we expect c1_1 and c1_3 to be retained
+		assertThat(result.getProductQtysInStockUOM().get(productId)).isEqualByComparingTo(Quantity.of("101", stockUOMRecord));
+		assertThat(result.getChildHUs()).hasSize(2); // we expect c1_1 and c1_3 to be retained
 		assertThat(result.getProductQtysInStockUOM()).hasSize(1);
 		assertThat(result.getWeightNet()).isNotNull();
-		assertThat(result.getWeightNet()).isEqualByComparingTo(Quantity.of("3", weightUOMRecord));
+		assertThat(result.getWeightNet()).isEqualByComparingTo(Quantity.of("8", weightUOMRecord));
 		assertThat(result.getReferencingModels()).containsExactly(ref1);
 
 		assertThat(result.getChildHUs().get(0).getId()).isEqualTo(HuId.ofRepoId(1));
@@ -191,6 +191,13 @@ class HUTest
 		assertThat(result.getChildHUs().get(0).getWeightNet()).isNotNull();
 		assertThat(result.getChildHUs().get(0).getWeightNet()).isEqualByComparingTo(Quantity.of("3", weightUOMRecord));
 		assertThat(result.getChildHUs().get(0).getReferencingModels()).containsExactly(ref1);
+
+		assertThat(result.getChildHUs().get(1).getId()).isEqualTo(HuId.ofRepoId(3));
+		assertThat(result.getChildHUs().get(1).getProductQtysInStockUOM().get(productId)).isEqualByComparingTo(Quantity.of("100", stockUOMRecord));
+		assertThat(result.getChildHUs().get(1).getWeightNet()).isNotNull();
+		assertThat(result.getChildHUs().get(1).getWeightNet()).isEqualByComparingTo(Quantity.of("5", weightUOMRecord));
+		assertThat(result.getChildHUs().get(1).getReferencingModels()).isEmpty(); // it doesn't contain any ref. it's just here because its parent does
+		
 	}
 
 	/**
@@ -204,7 +211,7 @@ class HUTest
 		final TableRecordReference ref1 = TableRecordReference.of(1, 2);
 		final TableRecordReference ref2 = TableRecordReference.of(3, 4);
 
-		final HU tu1 = prepareTU(productId, ref1, ref2);
+		final HU tu1 = prepareTU(productId, ref1, ref2, true);
 
 		// when
 		final HU result = tu1.retainReference(ref2);
@@ -237,19 +244,20 @@ class HUTest
 		final ProductId productId = BusinessTestHelper.createProductId("product", stockUOMRecord);
 		final TableRecordReference ref1 = TableRecordReference.of(1, 2);
 		final TableRecordReference ref2 = TableRecordReference.of(3, 4);
-		
-		final HU tu1 = prepareTU(productId, ref1, ref2);
+
+		final HU tu1 = prepareTU(productId, ref1, ref2, true/*true or false, doesn't matter for this test*/);
 
 		assertThat(tu1.extractMedianCUQtyPerChildHU(productId)).isEqualByComparingTo(Quantity.of(TEN, stockUOMRecord));
 	}
-	
+
 	/**
 	 * The HUs all have the same product
 	 */
 	private HU prepareTU(
 			@NonNull final ProductId productId,
 			@NonNull final TableRecordReference ref1,
-			@NonNull final TableRecordReference ref2)
+			@NonNull final TableRecordReference ref2,
+			final boolean putRef2IntoCu1_3)
 	{
 		final HU cu1_1 = HU.builder()
 				.id(HuId.ofRepoId(1))
@@ -274,17 +282,20 @@ class HUTest
 				.referencingModel(ref2)
 				.build();
 
-		// explicitly references ref2 tableRecordReference, so it shall not be retained if ref1 is asked for
-		final HU cu1_3 = HU.builder()
+		final HU.HUBuilder cu1_3Builder = HU.builder()
 				.id(HuId.ofRepoId(3))
 				.orgId(OrgId.ofRepoId(20))
 				.type(HUType.VirtualPI)
 				.packagingCode(null)
 				.attributes(ImmutableAttributeSet.EMPTY)
 				.productQtyInStockUOM(productId, Quantity.of("100", stockUOMRecord))
-				.weightNet(Quantity.of(new BigDecimal("5"), weightUOMRecord))
-				.referencingModel(ref2)
-				.build();
+				.weightNet(Quantity.of(new BigDecimal("5"), weightUOMRecord));
+		if (putRef2IntoCu1_3)
+		{
+			// explicitly references ref2 tableRecordReference, so it shall not be retained if ref1 is asked for
+			cu1_3Builder.referencingModel(ref2);
+		}
+		final HU cu1_3 = cu1_3Builder.build();
 
 		return HU.builder()
 				.id(HuId.ofRepoId(10))
