@@ -117,18 +117,28 @@ public class HU
 	 * If this HU and all children have the same LotNo - empties are ignored! - that String is returned.
 	 */
 	@Nullable
-	public String extractSingleLotNumber()
+	public String extractLotNumber()
 	{
-		final Supplier<String> attrValueFunction = () -> attributes.getValueAsStringOrNull(AttributeConstants.ATTR_LotNumber);
-
-		return extractLotNumber(attrValueFunction);
+		return extractLotNumber(null);
 	}
 
+	/**
+	 * @param externalLotNumberSupplier set to not-null when calling this method from unit-tests.
+	 */
 	@VisibleForTesting
 	@Nullable
-	String extractLotNumber(@NonNull final Supplier<String> lotNumberSupplier)
+	String extractLotNumber(@Nullable final Supplier<String> externalLotNumberSupplier)
 	{
-		final String ownLotNo = lotNumberSupplier.get();
+		final String ownLotNo;
+		if(externalLotNumberSupplier != null)
+		{
+			ownLotNo = externalLotNumberSupplier.get();
+		}
+		else
+		{
+			ownLotNo = getAttributes().getValueAsStringOrNull(AttributeConstants.ATTR_LotNumber);
+		}
+		
 		if (Check.isNotBlank(ownLotNo))
 		{
 			return ownLotNo;
@@ -137,7 +147,7 @@ public class HU
 		final HashSet<String> childLotNumbers = new HashSet<>();
 		for (final HU hu : childHUs)
 		{
-			final String childLotNo = hu.extractLotNumber(lotNumberSupplier);
+			final String childLotNo = hu.extractLotNumber(externalLotNumberSupplier);
 			if (Check.isNotBlank(childLotNo))
 			{
 				childLotNumbers.add(childLotNo);

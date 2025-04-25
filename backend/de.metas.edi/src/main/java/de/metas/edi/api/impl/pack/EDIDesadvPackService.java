@@ -573,7 +573,7 @@ public class EDIDesadvPackService
 						.bestBeforeDate(TimeUtil.asTimestamp(bestBefore))
 						.qtyTu(parameters.topLevelHU.getChildHUs().size());
 
-		final String lotNumber = parameters.topLevelHU.extractSingleLotNumber();
+		final String lotNumber = parameters.topLevelHU.extractLotNumber();
 		if (Check.isNotBlank(lotNumber))
 		{
 			createPackItemRequestBuilder.lotNumber(lotNumber);
