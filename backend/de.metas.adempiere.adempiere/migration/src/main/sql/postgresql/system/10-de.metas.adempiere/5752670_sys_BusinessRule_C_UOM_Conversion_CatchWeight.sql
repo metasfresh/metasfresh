@@ -68,13 +68,16 @@ DELETE FROM AD_BusinessRule_Precondition WHERE AD_BusinessRule_Precondition_ID=5
 ;
 
 
+
+
 -- Name: C_UOM_Conversion with catch weight flag
--- 2025-04-25T09:30:51.216Z
-UPDATE AD_Val_Rule SET Code='iscatchuomforproduct = ''N''
-   OR (iscatchuomforproduct = ''Y'' AND EXISTS
-    (SELECT 1
-     FROM C_UOM targetUOM
-     WHERE C_UOM_Conversion.c_uom_to_id = targetUOM.c_uom_id
-       AND targetUOM.uomtype = ''WE''))',Updated=TO_TIMESTAMP('2025-04-25 09:30:51.215000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540715
+-- 2025-04-25T10:28:53.733Z
+UPDATE AD_Val_Rule SET Code='iscatchuomforproduct = ''Y''
+   OR (iscatchuomforproduct = ''N''
+    AND EXISTS
+           (SELECT 1
+            FROM C_UOM targetUOM
+            WHERE C_UOM_Conversion.c_uom_to_id = targetUOM.c_uom_id
+              AND targetUOM.uomtype != ''WE''))',Updated=TO_TIMESTAMP('2025-04-25 10:28:53.733000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Val_Rule_ID=540715
 ;
 
