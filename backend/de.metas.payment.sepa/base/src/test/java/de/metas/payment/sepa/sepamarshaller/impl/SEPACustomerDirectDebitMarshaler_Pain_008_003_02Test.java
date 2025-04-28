@@ -109,7 +109,9 @@ class SEPACustomerDirectDebitMarshaler_Pain_008_003_02Test
 		assertThat(xmlDocument.getCstmrDrctDbtInitn().getGrpHdr().getInitgPty().getNm()).isEqualTo("SEPA_CreditorName");
 
 		assertThat(xmlDocument.getCstmrDrctDbtInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.getCdtr().getNm()).isEqualTo("bankAccount.A_Name"));
-		assertThat(xmlDocument.getCstmrDrctDbtInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.getCdtr().getPstlAdr()).isEqualTo("bankAccount.A_Name"));
+		assertThat(xmlDocument.getCstmrDrctDbtInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.getCdtr().getPstlAdr().getAdrLine().get(0)).isEqualTo("bankAccount.A_Street"));
+		assertThat(xmlDocument.getCstmrDrctDbtInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.getCdtr().getPstlAdr().getAdrLine().get(1)).isEqualTo("bankAccount.A_ZIP bankAccount.A_City"));
+		assertThat(xmlDocument.getCstmrDrctDbtInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.getCdtr().getPstlAdr().getCtry()).isNullOrEmpty());
 		assertThat(xmlDocument.getCstmrDrctDbtInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.getCdtrSchmeId().getId().getPrvtId().getOthr().getId()).isEqualTo("SEPA_CreditorIdentifier"));
 	}
 
