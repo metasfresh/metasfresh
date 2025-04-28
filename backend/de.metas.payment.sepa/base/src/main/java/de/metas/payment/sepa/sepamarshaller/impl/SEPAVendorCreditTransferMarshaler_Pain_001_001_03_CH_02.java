@@ -776,10 +776,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		if (bpBankAccount != null && bpBankAccount.isAddressComplete())
 		{
 			pstlAdr = objectFactory.createPostalAddress6CH();
-			if (Check.isNotBlank(bpBankAccount.getAccountCountry()))
-			{
-				pstlAdr.setCtry(bpBankAccount.getAccountCountry());
-			}
+
+			// Note: don't use the bankAccount's A_Country, because we need an ISO-3166 in this field
 
 			splitStreetAndNumber(bpBankAccount.getAccountStreet(), pstlAdr);
 
@@ -838,7 +836,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 		if (bpBankAccount != null && bpBankAccount.isAddressComplete())
 		{
-			pstlAdr.setCtry(bpBankAccount.getAccountCountry());
+			// Note: don't use the bankAccount's A_Country, because we need an ISO-3166 in this field
+
 			splitStreetAndNumber(bpBankAccount.getAccountStreet(), pstlAdr);
 
 			pstlAdr.setPstCd(bpBankAccount.getAccountZip());

@@ -74,7 +74,7 @@ public class BPBankAccountDAO extends de.metas.bpartner.service.impl.BPBankAccou
 				.accountStreet(StringUtils.trimBlankToNull(record.getA_Street()))
 				.accountZip(StringUtils.trimBlankToNull(record.getA_Zip()))
 				.accountCity(StringUtils.trimBlankToNull(record.getA_City()))
-				.accountCountry(StringUtils.trimBlankToNull(record.getA_Country()))
+				// Note: don't use the bankAccount's A_Country, because we need an ISO-3166 in this field
 				.esrRenderedAccountNo(record.getESR_RenderedAccountNo())
 				.IBAN(StringUtils.trimBlankToNull(record.getIBAN()))
 				.QR_IBAN(StringUtils.trimBlankToNull(record.getQR_IBAN()))
