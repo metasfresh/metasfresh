@@ -226,11 +226,8 @@ export const useFilterByQRCode = ({ applicationId }) => {
   const { filterByQRCode } = useSelector((state) => getApplicationLaunchers(state, applicationId));
 
   const setFilterByQRCode = (qrCode) => {
-    console.log('Set filterByQRCode', { qrCode });
     dispatch(populateLaunchersStart({ applicationId, filterByQRCode: toQRCodeObject(qrCode) }));
   };
-
-  console.log('useFilterByQRCode', { filterByQRCode });
 
   return {
     filterByQRCode,
