@@ -205,8 +205,9 @@ const useLaunchers = ({ applicationId, showFilterByQRCode, facets, filterByDocum
     filterByQRCode,
     filterByDocumentNo,
     facets,
-    onWebsocketMessage: ({ applicationId, applicationLaunchers }) =>
-      onNewLaunchers({ applicationId, applicationLaunchers }),
+    onWebsocketMessage: ({ applicationId, applicationLaunchers }) => {
+      onNewLaunchers({ applicationId, applicationLaunchers });
+    },
   });
 
   return {
@@ -225,8 +226,11 @@ export const useFilterByQRCode = ({ applicationId }) => {
   const { filterByQRCode } = useSelector((state) => getApplicationLaunchers(state, applicationId));
 
   const setFilterByQRCode = (qrCode) => {
+    console.log('Set filterByQRCode', { qrCode });
     dispatch(populateLaunchersStart({ applicationId, filterByQRCode: toQRCodeObject(qrCode) }));
   };
+
+  console.log('useFilterByQRCode', { filterByQRCode });
 
   return {
     filterByQRCode,
