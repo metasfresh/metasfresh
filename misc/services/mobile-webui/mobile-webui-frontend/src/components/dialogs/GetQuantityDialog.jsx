@@ -386,7 +386,7 @@ const GetQuantityDialog = ({
                         <div className="field">
                           <div className="control">
                             <DateInput
-                              id="bestBeforeDate"
+                              testId="bestBeforeDate"
                               type="date"
                               value={bestBeforeDate}
                               disabled={readOnly}
@@ -404,7 +404,7 @@ const GetQuantityDialog = ({
                         <div className="field">
                           <div className="control">
                             <input
-                              id="lotNo"
+                              data-testid="lotNo"
                               className="input"
                               type="text"
                               value={lotNo}
