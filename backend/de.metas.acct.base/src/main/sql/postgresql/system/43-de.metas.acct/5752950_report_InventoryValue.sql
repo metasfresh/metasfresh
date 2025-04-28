@@ -5,13 +5,6 @@ DROP FUNCTION IF EXISTS de_metas_acct.report_InventoryValue(
     IN p_AD_Language    character varying(6)
 )
 ;
-DROP FUNCTION IF EXISTS de_metas_acct.report_InventoryValue_NEW(
-    IN p_DateAcct       timestamp WITH TIME ZONE,
-    IN p_M_Product_ID   numeric(10, 0),
-    IN p_M_Warehouse_ID numeric(10, 0),
-    IN p_AD_Language    character varying(6)
-)
-;
 
 
 -- Used for Lagerwert (Excel)
