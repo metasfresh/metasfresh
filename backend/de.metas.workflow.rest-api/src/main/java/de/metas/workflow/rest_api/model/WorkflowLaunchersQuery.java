@@ -40,7 +40,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class WorkflowLaunchersQuery
 {
 	@NonNull MobileApplicationId applicationId;
