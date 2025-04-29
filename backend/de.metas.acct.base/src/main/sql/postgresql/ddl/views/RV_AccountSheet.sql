@@ -13,9 +13,13 @@ AS
            -- Document Info
            (CASE WHEN fa.c_currency_id = fa2.c_currency_id THEN fa.amtsourcedr END)   AS amtsourcedr,
            (CASE WHEN fa.c_currency_id = fa2.c_currency_id THEN fa.amtsourcecr END)   AS amtsourcecr,
+           (CASE WHEN fa.c_currency_id = fa2.c_currency_id THEN fa.amtsourcedr - fa.amtsourcecr END)       AS balance,
            (CASE WHEN fa.c_currency_id = fa2.c_currency_id THEN fa.c_currency_id END) AS c_currency_id,
            fa.dateacct,
            fa.datetrx,
+           fa.description,
+           tax.rate,
+           dt.name as docTypeName,
            fa.documentno,
            --
            fa.account_id,
@@ -29,6 +33,8 @@ AS
              INNER JOIN Fact_Acct fa2 ON (fa2.Fact_Acct_ID = fa.Counterpart_Fact_Acct_ID)
              INNER JOIN C_ElementValue ev ON (ev.C_ElementValue_ID = fa.Account_ID)
              INNER JOIN C_ElementValue ev2 ON (ev2.C_ElementValue_ID = fa2.Account_ID)
+             LEFT OUTER JOIN C_Tax tax ON fa.c_tax_id = tax.c_tax_ID
+             LEFT OUTER JOIN C_DocType dt ON fa.c_doctype_id = dt.c_doctype_id
     --
 )
 --
@@ -43,9 +49,13 @@ UNION ALL
            -- Document Info
            (CASE WHEN fa.c_currency_id = fa2.c_currency_id THEN fa2.amtsourcecr END)  AS amtsourcedr,
            (CASE WHEN fa.c_currency_id = fa2.c_currency_id THEN fa2.amtsourcedr END)  AS amtsourcecr,
+           (CASE WHEN fa.c_currency_id = fa2.c_currency_id THEN fa2.amtsourcecr-fa2.amtsourcedr END)      AS balance,
            (CASE WHEN fa.c_currency_id = fa2.c_currency_id THEN fa.c_currency_id END) AS c_currency_id,
            fa.dateacct,
            fa.datetrx,
+           fa.description,
+           tax.rate ,
+           dt.name as docTypeName,
            fa.documentno,
            --
            fa.account_id,
@@ -59,8 +69,9 @@ UNION ALL
              INNER JOIN Fact_Acct fa2 ON (fa2.counterpart_fact_acct_id = fa.fact_acct_id)
              INNER JOIN C_ElementValue ev ON (ev.C_ElementValue_ID = fa.Account_ID)
              INNER JOIN C_ElementValue ev2 ON (ev2.C_ElementValue_ID = fa2.Account_ID)
+             LEFT OUTER JOIN C_Tax tax ON fa.c_tax_id = tax.c_tax_ID
+             LEFT OUTER JOIN C_DocType dt ON fa.c_doctype_id = dt.c_doctype_id
     WHERE fa.counterpart_fact_acct_id IS NULL
     --
 )
 ;
-
