@@ -30,7 +30,6 @@
 		<property name="com.jaspersoft.studio.field.label" value="p_term"/>
 	</field>
 	<field name="paymentrule" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.name" value="paymentrule"/>
 		<property name="com.jaspersoft.studio.field.label" value="paymentrule"/>
 	</field>
 	<field name="textcenter" class="java.lang.String">

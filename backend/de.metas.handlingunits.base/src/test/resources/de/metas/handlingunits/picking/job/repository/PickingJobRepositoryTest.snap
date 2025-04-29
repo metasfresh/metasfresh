@@ -1,8 +1,11 @@
 de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNewAndGet_then_getById=[
   {
+    "currentPickingTarget": { },
     "docStatus": "Drafted",
     "header": {
+      "aggregationType": "sales_order",
       "allowPickingAnyHU": false,
+      "anonymousPickHUsOnTheFly": false,
       "customerName": "bpname-3",
       "deliveryBPLocationId": {
         "bpartnerId": 3,
@@ -15,6 +18,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
         "repoId": 4
       },
       "isAllowPickingAnyHU": false,
+      "isAnonymousPickHUsOnTheFly": false,
       "lockedBy": 5,
       "preparationDate": "2021-11-02T07:39:16Z",
       "salesOrderDocumentNo": "docno-2"
@@ -22,6 +26,12 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
     "id": 1000000,
     "lines": [
       {
+        "caption": "productName-6",
+        "currentPickingTarget": { },
+        "deliveryBPLocationId": {
+          "bpartnerId": 3,
+          "repoId": 4
+        },
         "id": 1000000,
         "isManuallyClosed": false,
         "orderLineSeqNo": 0,
@@ -48,6 +58,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
           "orderId": 2,
           "orderLineId": 8
         },
+        "salesOrderDocumentNo": "docno-2",
         "shipmentScheduleId": 7,
         "steps": [
           {
@@ -122,7 +133,6 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
         ]
       }
     ],
-    "luPickTarget": null,
     "pickFromAlternatives": [
       {
         "id": 1000000,
@@ -151,8 +161,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
         "qtyAvailable": "999 Ea"
       }
     ],
-    "pickingSlot": null,
-    "progress": "NOT_STARTED",
-    "tuPickTarget": null
+    "pickFromHU": null,
+    "progress": "NOT_STARTED"
   }
 ]

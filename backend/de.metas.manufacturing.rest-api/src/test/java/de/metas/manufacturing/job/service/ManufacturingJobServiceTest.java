@@ -12,10 +12,10 @@ import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHURepository;
 import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationRepository;
+import de.metas.handlingunits.qrcodes.service.QRCodeConfigurationService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
-import de.metas.manufacturing.generatedcomponents.ComponentGeneratorRepository;
-import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.util.Services;
@@ -42,7 +42,6 @@ class ManufacturingJobServiceTest
 		);
 
 		this.manufacturingJobService = new ManufacturingJobService(
-				new ManufacturingComponentGeneratorService(new ComponentGeneratorRepository()),
 				ppOrderIssueScheduleService,
 				new HUReservationService(new HUReservationRepository()),
 				new PPOrderSourceHUService(new PPOrderSourceHURepository(), ppOrderIssueScheduleService),
@@ -50,7 +49,8 @@ class ManufacturingJobServiceTest
 				new DeviceWebsocketNamingStrategy("/test/"),
 				new HUQRCodesService(
 						new HUQRCodesRepository(), 
-						new GlobalQRCodeService(DoNothingMassPrintingService.instance))
+						new GlobalQRCodeService(DoNothingMassPrintingService.instance),
+						new QRCodeConfigurationService(new QRCodeConfigurationRepository()))
 		);
 
 		this.sysConfigDAO = Services.get(ISysConfigDAO.class);

@@ -2,7 +2,7 @@ package de.metas.handlingunits.shipping.process;
 
 
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.transportation.InOutToTransportationOrderService;
+import de.metas.handlingunits.shipping.InOutToTransportationOrderService;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.process.IProcessPrecondition;

@@ -124,4 +124,7 @@ public class PurchaseCandidateRequestedEvent implements MaterialEvent
 		this.userElementString7 = userElementString7;
 		this.simulated = simulated;
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

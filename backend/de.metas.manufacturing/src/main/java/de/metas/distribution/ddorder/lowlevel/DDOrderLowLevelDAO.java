@@ -310,6 +310,13 @@ public class DDOrderLowLevelDAO
 		}
 
 		//
+		// Plant
+		if (query.getPlantIds() != null && !query.getPlantIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_DD_Order.COLUMNNAME_PP_Plant_ID, query.getPlantIds());
+		}
+
+		//
 		// Date Promised
 		if (query.getDatesPromised() != null && !query.getDatesPromised().isEmpty())
 		{

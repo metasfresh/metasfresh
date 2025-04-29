@@ -41,6 +41,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.location.AddressDisplaySequence;
 import de.metas.organization.IOrgDAO;
+import de.metas.quantity.Quantity;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
 import de.metas.workflow.rest_api.model.WorkflowLauncherCaption;
@@ -53,6 +54,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Optional;
 
 public class DisplayValueProvider
@@ -129,7 +131,7 @@ public class DisplayValueProvider
 
 	private static ImmutableSet<BPartnerLocationId> extractDeliveryLocationIds(final @NonNull ImmutableList<Context> contexts)
 	{
-		return contexts.stream().map(Context::getDeliveryLocationId).collect(ImmutableSet.toImmutableSet());
+		return contexts.stream().map(Context::getDeliveryLocationId).filter(Objects::nonNull).collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull
@@ -185,8 +187,10 @@ public class DisplayValueProvider
 				.deliveryLocationId(pickingJobCandidate.getDeliveryBPLocationId())
 				.salesOrderDocumentNo(pickingJobCandidate.getSalesOrderDocumentNo())
 				.customerName(pickingJobCandidate.getCustomerName())
-				.preparationDate(pickingJobCandidate.getPreparationDate().toZonedDateTime(orgDAO::getTimeZone))
+				.preparationDate(pickingJobCandidate.getPreparationDate() != null ? pickingJobCandidate.getPreparationDate().toZonedDateTime(orgDAO::getTimeZone) : null)
 				.handoverLocationId(pickingJobCandidate.getHandoverLocationId())
+				.productName(pickingJobCandidate.getProductName())
+				.qtyToDeliver(pickingJobCandidate.getQtyToDeliver())
 				.build();
 	}
 
@@ -194,11 +198,13 @@ public class DisplayValueProvider
 	private static Context toContext(@NonNull final PickingJobReference pickingJobReference)
 	{
 		return Context.builder()
-				.deliveryLocationId(pickingJobReference.getDeliveryLocationId())
+				.deliveryLocationId(pickingJobReference.getDeliveryBPLocationId())
 				.salesOrderDocumentNo(pickingJobReference.getSalesOrderDocumentNo())
 				.customerName(pickingJobReference.getCustomerName())
 				.preparationDate(pickingJobReference.getPreparationDate())
 				.handoverLocationId(pickingJobReference.getHandoverLocationId())
+				.productName(pickingJobReference.getProductName())
+				.qtyToDeliver(pickingJobReference.getQtyToDeliver())
 				.build();
 	}
 
@@ -211,6 +217,8 @@ public class DisplayValueProvider
 				.customerName(pickingJob.getCustomerName())
 				.preparationDate(pickingJob.getPreparationDate())
 				.handoverLocationId(pickingJob.getHandoverLocationId())
+				.productName(pickingJob.getSingleProductNameOrEmpty())
+				.qtyToDeliver(pickingJob.getSingleQtyToPickOrNull())
 				.build();
 	}
 
@@ -221,35 +229,49 @@ public class DisplayValueProvider
 	}
 
 	@NonNull
-	private ITranslatableString getDisplayValue(@NonNull final PickingJobField field, @NonNull final Context pickingJob)
+	private ITranslatableString getDisplayValue(@NonNull final PickingJobField field, @NonNull final Context context)
 	{
 		switch (field.getField())
 		{
 			case CUSTOMER:
 			{
-				return TranslatableStrings.anyLanguage(pickingJob.getCustomerName());
+				return TranslatableStrings.anyLanguage(context.getCustomerName());
 			}
 			case DATE_READY:
 			{
-				return TranslatableStrings.dateAndTime(pickingJob.getPreparationDate());
+				return context.getPreparationDate() != null
+						? TranslatableStrings.dateAndTime(context.getPreparationDate())
+						: TranslatableStrings.empty();
 			}
 			case DOCUMENT_NO:
 			{
-				return TranslatableStrings.anyLanguage(pickingJob.getSalesOrderDocumentNo());
+				return TranslatableStrings.anyLanguage(context.getSalesOrderDocumentNo());
 			}
 			case RUESTPLATZ_NR:
 			{
-				return TranslatableStrings.anyLanguage(getRuestplatz(pickingJob).orElse(null));
+				return TranslatableStrings.anyLanguage(getRuestplatz(context).orElse(null));
 			}
 			case DELIVERY_ADDRESS:
 			{
 				final AddressDisplaySequence displaySequence = getAddressDisplaySequence(field);
-				return TranslatableStrings.anyLanguage(getDeliveryAddress(pickingJob, displaySequence));
+				return TranslatableStrings.anyLanguage(getDeliveryAddress(context, displaySequence));
 			}
 			case HANDOVER_LOCATION:
 			{
 				final AddressDisplaySequence displaySequence = getAddressDisplaySequence(field);
-				return TranslatableStrings.anyLanguage(getHandoverAddress(pickingJob, displaySequence));
+				return TranslatableStrings.anyLanguage(getHandoverAddress(context, displaySequence));
+			}
+			case PRODUCT:
+			{
+				final ITranslatableString productName = context.getProductName();
+				return productName != null ? productName : TranslatableStrings.empty();
+			}
+			case QTY_TO_DELIVER:
+			{
+				final Quantity qtyToDeliver = context.getQtyToDeliver();
+				return qtyToDeliver != null
+						? TranslatableStrings.quantity(qtyToDeliver.toBigDecimal(), qtyToDeliver.getUOMSymbol())
+						: TranslatableStrings.empty();
 			}
 			default:
 			{
@@ -292,6 +314,11 @@ public class DisplayValueProvider
 	private Optional<String> getRuestplatz(@NonNull final Context pickingJob)
 	{
 		final BPartnerLocationId deliveryLocationId = pickingJob.getDeliveryLocationId();
+		if (deliveryLocationId == null)
+		{
+			return Optional.empty();
+		}
+
 		return ruestplatzCache.computeIfAbsent(deliveryLocationId, this::retrieveRuestplatz);
 	}
 
@@ -307,29 +334,37 @@ public class DisplayValueProvider
 				.map(StringUtils::trimBlankToNull);
 	}
 
-	@NonNull
+	@Nullable
 	private String getHandoverAddress(@NonNull final Context pickingJob, @Nullable AddressDisplaySequence displaySequence)
 	{
-		return renderedAddressProvider.getAddress(pickingJob.getHandoverLocationIdWithFallback(), displaySequence);
+		final BPartnerLocationId bpLocationId = pickingJob.getHandoverLocationIdWithFallback();
+		return bpLocationId != null
+				? renderedAddressProvider.getAddress(bpLocationId, displaySequence)
+				: null;
 	}
 
-	@NonNull
+	@Nullable
 	private String getDeliveryAddress(@NonNull final Context context, @Nullable AddressDisplaySequence displaySequence)
 	{
-		return renderedAddressProvider.getAddress(context.getDeliveryLocationId(), displaySequence);
+		final BPartnerLocationId bpLocationId = context.getDeliveryLocationId();
+		return bpLocationId != null
+				? renderedAddressProvider.getAddress(bpLocationId, displaySequence)
+				: null;
 	}
 
 	@Value
 	@Builder
 	private static class Context
 	{
-		@NonNull String salesOrderDocumentNo;
-		@NonNull String customerName;
-		@NonNull ZonedDateTime preparationDate;
-		@NonNull BPartnerLocationId deliveryLocationId;
+		@Nullable String salesOrderDocumentNo;
+		@Nullable String customerName;
+		@Nullable ZonedDateTime preparationDate;
+		@Nullable BPartnerLocationId deliveryLocationId;
 		@Nullable BPartnerLocationId handoverLocationId;
+		@Nullable ITranslatableString productName;
+		@Nullable Quantity qtyToDeliver;
 
-		@NonNull
+		@Nullable
 		public BPartnerLocationId getHandoverLocationIdWithFallback()
 		{
 			return handoverLocationId != null ? handoverLocationId : deliveryLocationId;

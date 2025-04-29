@@ -48,7 +48,6 @@ import java.time.LocalDate;
 
 /**
  * Mutable invoice allocation candidate.
- *
  * Used by {@link PaymentAllocationBuilder} internally.
  *
  * @author tsa
@@ -78,7 +77,7 @@ public class PayableDocument
 	@Getter
 	private final PayableDocumentType type;
 	
-	/** Will cause this payable to be wrapped as payment, so it can be allocated agains another invoice. */
+	/** Will cause this payable to be wrapped as payment, so it can be allocated against another invoice. */
 	@Getter
 	private final boolean creditMemo;
 
@@ -218,5 +217,15 @@ public class PayableDocument
 	public boolean isFullyAllocated()
 	{
 		return amountsToAllocate.getTotalAmt().isZero();
+	}
+
+	public boolean isARC()
+	{
+		return isCreditMemo() && getSoTrx().isSales();
+	}
+
+	public boolean isAPI()
+	{
+		return !isCreditMemo() && getSoTrx().isPurchase();
 	}
 }

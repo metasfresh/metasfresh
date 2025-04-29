@@ -181,6 +181,6 @@ public class C_BPartner_Product_StepDef
 
 		saveRecord(bPartnerProductRecord);
 
-		bpartnerProductTable.put(bPartnerProductIdentifier, ProductRepository.ofBPartnerProductRecord(bPartnerProductRecord));
+		bpartnerProductTable.put(bPartnerProductIdentifier, ProductRepository.fromRecord(bPartnerProductRecord));
 	}
 }

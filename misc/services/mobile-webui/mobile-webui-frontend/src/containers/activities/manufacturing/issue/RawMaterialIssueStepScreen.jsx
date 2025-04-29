@@ -19,6 +19,7 @@ import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
 
 const RawMaterialIssueStepScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId, lineId, stepId } = useScreenDefinition({
+    screenId: 'RawMaterialIssueStepScreen',
     back: manufacturingLineScreenLocation,
   });
 

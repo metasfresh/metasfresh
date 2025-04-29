@@ -154,10 +154,13 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		// Bill Location
 		final I_C_BPartner_Location billLocation = olCandEffectiveValuesBL.getBill_Location_Effective(olCand);
 
+		String errorCode = null;
+
 		if (billLocation != null && !billLocation.isActive())
 		{
 			final String localMsg = msgBL.getMsg(ctx, ERR_Bill_Location_Inactive);
 			msg.append(localMsg).append("\n");
+			errorCode = msgBL.getErrorCode(ERR_Bill_Location_Inactive);
 			isValid = false;
 		}
 
@@ -167,6 +170,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		{
 			final String localMsg = msgBL.getMsg(ctx, ERR_C_BPartner_Location_Effective_Inactive);
 			msg.append(localMsg).append("\n");
+			errorCode = msgBL.getErrorCode(ERR_C_BPartner_Location_Effective_Inactive);
 			isValid = false;
 		}
 
@@ -177,6 +181,7 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		{
 			final String localMsg = msgBL.getMsg(ctx, ERR_DropShip_Location_Inactive);
 			msg.append(localMsg).append("\n");
+			errorCode = msgBL.getErrorCode(ERR_DropShip_Location_Inactive);
 			isValid = false;
 		}
 
@@ -186,12 +191,13 @@ public class DefaultOLCandValidator implements IOLCandValidator
 		{
 			final String localMsg = msgBL.getMsg(ctx, ERR_HandOver_Location_Inactive);
 			msg.append(localMsg).append("\n");
+			errorCode = msgBL.getErrorCode(ERR_HandOver_Location_Inactive);
 			isValid = false;
 		}
 
 		if (!isValid)
 		{
-			throw new AdempiereException(TranslatableStrings.parse(msg.toString()));
+			throw new AdempiereException(TranslatableStrings.parse(msg.toString()), errorCode);
 		}
 	}
 

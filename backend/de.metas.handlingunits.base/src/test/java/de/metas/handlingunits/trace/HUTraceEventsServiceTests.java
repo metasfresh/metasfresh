@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
+import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_Item;
@@ -68,6 +69,8 @@ public class HUTraceEventsServiceTests
 
 	private HUAccessService huAccessService;
 
+	private InventoryRepository inventoryRepository;
+
 	private I_C_UOM uom;
 
 	@BeforeEach
@@ -76,7 +79,8 @@ public class HUTraceEventsServiceTests
 		AdempiereTestHelper.get().init();
 
 		huAccessService = Mockito.spy(new HUAccessService());
-		huTraceEventsService = new HUTraceEventsService(new HUTraceRepository(), huAccessService);
+		inventoryRepository = Mockito.spy(new InventoryRepository());
+		huTraceEventsService = new HUTraceEventsService(new HUTraceRepository(), huAccessService, inventoryRepository);
 
 		LogManager.setLoggerLevel(HUTraceRepository.class, Level.INFO);
 

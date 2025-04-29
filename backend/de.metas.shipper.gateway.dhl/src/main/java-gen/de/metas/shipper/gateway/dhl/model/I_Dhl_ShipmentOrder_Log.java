@@ -1,91 +1,75 @@
 package de.metas.shipper.gateway.dhl.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for Dhl_ShipmentOrder_Log
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public interface I_Dhl_ShipmentOrder_Log 
 {
 
-    /** TableName=Dhl_ShipmentOrder_Log */
-    public static final String Table_Name = "Dhl_ShipmentOrder_Log";
+	String Table_Name = "Dhl_ShipmentOrder_Log";
 
-    /** AD_Table_ID=541426 */
-//    public static final int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=541426 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
-//    org.compiere.util.KeyNamePair Model = new org.compiere.util.KeyNamePair(Table_ID, Table_Name);
-
-    /** AccessLevel = 7 - System - Client - Org
-     */
-//    java.math.BigDecimal accessLevel = java.math.BigDecimal.valueOf(7);
-
-    /** Load Meta Data */
 
 	/**
-	 * Get Mandant.
-	 * Mandant für diese Installation.
+	 * Get Client.
+	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Client_ID();
+	int getAD_Client_ID();
 
-    /** Column name AD_Client_ID */
-    public static final String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set System-Problem.
-	 * Automatically created or manually entered System Issue
+	 * Set Issues.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Issue_ID (int AD_Issue_ID);
+	void setAD_Issue_ID (int AD_Issue_ID);
 
 	/**
-	 * Get System-Problem.
-	 * Automatically created or manually entered System Issue
+	 * Get Issues.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Issue_ID();
+	int getAD_Issue_ID();
 
-	public org.compiere.model.I_AD_Issue getAD_Issue();
-
-	public void setAD_Issue(org.compiere.model.I_AD_Issue AD_Issue);
-
-    /** Column definition for AD_Issue_ID */
-    public static final org.adempiere.model.ModelColumn<I_Dhl_ShipmentOrder_Log, org.compiere.model.I_AD_Issue> COLUMN_AD_Issue_ID = new org.adempiere.model.ModelColumn<I_Dhl_ShipmentOrder_Log, org.compiere.model.I_AD_Issue>(I_Dhl_ShipmentOrder_Log.class, "AD_Issue_ID", org.compiere.model.I_AD_Issue.class);
-    /** Column name AD_Issue_ID */
-    public static final String COLUMNNAME_AD_Issue_ID = "AD_Issue_ID";
+	String COLUMNNAME_AD_Issue_ID = "AD_Issue_ID";
 
 	/**
-	 * Set Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Set Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setAD_Org_ID (int AD_Org_ID);
+	void setAD_Org_ID (int AD_Org_ID);
 
 	/**
-	 * Get Sektion.
-	 * Organisatorische Einheit des Mandanten
+	 * Get Organisation.
+	 * Organisational entity within client
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Org_ID();
+	int getAD_Org_ID();
 
-    /** Column name AD_Org_ID */
-    public static final String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
 	 * Set Config Summary.
@@ -94,7 +78,7 @@ public interface I_Dhl_ShipmentOrder_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setConfigSummary (java.lang.String ConfigSummary);
+	void setConfigSummary (@Nullable java.lang.String ConfigSummary);
 
 	/**
 	 * Get Config Summary.
@@ -103,40 +87,35 @@ public interface I_Dhl_ShipmentOrder_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getConfigSummary();
+	@Nullable java.lang.String getConfigSummary();
 
-    /** Column definition for ConfigSummary */
-    public static final org.adempiere.model.ModelColumn<I_Dhl_ShipmentOrder_Log, Object> COLUMN_ConfigSummary = new org.adempiere.model.ModelColumn<I_Dhl_ShipmentOrder_Log, Object>(I_Dhl_ShipmentOrder_Log.class, "ConfigSummary", null);
-    /** Column name ConfigSummary */
-    public static final String COLUMNNAME_ConfigSummary = "ConfigSummary";
+	ModelColumn<I_Dhl_ShipmentOrder_Log, Object> COLUMN_ConfigSummary = new ModelColumn<>(I_Dhl_ShipmentOrder_Log.class, "ConfigSummary", null);
+	String COLUMNNAME_ConfigSummary = "ConfigSummary";
 
 	/**
-	 * Get Erstellt.
-	 * Datum, an dem dieser Eintrag erstellt wurde
+	 * Get Created.
+	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getCreated();
+	java.sql.Timestamp getCreated();
 
-    /** Column definition for Created */
-    public static final org.adempiere.model.ModelColumn<I_Dhl_ShipmentOrder_Log, Object> COLUMN_Created = new org.adempiere.model.ModelColumn<I_Dhl_ShipmentOrder_Log, Object>(I_Dhl_ShipmentOrder_Log.class, "Created", null);
-    /** Column name Created */
-    public static final String COLUMNNAME_Created = "Created";
+	ModelColumn<I_Dhl_ShipmentOrder_Log, Object> COLUMN_Created = new ModelColumn<>(I_Dhl_ShipmentOrder_Log.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Erstellt durch.
-	 * Nutzer, der diesen Eintrag erstellt hat
+	 * Get Created By.
+	 * User who created this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getCreatedBy();
+	int getCreatedBy();
 
-    /** Column name CreatedBy */
-    public static final String COLUMNNAME_CreatedBy = "CreatedBy";
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Dhl ShipmentOrder Log.
@@ -145,7 +124,7 @@ public interface I_Dhl_ShipmentOrder_Log
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setDhl_ShipmentOrder_Log_ID (int Dhl_ShipmentOrder_Log_ID);
+	void setDhl_ShipmentOrder_Log_ID (int Dhl_ShipmentOrder_Log_ID);
 
 	/**
 	 * Get Dhl ShipmentOrder Log.
@@ -154,12 +133,10 @@ public interface I_Dhl_ShipmentOrder_Log
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getDhl_ShipmentOrder_Log_ID();
+	int getDhl_ShipmentOrder_Log_ID();
 
-    /** Column definition for Dhl_ShipmentOrder_Log_ID */
-    public static final org.adempiere.model.ModelColumn<I_Dhl_ShipmentOrder_Log, Object> COLUMN_Dhl_ShipmentOrder_Log_ID = new org.adempiere.model.ModelColumn<I_Dhl_ShipmentOrder_Log, Object>(I_Dhl_ShipmentOrder_Log.class, "Dhl_ShipmentOrder_Log_ID", null);
-    /** Column name Dhl_ShipmentOrder_Log_ID */
-    public static final String COLUMNNAME_Dhl_ShipmentOrder_Log_ID = "Dhl_ShipmentOrder_Log_ID";
+	ModelColumn<I_Dhl_ShipmentOrder_Log, Object> COLUMN_Dhl_ShipmentOrder_Log_ID = new ModelColumn<>(I_Dhl_ShipmentOrder_Log.class, "Dhl_ShipmentOrder_Log_ID", null);
+	String COLUMNNAME_Dhl_ShipmentOrder_Log_ID = "Dhl_ShipmentOrder_Log_ID";
 
 	/**
 	 * Set DHL Shipment Order Request.
@@ -168,7 +145,7 @@ public interface I_Dhl_ShipmentOrder_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDHL_ShipmentOrderRequest_ID (int DHL_ShipmentOrderRequest_ID);
+	void setDHL_ShipmentOrderRequest_ID (int DHL_ShipmentOrderRequest_ID);
 
 	/**
 	 * Get DHL Shipment Order Request.
@@ -177,16 +154,14 @@ public interface I_Dhl_ShipmentOrder_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getDHL_ShipmentOrderRequest_ID();
+	int getDHL_ShipmentOrderRequest_ID();
 
-	public de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest getDHL_ShipmentOrderRequest();
+	@Nullable de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest getDHL_ShipmentOrderRequest();
 
-	public void setDHL_ShipmentOrderRequest(de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest DHL_ShipmentOrderRequest);
+	void setDHL_ShipmentOrderRequest(@Nullable de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest DHL_ShipmentOrderRequest);
 
-    /** Column definition for DHL_ShipmentOrderRequest_ID */
-    public static final org.adempiere.model.ModelColumn<I_Dhl_ShipmentOrder_Log, de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest> COLUMN_DHL_ShipmentOrderRequest_ID = new org.adempiere.model.ModelColumn<I_Dhl_ShipmentOrder_Log, de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest>(I_Dhl_ShipmentOrder_Log.class, "DHL_ShipmentOrderRequest_ID", de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest.class);
-    /** Column name DHL_ShipmentOrderRequest_ID */
-    public static final String COLUMNNAME_DHL_ShipmentOrderRequest_ID = "DHL_ShipmentOrderRequest_ID";
+	ModelColumn<I_Dhl_ShipmentOrder_Log, de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest> COLUMN_DHL_ShipmentOrderRequest_ID = new ModelColumn<>(I_Dhl_ShipmentOrder_Log.class, "DHL_ShipmentOrderRequest_ID", de.metas.shipper.gateway.dhl.model.I_DHL_ShipmentOrderRequest.class);
+	String COLUMNNAME_DHL_ShipmentOrderRequest_ID = "DHL_ShipmentOrderRequest_ID";
 
 	/**
 	 * Set Duration (ms).
@@ -195,7 +170,7 @@ public interface I_Dhl_ShipmentOrder_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setDurationMillis (int DurationMillis);
+	void setDurationMillis (int DurationMillis);
 
 	/**
 	 * Get Duration (ms).
@@ -204,62 +179,56 @@ public interface I_Dhl_ShipmentOrder_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getDurationMillis();
+	int getDurationMillis();
 
-    /** Column definition for DurationMillis */
-    public static final org.adempiere.model.ModelColumn<I_Dhl_ShipmentOrder_Log, Object> COLUMN_DurationMillis = new org.adempiere.model.ModelColumn<I_Dhl_ShipmentOrder_Log, Object>(I_Dhl_ShipmentOrder_Log.class, "DurationMillis", null);
-    /** Column name DurationMillis */
-    public static final String COLUMNNAME_DurationMillis = "DurationMillis";
+	ModelColumn<I_Dhl_ShipmentOrder_Log, Object> COLUMN_DurationMillis = new ModelColumn<>(I_Dhl_ShipmentOrder_Log.class, "DurationMillis", null);
+	String COLUMNNAME_DurationMillis = "DurationMillis";
 
 	/**
-	 * Set Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Set Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsActive (boolean IsActive);
+	void setIsActive (boolean IsActive);
 
 	/**
-	 * Get Aktiv.
-	 * Der Eintrag ist im System aktiv
+	 * Get Active.
+	 * The record is active in the system
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isActive();
+	boolean isActive();
 
-    /** Column definition for IsActive */
-    public static final org.adempiere.model.ModelColumn<I_Dhl_ShipmentOrder_Log, Object> COLUMN_IsActive = new org.adempiere.model.ModelColumn<I_Dhl_ShipmentOrder_Log, Object>(I_Dhl_ShipmentOrder_Log.class, "IsActive", null);
-    /** Column name IsActive */
-    public static final String COLUMNNAME_IsActive = "IsActive";
+	ModelColumn<I_Dhl_ShipmentOrder_Log, Object> COLUMN_IsActive = new ModelColumn<>(I_Dhl_ShipmentOrder_Log.class, "IsActive", null);
+	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Fehler.
-	 * Ein Fehler ist bei der Durchführung aufgetreten
+	 * Set Error.
+	 * An Error occurred in the execution
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public void setIsError (boolean IsError);
+	void setIsError (boolean IsError);
 
 	/**
-	 * Get Fehler.
-	 * Ein Fehler ist bei der Durchführung aufgetreten
+	 * Get Error.
+	 * An Error occurred in the execution
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public boolean isError();
+	boolean isError();
 
-    /** Column definition for IsError */
-    public static final org.adempiere.model.ModelColumn<I_Dhl_ShipmentOrder_Log, Object> COLUMN_IsError = new org.adempiere.model.ModelColumn<I_Dhl_ShipmentOrder_Log, Object>(I_Dhl_ShipmentOrder_Log.class, "IsError", null);
-    /** Column name IsError */
-    public static final String COLUMNNAME_IsError = "IsError";
+	ModelColumn<I_Dhl_ShipmentOrder_Log, Object> COLUMN_IsError = new ModelColumn<>(I_Dhl_ShipmentOrder_Log.class, "IsError", null);
+	String COLUMNNAME_IsError = "IsError";
 
 	/**
 	 * Set Request Message.
@@ -268,7 +237,7 @@ public interface I_Dhl_ShipmentOrder_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setRequestMessage (java.lang.String RequestMessage);
+	void setRequestMessage (@Nullable java.lang.String RequestMessage);
 
 	/**
 	 * Get Request Message.
@@ -277,12 +246,10 @@ public interface I_Dhl_ShipmentOrder_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getRequestMessage();
+	@Nullable java.lang.String getRequestMessage();
 
-    /** Column definition for RequestMessage */
-    public static final org.adempiere.model.ModelColumn<I_Dhl_ShipmentOrder_Log, Object> COLUMN_RequestMessage = new org.adempiere.model.ModelColumn<I_Dhl_ShipmentOrder_Log, Object>(I_Dhl_ShipmentOrder_Log.class, "RequestMessage", null);
-    /** Column name RequestMessage */
-    public static final String COLUMNNAME_RequestMessage = "RequestMessage";
+	ModelColumn<I_Dhl_ShipmentOrder_Log, Object> COLUMN_RequestMessage = new ModelColumn<>(I_Dhl_ShipmentOrder_Log.class, "RequestMessage", null);
+	String COLUMNNAME_RequestMessage = "RequestMessage";
 
 	/**
 	 * Set Response Message.
@@ -291,7 +258,7 @@ public interface I_Dhl_ShipmentOrder_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public void setResponseMessage (java.lang.String ResponseMessage);
+	void setResponseMessage (@Nullable java.lang.String ResponseMessage);
 
 	/**
 	 * Get Response Message.
@@ -300,38 +267,33 @@ public interface I_Dhl_ShipmentOrder_Log
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public java.lang.String getResponseMessage();
+	@Nullable java.lang.String getResponseMessage();
 
-    /** Column definition for ResponseMessage */
-    public static final org.adempiere.model.ModelColumn<I_Dhl_ShipmentOrder_Log, Object> COLUMN_ResponseMessage = new org.adempiere.model.ModelColumn<I_Dhl_ShipmentOrder_Log, Object>(I_Dhl_ShipmentOrder_Log.class, "ResponseMessage", null);
-    /** Column name ResponseMessage */
-    public static final String COLUMNNAME_ResponseMessage = "ResponseMessage";
+	ModelColumn<I_Dhl_ShipmentOrder_Log, Object> COLUMN_ResponseMessage = new ModelColumn<>(I_Dhl_ShipmentOrder_Log.class, "ResponseMessage", null);
+	String COLUMNNAME_ResponseMessage = "ResponseMessage";
 
 	/**
-	 * Get Aktualisiert.
-	 * Datum, an dem dieser Eintrag aktualisiert wurde
+	 * Get Updated.
+	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public java.sql.Timestamp getUpdated();
+	java.sql.Timestamp getUpdated();
 
-    /** Column definition for Updated */
-    public static final org.adempiere.model.ModelColumn<I_Dhl_ShipmentOrder_Log, Object> COLUMN_Updated = new org.adempiere.model.ModelColumn<I_Dhl_ShipmentOrder_Log, Object>(I_Dhl_ShipmentOrder_Log.class, "Updated", null);
-    /** Column name Updated */
-    public static final String COLUMNNAME_Updated = "Updated";
+	ModelColumn<I_Dhl_ShipmentOrder_Log, Object> COLUMN_Updated = new ModelColumn<>(I_Dhl_ShipmentOrder_Log.class, "Updated", null);
+	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Aktualisiert durch.
-	 * Nutzer, der diesen Eintrag aktualisiert hat
+	 * Get Updated By.
+	 * User who updated this records
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	public int getUpdatedBy();
+	int getUpdatedBy();
 
-    /** Column name UpdatedBy */
-    public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 }

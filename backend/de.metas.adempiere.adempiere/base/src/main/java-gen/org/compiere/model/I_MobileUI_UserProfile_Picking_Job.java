@@ -143,6 +143,29 @@ public interface I_MobileUI_UserProfile_Picking_Job
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Allow completing partial picking jobs.
+	 * Users can complete jobs on mobile without picking the full ordered quantity.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowCompletingPartialPickingJob (boolean IsAllowCompletingPartialPickingJob);
+
+	/**
+	 * Get Allow completing partial picking jobs.
+	 * Users can complete jobs on mobile without picking the full ordered quantity.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowCompletingPartialPickingJob();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_IsAllowCompletingPartialPickingJob = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "IsAllowCompletingPartialPickingJob", null);
+	String COLUMNNAME_IsAllowCompletingPartialPickingJob = "IsAllowCompletingPartialPickingJob";
+
+	/**
 	 * Set Allow new TU.
 	 *
 	 * <br>Type: YesNo
@@ -229,6 +252,27 @@ public interface I_MobileUI_UserProfile_Picking_Job
 
 	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_IsAlwaysSplitHUsEnabled = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "IsAlwaysSplitHUsEnabled", null);
 	String COLUMNNAME_IsAlwaysSplitHUsEnabled = "IsAlwaysSplitHUsEnabled";
+
+	/**
+	 * Set Anonymous HU Picked On the Fly.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAnonymousHuPickedOnTheFly (boolean IsAnonymousHuPickedOnTheFly);
+
+	/**
+	 * Get Anonymous HU Picked On the Fly.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAnonymousHuPickedOnTheFly();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_IsAnonymousHuPickedOnTheFly = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "IsAnonymousHuPickedOnTheFly", null);
+	String COLUMNNAME_IsAnonymousHuPickedOnTheFly = "IsAnonymousHuPickedOnTheFly";
 
 	/**
 	 * Set Allow picking TU with catch weight.
@@ -319,6 +363,29 @@ public interface I_MobileUI_UserProfile_Picking_Job
 	String COLUMNNAME_IsShowConfirmationPromptWhenOverPick = "IsShowConfirmationPromptWhenOverPick";
 
 	/**
+	 * Set Show Best Before of Last Picked Item .
+	 * When enabled, the 'Best Before' date of the last picked item will be shown on each line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsShowLastPickedBestBeforeDateForLines (boolean IsShowLastPickedBestBeforeDateForLines);
+
+	/**
+	 * Get Show Best Before of Last Picked Item .
+	 * When enabled, the 'Best Before' date of the last picked item will be shown on each line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isShowLastPickedBestBeforeDateForLines();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_IsShowLastPickedBestBeforeDateForLines = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "IsShowLastPickedBestBeforeDateForLines", null);
+	String COLUMNNAME_IsShowLastPickedBestBeforeDateForLines = "IsShowLastPickedBestBeforeDateForLines";
+
+	/**
 	 * Set Mobile UI Picking Job Options.
 	 *
 	 * <br>Type: ID
@@ -359,6 +426,27 @@ public interface I_MobileUI_UserProfile_Picking_Job
 
 	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_Name = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Aggregation Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPickingJobAggregationType (@Nullable java.lang.String PickingJobAggregationType);
+
+	/**
+	 * Get Aggregation Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPickingJobAggregationType();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking_Job, Object> COLUMN_PickingJobAggregationType = new ModelColumn<>(I_MobileUI_UserProfile_Picking_Job.class, "PickingJobAggregationType", null);
+	String COLUMNNAME_PickingJobAggregationType = "PickingJobAggregationType";
 
 	/**
 	 * Set Picking line group by.

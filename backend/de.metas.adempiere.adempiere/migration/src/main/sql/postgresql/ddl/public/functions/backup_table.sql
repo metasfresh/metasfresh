@@ -1,7 +1,9 @@
-DROP FUNCTION IF EXISTS backup_table(p_TableName text)
+DROP FUNCTION IF EXISTS backup_table(p_TableName text,
+                                     p_suffix    text)
 ;
 
-CREATE OR REPLACE FUNCTION backup_table(p_TableName text)
+CREATE OR REPLACE FUNCTION backup_table(p_TableName text,
+                                        p_suffix    text = '')
     RETURNS text
     LANGUAGE plpgsql
     VOLATILE
@@ -11,7 +13,7 @@ DECLARE
     v_backupTableName text;
     v_rowcount        numeric;
 BEGIN
-    v_backupTableName = 'backup.' || p_TableName || '_bkp_' || TO_CHAR(NOW(), 'YYYYMMDD_HH24MISS_MS');
+    v_backupTableName = 'backup.' || p_TableName || '_bkp_' || TO_CHAR(NOW(), 'YYYYMMDD_HH24MISS_MS') || p_suffix;
     RAISE NOTICE 'Backup `%` to `%`...', p_TableName, v_backupTableName;
 
     EXECUTE 'CREATE TABLE ' || v_backupTableName || ' AS SELECT * FROM ' || p_TableName;

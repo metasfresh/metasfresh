@@ -88,6 +88,8 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static de.metas.shipper.gateway.dhl.DhlConstants.PARAM_RESPONSE_BODY_AS_STRING;
+
 public class DhlShipperGatewayClient implements ShipperGatewayClient
 {
 	private static final Logger logger = LoggerFactory.getLogger(DhlShipperGatewayClient.class);
@@ -200,7 +202,7 @@ public class DhlShipperGatewayClient implements ShipperGatewayClient
 
 		return AdempiereException.wrapIfNeeded(shipperGatewayException)
 				.appendParametersToMessage()
-				.setParameter("responseBodyAsString", responseBodyAsString)
+				.setParameter(PARAM_RESPONSE_BODY_AS_STRING, responseBodyAsString)
 				.setParameter("routingRequest", dhlOrderRequest);
 	}
 

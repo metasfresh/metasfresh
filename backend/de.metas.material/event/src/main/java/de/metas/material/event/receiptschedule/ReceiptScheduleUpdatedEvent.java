@@ -85,4 +85,7 @@ public class ReceiptScheduleUpdatedEvent extends AbstractReceiptScheduleEvent
 
 		return this;
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

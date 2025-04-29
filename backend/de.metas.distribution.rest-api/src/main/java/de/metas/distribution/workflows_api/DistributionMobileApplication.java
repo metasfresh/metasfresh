@@ -175,6 +175,10 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 						.value(job.getDocumentNo())
 						.build())
 				.entry(WFProcessHeaderProperty.builder()
+							   .caption(TranslatableStrings.adElementOrMessage("PickDate"))
+							   .value(job.getPickDate())
+							   .build())
+				.entry(WFProcessHeaderProperty.builder()
 						.caption(TranslatableStrings.adElementOrMessage("DateRequired"))
 						.value(job.getDateRequired())
 						.build())
@@ -201,6 +205,14 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 					.caption(TranslatableStrings.adElementOrMessage("PP_Order_DocumentNo"))
 					.value(job.getPpOrderDocumentNo())
 					.build());
+		}
+
+		if (Check.isNotBlank(job.getPlantName()))
+		{
+			builder.entry(WFProcessHeaderProperty.builder()
+								  .caption(TranslatableStrings.adElementOrMessage("PP_Plant_ID"))
+								  .value(job.getPlantName())
+								  .build());
 		}
 
 		return builder.build();

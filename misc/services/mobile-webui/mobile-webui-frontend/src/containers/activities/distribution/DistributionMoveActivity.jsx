@@ -14,11 +14,12 @@ const DistributionMoveActivity = ({ applicationId, wfProcessId, activityId, acti
 
   return (
     <div className="mt-5">
-      {lines.map((line) => {
+      {lines.map((line, lineIdx) => {
         const lineId = line.lineId;
         return (
           <DistributionLineButton
             key={lineId}
+            testId={`line-${lineIdx + 1}-button`}
             applicationId={applicationId}
             wfProcessId={wfProcessId}
             activityId={activityId}

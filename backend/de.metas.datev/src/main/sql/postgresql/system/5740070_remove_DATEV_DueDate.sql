@@ -13,6 +13,11 @@ DELETE FROM AD_Column WHERE AD_Column_ID=559217
 DELETE FROM DATEV_ExportFormatColumn WHERE DATEV_ExportFormatColumn_ID=540003
 ;
 
+--Also delete manual created lines
+-- 2024-11-20T15:40:36.193Z
+DELETE FROM DATEV_ExportFormatColumn WHERE AD_Column_ID=559219
+;
+
 -- UI Element: Buchungen Export(540413,de.metas.datev) -> Lines(541037,de.metas.datev) -> main -> 10 -> default.Datum Fälligkeit
 -- Column: DATEV_ExportLine.DueDate
 -- 2024-11-20T15:40:55.175Z

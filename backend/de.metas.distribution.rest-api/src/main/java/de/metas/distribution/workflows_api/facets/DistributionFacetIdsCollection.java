@@ -3,6 +3,7 @@ package de.metas.distribution.workflows_api.facets;
 import com.google.common.collect.ImmutableSet;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetId;
 import lombok.NonNull;
@@ -60,6 +61,8 @@ public class DistributionFacetIdsCollection implements Iterable<DistributionFace
 	public Set<ProductId> getProductIds() {return getValues(DistributionFacetGroupType.PRODUCT, DistributionFacetId::getProductId);}
 
 	public Set<Quantity> getQuantities() {return getValues(DistributionFacetGroupType.QUANTITY, DistributionFacetId::getQty);}
+
+	public Set<ResourceId> getPlantIds() {return getValues(DistributionFacetGroupType.PLANT_RESOURCE_ID, DistributionFacetId::getPlantId);}
 
 	public <T> Set<T> getValues(DistributionFacetGroupType groupType, Function<DistributionFacetId, T> valueExtractor)
 	{

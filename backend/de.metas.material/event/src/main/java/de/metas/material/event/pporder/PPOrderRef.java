@@ -2,6 +2,7 @@ package de.metas.material.event.pporder;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -67,6 +68,11 @@ public class PPOrderRef
 	public static PPOrderRef ofPPOrderId(@NonNull final PPOrderId ppOrderId)
 	{
 		return builder().ppOrderId(ppOrderId).build();
+	}
+
+	public static PPOrderRef ofPPOrderBOMLineId(@NonNull final RepoIdAware ppOrderId, final int ppOrderBOMLineId)
+	{
+		return ofPPOrderBOMLineId(ppOrderId.getRepoId(), ppOrderBOMLineId);
 	}
 
 	public static PPOrderRef ofPPOrderBOMLineId(final int ppOrderId, final int ppOrderBOMLineId)

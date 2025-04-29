@@ -31,7 +31,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.impl.CreateShipperTransportationRequest;
 import de.metas.handlingunits.impl.ShipperTransportationQuery;
 import de.metas.handlingunits.impl.ShipperTransportationRepository;
-import de.metas.handlingunits.transportation.InOutToTransportationOrderService;
+import de.metas.handlingunits.shipping.InOutToTransportationOrderService;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -186,7 +186,7 @@ public class ShipperDeliveryService
 	private LocalDate getPickupDate(@NonNull final I_M_ShipperTransportation shipperTransportation)
 	{
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(shipperTransportation.getAD_Org_ID()));
-		return CoalesceUtil.coalesce(
+		return CoalesceUtil.coalesceNotNull(
 				TimeUtil.asLocalDate(shipperTransportation.getDateToBeFetched(), timeZone), 
 				TimeUtil.asLocalDate(shipperTransportation.getDateDoc(), timeZone));
 	}

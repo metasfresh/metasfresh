@@ -10,6 +10,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
@@ -97,6 +98,13 @@ public class EventLogService
 		eventLogRecord.setEventData(eventString);
 		eventLogRecord.setEventTopicName(eventBusTopic.getName());
 		eventLogRecord.setEventTypeName(eventBusTopic.getType().toString());
+		eventLogRecord.setEventName(event.getEventName());
+		final TableRecordReference sourceRecordReference = event.getSourceRecordReference();
+		if (sourceRecordReference != null)
+		{
+			eventLogRecord.setAD_Table_ID(sourceRecordReference.getAD_Table_ID());
+			eventLogRecord.setRecord_ID(sourceRecordReference.getRecord_ID());
+		}
 
 		save(eventLogRecord);
 

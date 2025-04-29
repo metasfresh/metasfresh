@@ -40,6 +40,7 @@ const ConfirmActivity = ({
   return (
     <div className="mt-5">
       <ConfirmButton
+        id={isLastActivity ? 'last-confirm-button' : null}
         caption={caption}
         promptQuestion={promptQuestion}
         userInstructions={userInstructions}

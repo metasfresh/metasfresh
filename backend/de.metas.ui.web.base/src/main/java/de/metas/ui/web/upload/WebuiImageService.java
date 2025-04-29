@@ -5,7 +5,7 @@ import com.google.common.io.BaseEncoding;
 import de.metas.common.util.time.SystemTime;
 import de.metas.image.AdImage;
 import de.metas.image.AdImageRepository;
-import de.metas.printing.esb.base.util.Check;
+import de.metas.util.Check;
 import de.metas.util.FileUtil;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;

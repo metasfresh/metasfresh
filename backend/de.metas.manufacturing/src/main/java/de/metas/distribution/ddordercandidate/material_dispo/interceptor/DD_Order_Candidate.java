@@ -9,6 +9,7 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateCreatedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateData;
+import de.metas.material.event.ddordercandidate.DDOrderCandidateDeletedEvent;
 import de.metas.material.event.ddordercandidate.DDOrderCandidateUpdatedEvent;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import lombok.NonNull;
@@ -48,6 +49,9 @@ public class DD_Order_Candidate
 		ddOrderCandidateAllocRepository.deleteByQuery(DeleteDDOrderCandidateAllocQuery.builder()
 															  .ddOrderCandidateId(DDOrderCandidateId.ofRepoId(record.getDD_Order_Candidate_ID()))
 															  .build());
+
+		final DDOrderCandidateData data = toDDOrderCandidateData(record);
+		materialEventService.enqueueEventAfterNextCommit(DDOrderCandidateDeletedEvent.of(data));
 	}
 
 	private DDOrderCandidateData toDDOrderCandidateData(final I_DD_Order_Candidate record)

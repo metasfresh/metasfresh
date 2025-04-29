@@ -3,6 +3,7 @@ package de.metas.business_rule.event;
 import de.metas.business_rule.descriptor.model.BusinessRuleAndTriggerId;
 import de.metas.business_rule.log.BusinessRuleLogger;
 import de.metas.error.AdIssueId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -39,8 +40,9 @@ public class BusinessRuleEventRepository
 				+ "," + I_AD_BusinessRule_Event.COLUMNNAME_Updated // 9
 				+ "," + I_AD_BusinessRule_Event.COLUMNNAME_UpdatedBy // 10
 				+ "," + I_AD_BusinessRule_Event.COLUMNNAME_IsActive // 11
+				+ "," + I_AD_BusinessRule_Event.COLUMNNAME_Triggering_User_ID // 11
 				+ ")"
-				+ " VALUES (?, ?, ?, ?, ?, ?, now(), 0, now(), 0, 'Y')"
+				+ " VALUES (?, ?, ?, ?, ?, ?, now(), 0, now(), 0, 'Y', ?)"
 				+ " ON CONFLICT DO NOTHING";
 
 		DB.executeUpdateAndThrowExceptionOnFail(
@@ -52,6 +54,7 @@ public class BusinessRuleEventRepository
 						request.getRecordRef().getRecord_ID(), // 4
 						request.getClientAndOrgId().getClientId().getRepoId(), // 5
 						request.getClientAndOrgId().getOrgId().getRepoId(), //6
+						request.getTriggeringUserId().getRepoId() //11
 				},
 				ITrx.TRXNAME_ThreadInherited);
 	}
@@ -119,6 +122,7 @@ public class BusinessRuleEventRepository
 		return BusinessRuleEvent.builder()
 				.id(BusinessRuleEventId.ofRepoId(record.getAD_BusinessRule_Event_ID()))
 				.sourceRecordRef(TableRecordReference.of(record.getSource_Table_ID(), record.getSource_Record_ID()))
+				.triggeringUserId(UserId.ofRepoId(record.getTriggering_User_ID()))
 				.businessRuleAndTriggerId(BusinessRuleAndTriggerId.ofRepoIds(record.getAD_BusinessRule_ID(), record.getAD_BusinessRule_Trigger_ID()))
 				.processed(record.isProcessed())
 				.errorId(AdIssueId.ofRepoIdOrNull(record.getAD_Issue_ID()))

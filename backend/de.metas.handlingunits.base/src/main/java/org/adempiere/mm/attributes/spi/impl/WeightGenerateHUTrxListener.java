@@ -10,22 +10,17 @@ package org.adempiere.mm.attributes.spi.impl;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.math.BigDecimal;
-
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -38,17 +33,25 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Trx_Line;
 import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+
+import java.math.BigDecimal;
+import java.util.Optional;
 
 /**
  * Aim: in case we are transferring quantity between a document and a HU and we are dealing with a weightable or non weightable product we need to use it's standard weight.
  *
  * @author tsa
- * @task http://dewiki908/mediawiki/index.php/06936_Packtischdialog_weights_%28103796014800%29
+ * @implSpec <a href="http://dewiki908/mediawiki/index.php/06936_Packtischdialog_weights_%28103796014800%29">task</a>
  */
 public class WeightGenerateHUTrxListener implements IHUTrxListener
 {
-	public static final transient WeightGenerateHUTrxListener instance = new WeightGenerateHUTrxListener();
+	public static final WeightGenerateHUTrxListener instance = new WeightGenerateHUTrxListener();
 
 	@Override
 	public void trxLineProcessed(final IHUContext huContext, final I_M_HU_Trx_Line trxLine)
@@ -62,7 +65,7 @@ public class WeightGenerateHUTrxListener implements IHUTrxListener
 			return;
 		}
 
-		final BigDecimal trxWeightNet = calculateTrxWeightIfApplies(trxLine);
+		final Quantity trxWeightNet = calculateTrxWeightIfApplies(trxLine).orElse(null);
 		if (trxWeightNet == null || trxWeightNet.signum() == 0)
 		{
 			return;
@@ -77,71 +80,63 @@ public class WeightGenerateHUTrxListener implements IHUTrxListener
 		//
 		// Update weight by adding the transaction weight
 		{
+			final Quantity trxWeightNetConv = convertQuantityTo(trxWeightNet, weightable.getWeightNetUOM(), trxLine);
+
 			final BigDecimal weightNetOld = weightable.getWeightNet();
-			final BigDecimal weightNetNew = weightNetOld.add(trxWeightNet);
+			final BigDecimal weightNetNew = weightNetOld.add(trxWeightNetConv.toBigDecimal());
 			weightable.setWeightNet(weightNetNew);
 		}
 		// nothing
 	}
 
+	private static Quantity convertQuantityTo(final Quantity qty, final I_C_UOM targetUOM, final I_M_HU_Trx_Line trxLine)
+	{
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+		final ProductId productId = IHUTrxBL.extractProductId(trxLine);
+		return uomConversionBL.convertQuantityTo(qty, productId, targetUOM);
+	}
+
 	/**
 	 * Calculates the Weight of transaction line quantity by using the standard product weight.
-	 *
-	 * <strike>If the product has a weightable UOM then <code>null</code> will be returned because it does not apply for our case.</strike>
-	 *
-	 * Now our case changed. This logic is used for all UOMs, weightable or not Task:
-	 * http://dewiki908/mediawiki/index.php/08175_Gewicht_aus_Gebindeconfig_nach_Nettogewicht_%C3%BCbernehmen_bei_kg_Artikel_%28104866551966%29
-	 *
-	 * @param trxLine
-	 * @return weight or <code>null</code> if it does not apply.
 	 */
-	private BigDecimal calculateTrxWeightIfApplies(final I_M_HU_Trx_Line trxLine)
+	private Optional<Quantity> calculateTrxWeightIfApplies(final I_M_HU_Trx_Line trxLine)
 	{
 		//
 		// Get transaction Qty.
 		final BigDecimal qty = trxLine.getQty();
 		if (qty.signum() == 0)
 		{
-			return null;
+			return Optional.empty();
 		}
 
 		//
 		// Get transaction Product.
-		// Make sure we are dealing with a non-weightable product
 		final I_M_Product product = IHUTrxBL.extractProductOrNull(trxLine);
 		if (product == null)
 		{
-			return null;
+			return Optional.empty();
 		}
 
 		//
-		// 08175: Apply TrxListener and generate NET weights for both weightable and non-weightable products
-		// if (Services.get(IWeightableBL.class).isWeightable(product))
-		// {
-		// return null;
-		// }
-
-		//
-		// Get transaction UOM.
+		// Get transaction UOM (NOT the weight UOM!)
 		final I_C_UOM qtyUOM = IHUTrxBL.extractUOMOrNull(trxLine);
 		if (qtyUOM == null)
 		{
-			return null;
+			return Optional.empty();
 		}
 
 		//
 		// Get Product's weight
-		final BigDecimal productWeight = Services.get(IProductBL.class).getWeight(product, qtyUOM);
-		if (productWeight.signum() <= 0)
+		final Quantity productWeight = Services.get(IProductBL.class).getNetWeight(product, qtyUOM).orElse(null);
+		if (productWeight == null || productWeight.signum() <= 0)
 		{
-			return null;
+			return Optional.empty();
 		}
 
 		//
 		// Calculate transaction's weight
-		final BigDecimal trxWeightNet = qty.multiply(productWeight);
-
-		return trxWeightNet;
+		final Quantity trxWeightNet = productWeight.multiply(qty);
+		return Optional.of(trxWeightNet);
 	}
 
 	private IWeightable getWeightableIfApplies(final IHUContext huContext, final I_M_HU_Trx_Line trxLine)

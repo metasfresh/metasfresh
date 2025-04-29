@@ -14,7 +14,6 @@ import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.ShipmentScheduleId;
@@ -652,8 +651,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			if (record.isProcessed())
 			{
 				throw new AdempiereException(
-						Services.get(IMsgBL.class)
-								.getTranslatableMsgText(MSG_SHIPMENT_SCHEDULE_ALREADY_PROCESSED, record.getM_ShipmentSchedule_ID()))
+						MSG_SHIPMENT_SCHEDULE_ALREADY_PROCESSED, record.getM_ShipmentSchedule_ID())
 						.markAsUserValidationError();
 			}
 			closeShipmentSchedule(record);

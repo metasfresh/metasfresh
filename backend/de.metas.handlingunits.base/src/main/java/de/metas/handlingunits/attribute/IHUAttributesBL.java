@@ -34,6 +34,8 @@ import org.compiere.model.I_M_Attribute;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Map;
+import java.util.Set;
 
 public interface IHUAttributesBL extends ISingletonService
 {
@@ -108,4 +110,10 @@ public interface IHUAttributesBL extends ISingletonService
 	void transferAttributesForSingleProductHUs(@NonNull I_M_HU huFrom, @NonNull I_M_HU huTo);
 
 	void updateHUAttribute(@NonNull HuId huId, @NonNull AttributeCode attributeCode, @Nullable Object attributeValue);
+
+	@Nullable
+	String getHUAttributeValue(@NonNull I_M_HU hu, @NonNull AttributeCode attributeCode);
+
+	@Nullable
+	IAttributeValue getAttributeValue(@NonNull I_M_HU hu, @NonNull AttributeCode attributeCode);
 }

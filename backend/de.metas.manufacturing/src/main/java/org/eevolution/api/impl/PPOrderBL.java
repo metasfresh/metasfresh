@@ -40,6 +40,7 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderCreatedEvent;
+import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.WorkingTime;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
@@ -57,6 +58,7 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
@@ -100,6 +102,7 @@ import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -121,6 +124,7 @@ public class PPOrderBL implements IPPOrderBL
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IPPCostCollectorBL costCollectorsService = Services.get(IPPCostCollectorBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
 
 	@VisibleForTesting
 	static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.manufacturing.PP_Order.canBeExportedAfterSeconds";
@@ -129,6 +133,12 @@ public class PPOrderBL implements IPPOrderBL
 	public I_PP_Order getById(@NonNull final PPOrderId id)
 	{
 		return ppOrdersRepo.getById(id);
+	}
+
+	@Override
+	public List<I_PP_Order> getByIds(@NonNull final Set<PPOrderId> ids)
+	{
+		return ppOrdersRepo.getByIds(ids);
 	}
 
 	@Override
@@ -351,6 +361,18 @@ public class PPOrderBL implements IPPOrderBL
 		// ppOrdersRepo.save(ppOrder);
 
 		documentBL.processEx(ppOrder, X_PP_Order.DOCACTION_Close);
+	}
+
+	@Override
+	public void closeOrdersByIds(@NonNull final Set<PPOrderId> ppOrderIds)
+	{
+		if (ppOrderIds.isEmpty())
+		{
+			return;
+		}
+
+		final List<I_PP_Order> ppOrders = ppOrdersRepo.getByIds(ppOrderIds);
+		ppOrders.forEach(this::closeOrder);
 	}
 
 	@Override
@@ -651,4 +673,9 @@ public class PPOrderBL implements IPPOrderBL
 		return orderBOMService.getProductIdsToIssue(ppOrderId);
 	}
 
+	@NonNull
+	public String getResourceName(@NonNull final ResourceId resourceId)
+	{
+		return resourceDAO.getById(resourceId).getName();
+	}
 }

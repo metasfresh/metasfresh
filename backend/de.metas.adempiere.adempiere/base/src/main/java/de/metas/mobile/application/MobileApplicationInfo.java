@@ -16,7 +16,7 @@ public class MobileApplicationInfo
 	@NonNull ITranslatableString caption;
 	boolean requiresWorkstation;
 	boolean requiresWorkplace;
-	boolean requiresLaunchersQRCodeFilter;
+	boolean showFilterByQRCode;
 	boolean showFilters;
 	boolean showFilterByDocumentNo;
 	@Builder.Default boolean showInMainMenu = true;

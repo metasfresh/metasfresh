@@ -8,29 +8,33 @@ import { toQRCodeString } from '../utils/qrCode/hu';
 /**
  * @summary Get the list of available launchers
  */
-export const getLaunchers = ({ applicationId, filterByQRCode, filterByDocumentNo, facets }) => {
+export const getLaunchers = ({
+  applicationId,
+  filterByQRCodeString,
+  filterByDocumentNo,
+  facets,
+  countOnly = false,
+}) => {
   const facetIds = facets ? facets.map((facet) => facet.facetId) : null;
   return axios
     .post(`${apiBasePath}/userWorkflows/launchers/query`, {
       applicationId,
-      filterByQRCode: toQRCodeString(filterByQRCode),
+      filterByQRCode: filterByQRCodeString,
       filterByDocumentNo,
       facetIds,
+      countOnly,
     })
     .then((response) => unboxAxiosResponse(response));
 };
 
-export const countLaunchers = ({ applicationId, filterByDocumentNo, facetIds }) => {
-  //console.log('countLaunchers', { applicationId, facetIds });
-  return axios
-    .post(`${apiBasePath}/userWorkflows/launchers/query`, {
-      applicationId,
-      filterByDocumentNo,
-      facetIds,
-      countOnly: true,
-    })
-    .then((response) => unboxAxiosResponse(response))
-    .then((response) => response.count);
+export const countLaunchers = ({ applicationId, filterByQRCodeString, filterByDocumentNo, facetIds }) => {
+  return getLaunchers({
+    applicationId,
+    filterByQRCodeString,
+    filterByDocumentNo,
+    facetIds,
+    countOnly: true,
+  }).then((response) => response.count);
 };
 
 export const getFacets = ({ applicationId, filterByDocumentNo, activeFacetIds }) => {
@@ -95,7 +99,7 @@ export const useLaunchersWebsocket = ({
         facetIds,
       })}`;
 
-      console.debug(`WS connecting to ${topic}`, { applicationId, filterByQRCode, filterByDocumentNo, facetIds });
+      console.debug(`WS connecting to ${topic}`, { applicationId, filterByQRCodeString, filterByDocumentNo, facetIds });
       client = ws.connectAndSubscribe({
         topic,
         debug: !!window?.debug_ws,

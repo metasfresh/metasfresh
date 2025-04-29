@@ -28,6 +28,7 @@ import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
+import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.externalreference.ExternalIdentifier;
@@ -38,8 +39,12 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.CleanWhitespaceQueryFilterModifier;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 
 import java.util.List;
@@ -47,7 +52,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 
 public class CreateBPartnerV2_StepDef
@@ -55,15 +60,19 @@ public class CreateBPartnerV2_StepDef
 	private final BPartnerEndpointService bpartnerEndpointService;
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final AD_User_StepDefData userTable;
+	private final C_BP_BankAccount_StepDefData bankAccountTable;
 
-	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public CreateBPartnerV2_StepDef(
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final AD_User_StepDefData userTable)
+			@NonNull final AD_User_StepDefData userTable,
+			@NonNull final C_BP_BankAccount_StepDefData bankAccountTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.userTable = userTable;
+		this.bankAccountTable = bankAccountTable;
 		this.bpartnerEndpointService = SpringContextHolder.instance.getBean(BPartnerEndpointService.class);
 	}
 
@@ -88,13 +97,36 @@ public class CreateBPartnerV2_StepDef
 			final Optional<JsonResponseComposite> persistedResult = bpartnerEndpointService.retrieveBPartner(null, ExternalIdentifier.of(externalIdentifier));
 			final JsonResponseBPartner persistedBPartner = persistedResult.get().getBpartner();
 
-			assertThat(persistedBPartner.getCompanyName()).isEqualTo(companyName);
 			assertThat(persistedBPartner.getName()).isEqualTo(name);
-			assertThat(persistedBPartner.getUrl()).isEqualTo(url);
-			assertThat(persistedBPartner.getVatId()).isEqualTo(vatId);
-			assertThat(persistedBPartner.getLanguage()).contains(language);
-			assertThat(persistedBPartner.getCode()).isEqualTo(code);
-			assertThat(persistedBPartner.getPhone()).isEqualTo(phone);
+			if (Check.isNotBlank(companyName))
+			{
+				assertThat(persistedBPartner.getCompanyName()).isEqualTo(companyName);
+			}
+
+			if (Check.isNotBlank(url))
+			{
+				assertThat(persistedBPartner.getUrl()).isEqualTo(url);
+			}
+
+			if (Check.isNotBlank(vatId))
+			{
+				assertThat(persistedBPartner.getVatId()).isEqualTo(vatId);
+			}
+
+			if (Check.isNotBlank(language))
+			{
+				assertThat(persistedBPartner.getLanguage()).contains(language);
+			}
+
+			if (Check.isNotBlank(code))
+			{
+				assertThat(persistedBPartner.getCode()).isEqualTo(code);
+			}
+
+			if (Check.isNotBlank(phone))
+			{
+				assertThat(persistedBPartner.getPhone()).isEqualTo(phone);
+			}
 
 			if (Check.isNotBlank(group))
 			{
@@ -179,6 +211,24 @@ public class CreateBPartnerV2_StepDef
 			assertThat(persistedContact.getName()).isEqualTo(name);
 			assertThat(persistedContact.getFax()).isEqualTo(fax);
 			assertThat(persistedContact.getInvoiceEmailEnabled()).isEqualTo(isInvoiceEmailEnabled);
+		}
+	}
+
+	@And("locate C_BP_BankAccount by IBAN:")
+	public void locateBPBankAccountByIban(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> dataTableRow : dataTable.asMaps())
+		{
+			final String bankAccountIban = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_BP_BankAccount.COLUMNNAME_IBAN);
+			final String bankAccountTableIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID);
+
+			final I_C_BP_BankAccount bankAccountRecord = queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
+					.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IBAN, bankAccountIban, CleanWhitespaceQueryFilterModifier.getInstance())
+					.create()
+					.firstOnlyOptional()
+					.orElseThrow(() -> new AdempiereException("No record found for IBAN = " + bankAccountIban));
+
+			bankAccountTable.put(bankAccountTableIdentifier, bankAccountRecord);
 		}
 	}
 }

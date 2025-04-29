@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.pair.IPair;
+import de.metas.handlingunits.impl.CreateTUPackingInstructionsRequest;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.I_M_HU_Item_Storage;
@@ -41,6 +42,7 @@ import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
@@ -57,6 +59,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 public interface IHandlingUnitsDAO extends ISingletonService
 {
@@ -175,11 +179,18 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	List<I_M_HU> retrieveIncludedHUs(@NonNull I_M_HU hu);
 
+	List<I_M_HU> retrieveIncludedHUs(@NonNull HuId huId);
+
 	// Handling Unit PI Retrieval
 
 	Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
 			@NonNull HuPackingInstructionsId piId,
 			@Nullable String itemType,
+			@Nullable BPartnerId bpartnerId);
+
+	Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull I_M_HU_PI_Version version,
+			@Nullable HUItemType itemType,
 			@Nullable BPartnerId bpartnerId);
 
 	Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
@@ -258,6 +269,9 @@ public interface IHandlingUnitsDAO extends ISingletonService
 	 */
 	@Nullable
 	I_M_HU_PI_Item retrieveDefaultParentPIItem(@NonNull I_M_HU_PI huPI, @Nullable String huUnitType, @Nullable BPartnerId bpartnerId);
+
+	@NonNull
+	Optional<HuPackingInstructionsItemId> retrieveDefaultParentPIItemId(@NonNull I_M_HU_PI huPI, @Nullable String huUnitType, @Nullable BPartnerId bpartnerId);
 
 	/**
 	 * Retrieves the default LU.
@@ -346,4 +360,8 @@ public interface IHandlingUnitsDAO extends ISingletonService
 
 	@NonNull
 	ImmutableSet<HuId> retrieveHuIdAndDownstream(@NonNull HuId huId);
+
+	<T> Stream<T> streamByQuery(@NonNull final IQueryBuilder<I_M_HU> queryBuilder, @NonNull final Function<I_M_HU, T> mapper);
+
+	void createTUPackingInstructions(CreateTUPackingInstructionsRequest request);
 }

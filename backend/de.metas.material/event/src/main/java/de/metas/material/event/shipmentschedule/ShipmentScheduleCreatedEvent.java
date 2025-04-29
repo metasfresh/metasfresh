@@ -87,4 +87,7 @@ public class ShipmentScheduleCreatedEvent extends AbstractShipmentScheduleEvent
 		Check.errorIf(getDocumentLineDescriptor() == null, "documentLineDescriptor may not be null");
 		getDocumentLineDescriptor().validate();
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

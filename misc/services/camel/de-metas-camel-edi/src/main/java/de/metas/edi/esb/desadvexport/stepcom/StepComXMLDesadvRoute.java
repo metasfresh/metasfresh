@@ -28,8 +28,8 @@ import de.metas.edi.esb.commons.processor.feedback.EDIXmlSuccessFeedbackProcesso
 import de.metas.edi.esb.commons.processor.feedback.helper.EDIXmlFeedbackHelper;
 import de.metas.edi.esb.commons.route.AbstractEDIRoute;
 import de.metas.edi.esb.commons.route.exports.ReaderTypeConverter;
-import de.metas.edi.esb.jaxb.metasfresh.EDIDesadvFeedbackType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIDesadvFeedbackType;
+import de.metas.edi.esb.jaxb.metasfreshinhousev2.EDIExpDesadvType;
 import de.metas.edi.esb.jaxb.stepcom.desadv.ObjectFactory;
 import lombok.NonNull;
 import org.apache.camel.Exchange;

@@ -73,7 +73,6 @@ FROM C_Order o
          LEFT OUTER JOIN C_DocType_Trl dtt ON o.C_DocTypeTarget_ID = dtt.C_DocType_ID AND dtt.AD_Language = p_language
 
 WHERE o.c_order_id = record_id
-  AND o.isActive = 'Y'
 $$
 ;
 

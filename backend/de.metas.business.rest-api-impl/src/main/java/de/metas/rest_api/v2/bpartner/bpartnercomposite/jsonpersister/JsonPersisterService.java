@@ -105,6 +105,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.util.CollectionUtils;
 
@@ -1394,49 +1395,69 @@ public class JsonPersisterService
 			@NonNull final SyncAdvise parentSyncAdvise,
 			@NonNull final ShortTermBankAccountIndex shortTermIndex)
 	{
-		final String iban = jsonBankAccount.getIban();
-		final BPartnerBankAccount existingBankAccount = shortTermIndex.extract(iban);
-
-		final JsonResponseUpsertItemBuilder resultBuilder = JsonResponseUpsertItem.builder()
-				.identifier(iban);
-
-		final BPartnerBankAccount bankAccount;
-		if (existingBankAccount != null)
+		try
 		{
-			bankAccount = existingBankAccount;
-			shortTermIndex.remove(existingBankAccount.getId());
-			resultBuilder.syncOutcome(SyncOutcome.UPDATED);
-		}
-		else
-		{
-			if (parentSyncAdvise.isFailIfNotExists())
+			final SyncAdvise effectiveSyncAdvise = CoalesceUtil.coalesceNotNull(jsonBankAccount.getSyncAdvise(), parentSyncAdvise);
+
+			final String iban = jsonBankAccount.getIban();
+			final BPartnerBankAccount existingBankAccount = shortTermIndex.extract(iban);
+
+			final JsonResponseUpsertItemBuilder resultBuilder = JsonResponseUpsertItem.builder()
+					.identifier(iban);
+
+			final SyncOutcome syncOutcome;
+			final BPartnerBankAccount bankAccount;
+			if (existingBankAccount != null)
 			{
-				throw MissingResourceException.builder().resourceName("bankAccount").resourceIdentifier(iban).parentResource(jsonBankAccount).build()
-						.setParameter("parentSyncAdvise", parentSyncAdvise);
+				bankAccount = existingBankAccount;
+				shortTermIndex.remove(existingBankAccount.getId());
+
+				syncOutcome = effectiveSyncAdvise.getIfExists().isUpdate() ? SyncOutcome.UPDATED : SyncOutcome.NOTHING_DONE;
+			}
+			else
+			{
+				if (effectiveSyncAdvise.isFailIfNotExists())
+				{
+					throw MissingResourceException.builder().resourceName("bankAccount")
+							.resourceIdentifier(iban)
+							.parentResource(jsonBankAccount)
+							.build()
+							.setParameter("syncAdvise", effectiveSyncAdvise);
+				}
+
+				final CurrencyId currencyId = extractCurrencyIdOrNull(jsonBankAccount);
+				if (currencyId == null)
+				{
+					throw MissingResourceException.builder()
+							.resourceName("bankAccount.currencyId")
+							.resourceIdentifier(iban)
+							.parentResource(jsonBankAccount)
+							.build()
+							.setParameter("syncAdvise", effectiveSyncAdvise);
+				}
+
+				bankAccount = shortTermIndex.newBankAccount(iban, currencyId);
+				syncOutcome = SyncOutcome.CREATED;
 			}
 
-			final CurrencyId currencyId = extractCurrencyIdOrNull(jsonBankAccount);
-			if (currencyId == null)
+			if (syncOutcome != SyncOutcome.NOTHING_DONE)
 			{
-				throw MissingResourceException.builder().resourceName("bankAccount.currencyId").resourceIdentifier(iban).parentResource(jsonBankAccount).build()
-						.setParameter("parentSyncAdvise", parentSyncAdvise);
+				syncJsonToBankAccount(jsonBankAccount, bankAccount);
 			}
 
-			bankAccount = shortTermIndex.newBankAccount(iban, currencyId);
-			resultBuilder.syncOutcome(SyncOutcome.CREATED);
+			return resultBuilder.syncOutcome(syncOutcome);
 		}
-
-		syncJsonToBankAccount(jsonBankAccount, bankAccount);
-
-		return resultBuilder;
+		catch (final Exception e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.setParameter("bankAccount.iban", jsonBankAccount.getIban());
+		}
 	}
 
 	private void syncJsonToBankAccount(
 			@NonNull final JsonRequestBankAccountUpsertItem jsonBankAccount,
 			@NonNull final BPartnerBankAccount bankAccount)
 	{
-		// ignoring syncAdvise.isUpdateRemove because both active and currencyId can't be NULLed
-
 		// active
 		if (jsonBankAccount.getActive() != null)
 		{
@@ -1444,10 +1465,47 @@ public class JsonPersisterService
 		}
 
 		// currency
-		final CurrencyId currencyId = extractCurrencyIdOrNull(jsonBankAccount);
-		if (currencyId != null)
+		if (Check.isNotBlank(jsonBankAccount.getCurrencyCode()))
 		{
+			final CurrencyId currencyId = extractCurrencyIdOrNull(jsonBankAccount);
+			if (currencyId == null)
+			{
+				throw new AdempiereException("CurrencyId cannot be set to null!")
+						.appendParametersToMessage()
+						.setParameter("BPBankAccountIdentifier", jsonBankAccount.getIban());
+			}
+
 			bankAccount.setCurrencyId(currencyId);
+		}
+
+		// Account Name
+		if (Check.isNotBlank(jsonBankAccount.getAccountName()))
+		{
+			bankAccount.setAccountName(StringUtils.trim(jsonBankAccount.getAccountName()));
+		}
+
+		// Account Street
+		if (Check.isNotBlank(jsonBankAccount.getAccountStreet()))
+		{
+			bankAccount.setAccountStreet(StringUtils.trim(jsonBankAccount.getAccountStreet()));
+		}
+
+		// Account Zip
+		if (Check.isNotBlank(jsonBankAccount.getAccountZip()))
+		{
+			bankAccount.setAccountZip(StringUtils.trim(jsonBankAccount.getAccountZip()));
+		}
+
+		// Account City
+		if (Check.isNotBlank(jsonBankAccount.getAccountCity()))
+		{
+			bankAccount.setAccountCity(StringUtils.trim(jsonBankAccount.getAccountCity()));
+		}
+
+		// Account Country
+		if (Check.isNotBlank(jsonBankAccount.getAccountCountry()))
+		{
+			bankAccount.setAccountCountry(StringUtils.trim(jsonBankAccount.getAccountCountry()));
 		}
 	}
 

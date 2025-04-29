@@ -24,9 +24,13 @@ package de.metas.product;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.bpartner.BPartnerId;
+import de.metas.ean13.EAN13;
+import de.metas.ean13.EAN13ProductCodes;
 import de.metas.gs1.GTIN;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
@@ -40,8 +44,8 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -142,14 +146,18 @@ public interface IProductBL extends ISingletonService
 
 	Optional<UomId> getCatchUOMId(ProductId productId);
 
-	I_C_UOM getWeightUOM(I_M_Product product);
+	Optional<Quantity> computeGrossWeight(@NonNull ProductId productId, @NonNull Quantity qty);
+
+	Optional<Quantity> getGrossWeight(ProductId productId, I_C_UOM targetProductUOM);
+
+	Optional<Quantity> getGrossWeight(ProductId productId);
+
+	Optional<Quantity> getNetWeight(@NonNull I_M_Product product);
 
 	/**
-	 * Gets product standard Weight in <code>uomTo</code>.
-	 *
-	 * @return product's standard weight in <code>uomTo</code>
+	 * @return Net Weight for one unit of product in <code>targetProductUOM</code>.
 	 */
-	BigDecimal getWeight(I_M_Product product, I_C_UOM uomTo);
+	Optional<Quantity> getNetWeight(I_M_Product product, I_C_UOM targetProductUOM);
 
 	/**
 	 * Checks if given product is a Trading Product.
@@ -189,6 +197,10 @@ public interface IProductBL extends ISingletonService
 
 	String getProductValue(ProductId productId);
 
+	EAN13ProductCodes getEAN13ProductCodes(@NonNull ProductId productId);
+
+	EAN13ProductCodes getEAN13ProductCodes(@NonNull I_M_Product product);
+
 	ImmutableMap<ProductId, String> getProductValues(Set<ProductId> productIds);
 
 	String getProductName(ProductId productId);
@@ -223,8 +235,17 @@ public interface IProductBL extends ISingletonService
 
 	Optional<ProductId> getProductIdByValueStartsWith(@NonNull String valuePrefix, @NonNull ClientId clientId);
 
+	Optional<ProductId> getProductIdByEAN13(@NonNull EAN13 ean13);
+
+	Optional<ProductId> getProductIdByEAN13(@NonNull EAN13 ean13, @Nullable BPartnerId bpartnerId, @NonNull ClientId clientId);
+
+	boolean isValidEAN13Product(@NonNull EAN13 ean13, @NonNull ProductId expectedProductId, @Nullable BPartnerId bpartnerId);
+
 	Set<ProductId> getProductIdsMatchingQueryString(
 			@NonNull String queryString,
 			@NonNull ClientId clientId,
 			@NonNull QueryLimit limit);
+
+	@NonNull
+	List<I_M_Product> getByIds(@NonNull Set<ProductId> productIds);
 }

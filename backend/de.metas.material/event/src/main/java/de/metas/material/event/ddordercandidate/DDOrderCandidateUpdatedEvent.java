@@ -32,4 +32,7 @@ public class DDOrderCandidateUpdatedEvent extends AbstractDDOrderCandidateEvent
 				.ddOrderCandidate(data)
 				.build();
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

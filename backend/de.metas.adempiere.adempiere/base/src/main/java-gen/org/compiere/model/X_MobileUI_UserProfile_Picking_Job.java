@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking_Job, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 202441675L;
+	private static final long serialVersionUID = -1258613950L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking_Job (final Properties ctx, final int MobileUI_UserProfile_Picking_Job_ID, @Nullable final String trxName)
@@ -72,6 +72,18 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	}
 
 	@Override
+	public void setIsAllowCompletingPartialPickingJob (final boolean IsAllowCompletingPartialPickingJob)
+	{
+		set_Value (COLUMNNAME_IsAllowCompletingPartialPickingJob, IsAllowCompletingPartialPickingJob);
+	}
+
+	@Override
+	public boolean isAllowCompletingPartialPickingJob() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAllowCompletingPartialPickingJob);
+	}
+
+	@Override
 	public void setIsAllowNewTU (final boolean IsAllowNewTU)
 	{
 		set_Value (COLUMNNAME_IsAllowNewTU, IsAllowNewTU);
@@ -117,6 +129,18 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	public boolean isAlwaysSplitHUsEnabled() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAlwaysSplitHUsEnabled);
+	}
+
+	@Override
+	public void setIsAnonymousHuPickedOnTheFly (final boolean IsAnonymousHuPickedOnTheFly)
+	{
+		set_Value (COLUMNNAME_IsAnonymousHuPickedOnTheFly, IsAnonymousHuPickedOnTheFly);
+	}
+
+	@Override
+	public boolean isAnonymousHuPickedOnTheFly() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAnonymousHuPickedOnTheFly);
 	}
 
 	@Override
@@ -168,6 +192,18 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	}
 
 	@Override
+	public void setIsShowLastPickedBestBeforeDateForLines (final boolean IsShowLastPickedBestBeforeDateForLines)
+	{
+		set_Value (COLUMNNAME_IsShowLastPickedBestBeforeDateForLines, IsShowLastPickedBestBeforeDateForLines);
+	}
+
+	@Override
+	public boolean isShowLastPickedBestBeforeDateForLines() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsShowLastPickedBestBeforeDateForLines);
+	}
+
+	@Override
 	public void setMobileUI_UserProfile_Picking_Job_ID (final int MobileUI_UserProfile_Picking_Job_ID)
 	{
 		if (MobileUI_UserProfile_Picking_Job_ID < 1) 
@@ -192,6 +228,27 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	/** 
+	 * PickingJobAggregationType AD_Reference_ID=541931
+	 * Reference name: PickingJobAggregationType
+	 */
+	public static final int PICKINGJOBAGGREGATIONTYPE_AD_Reference_ID=541931;
+	/** sales_order = sales_order */
+	public static final String PICKINGJOBAGGREGATIONTYPE_Sales_order = "sales_order";
+	/** product = product */
+	public static final String PICKINGJOBAGGREGATIONTYPE_Product = "product";
+	@Override
+	public void setPickingJobAggregationType (final @Nullable java.lang.String PickingJobAggregationType)
+	{
+		set_Value (COLUMNNAME_PickingJobAggregationType, PickingJobAggregationType);
+	}
+
+	@Override
+	public java.lang.String getPickingJobAggregationType() 
+	{
+		return get_ValueAsString(COLUMNNAME_PickingJobAggregationType);
 	}
 
 	/** 

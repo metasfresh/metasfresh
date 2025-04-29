@@ -30,9 +30,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
 
+import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 
 /**
@@ -44,6 +46,8 @@ public class AdempiereException extends RuntimeException
 		implements IIssueReportableAware
 {
 	public static final AdMessageKey MSG_NoLines = AdMessageKey.of("NoLines");
+
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	/**
 	 * Wraps given <code>throwable</code> as {@link AdempiereException}, if it's not already an {@link AdempiereException}.<br>
@@ -125,6 +129,31 @@ public class AdempiereException extends RuntimeException
 		}
 
 		return TranslatableStrings.constant(extractMessage(throwable));
+	}
+
+	@Nullable
+	public static String extractErrorCodeOrNull(@Nullable final Throwable throwable)
+	{
+		if (throwable == null)
+		{
+			return null;
+		}
+		if (throwable instanceof AdempiereException)
+		{
+			return ((AdempiereException)throwable).getErrorCode();
+		}
+		else
+		{
+			final Throwable cause = extractCause(throwable);
+			if (cause instanceof AdempiereException)
+			{
+				return ((AdempiereException)cause).getErrorCode();
+			}
+			else
+			{
+				return null;
+			}
+		}
 	}
 
 	public static Map<String, Object> extractParameters(final Throwable throwable)
@@ -238,8 +267,8 @@ public class AdempiereException extends RuntimeException
 	 * In future this might become a "real" aphanumerical error-code.
 	 * But right now, I'm actually starting it so that we can verify in a language-independent way whether particular exceptions were thrown.
 	 */
-	@Getter
-	private final String errorCode;
+	@Getter @Nullable
+	private String errorCode;
 
 	private final ITranslatableString messageTrl;
 	/**
@@ -274,7 +303,21 @@ public class AdempiereException extends RuntimeException
 		this(message, true);
 	}
 
-	protected AdempiereException(@NonNull final ITranslatableString message, final boolean userValidationError)
+	public AdempiereException(@NonNull final ITranslatableString message, final boolean userValidationError)
+	{
+		// when this constructor is called, usually we have nice error messages,
+		// so we can consider those user-friendly errors
+		this(message, userValidationError, null);
+	}
+
+	public AdempiereException(@NonNull final ITranslatableString message, @Nullable final String errorCode)
+	{
+		// when this constructor is called, usually we have nice error messages,
+		// so we can consider those user-friendly errors
+		this(message, true, errorCode);
+	}
+
+	protected AdempiereException(@NonNull final ITranslatableString message, final boolean userValidationError, @Nullable final String errorCode)
 	{
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
 		this.messageTrl = message;
@@ -285,17 +328,16 @@ public class AdempiereException extends RuntimeException
 		// so we can consider those user-friendly errors
 		this.userValidationError = true;
 
-		this.errorCode = null;
+		this.errorCode = errorCode;
 	}
 
 	public AdempiereException(@NonNull final AdMessageKey messageKey)
 	{
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
-		this.messageTrl = Services.get(IMsgBL.class).getTranslatableMsgText(messageKey);
+		this.messageTrl = msgBL.getTranslatableMsgText(messageKey);
 		this.userValidationError = true;
 		this.mdcContextMap = captureMDCContextMap();
-
-		this.errorCode = messageKey.toAD_Message();
+		this.errorCode = coalesce(msgBL.getErrorCode(messageKey), messageKey.toAD_Message());
 	}
 
 	public AdempiereException(final String adLanguage, @NonNull final AdMessageKey adMessage, final Object... params)
@@ -304,11 +346,10 @@ public class AdempiereException extends RuntimeException
 		this.adLanguage = captureLanguageOnConstructionTime ? adLanguage : null;
 		this.userValidationError = true;
 		this.mdcContextMap = captureMDCContextMap();
+		this.errorCode = coalesce(msgBL.getErrorCode(adMessage), adMessage.toAD_Message());
 
 		setParameter("AD_Language", this.adLanguage);
 		setParameter("AD_Message", adMessage);
-
-		this.errorCode = adMessage.toAD_Message();
 	}
 
 	public AdempiereException(final AdMessageKey adMessage, final Object... params)
@@ -345,15 +386,14 @@ public class AdempiereException extends RuntimeException
 		this.messageTrl = message;
 		this.userValidationError = true;
 		this.mdcContextMap = captureMDCContextMap();
-
-		this.errorCode = null;
+		this.errorCode = extractErrorCodeOrNull(cause);
 	}
 
 	public static AdempiereException noLines() {return new AdempiereException(MSG_NoLines);}
 
 	public static AdempiereException newWithTranslatableMessage(@Nullable final String translatableMessage) {return new AdempiereException(TranslatableStrings.parse(translatableMessage));}
 
-	public static AdempiereException newWithPlainMessage(@Nullable final String plainMessage) {return new AdempiereException(TranslatableStrings.constant(plainMessage), false);}
+	public static AdempiereException newWithPlainMessage(@Nullable final String plainMessage) {return new AdempiereException(TranslatableStrings.constant(plainMessage), false, null);}
 
 	private static Map<String, String> captureMDCContextMap()
 	{
@@ -586,6 +626,12 @@ public class AdempiereException extends RuntimeException
 				: IssueCategory.OTHER;
 	}
 
+	public AdempiereException setErrorCode(@NonNull final String errorCode)
+	{
+		this.errorCode = errorCode;
+		return this;
+	}
+
 	/**
 	 * Sets parameter.
 	 *
@@ -643,6 +689,12 @@ public class AdempiereException extends RuntimeException
 	public final Object getParameter(@NonNull final String name)
 	{
 		return parameters != null ? Null.unbox(parameters.get(name)) : null;
+	}
+
+	@Nullable
+	public final String getParameterAsString(@NonNull final String name)
+	{
+		return Objects.toString(getParameter(name), null);
 	}
 
 	public final Map<String, Object> getParameters()

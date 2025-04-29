@@ -22,13 +22,13 @@ package org.adempiere.util.net;
  * #L%
  */
 
+import de.metas.util.Check;
+import lombok.NonNull;
+
+import javax.annotation.concurrent.Immutable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Objects;
-
-import javax.annotation.concurrent.Immutable;
-
-import de.metas.util.Check;
 
 public final class NetUtils
 {
@@ -63,9 +63,8 @@ public final class NetUtils
 		return of(inetAddress);
 	}
 
-	public static IHostIdentifier of(final InetAddress inetAddress)
+	public static IHostIdentifier of(@NonNull final InetAddress inetAddress)
 	{
-		Check.assumeNotNull(inetAddress, "inetAddress not null");
 		final String hostAddress = inetAddress.getHostAddress();
 		final String hostName = inetAddress.getHostName();
 		
@@ -73,7 +72,6 @@ public final class NetUtils
 	}
 
 	@Immutable
-	@SuppressWarnings("serial")
 	private static final class HostIdentifier implements IHostIdentifier
 	{
 		private final String hostName;
@@ -84,7 +82,6 @@ public final class NetUtils
 
 		private HostIdentifier(final String hostName, final String hostAddress)
 		{
-			super();
 			this.hostAddress = hostAddress;
 			this.hostName = hostName;
 		}
@@ -97,7 +94,7 @@ public final class NetUtils
 				_toString = (hostName != null ? hostName : "") + "/" + hostAddress;
 			}
 			return _toString;
-		};
+		}
 
 		@Override
 		public int hashCode()
@@ -140,6 +137,6 @@ public final class NetUtils
 		{
 			return hostName;
 		}
-	};
+	}
 
 }

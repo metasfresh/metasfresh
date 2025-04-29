@@ -22,7 +22,6 @@ import org.compiere.util.DB;
 @Interceptor(I_GL_JournalLine.class)
 public class GL_JournalLine
 {
-	// private static final transient Logger logger = CLogMgt.getLogger(GL_JournalLine.class);
 	private final IGLJournalLineBL glJournalLineBL = Services.get(IGLJournalLineBL.class);
 	private final IGLJournalBL glJournalBL = Services.get(IGLJournalBL.class);
 	private final IGLJournalLineDAO glJournalLineDAO = Services.get(IGLJournalLineDAO.class);
@@ -60,7 +59,11 @@ public class GL_JournalLine
 			glJournalLineBL.setGroupNoAndFlags(glJournalLine);
 		}
 
-		// Make sure IsSplitAcctTrx flag makes sense along with other GL_JournalLine settings
+		// commented out in the intensive_care_hotfix branch because the error is not displayed to user (FE issue)
+		// To be fixed in new_dawn_uat.
+		//glJournalLineBL.checkMandatoryDimensions(glJournalLine);
+
+		// Make sure the IsSplitAcctTrx flag makes sense along with other GL_JournalLine settings
 		glJournalLineBL.checkValidSplitAcctTrxFlag(glJournalLine);
 
 		//
@@ -77,17 +80,16 @@ public class GL_JournalLine
 	public void afterSave(final I_GL_JournalLine glJournalLine)
 	{
 		updateJournalTotal(glJournalLine);
-	}	// afterSave
+	}    // afterSave
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
 	public void afterDelete(final I_GL_JournalLine glJournalLine)
 	{
 		updateJournalTotal(glJournalLine);
-	}	// afterDelete
+	}    // afterDelete
 
 	/**
 	 * Update amounts of {@link I_GL_Journal} and {@link I_GL_JournalBatch}.
-	 *
 	 */
 	private void updateJournalTotal(final I_GL_JournalLine glJournalLine)
 	{

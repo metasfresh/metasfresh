@@ -214,7 +214,11 @@ public class PP_Order
 		createWorkflowAndBOM(ppOrderRecord);
 	}
 
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = { I_PP_Order.COLUMNNAME_QtyEntered, I_PP_Order.COLUMNNAME_AD_Workflow_ID })
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE,
+			ifColumnsChanged = {
+					I_PP_Order.COLUMNNAME_QtyEntered,
+					I_PP_Order.COLUMNNAME_DateStartSchedule,
+					I_PP_Order.COLUMNNAME_AD_Workflow_ID })
 	public void updateAndPostEventOnQtyEnteredChange(final I_PP_Order ppOrderRecord)
 	{
 		if (ppOrderBL.isSomethingProcessed(ppOrderRecord))

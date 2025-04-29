@@ -181,10 +181,10 @@
 		</band>
 	</detail>
 	<lastPageFooter>
-		<band height="13">
+		<band height="21">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-16" x="37" y="0" width="261" height="12" forecolor="#000000" uuid="de6bfa6e-e440-4073-972a-f37b1a686ec2">
+				<reportElement key="textField-16" x="37" y="6" width="261" height="12" forecolor="#000000" uuid="de6bfa6e-e440-4073-972a-f37b1a686ec2">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 				</reportElement>
 				<box rightPadding="5">
@@ -203,7 +203,7 @@
 )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="#,##0.00" isBlankWhenNull="true">
-				<reportElement key="textField-20" x="468" y="0" width="75" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
+				<reportElement key="textField-20" x="468" y="6" width="75" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281">
 					<property name="com.jaspersoft.studio.unit.y" value="px"/>
 					<property name="com.jaspersoft.studio.unit.x" value="px"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>
@@ -219,6 +219,11 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{grandtotal}]]></textFieldExpression>
 			</textField>
+			<line>
+				<reportElement x="34" y="3" width="545" height="1" uuid="a7bb8abb-b526-4eac-8b15-e713084e1de6">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+			</line>
 		</band>
 	</lastPageFooter>
 </jasperReport>

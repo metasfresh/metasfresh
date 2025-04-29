@@ -317,11 +317,6 @@ public class OLCandRepository
 		}
 
 		final org.adempiere.process.rpl.model.I_C_OLCand olCandWithIssuesInterface = InterfaceWrapperHelper.create(olCandPO, org.adempiere.process.rpl.model.I_C_OLCand.class);
-		if (request.getIsImportedWithIssues() != null)
-		{
-			olCandWithIssuesInterface.setIsImportedWithIssues(request.getIsImportedWithIssues());
-		}
-
 		if (request.getQtyShipped() != null)
 		{
 			olCandWithIssuesInterface.setQtyShipped(request.getQtyShipped());

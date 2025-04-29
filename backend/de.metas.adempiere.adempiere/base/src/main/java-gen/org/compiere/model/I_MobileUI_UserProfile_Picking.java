@@ -143,6 +143,29 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsAllowAnyCustomer = "IsAllowAnyCustomer";
 
 	/**
+	 * Set Allow completing partial picking jobs.
+	 * Users can complete jobs on mobile without picking the full ordered quantity.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAllowCompletingPartialPickingJob (boolean IsAllowCompletingPartialPickingJob);
+
+	/**
+	 * Get Allow completing partial picking jobs.
+	 * Users can complete jobs on mobile without picking the full ordered quantity.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAllowCompletingPartialPickingJob();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAllowCompletingPartialPickingJob = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAllowCompletingPartialPickingJob", null);
+	String COLUMNNAME_IsAllowCompletingPartialPickingJob = "IsAllowCompletingPartialPickingJob";
+
+	/**
 	 * Set Allow new TU.
 	 *
 	 * <br>Type: YesNo
@@ -231,6 +254,27 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsAlwaysSplitHUsEnabled = "IsAlwaysSplitHUsEnabled";
 
 	/**
+	 * Set Anonymous HU Picked On the Fly.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAnonymousHuPickedOnTheFly (boolean IsAnonymousHuPickedOnTheFly);
+
+	/**
+	 * Get Anonymous HU Picked On the Fly.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAnonymousHuPickedOnTheFly();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAnonymousHuPickedOnTheFly = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAnonymousHuPickedOnTheFly", null);
+	String COLUMNNAME_IsAnonymousHuPickedOnTheFly = "IsAnonymousHuPickedOnTheFly";
+
+	/**
 	 * Set Allow picking TU with catch weight.
 	 * If activated and a packing instruction is included in the order line, it is assumed that it is a TU when Catch Weight is picked. Otherwise metasfresh assumes that it is a CU
 	 *
@@ -277,6 +321,27 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsConsiderSalesOrderCapacity = "IsConsiderSalesOrderCapacity";
 
 	/**
+	 * Set Filter by Barcode.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFilterByBarcode (boolean IsFilterByBarcode);
+
+	/**
+	 * Get Filter by Barcode.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFilterByBarcode();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsFilterByBarcode = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsFilterByBarcode", null);
+	String COLUMNNAME_IsFilterByBarcode = "IsFilterByBarcode";
+
+	/**
 	 * Set Pick with LU.
 	 *
 	 * <br>Type: YesNo
@@ -319,6 +384,29 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsShowConfirmationPromptWhenOverPick = "IsShowConfirmationPromptWhenOverPick";
 
 	/**
+	 * Set Show Best Before of Last Picked Item .
+	 * When enabled, the 'Best Before' date of the last picked item will be shown on each line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsShowLastPickedBestBeforeDateForLines (boolean IsShowLastPickedBestBeforeDateForLines);
+
+	/**
+	 * Get Show Best Before of Last Picked Item .
+	 * When enabled, the 'Best Before' date of the last picked item will be shown on each line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isShowLastPickedBestBeforeDateForLines();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsShowLastPickedBestBeforeDateForLines = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsShowLastPickedBestBeforeDateForLines", null);
+	String COLUMNNAME_IsShowLastPickedBestBeforeDateForLines = "IsShowLastPickedBestBeforeDateForLines";
+
+	/**
 	 * Set Mobile UI Picking Profile.
 	 *
 	 * <br>Type: ID
@@ -359,6 +447,27 @@ public interface I_MobileUI_UserProfile_Picking
 
 	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_Name = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
+
+	/**
+	 * Set Aggregation Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPickingJobAggregationType (java.lang.String PickingJobAggregationType);
+
+	/**
+	 * Get Aggregation Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getPickingJobAggregationType();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_PickingJobAggregationType = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "PickingJobAggregationType", null);
+	String COLUMNNAME_PickingJobAggregationType = "PickingJobAggregationType";
 
 	/**
 	 * Set Picking line group by.

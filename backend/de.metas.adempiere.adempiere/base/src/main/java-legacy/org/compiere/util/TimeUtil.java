@@ -1142,7 +1142,7 @@ public class TimeUtil
 			cal.set(Calendar.MINUTE, mm);
 			return cal.getTimeInMillis();
 		}
-		
+
 		// M - Minute
 		if (TRUNC_MINUTE.equals(trunc))
 		{
@@ -1324,6 +1324,7 @@ public class TimeUtil
 	/**
 	 * @return date as timestamp or null if the date is null
 	 */
+	@Contract("!null -> !null")
 	@Nullable
 	public static Timestamp asTimestamp(@Nullable final Date date)
 	{
@@ -1337,6 +1338,7 @@ public class TimeUtil
 	/**
 	 * @return instant as timestamp or null if the instant is null; note: use {@link Timestamp#toInstant()} for the other direction.
 	 */
+	@Contract("!null -> !null")
 	@Nullable
 	public static Timestamp asTimestamp(@Nullable final Instant instant)
 	{
@@ -1353,6 +1355,7 @@ public class TimeUtil
 	 * NOTE: please consider using {@link #asTimestamp(LocalDate, ZoneId)} with the respective org's time zone instead (see {@link de.metas.organization.IOrgDAO#getTimeZone(de.metas.organization.OrgId)}).
 	 * Will be deprecated in future but atm we cannot because there are a lot of cases when we have to use it.
 	 */
+	@Contract("!null -> !null")
 	@Nullable
 	public static Timestamp asTimestamp(@Nullable final LocalDate localDate)
 	{
@@ -1360,6 +1363,7 @@ public class TimeUtil
 		return asTimestamp(localDate, timezone);
 	}
 
+	@Contract("!null -> !null")
 	@Nullable
 	public static Timestamp asTimestamp(
 			@Nullable final LocalDate localDate,
@@ -1687,6 +1691,7 @@ public class TimeUtil
 		}
 	}
 
+	@Contract("!null, _ -> !null")
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final Timestamp timestamp, @NonNull final ZoneId zoneId)
 	{
@@ -1695,6 +1700,7 @@ public class TimeUtil
 				: null;
 	}
 
+	@Contract("!null, _ -> !null")
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final ZonedDateTime zonedDateTime, @NonNull final ZoneId zoneId)
 	{
@@ -1703,6 +1709,7 @@ public class TimeUtil
 				: null;
 	}
 
+	@Contract("!null, _ -> !null")
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final Instant instant, @NonNull final ZoneId zoneId)
 	{
@@ -1865,6 +1872,7 @@ public class TimeUtil
 		return asZonedDateTime(obj, SystemTime.zoneId());
 	}
 
+	@Contract("!null, _ -> !null")
 	@Nullable
 	public static ZonedDateTime asZonedDateTime(@Nullable final Object obj, @NonNull final ZoneId zoneId)
 	{
@@ -2019,17 +2027,17 @@ public class TimeUtil
 		else if (obj instanceof LocalDateTime)
 		{
 			final LocalDateTime localDateTime = (LocalDateTime)obj;
-            return localDateTime.atZone(zoneId).toInstant();
+			return localDateTime.atZone(zoneId).toInstant();
 		}
 		else if (obj instanceof LocalDate)
 		{
 			final LocalDate localDate = (LocalDate)obj;
-            return localDate.atStartOfDay(zoneId).toInstant();
+			return localDate.atStartOfDay(zoneId).toInstant();
 		}
 		else if (obj instanceof LocalTime)
 		{
 			final LocalTime localTime = (LocalTime)obj;
-            return localTime.atDate(DATE_1970_01_01).atZone(zoneId).toInstant();
+			return localTime.atDate(DATE_1970_01_01).atZone(zoneId).toInstant();
 		}
 		else if (obj instanceof XMLGregorianCalendar)
 		{
@@ -2382,7 +2390,7 @@ public class TimeUtil
 	 */
 	public static long getDaysBetween360(@NonNull final ZonedDateTime from, @NonNull final ZonedDateTime to)
 	{
-		if(from.isEqual(to))
+		if (from.isEqual(to))
 		{
 			return 0;
 		}

@@ -20,8 +20,6 @@ import de.metas.document.location.RenderedAddressAndCapturedLocation;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inout.InOutId;
@@ -39,10 +37,8 @@ import de.metas.product.event.ProductWithNoCustomsTariffUserNotificationsProduce
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
-import de.metas.uom.X12DE355;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -202,7 +198,7 @@ public class CustomsInvoiceService
 
 		Quantity qty = null;
 		Money lineNetAmt = Money.of(BigDecimal.ZERO, currencyId);
-		ArrayList<CustomsInvoiceLineAlloc> allocations = new ArrayList<>();
+		final ArrayList<CustomsInvoiceLineAlloc> allocations = new ArrayList<>();
 
 		for (final InOutAndLineId inoutAndLineId : shipmentLinesForProducts)
 		{
@@ -305,15 +301,9 @@ public class CustomsInvoiceService
 
 	private Optional<Quantity> convertToKillogram(final Quantity qty, final ProductId productId)
 	{
-		final UomId kilogram = Services.get(IUOMDAO.class).getUomIdByX12DE355(X12DE355.KILOGRAM);
 		try
 		{
-			final Quantity quantityInKilograms = uomConversionBL.convertQuantityTo(
-					qty,
-					UOMConversionContext.of(productId),
-					kilogram);
-
-			return Optional.of(quantityInKilograms);
+			return Optional.of(uomConversionBL.convertToKilogram(qty, productId));
 		}
 		catch (final NoUOMConversionException ex)
 		{
@@ -355,9 +345,7 @@ public class CustomsInvoiceService
 
 		if (Check.isEmpty(linesToExport))
 		{
-			final ITranslatableString errorMessage = Services.get(IMsgBL.class).getTranslatableMsgText(ERR_NoValidLines);
-
-			throw new AdempiereException(errorMessage);
+			throw new AdempiereException(ERR_NoValidLines);
 		}
 
 		final ImmutableSetMultimap<ProductId, InOutAndLineId> linesToExportMap = linesToExport
@@ -375,10 +363,10 @@ public class CustomsInvoiceService
 		final String documentNo = reserveDocumentNo(docTypeId);
 
 		final RenderedAddressAndCapturedLocation bpartnerAddress = documentLocationBL.computeRenderedAddress(DocumentLocation.builder()
-												 .bpartnerId(bpartnerLocationId.getBpartnerId())
-												 .bpartnerLocationId(bpartnerLocationId)
-												 .contactId(contactId)
-												 .build());
+				.bpartnerId(bpartnerLocationId.getBpartnerId())
+				.bpartnerLocationId(bpartnerLocationId)
+				.contactId(contactId)
+				.build());
 
 		final CustomsInvoiceRequest customsInvoiceRequest = CustomsInvoiceRequest.builder()
 				.bpartnerAndLocationId(bpartnerLocationId)
@@ -411,7 +399,7 @@ public class CustomsInvoiceService
 		return ProductId.ofRepoId(shipmentLineRecord.getM_Product_ID());
 	}
 
-	public List<InOutAndLineId> retrieveLinesToExport(IQueryFilter<I_M_InOut> queryFilter)
+	public List<InOutAndLineId> retrieveLinesToExport(final IQueryFilter<I_M_InOut> queryFilter)
 	{
 		final ImmutableList<InOutId> selectedShipments = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_M_InOut.class)
@@ -421,7 +409,7 @@ public class CustomsInvoiceService
 				.stream()
 				.collect(ImmutableList.toImmutableList());
 
-		List<InOutAndLineId> shipmentLinesToExport = shipmentLinesForCustomsInvoiceRepo.retrieveValidLinesToExport(selectedShipments);
+		final List<InOutAndLineId> shipmentLinesToExport = shipmentLinesForCustomsInvoiceRepo.retrieveValidLinesToExport(selectedShipments);
 
 		return shipmentLinesToExport;
 
@@ -433,9 +421,7 @@ public class CustomsInvoiceService
 
 		if (Check.isEmpty(linesToExport))
 		{
-			final ITranslatableString errorMessage = Services.get(IMsgBL.class).getTranslatableMsgText(ERR_NoValidLines);
-
-			throw new AdempiereException(errorMessage);
+			throw new AdempiereException(ERR_NoValidLines);
 		}
 
 		final ImmutableSetMultimap<ProductId, InOutAndLineId> linesToExportMap = linesToExport
@@ -455,7 +441,7 @@ public class CustomsInvoiceService
 	}
 
 	@VisibleForTesting
-	void addShipmentLinesToCustomsInvoice(@NonNull ProductId productId, @NonNull final ImmutableSet<InOutAndLineId> shipmentLinesForProduct, @NonNull final CustomsInvoiceId customsInvoiceId)
+	void addShipmentLinesToCustomsInvoice(@NonNull final ProductId productId, @NonNull final ImmutableSet<InOutAndLineId> shipmentLinesForProduct, @NonNull final CustomsInvoiceId customsInvoiceId)
 	{
 		CustomsInvoice customsInvoice = customsInvoiceRepo.retrieveById(customsInvoiceId);
 
@@ -484,7 +470,7 @@ public class CustomsInvoiceService
 		final List<CustomsInvoiceLine> newLines = new ArrayList<>();
 		{
 			boolean added = false;
-			for (CustomsInvoiceLine existingLine : existingLines)
+			for (final CustomsInvoiceLine existingLine : existingLines)
 			{
 				if (Util.same(customsInvoiceLineForProductFound, existingLine))
 				{

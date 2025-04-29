@@ -3,12 +3,13 @@ import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../utils/translations';
 import { updateHeaderEntry } from '../../../actions/HeaderActions';
-import { getLineById } from '../../../reducers/wfProcesses';
+import { getActivityById, getLineByIdFromActivity, isAnonymousPickHUsOnTheFly } from '../../../reducers/wfProcesses';
 
 import PickStepButton from './PickStepButton';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { pickingLineScanScreenLocation } from '../../../routes/picking';
 import {
+  getCurrentPickFromHUQRCode,
   getQtyPickedOrRejectedTotalForLine,
   getQtyToPickForLine,
   getQtyToPickRemainingForLine,
@@ -19,16 +20,27 @@ import { closePickingJobLine, openPickingJobLine } from '../../../api/picking';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { getWFProcessScreenLocation } from '../../../routes/workflow_locations';
+import SelectCurrentLUTUButtons from './SelectCurrentLUTUButtons';
+import { startWorkflowRequest } from '../../../api/launchers';
+import { toastError } from '../../../utils/toast';
+import { APPLICATION_ID_Manufacturing } from '../../../apps/manufacturing/constants';
+import { PICK_ON_THE_FLY_QRCODE } from './PickConfig';
 
 const PickLineScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
+    screenId: 'PickLineScreen',
     back: getWFProcessScreenLocation,
   });
+  const dispatch = useDispatch();
 
   const {
     caption,
+    pickFromManufacturingOrder,
+    pickFromHUQRCode,
     allowPickingAnyHU,
+    allowAnonymousPickHUsOnTheFly,
     steps,
+    pickingSlot,
     pickingUnit,
     packingItemName,
     catchWeightUOM,
@@ -37,9 +49,44 @@ const PickLineScreen = () => {
     qtyToPickRemaining,
     uom,
     manuallyClosed,
+    additionalHeaderProperties,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
-  useHeaderUpdate({ url, caption, uom, pickingUnit, packingItemName, qtyToPick, qtyPicked });
+  useHeaderUpdate({
+    url,
+    caption,
+    uom,
+    pickingSlot,
+    pickingUnit,
+    packingItemName,
+    qtyToPick,
+    qtyPicked,
+    additionalHeaderProperties,
+  });
+
+  const onPickFromManufacturingOrderClicked = () => {
+    startWorkflowRequest({
+      wfParameters: {
+        applicationId: APPLICATION_ID_Manufacturing,
+        ...pickFromManufacturingOrder.wfParameters,
+      },
+    })
+      .then((wfProcess) => {
+        dispatch(
+          updateWFProcess({
+            wfProcess,
+            parent: { url, applicationId, wfProcessId, activityId, lineId },
+          })
+        );
+        history.push(
+          getWFProcessScreenLocation({
+            applicationId: APPLICATION_ID_Manufacturing,
+            wfProcessId: wfProcess.id,
+          })
+        );
+      })
+      .catch((axiosError) => toastError({ axiosError }));
+  };
 
   const onScanButtonClick = () =>
     history.push(
@@ -51,7 +98,30 @@ const PickLineScreen = () => {
       })
     );
 
-  const dispatch = useDispatch();
+  const onPickButtonClick = () => {
+    history.push(
+      pickingLineScanScreenLocation({
+        applicationId,
+        wfProcessId,
+        activityId,
+        lineId,
+        qrCode: pickFromHUQRCode,
+      })
+    );
+  };
+
+  const onPickQtyButtonClick = () => {
+    history.push(
+      pickingLineScanScreenLocation({
+        applicationId,
+        wfProcessId,
+        activityId,
+        lineId,
+        qrCode: PICK_ON_THE_FLY_QRCODE,
+      })
+    );
+  };
+
   const onClose = () => {
     closePickingJobLine({ wfProcessId, lineId })
       .then((wfProcess) => {
@@ -66,16 +136,42 @@ const PickLineScreen = () => {
     });
   };
 
+  const isShowPickFromManufacturingOrder = !manuallyClosed && pickFromManufacturingOrder != null;
+  const isShowScanQRCodeButton = !manuallyClosed && allowPickingAnyHU && pickFromHUQRCode == null;
+  const isShowPickHUButton = !manuallyClosed && pickFromHUQRCode != null;
+  const isShowPickQtyButton = !manuallyClosed && allowAnonymousPickHUsOnTheFly;
+
   return (
     <div className="section pt-2">
       <div className="buttons">
-        {!manuallyClosed && allowPickingAnyHU && (
-          <ButtonWithIndicator caption={trl('activities.picking.scanQRCode')} onClick={onScanButtonClick} />
+        <SelectCurrentLUTUButtons
+          applicationId={applicationId}
+          wfProcessId={wfProcessId}
+          activityId={activityId}
+          lineId={lineId}
+        />
+        <br />
+
+        {isShowPickFromManufacturingOrder && (
+          <ButtonWithIndicator
+            captionKey="activities.picking.PickFromManufacturingOrder"
+            onClick={onPickFromManufacturingOrderClicked}
+          />
+        )}
+        {isShowScanQRCodeButton && (
+          <ButtonWithIndicator captionKey="activities.picking.scanQRCode" onClick={onScanButtonClick} />
+        )}
+        {isShowPickHUButton && (
+          <ButtonWithIndicator captionKey="activities.picking.PickHU" onClick={onPickButtonClick} />
+        )}
+        {isShowPickQtyButton && (
+          <ButtonWithIndicator captionKey="activities.picking.pickQtyButton" onClick={onPickQtyButtonClick} />
         )}
         {steps.length > 0 &&
           steps.map((stepItem, idx) => {
             return (
               <PickStepButton
+                id={`step-${idx}-button`}
                 key={idx}
                 disabled={manuallyClosed}
                 applicationId={applicationId}
@@ -93,22 +189,27 @@ const PickLineScreen = () => {
             );
           })}
         {!manuallyClosed && qtyToPickRemaining > 0 && (
-          <ButtonWithIndicator caption={trl('general.closeText')} onClick={onClose} />
+          <ButtonWithIndicator captionKey="general.closeText" onClick={onClose} />
         )}
-        {manuallyClosed && <ButtonWithIndicator caption={trl('general.reOpenText')} onClick={onReOpen} />}
+        {manuallyClosed && <ButtonWithIndicator captionKey="general.reOpenText" onClick={onReOpen} />}
       </div>
     </div>
   );
 };
 
 const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
-  const line = getLineById(state, wfProcessId, activityId, lineId);
-  const stepsById = line != null && line.steps ? line.steps : {};
+  const activity = getActivityById(state, wfProcessId, activityId);
+  const line = getLineByIdFromActivity(activity, lineId);
+  const stepsById = line?.steps ?? {};
 
   return {
     caption: line?.caption,
+    pickFromHUQRCode: getCurrentPickFromHUQRCode({ activity }),
+    pickFromManufacturingOrder: line?.pickFromManufacturingOrder,
     allowPickingAnyHU: isAllowPickingAnyHUForLine({ line }),
+    allowAnonymousPickHUsOnTheFly: isAnonymousPickHUsOnTheFly({ activity }),
     steps: Object.values(stepsById),
+    pickingSlot: line?.pickingSlot,
     pickingUnit: line?.pickingUnit,
     packingItemName: line?.packingItemName,
     catchWeightUOM: line?.catchWeightUOM,
@@ -117,10 +218,21 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     qtyPicked: getQtyPickedOrRejectedTotalForLine({ line }),
     qtyToPickRemaining: getQtyToPickRemainingForLine({ line }),
     manuallyClosed: line?.manuallyClosed,
+    additionalHeaderProperties: line?.additionalHeaderProperties,
   };
 };
 
-export const useHeaderUpdate = ({ url, caption, pickingUnit, packingItemName, uom, qtyToPick, qtyPicked }) => {
+export const useHeaderUpdate = ({
+  url,
+  caption,
+  pickingSlot,
+  pickingUnit,
+  packingItemName,
+  uom,
+  qtyToPick,
+  qtyPicked,
+  additionalHeaderProperties,
+}) => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(
@@ -132,6 +244,11 @@ export const useHeaderUpdate = ({ url, caption, pickingUnit, packingItemName, uo
             caption: trl('activities.picking.PickingLine'),
             value: caption,
             bold: true,
+          },
+          {
+            caption: trl('activities.picking.pickingSlot'),
+            value: pickingSlot?.caption,
+            hidden: !pickingSlot?.caption,
           },
           {
             caption: trl('general.PackingItemName'),
@@ -146,6 +263,7 @@ export const useHeaderUpdate = ({ url, caption, pickingUnit, packingItemName, uo
             caption: trl('activities.picking.picked'),
             value: formatQtyToHumanReadableStr({ qty: qtyPicked, uom }),
           },
+          ...(additionalHeaderProperties?.entries || []),
         ],
       })
     );

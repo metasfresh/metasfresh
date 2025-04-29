@@ -18,32 +18,26 @@
 		<defaultValueExpression><![CDATA[$P{REPORT_LOCALE}.toString()]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT
-	st.AD_Org_ID,
-	st.DocStatus,
-	dt.PrintName,
-	(
-		SELECT	bpl.C_BPartner_Location_ID
-		FROM	C_BPartner_Location bpl
-		WHERE 	bp.C_BPartner_ID = bpl.C_BPartner_ID AND bpl.isActive = 'Y'
-		ORDER BY 	isbilltodefault DESC, isbillto DESC
-		LIMIT 1
-	) AS C_BPartner_Location_ID
-FROM
-	M_ShipperTransportation st
-	INNER JOIN M_Shipper s ON st.M_Shipper_ID = s.M_Shipper_ID AND s.isActive = 'Y'
-	INNER JOIN C_BPartner bp ON s.C_BPartner_ID = bp.C_BPartner_ID AND bp.isActive = 'Y'
-	INNER JOIN C_DocType dt ON st.C_DocType_ID = dt.C_DocType_ID AND dt.isActive = 'Y'
-	LEFT OUTER JOIN C_DocType_Trl dtt ON st.C_DocType_ID = dtt.C_DocType_ID AND dtt.AD_Language = $P{ad_language} AND dtt.isActive = 'Y'
-WHERE
-	st.M_ShipperTransportation_ID = $P{RECORD_ID}
-	AND st.isActive = 'Y'
+		<![CDATA[SELECT *
+FROM de_metas_endcustomer_fresh_reports.Docs_Sales_TransportOrder_Root($P{RECORD_ID}, $P{ad_language})
 ;]]>
 	</queryString>
-	<field name="ad_org_id" class="java.math.BigDecimal"/>
-	<field name="docstatus" class="java.lang.String"/>
-	<field name="printname" class="java.lang.String"/>
-	<field name="c_bpartner_location_id" class="java.math.BigDecimal"/>
+	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="ad_org_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+	</field>
+	<field name="docstatus" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="docstatus"/>
+		<property name="com.jaspersoft.studio.field.label" value="docstatus"/>
+	</field>
+	<field name="printname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="printname"/>
+		<property name="com.jaspersoft.studio.field.label" value="printname"/>
+	</field>
+	<field name="c_bpartner_location_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="c_bpartner_location_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="c_bpartner_location_id"/>
+	</field>
 	<background>
 		<band height="842" splitType="Stretch">
 			<textField evaluationTime="Auto" isBlankWhenNull="false">
@@ -178,7 +172,7 @@ WHERE
 				<textElement textAlignment="Right">
 					<font size="9" isBold="false"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{PAGE_NUMBER} + " von "]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER} + " / "]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
 				<reportElement key="textField-63" x="439" y="20" width="63" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="25c41579-a43d-4437-bbd4-2e42a608a4be"/>

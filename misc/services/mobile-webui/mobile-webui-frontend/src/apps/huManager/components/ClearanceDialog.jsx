@@ -32,7 +32,7 @@ const ClearanceDialog = ({ handlingUnitInfo, clearanceStatuses, onClearanceChang
 
   return (
     <div>
-      <Dialog className="clearance-dialog">
+      <Dialog className="clearance-dialog" testId="ClearanceDialog">
         <table className="table">
           <tbody>
             <tr>
@@ -52,7 +52,13 @@ const ClearanceDialog = ({ handlingUnitInfo, clearanceStatuses, onClearanceChang
               <td>
                 <div className="field">
                   <div className="control">
-                    <input className="input" type="text" value={currentNote} onChange={onClearanceNoteChange} />
+                    <input
+                      className="input"
+                      type="text"
+                      value={currentNote}
+                      onChange={onClearanceNoteChange}
+                      data-testid="clearanceNote-input"
+                    />
                   </div>
                 </div>
               </td>
@@ -61,11 +67,17 @@ const ClearanceDialog = ({ handlingUnitInfo, clearanceStatuses, onClearanceChang
         </table>
         <div className="buttons is-centered">
           <DialogButton
+            testId={'ok-button'}
             captionKey="activities.picking.confirmDone"
             className="button is-success"
             onClick={onDialogYes}
           />
-          <DialogButton captionKey="general.cancelText" className="button is-danger" onClick={onCloseDialog} />
+          <DialogButton
+            testId="cancel-button"
+            captionKey="general.cancelText"
+            className="button is-danger"
+            onClick={onCloseDialog}
+          />
         </div>
       </Dialog>
     </div>

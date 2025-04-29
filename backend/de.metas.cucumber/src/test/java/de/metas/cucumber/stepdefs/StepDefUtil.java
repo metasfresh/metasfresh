@@ -111,7 +111,7 @@ public class StepDefUtil
 			final long checkingIntervalMs,
 			@NonNull final ItemProvider<T> worker) throws InterruptedException
 	{
-		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, worker, (Supplier<String>)null);
+		return tryAndWaitForItem(maxWaitSeconds, checkingIntervalMs, worker, null);
 	}
 
 	public <T> T tryAndWaitForItem(
@@ -185,10 +185,10 @@ public class StepDefUtil
 			throw e;
 		}
 
-			if (logContext != null)
-			{
-				logContext.run();
-			}
+		if (logContext != null)
+		{
+			logContext.run();
+		}
 		Assertions.fail("the given worker didn't succeed within the " + maxWaitSeconds + "second timeout");
 		return null;
 	}
@@ -261,6 +261,11 @@ public class StepDefUtil
 	public <T> ItemFetcherExecutor.ItemFetcherExecutorBuilder<T> tryAndWaitForItem(@NonNull final IQuery<T> query)
 	{
 		return ItemFetcherExecutor.<T>builder().query(query);
+	}
+
+	public <T> ItemFetcherExecutor.ItemFetcherExecutorBuilder<T> tryAndWaitForData(@NonNull final Supplier<T> dataSupplier)
+	{
+		return ItemFetcherExecutor.<T>builder().dataSupplier(dataSupplier);
 	}
 
 	static long getMaxWaitSecondsEffective(final long maxWaitSecondsParam)

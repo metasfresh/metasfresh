@@ -20,6 +20,8 @@ SELECT i.C_Invoice_ID                                                           
                 THEN COALESCE(i.DateOrdered, o.DateOrdered, ol.dateordered)
                 ELSE NULL::TIMESTAMP WITHOUT TIME ZONE
         END)                                                                                                AS DateOrdered
+     , dt.docbasetype
+     , dt.docsubtype
      , (CASE dt.DocBaseType
             WHEN 'ARI'::BPChar THEN (CASE
                                          WHEN dt.DocSubType IS NULL OR TRIM(BOTH ' ' FROM dt.DocSubType) = ''   THEN '380'::TEXT
@@ -94,10 +96,10 @@ FROM C_Invoice i
          LEFT JOIN LATERAL ( SELECT io.DocumentNo,
                                     io.MovementDate
                              FROM M_InOut io
-                             left join c_invoice inv on io.m_inout_id = inv.m_inout_id and inv.c_invoice_id=i.c_invoice_id 
+                                      LEFT JOIN c_invoice inv ON io.m_inout_id = inv.m_inout_id AND inv.c_invoice_id = i.c_invoice_id
                              WHERE io.C_Order_ID = o.C_Order_ID
                                AND io.DocStatus IN ('CO', 'CL')
-                             ORDER BY inv.c_invoice_id NULLS last,io.Created
+                             ORDER BY inv.c_invoice_id NULLS LAST, io.Created
                              LIMIT 1 ) shipment ON TRUE -- for the case of missing EDI_Desadv, we still get the first M_InOut; DESADV can be switched off for individual C_BPartners
          LEFT JOIN C_BPartner rbp ON rbp.C_BPartner_ID = i.C_BPartner_ID
          LEFT JOIN C_BPartner_Location rl ON rl.C_BPartner_Location_ID = i.C_BPartner_Location_ID

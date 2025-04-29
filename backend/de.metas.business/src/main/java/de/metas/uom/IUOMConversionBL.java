@@ -254,4 +254,7 @@ public interface IUOMConversionBL extends ISingletonService, QuantityUOMConverte
 			UomId toUomId);
 
 	void createUOMConversion(@NonNull CreateUOMConversionRequest request);
+
+	@NonNull
+	Quantity convertToKilogram(@NonNull Quantity weight, @NonNull ProductId productId);
 }

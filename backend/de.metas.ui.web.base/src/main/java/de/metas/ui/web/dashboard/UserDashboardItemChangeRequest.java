@@ -1,11 +1,11 @@
 package de.metas.ui.web.dashboard;
 
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.dashboard.UserDashboardRepository.DashboardItemPatchPath;
 import de.metas.ui.web.dashboard.json.JsonUserDashboardItemAddRequest;
 import de.metas.ui.web.dashboard.json.JsonUserDashboardItemAddRequest.JSONInterval;
 import de.metas.ui.web.dashboard.json.JsonUserDashboardItemAddRequest.JSONWhen;
 import de.metas.ui.web.window.datatypes.json.JSONPatchEvent;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;

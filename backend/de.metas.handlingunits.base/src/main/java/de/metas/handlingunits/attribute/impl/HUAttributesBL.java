@@ -30,9 +30,12 @@ import de.metas.handlingunits.IHUAware;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IHUContextProcessorExecutor;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
+import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.IHUTransactionAttributeBuilder;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -42,6 +45,7 @@ import de.metas.handlingunits.attribute.strategy.impl.HUAttributeTransferRequest
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -62,6 +66,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.IMutable;
@@ -71,6 +76,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Optional;
 
 public class HUAttributesBL implements IHUAttributesBL
 {
@@ -85,6 +91,8 @@ public class HUAttributesBL implements IHUAttributesBL
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+
+	private final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
 
 	private final AdMessageKey MSG_MandatoryOnPicking = AdMessageKey.of("M_AttributeUse_MandatoryOnPicking");
 	private final AdMessageKey MSG_MandatoryOnShipment = AdMessageKey.of("M_AttributeUse_MandatoryOnShipment");
@@ -385,5 +393,26 @@ public class HUAttributesBL implements IHUAttributesBL
 
 			attributeStorage.saveChangesIfNeeded();
 		});
+	}
+	@Override
+	@Nullable
+	public String getHUAttributeValue(@NonNull final I_M_HU hu, @NonNull final AttributeCode attributeCode)
+	{
+		return Optional.ofNullable(attributeDAO.retrieveAttributeIdByValueOrNull(attributeCode))
+				.map(atrId -> huAttributesDAO.retrieveAttribute(hu, atrId))
+				.map(I_M_HU_Attribute::getValue)
+				.orElse(null);
+	}
+
+	@Override
+	@Nullable
+	public IAttributeValue getAttributeValue(@NonNull final I_M_HU hu, @NonNull final AttributeCode attributeCode)
+	{
+		final IMutableHUContext huContext = handlingUnitsBL
+				.createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx());
+
+		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
+		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
+		return attributeStorage.getAttributeValue(attributeCode);
 	}
 }

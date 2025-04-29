@@ -211,9 +211,17 @@ public final class TableRecordReference implements ITableRecordReference
 	}
 
 	@Nullable
-	public static TableRecordReference ofNullable(@Nullable String tableName, final int recordId)
+	public static TableRecordReference ofNullable(final @Nullable String tableName, final int recordId)
 	{
 		return tableName != null && !Check.isBlank(tableName) && recordId >= 0
+				? of(tableName, recordId)
+				: null;
+	}
+
+	@Nullable
+	public static TableRecordReference ofNullable(final @Nullable String tableName, @Nullable final RepoIdAware recordId)
+	{
+		return tableName != null && !Check.isBlank(tableName) && recordId != null
 				? of(tableName, recordId)
 				: null;
 	}
@@ -547,6 +555,11 @@ public final class TableRecordReference implements ITableRecordReference
 		return getModel(PlainContextAware.newWithThreadInheritedTrx());
 	}
 
+	/**
+	 * Deprecated: pls use appropriate DAO/Repository for loading models
+	 * e.g. ModelDAO.getById({@link TableRecordReference#getIdAssumingTableName(String, IntFunction)})
+	 */
+	@Deprecated
 	@Override
 	public <T> T getModel(final Class<T> modelClass)
 	{

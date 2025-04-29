@@ -57,4 +57,7 @@ public class PurchaseCandidateUpdatedEvent extends PurchaseCandidateEvent
 				purchaseCandidateRepoId,
 				vendorId);
 	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

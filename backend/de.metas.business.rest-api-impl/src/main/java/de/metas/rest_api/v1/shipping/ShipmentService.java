@@ -40,7 +40,7 @@ import de.metas.handlingunits.shipmentschedule.api.QtyToDeliverMap;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
-import de.metas.handlingunits.shipmentschedule.spi.impl.PackageInfo;
+import de.metas.handlingunits.shipping.PackageInfo;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;

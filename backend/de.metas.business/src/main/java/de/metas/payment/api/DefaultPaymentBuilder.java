@@ -307,10 +307,10 @@ public class DefaultPaymentBuilder
 		return this;
 	}
 
-	public final DefaultPaymentBuilder invoiceId(@NonNull final InvoiceId invoiceId)
+	public final DefaultPaymentBuilder invoiceId(@Nullable final InvoiceId invoiceId)
 	{
 		assertNotBuilt();
-		payment.setC_Invoice_ID(invoiceId.getRepoId());
+		payment.setC_Invoice_ID(InvoiceId.toRepoId(invoiceId));
 		return this;
 	}
 

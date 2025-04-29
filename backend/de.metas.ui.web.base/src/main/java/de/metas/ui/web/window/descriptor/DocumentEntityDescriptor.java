@@ -11,7 +11,6 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.process.AdProcessId;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvidersService;
@@ -31,6 +30,7 @@ import de.metas.ui.web.window.model.HighVolumeReadonlyIncludedDocumentsCollectio
 import de.metas.ui.web.window.model.IIncludedDocumentsCollection;
 import de.metas.ui.web.window.model.IIncludedDocumentsCollectionFactory;
 import de.metas.ui.web.window.model.SingleRowDetailIncludedDocumentsCollection;
+import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.Getter;
@@ -41,6 +41,7 @@ import org.adempiere.ad.callout.api.impl.CalloutExecutor;
 import org.adempiere.ad.callout.api.impl.NullCalloutExecutor;
 import org.adempiere.ad.callout.spi.ICalloutProvider;
 import org.adempiere.ad.callout.spi.ImmutablePlainCalloutProvider;
+import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
@@ -452,7 +453,7 @@ public class DocumentEntityDescriptor
 	//
 	//
 
-	@SuppressWarnings({ "OptionalAssignedToNull", "UnusedReturnValue" })
+	@SuppressWarnings({ "UnusedReturnValue" })
 	public static final class Builder
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentEntityDescriptor.Builder.class);
@@ -470,6 +471,7 @@ public class DocumentEntityDescriptor
 		private ITranslatableString _description = TranslatableStrings.empty();
 
 		private final LinkedHashMap<String, DocumentFieldDescriptor.Builder> _fieldBuilders = new LinkedHashMap<>();
+		private final LinkedHashMap<AdFieldId, DocumentFieldDescriptor.Builder> _fieldBuildersByMainAdFieldId = new LinkedHashMap<>();
 		private ImmutableMap<String, DocumentFieldDescriptor> _fields = null; // will be built
 		private final LinkedHashMap<DetailId, DocumentEntityDescriptor> _includedEntitiesByDetailId = new LinkedHashMap<>();
 		private DocumentEntityDataBindingDescriptorBuilder _dataBinding = DocumentEntityDataBindingDescriptorBuilder.NULL;
@@ -506,7 +508,7 @@ public class DocumentEntityDescriptor
 		private Optional<AdTabId> _adTabId = Optional.empty();
 		private Optional<String> _tableName = Optional.empty();
 		private Optional<SOTrx> _soTrx = Optional.empty();
-		private int viewPageLength;
+		@Getter private int viewPageLength;
 
 		private boolean queryIfNoFilters = true;
 
@@ -629,10 +631,15 @@ public class DocumentEntityDescriptor
 
 			// Add field
 			_fieldBuilders.put(fieldBuilder.getFieldName(), fieldBuilder);
+			if (fieldBuilder.getMainAdFieldId() != null)
+			{
+				_fieldBuildersByMainAdFieldId.put(fieldBuilder.getMainAdFieldId(), fieldBuilder);
+			}
 
 			return this;
 		}
 
+		@Nullable
 		public DocumentFieldDescriptor.Builder getFieldBuilder(final String fieldName)
 		{
 			return _fieldBuilders.get(fieldName);
@@ -646,6 +653,12 @@ public class DocumentEntityDescriptor
 		public boolean hasField(final String fieldName)
 		{
 			return getFieldBuilder(fieldName) != null;
+		}
+
+		@Nullable
+		public DocumentFieldDescriptor.Builder getFieldBuilder(@NonNull final AdFieldId adFieldId)
+		{
+			return _fieldBuildersByMainAdFieldId.get(adFieldId);
 		}
 
 		public int getFieldsCount()
@@ -876,7 +889,6 @@ public class DocumentEntityDescriptor
 
 		public Builder setTableName(@Nullable final Optional<String> tableName)
 		{
-			//noinspection OptionalAssignedToNull
 			_tableName = tableName != null ? tableName : Optional.empty();
 			return this;
 		}
@@ -954,7 +966,6 @@ public class DocumentEntityDescriptor
 
 		public Builder setIsSOTrx(@Nullable final Optional<SOTrx> soTrx)
 		{
-			//noinspection OptionalAssignedToNull
 			_soTrx = soTrx != null ? soTrx : Optional.empty();
 			return this;
 		}
@@ -968,11 +979,6 @@ public class DocumentEntityDescriptor
 		{
 			this.viewPageLength = Math.max(viewPageLength, 0);
 			return this;
-		}
-
-		public int getViewPageLength()
-		{
-			return viewPageLength;
 		}
 
 		public Builder setAllowCreateNewLogic(final ILogicExpression allowCreateNewLogic)

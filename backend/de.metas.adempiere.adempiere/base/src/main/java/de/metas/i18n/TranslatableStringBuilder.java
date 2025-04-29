@@ -158,6 +158,15 @@ public final class TranslatableStringBuilder
 		return insertFirst(TranslatableStrings.constant(value));
 	}
 
+	public TranslatableStringBuilder appendIfNotEmpty(@Nullable final String value)
+	{
+		if (!isEmpty())
+		{
+			append(value);
+		}
+		return this;
+	}
+
 	public TranslatableStringBuilder append(@Nullable final String value)
 	{
 		if (Check.isEmpty(value))

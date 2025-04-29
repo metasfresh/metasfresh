@@ -2,7 +2,6 @@ package de.metas.ui.web.pattribute;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.cache.CCache;
-import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -20,6 +19,7 @@ import de.metas.ui.web.window.descriptor.DocumentLayoutElementFieldDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.model.DocumentsRepository;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;

@@ -1,21 +1,22 @@
 package de.metas.material.event.stock;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-
-import org.adempiere.warehouse.WarehouseId;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Value;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_Transaction;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.Instant;
 
 /*
  * #%L
@@ -114,4 +115,14 @@ public class StockChangedEvent implements MaterialEvent
 			this.stockId = stockId;
 		}
 	}
+
+	@Nullable
+	@Override
+	public TableRecordReference getSourceTableReference()
+	{
+		return TableRecordReference.ofNullable(I_M_Transaction.Table_Name, stockChangeDetails.getTransactionId());
+	}
+
+	@Override
+	public String getEventName() {return TYPE;}
 }

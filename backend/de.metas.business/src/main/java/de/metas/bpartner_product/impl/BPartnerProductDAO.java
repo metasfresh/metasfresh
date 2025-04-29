@@ -33,6 +33,7 @@ import de.metas.bpartner_product.ProductExclude;
 import de.metas.bpartner_product.ProductExclude.ProductExcludeBuilder;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.ean13.EAN13ProductCode;
 import de.metas.organization.OrgId;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
@@ -462,4 +463,18 @@ public class BPartnerProductDAO implements IBPartnerProductDAO
 						.reason(bannedManufacturer.getExclusionFromSaleReason())
 						.build());
 	}
+
+	@Override
+	@NonNull
+	public List<I_C_BPartner_Product> retrieveByEAN13ProductCode(@NonNull final EAN13ProductCode ean13ProductCode, @NonNull final BPartnerId bpartnerId)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_BPartner_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_EAN13_ProductCode, ean13ProductCode.getAsString())
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID, bpartnerId)
+				.create()
+				.listImmutable(I_C_BPartner_Product.class);
+	}
+
 }

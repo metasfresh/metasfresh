@@ -97,38 +97,38 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 		<band splitType="Stretch"/>
 	</title>
 	<pageHeader>
-		<band height="13" splitType="Stretch">
+		<band height="22" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-19" x="356" y="1" width="47" height="12" forecolor="#000000" uuid="31559d9f-ad00-493b-85aa-c40248c81609"/>
+				<reportElement key="textField-19" x="356" y="6" width="47" height="12" forecolor="#000000" uuid="31559d9f-ad00-493b-85aa-c40248c81609"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-20" x="405" y="1" width="40" height="12" forecolor="#000000" uuid="35bfebbe-2a4e-4e2d-8ac5-884ccbd51718"/>
+				<reportElement key="textField-20" x="405" y="6" width="40" height="12" forecolor="#000000" uuid="35bfebbe-2a4e-4e2d-8ac5-884ccbd51718"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="166" y="1" width="67" height="12" forecolor="#000000" uuid="c2a20384-4f83-4956-8de0-647e2b2f9d11"/>
+				<reportElement key="textField-13" x="166" y="6" width="67" height="12" forecolor="#000000" uuid="c2a20384-4f83-4956-8de0-647e2b2f9d11"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Attributes}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-13" x="227" y="1" width="42" height="12" forecolor="#000000" uuid="f0f37ac5-8ba3-475c-87e9-382ac9b70abf"/>
+				<reportElement key="textField-13" x="227" y="6" width="42" height="12" forecolor="#000000" uuid="f0f37ac5-8ba3-475c-87e9-382ac9b70abf"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{HUQuantity}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-20" x="441" y="1" width="33" height="12" forecolor="#000000" uuid="13f10026-f4a5-4106-b562-2972eb43d034">
+				<reportElement key="textField-20" x="441" y="6" width="33" height="12" forecolor="#000000" uuid="13f10026-f4a5-4106-b562-2972eb43d034">
 					<printWhenExpression><![CDATA[new Boolean($R{show_price}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
@@ -137,7 +137,7 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 				<textFieldExpression><![CDATA[$R{Price}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-20" x="510" y="1" width="43" height="12" forecolor="#000000" uuid="b45ffa6b-7b14-4fcb-9324-11acf5dd951b">
+				<reportElement key="textField-20" x="510" y="6" width="43" height="12" forecolor="#000000" uuid="b45ffa6b-7b14-4fcb-9324-11acf5dd951b">
 					<printWhenExpression><![CDATA[new Boolean($R{show_price}.equals( "Y" ))]]></printWhenExpression>
 				</reportElement>
 				<textElement textAlignment="Right" markup="none">
@@ -146,19 +146,29 @@ FROM 	de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Details( $P{m_inout_id
 				<textFieldExpression><![CDATA[$R{Amount}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-17" x="272" y="1" width="84" height="12" forecolor="#000000" uuid="a02faea5-2530-4505-a8fb-aa78021f3a67"/>
+				<reportElement key="textField-17" x="272" y="6" width="84" height="12" forecolor="#000000" uuid="a02faea5-2530-4505-a8fb-aa78021f3a67"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Pack_Inst}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-16" x="37" y="1" width="130" height="12" forecolor="#000000" uuid="ae7f8642-14e1-4d38-89f2-5a0ab922b9a7"/>
+				<reportElement key="textField-16" x="37" y="6" width="130" height="12" forecolor="#000000" uuid="ae7f8642-14e1-4d38-89f2-5a0ab922b9a7"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 			</textField>
+			<line>
+				<reportElement x="34" y="3" width="545" height="1" uuid="820f99b8-e268-4514-b2d9-5c779c0177ea">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+			</line>
+			<line>
+				<reportElement x="34" y="19" width="545" height="1" uuid="dd134d6b-18ab-447b-b7e1-734db269c8c1">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+			</line>
 		</band>
 	</pageHeader>
 	<columnHeader>

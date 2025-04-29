@@ -267,13 +267,13 @@ public class AD_Column
 		}
 		else
 		{
-			if (columnName.endsWith("_ID"))
+			if (columnName.endsWith("_ID") && displayType != DisplayType.Button)
 			{
-				throw new AdempiereException("Ending a non lookup column wiht `_ID` is might be misleading");
+				throw new AdempiereException("Ending a non lookup column with `_ID` might be misleading");
 			}
 			if (columnName.endsWith("_Acct"))
 			{
-				throw new AdempiereException("Ending a non Account column wiht `_Acct` is might be misleading");
+				throw new AdempiereException("Ending a non Account column with `_Acct` might be misleading");
 			}
 		}
 	}

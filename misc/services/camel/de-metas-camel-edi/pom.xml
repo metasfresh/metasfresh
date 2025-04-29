@@ -22,10 +22,11 @@
         <jackson.version>2.13.1</jackson.version>
         <lombok.version>1.18.22</lombok.version>
         <org.apache.poi.version>4.1.2</org.apache.poi.version>
-        <jaxb.packageName>de.metas.edi.esb.jaxb.metasfresh</jaxb.packageName>
+        <jaxb.inhouse.v2.packageName>de.metas.edi.esb.jaxb.metasfreshinhousev2</jaxb.inhouse.v2.packageName>
         <jaxb.orders.packageName>de.metas.edi.esb.jaxb.stepcom.orders</jaxb.orders.packageName>
         <jaxb.invoic.packageName>de.metas.edi.esb.jaxb.stepcom.invoic</jaxb.invoic.packageName>
         <jaxb.desadv.packageName>de.metas.edi.esb.jaxb.stepcom.desadv</jaxb.desadv.packageName>
+        <jaxb.inhouse.v1.packageName>de.metas.edi.esb.jaxb.metasfreshinhousev1</jaxb.inhouse.v1.packageName>
         <metasfresh-common.version>10.0.0</metasfresh-common.version>
         <!--
             3.27.2 is currently the latest and greatest. Spring boot declares some 2.x version that
@@ -324,15 +325,15 @@
                 <artifactId>maven-jaxb2-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>xjc-schema-metasfresh</id>
+                        <id>xjc-schema-metasfresh-inhouse-v2</id>
                         <phase>generate-sources</phase>
                         <goals>
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <schemaDirectory>src/main/xsd/metasfresh</schemaDirectory>
-                            <generatePackage>${jaxb.packageName}</generatePackage>
-                            <generateDirectory>${project.basedir}/src/main/java-xjc_metasfresh</generateDirectory>
+                            <schemaDirectory>src/main/xsd/metasfreshinhousev2</schemaDirectory>
+                            <generatePackage>${jaxb.inhouse.v2.packageName}</generatePackage>
+                            <generateDirectory>${project.basedir}/src/main/java-xjc_metasfreshinhousev2</generateDirectory>
                         </configuration>
                     </execution>
                     <execution>
@@ -387,6 +388,18 @@
                             <generateDirectory>${project.basedir}/src/main/java-xjc_ecosio_remadv</generateDirectory>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>xjc-schema-metasfresh-inhouse-v1</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <schemaDirectory>src/main/xsd/metasfreshinhousev1</schemaDirectory>
+                            <generatePackage>${jaxb.inhouse.v1.packageName}</generatePackage>
+                            <generateDirectory>${project.basedir}/src/main/java-xjc_metasfreshinhousev1</generateDirectory>
+                        </configuration>
+                    </execution>
                 </executions>
                 <dependencies>
                     <dependency>
@@ -417,7 +430,8 @@
                         </goals>
                         <configuration>
                             <sources>
-                                <source>src/main/java-xjc_metasfresh</source>
+                                <source>src/main/java-xjc_metasfreshinhousev1</source>
+                                <source>src/main/java-xjc_metasfreshinhousev2</source>
                                 <source>src/main/java-xjc_stepcom_orders</source>
                                 <source>src/main/java-xjc_stepcom_desadv</source>
                                 <source>src/main/java-xjc_stepcom_invoic</source>

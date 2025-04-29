@@ -101,7 +101,7 @@ Feature: mobileUI Distribution
 
     # NOTE: atm closing the distribution job throws exception because the printer is not configured
 #    And Complete current distribution job
-#    And after not more than 0s, following DD_Orders are found
+#    And after not more than 60s, following DD_Orders are found
 #      | Identifier | DocStatus |
 #      | ddo        | CL        |
 
@@ -202,6 +202,6 @@ Feature: mobileUI Distribution
       | ddo         |
 
     And Pick HU for distribution job line
-      | M_HU_ID     | ExpectErrorContaining |
-      | hu_product2 | Product not matching  |
+      | M_HU_ID     | ExpectErrorContaining    |
+      | hu_product2 | Das Produkt stimmt nicht |
     # NOTE: the exception is not user friendly but its fine because this mismatch is validated early on frontend side solely

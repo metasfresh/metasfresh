@@ -20,7 +20,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
+import org.eevolution.model.I_DD_Order_Candidate;
 import org.eevolution.model.I_PP_Order;
 
 import javax.annotation.Nullable;
@@ -138,4 +140,11 @@ public abstract class AbstractDDOrderCandidateEvent implements MaterialEvent
 
 	@JsonIgnore
 	public int getExistingDDOrderCandidateId() {return getDdOrderCandidate().getExitingDDOrderCandidateId();}
+
+	@Nullable
+	public TableRecordReference getSourceTableReference()
+	{
+		return TableRecordReference.ofNullable(I_DD_Order_Candidate.Table_Name,ddOrderCandidate.getExitingDDOrderCandidateId());
+	}
+
 }

@@ -22,12 +22,10 @@ package de.metas.document;
  * #L%
  */
 
-
-import org.adempiere.exceptions.AdempiereException;
-
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
-
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 /**
  * Exception thrown by {@link DocumentNoBuilderException} when building the document number failed.
@@ -69,6 +67,11 @@ public class DocumentNoBuilderException extends AdempiereException
 	public DocumentNoBuilderException(final String message, final Throwable cause)
 	{
 		super(message, cause);
+	}
+
+	public DocumentNoBuilderException(final AdMessageKey adMessage, final Object... params)
+	{
+		super(adMessage, params);
 	}
 
 	// NOTE: please keep this constructor because it's used in Check.assume methods

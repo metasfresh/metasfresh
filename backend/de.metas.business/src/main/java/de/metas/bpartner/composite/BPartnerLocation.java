@@ -16,6 +16,7 @@ import de.metas.util.lang.ExternalId;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.table.RecordChangeLog;
@@ -139,8 +140,7 @@ public class BPartnerLocation
 	@Nullable
 	private String fax;
 
-	@Nullable
-	final String setupPlaceNo;
+	@Nullable final String setupPlaceNo;
 
 	final boolean remitTo;
 	final boolean handOverLocation;
@@ -151,6 +151,7 @@ public class BPartnerLocation
 	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
 	 */
 	@Getter(AccessLevel.NONE)
+	@EqualsAndHashCode.Exclude
 	private final HashSet<String> handles = new HashSet<>();
 
 	/**

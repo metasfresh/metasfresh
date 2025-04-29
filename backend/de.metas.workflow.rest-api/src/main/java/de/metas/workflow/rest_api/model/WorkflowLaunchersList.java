@@ -2,7 +2,7 @@ package de.metas.workflow.rest_api.model;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
-import de.metas.global_qrcodes.PrintableQRCode;
+import de.metas.scannable_code.PrintableScannedCode;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -25,7 +25,7 @@ public class WorkflowLaunchersList implements Iterable<WorkflowLauncher>
 {
 	@NonNull private final ImmutableList<WorkflowLauncher> launchers;
 	@Getter @NonNull private final ImmutableList<OrderBy> orderByFields;
-	@Getter @Nullable private final PrintableQRCode filterByQRCode;
+	@Getter @Nullable private final PrintableScannedCode filterByQRCode;
 
 	@Getter
 	@NonNull private final Instant timestamp;
@@ -34,7 +34,7 @@ public class WorkflowLaunchersList implements Iterable<WorkflowLauncher>
 	private WorkflowLaunchersList(
 			@NonNull final ImmutableList<WorkflowLauncher> launchers,
 			@NonNull @Singular final ImmutableList<OrderBy> orderByFields,
-			@Nullable final PrintableQRCode filterByQRCode,
+			@Nullable final PrintableScannedCode filterByQRCode,
 			@NonNull final Instant timestamp)
 	{
 		this.launchers = launchers;

@@ -85,27 +85,34 @@ public class HUAssignmentBL implements IHUAssignmentBL
 	}
 
 	@Override
-	public void assignHUs(final Object model, final Collection<I_M_HU> huList, final String trxName)
+	public void assignHUs(
+			@NonNull final Object model,
+			@NonNull final Collection<I_M_HU> huList, 
+			@Nullable final String trxName)
 	{
-		Check.assumeNotNull(model, "model not null");
-		Check.assumeNotNull(huList, "huList not null");
 		if (huList.isEmpty())
 		{
-			// Nothing to do.
-			return;
+			return; // Nothing to do.
 		}
 
 		huList.forEach(hu -> assignHU(model, hu, trxName));
 	}
 
 	@Override
-	public I_M_HU_Assignment assignHU(final Object model, final I_M_HU hu, final String trxName)
+	public I_M_HU_Assignment assignHU(
+			@NonNull final Object model,
+			@NonNull final I_M_HU hu, 
+			@Nullable final String trxName)
 	{
 		return assignHU0(model, hu, IsTransferPackingMaterials_DoNotChange, trxName);
 	}
 
 	@Override
-	public I_M_HU_Assignment assignHU(final Object model, final I_M_HU hu, final boolean isTransferPackingMaterials, final String trxName)
+	public I_M_HU_Assignment assignHU(
+			@NonNull final Object model,
+			@NonNull final I_M_HU hu, 
+			final boolean isTransferPackingMaterials,
+			@Nullable final String trxName)
 	{
 		return assignHU0(model, hu, isTransferPackingMaterials, trxName);
 	}
@@ -114,7 +121,7 @@ public class HUAssignmentBL implements IHUAssignmentBL
 			@NonNull final Object model,
 			@NonNull final I_M_HU hu,
 			@Nullable final Boolean isTransferPackingMaterials,
-			final String trxName)
+			@Nullable final String trxName)
 	{
 		// Validate the HU
 		final int huId = Check.assumeGreaterThanZero(hu.getM_HU_ID(), "hu.getM_HU_ID()");

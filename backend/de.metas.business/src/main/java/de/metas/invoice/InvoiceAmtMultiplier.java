@@ -92,7 +92,7 @@ public final class InvoiceAmtMultiplier
 		int toRelativeValueMultiplier = getToRelativeValueMultiplier();
 		return toRelativeValueMultiplier > 0 ? realValue : realValue.negate();
 	}
-
+	
 	public boolean isNegateToConvertToRealValue()
 	{
 		return getToRealValueMultiplier() < 0;

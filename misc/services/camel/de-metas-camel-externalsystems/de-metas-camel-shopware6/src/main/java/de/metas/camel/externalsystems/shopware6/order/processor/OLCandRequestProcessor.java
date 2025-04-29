@@ -122,7 +122,6 @@ public class OLCandRequestProcessor implements Processor
 				.dateCandidate(getDateCandidate(jsonOrder))
 				.dataSource(DATA_SOURCE_INT_SHOPWARE)
 				.isManualPrice(true)
-				.isImportedWithIssues(true)
 				.discount(DEFAULT_ORDER_LINE_DISCOUNT)
 				.deliveryViaRule(DEFAULT_DELIVERY_VIA_RULE)
 				.deliveryRule(DEFAULT_DELIVERY_RULE)
