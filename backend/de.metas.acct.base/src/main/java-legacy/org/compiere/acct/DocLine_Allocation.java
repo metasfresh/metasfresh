@@ -311,7 +311,7 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 			return false;
 		}
 
-		// The invoice of this line and the invoice of counter line shall be of opposite transactions (sales-purchase)
+		// The invoice for this line and the invoice for counter line shall be of opposite transactions (sales-purchase)
 		if (isSOTrxInvoice() == counterLine.isSOTrxInvoice())
 		{
 			return false;
@@ -630,32 +630,6 @@ class DocLine_Allocation extends DocLine<Doc_AllocationHdr>
 	{
 		Check.assumeNotNull(paymentReceipt, "payment document exists");
 		return paymentReceipt;
-	}
-
-	public boolean isValidPurchaseSalesCompensationAmt()
-	{
-		final BigDecimal compensationAmtSource = getAllocatedAmt();
-		final DocLine_Allocation counterLine = getCounterDocLine();
-		final BigDecimal counterLine_compensationAmtSource = counterLine.getAllocatedAmt();
-
-		if ((isAPI() && counterLine.isARC()) || (isARC() && counterLine.isAPI()))
-		{
-			return compensationAmtSource.compareTo(counterLine_compensationAmtSource) == 0;
-		}
-		else
-		{
-			return compensationAmtSource.compareTo(counterLine_compensationAmtSource.negate()) == 0;
-		}
-	}
-
-	private boolean isARC()
-	{
-		return isSOTrxInvoice() && isCreditMemoInvoice();
-	}
-
-	private boolean isAPI()
-	{
-		return !isSOTrxInvoice() && !isCreditMemoInvoice();
 	}
 
 }    // DocLine_Allocation

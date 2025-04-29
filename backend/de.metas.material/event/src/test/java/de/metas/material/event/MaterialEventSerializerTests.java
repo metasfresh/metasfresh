@@ -329,7 +329,7 @@ public class MaterialEventSerializerTests
 	{
 		final PPOrderDeletedEvent event = PPOrderDeletedEvent.builder()
 				.eventDescriptor(newEventDescriptor())
-				.ppOrderId(10)
+				.ppOrder(createPPOrder())
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(event);
@@ -383,7 +383,7 @@ public class MaterialEventSerializerTests
 	private PPOrder createPPOrder()
 	{
 		return PPOrder.builder()
-				.ppOrderId(1234)
+				.ppOrderId(PPOrderId.ofRepoId(1234))
 				.ppOrderData(PPOrderData.builder()
 						.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(100, 100))
 						.datePromised(NOW)

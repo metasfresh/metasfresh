@@ -931,7 +931,7 @@
             <xsd:element maxOccurs="unbounded" minOccurs="0" name="EDI_Exp_Desadv_Pack" type="EDI_Exp_Desadv_PackType"/>
             <xsd:element maxOccurs="unbounded" minOccurs="0" name="EDI_Exp_DesadvLineWithNoPack" type="EDI_Exp_DesadvLineWithNoPackType"/>
             <xsd:element name="M_InOut_ID" type="xsd:integer"/>
-
+            <xsd:element minOccurs="0" name="shipment_documentno" type="xsd:string"/>
             <xsd:element minOccurs="0" name="DatePromised" type="xsd:date"/>
         </xsd:sequence>
         <xsd:attribute ref="AD_Client_Value"/>

@@ -33,6 +33,7 @@ import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.uom.UomId;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.JsonQRCode;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
+import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessHeaderProperties;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -76,6 +77,7 @@ public class JsonPickingJobLine
 	@NonNull String displayGroupKey;
 	@Nullable String salesOrderDocumentNo;
 	int orderLineSeqNo;
+	@Nullable JsonWFProcessHeaderProperties additionalHeaderProperties;
 
 	public static JsonPickingJobLineBuilder builderFrom(
 			@NonNull final PickingJobLine line,

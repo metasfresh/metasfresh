@@ -41,7 +41,7 @@ import java.util.function.IntFunction;
 @EqualsAndHashCode
 public final class StepDefDataIdentifier
 {
-	public static final StepDefDataIdentifier NULL = new StepDefDataIdentifier(DataTableUtil.NULL_STRING);
+	private static final StepDefDataIdentifier NULL = new StepDefDataIdentifier(DataTableUtil.NULL_STRING);
 
 	public static final String SUFFIX = "Identifier";
 
@@ -107,6 +107,8 @@ public final class StepDefDataIdentifier
 	{
 		return this.equals(NULL);
 	}
+
+	public boolean isNotNullPlaceholder() {return !isNullPlaceholder();}
 
 	public String getAsString()
 	{

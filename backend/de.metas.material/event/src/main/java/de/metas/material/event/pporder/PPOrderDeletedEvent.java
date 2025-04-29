@@ -5,11 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.material.event.MaterialEvent;
 import de.metas.material.event.commons.EventDescriptor;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.eevolution.model.I_PP_Order;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -41,23 +40,23 @@ public class PPOrderDeletedEvent implements MaterialEvent
 
 	EventDescriptor eventDescriptor;
 
-	int ppOrderId;
+	@NonNull PPOrder ppOrder;
 
 	@JsonCreator
 	@Builder
 	public PPOrderDeletedEvent(
 			@JsonProperty("eventDescriptor") final EventDescriptor eventDescriptor,
-			@JsonProperty("ppOrderId") final int ppOrderId)
+			@NonNull @JsonProperty("ppOrder") final PPOrder ppOrder)
 	{
 		this.eventDescriptor = eventDescriptor;
-		this.ppOrderId = ppOrderId;
+		this.ppOrder = ppOrder;
 	}
 
-	@Nullable
+	@NonNull
 	@Override
 	public TableRecordReference getSourceTableReference()
 	{
-		return TableRecordReference.ofNullable(I_PP_Order.Table_Name, ppOrderId);
+		return TableRecordReference.of(I_PP_Order.Table_Name, ppOrder.getPpOrderId());
 	}
 
 	@Override

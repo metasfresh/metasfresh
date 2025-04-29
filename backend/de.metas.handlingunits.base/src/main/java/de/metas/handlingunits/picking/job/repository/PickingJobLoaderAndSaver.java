@@ -65,6 +65,7 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderId;
 import org.jetbrains.annotations.NotNull;
 
@@ -279,6 +280,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		@Nullable final BPartnerLocationId deliveryBPLocationId = extractDeliveryBPLocationId(record);
 		@Nullable final Timestamp preparationDate = record.getPreparationDate();
 		@Nullable final Timestamp deliveryDate = record.getDeliveryDate();
+		@NonNull final PickingJobOptions pickingJobOptions = getPickingJobOptions(deliveryBPLocationId);
 
 		return PickingJobHeader.builder()
 				.aggregationType(PickingJobAggregationType.ofCode(record.getPickingJobAggregationType()))
@@ -289,6 +291,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.deliveryBPLocationId(deliveryBPLocationId)
 				.deliveryRenderedAddress(record.getDeliveryToAddress())
 				.isAllowPickingAnyHU(record.isAllowPickingAnyHU())
+				.isAnonymousPickHUsOnTheFly(pickingJobOptions.isAnonymousPickHUsOnTheFly())
 				.lockedBy(UserId.ofRepoIdOrNullIfSystem(record.getPicking_User_ID()))
 				.handoverLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getHandOver_Partner_ID(), record.getHandOver_Location_ID()))
 				.build();
@@ -637,6 +640,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.actualPickedHU(extractPickedHUInfo(record))
 				.qtyPicked(Quantitys.of(record.getQtyPicked(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.catchWeight(extractCatchWeight(record))
+				.createdAt(TimeUtil.asInstant(record.getCreated()))
 				.build();
 	}
 
@@ -869,8 +873,13 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		return packingInfo.isFiniteTU() ? PickingUnit.TU : PickingUnit.CU;
 	}
 
-	private PickingJobOptions getPickingJobOptions(@NonNull final BPartnerId customerId)
+	private PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId)
 	{
 		return loadingSupportingServices.getPickingJobOptions(customerId);
+	}
+
+	private PickingJobOptions getPickingJobOptions(@Nullable final BPartnerLocationId deliveryLocationId)
+	{
+		return loadingSupportingServices.getPickingJobOptions(deliveryLocationId != null ? deliveryLocationId.getBpartnerId() : null);
 	}
 }

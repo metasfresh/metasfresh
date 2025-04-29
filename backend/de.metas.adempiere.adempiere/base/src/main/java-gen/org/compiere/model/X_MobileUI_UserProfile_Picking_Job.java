@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking_Job, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 795722020L;
+	private static final long serialVersionUID = -1258613950L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking_Job (final Properties ctx, final int MobileUI_UserProfile_Picking_Job_ID, @Nullable final String trxName)
@@ -132,6 +132,18 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	}
 
 	@Override
+	public void setIsAnonymousHuPickedOnTheFly (final boolean IsAnonymousHuPickedOnTheFly)
+	{
+		set_Value (COLUMNNAME_IsAnonymousHuPickedOnTheFly, IsAnonymousHuPickedOnTheFly);
+	}
+
+	@Override
+	public boolean isAnonymousHuPickedOnTheFly() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAnonymousHuPickedOnTheFly);
+	}
+
+	@Override
 	public void setIsCatchWeightTUPickingEnabled (final boolean IsCatchWeightTUPickingEnabled)
 	{
 		set_Value (COLUMNNAME_IsCatchWeightTUPickingEnabled, IsCatchWeightTUPickingEnabled);
@@ -177,6 +189,18 @@ public class X_MobileUI_UserProfile_Picking_Job extends org.compiere.model.PO im
 	public boolean isShowConfirmationPromptWhenOverPick() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsShowConfirmationPromptWhenOverPick);
+	}
+
+	@Override
+	public void setIsShowLastPickedBestBeforeDateForLines (final boolean IsShowLastPickedBestBeforeDateForLines)
+	{
+		set_Value (COLUMNNAME_IsShowLastPickedBestBeforeDateForLines, IsShowLastPickedBestBeforeDateForLines);
+	}
+
+	@Override
+	public boolean isShowLastPickedBestBeforeDateForLines() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsShowLastPickedBestBeforeDateForLines);
 	}
 
 	@Override

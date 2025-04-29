@@ -43,7 +43,7 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	private final HashMap<HuId, HUQRCode> qrCodes = new HashMap<>();
 
 	@Override
-	public PickingJobOptions getPickingJobOptions(final @NonNull BPartnerId customerId) {return MobileUIPickingUserProfile.DEFAULT.getDefaultPickingJobOptions();}
+	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId) {return MobileUIPickingUserProfile.DEFAULT.getDefaultPickingJobOptions();}
 
 	@Override
 	public void warmUpCachesFrom(@NonNull final PackageableList items)

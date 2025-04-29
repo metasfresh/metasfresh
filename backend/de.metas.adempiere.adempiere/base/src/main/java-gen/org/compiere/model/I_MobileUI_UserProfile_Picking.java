@@ -143,7 +143,8 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsAllowAnyCustomer = "IsAllowAnyCustomer";
 
 	/**
-	 * Set Allow Partial Picking Completion.
+	 * Set Allow completing partial picking jobs.
+	 * Users can complete jobs on mobile without picking the full ordered quantity.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -152,7 +153,8 @@ public interface I_MobileUI_UserProfile_Picking
 	void setIsAllowCompletingPartialPickingJob (boolean IsAllowCompletingPartialPickingJob);
 
 	/**
-	 * Get Allow Partial Picking Completion.
+	 * Get Allow completing partial picking jobs.
+	 * Users can complete jobs on mobile without picking the full ordered quantity.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -250,6 +252,27 @@ public interface I_MobileUI_UserProfile_Picking
 
 	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAlwaysSplitHUsEnabled = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAlwaysSplitHUsEnabled", null);
 	String COLUMNNAME_IsAlwaysSplitHUsEnabled = "IsAlwaysSplitHUsEnabled";
+
+	/**
+	 * Set Anonymous HU Picked On the Fly.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAnonymousHuPickedOnTheFly (boolean IsAnonymousHuPickedOnTheFly);
+
+	/**
+	 * Get Anonymous HU Picked On the Fly.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAnonymousHuPickedOnTheFly();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsAnonymousHuPickedOnTheFly = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsAnonymousHuPickedOnTheFly", null);
+	String COLUMNNAME_IsAnonymousHuPickedOnTheFly = "IsAnonymousHuPickedOnTheFly";
 
 	/**
 	 * Set Allow picking TU with catch weight.
@@ -359,6 +382,29 @@ public interface I_MobileUI_UserProfile_Picking
 
 	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsShowConfirmationPromptWhenOverPick = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsShowConfirmationPromptWhenOverPick", null);
 	String COLUMNNAME_IsShowConfirmationPromptWhenOverPick = "IsShowConfirmationPromptWhenOverPick";
+
+	/**
+	 * Set Show Best Before of Last Picked Item .
+	 * When enabled, the 'Best Before' date of the last picked item will be shown on each line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsShowLastPickedBestBeforeDateForLines (boolean IsShowLastPickedBestBeforeDateForLines);
+
+	/**
+	 * Get Show Best Before of Last Picked Item .
+	 * When enabled, the 'Best Before' date of the last picked item will be shown on each line.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isShowLastPickedBestBeforeDateForLines();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsShowLastPickedBestBeforeDateForLines = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsShowLastPickedBestBeforeDateForLines", null);
+	String COLUMNNAME_IsShowLastPickedBestBeforeDateForLines = "IsShowLastPickedBestBeforeDateForLines";
 
 	/**
 	 * Set Mobile UI Picking Profile.

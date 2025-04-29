@@ -18,6 +18,7 @@ import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeAssignment;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.handlingunits.qrcodes.special.PickOnTheFlyQRCode;
 import de.metas.process.AdProcessId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
@@ -321,6 +322,11 @@ public class HUQRCodesService
 				.map(HUQRCodeAssignment::getSingleHUId);
 	}
 
+	public void propagateQrForSplitHUs(@NonNull final HuId sourceHuId, @NonNull final ImmutableList<I_M_HU> splitHUs)
+	{
+		propagateQrForSplitHUs(handlingUnitsBL.getById(sourceHuId), splitHUs);
+	}
+
 	public void propagateQrForSplitHUs(@NonNull final I_M_HU sourceHU, @NonNull final ImmutableList<I_M_HU> splitHUs)
 	{
 		final ImmutableSet<HuId> idCandidatesToShareQrCode = qrCodeConfigurationService.filterSplitHUsForSharingQr(sourceHU, splitHUs);
@@ -373,6 +379,12 @@ public class HUQRCodesService
 		if (ean13HUQRCode != null)
 		{
 			return ean13HUQRCode;
+		}
+
+		final PickOnTheFlyQRCode pickOnTheFlyQRCode = PickOnTheFlyQRCode.fromStringOrNullIfNotHandled(jsonString);
+		if (pickOnTheFlyQRCode != null)
+		{
+			return pickOnTheFlyQRCode;
 		}
 
 		throw new AdempiereException("QR code is not handled: " + jsonString);

@@ -50,10 +50,12 @@ public class HUShipmentProcess_2LU_1ShipTrans_1InOut_IntegrationTest
 
 		Services.get(ISysConfigBL.class).setValue(HUShipperTransportationBL.SYSCONFIG_WeightSourceTypes, ShippingWeightSourceType.ProductWeight.toString(), ClientId.SYSTEM, OrgId.ANY);
 
-		pTomato.setWeight(BigDecimal.ONE);
+		pTomato.setGrossWeight(BigDecimal.ONE);
+		pTomato.setGrossWeight_UOM_ID(uomKg.getC_UOM_ID());
 		InterfaceWrapperHelper.save(pTomato);
 
-		pSalad.setWeight(BigDecimal.ONE);
+		pSalad.setGrossWeight(BigDecimal.ONE);
+		pSalad.setGrossWeight_UOM_ID(uomKg.getC_UOM_ID());
 		InterfaceWrapperHelper.save(pSalad);
 
 		// only set to trace if there are problems to debug

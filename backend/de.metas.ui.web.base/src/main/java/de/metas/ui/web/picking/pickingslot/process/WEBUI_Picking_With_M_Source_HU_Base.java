@@ -16,7 +16,6 @@ import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickReque
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.order.DeliveryRule;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
@@ -65,7 +64,6 @@ import java.util.List;
  * contains common code of the two fine picking process classes that we have.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 /* package */abstract class WEBUI_Picking_With_M_Source_HU_Base extends PickingSlotViewBasedProcess
 {
@@ -74,7 +72,6 @@ import java.util.List;
 	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 	private final PickingConfigRepository pickingConfigRepo = SpringContextHolder.instance.getBean(PickingConfigRepository.class);
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
-	private final IShipmentSchedulePA shipmentSchedulePA =  Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 	protected final boolean noSourceHUAvailable()
@@ -84,7 +81,7 @@ import java.util.List;
 	}
 
 	@NonNull
-	protected ImmutableList<HuId> getSourceHUIds()
+	protected final ImmutableList<HuId> getSourceHUIds()
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();
 
@@ -94,7 +91,7 @@ import java.util.List;
 				.onlyIfAttributesMatchWithShipmentSchedules(true)
 				.build();
 
-		return  huPickingSlotBL.retrieveAvailableSourceHUs(query)
+		return huPickingSlotBL.retrieveAvailableSourceHUs(query)
 				.stream()
 				.map(I_M_HU::getM_HU_ID)
 				.map(HuId::ofRepoId)
@@ -118,16 +115,16 @@ import java.util.List;
 	}
 
 	@NonNull
-	protected ImmutableList<HuId> retrieveTopLevelHUIdsAvailableForPicking()
+	protected final ImmutableList<HuId> retrieveTopLevelHUIdsAvailableForPicking()
 	{
-		final RetrieveAvailableHUIdsToPickRequest request = RetrieveAvailableHUIdsToPickRequest
-				.builder()
-				.scheduleId(getCurrentShipmentScheduleId())
-				.onlyTopLevel(true)
-				.considerAttributes(true)
-				.build();
-
-		return huPickingSlotBL.retrieveAvailableHUIdsToPickForShipmentSchedule(request);
+		return huPickingSlotBL.retrieveAvailableHUIdsToPickForShipmentSchedule(
+				RetrieveAvailableHUIdsToPickRequest
+						.builder()
+						.scheduleId(getCurrentShipmentScheduleId())
+						.onlyTopLevel(true)
+						.considerAttributes(true)
+						.build()
+		);
 	}
 
 	protected final boolean isForceDelivery()
@@ -136,23 +133,23 @@ import java.util.List;
 		return deliveryRule.isForce();
 	}
 
-	protected Quantity pickHUsAndPackTo(@NonNull final ImmutableList<HuId> huIdsToPick, @NonNull final Quantity qtyToPack, @NonNull final HuId packToHuId)
+	protected final Quantity pickHUsAndPackTo(@NonNull final ImmutableList<HuId> huIdsToPick, @NonNull final Quantity qtyToPack, @NonNull final HuId packToHuId)
 	{
 		final PickingSlotRow pickingSlotRow = getSingleSelectedRow();
 		final PickingSlotId pickingSlotId = pickingSlotRow.getPickingSlotId();
 
 		return pickingCandidateService.addQtyToHU(AddQtyToHURequest.builder()
-														  .qtyToPack(qtyToPack)
-														  .packToHuId(packToHuId)
-														  .sourceHUIds(huIdsToPick)
-														  .pickingSlotId(pickingSlotId)
-														  .shipmentScheduleId(getCurrentShipmentScheduleId())
-														  .allowOverDelivery(getPickingConfig().isAllowOverDelivery())
-														  .isForbidAggCUsForDifferentOrders(getPickingConfig().isForbidAggCUsForDifferentOrders())
-														  .build());
+				.qtyToPack(qtyToPack)
+				.packToHuId(packToHuId)
+				.sourceHUIds(huIdsToPick)
+				.pickingSlotId(pickingSlotId)
+				.shipmentScheduleId(getCurrentShipmentScheduleId())
+				.allowOverDelivery(getPickingConfig().isAllowOverDelivery())
+				.isForbidAggCUsForDifferentOrders(getPickingConfig().isForbidAggCUsForDifferentOrders())
+				.build());
 	}
 
-	protected void forcePick(Quantity qtyToPack, final HuId packToHuId)
+	protected final void forcePick(Quantity qtyToPack, final HuId packToHuId)
 	{
 		if (qtyToPack.signum() <= 0)
 		{
@@ -207,13 +204,13 @@ import java.util.List;
 	}
 
 	@NonNull
-	protected PickingConfig getPickingConfig()
+	protected final PickingConfig getPickingConfig()
 	{
 		return pickingConfigRepo.getPickingConfig();
 	}
 
 	@Nullable
-	protected OrderId getCurrentlyPickingOrderId()
+	protected final OrderId getCurrentlyPickingOrderId()
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();
 		return OrderId.ofRepoIdOrNull(shipmentSchedule.getC_Order_ID());

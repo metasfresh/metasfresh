@@ -10,6 +10,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.quantity.Quantity;
+import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -31,6 +32,7 @@ import java.util.List;
 public class FactAcctToTabularStringConverter
 {
 	@NonNull private final IUOMDAO uomDAO;
+	@NonNull private final ITaxDAO taxDAO;
 	@NonNull private final MoneyService moneyService;
 	@Nullable private final C_BPartner_StepDefData bpartnerTable;
 	@Nullable private final C_Tax_StepDefData taxTable;
@@ -84,12 +86,14 @@ public class FactAcctToTabularStringConverter
 			row.put("#", lineNo);
 		}
 		row.put("AccountConceptualName", record.getAccountConceptualName());
-		row.put("AmtAcctDr", record.getAmtAcctDr());
-		row.put("AmtAcctCr", record.getAmtAcctCr());
 		row.put("AmtSourceDr", extractAmtSourceDr(record));
 		row.put("AmtSourceCr", extractAmtSourceCr(record));
+		row.put("AmtAcctDr", record.getAmtAcctDr());
+		row.put("AmtAcctCr", record.getAmtAcctCr());
 		row.put("Qty", extractQuantityString(record));
 		row.put("C_BPartner_ID", extractBPartnerString(record));
+		row.put("C_Tax_ID", extractTaxId(record));
+		row.put("Record_ID", extractDocumentRef(record));
 
 		final PO po = InterfaceWrapperHelper.getPO(record);
 		for (int i = 0; i < po.get_ColumnCount(); i++)
@@ -99,20 +103,16 @@ public class FactAcctToTabularStringConverter
 			{
 				continue;
 			}
+			if (row.containsColumn(columnName))
+			{
+				continue;
+			}
 
 			final Object value;
 			if (I_Fact_Acct.COLUMNNAME_AD_Table_ID.equals(columnName))
 			{
 				// see Record_ID
 				continue;
-			}
-			else if (I_Fact_Acct.COLUMNNAME_Record_ID.equals(columnName))
-			{
-				value = extractDocumentRef(record);
-			}
-			else if (I_Fact_Acct.COLUMNNAME_C_Tax_ID.equals(columnName))
-			{
-				value = extractTaxId(record);
 			}
 			else
 			{
@@ -134,14 +134,18 @@ public class FactAcctToTabularStringConverter
 			return null;
 		}
 
-		if (taxTable == null)
+		if (taxTable != null)
 		{
-			return String.valueOf(taxId.getRepoId());
+			final String taxName = taxTable.getFirstIdentifierById(taxId)
+					.map(StepDefDataIdentifier::getAsString)
+					.orElse(null);
+			if (taxName != null)
+			{
+				return taxName;
+			}
 		}
 
-		return taxTable.getFirstIdentifierById(taxId)
-				.map(StepDefDataIdentifier::getAsString)
-				.orElseGet(() -> String.valueOf(taxId.getRepoId()));
+		return taxDAO.getTaxById(taxId).getName() + "/" + taxId.getRepoId();
 	}
 
 	@NonNull
@@ -150,14 +154,15 @@ public class FactAcctToTabularStringConverter
 		final TableRecordReference documentRef = TableRecordReference.of(record.getAD_Table_ID(), record.getRecord_ID());
 		if (identifiersResolver != null)
 		{
-			return identifiersResolver.getIdentifier(documentRef)
-					.map(StepDefDataIdentifier::getAsString)
-					.orElseGet(documentRef::toString);
+			final StepDefDataIdentifier identifier = identifiersResolver.getIdentifier(documentRef).orElse(null);
+			if (identifier != null)
+			{
+				return identifier.getAsString() + "/" + documentRef.getRecord_ID();
+			}
 		}
-		else
-		{
-			return documentRef.toString();
-		}
+
+		// Fallback:
+		return documentRef.toString();
 	}
 
 	private Amount extractAmtSourceDr(final I_Fact_Acct record)

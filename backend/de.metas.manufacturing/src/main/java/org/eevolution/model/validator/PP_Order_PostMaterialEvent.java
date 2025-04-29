@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.eventbus.MetasfreshEventBusService;
+import de.metas.material.event.pporder.PPOrder;
 import de.metas.material.event.pporder.PPOrderChangedEvent;
 import de.metas.material.event.pporder.PPOrderDeletedEvent;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
@@ -67,12 +68,27 @@ public class PP_Order_PostMaterialEvent
 			return;
 		}
 
+		createAndEnqueuePPOrderDeletedEvent(ppOrderRecord);
+	}
+
+	private void createAndEnqueuePPOrderDeletedEvent(final @NonNull I_PP_Order ppOrderRecord)
+	{
+		final PPOrder ppOrderPojo = ppOrderConverter.toPPOrder(ppOrderRecord);
+
 		final PPOrderDeletedEvent event = PPOrderDeletedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(ppOrderRecord.getAD_Client_ID(), ppOrderRecord.getAD_Org_ID()))
-				.ppOrderId(ppOrderRecord.getPP_Order_ID())
+				.ppOrder(ppOrderPojo)
 				.build();
 
 		materialEventService.enqueueEventAfterNextCommit(event);
+	}
+
+	@DocValidate(//
+			timings = { ModelValidator.TIMING_BEFORE_VOID })
+	public void fireMaterialEvent_voidedPPOrder(
+			@NonNull final I_PP_Order ppOrderRecord)
+	{
+		createAndEnqueuePPOrderDeletedEvent(ppOrderRecord);
 	}
 
 	@DocValidate(timings = {

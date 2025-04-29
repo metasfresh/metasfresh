@@ -24,6 +24,7 @@ import de.metas.acct.accounts.ProductAcctType;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.doc.AcctDocRequiredServicesFacade;
 import de.metas.acct.doc.PostingException;
+import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
@@ -35,6 +36,7 @@ import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.LocalDateAndOrgId;
@@ -50,6 +52,7 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Optionals;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -194,6 +197,11 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return _currencyId.orElse(null);
 	}
 
+	private final void setCurrencyId(@Nullable final CurrencyId currencyId)
+	{
+		this._currencyId = Optional.ofNullable(currencyId);
+	}
+
 	public final CurrencyConversionTypeId getCurrencyConversionTypeId()
 	{
 		Optional<CurrencyConversionTypeId> currencyConversionTypeIdHolder = this.currencyConversionTypeIdHolder;
@@ -212,7 +220,12 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 
 	protected final void setC_ConversionType_ID(final int C_ConversionType_ID)
 	{
-		currencyConversionTypeIdHolder = CurrencyConversionTypeId.optionalOfRepoId(C_ConversionType_ID);
+		setC_ConversionType_ID(CurrencyConversionTypeId.ofRepoIdOrNull(C_ConversionType_ID));
+	}
+
+	protected final void setC_ConversionType_ID(@Nullable final CurrencyConversionTypeId conversionTypeId)
+	{
+		currencyConversionTypeIdHolder = Optional.ofNullable(conversionTypeId);
 	}
 
 	/**
@@ -245,6 +258,38 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		setAmount(amtSourceDr, amtSourceCr);
 	}   // setAmounts
 
+	protected final void setAmountDrOrCr(final BigDecimal amtSource, @NonNull final PostingSign postingSign)
+	{
+		switch (postingSign)
+		{
+			case DEBIT:
+				setAmount(amtSource, null);
+				break;
+			case CREDIT:
+				setAmount(null, amtSource);
+				break;
+			default:
+				throw new AdempiereException("Invalid postingSign: " + postingSign);
+		}
+	}
+
+	protected final void setAmountDrOrCr(@NonNull final Money amtSource, @NonNull final PostingSign postingSign)
+	{
+		setCurrencyId(amtSource.getCurrencyId());
+
+		switch (postingSign)
+		{
+			case DEBIT:
+				setAmount(amtSource.toBigDecimal(), null);
+				break;
+			case CREDIT:
+				setAmount(null, amtSource.toBigDecimal());
+				break;
+			default:
+				throw new AdempiereException("Invalid postingSign: " + postingSign);
+		}
+	}
+
 	/**
 	 * Set Converted Amounts. If converted amounts are set, they will be used as is, and no further convertion will be done.
 	 *
@@ -256,6 +301,21 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		m_AmtAcctDr = amtAcctDr;
 		m_AmtAcctCr = amtAcctCr;
 	}   // setConvertedAmt
+
+	public final void setConvertedAmt(@NonNull final BigDecimal amtAcct, @NonNull final PostingSign postingSign)
+	{
+		switch (postingSign)
+		{
+			case DEBIT:
+				setConvertedAmt(amtAcct, (BigDecimal)null);
+				break;
+			case CREDIT:
+				setConvertedAmt(null, amtAcct);
+				break;
+			default:
+				throw new AdempiereException("Invalid postingSign: " + postingSign);
+		}
+	}
 
 	/**
 	 * Line Net Amount or Dr-Cr
@@ -577,7 +637,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return AttributeSetInstanceId.ofRepoIdOrNone(getValue("M_AttributeSetInstance_ID"));
 	}
 
-	public final int getM_Locator_ID()
+	public int getM_Locator_ID()
 	{
 		return getValue("M_Locator_ID");
 	}

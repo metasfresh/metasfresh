@@ -23,6 +23,7 @@ import lombok.NonNull;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.springframework.stereotype.Service;
@@ -110,7 +111,7 @@ public class PPOrderPojoConverter
 									 .build())
 				.lines(toPPOrderLinesList(ppOrderRecord))
 				.docStatus(DocStatus.ofCode(ppOrderRecord.getDocStatus()))
-				.ppOrderId(ppOrderRecord.getPP_Order_ID())
+				.ppOrderId(PPOrderId.ofRepoId(ppOrderRecord.getPP_Order_ID()))
 				.build();
 	}
 

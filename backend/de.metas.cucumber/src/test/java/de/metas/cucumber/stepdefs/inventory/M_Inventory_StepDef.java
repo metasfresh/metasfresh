@@ -165,18 +165,6 @@ public class M_Inventory_StepDef
 		huTable.put(huIdentifier, InterfaceWrapperHelper.load(huId, I_M_HU.class));
 	}
 
-	@And("metasfresh initially has M_Inventory data")
-	public void setupM_Inventory_Data(@NonNull final DataTable dataTable)
-	{
-		DataTableRows.of(dataTable).forEach(this::createM_Inventory);
-	}
-
-	@And("metasfresh initially has M_InventoryLine data")
-	public void setupM_InventoryLine_Data(@NonNull final DataTable dataTable)
-	{
-		DataTableRows.of(dataTable).forEach(this::createM_InventoryLine);
-	}
-
 	@And("complete inventory with inventoryIdentifier {string}")
 	public void complete_inventory(@NonNull final String identifiersString)
 	{
@@ -277,63 +265,7 @@ public class M_Inventory_StepDef
 	{
 		return inventoryLine.getQtyCount().subtract(inventoryLine.getQtyBook()).signum() >= 0;
 	}
-
-	private void createM_Inventory(@NonNull final DataTableRow row)
-	{
-		final @NonNull StepDefDataIdentifier identifier = row.getAsIdentifier("M_Inventory_ID");
-		final Timestamp movementDate = row.getAsLocalDateTimestamp("MovementDate");
-		final String documentNo = row.getAsString("DocumentNo");
-
-		final I_M_Inventory inventoryRecord = newInstance(I_M_Inventory.class);
-		inventoryRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
-		inventoryRecord.setC_DocType_ID(StepDefConstants.DOC_TYPE_ID_MMI.getRepoId());
-		inventoryRecord.setDocStatus(DocStatus.Drafted.getCode());
-
-		inventoryRecord.setMovementDate(movementDate);
-		inventoryRecord.setDocumentNo(documentNo);
-
-		saveRecord(inventoryRecord);
-
-		inventoryTable.put(identifier, inventoryRecord);
-	}
-
-	private void createM_InventoryLine(@NonNull final DataTableRow row)
-	{
-		final InventoryId inventoryId = inventoryTable.getId(row.getAsIdentifier("M_Inventory_ID"));
-
-		final I_M_InventoryLine inventoryLineRecord = newInstance(I_M_InventoryLine.class);
-		inventoryLineRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
-		inventoryLineRecord.setC_UOM_ID(UomId.toRepoId(UomId.EACH));
-		inventoryLineRecord.setM_Locator_ID(StepDefConstants.LOCATOR_ID.getRepoId());
-
-		row.getAsOptionalIdentifier(I_M_InventoryLine.COLUMNNAME_M_AttributeSetInstance_ID)
-				.map(attributeSetInstanceTable::getId)
-				.ifPresent(asiId -> inventoryLineRecord.setM_AttributeSetInstance_ID(asiId.getRepoId()));
-
-		inventoryLineRecord.setHUAggregationType(HUAggregationType.SINGLE_HU.getCode());
-		inventoryLineRecord.setIsCounted(true);
-
-		inventoryLineRecord.setM_Inventory_ID(inventoryId.getRepoId());
-		inventoryLineRecord.setQtyBook(row.getAsBigDecimal("QtyBook"));
-		inventoryLineRecord.setQtyCount(row.getAsBigDecimal("QtyCount"));
-
-		final StepDefDataIdentifier productIdentifier = row.getAsIdentifier("M_Product_ID");
-		ProductId productId = productTable.getIdOptional(productIdentifier).orElse(null);
-		if (productId == null)
-		{
-			productId = productIdentifier.getAsId(ProductId.class);
-			final I_M_Product productById = productDAO.getById(productId);
-			productTable.putOrReplace(productIdentifier, productById);
-
-		}
-		inventoryLineRecord.setM_Product_ID(productId.getRepoId());
-
-		saveRecord(inventoryLineRecord);
-
-		row.getAsOptionalIdentifier("M_InventoryLine_ID")
-				.ifPresent(inventoryLineIdentifier -> inventoryLineTable.put(inventoryLineIdentifier, inventoryLineRecord));
-	}
-
+	
 	@Given("metasfresh contains single line completed inventories")
 	public void addSingleLineInventories(@NonNull final DataTable dataTable)
 	{

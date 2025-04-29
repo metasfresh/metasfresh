@@ -98,7 +98,7 @@ public class QRCodeConfigurationService
 	@NonNull
 	public ImmutableMap<QRCodeConfigurationId, QRCodeConfiguration> getByIds(@NonNull final ImmutableSet<QRCodeConfigurationId> qrCodeConfigurationIds)
 	{
-		return repository.getByIds(qrCodeConfigurationIds);
+		return repository.getActiveByIds(qrCodeConfigurationIds);
 	}
 
 	@NonNull
@@ -109,6 +109,6 @@ public class QRCodeConfigurationService
 				.map(productBL::getById)
 				.map(I_M_Product::getQRCode_Configuration_ID)
 				.map(QRCodeConfigurationId::ofRepoIdOrNull)
-				.map(repository::getById);
+				.flatMap(repository::getActiveById);
 	}
 }

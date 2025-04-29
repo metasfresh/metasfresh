@@ -34,7 +34,7 @@ import java.util.Set;
  */
 public interface PickingJobLoaderSupportingServices
 {
-	PickingJobOptions getPickingJobOptions(@NonNull final BPartnerId customerId);
+	PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId);
 
 	void warmUpCachesFrom(@NonNull PackageableList items);
 

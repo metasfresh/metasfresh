@@ -8,7 +8,7 @@ import { GetQuantityDialog, QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/s
 import { expectErrorToast } from '../../utils/common';
 import { PickingJobLineScreen } from '../../utils/screens/picking/PickingJobLineScreen';
 
-const createMasterdata = async ({ filterByQRCode } = {}) => {
+const createMasterdata = async ({ filterByQRCode, anonymousPickHUsOnTheFly } = {}) => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -23,7 +23,8 @@ const createMasterdata = async ({ filterByQRCode } = {}) => {
                     allowPickingAnyHU: true,
                     pickWithNewLU: true,
                     allowNewTU: true,
-                    filterByQRCode,
+                    filterByQRCode: filterByQRCode ?? false,
+                    anonymousPickHUsOnTheFly: anonymousPickHUsOnTheFly ?? false,
                     customers: [
                         { customer: "customer1" },
                         { customer: "customer2" },
@@ -225,4 +226,47 @@ test('Filter by EAN13', async ({ page }) => {
             { qtyToDeliver: 21, productId: masterdata.products.P2.id },
         ]);
     });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Anonymous pick HUs on the fly', async ({ page }) => {
+    const masterdata = await createMasterdata({ anonymousPickHUsOnTheFly: true });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.expectJobButtons([
+        { qtyToDeliver: 72, productId: masterdata.products.P1.id },
+        { qtyToDeliver: 54, productId: masterdata.products.P2.id },
+    ]);
+
+    await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver: 72 });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.P1_20x4.luName });
+    
+    // NOTE: we are not scanning the pick from HU, because we want to pick on the fly
+
+    await test.step('Line 1 - Pick entirely', async () => {
+        await PickingJobScreen.clickLineButton({ index: 1 })
+        await GetQuantityDialog.waitForDialog();
+        await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: 5 /*TU*/ });
+        await PickingJobScreen.waitForScreen();
+    });
+    await test.step('Line 2 - Pick entirely', async () => {
+        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot2.qrCode });
+        await PickingJobScreen.clickLineButton({ index: 2 })
+        await GetQuantityDialog.waitForDialog();
+        await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: 6 /*TU*/ });
+        await PickingJobScreen.waitForScreen();
+    });
+    await test.step('Line 3 - Pick entirely', async () => {
+        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot3.qrCode });
+        await PickingJobScreen.clickLineButton({ index: 3 })
+        await GetQuantityDialog.waitForDialog();
+        await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: 7 /*TU*/ });
+    });
+
+    await PickingJobScreen.waitForScreen();
+    await PickingJobScreen.complete();
 });

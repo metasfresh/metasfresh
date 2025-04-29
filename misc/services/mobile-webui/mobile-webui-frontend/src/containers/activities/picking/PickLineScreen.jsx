@@ -3,7 +3,7 @@ import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../utils/translations';
 import { updateHeaderEntry } from '../../../actions/HeaderActions';
-import { getActivityById, getLineByIdFromActivity } from '../../../reducers/wfProcesses';
+import { getActivityById, getLineByIdFromActivity, isAnonymousPickHUsOnTheFly } from '../../../reducers/wfProcesses';
 
 import PickStepButton from './PickStepButton';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
@@ -24,6 +24,7 @@ import SelectCurrentLUTUButtons from './SelectCurrentLUTUButtons';
 import { startWorkflowRequest } from '../../../api/launchers';
 import { toastError } from '../../../utils/toast';
 import { APPLICATION_ID_Manufacturing } from '../../../apps/manufacturing/constants';
+import { PICK_ON_THE_FLY_QRCODE } from './PickConfig';
 
 const PickLineScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
@@ -37,6 +38,7 @@ const PickLineScreen = () => {
     pickFromManufacturingOrder,
     pickFromHUQRCode,
     allowPickingAnyHU,
+    allowAnonymousPickHUsOnTheFly,
     steps,
     pickingSlot,
     pickingUnit,
@@ -47,9 +49,20 @@ const PickLineScreen = () => {
     qtyToPickRemaining,
     uom,
     manuallyClosed,
+    additionalHeaderProperties,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
-  useHeaderUpdate({ url, caption, uom, pickingSlot, pickingUnit, packingItemName, qtyToPick, qtyPicked });
+  useHeaderUpdate({
+    url,
+    caption,
+    uom,
+    pickingSlot,
+    pickingUnit,
+    packingItemName,
+    qtyToPick,
+    qtyPicked,
+    additionalHeaderProperties,
+  });
 
   const onPickFromManufacturingOrderClicked = () => {
     startWorkflowRequest({
@@ -97,6 +110,18 @@ const PickLineScreen = () => {
     );
   };
 
+  const onPickQtyButtonClick = () => {
+    history.push(
+      pickingLineScanScreenLocation({
+        applicationId,
+        wfProcessId,
+        activityId,
+        lineId,
+        qrCode: PICK_ON_THE_FLY_QRCODE,
+      })
+    );
+  };
+
   const onClose = () => {
     closePickingJobLine({ wfProcessId, lineId })
       .then((wfProcess) => {
@@ -114,6 +139,7 @@ const PickLineScreen = () => {
   const isShowPickFromManufacturingOrder = !manuallyClosed && pickFromManufacturingOrder != null;
   const isShowScanQRCodeButton = !manuallyClosed && allowPickingAnyHU && pickFromHUQRCode == null;
   const isShowPickHUButton = !manuallyClosed && pickFromHUQRCode != null;
+  const isShowPickQtyButton = !manuallyClosed && allowAnonymousPickHUsOnTheFly;
 
   return (
     <div className="section pt-2">
@@ -137,6 +163,9 @@ const PickLineScreen = () => {
         )}
         {isShowPickHUButton && (
           <ButtonWithIndicator captionKey="activities.picking.PickHU" onClick={onPickButtonClick} />
+        )}
+        {isShowPickQtyButton && (
+          <ButtonWithIndicator captionKey="activities.picking.pickQtyButton" onClick={onPickQtyButtonClick} />
         )}
         {steps.length > 0 &&
           steps.map((stepItem, idx) => {
@@ -178,6 +207,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     pickFromHUQRCode: getCurrentPickFromHUQRCode({ activity }),
     pickFromManufacturingOrder: line?.pickFromManufacturingOrder,
     allowPickingAnyHU: isAllowPickingAnyHUForLine({ line }),
+    allowAnonymousPickHUsOnTheFly: isAnonymousPickHUsOnTheFly({ activity }),
     steps: Object.values(stepsById),
     pickingSlot: line?.pickingSlot,
     pickingUnit: line?.pickingUnit,
@@ -188,6 +218,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     qtyPicked: getQtyPickedOrRejectedTotalForLine({ line }),
     qtyToPickRemaining: getQtyToPickRemainingForLine({ line }),
     manuallyClosed: line?.manuallyClosed,
+    additionalHeaderProperties: line?.additionalHeaderProperties,
   };
 };
 
@@ -200,6 +231,7 @@ export const useHeaderUpdate = ({
   uom,
   qtyToPick,
   qtyPicked,
+  additionalHeaderProperties,
 }) => {
   const dispatch = useDispatch();
   useEffect(() => {
@@ -231,6 +263,7 @@ export const useHeaderUpdate = ({
             caption: trl('activities.picking.picked'),
             value: formatQtyToHumanReadableStr({ qty: qtyPicked, uom }),
           },
+          ...(additionalHeaderProperties?.entries || []),
         ],
       })
     );

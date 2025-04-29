@@ -91,4 +91,5 @@ public class DocBaseAndSubType
 	public boolean isMediated() {return (docBaseType.isPurchaseOrder()) && docSubType.isMediated();}
 
 	public boolean isRequisition() {return (docBaseType.isPurchaseOrder()) && docSubType.isRequisition();}
+
 }

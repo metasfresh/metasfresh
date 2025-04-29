@@ -56,9 +56,7 @@ public class SupplyRequiredEventCreator
 				requiredAdditionalQty,
 				supplyCandidateId);
 
-		return SupplyRequiredEvent.builder()
-				.supplyRequiredDescriptor(descriptor)
-				.build();
+		return SupplyRequiredEvent.of(descriptor);
 	}
 
 	private static void verifyCandidateType(final Candidate demandCandidate)

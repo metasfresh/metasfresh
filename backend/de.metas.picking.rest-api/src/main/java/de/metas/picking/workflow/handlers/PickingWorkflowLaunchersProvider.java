@@ -32,13 +32,16 @@ import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetGroupList;
 import de.metas.workflow.rest_api.model.facets.WorkflowLaunchersFacetQuery;
 import de.metas.workplace.WorkplaceService;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.util.lang.SynchronizedMutable;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.time.Duration;
 import java.util.ArrayList;
 
 import static de.metas.picking.workflow.handlers.PickingMobileApplication.APPLICATION_ID;
@@ -56,19 +59,21 @@ public class PickingWorkflowLaunchersProvider
 	@NonNull private final IDocumentLocationBL documentLocationBL;
 	@NonNull private final ScannedProductCodeResolver scannedProductCodeResolver;
 
-	private final CCache<UserId, SynchronizedMutable<WorkflowLaunchersList>> launchersCache = CCache.<UserId, SynchronizedMutable<WorkflowLaunchersList>>builder().build();
+	private final CCache<UserId, SynchronizedMutable<ComputedWorkflowLaunchers>> launchersCache = CCache.<UserId, SynchronizedMutable<ComputedWorkflowLaunchers>>builder().build();
 
 	public WorkflowLaunchersList provideLaunchers(@NonNull final WorkflowLaunchersQuery query)
 	{
+		//noinspection DataFlowIssue
 		return launchersCache.getOrLoad(query.getUserId(), SynchronizedMutable::empty)
-				.compute(previousLaunchers -> checkStateAndComputeLaunchers(query, previousLaunchers));
+				.compute(previousLaunchers -> checkStateAndComputeLaunchers(query, previousLaunchers))
+				.getList();
 	}
 
-	private WorkflowLaunchersList checkStateAndComputeLaunchers(
+	private ComputedWorkflowLaunchers checkStateAndComputeLaunchers(
 			@NonNull final WorkflowLaunchersQuery query,
-			@Nullable final WorkflowLaunchersList previousLaunchers)
+			@Nullable final ComputedWorkflowLaunchers previousLaunchers)
 	{
-		if (previousLaunchers == null || previousLaunchers.isStaled(query.getMaxStaleAccepted()))
+		if (previousLaunchers == null || !previousLaunchers.matches(query))
 		{
 			return computeLaunchers(query);
 		}
@@ -78,7 +83,7 @@ public class PickingWorkflowLaunchersProvider
 		}
 	}
 
-	private WorkflowLaunchersList computeLaunchers(@NonNull final WorkflowLaunchersQuery query)
+	private ComputedWorkflowLaunchers computeLaunchers(@NonNull final WorkflowLaunchersQuery query)
 	{
 		boolean returnNoResult = false;
 		ResolvedScannedProductCodes scannedProductCodes = null;
@@ -142,12 +147,14 @@ public class PickingWorkflowLaunchersProvider
 					.forEach(currentResult::add);
 		}
 
-		return WorkflowLaunchersList.builder()
+		final WorkflowLaunchersList list = WorkflowLaunchersList.builder()
 				.launchers(ImmutableList.copyOf(currentResult))
 				.orderByField(OrderBy.descending(PickingJobFieldType.RUESTPLATZ_NR))
 				.filterByQRCode(query.getFilterByQRCode() != null ? query.getFilterByQRCode().toPrintableScannedCode() : null)
 				.timestamp(SystemTime.asInstant())
 				.build();
+
+		return ComputedWorkflowLaunchers.ofListAndQuery(list, query);
 	}
 
 	@NonNull
@@ -210,10 +217,51 @@ public class PickingWorkflowLaunchersProvider
 
 	public void invalidateCacheByUserId(@NonNull final UserId invokerId)
 	{
-		final SynchronizedMutable<WorkflowLaunchersList> userCachedWorkflows = launchersCache.get(invokerId);
+		final SynchronizedMutable<ComputedWorkflowLaunchers> userCachedWorkflows = launchersCache.get(invokerId);
 		if (userCachedWorkflows != null)
 		{
 			userCachedWorkflows.setValue(null);
+		}
+	}
+
+	//
+	//
+	//
+
+	@Value
+	@Builder
+	private static class ComputedWorkflowLaunchers
+	{
+		@NonNull WorkflowLaunchersList list;
+		@NonNull WorkflowLaunchersQuery validationKey;
+
+		private ComputedWorkflowLaunchers(@NonNull final WorkflowLaunchersList list, @NonNull final WorkflowLaunchersQuery validationKey)
+		{
+			this.list = list;
+			this.validationKey = validationKey;
+		}
+
+		public static ComputedWorkflowLaunchers ofListAndQuery(@NonNull final WorkflowLaunchersList list, @NonNull final WorkflowLaunchersQuery query)
+		{
+			return new ComputedWorkflowLaunchers(list, toValidationKey(query));
+		}
+
+		private static WorkflowLaunchersQuery toValidationKey(@NonNull final WorkflowLaunchersQuery query)
+		{
+			return query.toBuilder()
+					.maxStaleAccepted(Duration.ZERO)
+					.build();
+		}
+
+		public boolean matches(@NonNull final WorkflowLaunchersQuery query)
+		{
+			if (list.isStaled(query.getMaxStaleAccepted()))
+			{
+				return false;
+			}
+
+			final WorkflowLaunchersQuery validationKeyExpected = toValidationKey(query);
+			return validationKey.equals(validationKeyExpected);
 		}
 	}
 }

@@ -140,6 +140,9 @@ public final class PickingJob
 	@JsonIgnore
 	public boolean isAllowPickingAnyHU() {return header.isAllowPickingAnyHU();}
 
+	@JsonIgnore
+	public boolean isAnonymousPickHUsOnTheFly() {return header.isAnonymousPickHUsOnTheFly();}
+
 	public UserId getLockedBy() {return header.getLockedBy();}
 
 	public PickingJob withLockedBy(@Nullable final UserId lockedBy)

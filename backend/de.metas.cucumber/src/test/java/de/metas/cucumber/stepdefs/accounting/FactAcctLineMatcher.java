@@ -35,8 +35,8 @@ public class FactAcctLineMatcher
 	@Nullable private final Money amtSourceCr;
 	@Nullable private final Quantity qty;
 	@NonNull @Getter private final TableRecordReference documentRef;
-	@Nullable @Getter private final TaxId taxId;
-	@Nullable Optional<BPartnerId> bpartnerId;
+	@Nullable private final Optional<TaxId> taxId;
+	@Nullable private final Optional<BPartnerId> bpartnerId;
 
 	@Override
 	public String toString() {return row.toTabularString();}
@@ -97,12 +97,24 @@ public class FactAcctLineMatcher
 			softly.assertThat(record.getAmtAcctDr())
 					.as(description.newWithMessage("AmtAcctDr"))
 					.isEqualByComparingTo(amtAcctDr);
+			if (amtAcctDr.signum() != 0)
+			{
+				softly.assertThat(record.getAmtAcctCr())
+						.as(description.newWithMessage("AmtAcctCr"))
+						.isEqualByComparingTo(BigDecimal.ZERO);
+			}
 		}
 		if (amtAcctCr != null)
 		{
 			softly.assertThat(record.getAmtAcctCr())
 					.as(description.newWithMessage("AmtAcctCr"))
 					.isEqualByComparingTo(amtAcctCr);
+			if (amtAcctCr.signum() != 0)
+			{
+				softly.assertThat(record.getAmtAcctDr())
+						.as(description.newWithMessage("AmtAcctDr"))
+						.isEqualByComparingTo(BigDecimal.ZERO);
+			}
 		}
 		if (amtSourceDr != null)
 		{
@@ -112,6 +124,12 @@ public class FactAcctLineMatcher
 			softly.assertThat(record.getC_Currency_ID())
 					.as(description.newWithMessage("C_Currency_ID"))
 					.isEqualTo(amtSourceDr.getCurrencyId().getRepoId());
+			if (amtSourceDr.signum() != 0)
+			{
+				softly.assertThat(record.getAmtSourceCr())
+						.as(description.newWithMessage("AmtSourceCr"))
+						.isEqualByComparingTo(BigDecimal.ZERO);
+			}
 		}
 		if (amtSourceCr != null)
 		{
@@ -121,6 +139,12 @@ public class FactAcctLineMatcher
 			softly.assertThat(record.getC_Currency_ID())
 					.as(description.newWithMessage("C_Currency_ID"))
 					.isEqualTo(amtSourceCr.getCurrencyId().getRepoId());
+			if (amtSourceCr.signum() != 0)
+			{
+				softly.assertThat(record.getAmtSourceDr())
+						.as(description.newWithMessage("AmtSourceDr"))
+						.isEqualByComparingTo(BigDecimal.ZERO);
+			}
 		}
 		if (qty != null)
 		{
@@ -144,7 +168,7 @@ public class FactAcctLineMatcher
 		{
 			softly.assertThat(TaxId.ofRepoIdOrNull(record.getC_Tax_ID()))
 					.as(description.newWithMessage("C_Tax_ID"))
-					.isEqualTo(taxId);
+					.isEqualTo(taxId.orElse(null));
 		}
 		if (bpartnerId != null)
 		{

@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.common.util.time.SystemTime;
 import de.metas.ean13.EAN13;
 import de.metas.ean13.EAN13ProductCode;
 import de.metas.gs1.GTIN;
@@ -23,6 +24,7 @@ import de.metas.handlingunits.allocation.transfer.LUTUResult.LU;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TU;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TUsList;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
@@ -58,6 +60,7 @@ import de.metas.handlingunits.qrcodes.leich_und_mehl.LMQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.qrcodes.special.PickOnTheFlyQRCode;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
@@ -67,6 +70,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.OrderLineId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -120,50 +124,30 @@ public class PickingJobPickCommand
 	private final static AdMessageKey NO_QTY_ERROR_MSG = AdMessageKey.of("de.metas.handlingunits.picking.job.NO_QTY_ERROR_MSG");
 	//
 	// Services
-	@NonNull
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	@NonNull
-	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	@NonNull
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	@NonNull
-	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
-	@NonNull
-	private final IHUShipmentScheduleBL shipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
-	@NonNull
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	@NonNull
-	private final PickingJobService pickingJobService;
-	@NonNull
-	private final PickingJobRepository pickingJobRepository;
-	@NonNull
-	private final HUQRCodesService huQRCodesService;
-	@NonNull
-	private final PackToHUsProducer packToHUsProducer;
-	@NonNull
-	private final HUReservationService huReservationService;
-	@NonNull
-	private final PickingConfigRepositoryV2 pickingConfigRepo;
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
+	@NonNull private final IHUShipmentScheduleBL shipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final PickingJobService pickingJobService;
+	@NonNull private final PickingJobRepository pickingJobRepository;
+	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final PackToHUsProducer packToHUsProducer;
+	@NonNull private final HUReservationService huReservationService;
+	@NonNull private final PickingConfigRepositoryV2 pickingConfigRepo;
+	@NonNull private final InventoryService inventoryService;
 	//
 	// Params
-	@NonNull
-	private final PickingJobLineId _lineId;
-	@NonNull
-	private final PickingUnit pickingUnit;
-	@NonNull
-	private final PickingJobStepPickFromKey stepPickFromKey;
-	@Nullable
-	private final IHUQRCode pickFromHUQRCode;
-	@NonNull
-	private final Quantity qtyToPickCUs;
-	@Nullable
-	private final QtyTU qtyToPickTUs;
-	@Nullable
-	private final QtyRejectedWithReason qtyRejectedCUs;
-	@Nullable
-	private final Quantity catchWeight;
+	@NonNull private final PickingJobLineId _lineId;
+	@NonNull private final PickingUnit pickingUnit;
+	@NonNull private final PickingJobStepPickFromKey stepPickFromKey;
+	@Nullable private final IHUQRCode pickFromHUQRCode;
+	@NonNull private final Quantity qtyToPickCUs;
+	@Nullable private final QtyTU qtyToPickTUs;
+	@Nullable private final QtyRejectedWithReason qtyRejectedCUs;
+	@Nullable private final Quantity catchWeight;
 	private final boolean isPickWholeTU;
 	private final boolean checkIfAlreadyPacked;
 	private final boolean createInventoryForMissingQty;
@@ -172,14 +156,12 @@ public class PickingJobPickCommand
 	private final boolean isSetLotNo;
 	private final String lotNo;
 	private final boolean isCloseTarget;
-	@NonNull
-	private final HashMap<ShipmentScheduleId, ShipmentScheduleInfo> shipmentSchedulesCache = new HashMap<>();
 	//
 	// State
-	@NonNull
-	private PickingJob _pickingJob;
-	@Nullable
-	private PickingJobStepId _stepId;
+	@NonNull private PickingJob _pickingJob;
+	@Nullable private PickingJobStepId _stepId;
+	@Nullable private HUInfo _pickfromHUIdAndQRCode; // lazy
+	@NonNull private final HashMap<ShipmentScheduleId, ShipmentScheduleInfo> shipmentSchedulesCache = new HashMap<>();
 
 	@Builder
 	private PickingJobPickCommand(
@@ -216,6 +198,7 @@ public class PickingJobPickCommand
 		this.huQRCodesService = huQRCodesService;
 		this.huReservationService = huReservationService;
 		this.pickingConfigRepo = pickingConfigRepo;
+		this.inventoryService = inventoryService;
 		this.packToHUsProducer = PackToHUsProducer.builder()
 				.handlingUnitsBL(handlingUnitsBL)
 				.huPIItemProductBL(Services.get(IHUPIItemProductBL.class))
@@ -446,7 +429,7 @@ public class PickingJobPickCommand
 
 	private PickingJobStep getStep()
 	{
-		final PickingJobStepId stepId = getStepId(); // IMPORTANT: don't inline this because getStepId() changes the current "_pickingJob"
+		final PickingJobStepId stepId = getOrCreateStepId(); // IMPORTANT: don't inline this because getOrCreateStepId() changes the current "_pickingJob"
 		return _pickingJob.getStepById(stepId);
 	}
 
@@ -478,7 +461,7 @@ public class PickingJobPickCommand
 
 	private void changeStep(@NonNull final UnaryOperator<PickingJobStep> stepMapper)
 	{
-		_pickingJob = _pickingJob.withChangedStep(getStepId(), stepMapper);
+		_pickingJob = _pickingJob.withChangedStep(getOrCreateStepId(), stepMapper);
 	}
 
 	private void checkOrAllocatePickingSlot()
@@ -560,7 +543,7 @@ public class PickingJobPickCommand
 		}
 	}
 
-	private PickingJobStepId getStepId()
+	private PickingJobStepId getOrCreateStepId()
 	{
 		if (this._stepId == null)
 		{
@@ -579,9 +562,8 @@ public class PickingJobPickCommand
 		final PickingJobStepId newStepId = pickingJobRepository.newPickingJobStepId();
 
 		final PickingJobLine line = getLine();
-		final HUQRCode pickFromHUQRCode = getPickFromHUQRCode();
-		final HuId pickFromHUId = huQRCodesService.getHuIdByQRCode(pickFromHUQRCode);
-		final LocatorId pickFromLocatorId = handlingUnitsBL.getLocatorId(pickFromHUId);
+		final HUInfo pickFromHU = getPickFromHUIdAndQRCode();
+		final LocatorId pickFromLocatorId = handlingUnitsBL.getLocatorId(pickFromHU.getId());
 
 		final PackToSpec packToSpec;
 		if (pickingUnit.isTU())
@@ -604,10 +586,7 @@ public class PickingJobPickCommand
 								.id(pickFromLocatorId)
 								.caption(warehouseBL.getLocatorNameById(pickFromLocatorId))
 								.build())
-						.pickFromHU(HUInfo.builder()
-								.id(pickFromHUId)
-								.qrCode(pickFromHUQRCode)
-								.build())
+						.pickFromHU(pickFromHU)
 						.packToSpec(packToSpec)
 						.build()
 		);
@@ -616,25 +595,68 @@ public class PickingJobPickCommand
 	}
 
 	@NonNull
-	private HUQRCode getPickFromHUQRCode()
+	private HUInfo getPickFromHUIdAndQRCode()
+	{
+		if (this._pickfromHUIdAndQRCode == null)
+		{
+			this._pickfromHUIdAndQRCode = computePickFromHUIdAndQRCode();
+		}
+		return this._pickfromHUIdAndQRCode;
+	}
+
+	@NonNull
+	private HUInfo computePickFromHUIdAndQRCode()
 	{
 		final IHUQRCode pickFromHUQRCode = Optional.ofNullable(this.pickFromHUQRCode)
 				.orElseThrow(() -> new AdempiereException(NO_QR_CODE_ERROR_MSG));
 
 		if (pickFromHUQRCode instanceof HUQRCode)
 		{
-			return (HUQRCode)pickFromHUQRCode;
+			final HUQRCode huQRCode = (HUQRCode)pickFromHUQRCode;
+			final HuId huId = huQRCodesService.getHuIdByQRCode(huQRCode);
+			return HUInfo.ofHuIdAndQRCode(huId, huQRCode);
+		}
+		else if (pickFromHUQRCode instanceof PickOnTheFlyQRCode)
+		{
+			return createPickFromHUOnTheFly();
 		}
 		else
 		{
-			final String lotNumber = pickFromHUQRCode.getLotNumber().orElseThrow(() -> new AdempiereException(L_M_QR_CODE_ERROR_MSG));
-
-			return handlingUnitsBL.getFirstHuIdByExternalLotNo(lotNumber)
-					.map(huQRCodesService::getQRCodeByHuId)
+			final String lotNumber = pickFromHUQRCode.getLotNumber()
+					.orElseThrow(() -> new AdempiereException(L_M_QR_CODE_ERROR_MSG)
+							.setParameter("pickFromHUQRCode", pickFromHUQRCode));
+			final HuId huId = handlingUnitsBL.getFirstHuIdByExternalLotNo(lotNumber)
 					.orElseThrow(() -> new AdempiereException(QR_CODE_EXTERNAL_LOT_ERROR_MSG)
 							.appendParametersToMessage()
 							.setParameter("LotNumber", lotNumber));
+			final HUQRCode huQRCode = huQRCodesService.getQRCodeByHuId(huId);
+			return HUInfo.ofHuIdAndQRCode(huId, huQRCode);
 		}
+	}
+
+	private HUInfo createPickFromHUOnTheFly()
+	{
+		final PickingJob pickingJob = getPickingJob();
+		if (!pickingJob.isAnonymousPickHUsOnTheFly())
+		{
+			throw new AdempiereException("Anonymous picking HUs on the fly is not allowed");
+		}
+
+		final ShipmentScheduleInfo shipmentScheduleInfo = getShipmentScheduleInfo();
+
+		final HuId newCUId = inventoryService.createInventoryForMissingQty(CreateVirtualInventoryWithQtyReq.builder()
+				.clientAndOrgId(shipmentScheduleInfo.getClientAndOrgId())
+				.warehouseId(shipmentScheduleInfo.getWarehouseId())
+				.productId(shipmentScheduleInfo.getProductId())
+				.qty(qtyToPickCUs)
+				.movementDate(SystemTime.asZonedDateTime())
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.pickingJobId(pickingJob.getId())
+				.build());
+
+		final HUQRCode huQRCode = huQRCodesService.getQRCodeByHuId(newCUId);
+
+		return HUInfo.ofHuIdAndQRCode(newCUId, huQRCode);
 	}
 
 	private ShipmentScheduleId getShipmentScheduleId()
@@ -861,6 +883,7 @@ public class PickingJobPickCommand
 				.actualPickedHU(getSingleTUInfo(tu))
 				.qtyPicked(qtyPicked)
 				.catchWeight(catchWeight)
+				.createdAt(SystemTime.asInstant())
 				.build();
 	}
 
@@ -888,6 +911,7 @@ public class PickingJobPickCommand
 			result.add(pickedHUTemplate
 					.actualPickedHU(HUInfo.builder().id(tu.getId()).qrCode(huQRCodes.get(i)).build())
 					.qtyPicked(qtyPickedPerTU.get(i))
+					.createdAt(SystemTime.asInstant())
 					.build());
 		}
 
@@ -1140,7 +1164,7 @@ public class PickingJobPickCommand
 		}
 		else
 		{
-			return huQRCodesService.getHuIdByQRCode(getPickFromHUQRCode());
+			return getPickFromHUIdAndQRCode().getId();
 		}
 	}
 
@@ -1154,6 +1178,7 @@ public class PickingJobPickCommand
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleBL.getById(shipmentScheduleId);
 
 		return ShipmentScheduleInfo.builder()
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID()))
 				.warehouseId(shipmentScheduleBL.getWarehouseId(shipmentSchedule))
 				.bpartnerId(shipmentScheduleBL.getBPartnerId(shipmentSchedule))
 				.salesOrderLineId(Optional.ofNullable(OrderLineId.ofRepoIdOrNull(shipmentSchedule.getC_OrderLine_ID())))
@@ -1200,21 +1225,15 @@ public class PickingJobPickCommand
 	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	private static class ShipmentScheduleInfo
 	{
-		@NonNull
-		WarehouseId warehouseId;
-		@NonNull
-		BPartnerId bpartnerId;
-		@NonNull
-		Optional<OrderLineId> salesOrderLineId;
+		@NonNull ClientAndOrgId clientAndOrgId;
+		@NonNull WarehouseId warehouseId;
+		@NonNull BPartnerId bpartnerId;
+		@NonNull Optional<OrderLineId> salesOrderLineId;
 
-		@NonNull
-		ProductId productId;
-		@NonNull
-		AttributeSetInstanceId asiId;
-		@NonNull
-		Optional<ShipmentAllocationBestBeforePolicy> bestBeforePolicy;
+		@NonNull ProductId productId;
+		@NonNull AttributeSetInstanceId asiId;
+		@NonNull Optional<ShipmentAllocationBestBeforePolicy> bestBeforePolicy;
 
-		@NonNull
-		I_M_ShipmentSchedule record;
+		@NonNull I_M_ShipmentSchedule record;
 	}
 }

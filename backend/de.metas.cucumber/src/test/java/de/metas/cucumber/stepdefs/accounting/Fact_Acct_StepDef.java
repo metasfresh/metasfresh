@@ -3,6 +3,7 @@ package de.metas.cucumber.stepdefs.accounting;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.money.MoneyService;
+import de.metas.tax.api.ITaxDAO;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -26,9 +27,11 @@ public class Fact_Acct_StepDef
 		this.identifiersResolver = identifiersResolver;
 
 		@NonNull final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+		@NonNull final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 		@NonNull final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 		this.factAcctMatchersFactory = FactAcctMatchersFactory.builder()
 				.uomDAO(uomDAO)
+				.taxDAO(taxDAO)
 				.moneyService(moneyService)
 				.identifiersResolver(identifiersResolver)
 				.bpartnerTable(bpartnerTable)
@@ -36,6 +39,7 @@ public class Fact_Acct_StepDef
 				.build();
 		this.factAcctTabularStringConverter = FactAcctToTabularStringConverter.builder()
 				.uomDAO(uomDAO)
+				.taxDAO(taxDAO)
 				.moneyService(moneyService)
 				.bpartnerTable(bpartnerTable)
 				.taxTable(taxTable)

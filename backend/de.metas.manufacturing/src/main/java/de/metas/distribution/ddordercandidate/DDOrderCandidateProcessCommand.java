@@ -140,7 +140,7 @@ class DDOrderCandidateProcessCommand
 		aggregates.values().forEach(this::createDDOrder);
 	}
 
-	private void addToAggregates(DDOrderCandidate ddOrderCandidate)
+	private void addToAggregates(final DDOrderCandidate ddOrderCandidate)
 	{
 		final HeaderAggregationKey headerAggregationKey = HeaderAggregationKey.of(ddOrderCandidate);
 

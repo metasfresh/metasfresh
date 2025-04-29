@@ -52,6 +52,7 @@ public class MobileUIPickingUserProfile
 					.isAllowSkippingRejectedReason(false)
 					.createShipmentPolicy(CreateShipmentPolicy.DO_NOT_CREATE)
 					.isAllowCompletingPartialPickingJob(true)
+       			                .isShowLastPickedBestBeforeDateForLines(false)
 					.build())
 			.filters(PickingFiltersList.ofList(ImmutableList.of(
 					PickingFilter.of(PickingJobFacetGroup.CUSTOMER, 10),
@@ -132,6 +133,7 @@ public class MobileUIPickingUserProfile
 		return launcherFieldsInOrder.stream().anyMatch(field -> PickingJobFieldType.equals(field.getField(), fieldType));
 	}
 
+	@NonNull
 	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId, @NonNull PickingJobOptionsCollection pickingJobOptionsCollection)
 	{
 		return customerId != null
