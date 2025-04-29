@@ -1854,7 +1854,7 @@ Feature: invoice payment allocation
   @Id:S0465_500
   @from:cucumber
   Scenario: sales credit memo - purchase invoice - inbound payment (REMADV case)
-    # NOTE: this kind of allocation cannot be manualy done by user (because REMADV code is doing it), but the purpose of this test
+    # NOTE: this kind of allocation cannot be manually done by user (because REMADV code is doing it), but the purpose of this test
     # is to make sure, that in case of such allocation the open amounts and accounting is correct
     Given metasfresh contains M_Products:
       | Identifier           |
