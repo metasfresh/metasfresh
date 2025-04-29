@@ -1549,6 +1549,29 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsEmployee = "IsEmployee";
 
 	/**
+	 * Set Full LU Required.
+	 * This flag indicates whether the partner requires the loading unit (LU) to be full when adding product quantities to an order line. If the flag is set to 'Y', it means the order line must contain a full loading unit. If it is set to 'N', partial loading units are allowed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsFullLURequired (boolean IsFullLURequired);
+
+	/**
+	 * Get Full LU Required.
+	 * This flag indicates whether the partner requires the loading unit (LU) to be full when adding product quantities to an order line. If the flag is set to 'Y', it means the order line must contain a full loading unit. If it is set to 'N', partial loading units are allowed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isFullLURequired();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsFullLURequired = new ModelColumn<>(I_C_BPartner.class, "IsFullLURequired", null);
+	String COLUMNNAME_IsFullLURequired = "IsFullLURequired";
+
+	/**
 	 * Set Haddex Prüfung erforderlich.
 	 *
 	 * <br>Type: YesNo
