@@ -25,20 +25,20 @@ CREATE OR REPLACE FUNCTION de_metas_acct.AccountSheet_Report(
     RETURNS
         TABLE
         (
-            konto         text,
-            gegenkonto    text,
-            Buchungsdatum text,
-            Belegdatum    text,
-            Beschreibung  character varying,
-            Steuersatz    numeric,
-            soll          numeric,
-            haben         numeric,
-            Saldo         numeric,
-            soll_währung  numeric,
-            haben_währung numeric,
-            währung       text,
-            Belegart      character varying,
-            "Nr"          text
+            "Konto"          text,
+            "Gegenkonto"     text,
+            "Buchungsdatum"  text,
+            "Belegdatum"     text,
+            "Beschreibung"   character varying,
+            "Steuersatz"     numeric,
+            "Soll"           numeric,
+            "Haben"          numeric,
+            "Saldo"          numeric,
+            "Soll Währung"   numeric,
+            "Haben Währung"  numeric,
+            "Währung"        text,
+            "Belegart"       character varying,
+            "Nr"             text
         )
     LANGUAGE plpgsql
     STABLE
@@ -60,19 +60,19 @@ BEGIN
     END IF;
 
     RETURN QUERY
-        SELECT t.AccountValueAndName::text                                                            AS konto,
-               t.counterpart_AccountValueAndName::text                                                AS gegenkonto,
-               TO_CHAR(t.dateacct, 'DD.MM.YYYY')::text                                                AS Buchungsdatum,
-               TO_CHAR(t.datetrx, 'DD.MM.YYYY')::text                                                 AS Belegdatum,
-               t.description                                                                          AS Beschreibung,
-               t.rate                                                                                 AS Steuersatz,
-               t.amtacctdr                                                                            AS soll,
-               t.amtacctcr                                                                            AS haben,
-               t.balance                                                                              AS Saldo,
-               t.amtsourcedr                                                                          AS soll_währung,
-               t.amtsourcecr                                                                          AS haben_währung,
-               (SELECT cy.iso_code FROM c_currency cy WHERE cy.c_currency_id = t.c_currency_id)::text AS währung,
-               t.docTypeName                                                                          AS Belegart,
+        SELECT t.AccountValueAndName::text                                                            AS "Konto",
+               t.counterpart_AccountValueAndName::text                                                AS "Gegenkonto",
+               TO_CHAR(t.dateacct, 'DD.MM.YYYY')::text                                                AS "Buchungsdatum",
+               TO_CHAR(t.datetrx, 'DD.MM.YYYY')::text                                                 AS "Belegdatum",
+               t.description                                                                          AS "Beschreibung",
+               t.rate                                                                                 AS "Steuersatz",
+               t.amtacctdr                                                                            AS "Soll",
+               t.amtacctcr                                                                            AS "Haben",
+               t.balance                                                                              AS "Saldo",
+               t.amtsourcedr                                                                          AS "Soll Währung",
+               t.amtsourcecr                                                                          AS "Haben Währung",
+               (SELECT cy.iso_code FROM c_currency cy WHERE cy.c_currency_id = t.c_currency_id)::text AS "Währung",
+               t.docTypeName                                                                          AS "Belegart",
                t.documentno::text                                                                     AS "Nr"
         FROM de_metas_acct.RV_AccountSheet t
         WHERE TRUE
