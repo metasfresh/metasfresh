@@ -110,3 +110,47 @@ UPDATE AD_Column SET AD_Reference_Value_ID=156, IsExcludeFromZoomTargets='Y',Upd
 -- 2025-04-30T10:10:10.491Z
 ALTER TABLE C_BP_BankAccount ADD CONSTRAINT ACountry_CBPBankAccount FOREIGN KEY (A_Country_ID) REFERENCES public.C_Country DEFERRABLE INITIALLY DEFERRED
 ;
+
+--- add to window
+
+-- Run mode: SWING_CLIENT
+
+-- Field: Geschäftspartner_OLD(123,D) -> Bankkonto(226,D) -> Land
+-- Column: C_BP_BankAccount.A_Country_ID
+-- 2025-04-30T13:46:29.702Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,589920,741989,0,226,0,TO_TIMESTAMP('2025-04-30 13:46:29.049000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'D',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,'Land',0,0,300,0,1,1,TO_TIMESTAMP('2025-04-30 13:46:29.049000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2025-04-30T13:46:29.894Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=741989 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2025-04-30T13:46:29.943Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(583601)
+;
+
+-- 2025-04-30T13:46:29.981Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=741989
+;
+
+-- 2025-04-30T13:46:30.007Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(741989)
+;
+
+-- UI Element: Geschäftspartner_OLD(123,D) -> Bankkonto(226,D) -> main -> 10 -> default.Land
+-- Column: C_BP_BankAccount.A_Country_ID
+-- 2025-04-30T13:48:14.799Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,741989,0,226,1000036,631384,'F',TO_TIMESTAMP('2025-04-30 13:48:14.363000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','N','N','N','Land',160,0,0,TO_TIMESTAMP('2025-04-30 13:48:14.363000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Geschäftspartner_OLD(123,D) -> Bankkonto(226,D) -> main -> 10 -> default.Land
+-- Column: C_BP_BankAccount.A_Country_ID
+-- 2025-04-30T13:48:25.667Z
+UPDATE AD_UI_Element SET SeqNo=158,Updated=TO_TIMESTAMP('2025-04-30 13:48:25.667000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=631384
+;
+
+-- Column: C_BP_BankAccount.A_Country
+-- 2025-04-30T13:50:49.372Z
+UPDATE AD_Column SET ReadOnlyLogic='1=1',Updated=TO_TIMESTAMP('2025-04-30 13:50:49.372000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=8212
+;
+
