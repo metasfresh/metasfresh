@@ -31,7 +31,6 @@ import de.metas.payment.sepa.api.IIBANValidationBL;
 import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
@@ -80,7 +79,7 @@ public class C_BP_BankAccount
 
 	@ModelChange(
 			timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_AFTER_NEW },
-			ifColumnsChanged = { I_C_BP_BankAccount.COLUMNNAME_A_Country_ID}
+			ifColumnsChanged = { I_C_BP_BankAccount.COLUMNNAME_A_Country_ID }
 	)
 	public void setA_Country(final I_C_BP_BankAccount bp_bankAccount)
 	{
@@ -90,16 +89,20 @@ public class C_BP_BankAccount
 			final String countryCode = countryDAO.getCountryCode(CountryId.ofRepoId(countryId));
 			bp_bankAccount.setA_Country(countryCode);
 		}
+		else
+		{
+			bp_bankAccount.setA_Country(null);
+		}
 	}
 
 	@ModelChange(
 			timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_AFTER_NEW },
-			ifColumnsChanged = { I_C_BP_BankAccount.COLUMNNAME_A_Country}
+			ifColumnsChanged = { I_C_BP_BankAccount.COLUMNNAME_A_Country }
 	)
 	public void validateA_Country(final I_C_BP_BankAccount bp_bankAccount)
 	{
 		final String A_Country = bp_bankAccount.getA_Country();
-		if (StringUtils.trimBlankToNull(A_Country) != null)
+		if (Check.isNotBlank(A_Country))
 		{
 			final CountryId countryId = countryDAO.getCountryIdByCountryCodeOrNull(A_Country);
 			if (countryId == null)
