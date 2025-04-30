@@ -81,6 +81,9 @@ public class BankAccount
 	@Nullable
 	String accountCity;
 
+	@Nullable
+	String accountCountry;
+
 	public boolean isAccountNoMatching(@NonNull final String accountNo)
 	{
 		final String QR_IBAN = StringUtils.trimBlankToNull(getQR_IBAN());

@@ -111,7 +111,6 @@ class SEPACustomerDirectDebitMarshaler_Pain_008_003_02Test
 		assertThat(xmlDocument.getCstmrDrctDbtInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.getCdtr().getNm()).isEqualTo("bankAccount.A_Name"));
 		assertThat(xmlDocument.getCstmrDrctDbtInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.getCdtr().getPstlAdr().getAdrLine().get(0)).isEqualTo("bankAccount.A_Street"));
 		assertThat(xmlDocument.getCstmrDrctDbtInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.getCdtr().getPstlAdr().getAdrLine().get(1)).isEqualTo("bankAccount.A_ZIP bankAccount.A_City"));
-		assertThat(xmlDocument.getCstmrDrctDbtInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.getCdtr().getPstlAdr().getCtry()).isNullOrEmpty());
 		assertThat(xmlDocument.getCstmrDrctDbtInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.getCdtrSchmeId().getId().getPrvtId().getOthr().getId()).isEqualTo("SEPA_CreditorIdentifier"));
 	}
 
@@ -148,7 +147,6 @@ class SEPACustomerDirectDebitMarshaler_Pain_008_003_02Test
 		bankAccount.setA_City("bankAccount.A_City");
 		bankAccount.setA_Street("bankAccount.A_Street");
 		bankAccount.setA_Zip("bankAccount.A_ZIP");
-		bankAccount.setA_Country("bankAccount.setA_Country");
 		save(bankAccount);
 
 		final I_SEPA_Export_Line line = newInstance(I_SEPA_Export_Line.class);

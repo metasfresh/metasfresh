@@ -339,6 +339,10 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		bankAccount.setIBAN(iban);
 		bankAccount.setIsEsrAccount(true);
 		bankAccount.setA_Name("bankAccount.A_Name");
+		bankAccount.setA_City("bankAccount.A_City");
+		bankAccount.setA_Street("bankAccount.A_Street");
+		bankAccount.setA_Zip("bankAccount.A_ZIP");
+		bankAccount.setA_Country("bankAccount.setA_Country");
 		save(bankAccount);
 
 		final I_SEPA_Export_Line line = newInstance(I_SEPA_Export_Line.class);

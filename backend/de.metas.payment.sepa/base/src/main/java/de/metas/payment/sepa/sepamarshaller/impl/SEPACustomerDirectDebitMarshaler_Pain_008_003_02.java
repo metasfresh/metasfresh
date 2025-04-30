@@ -468,8 +468,10 @@ public class SEPACustomerDirectDebitMarshaler_Pain_008_003_02 implements SEPAMar
 
 		final PostalAddressSEPA postalAddressSEPA = new PostalAddressSEPA();
 
-		// Note: don't use the bankAccount's A_Country, because we need an ISO-3166 in this field
-
+		if (Check.isNotBlank(bankAccount.getAccountCountry()))
+		{
+			postalAddressSEPA.setCtry(SepaUtils.replaceForbiddenChars(bankAccount.getAccountCountry()));
+		}
 		postalAddressSEPA.getAdrLine().add(SepaUtils.replaceForbiddenChars(bankAccount.getAccountStreet()));
 		postalAddressSEPA.getAdrLine().add(SepaUtils.replaceForbiddenChars(bankAccount.getAccountZip() + " " + bankAccount.getAccountCity()));
 

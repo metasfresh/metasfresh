@@ -25,25 +25,29 @@ package de.metas.payment.sepa.model.validator;
  * #L%
  */
 
+import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
+import de.metas.payment.sepa.api.IIBANValidationBL;
+import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.ModelValidator;
 
-import de.metas.payment.sepa.api.IIBANValidationBL;
-import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
-import de.metas.util.Check;
-import de.metas.util.Services;
-
 /**
  * @author cg
- *
  */
 
 @Validator(I_C_BP_BankAccount.class)
 public class C_BP_BankAccount
 {
+
+	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
+
 	@ModelChange(
 			timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_AFTER_NEW },
 			ifColumnsChanged = { I_C_BP_BankAccount.COLUMNNAME_IBAN }
@@ -74,4 +78,35 @@ public class C_BP_BankAccount
 
 	}
 
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_AFTER_NEW },
+			ifColumnsChanged = { I_C_BP_BankAccount.COLUMNNAME_A_Country_ID}
+	)
+	public void setA_Country(final I_C_BP_BankAccount bp_bankAccount)
+	{
+		final int countryId = bp_bankAccount.getA_Country_ID();
+		if (countryId > 0)
+		{
+			final String countryCode = countryDAO.getCountryCode(CountryId.ofRepoId(countryId));
+			bp_bankAccount.setA_Country(countryCode);
+		}
+	}
+
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_AFTER_NEW },
+			ifColumnsChanged = { I_C_BP_BankAccount.COLUMNNAME_A_Country}
+	)
+	public void validateA_Country(final I_C_BP_BankAccount bp_bankAccount)
+	{
+		final String A_Country = bp_bankAccount.getA_Country();
+		if (StringUtils.trimBlankToNull(A_Country) != null)
+		{
+			final CountryId countryId = countryDAO.getCountryIdByCountryCodeOrNull(A_Country);
+			if (countryId == null)
+			{
+				throw new AdempiereException("Country code " + A_Country + " not found");
+			}
+		}
+
+	}
 }
