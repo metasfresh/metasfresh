@@ -136,6 +136,7 @@ public final class PPOrderDeletedHandler
 				.builder()
 				.productionDetailsQuery(ProductionDetailsQuery.builder()
 						.ppOrderId(ppOrderCandidate.getPpOrderId())
+						.ppOrderLineIds(InSetPredicate.none())
 						.build())
 				.build();
 	}
