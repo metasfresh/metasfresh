@@ -151,7 +151,7 @@ Feature: create production order
       | PP_Order_Candidate_ID |
       | oc_1                  |
     # this is the PP_Order_Candidates from above, but now with processed=Y
-    Then after not more than 60s, PP_Order_Candidates are found
+    And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | M_AttributeSetInstance_ID |
       | oc_1       | true      | p_1          | bom_1             | ppln_1                 | 540006        | 10 PCE     | 0 PCE        | 10 PCE       | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    | bomASI                    |
     And after not more than 60s, PP_Orders are found
@@ -173,7 +173,10 @@ Feature: create production order
       # PP_Order:
       | 5          | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 10   | 0    | bomASI                    |
       | 6          | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | -100 | -100 | bomLineASI                |
-    And the PP_Order ppo_1 is voided
+
+    # Now we're voiding
+    Then the PP_Order ppo_1 is voided
+
     And after not more than 60s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID | PP_Order_ID | QtyEntered |
       | oc_1                  | ppo_1       | 10 PCE     |
