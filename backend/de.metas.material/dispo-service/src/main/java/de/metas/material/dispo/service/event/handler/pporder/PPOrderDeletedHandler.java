@@ -136,6 +136,7 @@ public final class PPOrderDeletedHandler
 				.builder()
 				.productionDetailsQuery(ProductionDetailsQuery.builder()
 						.ppOrderId(ppOrderCandidate.getPpOrderId())
+						.ppOrderLineIds(InSetPredicate.none()) // to get the header (main-product), we just need to exclude the PPOrderLine-IDs
 						.build())
 				.build();
 	}

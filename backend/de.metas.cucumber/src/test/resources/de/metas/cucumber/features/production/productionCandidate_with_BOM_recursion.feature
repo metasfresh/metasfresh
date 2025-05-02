@@ -164,7 +164,7 @@ Feature: Production dispo scenarios with BOMs whose components have their own BO
       | oc_1_S0460_20         | product_2_2_S0460_20 | 0 PCE      | CO            | boml_2_2_S0460_20     |
       | oc_2_S0460_20         | product_3_1_S0460_20 | 0 PCE      | CO            | boml_3_1_S0460_20     |
 
-    # the first 1 MD_Candidates belonss the original demand. the next 5 belong to the PP_Order_Candidates; the last 5 MD_Candidates belong to the PP_Orders
+    # the first 1 MD_Candidates belongs to the original demand. The next 5 belong to the PP_Order_Candidates; the last 5 MD_Candidates belong to the PP_Orders
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier        | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID         | DateProjected        | Qty | ATP  | M_Warehouse_ID |
       | 01/d_1_1_S0460_20 | DEMAND            | SHIPMENT                  | product_1_1_S0460_20 | 2024-09-22T21:00:00Z | 1   | -1   | WH_S0460       |
