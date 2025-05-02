@@ -174,7 +174,7 @@ Feature: create production order
       | 5          | SUPPLY            | PRODUCTION                | p_1          | 2021-04-16T21:00:00Z | 10   | 0    | bomASI                    |
       | 6          | DEMAND            | PRODUCTION                | p_2          | 2021-04-16T21:00:00Z | -100 | -100 | bomLineASI                |
 
-    # Now we're voiding
+    # Voiding the PP_Order, its entire quantity is returned to the candidate, so that a new PP_Order can be created from it
     Then the PP_Order ppo_1 is voided
 
     And after not more than 60s, PP_OrderCandidate_PP_Order are found
@@ -185,6 +185,7 @@ Feature: create production order
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | M_AttributeSetInstance_ID |
       | oc_1       | false     | p_1          | bom_1             | ppln_1                 | 540006        | 10 PCE     | 10 PCE       | 0 PCE        | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    | bomASI                    |
 
+    # This avoids a potential race condition in which the PP_Order MD_Candidates are deleted, but not their associated STOCK records.
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
     And after not more than 60s, the MD_Candidate table has only the following records
