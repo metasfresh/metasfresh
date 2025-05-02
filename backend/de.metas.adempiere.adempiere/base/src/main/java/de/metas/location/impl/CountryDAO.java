@@ -37,6 +37,7 @@ import org.compiere.model.I_C_Region;
 import org.compiere.model.MCountry;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -84,6 +85,7 @@ public class CountryDAO implements ICountryDAO
 		return alpha2to3CountryCodesBuilder.build();
 	}
 
+	@NonNull
 	private static IndexedCountries retrieveIndexedCountries()
 	{
 		final List<I_C_Country> countries = Services.get(IQueryBL.class)
@@ -127,6 +129,7 @@ public class CountryDAO implements ICountryDAO
 				.build();
 	}
 
+	@Nullable
 	@Override
 	public CountryCustomInfo retriveCountryCustomInfo(final Properties ctx, final String trxName)
 	{
@@ -191,9 +194,10 @@ public class CountryDAO implements ICountryDAO
 		return countries;
 	} // getCountries
 
+	@NonNull
 	private IndexedCountries getIndexedCountries()
 	{
-		return countriesCache.getOrLoad(0, CountryDAO::retrieveIndexedCountries);
+		return Check.assumeNotNull(countriesCache.getOrLoad(0, CountryDAO::retrieveIndexedCountries),"retrieveIndexedCountries doesn't return null");
 	}
 
 	private String getCountryCodeByADClientId(final Properties ctx)
@@ -262,8 +266,9 @@ public class CountryDAO implements ICountryDAO
 		return getIndexedCountries().getIdByCountryCode(countryCode);
 	}
 
+	@Nullable
 	@Override
-	public CountryId getCountryIdByCountryCodeOrNull(final String countryCode)
+	public CountryId getCountryIdByCountryCodeOrNull(@Nullable final String countryCode)
 	{
 		return getIndexedCountries().getIdByCountryCodeOrNull(countryCode);
 	}
@@ -306,6 +311,7 @@ public class CountryDAO implements ICountryDAO
 		return CurrencyId.optionalOfRepoId(country.getC_Currency_ID());
 	}
 
+	@NonNull
 	@Override
 	public String getCountryCode(@NonNull final CountryId countryId)
 	{
@@ -348,7 +354,7 @@ public class CountryDAO implements ICountryDAO
 			return country;
 		}
 
-		public I_C_Country getByCountryCodeOrNull(final String countryCode)
+		public I_C_Country getByCountryCodeOrNull(@Nullable final String countryCode)
 		{
 			return countriesByCountryCode.get(countryCode);
 		}
@@ -363,17 +369,19 @@ public class CountryDAO implements ICountryDAO
 			return country;
 		}
 
-		public CountryId getIdByCountryCode(final String countryCode)
+		@NonNull
+		public CountryId getIdByCountryCode(@NonNull final String countryCode)
 		{
 			final I_C_Country country = getByCountryCode(countryCode);
 			return CountryId.ofRepoId(country.getC_Country_ID());
 		}
 
-		public CountryId getIdByCountryCodeOrNull(final String countryCode)
+		@Nullable
+		public CountryId getIdByCountryCodeOrNull(@Nullable final String countryCode)
 		{
 			final I_C_Country country = getByCountryCodeOrNull(countryCode);
 
-			return country!= null? CountryId.ofRepoId(country.getC_Country_ID()) : null;
+			return country != null ? CountryId.ofRepoId(country.getC_Country_ID()) : null;
 		}
 
 	}
