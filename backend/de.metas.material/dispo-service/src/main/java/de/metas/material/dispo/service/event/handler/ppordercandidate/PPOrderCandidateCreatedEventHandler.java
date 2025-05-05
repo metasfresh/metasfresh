@@ -84,4 +84,9 @@ public class PPOrderCandidateCreatedEventHandler extends PPOrderCandidateEventHa
 
 		createLineCandidates(event, groupId, headerCandidate);
 	}
+
+	protected boolean isMaterialTrackingDeferredForThisEventType()
+	{
+		return true;
+	}
 }

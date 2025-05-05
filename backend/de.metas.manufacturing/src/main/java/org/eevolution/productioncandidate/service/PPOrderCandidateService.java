@@ -518,9 +518,13 @@ public class PPOrderCandidateService
 		saveRecord(newAllocationRecord);
 	}
 
-	public void updateOrderCandidateById(@NonNull final PPOrderCandidateId ppOrderCandidateId)
+	public void updateOrderCandidateAfterCommit(@NonNull final PPOrderCandidateId ppOrderCandidateId)
 	{
-		updateOrderCandidatesByIds(ImmutableSet.of(ppOrderCandidateId));
+		trxManager.accumulateAndProcessAfterCommit(
+				"PPOrderCandidateService.candidatesToUpdate",
+				ImmutableSet.of(ppOrderCandidateId),
+				this::updateOrderCandidatesByIds
+		);
 	}
 
 	private void updateOrderCandidatesByIds(@NonNull final Collection<PPOrderCandidateId> ppOrderCandidateIds)

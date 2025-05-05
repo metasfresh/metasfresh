@@ -408,7 +408,7 @@ public class PP_Order_Candidate_StepDef
 		row.getAsOptionalIdentifier(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_Parent_ID)
 				.map(ppOrderCandidateTable::getId)
 				.ifPresent(ppOrderCandidateId -> softly.assertThat(actual.getPP_Order_Candidate_Parent_ID()).as("PP_Order_Candidate_Parent_ID").isEqualTo(ppOrderCandidateId.getRepoId()));
-		
+
 		softly.assertAll();
 	}
 

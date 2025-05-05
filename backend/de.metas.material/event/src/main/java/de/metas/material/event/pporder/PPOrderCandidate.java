@@ -30,7 +30,6 @@ import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
 
-import javax.annotation.Nullable;
 import java.util.List;
 
 @Value
@@ -57,7 +56,7 @@ public class PPOrderCandidate
 			@JsonProperty("simulated") final boolean simulated,
 			@JsonProperty("parentPPOrderCandidateId") final int parentPPOrderCandidateId,
 			@JsonProperty("ppOrderData") @NonNull final PPOrderData ppOrderData,
-			@JsonProperty("lines") @Nullable final List<PPOrderLineCandidate> lines)
+			@JsonProperty("lines") @NonNull final List<PPOrderLineCandidate> lines)
 	{
 		this.ppOrderCandidateId = ppOrderCandidateId;
 		this.simulated = simulated;
