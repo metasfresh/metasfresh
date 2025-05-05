@@ -35,8 +35,9 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Collections;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestPOJOs
 {
@@ -76,6 +77,7 @@ public class TestPOJOs
 									 .qtyRequired(BigDecimal.ONE)
 									 .qtyDelivered(BigDecimal.ZERO)
 									 .build())
+				.lines(Collections.emptyList())
 				.build();
 	}
 }
