@@ -31,7 +31,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.common.rest_api.v2.JsonErrorItem;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
@@ -44,7 +43,6 @@ import de.metas.cucumber.stepdefs.bankStatement.C_BankStatementLine_StepDefData;
 import de.metas.cucumber.stepdefs.bankStatement.C_BankStatement_StepDefData;
 import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
-import de.metas.cucumber.stepdefs.doctype.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.engine.IDocument;
@@ -77,7 +75,6 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Comparator;
@@ -87,11 +84,8 @@ import java.util.Map;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_BPartner_ID;
-import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Payment_ID;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_C_DocType_ID;
-import static org.compiere.model.I_C_Payment.COLUMNNAME_DateAcct;
-import static org.compiere.model.I_C_Payment.COLUMNNAME_DateTrx;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_DiscountAmt;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_IsAllocated;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_IsReceipt;
@@ -204,7 +198,6 @@ public class C_Payment_StepDef
 				.ifPresent(expectedDocTypeId -> softly.assertThat(payment.getC_DocType_ID()).isEqualTo(expectedDocTypeId.getRepoId()));
 
 		softly.assertAll();
-		}
 	}
 
 	@And("^after not more than (.*)s, C_Payment is found")
@@ -283,7 +276,6 @@ public class C_Payment_StepDef
 	{
 		final OrgId orgId = Env.getOrgId();
 		final BPartnerId bpartnerId = row.getAsIdentifier(COLUMNNAME_C_BPartner_ID).lookupNotNullIdIn(bpartnerTable);
-		final InvoiceId invoiceId = row.getAsOptionalIdentifier(COLUMNNAME_C_Invoice_ID).lookupIdIn(invoiceTable);
 
 		final Money payAmt = row.getAsMoney(COLUMNNAME_PayAmt, currencyRepository::getCurrencyIdByCurrencyCode);
 		final Money discountAmt = row.getAsOptionalMoney(COLUMNNAME_DiscountAmt, currencyRepository::getCurrencyIdByCurrencyCode).orElse(null);

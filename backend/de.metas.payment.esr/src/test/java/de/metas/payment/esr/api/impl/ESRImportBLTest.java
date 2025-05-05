@@ -686,6 +686,7 @@ public class ESRImportBLTest extends ESRTestBase
 		invoice.setDocumentNo("452432");
 		invoice.setAD_Org_ID(org.getAD_Org_ID());
 		invoice.setC_DocType_ID(type.getC_DocType_ID());
+		invoice.setC_Currency_ID(currencyEUR.getRepoId());
 		save(invoice);
 
 		final I_ESR_Import esrImport = newInstance(I_ESR_Import.class);
